@@ -10,7 +10,7 @@ include_HEADERS =
 # here you should add all header files, which shouldn't be installed
 noinst_HEADERS =
 
-INCLUDES = -I../include
+INCLUDES = -I$(srcdir)/../include
 CFLAGS += @DEBUG@
 CXXFLAGS += @DEBUG@
 
