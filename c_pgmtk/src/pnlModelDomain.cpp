@@ -286,6 +286,9 @@ CModelDomain::~CModelDomain()
         omp_destroy_lock(&(m_heap_lock[lock]));
         m_heap_lock[lock] = NULL;
     }
+
+    if (m_pStubObject != NULL)
+      delete m_pStubObject;
 }
 
 static int IsNodeTypeNotInitialized(CNodeType nt)
@@ -294,79 +297,83 @@ static int IsNodeTypeNotInitialized(CNodeType nt)
 }
 
 CModelDomain::CModelDomain( int numVariables,
-			   const CNodeType& commonVariableType,
-			   CGraphicalModel* pCreaterOfMD )
-			   : m_variableTypes( 1, commonVariableType ),
-			   m_variableAssociation( numVariables, 0 ),
-			   m_obsGauVarType( 0, 0 ),
-			   m_obsTabVarType( 1, 1 ),
-			   m_bSelfCreated(false)
+                           const CNodeType& commonVariableType,
+                           CGraphicalModel* pCreaterOfMD )
+                           : m_variableTypes( 1, commonVariableType ),
+                           m_variableAssociation( numVariables, 0 ),
+                           m_obsGauVarType( 0, 0 ),
+                           m_obsTabVarType( 1, 1 ),
+                           m_bSelfCreated(false)
 {
-    if( pCreaterOfMD == NULL )
-    {
-	AddRef(this);
+  for (int lock = 0; lock < c_MaxThreadNumber; lock++) 
+    omp_init_lock(&(m_heap_lock[lock]));
 
-	m_bSelfCreated = true;
-    }
-    else
-    {
-	AddRef(pCreaterOfMD);
-    }
+  m_pStubObject = NULL;
 
-    for (int lock = 0; lock < c_MaxThreadNumber; lock++) 
-        omp_init_lock(&(m_heap_lock[lock]));
+  if( pCreaterOfMD == NULL )
+  {
+    AddRef(this);
+    
+    m_bSelfCreated = true;
+  }
+  else
+  {
+    AddRef(pCreaterOfMD);
+  }
 }
 
 CModelDomain::CModelDomain( const nodeTypeVector& variableTypes,
-			   const intVector& variableAssociation,
-			   CGraphicalModel* pCreaterOfMD)
-			   : m_variableTypes( variableTypes.begin(),
-			   variableTypes.end() ),
-			   m_variableAssociation( variableAssociation.begin(),
-			   variableAssociation.end()),
-			   m_obsGauVarType( 0, 0 ),
-			   m_obsTabVarType( 1, 1 ),
-			   m_bSelfCreated(false)
+                           const intVector& variableAssociation,
+                           CGraphicalModel* pCreaterOfMD)
+                           : m_variableTypes( variableTypes.begin(),
+                           variableTypes.end() ),
+                           m_variableAssociation( variableAssociation.begin(),
+                           variableAssociation.end()),
+                           m_obsGauVarType( 0, 0 ),
+                           m_obsTabVarType( 1, 1 ),
+                           m_bSelfCreated(false)
 {
-    for (int lock = 0; lock < c_MaxThreadNumber; lock++) 
-        omp_init_lock(&(m_heap_lock[lock]));
+  for (int lock = 0; lock < c_MaxThreadNumber; lock++) 
+    omp_init_lock(&(m_heap_lock[lock]));
 
-    for (int fi = 0; fi < c_MaxThreadNumber; fi++) 
-        m_factorsHeap[fi].clear();
-    nodeTypeVector::const_iterator ntIter;
-
-    ntIter = std::find_if( m_variableTypes.begin(), m_variableTypes.end(),
-	IsNodeTypeNotInitialized );
-
-    if( ntIter != m_variableTypes.end() )
-    {
-	PNL_THROW( CInconsistentType,
-	    " variable types have not been initialized " );
-    }
-    /* variable types validity check end */
-
-    /* variable association validity check */
-    intVector::const_iterator naIter = m_variableAssociation.begin();
-
-    int numVarTypes = m_variableAssociation.size();
-
+  m_pStubObject = NULL;
+  
+  for (int fi = 0; fi < c_MaxThreadNumber; fi++) 
+    m_factorsHeap[fi].clear();
+  nodeTypeVector::const_iterator ntIter;
+  
+  ntIter = std::find_if( m_variableTypes.begin(), m_variableTypes.end(),
+    IsNodeTypeNotInitialized );
+  
+  if( ntIter != m_variableTypes.end() )
+  {
+    PNL_THROW( CInconsistentType,
+      " variable types have not been initialized " );
+  }
+  /* variable types validity check end */
+  
+  /* variable association validity check */
+  intVector::const_iterator naIter = m_variableAssociation.begin();
+  
+  int numVarTypes = m_variableAssociation.size();
+  
 #if 1
-    for( ; naIter != m_variableAssociation.end(); ++naIter )
-    {
-	PNL_CHECK_RANGES( *naIter, 0, numVarTypes - 1 );
-    }
+  for( ; naIter != m_variableAssociation.end(); ++naIter )
+  {
+    PNL_CHECK_RANGES( *naIter, 0, numVarTypes - 1 );
+  }
 #endif
-
-    if( pCreaterOfMD == NULL )
-    {
-	AddRef(this);
-
-	m_bSelfCreated = true;
-    }
-    else
-    {
-	AddRef(pCreaterOfMD);
-    }
+  
+  if( pCreaterOfMD == NULL )
+  {
+    AddRef(this);
+    
+    m_bSelfCreated = true;
+  }
+  else
+  {
+    AddRef(pCreaterOfMD);
+  }
 }
 
 void CModelDomain::AddRef(void* pObjectIn)
@@ -382,14 +389,44 @@ void CModelDomain::AddRef(void* pObjectIn)
 
 void CModelDomain::Release(void* pObjectIn)
 {
-//#ifdef _DEBUG
+#ifdef _DEBUG
     omp_set_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
-//#endif
+    m_pStubObject = new int;
+    CReferenceCounter::AddRef(m_pStubObject);
     CReferenceCounter::Release(pObjectIn);
-//#ifdef _DEBUG
-    if (m_heap_lock[c_MaxThreadNumber-1]!=NULL)
-      omp_unset_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
-//#endif
+    if (CReferenceCounter::GetNumOfReferences() == 1) 
+    {
+      if (m_heap_lock[c_MaxThreadNumber-1]!=NULL)
+        omp_unset_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+
+      CReferenceCounter::Release(m_pStubObject);
+    }
+    else 
+    {
+      CReferenceCounter::Release(m_pStubObject);
+      delete m_pStubObject;
+      m_pStubObject = NULL;
+
+      if (m_heap_lock[c_MaxThreadNumber-1]!=NULL)
+        omp_unset_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+    }
+#else
+    omp_set_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+    if (CReferenceCounter::GetNumOfReferences() == 1) 
+    {
+      if (m_heap_lock[c_MaxThreadNumber-1]!=NULL)
+        omp_unset_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+
+      CReferenceCounter::Release(pObjectIn);
+    }
+    else 
+    {
+      CReferenceCounter::Release(pObjectIn);
+
+      if (m_heap_lock[c_MaxThreadNumber-1]!=NULL)
+        omp_unset_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+    }
+#endif
 };
 
 int  CModelDomain::GetNumOfReferences()
