@@ -70,6 +70,9 @@ CLIMIDInfEngine::CLIMIDInfEngine(const CStaticGraphicalModel *pOldGM,
   SetJTreeRootNode(0);
   m_pIDNet->GetDecisionNodes(m_decisionNodes);
 
+  if (m_decisionNodes.size() == 0)
+    PNL_THROW(CInternalError, "CLIMIDInfEngine:: there are no desision nodes in net");
+
   m_RetractPotential = NULL;
   m_CollectPotential = NULL;
   m_pMargFromFamilyPotential = NULL;
@@ -85,7 +88,6 @@ CLIMIDInfEngine::~CLIMIDInfEngine()
   delete m_CollectPotential;
   delete m_pMargFromFamilyPotential;
   delete m_pMatContr;
-  // Проверить все внутренние поля на предмет необходимости удаления
 
   if (m_pBaseIDNet != m_pIDNet) 
     delete m_pIDNet;
