@@ -1108,6 +1108,54 @@ void CGaussianDistribFun::SetCoefficient( float  coeff, int isG )
     }
 }
 
+void CGaussianDistribFun::UpdateCanonicalCoefficient()
+{
+    if(m_bCanonical && !IsDistributionSpecific())
+    {
+        if( m_pMatrixK && m_pMatrixH )
+        {
+			float det = m_pMatrixK->Determinant();
+			if(det < 1e-6f)
+			{
+				PNL_THROW( CInconsistentType,
+					"K matrix must be positive semidifinite" );
+			}
+			int oldMoment = m_bMoment;
+			UpdateMomentForm();
+			C2DNumericDenseMatrix<float>* matTr = m_pMatrixMean->Transpose();
+			C2DNumericDenseMatrix<float> *matTemp1 = pnlMultiply(matTr,
+				m_pMatrixK, 0);
+			delete matTr;
+			C2DNumericDenseMatrix<float> *matTemp2 = pnlMultiply(matTemp1,
+				m_pMatrixMean, 0);
+			delete matTemp1;
+			int size;
+			const float *val;
+			matTemp2->GetRawData( &size, &val);
+			if( size != 1 )
+			{
+				PNL_THROW( CInternalError, "it should be a single value" );
+			}
+			m_g = log(m_normCoeff) - 0.5 * val[0];
+			delete matTemp2;
+			if( !oldMoment )
+			{
+				m_bMoment = 0;
+				void *pObj = this;
+				m_pMatrixMean->Release(pObj);
+				m_pMatrixMean = NULL;
+				m_pMatrixCov->Release(pObj);
+				m_pMatrixCov = NULL;
+				m_normCoeff = 0.0f;
+			}
+		}
+    }
+	else
+	{
+		m_g = FLT_MAX;
+	}
+}
+
 int CGaussianDistribFun::GetMultipliedDelta( const int **positions, 
 					    const float **values, const int **offsets ) const
 {
@@ -1392,7 +1440,7 @@ void CGaussianDistribFun::AttachMatrix( CMatrix<float>* pMatrix,
                     dimSize += m_NodeTypes[i]->GetNodeSize();
             }
             
-            //we delete all matrices from another form
+            /*//we delete all matrices from another form
             if(( mType == matMean )||( mType == matCovariance ))
             { 
                 if( m_bCanonical )
@@ -1432,7 +1480,7 @@ void CGaussianDistribFun::AttachMatrix( CMatrix<float>* pMatrix,
                     }
                     m_normCoeff = 0;
                 }
-            }
+            }*/
             // change matrix - checking data
             if(( mType == matMean )||( mType == matH ))
             {
@@ -1801,13 +1849,13 @@ int CGaussianDistribFun::CheckCanonialFormValidity()
                     PNL_THROW( CInconsistentType,
 		        "K matrix must be positive semidifinite" );
                 }
-                float kSum = m_pMatrixK->SumAll(1);
-                float hSum = m_pMatrixH->SumAll(1);
-                if( (kSum < 0.001f)&&( hSum < 0.001f )&&( fabs(m_g)<0.001 ) )
-                {
-                    PNL_THROW( CInvalidOperation, 
-		        "created model is UnitFunction but it created by non special case" );
-                }
+                //float kSum = m_pMatrixK->SumAll(1);
+                //float hSum = m_pMatrixH->SumAll(1);
+                //if( (kSum < 0.001f)&&( hSum < 0.001f )&&( fabs(m_g)<0.001 ) )
+                //{
+                    //PNL_THROW( CInvalidOperation, 
+		        //"created model is UnitFunction but it created by non special case" );
+                //}
             }
             if( fabs(m_g) < FLT_MAX)
             {
@@ -1834,8 +1882,9 @@ int CGaussianDistribFun::CheckCanonialFormValidity()
                 {
                     PNL_THROW( CInternalError, "it should be a single value" );
                 }
-                m_g = m_normCoeff + 0.5f*(float)(log(m_pMatrixK->Determinant()))
-		    - m_numberOfDims*(float)log(2*PNL_PI) - val[0];
+                //m_g = m_normCoeff + 0.5f*(float)(log(m_pMatrixK->Determinant()))
+		    //- m_numberOfDims*(float)log(2*PNL_PI) - val[0];
+                m_g = (float)log(m_normCoeff) - 0.5f * val[0];
                 delete matTemp2;
                 if( !oldMoment )
                 {
@@ -1902,8 +1951,8 @@ void CGaussianDistribFun::UpdateMomentForm()
             const int *ranges;
             m_pMatrixMean->GetRanges(&n, &ranges);
             n = ranges[0];
-            if(( fabs(m_g)<0.0001f )||( fabs(m_g)>=FLT_MAX ))
-            {
+            //if(( fabs(m_g)<0.0001f )||( fabs(m_g)>=FLT_MAX ))
+            //{
                 //we recompute it if m_g takes the specified value
                 //but its all right if it takes this value accidentally - no problem
                 float p1 = (float)pow((double)(2*PNL_PI), (n/2) );
@@ -1915,7 +1964,7 @@ void CGaussianDistribFun::UpdateMomentForm()
                 }
                 float p2 = (float)pow((double)detCov, 0.5);
                 m_normCoeff = 1/(p1*p2);
-            }
+            /*}
             else
             {
                 //m_normCoeff = g - 0.5*(log(det(K)) - n*log(2*pi) - mean'*K*mean)
@@ -1937,7 +1986,7 @@ void CGaussianDistribFun::UpdateMomentForm()
                 m_normCoeff = (float)exp(m_g + 0.5f * val[0]);
                 delete matTemp1;
                 delete matTemp2;
-            }
+            }*/
             m_bMoment = 1;
         }
     }
@@ -2005,8 +2054,9 @@ void CGaussianDistribFun::UpdateCanonicalForm()
                 float p2 = (float)pow((double)detCov, 0.5);
                 m_normCoeff = 1/(p1*p2);
             }
-            m_g = m_normCoeff + 0.5f*(float)(log(m_pMatrixK->Determinant()))
-                - m_numberOfDims*(float)log(2*PNL_PI) - val[0];
+            //m_g = m_normCoeff + 0.5f*(float)(log(m_pMatrixK->Determinant()))
+                //- m_numberOfDims*(float)log(2*PNL_PI) - val[0];
+            m_g = (float)log(m_normCoeff) - 0.5f * val[0];
             delete matTemp1;
             delete matTemp2;
             m_bCanonical = 1;
@@ -2070,7 +2120,8 @@ int CGaussianDistribFun::IsEqual( const CDistribFun *dataToCompare,
     {
         return 0;
     }
-    int ret = 1;
+    //int ret = 1;
+    int ret = 0;
     //we need to check special cases but it can be in both special & common forms (fixme)
     if( m_bUnitFunctionDistribution )
     {
@@ -4081,7 +4132,7 @@ void CGaussianDistribFun::Dump() const
     if( momentFormFlag )
     {
         dump<<"I have valid moment form\n";
-        dump<<"My normal coefficient is" << m_normCoeff<<"\n";
+        dump<<"My normal coefficient is " << m_normCoeff<<"\n";
         dump<<"My matrix Mean is:\n";
         const floatVector *myVector = static_cast<CNumericDenseMatrix<float>*>(
             m_pMatrixMean)->GetVector();
@@ -4571,7 +4622,13 @@ void CGaussianDistribFun::MarginalizeData( const CDistribFun *pOldData,
         {
             if( pData->m_bCanonical )
             {
-                CGaussianDistribFun* pDistr = static_cast<CGaussianDistribFun*>(
+				MarginalizeOnMatrices( VarsOfKeep, NumVarsOfKeep,
+					&nodeSizesOld.front(), nodeSizesOld.size(), pData->m_pMatrixH, 
+					pData->m_pMatrixK, pData->m_g, 0, &m_pMatrixH,
+					&m_pMatrixK, &m_g, maximize );
+				m_pMatrixH->AddRef(pObj);
+				m_pMatrixK->AddRef(pObj);
+                /*CGaussianDistribFun* pDistr = static_cast<CGaussianDistribFun*>(
                     pData->Clone());
                 pDistr->UpdateMomentForm();
                 MarginalizeOnMatrices( VarsOfKeep, NumVarsOfKeep,
@@ -4601,7 +4658,7 @@ void CGaussianDistribFun::MarginalizeData( const CDistribFun *pOldData,
                 //delta distribution have matrix mean and canonical form falg only
                 m_normCoeff = 0.0f;
                 m_bMoment = 0;
-                delete pDistr;
+                delete pDistr;*/
             }
             else
             {
@@ -4892,59 +4949,78 @@ void CGaussianDistribFun::MarginalizeOnMatrices( const int* keepVariables,
     }
     else
     {
-        PNL_THROW( CNotImplemented,
-            "can't provide correct marginalization in canonical form now" );
+		C2DNumericDenseMatrix<float>* matHKeep = NULL;
+		C2DNumericDenseMatrix<float>* matHSum = NULL;
+		vecMat->GetLinearBlocks( keepVariables, numKeepVariables,
+			allVariableSizes, numVariables, &matHKeep, &matHSum );
+
+		C2DNumericDenseMatrix<float> *matXK = NULL;
+		C2DNumericDenseMatrix<float> *matYK = NULL;
+		C2DNumericDenseMatrix<float> *matXYK = NULL;
+		C2DNumericDenseMatrix<float> *matYXK = NULL;
+		squareMat->GetBlocks(  keepVariables, numKeepVariables,
+			allVariableSizes, numVariables, &matXK, &matYK, &matXYK, &matYXK );
+		if (!matHSum)
+		{
+			*resVecMat = matHKeep;
+			*resSquareMat = matXK;
+			*resCoeff = coeff;
+			return;
+		}
+		C2DNumericDenseMatrix<float> *matHSUMTr = matHSum->Transpose();
+		C2DNumericDenseMatrix<float> *matYKinverse = matYK->Inverse();
+		C2DNumericDenseMatrix<float> *matMult1 = 
+			pnlMultiply(matYKinverse, matHSum, maximize);
+		C2DNumericDenseMatrix<float> *matMult2 = pnlMultiply(matHSUMTr,matMult1, maximize );
+		int multSize;const float*dataMult;
+		matMult2->GetRawData( &multSize, &dataMult );
+		if( multSize != 1 )
+		{
+			PNL_THROW( CInvalidOperation,
+				"result should be one float number" );
+		}
+		*resCoeff = (float)coeff + 0.5f * (m_numberOfDims * (float)log(2 * PNL_PI) - 
+			(float)log(matYK->Determinant()) + dataMult[0]);
+		delete matMult1;
+		delete matMult2;
+		matMult1 = pnlMultiply( matXYK, matYKinverse, maximize );
+		matMult2 = pnlMultiply( matMult1,matHSum, maximize);
+		//substract in combining matrices
+		*resVecMat = static_cast<C2DNumericDenseMatrix<float>*>(
+			pnlCombineNumericMatrices( matHKeep, matMult2, 0 ));
+		delete matMult2;
+		//substract in combining matrices
+		matMult2 = pnlMultiply( matMult1, matYXK, maximize);
+
+		//make matrix simmetric to correct miscalculation
+		float *matVec = (float*)&(matMult2->GetVector()->front());
+		const int *ranges;
+		int numDims;
+		matMult2->GetRanges(&numDims, &ranges);
+		int i,j;
+		int size = ranges[0];
+		for( i = 0; i < size ; i++)
+		{
+			for( j = 0; j < i; j++ )
+			{
+				matVec[i*size+j] = matVec[j*size+i];
+			}
+		}
+		
+		*resSquareMat = static_cast<C2DNumericDenseMatrix<float>*>(
+			pnlCombineNumericMatrices( matXK, matMult2, 0 ));
+		delete matMult1;
+		delete matMult2;
+		delete matXK;
+		delete matYK;
+		delete matYKinverse;
+		delete matXYK;
+		delete matYXK;
+		delete matHSum;
+		delete matHSUMTr;
+		delete matHKeep;
+		return;
     }
-    /*if( isInMoment == 0 )
-    {
-    C2DNumericDenseMatrix<float>* matHKeep = NULL;
-    C2DNumericDenseMatrix<float>* matHSum = NULL;
-    vecMat->GetLinearBlocks( keepVariables, numKeepVariables,
-    allVariableSizes, numVariables, &matHKeep, &matHSum );
-    C2DNumericDenseMatrix<float> *matHSUMTr = matHSum->Transpose();
-    C2DNumericDenseMatrix<float> *matXK = NULL;
-    C2DNumericDenseMatrix<float> *matYK = NULL;
-    C2DNumericDenseMatrix<float> *matXYK = NULL;
-    C2DNumericDenseMatrix<float> *matYXK = NULL;
-    squareMat->GetBlocks(  keepVariables, numKeepVariables,
-    allVariableSizes, numVariables, &matXK, &matYK, &matXYK, &matYXK );
-    C2DNumericDenseMatrix<float> *matYKinverse = matYK->Inverse();
-    C2DNumericDenseMatrix<float> *matMult1 = 
-    pnlMultiply(matYKinverse, matHSum, maximize);
-    C2DNumericDenseMatrix<float> *matMult2 = pnlMultiply(matHSUMTr,matMult1, maximize );
-    int multSize;const float*dataMult;
-    matMult2->GetRawData( &multSize, &dataMult );
-    if( multSize != 1 )
-    {
-    PNL_THROW( CInvalidOperation,
-    "result should be one float number" );
-    }
-    *resCoeff = (float)coeff+0.5f*( m_numberOfDims*(float)log(2*PNL_PI) - 
-    (float)log(matYK->Determinant())+ dataMult[0]);
-    delete matMult1;
-    delete matMult2;
-    matMult1 = pnlMultiply( matXYK, matYKinverse, maximize );
-    matMult2 = pnlMultiply( matMult1,matHSum, maximize);
-    //substract in combining matrices
-    *resVecMat = static_cast<C2DNumericDenseMatrix<float>*>(
-    pnlCombineNumericMatrices( matHKeep, matMult2, 0 ));
-    delete matMult2;
-    //substract in combining matrices
-    matMult2 = pnlMultiply( matMult1, matYXK, maximize);
-    *resSquareMat = static_cast<C2DNumericDenseMatrix<float>*>(
-    pnlCombineNumericMatrices( matXK, matMult2, 0 ));
-    delete matMult1;
-    delete matMult2;
-    delete matXK;
-    delete matYK;
-    delete matYKinverse;
-    delete matXYK;
-    delete matYXK;
-    delete matHSum;
-    delete matHSUMTr;
-    delete matHKeep;
-    return;
-}*/
 }
 						
 void CGaussianDistribFun::ShrinkToMatrices( const int* keepPositions, 
@@ -6264,7 +6340,7 @@ CDistribFun* CGaussianDistribFun::CPD_to_pi(CDistribFun *const*allPiMessages,
     else
     {
         float p1 = (float)pow((double)(2*PNL_PI),(m_numberOfDims/2.0));
-        float p2 = (float)pow((double)m_pMatrixCov->Determinant(),0.5);
+        float p2 = (float)pow((double)matrixCov->Determinant(),0.5);
         resData->m_normCoeff = 1/(p1*p2);
     }
     resData->m_bMoment = 1;
