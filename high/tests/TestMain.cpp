@@ -1,9 +1,9 @@
 #include "test_conf.hpp"
 
-#define SKIP_TOKEN
+//#define SKIP_TOKEN
 //#define SKIP_LIMID
-#define SKIP_DBN
-#define SKIP_MRF
+//#define SKIP_DBN
+//#define SKIP_MRF
 //#define SKIP_NUMERATION
 
 int main(int argc, char* argv[])
@@ -19,26 +19,19 @@ int main(int argc, char* argv[])
     bTestOK = testExtractTok() && bTestOK;
     try 
     {
-        //TestGaussianModelCreate();
-        //TestGaussianInference();
-        //TestGaussianParamLearning();
-	//TestMultivariateWrapperJPD();
-	//TestMultivariateWrapperLearn();
-	//TestMultivariateWrapperLearnPartOfObservation();
-	//TestMultivariateWrapperMPE();
         SimpleModel();
-//        TestGaussianModelCreate();// del arc
+    //    TestGaussianModelCreate();// del arc
         TestGaussianInference();
         TestGaussianParamLearning();// too long
-	TestMultivariateWrapperJPD();
-	TestMultivariateWrapperLearn();
-	TestMultivariateWrapperLearnPartOfObservation();
-	TestMultivariateWrapperMPE();
+        TestMultivariateWrapperJPD();
+        TestMultivariateWrapperLearn();
+        TestMultivariateWrapperLearnPartOfObservation();
+        TestMultivariateWrapperMPE();
     }
     catch(pnl::CException e)
     {
-	std::cout << e.GetMessage();
-	bTestOK = false;
+        std::cout << e.GetMessage();
+        bTestOK = false;
     }
 #endif
 #ifndef SKIP_LIMID
@@ -48,8 +41,8 @@ int main(int argc, char* argv[])
     }
     catch(pnl::CException e)
     {
-	std::cout << e.GetMessage()<< "\n";
-	bTestOK = false;
+        std::cout << e.GetMessage()<< "\n";
+        bTestOK = false;
     }
     try 
     {
@@ -57,8 +50,8 @@ int main(int argc, char* argv[])
     }
     catch(pnl::CException e)
     {
-	std::cout << e.GetMessage()<< "\n";
-	bTestOK = false;
+        std::cout << e.GetMessage()<< "\n";
+        bTestOK = false;
     }
 
     try 
@@ -67,8 +60,8 @@ int main(int argc, char* argv[])
     }
     catch(pnl::CException e)
     {
-	std::cout << e.GetMessage()<<"\n";
-	bTestOK = false;
+        std::cout << e.GetMessage()<<"\n";
+        bTestOK = false;
     }
 
     try 
@@ -76,15 +69,15 @@ int main(int argc, char* argv[])
         LimidTopology();
         DelNodes();
         TestPigs();
-	OilTest();
-	testRandom1();
+        OilTest();
+        testRandom1();
         testRandom2();
-	testRandom3();
+        testRandom3();
     }
     catch(pnl::CException e)
     {
-	std::cout << e.GetMessage();
-	bTestOK = false;
+        std::cout << e.GetMessage();
+        bTestOK = false;
     }
 
 #endif
@@ -92,8 +85,8 @@ int main(int argc, char* argv[])
     int res = 0;
     
     res = testDBN();
-//	res = testDBNTopologicalSort1();
-    res = testDBNTopologicalSort2();
+//    res = testDBNTopologicalSort1();
+//    res = testDBNTopologicalSort2();
     res = testDBNSmothing() & res;
     res = testDBNFixLagSmothing() & res;
     res = testDBNFiltering() & res;
@@ -106,13 +99,13 @@ int main(int argc, char* argv[])
 #ifndef SKIP_MRF
     try 
     {
-        TestMRFModelCreate();
-        TestMRFGetJPD();
+    //    TestMRFModelCreate();
+    //    TestMRFGetJPD();
     }
     catch(pnl::CException e)
     {
-	std::cout << e.GetMessage();
-	bTestOK = false;
+        std::cout << e.GetMessage();
+        bTestOK = false;
     }
 #endif
 
@@ -121,19 +114,19 @@ int main(int argc, char* argv[])
     try 
     {
         TestForGetPTabular();
-	TestForSetInferenceProperties();
-	TestForGetMPE();
+        TestForSetInferenceProperties();
+        TestForGetMPE();
     }
     catch(pnl::CException e)
     {
-	std::cout << e.GetMessage();
-	bTestOK = false;
+        std::cout << e.GetMessage();
+        bTestOK = false;
     }
 #endif
 
     if(bTestOK)
     {
-	std::cout << "All tests were completed successfully" << "\n";
+        std::cout << "All tests were completed successfully" << "\n";
     }
 
     return 0;
