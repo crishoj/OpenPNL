@@ -19,6 +19,9 @@
 #define __PNLSTRING_HPP__
 
 #include <stdio.h>
+#ifndef __PNLCONFIG_H__
+#include "pnlConfig.h"
+#endif
 
 PNL_BEGIN
 
