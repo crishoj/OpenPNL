@@ -85,6 +85,11 @@ void BayesNet::SetP(TokArr value, TokArr prob, TokArr parentValue)
     Net().Distributions()->FillData(value, prob, parentValue);
 }
 
+void BayesNet::SetGaussian(TokArr var, TokArr mean, TokArr variance)
+{
+
+}
+
 TokArr BayesNet::P(TokArr child, TokArr parents)
 {
     static const char fname[] = "P";
@@ -476,9 +481,14 @@ TokArr BayesNet::MPE(TokArr nodes)
 	    ThrowInternalError("Non-discrete value for discrete variable", "MPE");
 	}
 
+#if 1
+        result.push_back(Tok(Net().Graph()->NodeName(queryNds[i]))
+            ^ Net().DiscreteValue(queryNds[i], v.GetInt()));
+#else
 	TokIdNode *node = Net().TokNodeByIndex(queryNds[i]);
 	if(Net().pnlNodeType(queryNds[i]).IsDiscrete())
 	{
+
 	    node = node->v_next;
 	    //may be we should search by id?
 	    for(; node; node = node->h_next)
@@ -491,6 +501,7 @@ TokArr BayesNet::MPE(TokArr nodes)
 
 	    result.push_back(Tok(node));
 	}
+#endif
     }
 
     return result;
