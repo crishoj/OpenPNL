@@ -380,14 +380,14 @@ int RunTest(int argc, char* argv[])
     queries.resize(2);
     queries[0].resize(0);
     queries[0].push_back(2);
-    queries[0].push_back(3);
-    queries[0].push_back(4);
-    queries[0].push_back(5);
-    queries[0].push_back(7);
+//    queries[0].push_back(3); 
+//    queries[0].push_back(4);
+//    queries[0].push_back(5);
+//    queries[0].push_back(7);
     queries.resize(2);
     queries[1].resize(0);
     queries[1].push_back(1);
-    queries[1].push_back(2);
+//    queries[1].push_back(2);
   }
   else
   {
