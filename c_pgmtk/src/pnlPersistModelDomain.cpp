@@ -58,3 +58,8 @@ CPersistModelDomain::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
     pContext->Put(new CCoverDel<intVector>(paVarAssociation), "VarAssociations");
     pContext->Put(new CCoverDel<nodeTypeVector>(paNodeType), "NodeTypes");
 }
+
+bool CPersistModelDomain::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CModelDomain*>(pObj) != 0;
+}

@@ -26,7 +26,7 @@
 #include "pnlEvidence.hpp"
 #include "pnlDistribFun.hpp"
 
-PNL_USING
+PNL_BEGIN
 
 void
 CPersistNodeType::Save(CPNLBase *pObj, CContextSave *pContext)
@@ -55,6 +55,11 @@ CPersistNodeType::Load(CContextLoad *pContext)
     pContext->GetAttribute(&nodeState, "NodeState");
 
     return new CNodeType(bDiscrete, nodeSize, (EIDNodeState)nodeState);
+}
+
+bool CPersistNodeType::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CNodeType*>(pObj) != 0;
 }
 
 void
@@ -106,6 +111,11 @@ CPersistNodeValues::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
     pContext->Put(pCov, "pNodeTypes", true);
 }
 
+bool CPersistNodeValues::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CNodeValues*>(pObj) != 0;
+}
+
 // Evidence
 
 void
@@ -150,6 +160,11 @@ CPNLBase *CPersistEvidence::Load(CContextLoad *pContext)
     intVector *pV = static_cast<CCover<intVector>*>(pContext->Get("ObservedNodes"))->GetPointer();
 
     return CEvidence::Create(pMD, *pV, *paValue);
+}
+
+bool CPersistEvidence::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CEvidence*>(pObj) != 0;
 }
 
 // Matrix
@@ -443,15 +458,7 @@ CPNLBase *CPersistMatrixDistribFun::Load(CContextLoad *pContext)
 }
 
 static
-pnlString &operator<<(pnlString &str, const Value &v)
-{
-    (v.IsDiscrete()) ? (str << v.GetInt()) : (str << v.GetFlt() << 'f');
-
-    return str;
-}
-
-static
-pnlString &operator<<(pnlString &str, Value &v)
+pnlString &operator<<(pnlString &str, const Value v)
 {
     (v.IsDiscrete()) ? (str << v.GetInt()) : (str << v.GetFlt() << 'f');
 
@@ -488,21 +495,21 @@ void CPersistValueVector::Save(CPNLBase *pObj, CContextSave *pContext)
         PNL_THROW(CInconsistentType, "valueVector must be covered");
     }
 
-    SaveArray(*pContext, &pV->front(), pV->size());
+    SaveArray<Value>(*pContext, &pV->front(), pV->size());
 }
 
 CPNLBase *CPersistValueVector::Load(CContextLoad *pContext)
 {
-    pnlString str;
-    
-    pContext->GetText(str);
-    std::istringstream buf(str.c_str());
-    valueVector *pV = new valueVector;
-
-    LoadArray(buf, *pV);
     CCover<valueVector> *pCov =
-        new CCoverDel<valueVector >(pV);
+        new CCoverDel<valueVector >(LoadArray<Value>(*pContext));
     pContext->AutoDelete(pCov);
 
     return pCov;
 }
+
+bool CPersistValueVector::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CCover<valueVector>*>(pObj) != 0;
+}
+
+PNL_END

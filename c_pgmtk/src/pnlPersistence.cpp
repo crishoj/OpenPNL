@@ -27,6 +27,11 @@
 
 PNL_USING
 
+CPersistenceZoo *GetZoo();
+
+static CPersistence *spQueueHead = 0;
+static int siQueueUpdate;
+
 class PersistenceUsing
 {
 public:
@@ -38,12 +43,43 @@ public:
         {
             delete m_pZoo;
         }
+	m_pZoo = 0;
     }
 
     CPersistenceZoo *m_pZoo;
 };
 
 static PersistenceUsing persistenceZooHolder;
+
+CPersistence::CPersistence()
+{
+    m_pNext = spQueueHead;
+    m_pPrev = 0;
+    if(m_pNext)
+    {
+	m_pNext->m_pPrev = this;
+    }
+    spQueueHead = this;
+    ++siQueueUpdate;
+}
+
+CPersistence::~CPersistence()
+{
+    // remove from queue
+    if(m_pPrev)
+    {
+	m_pPrev->m_pNext = m_pNext;
+    }
+    if(m_pNext)
+    {
+	m_pNext->m_pPrev = m_pPrev;
+    }
+
+    if(persistenceZooHolder.m_pZoo)
+    {
+	persistenceZooHolder.m_pZoo->Unregister(this, true/* from DTOR */);
+    }
+}
 
 CPersistenceZoo *GetZoo()
 {
@@ -85,13 +121,88 @@ void CPersistenceZoo::Register(CPersistence *pPersist)
     m_aFuncMap[Map::key_type(pnlString(pPersist->Signature()))] = pPersist;
 }
 
-void CPersistenceZoo::Unregister(CPersistence *pPersist)
+void CPersistenceZoo::Unregister(CPersistence *pPersist, bool bDTOR)
 {
-    Map::iterator it = m_aFuncMap.find(pPersist->Signature());
-    
-    if(it != m_aFuncMap.end())
+    Map::iterator it;
+
+    if(m_bUnregister == false)
     {
-        m_aFuncMap.erase(it);
+	return;
     }
-    // else { does not exists };
+    if(bDTOR)
+    {
+	for(it = m_aFuncMap.begin(); it != m_aFuncMap.end(); it++)
+	{
+	    if(it->second == pPersist)
+	    {
+		m_aFuncMap.erase(it);
+		break;
+	    }
+	}
+    }
+    else
+    {
+	it = m_aFuncMap.find(pPersist->Signature());
+	
+	if(it != m_aFuncMap.end())
+	{
+	    m_aFuncMap.erase(it);
+	}
+	// else { does not exists };
+    }
 }
+
+bool CPersistenceZoo::GetClassName(pnlString *pName, CPNLBase *pObj)
+{
+    RescanIfNeed();
+    Map::const_iterator it = m_aFuncMap.begin();
+
+    for(; it != m_aFuncMap.end(); ++it)
+    {
+	if(it->second->IsHandledType(pObj))
+	{
+	    *pName = it->first;
+	    return true;
+	}
+    }
+
+    return false;
+}
+
+CPersistence *CPersistenceZoo::ObjectBySignature(pnlString &name)
+{
+    RescanIfNeed();
+    Map::iterator it = m_aFuncMap.find(name);
+    return (it == m_aFuncMap.end()) ? 0:(*it).second;
+}
+
+void CPersistenceZoo::RescanIfNeed()
+{
+    if(m_iUpdate != siQueueUpdate)
+    {
+	CPersistence *pPers = spQueueHead;
+	Map::iterator it = m_aFuncMap.find(pPers->Signature());
+	
+	// register without checking all unregistered CPersistence
+	for(;(it = m_aFuncMap.find(pPers->Signature())) == m_aFuncMap.end();
+	    pPers = pPers->m_pNext)
+	{
+	    m_aFuncMap[pPers->Signature()] = pPers;
+	}
+
+	m_iUpdate = siQueueUpdate;
+    }
+}
+
+CPersistenceZoo::~CPersistenceZoo()
+{
+    Map::const_iterator it = m_aFuncMap.begin();
+
+    m_bUnregister = false;
+    for(; it != m_aFuncMap.end(); ++it)
+    {
+	delete it->second;
+    }
+}
+
+CPersistenceZoo::CPersistenceZoo(): m_bUnregister(true), m_iUpdate(0) {}

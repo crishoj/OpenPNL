@@ -134,3 +134,8 @@ CPersistFactor::Load(CContextLoad *pContext)
 
     return pFactor;
 }
+
+bool CPersistFactor::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CFactor*>(pObj) != 0;
+}

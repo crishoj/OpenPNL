@@ -237,6 +237,11 @@ CPersistGaussianDistribFun::TraverseSubobject(CPNLBase *pObj, CContext *pContext
     }
 }
 
+bool CPersistGaussianDistribFun::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CGaussianDistribFun*>(pObj) != 0;
+}
+
 
 // SoftMaxDistribFun
 
@@ -307,6 +312,11 @@ CPersistSoftMaxDistribFun::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
     pContext->Put(new CCoverDel<floatVector>(pDF->GetOffsetVector()), "Offsets");
 }
 
+bool CPersistSoftMaxDistribFun::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CSoftMaxDistribFun*>(pObj) != 0;
+}
+
 
 // TabularDistribFun
 
@@ -367,6 +377,11 @@ CPersistTabularDistribFun::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
     pContext->Put(pDF->GetMatrix(matTable), "MatTable");
 }
 
+bool CPersistTabularDistribFun::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CTabularDistribFun*>(pObj) != 0;
+}
+
 
 // ConditionalGaussianDistribFun
 
@@ -422,6 +437,11 @@ CPersistCondGaussianDistribFun::Load(CContextLoad *pContext)
     delete it;
 
     return pDF;
+}
+
+bool CPersistCondGaussianDistribFun::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CCondGaussianDistribFun*>(pObj) != 0;
 }
 
 
@@ -480,6 +500,11 @@ CPersistCondSoftMaxDistribFun::TraverseSubobject(CPNLBase *pObj, CContext *pCont
     pContext->Put(pDF->GetMatrixWithDistribution(), "DistributionMatrix");
 }
 
+bool CPersistCondSoftMaxDistribFun::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CCondSoftMaxDistribFun*>(pObj) != 0;
+}
+
 
 // ScalarDistribFun
 
@@ -510,4 +535,9 @@ CPersistScalarDistribFun::Load(CContextLoad *pContext)
     LoadForDistribFun(&isUnitFun, &nNode, &ppNodeType, pContext);
 
     return CScalarDistribFun::Create(nNode, ppNodeType);
+}
+
+bool CPersistScalarDistribFun::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CScalarDistribFun*>(pObj) != 0;
 }

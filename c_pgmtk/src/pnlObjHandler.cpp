@@ -26,7 +26,7 @@ void
 CObjHandlerForPersistence::CallByName(pnlString &name, CPNLBase *pObj, CContext *pContext)
 {
     PNL_CHECK_FOR_ZERO(name.size());
-    CPersistence *pPersist = m_pZoo->Function(name);
+    CPersistence *pPersist = m_pZoo->ObjectBySignature(name);
     if(pPersist)
     {
         Run(pPersist, pObj, pContext);
@@ -34,6 +34,10 @@ CObjHandlerForPersistence::CallByName(pnlString &name, CPNLBase *pObj, CContext 
     // else throw?
 }
 
+bool CObjHandlerForPersistence::GetClassName(pnlString *pName, CPNLBase *pObj)
+{
+    return m_pZoo->GetClassName(pName, pObj);
+}
 
 void CObjSaver::Run(CPersistence *pPersist, CPNLBase *pObj, CContext *pContext)
 {

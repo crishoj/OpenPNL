@@ -15,14 +15,15 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+#ifndef __PNLPERSISTARRAY_HPP__
+#define __PNLPERSISTARRAY_HPP__
+
 #include "pnlConfig.hpp"
 #include <ctype.h>
 #include <sstream>
 #include "pnlContextPersistence.hpp"
-//#include "pnlPersistCover.hpp"
-//#include "pnlPersistTypes.hpp"
 
-PNL_USING
+PNL_BEGIN
 
 template<typename Type>
 void SaveArray(pnlString &buf, const Type *pArray, int nElement, char delim = ' ')
@@ -100,3 +101,6 @@ LoadArray(CContextLoad &rContext, pnlVector<Type> *pArray = 0, char delim = ' ')
     return pArray;
 }
 
+PNL_END
+
+#endif // __PNLPERSISTARRAY_HPP__

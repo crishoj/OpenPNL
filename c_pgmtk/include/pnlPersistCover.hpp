@@ -62,6 +62,7 @@ public:
     virtual const char *Signature() { return "NodeTypeVector"; }
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 class CPersistPNodeTypeVector: public CPersistence
@@ -70,6 +71,7 @@ public:
     virtual const char *Signature() { return "PNodeTypeVector"; }
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 template<typename Type> class CPersistNumericVector: public CPersistence
@@ -83,6 +85,10 @@ public:
     virtual const char *Signature() { return m_Name.c_str(); }
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const
+    {
+	return dynamic_cast<CCover<pnlVector<Type> >*>(pObj) != 0;
+    }
 
 private:
     pnlString m_Name;
@@ -122,6 +128,10 @@ public:
     virtual const char *Signature() { return m_Name.c_str(); }
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const
+    {
+	return dynamic_cast<CCover<pnlVector<pnlVector<Type> > >*>(pObj) != 0;
+    }
 
 private:
     pnlString m_Name;

@@ -34,6 +34,7 @@ public:
     virtual ~CObjHandler() {}
     virtual void CallByName(pnlString &name, CPNLBase *pObj, CContext *pContext) = 0;
     virtual void CallByNameForDup(pnlString &name, CPNLBase *pObj, CContext *pContext) {}
+    virtual bool GetClassName(pnlString *pName, CPNLBase *pObj) = 0;
 };
 
 class PNL_API CObjHandlerForPersistence: public CObjHandler
@@ -42,6 +43,7 @@ public:
     CObjHandlerForPersistence(CPersistenceZoo *pZoo): m_pZoo(pZoo) {}
     virtual void CallByName(pnlString &name, CPNLBase *pObj, CContext *pContext);
     virtual void Run(CPersistence *pPersist, CPNLBase *pObj, CContext *pContext) = 0;
+    virtual bool GetClassName(pnlString *pName, CPNLBase *pObj);
 
 private:
     CPersistenceZoo* m_pZoo;

@@ -29,10 +29,10 @@ PNL_USING
 static void
 TraverseSubobjectOfGrModel(CGraphicalModel *pObj, CContext *pContext)
 {
-	if(!pObj->IsValid())
-	{
-	    PNL_THROW(CInvalidOperation, "Model is invalid")
-	}
+    if(!pObj->IsValid())
+    {
+	PNL_THROW(CInvalidOperation, "Model is invalid")
+    }
 
     pContext->Put(pObj->GetModelDomain(), "ModelDomain");
 
@@ -102,6 +102,11 @@ CPersistBNet::Load(CContextLoad *pContext)
     return pModel;
 }
 
+bool CPersistBNet::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CBNet*>(pObj) != 0;
+}
+
 
 // IDNet
 
@@ -132,6 +137,11 @@ CPersistIDNet::Load(CContextLoad *pContext)
     return pModel;
 }
 
+bool CPersistIDNet::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CIDNet*>(pObj) != 0;
+}
+
 
 // DBN
 
@@ -150,6 +160,11 @@ CPNLBase *
 CPersistDBN::Load(CContextLoad *pContext)
 {
     return CDBN::Create(static_cast<CStaticGraphicalModel*>(pContext->Get("StaticModel")));
+}
+
+bool CPersistDBN::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CDBN*>(pObj) != 0;
 }
 
 
@@ -196,6 +211,11 @@ CPersistMNet::Load(CContextLoad *pContext)
     return pModel;
 }
 
+bool CPersistMNet::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CMNet*>(pObj) != 0;
+}
+
 
 // MRF2
 
@@ -222,4 +242,9 @@ CPersistMRF2::Load(CContextLoad *pContext)
     LoadForGrModel(pModel, pContext);
 
     return pModel;
+}
+
+bool CPersistMRF2::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CMRF2*>(pObj) != 0;
 }

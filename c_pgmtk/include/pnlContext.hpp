@@ -33,7 +33,7 @@ class CPNLBase;
 class CObjHandler;
 
 #ifndef ASSERT
-#define ASSERT(A)     if( (A) != true ) { PNL_THROW( CBadArg, #A " should be true"); }
+#define ASSERT(A)     if( (A) != true ) { PNL_THROW( CBadArg, #A " must be true"); }
 
 #endif
 
@@ -86,8 +86,6 @@ public: // INTERFACE FOR INNER USE
     }
 
 protected: // DATA TYPES
-    bool IsEnumeration() { return m_bEnumeration; }
-    void Traverse(int iTree);
     template<typename Type> class TreeLeafIndex
     {
     public:
@@ -182,6 +180,7 @@ protected: // DATA TYPES
         void *m_pUser;
     };
 
+protected: // FUNCTIONS
     TreeEntry& Current()
     {
         return m_Indices.back()();
@@ -207,8 +206,9 @@ protected: // DATA TYPES
 	}
         pObjTypeName->resize(0);
     }
+    bool IsEnumeration() { return m_bEnumeration; }
+    void Traverse(int iTree);
 
-protected: // FUNCTIONS
     virtual void BeginTraverseObject(const pnlString &, TreeEntry&) {}
     virtual void   EndTraverseObject(const pnlString &, TreeEntry&) {}
     virtual bool HandleObjectBeforeInterior() const { return true; }

@@ -125,3 +125,8 @@ CGraphPersistence::Load(CContextLoad *pContext)
 
     return CGraph::Create(aNbrs, aNbrsTypes);
 }
+
+bool CGraphPersistence::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CGraph*>(pObj) != 0;
+}

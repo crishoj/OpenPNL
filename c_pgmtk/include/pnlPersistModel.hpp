@@ -29,6 +29,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 class PNL_API CPersistIDNet: public CPersistence
@@ -38,6 +39,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 class PNL_API CPersistDBN: public CPersistence
@@ -47,6 +49,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 class PNL_API CPersistMNet: public CPersistence
@@ -56,6 +59,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 class PNL_API CPersistMRF2: public CPersistence
@@ -65,6 +69,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 PNL_END

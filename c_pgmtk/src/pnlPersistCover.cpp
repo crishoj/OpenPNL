@@ -94,6 +94,12 @@ CPersistNodeTypeVector::Load(CContextLoad *pContext)
     return result;
 }
 
+bool CPersistNodeTypeVector::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CCover<nodeTypeVector>*>(pObj) != 0;
+}
+
+
 void
 CPersistPNodeTypeVector::Save(CPNLBase *pObj, CContextSave *pContext)
 {
@@ -133,4 +139,9 @@ CPersistPNodeTypeVector::Load(CContextLoad *pContext)
     pContext->AutoDelete(result);
 
     return result;
+}
+
+bool CPersistPNodeTypeVector::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CCover<pNodeTypeVector>*>(pObj) != 0;
 }

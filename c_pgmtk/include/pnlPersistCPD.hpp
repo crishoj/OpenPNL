@@ -29,6 +29,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 PNL_END

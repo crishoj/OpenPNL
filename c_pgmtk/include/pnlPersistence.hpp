@@ -30,14 +30,28 @@ class CPNLBase;
 class CContext;
 class CContextLoad;
 class CContextSave;
+class CPersistenceZoo;
 
 class PNL_API CPersistence
 {
 public:
+    virtual ~CPersistence();
     virtual const char *Signature() = 0;
     virtual void Save(CPNLBase *pObj, CContextSave *pContext) = 0;
     virtual CPNLBase *Load(CContextLoad *pContext) = 0;
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext) {}
+    virtual bool IsHandledType(CPNLBase *pObj) const = 0;
+    friend class CPersistenceZoo;
+
+    // functions IsHandledType, Signature, and omitted ParentType is related
+    // to Type functions. When class 'Type' be ready, it must be removed from here
+
+protected:
+    CPersistence();
+
+private:
+    CPersistence *m_pNext;
+    CPersistence *m_pPrev;
 };
 
 class PNL_API CPersistenceZoo
@@ -47,16 +61,21 @@ public:
 
     void Register(CPersistence *pPersist);
 
-    void Unregister(CPersistence *pPersist);
+    void Unregister(CPersistence *pPersist, bool bDTOR = false);
 
-    CPersistence *Function(pnlString &name)
-    {
-        Map::iterator it = m_aFuncMap.find(name);
-        return (it == m_aFuncMap.end()) ? 0:(*it).second;
-    }
+    CPersistence *ObjectBySignature(pnlString &name);
+
+    bool GetClassName(pnlString *pName, CPNLBase *pObj);
+
+    ~CPersistenceZoo();
+    CPersistenceZoo();
 
 private:
-    Map m_aFuncMap;
+    void RescanIfNeed();// Rescan if need (uses m_iUpdate)
+
+    int m_iUpdate;// If this index != saved index (see .cpp) then perform rescan
+    Map m_aFuncMap;// storage for CPersistence objects. We search CPersistence objects by typename
+    bool m_bUnregister;// false if inside destructor and mustn't handle Unregister
 };
 
 PNL_END

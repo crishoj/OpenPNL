@@ -249,7 +249,7 @@ static const char *GetClassName(CPNLBase *pObj)
         return "ModelDomain";
     }
     
-    return 0;
+    return "";
     // THROW(UNHANDLED TYPE);??
 }
 
@@ -267,7 +267,11 @@ void CContext::Traverse(int iTree)
 
         if(pObj)
         {
-            objTypeName.assign(GetClassName(pObj));
+	    objTypeName.assign(GetClassName(pObj));
+	    if(!objTypeName.length())
+	    {
+		m_pObjectHandler->GetClassName(&objTypeName, pObj);
+	    }
             if(!objTypeName.length())
             {
                 continue;

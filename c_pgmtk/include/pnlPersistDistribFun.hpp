@@ -29,6 +29,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 class PNL_API CPersistSoftMaxDistribFun: public CPersistence
@@ -38,6 +39,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 class PNL_API CPersistTabularDistribFun: public CPersistence
@@ -47,6 +49,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 class PNL_API CPersistCondGaussianDistribFun: public CPersistence
@@ -56,6 +59,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 class PNL_API CPersistCondSoftMaxDistribFun: public CPersistence
@@ -65,6 +69,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 class PNL_API CPersistScalarDistribFun: public CPersistence
@@ -74,6 +79,7 @@ public:
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 
 PNL_END
