@@ -127,3 +127,4 @@ Note: it is normal for w2k_vc6 autobuilds to have "bad_build" code coverage summ
 06/11/04 20:20:03	w2k_icc	success	75.8	
 06/14/04 20:20:02	w2k_icc	success	75.7	
 06/16/04 20:20:05	w2k_icc	success	75.7	
+06/18/04 20:20:05	w2k_icc	success	75.7	
