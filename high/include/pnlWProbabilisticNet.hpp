@@ -66,6 +66,7 @@ public:
 
 public:
     pnl::CEvidence *CreateEvidence(TokArr &aValue);
+    void GetTokenByEvidence(TokArr *tEvidence, pnl::CEvidence *evidence);
     int nNetNode() const;
     void MustBeNode(TokArr &nodes) const;
     bool IsNode(Tok &node) const;

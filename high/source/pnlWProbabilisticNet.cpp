@@ -610,6 +610,26 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
     return pnl::CEvidence::Create(Model(), aiNode, vValue);
 }
 
+void ProbabilisticNet::GetTokenByEvidence(TokArr *tEvidence, pnl::CEvidence *evidence)
+{
+    pnl::intVector aiNode;
+    pnl::valueVecVector vValue;
+
+    evidence->GetObsNodesWithValues(&aiNode, &vValue);
+    tEvidence->resize(aiNode.size());
+    for(int i = 0; i < aiNode.size(); ++i)
+    {
+	String nodeName = NodeName(aiNode[i]);
+	if(!vValue[i][0].IsDiscrete())
+	{
+	    ThrowInternalError("Not yet realized", "GetTokenByEvidence");
+	}
+	String valName  = DiscreteValue(aiNode[i], vValue[i][0].GetInt());
+
+	(*tEvidence)[i] = Tok(nodeName) ^ valName;
+    }
+}
+
 int ProbabilisticNet::nNetNode() const
 {
     return Graph()->nNode();
@@ -834,7 +854,6 @@ TokArr ProbabilisticNet::CutReq( Vector<int>& queryNds, Vector<int>& queryVls,
 	    obsVls.push_back(v);
 	    obsDims.push_back(i);
 	}
-	
     }
 
     const pnl::CMatrix<float> * resMat;
