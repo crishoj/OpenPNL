@@ -43,9 +43,9 @@ CFG=pnl - Win32 Debug Static
 # PROP Output_Dir "..\..\temp\pnl\DebugStatic"
 # PROP Intermediate_Dir "..\..\temp\pnl\DebugStatic"
 # PROP Target_Dir ""
-MTL=midl.exe
-LINK32=link.exe
 F90=df.exe
+LINK32=link.exe
+MTL=midl.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\src\include" /I "..\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD CPP /nologo /W4 /Gm /GR /GX /Zi /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "PNL_STATIC" /D "WIN32" /FD /GZ /c
@@ -72,9 +72,9 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\..\temp\pnl\ReleaseStatic"
 # PROP Intermediate_Dir "..\..\temp\pnl\ReleaseStatic"
 # PROP Target_Dir ""
-MTL=midl.exe
-LINK32=link.exe
 F90=df.exe
+LINK32=link.exe
+MTL=midl.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /GX /Od /I "..\src\include" /I "..\include" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /W4 /GR /GX /Zi /O2 /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "PNL_STATIC" /D "WIN32" /FD /c
@@ -149,7 +149,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\bin\pnl.dll" /implib:"..\..\lib\pnl.lib" /libpath:"..\..\lib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\bin\pnl.dll" /implib:"..\..\lib\pnl.lib" /libpath:"..\..\lib" /libpath:"..\..\cxcore\lib"
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "pnl - Win32 Parallel Debug"
