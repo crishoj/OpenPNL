@@ -1249,7 +1249,7 @@ void CParJtreeInfEngine::DoPropagateOMP(
 		{
 			if(isCollect)
 			{
-				m_norm *= sum;
+				SetNormalizeCoefficient(GetNormalizeCoefficient() * sum);
 			}
 		}
     }// end of parallel section
