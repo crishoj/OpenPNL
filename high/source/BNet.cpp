@@ -283,11 +283,6 @@ void BayesNet::ClearEvidBuf()
     m_nLearnedEvidence = 0;
 }
 
-void BayesNet::Learn()
-{
-    Learn(0, 0);
-}
-
 void BayesNet::Learn(TokArr aSample[], int nSample)
 {   
     if(m_nLearnedEvidence > Net().EvidenceBuf()->size())

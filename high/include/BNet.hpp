@@ -82,9 +82,8 @@ public:
     // clears evidence history
     void ClearEvidBuf();
     
-    // learns using evidence history
-    void Learn();
-    void Learn(TokArr aValue[], int nValue);
+    // learns using evidence buffer and new evidences 
+    void Learn(TokArr aValue[] = NULL, int nValue = 0);
     
     //learn structure of the network using input evidences or evidence history
 #if 0 
