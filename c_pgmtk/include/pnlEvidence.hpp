@@ -32,7 +32,7 @@ PNL_BEGIN
 %rename (CreateByModelDomain) CEvidence::Create( const CModelDomain*, const intVector&, const valueVector&);
 %rename (GetValueConst) CEvidence::GetValue(int) const;
 %rename (SaveForStaticModel) CEvidence::Save(const char *fname,  pConstEvidenceVector& evVec);
-%rename (LoadForStaticModel) CEvidence::Load(const char *fname,  pEvidencesVector* evVec, const CModelDomain *pMD);
+%rename (LoadForStaticModel) CEvidence::Load(const char *fname,  pEvidencesVector* evVecOut, const CModelDomain *pMD);
 %rename (SaveForDBN) CEvidence::Save(const char *fname,  const pEvidencesVecVector& evVec);
 %rename (LoadForDBN) CEvidence::Load(const char *fname,  pEvidencesVecVector* evVec, const CModelDomain *pMD);
 #endif
@@ -51,7 +51,7 @@ public:
     void ToggleNodeState( const intVector& numsOfNdsIn );
     
     static bool Save(const char *fname,  pConstEvidenceVector& evVec);
-    static bool Load(const char *fname,  pEvidencesVector* evVec, const CModelDomain *pMD);
+    static bool Load(const char *fname,  pEvidencesVector* evVecOut, const CModelDomain *pMD);
     static bool Save(const char *fname,  const pEvidencesVecVector& evVec);
     static bool Load(const char *fname,  pEvidencesVecVector* evVec, const CModelDomain *pMD);
 #ifdef PNL_OBSOLETE
