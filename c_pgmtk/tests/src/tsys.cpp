@@ -97,6 +97,7 @@ void initAInfForRndBNet();
 void initAExInfEngine();
 void initAExLearnEngine();
 void initACondSoftMaxAndSoftMaxInfAndLearn();
+void initStructLearnEngWithJTreeInf();
 
 struct {
     void (*pFunc)();
@@ -172,6 +173,7 @@ struct {
     FUNC_ENTITY(initAExInfEngine),                     1,
  //   FUNC_ENTITY(initAExLearnEngine),                   1,
     FUNC_ENTITY(initACondSoftMaxAndSoftMaxInfAndLearn),1,
+    FUNC_ENTITY(initStructLearnEngWithJTreeInf), 1,
 
     0, 0 // don't delete this line!
 };

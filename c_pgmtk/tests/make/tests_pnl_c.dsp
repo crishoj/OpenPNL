@@ -351,6 +351,10 @@ SOURCE=..\src\AStackAllocator.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\AStructuralLearningWithJTreeInference.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\AStructureLearning.cpp
 # End Source File
 # Begin Source File
