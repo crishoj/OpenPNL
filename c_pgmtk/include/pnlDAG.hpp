@@ -92,6 +92,9 @@ public:
 	static CDAG* CreateMinimalSpanningTree(const CMatrix<float>* pWeightMatrix, const CMatrix<float>* pWeightMatrix2);
 	bool IsValidMove(int iStartNode, int iEndNode, EDAGChangeType iChangeType);
 	void GetAllValidMove(EDGEOPVECTOR* pvOutput, intVector* pvAncesstorVector=NULL, intVector* pvDescendantsVector=NULL, intVector* pvNotParents=NULL, intVector* pvNotChild=NULL);
+	void GetAllValidMove(EDGEOPVECTOR* pvOutput, const int* pNotChangeNodes, int numOfNot, int nMaxFanIn, 
+		intVector* pvAncesstorVector=NULL, intVector* pvDescendantsVector=NULL, intVector* pvNotParents=NULL, intVector* pvNotChild=NULL);
+
 	bool DoMove(int iStartNode, int iEndNode, EDAGChangeType iChangeType); // return false if a invalid move applyed
 	void GetAllEdges(EDGEVECTOR* pvOutput);
 	bool IsEquivalent(CDAG* pDAG1);  

@@ -1273,3 +1273,84 @@ int CDAG::SymmetricDifference(const CDAG* pDAG) const
     }
     return diffcount;
 }
+
+void CDAG::GetAllValidMove(EDGEOPVECTOR *pvOutput, const int* pNotChangeNodes, int numOfNot, int nMaxFanIn, 
+	intVector* pvAncesstorVector, intVector* pvDescendantsVector, intVector* pvNotParents, intVector* pvNotChild)
+{
+	pvOutput->clear();
+	bool bCheck = false;
+	if(pvAncesstorVector != NULL && pvDescendantsVector!= NULL) // if one  set is empty all are valid
+		if(!pvAncesstorVector->empty() && !pvDescendantsVector->empty())
+			bCheck = true;
+		
+	bool bCheck2 = false;
+	if(pvNotParents != NULL && pvNotChild!= NULL) // if one  set is empty all are valid
+		if(!pvNotParents->empty() && !pvNotChild->empty())
+			bCheck2 = true;
+	
+	int i, j;
+	for(i=0; i<GetNumberOfNodes(); i++)
+	{
+		if(numOfNot)
+		{
+			if( std::find(pNotChangeNodes, pNotChangeNodes+numOfNot, i) != pNotChangeNodes+numOfNot )
+				continue;
+		}
+		for(j=0; j<GetNumberOfNodes(); j++)
+		{
+			if(numOfNot)
+			{
+				if( std::find(pNotChangeNodes, pNotChangeNodes+numOfNot, j) != pNotChangeNodes+numOfNot )
+					continue;
+			}
+			if(i == j)
+			{
+				continue;
+			}
+			int nDirect = GetEdgeDirect(i, j);
+			if(nDirect == 1) // try remove, change
+			{
+				if(IsValidMove(i, j, DAG_DEL))
+				{
+					EDGEOP eOP;
+					eOP.originalEdge.startNode = i;
+					eOP.originalEdge.endNode = j;
+					eOP.DAGChangeType = DAG_DEL;
+					if((!bCheck || CheckValid(*pvAncesstorVector, *pvDescendantsVector, eOP)) && (!bCheck2 || CheckValid2(*pvNotParents, *pvNotChild, eOP)))
+						pvOutput->push_back(eOP);
+
+				}
+				if(IsValidMove(i, j, DAG_REV))
+				{
+					EDGEOP eOP;
+					eOP.originalEdge.startNode = i;
+					eOP.originalEdge.endNode = j;
+					eOP.DAGChangeType = DAG_REV;
+					if((!bCheck || CheckValid(*pvAncesstorVector, *pvDescendantsVector, eOP)) 
+						&& (!bCheck2 || CheckValid2(*pvNotParents, *pvNotChild, eOP)))
+					{
+						if( GetNumberOfParents(i)<nMaxFanIn )
+							pvOutput->push_back(eOP);
+					}
+				}
+			}
+			else if (nDirect == 0)//no edge, try to add it.
+			{
+				if(IsValidMove(i, j, DAG_ADD))
+				{
+					EDGEOP eOP;
+					eOP.originalEdge.startNode = i;
+					eOP.originalEdge.endNode = j;
+					eOP.DAGChangeType = DAG_ADD;
+					if((!bCheck || CheckValid(*pvAncesstorVector, *pvDescendantsVector, eOP)) 
+						&& (!bCheck2 || CheckValid2(*pvNotParents, *pvNotChild, eOP)))
+					{
+						if( GetNumberOfParents(j)<nMaxFanIn )
+							pvOutput->push_back(eOP);
+					}
+				}
+			}
+		}
+	}
+}
+
