@@ -451,9 +451,9 @@ int RunTest(int argc, char* argv[])
     }
   }
 
-  int gibbs_max_time = 10000;
-  int gibbs_burnin = 1000;
-  int gibbs_num_streams = 8;
+  int gibbs_max_time = 1000;
+  int gibbs_burnin = 100;
+  int gibbs_num_streams = 8; // more then number of MPI process
 // Run choosen inference engine 
 // - INTEL section ------------------------------------------------------------
   #ifdef INTEL_PNL
@@ -483,7 +483,11 @@ int RunTest(int argc, char* argv[])
     IntelTime[TestNum] = duration;
     MPI_PRINT(0) printf("done\n");
   #endif //INTEL_PNL
-  
+
+  #ifdef PAR_MPI
+    gibbs_num_streams /= numproc;
+  #endif
+
 // - PAR PNL section ----------------------------------------------------------
   #ifdef PAR_PNL
     MPI_PRINT(0) printf("Computation (PAR PNL) ... ");
@@ -631,29 +635,32 @@ int RunTest(int argc, char* argv[])
     #endif
   
     #ifdef PAR_PNL
-      MPI_PRINT(0)
       if (strcmp(argv[2],"EMLearn") == 0)
       {
-        printf("\nPAR_PNL %s learn engine results\n====================================\n\n", argv[2]);
-        numOfNdsTmp = pBNet1->GetNumberOfNodes();
-        int length = 0; 
-        const float *output;
-        CNumericDenseMatrix<float> *pMatrix;
-        for (i = 0; i < numOfNdsTmp; i++)
+        MPI_PRINT(0)
         {
-          pMatrix = static_cast<CNumericDenseMatrix<float>*>(
-            pBNet1->GetFactor(i)->GetMatrix(matTable));
-          pMatrix->GetRawData(&length, &output);
-          for (int j = 0; j < length; j++)
+          printf("\nPAR_PNL %s learn engine results\n====================================\n\n", argv[2]);
+          numOfNdsTmp = pBNet1->GetNumberOfNodes();
+          int length = 0; 
+          const float *output;
+          CNumericDenseMatrix<float> *pMatrix;
+          for (i = 0; i < numOfNdsTmp; i++)
           {
-            printf("(%.5f) ", output[j]);
+            pMatrix = static_cast<CNumericDenseMatrix<float>*>(
+              pBNet1->GetFactor(i)->GetMatrix(matTable));
+            pMatrix->GetRawData(&length, &output);
+            for (int j = 0; j < length; j++)
+            {
+              printf("(%.5f) ", output[j]);
+            }
+            printf("\n");
           }
-          printf("\n");
         }
       }
       else
       {
-        printf("\nPAR_PNL %s engine results\n====================================\n\n", argv[2]);
+        MPI_PRINT(0) 
+          printf("\nPAR_PNL %s engine results\n====================================\n\n", argv[2]);
         if (strcmp(argv[2],"Gibbs") == 0)
         {
           const int querySz = 1;
