@@ -530,6 +530,7 @@ m_bMoment(0), m_bCanonical(0), m_bDeltaFunction(0)
             PNL_THROW( CBadConst, "isFactor should be 0 or 1" );
         }
     }
+    m_bMoment = 1;
     delete []ranges;
     
 }
