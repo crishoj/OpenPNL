@@ -15,7 +15,7 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "pnlConfig.hpp"
+#include "pnlConfig.hpp"    
 #include "pnlTabularDistribFun.hpp"
 /*#include "pnlTabularCPD.hpp"
 #include "pnlTabularPotential.hpp"
