@@ -2805,6 +2805,21 @@ void CParPearlInfEngine::ParallelProtocol()
 
 // ----------------------------------------------------------------------------
 
+
+bool CParPearlInfEngine :: AllCountinuesNodes( const CStaticGraphicalModel *pGrModel) const
+{
+  int i = 0;  
+  do  
+  {
+    if ((pGrModel->GetNumberOfNodeTypes(i)) != (dtGaussian)) 
+    return true;
+    i++;
+  } while (i < GetNumberOfNodesInModel());
+  return false;
+}
+
+
+
 #ifdef PAR_MPI
 void CParPearlInfEngine::ParallelProtocolContMPI()
 {
@@ -3133,7 +3148,7 @@ void CParPearlInfEngine::ParallelProtocolOMP()
 // ----------------------------------------------------------------------------
 
 #ifdef PAR_OMP
-void CParPearlInfEngine::ParallelProtocolOMP_Cond()
+void CParPearlInfEngine::ParallelProtocolContOMP()
 {
   if (GetMaxNumberOfIterations() == 0)
   {

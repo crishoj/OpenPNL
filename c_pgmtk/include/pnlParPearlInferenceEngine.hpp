@@ -124,6 +124,7 @@ protected:
 
     // normalize matrix of message
     void NormalizeDataInMessage(CDistribFun* Data);
+    bool AllCountinuesNodes( const CStaticGraphicalModel *pGrModel) const;
 
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
