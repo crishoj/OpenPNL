@@ -575,11 +575,25 @@ void TokenCover::DoNotify(int message, int iNode, ModelEngine *pObj)
 	}
 	break;
     case eDelNode:
-	return; // temporary stub - all nodes must be deleted via TokenCover interface
+	{// if user deletes node via WGraph
+	    TokIdNode *node = Tok(m_pGraph->NodeName(iNode)).Node(m_aNode);
+	    if(!node)
+	    {
+		break;
+	    }
+	    if(pObj != m_pGraph)
+	    {
+		ThrowInternalError("Unexpected source of DelNode message",
+		    "TokenCover::Notify");
+	    }
+	    node->Kill();
+	    break;
+	}
     default:
 	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
-	return;
+	break;
     }
+    return;
 }
 
 PNLW_END
