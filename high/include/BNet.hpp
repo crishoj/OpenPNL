@@ -47,7 +47,7 @@ public:
     void AddArc(TokArr from, TokArr to);
     void DelArc(TokArr from, TokArr to);
     
-    TokArr GetNeighbours(TokArr nodes);
+    TokArr GetNeighbors(TokArr nodes);
     TokArr GetParents(TokArr nodes);
     TokArr GetChildren(TokArr nodes);
     

@@ -111,6 +111,115 @@ void ProbabilisticNet::DelArc(TokArr from, TokArr to)
     }
 }
 
+TokArr ProbabilisticNet::GetNeighbors(TokArr &nodes)
+{
+    MustBeNode(nodes);
+
+    Vector<int> aiNode;
+    ExtractTokArr(nodes, &aiNode, 0, &Graph()->MapOuterToGraph());
+
+    pnl::CGraph *graph = Graph()->Graph();
+    Vector<int> aiResult(nNetNode());
+    int i, j;
+    pnl::intVector aiNeig;
+    pnl::neighborTypeVector aNeigType;
+
+    // accumulate all nodes
+    for(i = 0; i < aiNode.size(); ++i)
+    {
+	graph->GetNeighbors(aiNode[i], &aiNeig, &aNeigType);
+	for(j = 0; j < aiNeig.size(); ++j)
+	{
+	    ++aiResult[aiNeig[j]];
+	}
+    }
+
+    // list each node once
+    TokArr result;
+    for(i = 0; i < aiResult.size(); ++i)
+    {
+	if(!aiResult[i])
+	{
+	    continue;
+	}
+	result.push_back(NodeName(Graph()->IOuter(i)));
+    }
+
+    return result;
+}
+
+TokArr ProbabilisticNet::GetParents(TokArr &nodes)
+{
+    MustBeNode(nodes);
+
+    Vector<int> aiNode;
+    ExtractTokArr(nodes, &aiNode, 0, &Graph()->MapOuterToGraph());
+
+    pnl::CGraph *graph = Graph()->Graph();
+    Vector<int> aiResult(nNetNode());
+    int i, j;
+    pnl::intVector aiNeig;
+
+    // accumulate all nodes
+    for(i = 0; i < aiNode.size(); ++i)
+    {
+	graph->GetParents(aiNode[i], &aiNeig);
+	for(j = 0; j < aiNeig.size(); ++j)
+	{
+	    ++aiResult[aiNeig[j]];
+	}
+    }
+
+    // list each node once
+    TokArr result;
+    for(i = 0; i < aiResult.size(); ++i)
+    {
+	if(!aiResult[i])
+	{
+	    continue;
+	}
+	result.push_back(NodeName(Graph()->IOuter(i)));
+    }
+
+    return result;
+}
+
+TokArr ProbabilisticNet::GetChildren(TokArr &nodes)
+{
+    MustBeNode(nodes);
+
+    Vector<int> aiNode;
+    ExtractTokArr(nodes, &aiNode, 0, &Graph()->MapOuterToGraph());
+
+    pnl::CGraph *graph = Graph()->Graph();
+    Vector<int> aiResult(nNetNode());
+    int i, j;
+    pnl::intVector aiNeig;
+
+    // accumulate all nodes
+    for(i = 0; i < aiNode.size(); ++i)
+    {
+	graph->GetParents(aiNode[i], &aiNeig);
+	for(j = 0; j < aiNeig.size(); ++j)
+	{
+	    ++aiResult[aiNeig[j]];
+	}
+    }
+
+    // list each node once
+    TokArr result;
+    for(i = 0; i < aiResult.size(); ++i)
+    {
+	if(!aiResult[i])
+	{
+	    continue;
+	}
+	result.push_back(NodeName(Graph()->IOuter(i)));
+    }
+
+    return result;
+}
+
 void ProbabilisticNet::EditEvidence(TokArr values)
 {
     if(values.size())

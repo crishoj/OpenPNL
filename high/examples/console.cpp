@@ -163,13 +163,13 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eAddArc:	    BNet().AddArc (args[0], args[1]); break;
 	case eLoadNet:	    BNet().LoadNet(args[0].c_str());  break;
 	case eSaveNet:	    BNet().SaveNet(args[0].c_str());  break;
-	case eLoadEvidBuf: BNet().LoadEvidBuf(args[0].c_str());  break;
-	case eSaveEvidBuf: BNet().SaveEvidBuf(args[0].c_str());  break;
+	case eLoadEvidBuf:  BNet().LoadEvidBuf(args[0].c_str());  break;
+	case eSaveEvidBuf:  BNet().SaveEvidBuf(args[0].c_str());  break;
 	case eSetPTabular:  BNet().SetPTabular(args[0], args[1], args[2]); break;
 	case eGetPTabular:  Print(BNet().GetPTabular(args[0], args[1]));break;
 	case eLearnStructure:	BNet().LearnStructure(0, 0); break;
         case eGaussianMean: Print(BNet().GetGaussianMean(args[0]));break;
-        case eGaussianCovar: Print(BNet().GetGaussianCovar(args[0]));break;
+        case eGaussianCovar:Print(BNet().GetGaussianCovar(args[0]));break;
 	case eSetProperty:  BNet().SetProperty(args[0].c_str(), args[1].c_str()); break;
         case eSetPGaussian:  
             {
@@ -222,13 +222,16 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	    }
 	case eEditEvidence: BNet().EditEvidence(args[0]); break;
 	case eClearEvid:    BNet().ClearEvid(); break;
-	case eAddEvidToBuf:    BNet().AddEvidToBuf(args[0]); break;
+	case eAddEvidToBuf: BNet().AddEvidToBuf(args[0]); break;
 	case eClearEvidBuf: BNet().ClearEvidBuf(); break;
 	case eCurEvidToBuf: BNet().CurEvidToBuf(); break;
 	case eLearn:	    BNet().LearnParameters(); break;
 	case eMPE:	    Print(BNet().GetMPE(args[0])); break;
 	case eJPD:	    Print(BNet().GetJPD(args[0])); break;
-	case eNodeType:
+	case eNodeType:	    Print(BNet().GetNodeType(args[0])); break;
+	case eGetNeighbors: Print(BNet().GetNeighbors(args[0])); break;
+	case eGetChildren:  Print(BNet().GetParents  (args[0])); break;
+	case eGetParents:   Print(BNet().GetChildren (args[0])); break;
 	default:
 	    fprintf(Stdout(), "Unrealized command: '%s'\n", fname.c_str());
 	    return -2;

@@ -18,28 +18,31 @@ struct FuncDesc
 */
 
 FuncDesc aFuncDesc[] =
-{   "savenet",	      eSaveNet,	    false, 0, 1, 0
-,   "loadnet",        eLoadNet,	    false, 0, 1, 0
-,   "saveevidbuf",    eSaveEvidBuf, false, 0, 1, 0
-,   "loadevidbuf",    eLoadEvidBuf, false, 0, 1, 0
-,   "addnode",	      eAddNode,	    true,  0, 2, 0
-,   "addarc",	      eAddArc,	    true,  0, 2, 0
-,   "setptabular",    eSetPTabular, true,  0, 3, 1
-,   "getptabular",    eGetPTabular, true,  1, 2, 1
-,   "editevidence",   eEditEvidence,true,  0, 1, 0
-,   "clearevid",      eClearEvid,   true,  0, 0, 0
-,   "addevidtobuf",   eAddEvidToBuf,true,  0, 1, 1
-,   "clearevidbuf",   eClearEvidBuf,true,  0, 0, 0
-,   "curevidtobuf",   eCurEvidToBuf,true,  0, 0, 0
-,   "learnparameters",eLearn,	    true,  0, 0, 0
-,   "getmpe",	      eMPE,	    true,  1, 1, 1
-,   "generateevidences", eGenerateEvidences, false, 0, 3, 2
-,   "learnstructure", eLearnStructure,true,0, 0, 0
-,   "getgaussianmean",   eGaussianMean,true,  1, 1, 0
-,   "getgaussiancovar",  eGaussianCovar,true, 1, 1, 0 
-,   "setpgaussian",   eSetPGaussian, true,  0, 4, 3
-,   "setproperty",    eSetProperty, false, 0, 2, 0
-,   "getjpd",            eJPD,	    true,  1, 1, 0 
+{   "savenet",		eSaveNet,	false, 0, 1, 0
+,   "loadnet",		eLoadNet,	false, 0, 1, 0
+,   "saveevidbuf",	eSaveEvidBuf,	false, 0, 1, 0
+,   "loadevidbuf",	eLoadEvidBuf,	false, 0, 1, 0
+,   "addnode",		eAddNode,	true,  0, 2, 0
+,   "addarc",		eAddArc,	true,  0, 2, 0
+,   "setptabular",	eSetPTabular,	true,  0, 3, 1
+,   "getptabular",	eGetPTabular,	true,  1, 2, 1
+,   "editevidence",	eEditEvidence,	true,  0, 1, 0
+,   "clearevid",	eClearEvid,	true,  0, 0, 0
+,   "addevidtobuf",	eAddEvidToBuf,	true,  0, 1, 1
+,   "clearevidbuf",	eClearEvidBuf,	true,  0, 0, 0
+,   "curevidtobuf",	eCurEvidToBuf,	true,  0, 0, 0
+,   "learnparameters",	eLearn,		true,  0, 0, 0
+,   "getmpe",		eMPE,		true,  1, 1, 1
+,   "generateevidences",eGenerateEvidences, false, 0, 3, 2
+,   "learnstructure",	eLearnStructure,true,  0, 0, 0
+,   "getgaussianmean",	eGaussianMean,	true,  1, 1, 0
+,   "getgaussiancovar", eGaussianCovar, true,  1, 1, 0 
+,   "setpgaussian",	eSetPGaussian,	true,  0, 4, 3
+,   "setproperty",	eSetProperty,	false, 0, 2, 0
+,   "getjpd",		eJPD,		true,  1, 1, 0 
+,   "getparents",	eGetParents,	true,  1, 1, 0
+,   "getneighbors",	eGetNeighbors,	true,  1, 1, 0
+,   "getchildren",	eGetChildren,	true,  1, 1, 0
 // build-in commands
 ,   "execute",	      -1,	    false, 0, 1, 0
 ,   "clear",	      -2,	    true,  0, 0, 0

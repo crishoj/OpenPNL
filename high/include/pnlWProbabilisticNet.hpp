@@ -39,6 +39,11 @@ public:
     TokArr GetNodeType(TokArr nodes);
     void AddArc(TokArr from, TokArr to);
     void DelArc(TokArr from, TokArr to);
+
+    TokArr GetNeighbors(TokArr &nodes);
+    TokArr GetParents(TokArr &nodes);
+    TokArr GetChildren(TokArr &nodes);
+    
     void EditEvidence(TokArr values);
     void ClearEvid();
     void CurEvidToBuf();

@@ -74,6 +74,21 @@ void BayesNet::DelArc(TokArr from, TokArr to)
     Net().AddArc(from, to);
 }
 
+TokArr BayesNet::GetNeighbors(TokArr nodes)
+{
+    return Net().GetNeighbors(nodes);
+}
+
+TokArr BayesNet::GetParents(TokArr nodes)
+{
+    return Net().GetParents(nodes);
+}
+
+TokArr BayesNet::GetChildren(TokArr nodes)
+{
+    return Net().GetChildren(nodes);
+}
+
 static int cmpTokIdNode(TokIdNode *node1, TokIdNode *node2)
 {
     return (char*)node1->data - (char*)node2->data;
