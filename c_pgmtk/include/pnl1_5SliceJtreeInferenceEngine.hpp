@@ -22,6 +22,9 @@
 #include "pnl1_5SliceInferenceEngine.hpp"
 #include "pnlJunctionTree.hpp"
 #include "pnlJtreeInferenceEngine.hpp"
+#ifdef PAR_OMP
+    #include "pnlParJtreeInferenceEngine.hpp"
+#endif
 
 
 PNL_BEGIN
@@ -67,11 +70,19 @@ protected:
     
 private:
     
+#ifdef PAR_OMP
+    CParJtreeInfEngine *m_pPriorSliceJtreeInf;
+    CParJtreeInfEngine *m_p1_5SliceJtreeInf;
+    
+    CRing<CParJtreeInfEngine *> m_CRingJtreeInf;
+    CRing<CParJtreeInfEngine *>::iterator m_JTreeInfIter;
+#else
     CJtreeInfEngine *m_pPriorSliceJtreeInf;
     CJtreeInfEngine *m_p1_5SliceJtreeInf;
     
     CRing<CJtreeInfEngine *> m_CRingJtreeInf;
     CRing<CJtreeInfEngine *>::iterator m_JTreeInfIter;
+#endif  
     
     
     CRing<CPotential*> m_CRingDistrOnSep;
