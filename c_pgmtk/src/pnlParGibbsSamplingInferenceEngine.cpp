@@ -27,7 +27,7 @@
 #include "pnlTabularPotential.hpp"
 #include "pnlGaussianPotential.hpp"
 #include "pnlCPD.hpp"
-#include "pnlMixtureGaussiancpd.hpp"
+#include "pnlMixtureGaussianCPD.hpp"
 #include "pnlMNet.hpp"
 
 #ifdef PAR_OMP
