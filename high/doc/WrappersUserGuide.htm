@@ -19,6 +19,12 @@ PNL Wrappers: User Guide
   <h4>
 <UL>
   <LI><A href="#Intro">Intro</A> 
+  <UL>  
+      <LI><A href="#BayesNet_class">BayesNet class</A> 
+      <LI><A href="#DBN_class">DBN class</A> 
+      <LI><A href="#LIMID_class">LIMID class</A> 
+      <LI><A href="#MRF_class">MRF class</A> 
+  </UL>
   <LI><A href="#DiscreteNet">Bayesian networks with discrete nodes</A> 
   <UL>  
       <LI><A href="#CreateNetDiscr">Creating the net</A> 
@@ -112,6 +118,8 @@ PNL Wrappers: User Guide
 <P>
 This manual describes usage of PNL with the help of wrappers.
 <p>
+
+<h2><a name="BayesNet_class">BayesNet class</a></h2>
 It is BayesNet class, that is used for working with Bayesian networks in wrappers. 
 It is main class, all the operations are made by it. This class allows user 
 <UL>
@@ -130,7 +138,7 @@ convenient for user to use default algorithm, he can specify definite algorithm 
 to solve his task.
 <p>
 
-
+<h2><a name="DBN_class">DBN class</a></h2>
 It is DBN class, that is used for working with Dynamic Bayesian Networks(DBN) in wrappers. It is main class, all the operations are made by it. This class allows user
 <UL>
   <LI>to create new Dynamic Bayesian Network,</LI>
@@ -152,6 +160,7 @@ Network has several properties, that takes default values. The topology of the p
 that is why for DBN creation user have to create 0 and 1 slice topology and connect them.
 <p>
 
+<h2><a name="LIMID_class">LIMID class</a></h2>
 It is LIMID class that is used for working with LImited Memory Influence Diagram (LIMID) in wrappers. This class allows user 
 <UL>
 	<LI>to create new LIMID,</LI>
@@ -165,6 +174,23 @@ It is LIMID class that is used for working with LImited Memory Influence Diagram
 LIMID inference algorithm allows user to get only pure politics. At the moment inference algorithm for LIMIDs with discrete probability distributions on the nodes is realized. 
 <p>
 
+<h2><a name="MRF_class">MRF class</a></h2>
+It is MRF class, that is used for working with Markov Random Fields (MRF) in wrappers. 
+It is main class, all the operations are made by it. This class allows user 
+<UL>
+    <LI>to create new MRF,</LI>
+    <LI>to specify probability distributions on the cliques,</LI>
+    <LI>to assign observations (evidences),</LI>
+    <LI>to carry out learning process,</LI>
+    <LI>to get joint probability distribution (JPD) and maximum probability explanation (MPE) for network nodes,</LI>
+    <LI>to save MRF and observations (evidences) as files and to load them from files,
+    <br>etc.</LI>
+</UL>
+With the help of MRF class methods user specifies parameters of the network, evidences and other network 
+characteristics and demands desired results. Required algorithms are called automatically. Inference process
+can be carried out with the help of different PNL algorithms. User can specify definite algorithm that he want to use 
+to solve his task.
+<p>
 
 
 
@@ -284,9 +310,9 @@ TokArr PCloudy = net.GetPTabular("Cloudy");
 Now it is possible to represent this distribution as string or as float numbers: 
 <p>
 <pre>
-String PCloudyStr = PCloudy.String();
-float PCloudyTrueF = PCloudy[0].FltValue(0).fl;
-float PCloudyFalseF = PCloudy[1].FltValue().fl;
+String PCloudyStr = String(PCloudy);
+float PCloudyTrueF = PCloudy[0].FltValue();
+float PCloudyFalseF = PCloudy[1].FltValue();
 </pre>
 </p>
 The following values are now stored in the variables:
@@ -301,7 +327,7 @@ For the conditional distribution it is possible to get probabilities for the ind
 <p>
 <pre>
 TokArr PSprinkler = net.GetPTabular("Sprinkler", "Cloudy^true");
-String PSprinklerStr = PSprinkler.String();
+String PSprinklerStr = String(PSprinkler);
 float PSprinklerTrue = PSprinkler[0].FltValue();
 float PSprinklerFalse = PSprinkler[1].FltValue();
 </pre>
@@ -323,8 +349,8 @@ TokArr PCloudyFalse = net.GetPTabular("Cloudy^false");
 Now it is possible to represent this distribution  as string or as float number:
 <p>
 <pre>
-String PCloudyFalseStr = PCloudyFalse.String();
-float PCloudyFalseF = PCloudyFalse[0].FloatValue();
+String PCloudyFalseStr = String(PCloudyFalse);
+float PCloudyFalseF = PCloudyFalse[0].FltValue();
 </pre>
 </p>
 The values of the variables:
@@ -456,8 +482,8 @@ TokArr SprinklerChildren = net.GetChildren("Sprinkler");
 SprinklerParents and SprinklerChildren are the lists of Sprinkler node parents and children. They can be used as arguments for other methods, or can be converted to strings objects for displaying:
 <p>
 <pre>
-String SprinklerParentsStr = SprinklerParents.String();
-String SprinklerChildrenStr = SprinklerChildren.String();
+String SprinklerParentsStr = String(SprinklerParents);
+String SprinklerChildrenStr = String(SprinklerChildren);
 </pre>
 </p>
 Another way of getting the learning results is saving the final net to file (SaveNet method).
@@ -466,7 +492,7 @@ We must mention that  LearnParameters and LearnStructure methods can get two arg
 <p>
 <pre>
 TokArr evidences[] = {"Sprinkler^true WetGrass^false", "Cloudy^true WetGrass^false"};
-net.LearnParameters(evidences, 2);
+net.LearnStructure(evidences, 2);
 </pre>
 </p>
 In this case two new evidences will be added to evidence buffer and then learning process will be carried out using all evidences from the buffer.
@@ -607,7 +633,7 @@ Tok class object can be converted into string. For example, the result of conver
 </p>
 <hr>
 
-<h3><a name="StrAndFltMethodsDiscr">String and FltValue methods</a></h3>
+<h3><a name="StrAndFltMethodsDiscr">String operator and FltValue method</a></h3>
 <p>
 To convert TokArr and Tok class objects into strings String method is used:
 <p>
@@ -616,9 +642,9 @@ TokArr distribution = "Cloudy^true^0.6 Cloudy^false^0.4";
 Tok probabilityTrue = distribution[0];
 Tok probabilityFalse = distribution[1];
 </p><p>
-String distributionStr = distribution.String();
-String probabilityTrueStr = probabilityTrue.String();
-String probabilityFalseStr = probabilityFalse.String();
+String distributionStr = String(distribution);
+String probabilityTrueStr = String(probabilityTrue);
+String probabilityFalseStr = String(probabilityFalse);
 </pre>
 </p>
 If Tok class variable contains the value of probability, then it is possible to get this value as a float number with the help of FltValue method:
@@ -704,7 +730,7 @@ net.SetPGaussian("x1", "1.0", "1.0")
 </pre>
 </p>
 The first argument of this function is the name of the node. The second is the mean of the corresponding variate, the third – dispersion.
-<br>The rest nodes have parents. To set probability distributions on this node we have to call the following functions:
+<br>The rest nodes have parents. To set probability distributions on these nodes we have to call SetPGaussian method with following parameters:
 <p>
 <pre>
 net.SetPGaussian("x2", "0.0", "2.0", "1.0 2.0");
@@ -712,7 +738,7 @@ net.SetPGaussian("x3", "0.0", "4.0", "1.1");
 net.SetPGaussian("x4", "-0.8", "1.2", "2.0");
 </pre>
 </p>
-The last parameter defines weights. We must specify weight for every parent of the current node.
+The last parameter defines weights. We must specify weight for every parent of the current node.<br>
 We can get the parameters of continuous distribution, that we have already specified, with the help of the following methods:
 <p>
 <pre>
@@ -737,7 +763,7 @@ Here we will describe the way of working with evidences in wrappers. BayesNet cl
 <br>Default current evidence is empty. User can edit it with the EditEvidence method:
 <p>
 <pre>
-net.editEvidence("x0^dim1^0.4");
+net.EditEvidence("x0^dim1^0.4");
 </pre>
 </p>
 While defining the observation on the continuous node, it is necessary to specify the name of the node, the name of the dimension and the observed value. 
@@ -1300,7 +1326,7 @@ dbn.SetPGaussian("Street-0", "1.0", "4.0")
 </pre>
 </p>
 The first argument of this function is the name of the node. The second is the mean of the corresponding variate, the third – dispersion.
-<br>The rest nodes have parents. To set probability distributions on this node we have to call the following functions:
+<br>The rest nodes have parents. To set probability distributions on these nodes we have to call SetPGaussian method with following parameters:
 <p>
 <pre>
 dbn.SetPGaussian("House-0", "0.0", "2.0", "1.0");
@@ -1310,7 +1336,7 @@ dbn.SetPGaussian("House-1", "0.1", "2.1", "3.0");
 dbn.SetPGaussian("Flat-1", "0.0", "2.0", "1.0 2.0");
 </pre>
 </p>
-The last parameter defines weights. We must specify weight for every parent of the current node.
+The last parameter defines weights. We must specify weight for every parent of the current node.<br>
 We can get the parameters of continuous distribution, that we have already specified, with the help of the following methods:
 <p>
 <pre>
