@@ -46,7 +46,7 @@ public:
     void EnterEvidence( const CEvidence *pEvidenceIn, int maximize = 0, 
         int sumOnMixtureNode = 1 );
 
-	virtual ~CParGibbsSamplingInfEngine();
+    virtual ~CParGibbsSamplingInfEngine();
 
 #ifdef PNL_RTTI
   virtual const CPNLType &GetTypeInfo() const
@@ -71,11 +71,11 @@ protected:
 
     void CreateQueryFactors();
 
-	virtual void Initialization();
-
-	//Each cont. parent of tabular child has got an element in m_SoftMaxGaussianFactorsForOMP
-	//It contains a potential for statistic inference (see ConvertingFamilyToPot function)
-	pFactorVector m_SoftMaxGaussianFactorsForOMP;
+    virtual void Initialization();
+    
+    //Each cont. parent of tabular child has got an element in m_SoftMaxGaussianFactorsForOMP
+    //It contains a potential for statistic inference (see ConvertingFamilyToPot function)
+    pFactorVector m_SoftMaxGaussianFactorsForOMP;
 
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
@@ -101,6 +101,17 @@ private:
     // recv potentials from other processes 
     void RecvPotentialsViaMpi(intVector *pNumberOfSamples,
         floatVecVector *pProbDistrib);
+
+    int GetFactorNumber(intVector queryIn);
+
+    void SendMyGaussianStatisticsViaMpi(int NumberOfFactor);
+
+    void RecvGaussianStatisticsViaMpi(intVector *pNumberOfSamples, 
+        floatVecVector *pLearnMean, floatVecVector *pLearnCov, 
+        int NumberOfFactor);
+
+
+
 };
 
 PNL_END

@@ -103,35 +103,35 @@ CParGibbsSamplingInfEngine::CParGibbsSamplingInfEngine(
     
     FindEnvironment(&m_environment);
 
-	m_SoftMaxGaussianFactorsForOMP.resize(pGraphicalModel->GetNumberOfNodes()*m_NumberOfThreads, NULL);
+    m_SoftMaxGaussianFactorsForOMP.resize(pGraphicalModel->GetNumberOfNodes()*m_NumberOfThreads, NULL);
 
-	Initialization();
+    Initialization();
 }
 // ----------------------------------------------------------------------------
 
 CParGibbsSamplingInfEngine::~CParGibbsSamplingInfEngine()
 {
-	int NFactors = m_pGraphicalModel->GetNumberOfNodes()*m_NumberOfThreads;
-	for (int factor = 0; factor < NFactors; factor++) {
-		if (m_SoftMaxGaussianFactorsForOMP[factor]!=NULL) {
-			delete m_SoftMaxGaussianFactorsForOMP[factor];
-			m_SoftMaxGaussianFactorsForOMP[factor] = NULL;
-		}
-	}	
-	
-	//Destroy query factors, that was created in CParGibbsSamplingInfEngine::Initialization()
-	int nFactors = GetModel()->GetNumberOfFactors();
-	int nFactorsOMP = GetModel()->GetNumberOfFactors()*m_NumberOfThreads;
-	pFactorVector *currentFactors = GetCurrentFactors();
-	int i;
-	for( i = nFactors; i < nFactorsOMP; i++ )
-	{
-		if ((*currentFactors)[i])
-		{
-			delete (*currentFactors)[i];
-			(*currentFactors)[i] = NULL;
-		};
-	}
+    int NFactors = m_pGraphicalModel->GetNumberOfNodes()*m_NumberOfThreads;
+    for (int factor = 0; factor < NFactors; factor++) {
+        if (m_SoftMaxGaussianFactorsForOMP[factor]!=NULL) {
+            delete m_SoftMaxGaussianFactorsForOMP[factor];
+            m_SoftMaxGaussianFactorsForOMP[factor] = NULL;
+        }
+    }
+
+    //Destroy query factors, that was created in CParGibbsSamplingInfEngine::Initialization()
+    int nFactors = GetModel()->GetNumberOfFactors();
+    int nFactorsOMP = GetModel()->GetNumberOfFactors()*m_NumberOfThreads;
+    pFactorVector *currentFactors = GetCurrentFactors();
+    int i;
+    for( i = nFactors; i < nFactorsOMP; i++ )
+    {
+        if ((*currentFactors)[i])
+        {
+            delete (*currentFactors)[i];
+            (*currentFactors)[i] = NULL;
+        };
+    }
 }
 // ----------------------------------------------------------------------------
 
@@ -148,196 +148,203 @@ void CParGibbsSamplingInfEngine::InitIPCConsts()
 // ----------------------------------------------------------------------------
 
 void CParGibbsSamplingInfEngine::MarginalNodes(const int *queryIn, int querySz,
-											   int notExpandJPD)
+    int notExpandJPD)
 {
     PNL_CHECK_IS_NULL_POINTER(queryIn);
-	
-	EDistributionType paramDistrType = 
-		pnlDetermineDistributionType( GetModel()->GetModelDomain(), querySz, queryIn, m_pEvidence);
 
-	bool IsUnobservedNodes = false;
-		
-	for (int variable = 0; variable < querySz; variable++)
-	{
-		if (!(m_pEvidence->IsNodeObserved(queryIn[variable])))
-			IsUnobservedNodes = true;
-	};
+    EDistributionType paramDistrType = 
+        pnlDetermineDistributionType( GetModel()->GetModelDomain(), querySz, queryIn, m_pEvidence);
+    
+    bool IsUnobservedNodes = false;
+    
+    for (int variable = 0; variable < querySz; variable++)
+    {
+        if (!(m_pEvidence->IsNodeObserved(queryIn[variable])))
+            IsUnobservedNodes = true;
+    };
 
-	intVector Query(querySz);
-	int NumberOfFactor;
-	pFactorVector queryFactors;
-	GetQueryFactors( &queryFactors);
-	
-	switch (paramDistrType)
-	{
-	case dtTabular:
-		CGibbsSamplingInfEngine::MarginalNodes(queryIn, querySz, notExpandJPD);
-		
-		if (IsUnobservedNodes)
-			if (m_MyRank != 0)
-			{
-				SendMyPotentialViaMpi();
-			}
-			else
-			{
-				CNumericDenseMatrix<float> *mat;
-				int dataLength;
-				const float *pData;
-				
-				//need to know size of vector pData
-				CPotential *ShrinkPot;
-				
-				ShrinkPot = m_pQueryJPD->ShrinkObservedNodes(m_pEvidence);
-				
-				mat = static_cast<CNumericDenseMatrix<float>*>
-					((ShrinkPot->GetDistribFun())->GetMatrix(matTable));
-				mat->GetRawData(&dataLength, &pData);
-				
-				intVector NumbersOfSamples(m_NumberOfProcesses, -1);
-				NumbersOfSamples[0] =
-					(m_currentTime-GetBurnIn()-1) * GetNumStreams();
-				
-				floatVecVector ProbDistrib(m_NumberOfProcesses,
-					floatVector(dataLength, -1));
-				ProbDistrib[0].assign(pData, &(pData[dataLength - 1]));
-				ProbDistrib[0].push_back( pData[dataLength - 1] );
-				
-				RecvPotentialsViaMpi(&NumbersOfSamples, &ProbDistrib);
-				
-				//Claculating of evidences
-				int SumNumberOfSamples = 0;
-				floatVector SumNumberOfProperSamples(dataLength, 0);
-				floatVector FinalDistrib(dataLength, 0);
-				
-				for (int i = 0; i < m_NumberOfProcesses; i++)
-				{
-					SumNumberOfSamples += NumbersOfSamples[i];
-					
-					for (int variant = 0; variant < dataLength; variant++)
-						SumNumberOfProperSamples[variant] +=
-						ProbDistrib[i][variant]*NumbersOfSamples[i];
-				}
-				
-				for (int variant = 0; variant < dataLength; variant++)
-				{
-					FinalDistrib[variant] =
-						SumNumberOfProperSamples[variant] / SumNumberOfSamples;
-				}
-				
-				// set new potential
-				CModelDomain* pMD=ShrinkPot->GetModelDomain();
-				
-				// this is a vector of domain
-				intVector Domain(querySz);
-				
-				Domain.assign(queryIn, queryIn + (querySz - 1));
-				Domain.push_back( queryIn[querySz - 1] );
-				
-				intVector obsIndicesIn(0);
-				
-				for (int variable = 0; variable < querySz; variable++)
-				{
-					if (m_pEvidence->IsNodeObserved(queryIn[variable]))
-						obsIndicesIn.push_back(queryIn[variable]);
-				}
-				
-				//need to recv Final Distribution
-				CPotential *deltaPot = CTabularPotential::Create(Domain, pMD,
-					&FinalDistrib.front(), obsIndicesIn);
-				
-				delete ShrinkPot;
-				
-				ShrinkPot = deltaPot->ExpandObservedNodes(m_pEvidence);
-				
-				m_pQueryJPD->SetDistribFun(ShrinkPot->GetDistribFun());
-				
-				delete deltaPot;
-			}
-			break;
-	case dtGaussian:
-		int i;
-		for (i=0; i< querySz; i++) Query[i] = queryIn[i];
-		NumberOfFactor = GetFactorNumber(Query);
-		if (IsUnobservedNodes)
-			if (m_MyRank != 0)
-			{
-				SendMyGaussianStatisticsViaMpi(NumberOfFactor);
-			}
-			else
-			{
-				intVector NumberOfSamples;
-				floatVecVector LearnMean;
-				floatVecVector LearnCov;
-
-				RecvGaussianStatisticsViaMpi(&NumberOfSamples, &LearnMean, &LearnCov, NumberOfFactor);
-
-				CFactor *factor = CGaussianPotential::Create(Query, GetModel()->GetModelDomain());
-
-				CNumericDenseMatrix<float> *pMatLearnMean = dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
-					GetDistribFun()->GetStatisticalMatrix(stMatMu));
-				CNumericDenseMatrix<float> *pMatLearnCov = dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
-					GetDistribFun()->GetStatisticalMatrix(stMatSigma));
-
-		        int length = 0;   	
-				pConstNodeTypeVector *pNodeTypes;
-				pNodeTypes = queryFactors[NumberOfFactor]->GetDistribFun()->GetNodeTypesVector();
-				int NumberOfNodes = pNodeTypes->size();
-
-				for (int node = 0; node < NumberOfNodes; node++)
-				{
-					length += ( (*pNodeTypes)[node]->GetNodeSize() );
-				}
-
-				int DimMean = 2;
-				int DimCov = 2;
-				const int RangeMean[2] = {length, 1} ;
-				const int RangeCov[2] = {length, length};
-
-				float *pData = new float[length * length];
-
-				for (i = 1; i < m_NumberOfProcesses; i++)
-				{
-					C2DNumericDenseMatrix<float> * pLearnMean = C2DNumericDenseMatrix<float>::Create(RangeMean, &(LearnMean[i].front()));
-					C2DNumericDenseMatrix<float> * pLearnCov = C2DNumericDenseMatrix<float>::Create(RangeCov, &(LearnCov[i].front()));
-					//pLearnMean->GetRaw
-
-
-					factor->SetStatistics(pLearnMean, stMatMu);
-					factor->SetStatistics(pLearnCov, stMatSigma);
-
-					queryFactors[NumberOfFactor]->UpdateStatisticsML(factor);
-				};
-
-				int AdditionalSamples = 0;
-				for (i = 1; i < m_NumberOfProcesses; i++)
-				{
-					AdditionalSamples += NumberOfSamples[i];
-				};
-
-				int OldMaxTime = GetMaxTime();
-				int OldBarnIn = GetBurnIn();
-				int OldNumberOfStreams = GetNumStreams();
-
-				AdditionalSamples += (OldMaxTime-OldBarnIn-1)*OldNumberOfStreams;
-
-				SetMaxTime(AdditionalSamples+1);
-				SetBurnIn(0);
-				SetNumStreams(1);
-
-				CGibbsSamplingInfEngine::MarginalNodes(queryIn, querySz, notExpandJPD);
-	
-				SetMaxTime(OldMaxTime);
-				SetBurnIn(OldBarnIn);
-				SetNumStreams(OldNumberOfStreams);
-			};
-
-		break;										   
+    intVector Query(querySz);
+    int NumberOfFactor;
+    pFactorVector queryFactors;
+    GetQueryFactors( &queryFactors);
+    
+    switch (paramDistrType)
+    {
+    case dtTabular:
+        CGibbsSamplingInfEngine::MarginalNodes(queryIn, querySz, notExpandJPD);
+        
+        if (IsUnobservedNodes)
+            if (m_MyRank != 0)
+            {
+                SendMyPotentialViaMpi();
+            }
+            else
+            {
+                CNumericDenseMatrix<float> *mat;
+                int dataLength;
+                const float *pData;
+                
+                //need to know size of vector pData
+                CPotential *ShrinkPot;
+                
+                ShrinkPot = m_pQueryJPD->ShrinkObservedNodes(m_pEvidence);
+                
+                mat = static_cast<CNumericDenseMatrix<float>*>
+                    ((ShrinkPot->GetDistribFun())->GetMatrix(matTable));
+                mat->GetRawData(&dataLength, &pData);
+                
+                intVector NumbersOfSamples(m_NumberOfProcesses, -1);
+                NumbersOfSamples[0] =
+                    (m_currentTime-GetBurnIn()-1) * GetNumStreams();
+                
+                floatVecVector ProbDistrib(m_NumberOfProcesses,
+                    floatVector(dataLength, -1));
+                ProbDistrib[0].assign(pData, &(pData[dataLength - 1]));
+                ProbDistrib[0].push_back( pData[dataLength - 1] );
+                
+                RecvPotentialsViaMpi(&NumbersOfSamples, &ProbDistrib);
+                
+                //Claculating of evidences
+                int SumNumberOfSamples = 0;
+                floatVector SumNumberOfProperSamples(dataLength, 0);
+                floatVector FinalDistrib(dataLength, 0);
+                
+                for (int i = 0; i < m_NumberOfProcesses; i++)
+                {
+                    SumNumberOfSamples += NumbersOfSamples[i];
+                    
+                    for (int variant = 0; variant < dataLength; variant++)
+                        SumNumberOfProperSamples[variant] +=
+                        ProbDistrib[i][variant]*NumbersOfSamples[i];
+                }
+                
+                for (int variant = 0; variant < dataLength; variant++)
+                {
+                    FinalDistrib[variant] =
+                        SumNumberOfProperSamples[variant] / SumNumberOfSamples;
+                }
+                
+                // set new potential
+                CModelDomain* pMD=ShrinkPot->GetModelDomain();
+                
+                // this is a vector of domain
+                intVector Domain(querySz);
+                
+                Domain.assign(queryIn, queryIn + (querySz - 1));
+                Domain.push_back( queryIn[querySz - 1] );
+                
+                intVector obsIndicesIn(0);
+                
+                for (int variable = 0; variable < querySz; variable++)
+                {
+                    if (m_pEvidence->IsNodeObserved(queryIn[variable]))
+                        obsIndicesIn.push_back(queryIn[variable]);
+                }
+                
+                //need to recv Final Distribution
+                CPotential *deltaPot = CTabularPotential::Create(Domain, pMD,
+                    &FinalDistrib.front(), obsIndicesIn);
+                
+                delete ShrinkPot;
+                
+                ShrinkPot = deltaPot->ExpandObservedNodes(m_pEvidence);
+                
+                m_pQueryJPD->SetDistribFun(ShrinkPot->GetDistribFun());
+                
+                delete deltaPot;
+            }
+            break;
+    case dtGaussian:
+        int i;
+        for (i=0; i< querySz; i++) Query[i] = queryIn[i];
+        NumberOfFactor = GetFactorNumber(Query);
+        if (IsUnobservedNodes)
+            if (m_MyRank != 0)
+            {
+                SendMyGaussianStatisticsViaMpi(NumberOfFactor);
+            }
+            else
+            {
+                intVector NumberOfSamples;
+                floatVecVector LearnMean;
+                floatVecVector LearnCov;
+                
+                RecvGaussianStatisticsViaMpi(&NumberOfSamples, &LearnMean, 
+                    &LearnCov, NumberOfFactor);
+                
+                CFactor *factor = CGaussianPotential::Create(Query, 
+                    GetModel()->GetModelDomain());
+                
+                CNumericDenseMatrix<float> *pMatLearnMean = 
+                    dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
+                    GetDistribFun()->GetStatisticalMatrix(stMatMu));
+                CNumericDenseMatrix<float> *pMatLearnCov = 
+                    dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
+                    GetDistribFun()->GetStatisticalMatrix(stMatSigma));
+                
+                int length = 0;
+                const pConstNodeTypeVector *pNodeTypes;
+                pNodeTypes = queryFactors[NumberOfFactor]->GetDistribFun()->
+                    GetNodeTypesVector();
+                int NumberOfNodes = pNodeTypes->size();
+                
+                for (int node = 0; node < NumberOfNodes; node++)
+                {
+                    length += ( (*pNodeTypes)[node]->GetNodeSize() );
+                }
+                
+                int DimMean = 2;
+                int DimCov = 2;
+                const int RangeMean[2] = {length, 1} ;
+                const int RangeCov[2] = {length, length};
+                
+                float *pData = new float[length * length];
+                
+                for (i = 1; i < m_NumberOfProcesses; i++)
+                {
+                    C2DNumericDenseMatrix<float> * pLearnMean = 
+                        C2DNumericDenseMatrix<float>::Create(RangeMean, &(LearnMean[i].front()));
+                    C2DNumericDenseMatrix<float> * pLearnCov = 
+                        C2DNumericDenseMatrix<float>::Create(RangeCov, &(LearnCov[i].front()));
+                    //pLearnMean->GetRaw
+                    
+                    
+                    factor->SetStatistics(pLearnMean, stMatMu);
+                    factor->SetStatistics(pLearnCov, stMatSigma);
+                    
+                    queryFactors[NumberOfFactor]->UpdateStatisticsML(factor);
+                };
+                
+                int AdditionalSamples = 0;
+                for (i = 1; i < m_NumberOfProcesses; i++)
+                {
+                    AdditionalSamples += NumberOfSamples[i];
+                };
+                
+                int OldMaxTime = GetMaxTime();
+                int OldBarnIn = GetBurnIn();
+                int OldNumberOfStreams = GetNumStreams();
+                
+                AdditionalSamples += (OldMaxTime-OldBarnIn-1)*OldNumberOfStreams;
+                
+                SetMaxTime(AdditionalSamples+1);
+                SetBurnIn(0);
+                SetNumStreams(1);
+                
+                CGibbsSamplingInfEngine::MarginalNodes(queryIn, querySz, notExpandJPD);
+                
+                SetMaxTime(OldMaxTime);
+                SetBurnIn(OldBarnIn);
+                SetNumStreams(OldNumberOfStreams);
+            };
+            
+            break;
     default:
-		{
-			PNL_THROW( CInconsistentType, "distribution type" )
-		}
-		
-	}
+        {
+            PNL_THROW( CInconsistentType, "distribution type" )
+        }
+        
+    }
 }
 // ----------------------------------------------------------------------------
 
@@ -486,7 +493,7 @@ Sampling( int statTime, int endTime )
                 int digit = ndsForSampling[(ndsSampleIsNeed[i])] + 
                     myid * numNdsForSampling;
            
-				bool canBeSample = ConvertingFamilyToPot( digit, pCurrentEvidence );
+                bool canBeSample = ConvertingFamilyToPot( digit, pCurrentEvidence );
 
                 if(canBeSample)
                 {
@@ -545,7 +552,7 @@ Sampling( int statTime, int endTime )
     rfQueryFactors.resize(queryFactorsSize);
 
 #ifdef PAR_OMP
-	GetModel()->GetModelDomain()->ClearNodeTypeCopies();
+    GetModel()->GetModelDomain()->ClearNodeTypeCopies();
 #endif
 }
 // ----------------------------------------------------------------------------
@@ -591,366 +598,366 @@ ConvertingFamilyToPot( int node, const CEvidence* pEv )
 {
     int NNodes = m_pGraphicalModel->GetNumberOfNodes();
     int nodeModndsSize = node%NNodes;
-	
-	int ThreadId = PAR_OMP_NUM_CURR_THREAD;
 
-	bool ret = false;
-	CPotential* potToSample = GetPotToSampling(node);
-	Normalization(potToSample);
-	int i;
-	bool isTreeNode = false;
-	
-	//Has node got discrete child with more than 2 values
-	bool bHasNodeGotDChldWMrThn2Vl = false;
-	
-	for (int ii = 0; ((ii < (m_environment[nodeModndsSize].size()-1))&&(!bHasNodeGotDChldWMrThn2Vl)); ii++) {
-		int num = m_environment[nodeModndsSize][ii];
-		if ((GetModel()->GetNodeType(num)->IsDiscrete())&&(GetModel()->GetNodeType(num)->GetNodeSize() > 2))
-			bHasNodeGotDChldWMrThn2Vl = true;
-	};
-	
-	int *obsNds = NULL;
-	valueVector obsVals;
-	CEvidence *pSoftMaxEvidence = NULL; 	
-	
-	if ((bHasNodeGotDChldWMrThn2Vl)&&(m_SoftMaxGaussianFactorsForOMP[node] != NULL)) 
-	{
-		obsVals.resize(NNodes);
-		obsNds = new int[NNodes];
-		
-		const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &nodeModndsSize);
-		
-		for (i = 0; i < NNodes; i++) 
-		{
-			const CNodeType *nt = m_pGraphicalModel->GetNodeType(i);
-			if (nt->IsDiscrete()) 
-				obsVals[i].SetInt(pEv->GetValue(i)->GetInt()); 
-			else 
-				obsVals[i].SetFlt(pEv->GetValue(i)->GetFlt()); 
-			
-			obsNds[i] = i;
-		}
-		
-		const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &nodeModndsSize);
-	}
-	
-	for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-	{            
-		int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
-		if ( (*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtTree)
-		{
-			isTreeNode = true;
-		};
-	};
-	
-	if( (!IsAllNdsTab()) || (isTreeNode == true))
-	{
-		if( GetModel()->GetModelType() == mtBNet )
-		{
-			if (m_SoftMaxGaussianFactorsForOMP[node] == NULL) {	  
-				for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-				{            
-					int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
-					CPotential *pot1 = (!(((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtSoftMax)||
-						((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtCondSoftMax)))?
-						
-						(static_cast< CCPD* >( (*GetCurrentFactors())[num] )
-						->ConvertWithEvidenceToPotential(pEv)):
-					
-					(static_cast< CSoftMaxCPD* >( (*GetCurrentFactors())[num] )
-						->ConvertWithEvidenceToTabularPotential(pEv));
-					
-					CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
-					delete pot1;
-					*potToSample *= *pot2;
-					delete pot2;
-				} //for( i = 0; i < m_envir...
-			}
-			else {
-				if (!bHasNodeGotDChldWMrThn2Vl) {
-					for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-					{       
-						int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
-						
-						if (!(((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtSoftMax)||
-							((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtCondSoftMax))) {           
-							CPotential *pot1 = (static_cast< CCPD* >( (*GetCurrentFactors())[num] )
-								->ConvertWithEvidenceToPotential(pEv));
-							
-							CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
-							delete pot1;
-							*potToSample *= *pot2;  
-							//static_cast<CGaussianDistribFun *>(potToSample->GetDistribFun())->UpdateMomentForm();
-							//potToSample->Dump();
-							delete pot2;
-						}
-						else {
-							//Converting distribution to gaussiang
-							//Variational Approzimation (see Kevin P. Murphy
-							//"A variational Approximation for Bayesian Networks with Disrete and Continuous Latent Variables")
-							floatVector MeanContParents;
-							C2DNumericDenseMatrix<float>* CovContParents;
-							
-							static_cast<const CSoftMaxCPD*>((*GetCurrentFactors())[num])->
-								CreateMeanAndCovMatrixForNode(num%NNodes, pEv, static_cast<const CBNet*> (GetModel()), 
-								MeanContParents, &CovContParents);
-							
-							intVector discParents(0);
-							static_cast <const CBNet *>(GetModel())->GetDiscreteParents(num%NNodes, &discParents);
-							
-							int *parentComb = new int [discParents.size()];
-							
-							intVector pObsNodes;
-							pConstValueVector pObsValues;
-							pConstNodeTypeVector pNodeTypes;
-							pEv->GetObsNodesWithValues(&pObsNodes, &pObsValues,
-								&pNodeTypes);
-							
-							int location;
-							for (int k = 0; k < discParents.size(); k++)
-							{
-								location = 
-									std::find(pObsNodes.begin(), pObsNodes.end(), 
-									discParents[k]) - pObsNodes.begin();
-								parentComb[k] = pObsValues[location]->GetInt();
-							}
-							
-							int index = 0; 
-							int multidimindexes[2];
-							
-							const CSoftMaxDistribFun* dtSM = NULL;
-							
-							if ((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtCondSoftMax)
-								dtSM = 
-								static_cast<CCondSoftMaxDistribFun*>((*GetCurrentFactors())[num]->GetDistribFun())->
-								GetDistribution(parentComb);
-							else 
-								dtSM = 
-								static_cast<CSoftMaxDistribFun*>((*GetCurrentFactors())[num]->GetDistribFun());
-							
-							intVector Domain;
-							(*GetCurrentFactors())[num]->GetDomain(&Domain);
-							
-							const CNodeType *nt;
-							for(int ii = 0; ii < Domain.size(); ii++)
-							{
-								nt = GetModel()->GetNodeType( Domain[ii] );
-								if(!(nt->IsDiscrete()))
-								{
-									if (Domain[ii] != nodeModndsSize) 
-										index++;
-									else
-										break;
-								}
-							}
-							
-							multidimindexes[0] = index;
-							CMatrix<float>* pMatWeights = dtSM->GetMatrix(matWeights);
-							
-							multidimindexes[1] = 0;
-							float weight0 = pMatWeights->GetElementByIndexes(multidimindexes);
-							multidimindexes[1] = 1;
-							float weight1 = pMatWeights->GetElementByIndexes(multidimindexes);;
-							
-							if (weight0 != weight1) {
+    int ThreadId = PAR_OMP_NUM_CURR_THREAD;
+    
+    bool ret = false;
+    CPotential* potToSample = GetPotToSampling(node);
+    Normalization(potToSample);
+    int i;
+    bool isTreeNode = false;
+    
+    //Has node got discrete child with more than 2 values
+    bool bHasNodeGotDChldWMrThn2Vl = false;
+    
+    for (int ii = 0; ((ii < (m_environment[nodeModndsSize].size()-1))&&(!bHasNodeGotDChldWMrThn2Vl)); ii++) {
+        int num = m_environment[nodeModndsSize][ii];
+        if ((GetModel()->GetNodeType(num)->IsDiscrete())&&(GetModel()->GetNodeType(num)->GetNodeSize() > 2))
+            bHasNodeGotDChldWMrThn2Vl = true;
+    };
+    
+    int *obsNds = NULL;
+    valueVector obsVals;
+    CEvidence *pSoftMaxEvidence = NULL;
+
+    if ((bHasNodeGotDChldWMrThn2Vl)&&(m_SoftMaxGaussianFactorsForOMP[node] != NULL)) 
+    {
+        obsVals.resize(NNodes);
+        obsNds = new int[NNodes];
+        
+        const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &nodeModndsSize);
+        
+        for (i = 0; i < NNodes; i++) 
+        {
+            const CNodeType *nt = m_pGraphicalModel->GetNodeType(i);
+            if (nt->IsDiscrete()) 
+                obsVals[i].SetInt(pEv->GetValue(i)->GetInt()); 
+            else 
+                obsVals[i].SetFlt(pEv->GetValue(i)->GetFlt()); 
+            
+            obsNds[i] = i;
+        }
+        
+        const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &nodeModndsSize);
+    }
+
+    for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+    {            
+        int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+        if ( (*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtTree)
+        {
+            isTreeNode = true;
+        };
+    };
+
+    if( (!IsAllNdsTab()) || (isTreeNode == true))
+    {
+        if( GetModel()->GetModelType() == mtBNet )
+        {
+            if (m_SoftMaxGaussianFactorsForOMP[node] == NULL) 
+            {
+                for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+                {            
+                    int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+                    CPotential *pot1 = (!(((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtSoftMax)||
+                        ((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtCondSoftMax)))?
+                        
+                        (static_cast< CCPD* >( (*GetCurrentFactors())[num] )
+                        ->ConvertWithEvidenceToPotential(pEv)):
+                    
+                    (static_cast< CSoftMaxCPD* >( (*GetCurrentFactors())[num] )
+                        ->ConvertWithEvidenceToTabularPotential(pEv));
+                    
+                    CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
+                    delete pot1;
+                    *potToSample *= *pot2;
+                    delete pot2;
+                } //for( i = 0; i < m_envir...
+            }
+            else {
+                if (!bHasNodeGotDChldWMrThn2Vl) {
+                    for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+                    {       
+                        int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+                        
+                        if (!(((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtSoftMax)||
+                            ((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtCondSoftMax))) {           
+                            CPotential *pot1 = (static_cast< CCPD* >( (*GetCurrentFactors())[num] )
+                                ->ConvertWithEvidenceToPotential(pEv));
+                            
+                            CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
+                            delete pot1;
+                            *potToSample *= *pot2;  
+                            //static_cast<CGaussianDistribFun *>(potToSample->GetDistribFun())->UpdateMomentForm();
+                            //potToSample->Dump();
+                            delete pot2;
+                        }
+                        else {
+                            //Converting distribution to gaussiang
+                            //Variational Approzimation (see Kevin P. Murphy
+                            //"A variational Approximation for Bayesian Networks with Disrete and Continuous Latent Variables")
+                            floatVector MeanContParents;
+                            C2DNumericDenseMatrix<float>* CovContParents;
+                            
+                            static_cast<const CSoftMaxCPD*>((*GetCurrentFactors())[num])->
+                                CreateMeanAndCovMatrixForNode(num%NNodes, pEv, static_cast<const CBNet*> (GetModel()), 
+                                MeanContParents, &CovContParents);
+                            
+                            intVector discParents(0);
+                            static_cast <const CBNet *>(GetModel())->GetDiscreteParents(num%NNodes, &discParents);
+                            
+                            int *parentComb = new int [discParents.size()];
+                            
+                            intVector pObsNodes;
+                            pConstValueVector pObsValues;
+                            pConstNodeTypeVector pNodeTypes;
+                            pEv->GetObsNodesWithValues(&pObsNodes, &pObsValues,
+                                &pNodeTypes);
+                            
+                            int location;
+                            for (int k = 0; k < discParents.size(); k++)
+                            {
+                                location = 
+                                    std::find(pObsNodes.begin(), pObsNodes.end(), 
+                                    discParents[k]) - pObsNodes.begin();
+                                parentComb[k] = pObsValues[location]->GetInt();
+                            }
+                            
+                            int index = 0; 
+                            int multidimindexes[2];
+                            
+                            const CSoftMaxDistribFun* dtSM = NULL;
+                            
+                            if ((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtCondSoftMax)
+                                dtSM = 
+                                static_cast<CCondSoftMaxDistribFun*>((*GetCurrentFactors())[num]->GetDistribFun())->
+                                GetDistribution(parentComb);
+                            else 
+                                dtSM = 
+                                static_cast<CSoftMaxDistribFun*>((*GetCurrentFactors())[num]->GetDistribFun());
+                            
+                            intVector Domain;
+                            (*GetCurrentFactors())[num]->GetDomain(&Domain);
+                            
+                            const CNodeType *nt;
+                            for(int ii = 0; ii < Domain.size(); ii++)
+                            {
+                                nt = GetModel()->GetNodeType( Domain[ii] );
+                                if(!(nt->IsDiscrete()))
+                                {
+                                    if (Domain[ii] != nodeModndsSize) 
+                                        index++;
+                                    else
+                                        break;
+                                }
+                            }
+                            
+                            multidimindexes[0] = index;
+                            CMatrix<float>* pMatWeights = dtSM->GetMatrix(matWeights);
+                            
+                            multidimindexes[1] = 0;
+                            float weight0 = pMatWeights->GetElementByIndexes(multidimindexes);
+                            multidimindexes[1] = 1;
+                            float weight1 = pMatWeights->GetElementByIndexes(multidimindexes);;
+                            
+                            if (weight0 != weight1) {
 #ifdef PAR_OMP
-								GetModel()->GetModelDomain()->ChangeNodeTypeOnThread(num%NNodes, 1);
+                                GetModel()->GetModelDomain()->ChangeNodeTypeOnThread(num%NNodes, 1);
 #else
-								GetModel()->GetModelDomain()->ChangeNodeType(num%NNodes, 1);
+                                GetModel()->GetModelDomain()->ChangeNodeType(num%NNodes, 1);
 #endif
-								
-								CPotential *pot1 = (static_cast< CSoftMaxCPD* >( (*GetCurrentFactors())[num] )
-									->ConvertWithEvidenceToGaussianPotential(pEv, MeanContParents, CovContParents, parentComb));
-								
-								CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
-								
-								delete pot1;
-								*potToSample *= *pot2;
-								delete pot2;
-								
+                                
+                                CPotential *pot1 = (static_cast< CSoftMaxCPD* >( (*GetCurrentFactors())[num] )
+                                    ->ConvertWithEvidenceToGaussianPotential(pEv, MeanContParents, CovContParents, parentComb));
+                                
+                                CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
+                                
+                                delete pot1;
+                                *potToSample *= *pot2;
+                                delete pot2;
+                                
 #ifdef PAR_OMP
-								GetModel()->GetModelDomain()->ChangeNodeTypeOnThread(num%NNodes, 0);
+                                GetModel()->GetModelDomain()->ChangeNodeTypeOnThread(num%NNodes, 0);
 #else
-								GetModel()->GetModelDomain()->ChangeNodeType(num%NNodes, 0);
+                                GetModel()->GetModelDomain()->ChangeNodeType(num%NNodes, 0);
 #endif
-							};
-							
-							delete[] parentComb;
-							delete CovContParents;
-						}
+                            };
+                            
+                            delete[] parentComb;
+                            delete CovContParents;
+                        }
           }
         }  //if (!bHasNodeGotDChldWMrThn2Vl) {
         else {
-			int numberOfCorrectSamples = 0;
-			int numberOfAllSamples = 0;
-			
-			m_SoftMaxGaussianFactorsForOMP[node]->GetDistribFun()->ClearStatisticalData();
-			
-			for (;(numberOfCorrectSamples < GetNSamplesForSoftMax())&&(numberOfAllSamples < GetMaxNSamplesForSoftMax());numberOfAllSamples++) {
-				
-				//Generating of the continuous parent
-				pSoftMaxEvidence = CEvidence::Create( m_pGraphicalModel, NNodes, obsNds, obsVals );  
-				
-				pSoftMaxEvidence->ToggleNodeState(1, &nodeModndsSize);
-				
-				CPotential *pDeltaPotToSample = dynamic_cast<CPotential*>(potToSample->Clone());
-				
-				const CNodeType *nt;
-				for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-				{            
-					int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
-					nt = m_pGraphicalModel->GetNodeType(num%NNodes);
-					if (!nt->IsDiscrete()) {
-						CPotential *pot1 = static_cast< CCPD* >( (*GetCurrentFactors())[num] )
-							->ConvertWithEvidenceToPotential(pSoftMaxEvidence);
-						CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
-						delete pot1;
-						*pDeltaPotToSample *= *pot2;
-						delete pot2;
-					}
-				}//for( i = 0; i < m_envir...
-				
-				pDeltaPotToSample->GenerateSample( pSoftMaxEvidence, m_bMaximize );
-				
-				delete pDeltaPotToSample;
-				
-				//Generating of the children's values
-				for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-				{            
-					int child = m_environment[nodeModndsSize][i];
-					nt = m_pGraphicalModel->GetNodeType(child);
-					
-					if (nt->IsDiscrete()) {
-						pDeltaPotToSample = dynamic_cast<CPotential*>(GetPotToSampling(child)->Clone());
-						pSoftMaxEvidence->ToggleNodeState(1, &child);
-						
-						for(int j = 0; j < m_environment[child].size(); j++ )
-						{        
-							int grandchild = m_environment[child][j];     
-							
-							CPotential *pot1 = (!(((*GetCurrentFactors())[grandchild]->GetDistribFun()->GetDistributionType() == dtSoftMax)||
-								((*GetCurrentFactors())[grandchild]->GetDistribFun()->GetDistributionType() == dtCondSoftMax)))?
-								
-								(static_cast< CCPD* >( (*GetCurrentFactors())[grandchild] )
-								->ConvertWithEvidenceToPotential(pSoftMaxEvidence)):
-							
-							(static_cast< CSoftMaxCPD* >( (*GetCurrentFactors())[grandchild] )
-								->ConvertWithEvidenceToTabularPotential(pSoftMaxEvidence));
-							CPotential *pot2 = pot1->Marginalize(&child, 1);
-							delete pot1;
-							*pDeltaPotToSample *= *pot2;
-							delete pot2;
-						}
-						
-						pDeltaPotToSample->GenerateSample( pSoftMaxEvidence, m_bMaximize );
-						
-						delete pDeltaPotToSample;        
-					}
-				}//for( i = 0; i < m_envir...
-				
-				//Verification of children values
-				bool NeedToUpgrade = true;
-				for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-				{            
-					int child = m_environment[nodeModndsSize][i];
-					nt = m_pGraphicalModel->GetNodeType(child);
-					
-					if (nt->IsDiscrete()) {
-						if (pSoftMaxEvidence->GetValue(child)->GetInt() != pEv->GetValue(child)->GetInt())   
-							NeedToUpgrade = false;
-					}
-				}//for( i = 0; i < m_envir...
-				
-				if (NeedToUpgrade) {
-					m_SoftMaxGaussianFactorsForOMP[node]->UpdateStatisticsML(&pSoftMaxEvidence, 1);
-					numberOfCorrectSamples++;
-				}
-				
-				delete pSoftMaxEvidence;
-			}//for ((numberOfCorrectSamples < m_NSamplesForS...
-			
-			if (numberOfCorrectSamples) {
-				CPotential *tempPot = m_SoftMaxGaussianFactorsForOMP[node]
-					->ConvertStatisticToPot(numberOfCorrectSamples);
-				*potToSample *= *tempPot;
-				delete tempPot;
-			}
+            int numberOfCorrectSamples = 0;
+            int numberOfAllSamples = 0;
+            
+            m_SoftMaxGaussianFactorsForOMP[node]->GetDistribFun()->ClearStatisticalData();
+            
+            for (;(numberOfCorrectSamples < GetNSamplesForSoftMax())&&(numberOfAllSamples < GetMaxNSamplesForSoftMax());numberOfAllSamples++) {
+                
+                //Generating of the continuous parent
+                pSoftMaxEvidence = CEvidence::Create( m_pGraphicalModel, NNodes, obsNds, obsVals );  
+                
+                pSoftMaxEvidence->ToggleNodeState(1, &nodeModndsSize);
+                
+                CPotential *pDeltaPotToSample = dynamic_cast<CPotential*>(potToSample->Clone());
+                
+                const CNodeType *nt;
+                for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+                {            
+                    int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+                    nt = m_pGraphicalModel->GetNodeType(num%NNodes);
+                    if (!nt->IsDiscrete()) {
+                        CPotential *pot1 = static_cast< CCPD* >( (*GetCurrentFactors())[num] )
+                            ->ConvertWithEvidenceToPotential(pSoftMaxEvidence);
+                        CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
+                        delete pot1;
+                        *pDeltaPotToSample *= *pot2;
+                        delete pot2;
+                    }
+                }//for( i = 0; i < m_envir...
+                
+                pDeltaPotToSample->GenerateSample( pSoftMaxEvidence, m_bMaximize );
+                
+                delete pDeltaPotToSample;
+                
+                //Generating of the children's values
+                for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+                {            
+                    int child = m_environment[nodeModndsSize][i];
+                    nt = m_pGraphicalModel->GetNodeType(child);
+                    
+                    if (nt->IsDiscrete()) {
+                        pDeltaPotToSample = dynamic_cast<CPotential*>(GetPotToSampling(child)->Clone());
+                        pSoftMaxEvidence->ToggleNodeState(1, &child);
+                        
+                        for(int j = 0; j < m_environment[child].size(); j++ )
+                        {        
+                            int grandchild = m_environment[child][j];     
+                            
+                            CPotential *pot1 = (!(((*GetCurrentFactors())[grandchild]->GetDistribFun()->GetDistributionType() == dtSoftMax)||
+                                ((*GetCurrentFactors())[grandchild]->GetDistribFun()->GetDistributionType() == dtCondSoftMax)))?
+                                
+                                (static_cast< CCPD* >( (*GetCurrentFactors())[grandchild] )
+                                ->ConvertWithEvidenceToPotential(pSoftMaxEvidence)):
+                            
+                            (static_cast< CSoftMaxCPD* >( (*GetCurrentFactors())[grandchild] )
+                                ->ConvertWithEvidenceToTabularPotential(pSoftMaxEvidence));
+                            CPotential *pot2 = pot1->Marginalize(&child, 1);
+                            delete pot1;
+                            *pDeltaPotToSample *= *pot2;
+                            delete pot2;
+                        }
+                        
+                        pDeltaPotToSample->GenerateSample( pSoftMaxEvidence, m_bMaximize );
+                        
+                        delete pDeltaPotToSample;        
+                    }
+                }//for( i = 0; i < m_envir...
+                
+                //Verification of children values
+                bool NeedToUpgrade = true;
+                for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+                {            
+                    int child = m_environment[nodeModndsSize][i];
+                    nt = m_pGraphicalModel->GetNodeType(child);
+                    
+                    if (nt->IsDiscrete()) {
+                        if (pSoftMaxEvidence->GetValue(child)->GetInt() != pEv->GetValue(child)->GetInt())   
+                            NeedToUpgrade = false;
+                    }
+                }//for( i = 0; i < m_envir...
+                
+                if (NeedToUpgrade) {
+                    m_SoftMaxGaussianFactorsForOMP[node]->UpdateStatisticsML(&pSoftMaxEvidence, 1);
+                    numberOfCorrectSamples++;
+                }
+                
+                delete pSoftMaxEvidence;
+            }//for ((numberOfCorrectSamples < m_NSamplesForS...
+            
+            if (numberOfCorrectSamples) {
+                CPotential *tempPot = m_SoftMaxGaussianFactorsForOMP[node]
+                    ->ConvertStatisticToPot(numberOfCorrectSamples);
+                *potToSample *= *tempPot;
+                delete tempPot;
+            }
         }
       }
     }//if( GetModel()->GetModelType() == mtBNe...
     else
     {
-		for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-		{
-			int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
-			CPotential *pot1 = static_cast< CPotential* >( (*GetCurrentFactors())[num] )
-				->ShrinkObservedNodes(pEv);
-			CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
-			delete pot1;
-			*potToSample *= *pot2;
-			delete pot2;
-		}
+        for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+        {
+            int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+            CPotential *pot1 = static_cast< CPotential* >( (*GetCurrentFactors())[num] )
+                ->ShrinkObservedNodes(pEv);
+            CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
+            delete pot1;
+            *potToSample *= *pot2;
+            delete pot2;
+        }
     }
   }
   else //  if( !IsAllNdsTab() )...
   {
-	  
-	  CMatrix< float > *pMatToSample;
-	  pMatToSample = static_cast<CTabularDistribFun*>(potToSample->GetDistribFun())
-		  ->GetMatrix(matTable);
-	  
-	  intVector dims;
-	  intVector vls;
-	  intVector domain;
-	  
-	  for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-	  {            
-		  int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
-		  (*GetCurrentFactors())[num]->GetDomain(&domain);
-		  GetObsDimsWithVls( domain, nodeModndsSize, pEv, &dims, &vls); 
-		  CMatrix< float > *pMat;
-		  pMat = static_cast<CTabularDistribFun*>((*GetCurrentFactors())[num]->
-			  GetDistribFun())->GetMatrix(matTable);
-		  pMat->ReduceOp( &dims.front(), dims.size(), 2, &vls.front(),
-			  pMatToSample, PNL_ACCUM_TYPE_MUL );
-		  dims.clear();
-		  vls.clear();
-		  domain.clear();
-		  
-	  }
+      
+      CMatrix< float > *pMatToSample;
+      pMatToSample = static_cast<CTabularDistribFun*>(potToSample->GetDistribFun())
+          ->GetMatrix(matTable);
+      
+      intVector dims;
+      intVector vls;
+      intVector domain;
+      
+      for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+      {            
+          int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+          (*GetCurrentFactors())[num]->GetDomain(&domain);
+          GetObsDimsWithVls( domain, nodeModndsSize, pEv, &dims, &vls); 
+          CMatrix< float > *pMat;
+          pMat = static_cast<CTabularDistribFun*>((*GetCurrentFactors())[num]->
+              GetDistribFun())->GetMatrix(matTable);
+          pMat->ReduceOp( &dims.front(), dims.size(), 2, &vls.front(),
+              pMatToSample, PNL_ACCUM_TYPE_MUL );
+          dims.clear();
+          vls.clear();
+          domain.clear();
+          
+      }
   }  
   //check for non zero elements
   CMatrix<float> *pMat;
   if( potToSample->GetDistributionType()==dtTabular )
-  {	
-	  pMat = potToSample->GetDistribFun()->GetMatrix(matTable);
+  {
+      pMat = potToSample->GetDistribFun()->GetMatrix(matTable);
   }
   else
   {
-	  CGaussianDistribFun* pDistr = static_cast<CGaussianDistribFun*>(potToSample->GetDistribFun());
-	  if(pDistr->GetMomentFormFlag())
-	  {
-		  pMat = pDistr->GetMatrix(matCovariance);
-	  }
-	  else
-	  {
-		  pMat = pDistr->GetMatrix(matK);
-	  }
+      CGaussianDistribFun* pDistr = static_cast<CGaussianDistribFun*>(potToSample->GetDistribFun());
+      if(pDistr->GetMomentFormFlag())
+      {
+          pMat = pDistr->GetMatrix(matCovariance);
+      }
+      else
+      {
+          pMat = pDistr->GetMatrix(matK);
+      }
   }
   
   CMatrixIterator<float>* iter = pMat->InitIterator();
   for( iter; pMat->IsValueHere( iter ); pMat->Next(iter) )
   {
-	  
-	  if(*(pMat->Value( iter )) > FLT_EPSILON)
-	  {
-		  ret = true;
-		  break;
-	  }
+      if(*(pMat->Value( iter )) > FLT_EPSILON)
+      {
+          ret = true;
+          break;
+      }
   }
   
   if (obsNds != NULL)
-	  delete obsNds;
+      delete obsNds;
   delete iter;
   return ret;
 }
@@ -1005,17 +1012,17 @@ void CParGibbsSamplingInfEngine::EnterEvidence( const CEvidence *pEvidenceIn,
 void CParGibbsSamplingInfEngine::CreateQueryFactors()
 {
     int NumThreads = PAR_OMP_NUM_THREADS;
-	
+
     pConstNodeTypeVector ntVec;
     const CNodeType *nt;
     intVector query;
-	
+
     intVecVector& rfQueryes = GetQueryes();
     pFactorVector& rfQueryFactors = *GetQueryFactors();
-	
+
     //Create additional factors for every processes
     for (int proc = 0; proc < NumThreads; proc++)
-	{
+    {
         for( int number = 0; number < rfQueryes.size(); number++ )
         {
             for( int node = 0; node < rfQueryes[number].size(); node++)
@@ -1051,111 +1058,110 @@ void CParGibbsSamplingInfEngine::CreateQueryFactors()
             ntVec.clear();
             query.clear();
         }
-	};
-	
-	//Create m_SoftMaxGaussianFactorsForOMP potentials
-	int NNodes = m_pGraphicalModel->GetNumberOfNodes();
-	int NFactors = m_pGraphicalModel->GetNumberOfNodes()*m_NumberOfThreads;
-	CGraph *pGraph = m_pGraphicalModel->GetGraph();
-	intVector Children;
-	
-	for (int factor = 0; factor < NFactors; factor++) 
-	{
-		nt = m_pGraphicalModel->GetNodeType(factor%NNodes);
-		
-		if ((!nt->IsDiscrete())&&(!(m_pEvidence->IsNodeObserved(factor%NNodes))))
-		{
-			pGraph->GetChildren(factor%NNodes, &Children);
-			
-			for (int child = 0; child < Children.size(); child++) 
-			{
-				nt = m_pGraphicalModel->GetNodeType(Children[child]);
-				
-				if (nt->IsDiscrete()) {
-					int node = factor%NNodes;
-					m_SoftMaxGaussianFactorsForOMP[factor] = CGaussianPotential::Create(&node, 1, m_pGraphicalModel->GetModelDomain());
-					break;
-				};
-			}
-		}
-	};
+    };
 
-	
+    //Create m_SoftMaxGaussianFactorsForOMP potentials
+    int NNodes = m_pGraphicalModel->GetNumberOfNodes();
+    int NFactors = m_pGraphicalModel->GetNumberOfNodes()*m_NumberOfThreads;
+    CGraph *pGraph = m_pGraphicalModel->GetGraph();
+    intVector Children;
+    
+    for (int factor = 0; factor < NFactors; factor++) 
+    {
+        nt = m_pGraphicalModel->GetNodeType(factor%NNodes);
+        
+        if ((!nt->IsDiscrete())&&(!(m_pEvidence->IsNodeObserved(factor%NNodes))))
+        {
+            pGraph->GetChildren(factor%NNodes, &Children);
+            
+            for (int child = 0; child < Children.size(); child++) 
+            {
+                nt = m_pGraphicalModel->GetNodeType(Children[child]);
+                
+                if (nt->IsDiscrete()) {
+                    int node = factor%NNodes;
+                    m_SoftMaxGaussianFactorsForOMP[factor] = CGaussianPotential::Create(&node, 1, m_pGraphicalModel->GetModelDomain());
+                    break;
+                };
+            }
+        }
+    };
 }
 // ----------------------------------------------------------------------------
 
 void CParGibbsSamplingInfEngine::Initialization()
 {
-	int nFactors = GetModel()->GetNumberOfFactors();
-	int nFactorsOMP = GetModel()->GetNumberOfFactors()*m_NumberOfThreads;
-	pFactorVector *currentFactors = GetCurrentFactors();
-	currentFactors->resize(nFactorsOMP);
-	int i;
-	for( i = 0; i < nFactorsOMP; i++ )
-	{
-		if (i<nFactors)
-		{
-			(*currentFactors)[i] = GetModel()->GetFactor(i);
-		}
-		else
-		{
-			(*currentFactors)[i] = GetModel()->GetFactor(i%nFactors)->Clone();
-		};
-	}
+    int nFactors = GetModel()->GetNumberOfFactors();
+    int nFactorsOMP = GetModel()->GetNumberOfFactors()*m_NumberOfThreads;
+    pFactorVector *currentFactors = GetCurrentFactors();
+    currentFactors->resize(nFactorsOMP);
+    int i;
+    for( i = 0; i < nFactorsOMP; i++ )
+    {
+        if (i<nFactors)
+        {
+            (*currentFactors)[i] = GetModel()->GetFactor(i);
+        }
+        else
+        {
+            (*currentFactors)[i] = GetModel()->GetFactor(i%nFactors)->Clone();
+        };
+    }
 }
 // ----------------------------------------------------------------------------
 
 int CParGibbsSamplingInfEngine::GetFactorNumber(intVector queryIn)
 {
-	int FactorNumber = -1;
-	const CFactor *pFactor;
-	int *begin1;
-	int *end1;
-	int *begin2;
-	int *end2;
-	intVector domainVec;
-	intVector queryVec;
+    int FactorNumber = -1;
+    const CFactor *pFactor;
+    int *begin1;
+    int *end1;
+    int *begin2;
+    int *end2;
+    intVector domainVec;
+    intVector queryVec;
     pFactorVector queryFactors;
 
-	queryVec.reserve(queryIn.size());
-	int i;
-	int querySz = queryIn.size();
-	for( i = 0; i < querySz; i++ )
-	{
-		if (! m_pEvidence->IsNodeObserved(queryIn[i]))
-			queryVec.push_back(queryIn[i]);
-	}
-	
-	GetQueryFactors( &queryFactors);
+    queryVec.reserve(queryIn.size());
+    int i;
+    int querySz = queryIn.size();
+    for( i = 0; i < querySz; i++ )
+    {
+        if (! m_pEvidence->IsNodeObserved(queryIn[i]))
+            queryVec.push_back(queryIn[i]);
+    }
+    
+    GetQueryFactors( &queryFactors);
 
-	if( queryVec.size() )
-	{
-		for( i = 0; i < queryFactors.size(); i++)     
-		{
-			domainVec.clear();
-			pFactor = queryFactors[i];
-			pFactor->GetDomain(&domainVec);
-			begin1 = &domainVec.front();
-			end1 = &domainVec.back() + 1;
-			std::sort(begin1, end1);
-			
-			begin2 = &queryVec.front();
-			end2 = &queryVec.back() + 1;
-			std::sort(begin2, end2);
-			
-			if( std::includes(begin1, end1, begin2, end2) )
-			{
-				FactorNumber = i;
-				break;
-			}
-			
-		}
-	}
-	
-	return FactorNumber;
+    if( queryVec.size() )
+    {
+        for( i = 0; i < queryFactors.size(); i++)     
+        {
+            domainVec.clear();
+            pFactor = queryFactors[i];
+            pFactor->GetDomain(&domainVec);
+            begin1 = &domainVec.front();
+            end1 = &domainVec.back() + 1;
+            std::sort(begin1, end1);
+            
+            begin2 = &queryVec.front();
+            end2 = &queryVec.back() + 1;
+            std::sort(begin2, end2);
+            
+            if( std::includes(begin1, end1, begin2, end2) )
+            {
+                FactorNumber = i;
+                break;
+            }
+            
+        }
+    }
+    
+    return FactorNumber;
 }
 
 // ----------------------------------------------------------------------------
+
 // send gaussian learn matrixes, where index in m_queryFactors is NumberOfFactor
 void CParGibbsSamplingInfEngine::SendMyGaussianStatisticsViaMpi(int NumberOfFactor)
 {
@@ -1163,19 +1169,19 @@ void CParGibbsSamplingInfEngine::SendMyGaussianStatisticsViaMpi(int NumberOfFact
     if (m_MyRank == 0)
         return;
 
-	pFactorVector queryFactors;
-	GetQueryFactors( &queryFactors);
-	PNL_CHECK_RANGES(NumberOfFactor, 0, queryFactors.size()-1);
+    pFactorVector queryFactors;
+    GetQueryFactors( &queryFactors);
+    PNL_CHECK_RANGES(NumberOfFactor, 0, queryFactors.size()-1);
 
     //send number of samples 
     int NumberOfSamples = (m_currentTime-GetBurnIn()-1) * GetNumStreams();
     MPI_Send(&NumberOfSamples, 1, MPI_INT, 0, m_MyRank, MPI_COMM_WORLD);
 
-	//send learn matrix of mean
-	CNumericDenseMatrix<float> *pMatLearnMean = dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
-		GetDistribFun()->GetStatisticalMatrix(stMatMu));
-
-	int dataLength;
+    //send learn matrix of mean
+    CNumericDenseMatrix<float> *pMatLearnMean = dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
+        GetDistribFun()->GetStatisticalMatrix(stMatMu));
+    
+    int dataLength;
     const float *pDataForSending;
 
     pMatLearnMean->GetRawData(&dataLength, &pDataForSending);
@@ -1183,17 +1189,16 @@ void CParGibbsSamplingInfEngine::SendMyGaussianStatisticsViaMpi(int NumberOfFact
     MPI_Send((float*)pDataForSending, dataLength, MPI_FLOAT, 0, m_MyRank, 
         MPI_COMM_WORLD);
 
-	//send learn matrix of cov
-	CNumericDenseMatrix<float> *pMatLearnCov = dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
-		GetDistribFun()->GetStatisticalMatrix(stMatSigma));
+    //send learn matrix of cov
+    CNumericDenseMatrix<float> *pMatLearnCov = dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
+        GetDistribFun()->GetStatisticalMatrix(stMatSigma));
 
     pMatLearnCov->GetRawData(&dataLength, &pDataForSending);
 
     MPI_Send((float*)pDataForSending, dataLength, MPI_FLOAT, 0, m_MyRank, 
         MPI_COMM_WORLD);
-#endif
+#endif // PAR_MPI
 }
-
 // ----------------------------------------------------------------------------
 
 // recv gaussian learn matrixes from all processes but 0
@@ -1208,38 +1213,38 @@ RecvGaussianStatisticsViaMpi(intVector *pNumberOfSamples, floatVecVector *pLearn
     PNL_CHECK_IS_NULL_POINTER(pLearnMean);
     PNL_CHECK_IS_NULL_POINTER(pLearnCov);
 
-	pFactorVector queryFactors;
-	GetQueryFactors( &queryFactors);
-	PNL_CHECK_RANGES(NumberOfFactor, 0, queryFactors.size()-1);
+    pFactorVector queryFactors;
+    GetQueryFactors( &queryFactors);
+    PNL_CHECK_RANGES(NumberOfFactor, 0, queryFactors.size()-1);
 
     // HaveMsg[0] is never used
     intVector HaveMsg(m_NumberOfProcesses, -1);
     // -1 - no messages
     //  1 - have int
     //  2 - have int and one float array
-	//  3 - have int and 2 float arrays
+    //  3 - have int and 2 float arrays
 
-	//Resizing
-	pNumberOfSamples->resize(m_NumberOfProcesses,-1);
-	pLearnMean->resize(m_NumberOfProcesses);
-	pLearnCov->resize(m_NumberOfProcesses);
+    //Resizing
+    pNumberOfSamples->resize(m_NumberOfProcesses,-1);
+    pLearnMean->resize(m_NumberOfProcesses);
+    pLearnCov->resize(m_NumberOfProcesses);
 
-	int numOfDimsOut;
-	const int *rangesOut;
-	queryFactors[NumberOfFactor]->GetDistribFun()->GetStatisticalMatrix(stMatMu)
-		->GetRanges(&numOfDimsOut, &rangesOut);
+    int numOfDimsOut;
+    const int *rangesOut;
+    queryFactors[NumberOfFactor]->GetDistribFun()->GetStatisticalMatrix(stMatMu)
+        ->GetRanges(&numOfDimsOut, &rangesOut);
 
-	int Rank = 1;
-	int i;
-	for (i = 0; i < numOfDimsOut; i++)
-	{
-		Rank *= rangesOut[i];
-	};
+    int Rank = 1;
+    int i;
+    for (i = 0; i < numOfDimsOut; i++)
+    {
+        Rank *= rangesOut[i];
+    };
 
-	if (!numOfDimsOut)
-	{
-		Rank = 0;
-	};
+    if (!numOfDimsOut)
+    {
+        Rank = 0;
+    };
 
     // number of recieved msges
     int NumberOfMsg = 0;
@@ -1263,21 +1268,21 @@ RecvGaussianStatisticsViaMpi(intVector *pNumberOfSamples, floatVecVector *pLearn
                         HaveMsg[i] = 1;
                     }
                     else
-					if (HaveMsg[i] == 1)
+                    if (HaveMsg[i] == 1)
                     {//HaveMsg[i] == 1
                         MPI_Recv(&(pLearnMean->operator[](i).front()),
                             Rank, MPI_FLOAT, i, MPI_ANY_TAG,
                             MPI_COMM_WORLD, &status);
                         HaveMsg[i] = 2;
                     }
-					else
-					{//HaveMsg[i] == 2
+                    else
+                    {//HaveMsg[i] == 2
                         MPI_Recv(&(pLearnCov->operator[](i).front()),
                             Rank*Rank, MPI_FLOAT, i, MPI_ANY_TAG,
                             MPI_COMM_WORLD, &status);
                         HaveMsg[i] = 3;
                         NumberOfMsg++;
-					};
+                    };
             } //if (HaveMsg[i] != 3...
     } //while...
 #endif // PAR_MPI
