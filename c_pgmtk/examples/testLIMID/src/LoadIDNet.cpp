@@ -22,7 +22,7 @@
 PNL_USING
 using namespace std;
 
-const string nameOfIDModel = "IDNet_model";
+const string nameOfIDModel = "Model";
 
 // ----------------------------------------------------------------------------
 CIDNet* LoadIDNetFromXML(const string fname)
