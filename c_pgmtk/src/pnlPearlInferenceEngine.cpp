@@ -284,7 +284,7 @@ void CPearlInfEngine::MarginalNodes( const int* query, int querySize,
         {
             //compute MPE
             CNodeValues * values = m_pQueryJPD->GetDistribFun()->GetMPE();
-            CEvidence *evid = CEvidence::Create( values, domLength, domain,
+            CEvidence *evid = CEvidence::Create( values, querySize, query,
                 m_pGraphicalModel->GetModelDomain() );
             m_pEvidenceMPE = evid;
             delete values;
