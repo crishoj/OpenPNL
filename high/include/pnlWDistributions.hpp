@@ -59,7 +59,7 @@ protected:
     virtual void DoNotify(const Message &msg);
     virtual int InterestedIn() const
     {
-	return Message::eDelNode | Message::eChangeNState
+	return Message::eMSGDelNode | Message::eChangeNState
 	| Message::eChangeParentNState | Message::eInit;
     }
     TokenCover &Token() const { return *m_pToken; }

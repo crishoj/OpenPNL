@@ -1296,7 +1296,7 @@ void ProbabilisticNet::DoNotify(const Message &msg)
 {
     switch(msg.MessageId())
     {
-    case Message::eDelNode:
+    case Message::eMSGDelNode:
     case Message::eChangeParentNState:
     case Message::eChangeNState:
     case Message::eInit:

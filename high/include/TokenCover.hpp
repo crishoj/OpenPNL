@@ -73,7 +73,7 @@ public:
 
 protected:
     virtual void DoNotify(const Message &msg);
-    virtual int InterestedIn() const { return Message::eDelNode | Message::eChangeName; }
+    virtual int InterestedIn() const { return Message::eMSGDelNode | Message::eChangeName; }
 
 private:// FUNCTIONS
     void CreateRoot(const char *rootName, bool bAutoNum = false);

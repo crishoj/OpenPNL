@@ -318,7 +318,7 @@ bool WGraph::DelNode(int iNode)
     {
 	return false;
     }
-    Notify(eDelNode, iNode);
+    Notify(Message::eMSGDelNode, iNode);
     m_aUnusedIndex.push_back(iNode);
     m_abValid[iNode] = 0;
     m_aParent[iNode].resize(0);

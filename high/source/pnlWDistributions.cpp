@@ -415,7 +415,7 @@ void WDistributions::DoNotify(const Message &msg)
 {
     switch(msg.MessageId())
     {
-    case Message::eDelNode:
+    case Message::eMSGDelNode:
 	DropDistribution(msg.IntArg());
 	break;
     case Message::eChangeParentNState:

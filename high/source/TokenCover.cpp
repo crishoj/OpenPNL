@@ -231,7 +231,7 @@ int TokenCover::AddNode(Tok &node, TokArr &aValue)
 
 bool TokenCover::DelNode(int iNode)
 {
-    //Notify(eDelNode, iNode);
+    //Notify(Message::eMSGDelNode, iNode);
     if(!m_pGraph)
     {
 	ThrowInternalError("Call to TokenCover::DelNode without graph", "DelNode");
@@ -262,9 +262,9 @@ bool TokenCover::DelNode(Tok &nodeName)
 
     node->Kill();
 
-    MaskAddOrDelete(eDelNode, true);
+    MaskAddOrDelete(Message::eMSGDelNode, true);
     bool result = m_pGraph && !m_pGraph->DelNode(m_pGraph->INode(name.c_str()));
-    MaskAddOrDelete(eDelNode, false);
+    MaskAddOrDelete(Message::eMSGDelNode, false);
 
     return result;
 }
@@ -620,7 +620,7 @@ void TokenCover::DoNotify(const Message &msg)
 	    }
 	}
 	break;
-    case Message::eDelNode:
+    case Message::eMSGDelNode:
 	{// if user deletes node via WGraph
 	    TokIdNode *node = Node(msg.IntArg());
 	    if(!node)

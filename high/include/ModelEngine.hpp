@@ -14,7 +14,7 @@ public:
     typedef enum
     {	eChangeNState		= 1
     ,	eChangeParentNState	= 2
-    ,	eDelNode		= 4
+    ,	eMSGDelNode		= 4
     ,	eInit			= 8
     ,	eChangeName		= 16
     ,	eSetModelInvalid	= 32

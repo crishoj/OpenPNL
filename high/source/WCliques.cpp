@@ -208,7 +208,7 @@ void WCliques::DoNotify(const Message &msg)
 {
     switch(msg.MessageId())
     {
-    case eDelNode:
+    case Message::eMSGDelNode:
         {
 	    Vector<int> clqs = ClqNumbersForNode(msg.IntArg());
             int i, iClq;
@@ -216,7 +216,7 @@ void WCliques::DoNotify(const Message &msg)
             {
                 iClq = clqs[i];
                 DestroyClique(m_aCliques[iClq]);
-		Notify(Message::eDelNode, iClq);
+		Notify(Message::eMSGDelNode, iClq);
             }
             break;
         }

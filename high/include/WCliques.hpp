@@ -30,7 +30,7 @@ public:// inlines for access to object fields
 
 protected:
     virtual void DoNotify(const Message &msg);
-    virtual int InterestedIn() const { return Message::eDelNode; }
+    virtual int InterestedIn() const { return Message::eMSGDelNode; }
 
 private:
     int hash(const Vector<int> &aIndex) const;	// hash function that maps set of 
