@@ -38,9 +38,9 @@ MRF::MRF(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
     m_pNet = new ProbabilisticNet("mrf");
     m_pNet->SetCallback(new MRFCallback());
     //m_pNet->Distributions()->SetMRF(true);
-    m_pNet->Token()->AddProperty("Inference", aInference,
+    m_pNet->Token().AddProperty("Inference", aInference,
 	sizeof(aInference)/sizeof(aInference[0]));
-    m_pNet->Token()->AddProperty("Learning", aLearning,
+    m_pNet->Token().AddProperty("Learning", aLearning,
 	sizeof(aLearning)/sizeof(aLearning[0]));
 }
 
@@ -73,10 +73,10 @@ void MRF::SetClique(TokArr nodes)
     Vector<int> aINode(nodes.size());
     for(int i = 0; i < nodes.size(); i++)
     {
-	aINode[i] = Net().Graph()->INode(nodes[i].Name());
+	aINode[i] = Net().Graph().INode(nodes[i].Name());
     }
     
-    if(!Net().Distributions()->Cliques().FormClique(aINode))
+    if(!Net().Distributions().Cliques().FormClique(aINode))
     {
         ThrowUsingError("Clique already exists or nodes are subset of some clique or some clique is subset of nodes.", "SetClique");
     }
@@ -88,10 +88,10 @@ void MRF::DestroyClique(TokArr nodes)
     Vector<int> aINode(nodes.size());
     for(int i = 0; i < nodes.size(); i++)
     {
-	aINode[i] = Net().Graph()->INode(nodes[i].Name());
+	aINode[i] = Net().Graph().INode(nodes[i].Name());
     }
     
-    Net().Distributions()->Cliques().DestroyClique(aINode);
+    Net().Distributions().Cliques().DestroyClique(aINode);
 }
 
 int MRF::GetNumberOfNodes() const
@@ -101,7 +101,7 @@ int MRF::GetNumberOfNodes() const
 
 int MRF::GetNumberOfCliques() const
 {
-    return Net().Distributions()->Cliques().nClique();
+    return Net().Distributions().Cliques().nClique();
 }
 
 TokArr MRF::GetFullScale(TokArr aValue) const
@@ -114,12 +114,12 @@ TokArr MRF::GetFullScale(TokArr aValue) const
     int nVal = 1, nval, iNode;
     for(i = aValSize; --i; )
     {
-        node = Net().Token()->Node(aValue[i]);
+        node = Net().Token().Node(aValue[i]);
         if(node->tag == eTagValue)
         {
             tokNumbers[i - 1] = tokNumbers[i];
             node = node->v_prev;
-            iNode = Net().Graph()->INode(node->Name());
+            iNode = Net().Graph().INode(node->Name());
             if(node->tag != eTagNetNode)
             {
                 ThrowUsingError("There is must be node", fname);
@@ -129,8 +129,8 @@ TokArr MRF::GetFullScale(TokArr aValue) const
         {
             if(node->tag == eTagNetNode)
             {
-                iNode = Net().Graph()->INode(node->Name());
-                nval = Net().Token()->nValue(iNode);
+                iNode = Net().Graph().INode(node->Name());
+                nval = Net().Token().nValue(iNode);
                 tokNumbers[i - 1] = tokNumbers[i] * nval;
                 nVal *= nval;
             }
@@ -140,11 +140,11 @@ TokArr MRF::GetFullScale(TokArr aValue) const
             }
         }
     }
-    node = Net().Token()->Node(aValue[0]);
+    node = Net().Token().Node(aValue[0]);
     if(node->tag == eTagNetNode)
     {
-        iNode = Net().Graph()->INode(node->Name());
-	nVal *= Net().Token()->nValue(iNode);
+        iNode = Net().Graph().INode(node->Name());
+	nVal *= Net().Token().nValue(iNode);
     }
     if(node->tag == eTagValue)
     {
@@ -159,7 +159,7 @@ TokArr MRF::GetFullScale(TokArr aValue) const
     Vector<Tok> aTok(nVal);
     for(i = 0; i < aValSize; i++)
     {
-        node = Net().Token()->Node(aValue[i]);
+        node = Net().Token().Node(aValue[i]);
         if(node->tag == eTagValue)
         {
             for(TokInd = 0; TokInd < nVal; TokInd++)
@@ -170,7 +170,7 @@ TokArr MRF::GetFullScale(TokArr aValue) const
         else
         {
             Vector<String> values;
-            Net().Token()->GetValues(Net().Graph()->INode(node->Name()), values);
+            Net().Token().GetValues(Net().Graph().INode(node->Name()), values);
 	    int flag = 1;
             for(TokInd = 0, j = 0; TokInd < nVal; TokInd++, flag++)
             {
@@ -199,17 +199,17 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
     TokArr aScaleValue = GetFullScale(aValue);
 
     int nVal = aScaleValue.size();
-    Vector<int> NodeIndices = Net().Token()->aiNode(aScaleValue[0]);
+    Vector<int> NodeIndices = Net().Token().aiNode(aScaleValue[0]);
 
     if(prob.size() != nVal)
     {
         ThrowUsingError("Number of probabilities is incorrect", fname);
     }
 
-    if(Net().Distributions()->Cliques().iClique(NodeIndices) == -1)
+    if(Net().Distributions().Cliques().iClique(NodeIndices) == -1)
     {
         // if clique does not exist then create it
-        if(!Net().Distributions()->Cliques().FormClique(NodeIndices))
+        if(!Net().Distributions().Cliques().FormClique(NodeIndices))
         {
             ThrowUsingError("Nodes are subset of some clique or some clique is subset of nodes.", fname);
         }
@@ -222,15 +222,15 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
        //cout << String(aScaleValue[i]) << endl;
     }
 
-    Net().Distributions()->FillDataNew(pnl::matTable, aScaleValue);
+    Net().Distributions().FillDataNew(pnl::matTable, aScaleValue);
 }
 /*
 void MRF::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)
 {
-    Net().Distributions()->FillData(node, mean, TokArr(), pnl::matMean);
-    Net().Distributions()->FillData(node, variance, TokArr(), pnl::matCovariance);
+    Net().Distributions().FillData(node, mean, TokArr(), pnl::matMean);
+    Net().Distributions().FillData(node, variance, TokArr(), pnl::matCovariance);
     if (weight.size() != 0)
-        Net().Distributions()->FillData(node, weight, TokArr(), pnl::matWeights);
+        Net().Distributions().FillData(node, weight, TokArr(), pnl::matWeights);
 }
 
 TokArr MRF::GetGaussianMean(TokArr vars)
@@ -285,7 +285,7 @@ TokArr MRF::GetPTabular(TokArr aValue)
 
     TokArr aScaleValue = GetFullScale(aValue);
 
-    Net().Distributions()->ExtractData(pnl::matTable, aScaleValue);
+    Net().Distributions().ExtractData(pnl::matTable, aScaleValue);
 
     return aScaleValue;
 }
@@ -420,7 +420,7 @@ TokArr MRF::GetJPD( TokArr nodes )
     }
     
     delete evid;
-    Net().Token()->SetContext(res);
+    Net().Token().SetContext(res);
     return res;
 }
 
@@ -503,11 +503,11 @@ void MRF::LearnParameters(TokArr aSample[], int nSample)
 
     SetParamLearningProperties();
     Learning().Learn();
-    for (i = 0; i < Net().Graph()->iNodeMax(); i++)
+    for (i = 0; i < Net().Graph().iNodeMax(); i++)
     {
-	if(Net().Graph()->IsValidINode(i))
+	if(Net().Graph().IsValidINode(i))
 	{
-	    Net().Distributions()->ResetDistribution(i, *Net().Model()->GetFactor(Net().Graph()->IGraph(i)));
+	    Net().Distributions().ResetDistribution(i, *Net().Model().GetFactor(Net().Graph().IGraph(i)));
 	}
     }
 }
@@ -573,13 +573,13 @@ TokArr MRF::GetMPE(TokArr nodes)
 	}
 
         if (Net().pnlNodeType(queryNds[i]).IsDiscrete())
-            result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v.GetInt()));
+            result.push_back(Net().Token().TokByNodeValue(queryNds[i], v.GetInt()));
         else
     	    result.push_back(v.GetFlt());
     }
 
     delete evid;
-    Net().Token()->SetContext(result);
+    Net().Token().SetContext(result);
 
     return result;
 }
@@ -650,10 +650,25 @@ void MRF::MaskEvidBuf(TokArr whatNodes)
 
 //= private functions  =================================================
 
+void MRF::DoNotify(const Message &msg)
+{
+    switch(msg.MessageId())
+    {
+    case Message::eSetModelInvalid:
+	delete m_Learning;
+	m_Learning = 0;
+	delete m_Inference;
+	m_Inference = 0;
+	break;
+    default:
+	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
+	return;
+    }
+}
 
 pnl::CMatrix<float> *MRF::Matrix(int iNode) const
 {
-    pnl::CMatrix<float> *mat = Net().Distributions()->Distribution(iNode)->Matrix(pnl::matTable);
+    pnl::CMatrix<float> *mat = Net().Distributions().Distribution(iNode)->Matrix(pnl::matTable);
 
     return mat;
 }
@@ -797,7 +812,7 @@ pnl::CStaticLearningEngine &MRF::Learning()
 
 pnl::CMNet *MRF::Model()
 {
-    return static_cast<pnl::CMNet*>(Net().Model());
+    return static_cast<pnl::CMNet*>(&Net().Model());
 }
 
 void MRF::SetProperty(const char *name, const char *value)

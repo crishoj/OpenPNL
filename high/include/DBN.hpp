@@ -4,9 +4,7 @@
 #include <string>
 #include "pnlHighConf.hpp"
 #include "pnlTok.hpp"
-#include "Wcsv.hpp"
-#include "BNet.hpp"
-
+#include "ModelEngine.hpp"
 
 // FORWARDS
 PNLW_BEGIN
@@ -14,6 +12,7 @@ class WGraph;
 class TokenCover;
 class WDistributions;
 class NetCallback;
+class BayesNet;
 class ProbabilisticNet;
 PNLW_END
 
@@ -33,7 +32,7 @@ namespace pnl
 
 PNLW_BEGIN
 
-class PNLHIGH_API DBN
+class PNLHIGH_API DBN: public ModelEngine
 {
 public:
     DBN();
@@ -149,15 +148,16 @@ private:
     pnl::CDynamicInfEngine &Inference();
     pnl::CDynamicLearningEngine &Learning();
 
+    // handles messages - from ModelEngine interface
+    virtual void DoNotify(const Message &msg);
+
     int GetSliceNum(String nodeName);
-	String GetNodeName(String nodeEvid);
-	String GetShortName(String nodeName);
-	String GetValue(String nodeEvid);
-	TokArr ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice);
-	pnl::intVector GetSlicesNodesCorrespInd();
+    String GetNodeName(String nodeEvid);
+    String GetShortName(String nodeName);
+    String GetValue(String nodeEvid);
+    TokArr ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice);
+    pnl::intVector GetSlicesNodesCorrespInd();
 
-
-    void CreateModel();
     pnl::CDBN *Model();
 
     const char PropertyAbbrev(const char *name) const;
@@ -188,4 +188,4 @@ private:// DATA members
 
 PNLW_END
 
-#endif //__BNET_HPP__
+#endif //__DBN_HPP__

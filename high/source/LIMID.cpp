@@ -71,17 +71,17 @@ void LIMID::DelArc(TokArr from, TokArr to)
 
 void LIMID::SetPChance(TokArr value, TokArr prob, TokArr parentValue)
 {
-    Net().Distributions()->FillData(value, prob, parentValue);
+    Net().Distributions().FillData(value, prob, parentValue);
 }
 
 void LIMID::SetPDecision(TokArr value, TokArr prob, TokArr parentValue)
 {
-    Net().Distributions()->FillData(value, prob, parentValue);
+    Net().Distributions().FillData(value, prob, parentValue);
 }
 
 void LIMID::SetValueCost(TokArr value, TokArr prob, TokArr parentValue)
 {
-    Net().Distributions()->FillData(value, prob, parentValue);
+    Net().Distributions().FillData(value, prob, parentValue);
 }
 
 TokArr LIMID::GetPChance(TokArr value, TokArr parents)
@@ -198,16 +198,31 @@ TokArr LIMID::GetPolitics()
 }
 
 //= private functions  =================================================
+
+void LIMID::DoNotify(const Message &msg)
+{
+    switch(msg.MessageId())
+    {
+    case Message::eSetModelInvalid:
+	m_Inf->Release(&m_Inf);
+	m_Inf = 0;
+	break;
+    default:
+	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
+	return;
+    }
+}
+
 pnl::CMatrix<float> *LIMID::Matrix(int iNode) const
 {
-    pnl::CMatrix<float> *mat = Net().Distributions()->Distribution(iNode)->Matrix(pnl::matTable);
+    pnl::CMatrix<float> *mat = Net().Distributions().Distribution(iNode)->Matrix(pnl::matTable);
 
     return mat;
 }
 
 pnl::CIDNet *LIMID::Model()
 {
-    return static_cast<pnl::CIDNet*>(Net().Model());
+    return static_cast<pnl::CIDNet*>(&Net().Model());
 }
 
 pnl::CLIMIDInfEngine & LIMID::Inference()
@@ -277,8 +292,8 @@ TokArr LIMID::GetP(TokArr child, TokArr parents)
     }
     else
     {
-        Net().Graph()->Graph()->GetParents( childNdInner.front(), &parentNdsInner );
-        Net().Graph()->IOuter( &parentNdsInner, &parentNds);
+        Net().Graph().Graph()->GetParents( childNdInner.front(), &parentNdsInner );
+        Net().Graph().IOuter( &parentNdsInner, &parentNds);
         nparents = parentNds.size();
         parentVls.assign(nparents, -1);
     }

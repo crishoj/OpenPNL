@@ -32,7 +32,7 @@ namespace pnl
 
 PNLW_BEGIN
 
-class PNLHIGH_API ProbabilisticNet: protected ModelEngine
+class PNLHIGH_API ProbabilisticNet: public ModelEngine
 {
 public:
     ProbabilisticNet(const char *netType = "bnet");
@@ -92,13 +92,11 @@ public:
     bool IsNode(Tok &node) const;
     WEvidence *EvidenceBoard() { return &m_EvidenceBoard; }
     Vector<pnl::CEvidence *> *EvidenceBuf() { return &m_aEvidence; }
-    virtual void DoNotify(int message, int iNode, ModelEngine *pObj) {/* realize! */}
 
 public:// Bayes node name (or TokIdNode) <-> index
     String NodeName(int iNode) const;
     int NodeIndex(const char *name) const;
     int NodeIndex(TokIdNode *name) const;
-    TokIdNode *TokNodeByIndex(int i) const;
     String DiscreteValue(int iNode, int value) const;
     void ExtractTokArr(TokArr &aNode, Vector<int> *paiNode,
 	Vector<int> *paiValue, IIMap *pMap = 0) const;
@@ -117,11 +115,16 @@ public:
 //    void SetTopologicalOrder(const int *renaming, pnl::CGraph *pnlGraph);
 
 public:// inlines for access to object fields
-    WGraph *Graph() const { return m_pGraph; }
-    TokenCover *Token() const { return m_pTokenCov; }
-    WDistributions *Distributions() const { return m_paDistribution; }
-    pnl::CGraphicalModel *Model();
+    WGraph &Graph() const { return *m_pGraph; }
+    TokenCover &Token() const { return *m_pTokenCov; }
+    WDistributions &Distributions() const { return *m_paDistribution; }
+    pnl::CGraphicalModel &Model();
     Tok ConvertMatrixToToken(const pnl::CMatrix<float> *mat);
+
+private:
+    virtual void DoNotify(const Message &msg);
+    void SetModelInvalid();
+    bool IsModelValid() const { return m_bModelValid; }
 
 private:// DATA members
     // Tree for bnet:
@@ -130,6 +133,7 @@ private:// DATA members
     // bnet - nodes
     //		   \ continuous
     pnl::CGraphicalModel *m_Model;	    // model, if it exists
+    bool m_bModelValid;			    // validity flag for model m_Model
     WEvidence m_EvidenceBoard;		    // board for evidence (see diagram for evidence buffer)
     Vector<pnl::CEvidence *> m_aEvidence;   // buffer for evidences
     WDistributions *m_paDistribution;	    // It holds all distributions
@@ -142,6 +146,7 @@ private:// DATA members
 
     NetCallback *m_pCallback;		    // pointer to object which creates model,
 					    // generates evidences for concrete net type
+    bool m_bIgnoreUnknownVariable;	    // should we ignore unknown variables
 };
 
 PNLW_END

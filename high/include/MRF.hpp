@@ -4,6 +4,7 @@
 #include <string>
 #include "pnlHighConf.hpp"
 #include "pnlTok.hpp"
+#include "ModelEngine.hpp"
 
 // FORWARDS
 PNLW_BEGIN
@@ -29,7 +30,7 @@ namespace pnl
 
 PNLW_BEGIN
 
-class PNLHIGH_API MRF
+class PNLHIGH_API MRF: public ModelEngine
 {
 public:
     MRF();
@@ -127,18 +128,19 @@ private:
     pnl::CMatrix<float> *Matrix(int iNode) const;
     pnl::CInfEngine &Inference();
     pnl::CStaticLearningEngine &Learning();
-    void CreateModel();
     pnl::CMNet *Model();
 
     void SetInferenceProperties(TokArr &nodes);
     void SetParamLearningProperties();
     const char PropertyAbbrev(const char *name) const;
     TokArr GetFullScale(TokArr aValue) const;
-//    void RebindFrom(BayesNet *bnet);
+
+    // handles messages - from ModelEngine interface
+    virtual void DoNotify(const Message &msg);
 
 private:// DATA members
     pnl::CInfEngine *m_Inference;// inference, if it exists
-    pnl:: CStaticLearningEngine *m_Learning;   // learning, if it exists
+    pnl::CStaticLearningEngine *m_Learning;   // learning, if it exists
     int m_nLearnedEvidence;
 
     ProbabilisticNet *m_pNet;

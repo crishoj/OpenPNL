@@ -1,7 +1,8 @@
 #include "DBN.hpp"
+#include "pnlWProbabilisticNet.hpp"
+#include "BNet.hpp"
 #include "WInner.hpp"
 #include "Wcsv.hpp"
-#include "pnlWProbabilisticNet.hpp"
 #include "pnlWDistributions.hpp"
 #include "pnlWGraph.hpp"
 #include "WDistribFun.hpp"
@@ -42,7 +43,7 @@ DBN::DBN(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
     
     m_pNet = new ProbabilisticNet();
     m_pNet->SetCallback(new DBNCallback());
-    m_pNet->Token()->AddProperty("Inference", aInference,
+    m_pNet->Token().AddProperty("Inference", aInference,
 	sizeof(aInference)/sizeof(aInference[0]));
 }
 
@@ -61,11 +62,11 @@ void DBN::AddNode(TokArr nodes, TokArr subnodes)
     {
 	TopologicalSortDBN *pSort = new TopologicalSortDBN();
 	pSort->SetMapping(GetSlicesNodesCorrespInd());
-	Net().Graph()->SetSorter(pSort);
+	Net().Graph().SetSorter(pSort);
     }
     else
     {
-	Net().Graph()->SetSorter(0);
+	Net().Graph().SetSorter(0);
     }
 }
 
@@ -143,15 +144,15 @@ static int cmpTokIdNode(TokIdNode *node1, TokIdNode *node2)
 // It is inner DistribFun
 void DBN::SetPTabular(TokArr value, TokArr prob, TokArr parentValue)
 {
-    Net().Distributions()->FillData(value, prob, parentValue);
+    Net().Distributions().FillData(value, prob, parentValue);
 }
 
 void DBN::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)
 {
-    Net().Distributions()->FillData(node, mean, TokArr(), pnl::matMean);
-    Net().Distributions()->FillData(node, variance, TokArr(), pnl::matCovariance);
+    Net().Distributions().FillData(node, mean, TokArr(), pnl::matMean);
+    Net().Distributions().FillData(node, variance, TokArr(), pnl::matCovariance);
     if (weight.size() != 0)
-        Net().Distributions()->FillData(node, weight, TokArr(), pnl::matWeights);
+        Net().Distributions().FillData(node, weight, TokArr(), pnl::matWeights);
 }
 
 TokArr DBN::GetGaussianMean(TokArr vars)
@@ -276,7 +277,7 @@ TokArr DBN::GetPTabular(TokArr child, TokArr parents)
     }
     else
     {
-	Net().Graph()->Graph()->GetParents( childNd.front(), &parentNds );
+	Net().Graph().Graph()->GetParents( childNd.front(), &parentNds );
 	nparents = parentNds.size();
 	parentVls.assign(nparents, -1);
     }
@@ -285,7 +286,7 @@ TokArr DBN::GetPTabular(TokArr child, TokArr parents)
     parentVls.resize(nparents + 1);
     
     int node = childNd.front();
-    const pnl::CMatrix<float> *mat = Net().Distributions()->Distribution(node)->Matrix(0,0);
+    const pnl::CMatrix<float> *mat = Net().Distributions().Distribution(node)->Matrix(0,0);
     
     TokArr result = "";
     int i;
@@ -423,7 +424,7 @@ TokArr DBN::GetJPD( TokArr nodes)
     /*
 	if (nSlice <= 1)  
     {
-	Net().Token()->Resolve(res);
+	Net().Token().Resolve(res);
     }
 	*/
     res = ConvertBNetQueToDBNQue(res,nSlice);
@@ -504,11 +505,11 @@ void DBN::LearnParameters()
     
     Learning().SetData(static_cast<const pnl::pEvidencesVecVector>(m_AllEvidences));
     Learning().Learn();
-    for (i = 0; i < Net().Graph()->iNodeMax(); i++)
+    for (i = 0; i < Net().Graph().iNodeMax(); i++)
     {
-	if(Net().Graph()->IsValidINode(i))
+	if(Net().Graph().IsValidINode(i))
 	{
-	    Net().Distributions()->ResetDistribution(i, *Net().Model()->GetFactor(Net().Graph()->IGraph(i)));
+	    Net().Distributions().ResetDistribution(i, *Net().Model().GetFactor(Net().Graph().IGraph(i)));
 	}
     }
 }
@@ -604,7 +605,7 @@ TokArr DBN::GetMPE(TokArr nodes)
 	}
 
 	if (Net().pnlNodeType(queryNds[i]).IsDiscrete())
-	    result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v.GetInt()));
+	    result.push_back(Net().Token().TokByNodeValue(queryNds[i], v.GetInt()));
 	else
 	    result.push_back(v.GetFlt());
     }
@@ -666,7 +667,7 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 	    {
 		continue;
 	    }
-	    String colName(Net().NodeName(Net().Graph()->IOuter(iCol)));
+	    String colName(Net().NodeName(Net().Graph().IOuter(iCol)));
 	    String tmpStr;
 	    const pnl::CNodeType &nt = *Model()->GetNodeType(iCol);
 
@@ -682,7 +683,7 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 		for(i = 0; i < nt.GetNodeSize(); ++i)
 		{
 		    subColName = colName;
-		    subColName << "^" <<Net().Token()->Value(Net().Graph()->IOuter(iCol), i);
+		    subColName << "^" <<Net().Token().Value(Net().Graph().IOuter(iCol), i);
 		    tmpStr = GetShortName(subColName);
 		    lex.PutValue(tmpStr);
 		}
@@ -907,7 +908,7 @@ void DBN::GenerateEvidences(TokArr numSlices)
 
 pnl::CMatrix<float> *DBN::Matrix(int iNode) const
 {
-    pnl::CMatrix<float> *mat = Net().Distributions()->Distribution(iNode)->Matrix(pnl::matTable);
+    pnl::CMatrix<float> *mat = Net().Distributions().Distribution(iNode)->Matrix(pnl::matTable);
     
     return mat;
 }
@@ -932,7 +933,7 @@ pnl::CDynamicLearningEngine &DBN::Learning()
 
 pnl::CDBN *DBN::Model()
 {
-    return static_cast<pnl::CDBN*>(Net().Model());
+    return static_cast<pnl::CDBN*>(&Net().Model());
 }
 
 void DBN::SetProperty(const char *name, const char *value)
@@ -1253,13 +1254,13 @@ BayesNet* DBN::Unroll()
     {
 	for(j = 0; j < nNodes; j++)
 	{
-	    tmpName = Net().Graph()->NodeName(j);
+	    tmpName = Net().Graph().NodeName(j);
 	    newName = GetShortName(tmpName);
 	    newName << "-";
 	    fullName = Net().GetNodeType(tmpName); 
 	    newName << i;
 	    fullName << "^" << newName;
-	    Net().Token()->GetValues(j,values);
+	    Net().Token().GetValues(j,values);
 	    TokArr nodeValues;
 	    for(k = 0; k < values.size(); k++)
 	    {
@@ -1281,7 +1282,7 @@ pnl::intVector DBN::GetSlicesNodesCorrespInd()
     Vector<String> names;
 
     j = 0;
-    names = Net().Graph()->Names();
+    names = Net().Graph().Names();
     indexes.resize(names.size());
     numNodesPerSlice = names.size() / 2;
 
@@ -1292,8 +1293,8 @@ pnl::intVector DBN::GetSlicesNodesCorrespInd()
 	{
 	    NodeNameS1 = GetShortName(names[i]);
 	    NodeNameS1<<"-1";
-	    indexes[j] = Net().Graph()->INode(names[i]);
-	    indexes[j + numNodesPerSlice] = Net().Graph()->INode(NodeNameS1); 
+	    indexes[j] = Net().Graph().INode(names[i]);
+	    indexes[j + numNodesPerSlice] = Net().Graph().INode(NodeNameS1); 
 	    j++;
 	}
     }
@@ -1309,7 +1310,7 @@ bool DBN::IsFullDBN()
     Vector<String> names;
 	
     j = 0;
-    names = Net().Graph()->Names();
+    names = Net().Graph().Names();
     indexes.resize(names.size());
     numberOfNodes = names.size();
 
@@ -1319,7 +1320,7 @@ bool DBN::IsFullDBN()
 	{
 	    NodeNameS1 = GetShortName(names[i]);
 	    NodeNameS1<<"-1";
-	    if( Net().Graph()->INode(NodeNameS1) == -1)
+	    if( Net().Graph().INode(NodeNameS1) == -1)
 	    {
 		return false;
 	    }
@@ -1335,7 +1336,7 @@ bool DBN::IsDBNContainNode(TokArr node)
     Vector<String> names;
 
     String nodeName = String(node);
-    names = Net().Graph()->Names();
+    names = Net().Graph().Names();
     numberOfNodes = names.size();
     
     for(i = 0; i < numberOfNodes; i++)
@@ -1346,6 +1347,22 @@ bool DBN::IsDBNContainNode(TokArr node)
 	}
     }
     return false;
+}
+
+void DBN::DoNotify(const Message &msg)
+{
+    switch(msg.MessageId())
+    {
+    case Message::eSetModelInvalid:
+	delete m_Learning;
+	m_Learning = 0;
+	delete m_Inference;
+	m_Inference = 0;
+	break;
+    default:
+	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
+	return;
+    }
 }
 
 PNLW_END

@@ -6,12 +6,9 @@
 
 PNLW_BEGIN
 
-// ModelEngine is base class for all interacting entities under cover
-// of user class (Graph object or Distribution object for example)
-//
-// Purpose of ModelEngine - to deliver message about model changing to all
-// objects who interested in it
-class PNLHIGH_API ModelEngine
+class ModelEngine;
+
+class PNLHIGH_API Message
 {
 public:
     typedef enum
@@ -20,12 +17,36 @@ public:
     ,	eDelNode		= 4
     ,	eInit			= 8
     ,	eChangeName		= 16
+    ,	eSetModelInvalid	= 32
     };
 
+    Message(int messageId, ModelEngine *sender, int i = -1):
+    m_MessageId(messageId), m_Sender(sender), m_IntArg(i) {}
+
+    int MessageId()	    const { return m_MessageId; }
+    ModelEngine &Sender()   const { return *m_Sender; }
+    int IntArg()	    const { return m_IntArg; }
+    virtual ~Message() {}
+
+private:
+    int m_MessageId;
+    ModelEngine *m_Sender;
+    int m_IntArg;
+};
+
+// ModelEngine is base class for all interacting entities under cover
+// of user class (Graph object or Distribution object for example)
+//
+// Purpose of ModelEngine - to deliver message about model changing to all
+// objects who interested in it
+class PNLHIGH_API ModelEngine
+{
+public:
     ModelEngine(): m_MaskMessage(0) {}
     virtual ~ModelEngine();
-    void Notify(int message, int iNode)
+    void Notify(int message, int iNode = -1)
     {
+	Message msg(message, this, iNode);
 	MaskAddOrDelete(message, true);// temporary mask message
 	for(int i = m_apSpy.size(); --i >= 0;)
 	{
@@ -33,13 +54,11 @@ public:
 
 	    if(message & engine.InterestedIn() & (~engine.Mask()))
 	    {
-		engine.DoNotify(message, iNode, this);
+		engine.DoNotify(msg);
 	    }
 	}
 	MaskAddOrDelete(message, false);// unmask message, previously masked
     }
-    virtual void DoNotify(int message, int iNode, ModelEngine *pObj) = 0;
-    virtual int InterestedIn() const { return 127; /* all messages */ }
     void SpyTo(ModelEngine *pSpy)
     {
 	pSpy->m_apSpy.push_back(this);
@@ -68,6 +87,9 @@ public:
 	}
     }
 
+protected:
+    virtual void DoNotify(const Message &msg) = 0;
+    virtual int InterestedIn() const { return 127; /* all messages */ }
     // With masks we can temporary stop handling of some messages
     void MaskAddOrDelete(int mask, bool bAdd)
     {

@@ -36,10 +36,11 @@ BayesNet::BayesNet(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
     };
 
     m_pNet = new ProbabilisticNet();
+    SpyTo(m_pNet);
     m_pNet->SetCallback(new BayesNetCallback());
-    m_pNet->Token()->AddProperty("Inference", aInference,
+    m_pNet->Token().AddProperty("Inference", aInference,
 	sizeof(aInference)/sizeof(aInference[0]));
-    m_pNet->Token()->AddProperty("Learning", aLearning,
+    m_pNet->Token().AddProperty("Learning", aLearning,
 	sizeof(aLearning)/sizeof(aLearning[0]));
 }
 
@@ -47,6 +48,7 @@ BayesNet::~BayesNet()
 {
     delete m_Inference;
     delete m_Learning;
+    StopSpyTo(m_pNet);
     delete m_pNet;
 }
 
@@ -100,16 +102,16 @@ static int cmpTokIdNode(TokIdNode *node1, TokIdNode *node2)
 // It is inner DistribFun
 void BayesNet::SetPTabular(TokArr value, TokArr prob, TokArr parentValue)
 {
-    Net().Distributions()->FillData(value, prob, parentValue);
+    Net().Distributions().FillData(value, prob, parentValue);
 }
 
 void BayesNet::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)
 {
-    Net().Distributions()->FillData(node, mean, TokArr(), pnl::matMean);
-    Net().Distributions()->FillData(node, variance, TokArr(), pnl::matCovariance);
+    Net().Distributions().FillData(node, mean, TokArr(), pnl::matMean);
+    Net().Distributions().FillData(node, variance, TokArr(), pnl::matCovariance);
     if (weight.size() != 0)
     {
-        Net().Distributions()->FillData(node, weight, TokArr(), pnl::matWeights);
+        Net().Distributions().FillData(node, weight, TokArr(), pnl::matWeights);
     }
 }
 
@@ -124,7 +126,7 @@ TokArr BayesNet::GetGaussianMean(TokArr node)
     }
 
     Vector<int> queryNds, queryVls;
-    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph()->MapOuterToGraph());
+    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph().MapOuterToGraph());
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
@@ -165,7 +167,7 @@ TokArr BayesNet::GetGaussianCovar(TokArr node)
     }
 
     Vector<int> queryNds, queryVls;
-    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph()->MapOuterToGraph());
+    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph().MapOuterToGraph());
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
@@ -218,10 +220,10 @@ TokArr BayesNet::GetGaussianWeights(TokArr node, TokArr parent)
     }
 
     Vector<int> queryNdsOuter, queryVls;
-    Net().ExtractTokArr(node, &queryNdsOuter, &queryVls, &Net().Graph()->MapOuterToGraph());
+    Net().ExtractTokArr(node, &queryNdsOuter, &queryVls, &Net().Graph().MapOuterToGraph());
 
     Vector<int> parentsOuter;
-    Net().ExtractTokArr(parent, &parentsOuter, &queryVls, &Net().Graph()->MapOuterToGraph());
+    Net().ExtractTokArr(parent, &parentsOuter, &queryVls, &Net().Graph().MapOuterToGraph());
     
     int iNode = queryNdsOuter[0];
     int iParent = parentsOuter[0];
@@ -278,7 +280,7 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
     int i;
     Net().ExtractTokArr(child, &childNd, &childVl);
 
-    Net().Graph()->IGraph( &childNd, &childNdInner);
+    Net().Graph().IGraph( &childNd, &childNdInner);
 
     // node for all child must be same (its may differ by combination only)
     for(i = childNd.size(); --i > 0; ++i)
@@ -300,7 +302,7 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
     if( nparents )
     {
 	Net().ExtractTokArr(parents, &parentNds, &parentVls);
-	Net().Graph()->IGraph( &parentNds, &parentNdsInner);
+	Net().Graph().IGraph( &parentNds, &parentNdsInner);
 	if( parentVls.size() == 0 ||
 	    std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
 	{
@@ -309,8 +311,8 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
     }
     else
     {
-	Net().Graph()->Graph()->GetParents( childNdInner.front(), &parentNdsInner );
-	Net().Graph()->IOuter( &parentNdsInner, &parentNds);
+	Net().Graph().Graph()->GetParents( childNdInner.front(), &parentNdsInner );
+	Net().Graph().IOuter( &parentNdsInner, &parentNds);
 	nparents = parentNds.size();
 	parentVls.assign(nparents, -1);
     }
@@ -331,7 +333,7 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
 	result << Net().CutReq( parentNds, parentVls, mat);
     }
 
-    Net().Token()->SetContext(result);
+    Net().Token().SetContext(result);
     return result;
 }
 
@@ -509,7 +511,7 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     }
     
     delete evid;
-    Net().Token()->SetContext(res);
+    Net().Token().SetContext(res);
     return res;
 }
 
@@ -592,11 +594,11 @@ void BayesNet::LearnParameters(TokArr aSample[], int nSample)
 
     SetParamLearningProperties();
     Learning().Learn();
-    for (i = 0; i < Net().Graph()->iNodeMax(); i++)
+    for (i = 0; i < Net().Graph().iNodeMax(); i++)
     {
-	if(Net().Graph()->IsValidINode(i))
+	if(Net().Graph().IsValidINode(i))
 	{
-	    Net().Distributions()->ResetDistribution(i, *Net().Model()->GetFactor(Net().Graph()->IGraph(i)));
+	    Net().Distributions().ResetDistribution(i, *Net().Model().GetFactor(Net().Graph().IGraph(i)));
 	}
     }
 }
@@ -634,9 +636,9 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 
     Net().SetTopologicalOrder(pRenaming, newNet->GetGraph());
 
-    for(i = 0; i < Net().Graph()->nNode(); ++i)
+    for(i = 0; i < Net().Graph().nNode(); ++i)
     {
-	Net().Distributions()->ResetDistribution(i, *newNet->GetFactor(i));
+	Net().Distributions().ResetDistribution(i, *newNet->GetFactor(i));
     }
 
     //change ordering in current stuff
@@ -646,7 +648,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     //new network to old ordering. So we would not have to do all below
 
     int nnodes = newNet->GetNumberOfNodes();
-    Net().Token()->RenameGraph(pRenaming);
+    Net().Token().RenameGraph(pRenaming);
 
     //clear learning engine
     delete m_Learning;
@@ -730,7 +732,7 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 	}
 
         if (Net().pnlNodeType(queryNds[i]).IsDiscrete())
-            result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v->GetInt()));
+            result.push_back(Net().Token().TokByNodeValue(queryNds[i], v->GetInt()));
         else
 	{
 	    int size = Net().pnlNodeType(queryNds[i]).GetNodeSize();
@@ -746,7 +748,7 @@ TokArr BayesNet::GetMPE(TokArr nodes)
     }
 
     delete evid;
-    Net().Token()->SetContext(result);
+    Net().Token().SetContext(result);
 
     return result;
 }
@@ -825,12 +827,20 @@ void BayesNet::MaskEvidBuf(TokArr whatNodes)
 
 //= private functions  =================================================
 
-
-pnl::CMatrix<float> *BayesNet::Matrix(int iNode) const
+void BayesNet::DoNotify(const Message &msg)
 {
-    pnl::CMatrix<float> *mat = Net().Distributions()->Distribution(iNode)->Matrix(pnl::matTable);
-
-    return mat;
+    switch(msg.MessageId())
+    {
+    case Message::eSetModelInvalid:
+	delete m_Learning;
+	m_Learning = 0;
+	delete m_Inference;
+	m_Inference = 0;
+	break;
+    default:
+	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
+	return;
+    }
 }
 
 pnl::CInfEngine &BayesNet::Inference()
@@ -985,7 +995,7 @@ pnl::CStaticLearningEngine &BayesNet::Learning()
 
 pnl::CBNet *BayesNet::Model()
 {
-    return static_cast<pnl::CBNet*>(Net().Model());
+    return static_cast<pnl::CBNet*>(&Net().Model());
 }
 
 void BayesNet::SetProperty(const char *name, const char *value)

@@ -4,6 +4,7 @@
 #include <string>
 #include "pnlHighConf.hpp"
 #include "pnlTok.hpp"
+#include "ModelEngine.hpp"
 
 // FORWARDS
 PNLW_BEGIN
@@ -26,7 +27,7 @@ namespace pnl
 
 PNLW_BEGIN
 
-class PNLHIGH_API LIMID
+class PNLHIGH_API LIMID: public ModelEngine
 {
 public:
     LIMID();
@@ -72,6 +73,9 @@ private:
     pnl::CLIMIDInfEngine& Inference();
     pnl::CIDNet *Model();
     TokArr GetP(TokArr value, TokArr parents = TokArr());
+
+    // handles messages - from ModelEngine interface
+    virtual void DoNotify(const Message &msg);
 
 private:// DATA members
 

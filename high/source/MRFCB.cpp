@@ -21,7 +21,7 @@ pnl::CGraphicalModel *MRFCallback::CreateModel(ProbabilisticNet &net)
     GetNodeInfo(&aNodeType, &aNodeAssociation, net);
 
     // set cliques
-    Vector<Vector<int> > cliques = net.Distributions()->Cliques().Cliques();
+    Vector<Vector<int> > cliques = net.Distributions().Cliques().Cliques();
 
     bool isMRF2 = true;
     for(i = 0; i < cliques.size(); i++)
@@ -47,12 +47,12 @@ pnl::CGraphicalModel *MRFCallback::CreateModel(ProbabilisticNet &net)
     // attach parameters
     for(i = 0; i < cliques.size(); i++)
     {
-	WDistribFun *pWDF = net.Distributions()->Distribution(i);
+	WDistribFun *pWDF = net.Distributions().Distribution(i);
         PNL_CHECK_IS_NULL_POINTER(pWDF);
 
         pnlNet->AllocFactor(i);
 
-        if (net.Distributions()->DistributionType(i).IsDiscrete())
+        if (net.Distributions().DistributionType(i).IsDiscrete())
         {
             pnl::CDenseMatrix<float> *mat = dynamic_cast<WTabularDistribFun*>(pWDF)->Matrix(0);
             PNL_CHECK_IS_NULL_POINTER(mat);
@@ -68,7 +68,7 @@ void MRFCallback::GenerateSamples(ProbabilisticNet &net,
 					pnl::pEvidencesVector *newSamples,
 					int nSample, pnl::CEvidence *evid)
 {
-    static_cast<pnl::CMNet*>(net.Model())->GenerateSamples( newSamples,
+    static_cast<pnl::CMNet&>(net.Model()).GenerateSamples( newSamples,
 	nSample, evid);
 }
 
