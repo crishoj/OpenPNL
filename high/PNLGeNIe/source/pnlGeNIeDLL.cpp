@@ -39,28 +39,6 @@ public:
     virtual void Delete();
 
 private:
-#if 0
-    class ScopedElement
-    {
-    public:	
-	ScopedElement(IXmlWriter *writer, const char *name)
-	{
-	    this->writer = writer;
-	    this->name = name;
-	    writer->OpenElement(name);
-	}
-
-	~ScopedElement()
-	{
-	    writer->CloseElement(name.c_str());
-	}
-
-    private:
-	std::string name;
-	IXmlWriter *writer;
-    };
-#endif
-
     FILE *m_pFile;
     std::vector<pnl::pnlString> m_aElement;
 };
@@ -159,3 +137,7 @@ void IXmlWriterPNLH::Delete()
 {
     delete this;
 }
+
+#if 0
+class 
+#endif

@@ -150,7 +150,17 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
     }
 
     Vector<int> childNd, childVl;
+    int i;
     Net().ExtractTokArr(child, &childNd, &childVl);
+
+    // node for all child must be same (its may differ by combination only)
+    for(i = childNd.size(); --i > 0; ++i)
+    {
+	if(childNd[i] != childNd[0])
+	{
+	    ThrowUsingError("Can't return probabilities for different nodes", fname);
+	}
+    }
 
     if( !childVl.size())
     {
@@ -182,7 +192,6 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matTable);
     
     TokArr result = "";
-    int i;
     for( i = 0; i < nchldComb; i++ )
     {
 	parentNds[nparents] = childNd.front();
