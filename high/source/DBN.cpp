@@ -1188,7 +1188,7 @@ TokArr DBN::GetChildren(TokArr nodes)
 	if(nSlice != 0)
 	{	    
 	    tmpStr = GetShortName(tmpStr);
-	    tmpStr<<"-0";
+	    tmpStr<<"-1";
 	    const char *s = tmpStr.c_str();
 
 	    NewQue1.push_back(tmpStr);
