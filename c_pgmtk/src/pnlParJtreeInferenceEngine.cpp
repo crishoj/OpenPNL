@@ -388,18 +388,84 @@ void CParJtreeInfEngine::EnterEvidenceOMP(const CEvidence *pEvidence,
     PNL_CHECK_IS_NULL_POINTER(pEvidence);
     PNL_CHECK_RANGES( maximize, 0, 2 );
 
-    if( pEvidence->GetModelDomain() != m_pGraphicalModel->GetModelDomain() )
+
+	if( pEvidence->GetModelDomain() != m_pGraphicalModel->GetModelDomain() )
+	{
+		PNL_THROW( CInvalidOperation, 
+			"evidence and the Graphical Model must be on one Model Domain" );
+	}
+	// bad-args check end
+	
+	if (GetModel()->GetModelType() == mtBNet)
     {
-        PNL_THROW( CInvalidOperation, 
-            "evidence and the Graphical Model must be on one Model Domain" );
-    }
-    // bad-args check end
+		ShrinkObservedOMP( pEvidence, maximize, sumOnMixtureNode );
+		
+		CJunctionTree *jtree = GetJTree();
 
-    ShrinkObservedOMP( pEvidence, maximize, sumOnMixtureNode );
+		int i = 0; 
+		int nNodes = jtree->GetNumberOfNodes();
+		int isJtDiscr = -1;
+		do
+		{
+			EDistributionType potDt = jtree->GetNodePotential(i)->
+				GetDistribFun()->GetDistributionType();
+			switch (potDt)
+			{
+			case dtTabular:
+				isJtDiscr = 1;
+				break;
+			case dtGaussian:
+				isJtDiscr = 0;
+				break;
+			case dtScalar:
+			case dtUnitFunction:
+				i++;
+				break;
+			default:
+				{
+					PNL_THROW( CInvalidOperation, "invalid potential" );
+				}
+			}
+		} while (isJtDiscr == -1 && i < nNodes);
 
-    CollectEvidenceOMP();
+		if (isJtDiscr)
+		{
+			CollectEvidenceOMP();
+		}
+		else
+		{
+			CollectEvidenceOMP_gau();
+		}
+		
+		DistributeEvidenceOMP();
 
-    DistributeEvidenceOMP();
+#pragma omp parallel for schedule(dynamic) private(i)
+		for (i = 0; i < nNodes; i++)
+		{
+			CDistribFun *df = jtree->GetNodePotential(i)->GetDistribFun();
+			EDistributionType dt = df->GetDistributionType();
+			if(dt == dtGaussian)
+			{
+				static_cast<CGaussianDistribFun*>(df)->UpdateCanonicalCoefficient();
+			}
+		}
+		
+		bool allDiscrObs = pEvidence->IsAllDiscreteNodesObs(GetModel());
+		if (allDiscrObs)
+		{
+			for (i = 0; i < GetModel()->GetNumberOfNodes(); i++)
+			{
+				if (GetModel()->GetFactor(i)->GetDistributionType() == dtSoftMax)
+				{
+					GetModel()->GetModelDomain()->ChangeNodeType(i, 0);
+				}
+			}
+		}
+	}
+	else
+	{
+	    PNL_THROW(CNotImplemented, "for BNets only");
+	}
 }
 #endif // PAR_OMP
 // ----------------------------------------------------------------------------
@@ -637,6 +703,105 @@ void CParJtreeInfEngine::CollectEvidenceOMP()
             nodesSentMessages[*sourceIt] = true;
         }
     }
+
+    m_lastOpDone = opsCollect;
+}
+#endif // PAR_OMP
+// ----------------------------------------------------------------------------
+
+#ifdef PAR_OMP
+void CParJtreeInfEngine::CollectEvidenceOMP_gau()
+{
+    int j;
+    
+    SetNormalizeCoefficient(1.0f);
+	RebuildTreeFromRoot();
+
+    const int NumVertex = GetOriginalJTree()->GetNumberOfNodes();
+    omp_lock_t queue_lock, *parents_lock;
+    parents_lock = new omp_lock_t[NumVertex];
+
+    omp_init_lock(&queue_lock);
+    for (j = 0; j < NumVertex; j++)
+        omp_init_lock(&parents_lock[j]);
+    
+    InitQueueNodesOMP();
+    InitNodeConditionsAndUpdateRatios();
+    SetNbrsTypes();
+    
+    const CGraph *pGraph = GetOriginalJTree()->GetGraph();
+#pragma omp parallel
+    {
+        int i;
+        int currNode;
+        int ValueOfSummator;
+        intVector Parents(0);
+        int                 numOfNbrs1;
+        const int           *nbrs1;
+        const ENeighborType *nbrsTypes1;
+        int poschild;
+        int                 numOfNbrs;
+        const int           *nbrs;
+        const ENeighborType *nbrsTypes;
+        int       numNdsInSepDom;
+        while (!m_QueueNodes.empty())
+        {
+            omp_set_lock(&queue_lock);
+            if (m_QueueNodes.empty()) 
+            { 
+                omp_unset_lock(&queue_lock);
+                continue; 
+            }
+            currNode = m_QueueNodes.front();
+            m_QueueNodes.pop();
+            omp_unset_lock(&queue_lock);
+            
+            ValueOfSummator=m_NodeConditions[currNode].begin()[m_NodeConditions[currNode].size()-1]; 
+            if (ValueOfSummator==0)
+            {	
+                if (currNode != GetJTreeRootNode())
+                {
+                    GetParents(currNode,&Parents);	
+                    
+                    omp_set_lock(&parents_lock[Parents.begin()[0]]);
+                    
+                    PropagateBetweenClqs(currNode, Parents.begin()[0], 1);
+                    
+                    omp_unset_lock(&parents_lock[Parents.begin()[0]]);
+                    
+                    pGraph->GetNeighbors( Parents.begin()[0], &numOfNbrs1, &nbrs1, &nbrsTypes1 );
+                    poschild=0;
+                    while (poschild < numOfNbrs1 && nbrs1[poschild] != currNode)
+                        poschild++;//?????? ????? currNode
+                    m_NodeConditions[Parents.begin()[0]].begin()[poschild] = 1;
+                }
+            }
+            else
+            {
+                
+                for (i = 0; i < m_NodeConditions[currNode].size() - 1; i++)
+                {
+                    if (m_NodeConditions[currNode].begin()[i] == 1)
+                    {
+                        m_NodeConditions[currNode].begin()[i] = 2;
+                        --m_NodeConditions[currNode].begin()[m_NodeConditions[currNode].size() - 1];
+                    }
+                }// ??? 1 ??????????
+                
+                omp_set_lock(&queue_lock);
+                m_QueueNodes.push(currNode);
+                omp_unset_lock(&queue_lock);
+                
+            }
+        } //while
+    } //parallel section
+
+    omp_destroy_lock(&queue_lock);
+    for (j = 0; j < NumVertex; j++)
+    {
+        omp_destroy_lock(&parents_lock[j]);
+    }
+    delete [] parents_lock;
 
     m_lastOpDone = opsCollect;
 }
@@ -1262,6 +1427,25 @@ void CParJtreeInfEngine::DoPropagateOMP(
 
     delete [] offsets;
     delete [] sum_par;
+}
+#endif // PAR_OMP
+// ----------------------------------------------------------------------------
+
+#ifdef PAR_OMP
+void CParJtreeInfEngine::InitQueueNodesOMP()
+{
+    intVector::const_iterator sourceIt, source_end;
+    intVecVector::const_iterator layerIt = GetCollectSequence().begin(),
+        collSeq_end = GetCollectSequence().end();
+	
+    for(; layerIt != collSeq_end; ++layerIt)
+    {
+        for(sourceIt = layerIt->begin(), source_end = layerIt->end();
+        sourceIt != source_end; ++sourceIt)
+        {
+			m_QueueNodes.push(*sourceIt);
+        }
+    }
 }
 #endif // PAR_OMP
 // ----------------------------------------------------------------------------
