@@ -44,6 +44,9 @@ public:
     void Cast(const CPotential * pot, int node, int ev, float *** full_evid);
     EMaximizingMethod GetMaximizingMethod();
 
+	const float* GetFamilyLogLik()const;  
+	void LearnExtraCPDs(int nMaxFamily, pCPDVector* additionalCPDs, floatVector* additionalLLs);
+
 protected:
     CEMLearningEngine(CStaticGraphicalModel *pGrModel, CInfEngine *pInfEng,
   ELearningTypes LearnType );
@@ -68,6 +71,9 @@ private:
     int m_maxIterEM;
     float m_precisionEM;
     EMaximizingMethod m_MaximizingMethod;
+
+	floatVector m_vFamilyLogLik; 
+
 };
 
 #ifndef SWIG

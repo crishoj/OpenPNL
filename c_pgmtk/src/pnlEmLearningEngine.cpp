@@ -457,6 +457,94 @@ void CEMLearningEngine::Learn()
 
 }
 
+void CEMLearningEngine::LearnExtraCPDs(int nMaxFamily, pCPDVector* additionalCPDs, floatVector* additionalLLs)
+{
+/*
+	function takes an information from m_pEvidences and learns parameters & additional CPDs
+	of graphical model using prior probabilities or not, do just 1 step em learning
+	It must be execute after the Learn() function called
+	Currently it does not support SoftMax distribution
+*/
+    CStaticGraphicalModel *pGrModel =  this->GetStaticModel();
+    PNL_CHECK_IS_NULL_POINTER(pGrModel);
+    PNL_CHECK_LEFT_BORDER(GetNumEv(), 1);
+
+	int numberOfFactors = pGrModel->GetNumberOfFactors();
+	int numberOfAddFactors = additionalCPDs->size();
+
+	float	loglik, ll;
+    int		i, ev;
+    const CEvidence* pEv;
+
+    CFactor *factor = NULL;
+	int nnodes;
+	const int * domain;
+	bool bInfIsNeed;
+	CInfEngine *pInfEng = m_pInfEngine;
+
+	for( ev = 0; ev < GetNumEv() ; ev++)
+	{
+		bInfIsNeed = !GetObsFlags(ev)->empty(); 
+		pEv = m_Vector_pEvidences[ev];
+		if( bInfIsNeed )
+		{
+			pInfEng->EnterEvidence(pEv, 0, 0);
+		}
+			
+		for( i = 0; i < numberOfAddFactors; i++ )
+		{
+			factor = static_cast<CFactor*>(additionalCPDs->at(i));
+		    factor->GetDomain( &nnodes, &domain );
+		    if( bInfIsNeed && !IsDomainObserved(nnodes, domain, ev ) )
+		    {
+				pInfEng->MarginalNodes( domain, nnodes, 1 );
+				factor->UpdateStatisticsEM( pInfEng->GetQueryJPD(), pEv );
+		    }
+		    else
+		    {
+				factor->UpdateStatisticsML( &pEv, 1 );
+		    }
+		}
+	}
+
+	m_vFamilyLogLik.clear();
+	additionalLLs->clear();
+
+	switch (pGrModel->GetModelType())
+	{
+	case mtBNet:
+		{
+			loglik = 0.0f;
+            for( i = 0; i<numberOfFactors; i++ )
+            {
+                factor = pGrModel->GetFactor(i);
+				ll = factor->ProcessingStatisticalData( GetNumEv());
+				loglik += ll;
+				m_vFamilyLogLik.push_back(ll);                   
+            }
+			for( i = 0; i < numberOfAddFactors; i++ )
+            {
+				factor = static_cast<CFactor*>(additionalCPDs->at( i ));
+				ll = factor->ProcessingStatisticalData( GetNumEv());
+				additionalLLs->push_back(ll);
+            }
+            break;
+		}
+	case mtMRF2:
+	case mtMNet:
+        {	
+            break;
+        }
+    default:
+        {
+            PNL_THROW(CBadConst, "model type" )
+                break;
+        }
+    }
+                
+    ClearStatisticData();
+    m_critValue.push_back(loglik);    
+}
 
 float CEMLearningEngine::_LearnPotentials()
 {
@@ -711,3 +799,9 @@ float CEMLearningEngine::UpdateModel()
   }
   return loglik;
 }
+
+const float* CEMLearningEngine::GetFamilyLogLik()const
+{
+	return m_vFamilyLogLik.begin();
+}
+
