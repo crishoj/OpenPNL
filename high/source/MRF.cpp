@@ -176,7 +176,8 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
     {
        aTok[i] ^= prob[i];
     }
-    Net().Distributions()->FillDataNew(pnl::matTable, TokArr(&aTok.front(), nVal));
+    TokArr ta(&aTok.front(), nVal);
+    Net().Distributions()->FillDataNew(pnl::matTable, ta);
 }
 /*
 void MRF::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)

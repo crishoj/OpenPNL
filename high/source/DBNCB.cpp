@@ -20,7 +20,7 @@ pnl::CGraphicalModel *DBNCallback::CreateModel(ProbabilisticNet &net)
     aNodeType.reserve(nNode > 16 ? 8:4);
     for(i = 0; i < nNode; i++)
     {
-	pnl::CNodeType &nt = net.pnlNodeType(i);
+	const pnl::CNodeType &nt = net.pnlNodeType(i);
 
 	aNodeAssociation[i] = net.NodeAssociation(&aNodeType,
 	    nt.IsDiscrete(), nt.GetNodeSize());
