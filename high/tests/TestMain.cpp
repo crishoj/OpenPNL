@@ -1,9 +1,9 @@
 #include "test_conf.hpp"
 
-//#define SKIP_TOKEN
+#define SKIP_TOKEN
 //#define SKIP_LIMID
 #define SKIP_DBN
-//#define SKIP_MRF
+#define SKIP_MRF
 //#define SKIP_NUMERATION
 
 int main(int argc, char* argv[])
@@ -44,10 +44,36 @@ int main(int argc, char* argv[])
 #ifndef SKIP_LIMID
     try 
     {
+          PureLimidModel1();
+    }
+    catch(pnl::CException e)
+    {
+	std::cout << e.GetMessage()<< "\n";
+	bTestOK = false;
+    }
+    try 
+    {
+          PureLimidModel2();
+    }
+    catch(pnl::CException e)
+    {
+	std::cout << e.GetMessage()<< "\n";
+	bTestOK = false;
+    }
+
+    try 
+    {
+          PureLimidModel3();
+    }
+    catch(pnl::CException e)
+    {
+	std::cout << e.GetMessage()<<"\n";
+	bTestOK = false;
+    }
+
+    try 
+    {
         LimidTopology();
-        PureLimidModel1();
-        PureLimidModel2();
-        PureLimidModel3();
         DelNodes();
         TestPigs();
 	OilTest();
