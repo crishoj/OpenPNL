@@ -60,9 +60,7 @@ int testSaveLoadEvidences()
 	delete []vec;
     }
     
-    pConstEvidenceVector pEvToSave;
-    pEvToSave.assign(pEv.begin(), pEv.end());
-    if( !CEvidence::Save( argv, pEvToSave) )
+    if( !CEvidence::Save( argv, *((pConstEvidenceVector*)&pEv)) )
     {
 	ret = TRS_FAIL;
 	return trsResult( ret, ret == TRS_OK ? "No errors" : 
