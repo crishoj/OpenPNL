@@ -94,6 +94,9 @@ public:
 
     bool IsValid(std::string* descriptionOut = NULL) const; 
 
+    void GetContinuousParents(int nodeNum, intVector *contParents) const;
+    void GetDiscreteParents(int nodeNum, intVector *discParents) const;
+
 protected:
     
     CBNet( CGraph *pGraph, CModelDomain* pMD );

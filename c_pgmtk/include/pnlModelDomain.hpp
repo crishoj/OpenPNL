@@ -72,6 +72,8 @@ public:
 #endif
     inline int GetVariableAssociation(int variable)const;
 
+    void ChangeNodeType(int NodeNumber, bool ToCont);
+
     virtual ~CModelDomain();
 protected:
     //model domain is based on CNodeTypes

@@ -909,3 +909,33 @@ void CBNet::FindSummarizeNodes(intVector* summarizeNodes) const
         }
     }
 }
+
+void CBNet::GetDiscreteParents(int nodeNum, intVector *discParents) const
+{
+    intVector parentOut;
+    GetGraph()->GetParents(nodeNum, &parentOut);
+    int i;
+    const CNodeType *nodetype;
+    for (i = 0; i < parentOut.size(); i++)
+    {
+        nodetype = GetModelDomain()->GetVariableType(parentOut[i]);
+        if ( nodetype->IsDiscrete() )
+            discParents->push_back(parentOut[i]);        
+     }
+}
+
+
+void CBNet::GetContinuousParents(int nodeNum, intVector *contParents) const
+{
+    intVector parentOut;
+    GetGraph()->GetParents(nodeNum, &parentOut);
+    int i;
+    const CNodeType *nodetype;
+    for (i = 0; i < parentOut.size(); i++)
+    {
+        nodetype = GetModelDomain()->GetVariableType(parentOut[i]);
+        if ( !(nodetype->IsDiscrete()))
+            contParents->push_back(parentOut[i]);        
+     }
+
+}

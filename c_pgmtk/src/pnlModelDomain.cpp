@@ -250,3 +250,27 @@ CModelDomain::CModelDomain( const nodeTypeVector& variableTypes,
 	AddRef(pCreaterOfMD);
     }
 }
+
+void CModelDomain::ChangeNodeType(int NodeNumber, bool ToCont)
+{
+    int i;
+    for (i = 0; i < m_variableTypes.size(); i++)
+    {
+        if (ToCont)
+        {
+            if ((!m_variableTypes[i].IsDiscrete())&&(m_variableTypes[i].GetNodeSize() == 1))
+            {
+                m_variableAssociation[NodeNumber] = i;
+                break;
+            }
+        }
+        else
+        {
+            if ((m_variableTypes[i].IsDiscrete())&&(m_variableTypes[i].GetNodeSize() == 2))
+            {
+                m_variableAssociation[NodeNumber] = i;
+                break;
+            }
+        }
+    }
+}

@@ -1193,4 +1193,15 @@ CNumericDenseMatrix<float>* CCondSoftMaxDistribFun:: GetProbMatrix(const CEviden
      delete []Values;
      return NewMatrix;
 };
+
+//-----------------------------------------------------------------------------
+int CCondSoftMaxDistribFun::GetSoftMaxSize() const
+{
+    int *multiindex = new int[2];
+    multiindex[0] = 0;
+    multiindex[1] = 0;
+    int res = m_distribution->GetElementByIndexes(multiindex)->GetSoftMaxSize();
+    delete [] multiindex;
+    return res;
+}
 // end of file ----------------------------------------------------------------

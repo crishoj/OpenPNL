@@ -142,7 +142,7 @@ CFactor::CFactor( EDistributionType dt,
                     }
                     for( i = 0; i < nNodes; i++ )
                     {
-                        if( nt[i]->IsDiscrete() )
+                        if( nt[i]->IsDiscrete() && (nt[i]->GetNodeSize() != 1))
                         {
                             PNL_THROW( CInvalidOperation,
                                 "Gaussian potential must be of Gaussian nodes only" )

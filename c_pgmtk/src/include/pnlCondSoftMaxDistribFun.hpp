@@ -173,6 +173,8 @@ public:
   void MaximumLikelihood(float **Observation, int NumberOfObservations, 
     float Accuracy, float step = 0.1);
 
+  int GetSoftMaxSize() const;
+
 protected:
   CCondSoftMaxDistribFun(int nNodes, const CNodeType *const* nodeTypes,
     CSoftMaxDistribFun* const pDefaultDistr);

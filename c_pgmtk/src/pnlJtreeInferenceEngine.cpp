@@ -186,9 +186,29 @@ void CJtreeInfEngine::EnterEvidence( const CEvidence *pEvidence,
             "evidence and the Graphical Model must be on one Model Domain" );
     }
     // bad-args check end
+    int i;
+
     ShrinkObserved( pEvidence, maximize, sumOnMixtureNode );
+
     CollectEvidence();
+
     DistributeEvidence();
+
+    if (GetModel()->GetModelType() == mtBNet)
+    {
+        bool allDiscrObs = pEvidence->IsAllDiscreteNodesObs(GetModel());
+        if (allDiscrObs)
+        {
+            for (i = 0; i < GetModel()->GetNumberOfNodes(); i++)
+            {
+                if (GetModel()->GetFactor(i)->GetDistributionType() == dtSoftMax)
+                {
+                    GetModel()->GetModelDomain()->ChangeNodeType(i, 0);
+                }
+            }
+        }
+    }
+
 }
 
 void CJtreeInfEngine::ShrinkObserved( const CEvidence *pEvidence, 

@@ -24,6 +24,7 @@
 #include "pnlCPD.hpp"
 #include "pnlInferenceEngine.hpp"
 #include "pnlIDNet.hpp"
+#include "pnlDistribFun.hpp"
 #include <sstream>
 
 PNL_USING
@@ -985,9 +986,23 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
     
     intVecVector::const_iterator ndContIt = m_nodeContents.begin();
 
-    int i = 0;
+    int i = 0, k;
     
-    for( ; i < m_numberOfNodes; ++i, ++ndContIt )
+    bool allDiscrObs = pEvidence->IsAllDiscreteNodesObs(pBNet);
+    bool allCountObs = pEvidence->IsAllCountinuesNodesObs(pBNet);
+
+    if (allDiscrObs)
+    {
+        for (k = 0; k < pBNet->GetNumberOfNodes(); k++)
+        {
+            if (pBNet->GetFactor(k)->GetDistributionType() == dtSoftMax)
+            {
+                pBNet->GetModelDomain()->ChangeNodeType(k, 1);
+            }
+        }
+    }
+
+   for( ; i < m_numberOfNodes; ++i, ++ndContIt )
     {
         // finding out if the unit function is to be sparse or not
         bool bDenseUnitFunction = true;
@@ -1083,16 +1098,115 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
         for( ; assFactsIt != assFacts_end; ++assFactsIt )
         {
             const CPotential *pTmpPot;
-            if(((*assFactsIt)->GetDistributionType() == dtSoftMax)||
-                  ((*assFactsIt)->GetDistributionType() == dtCondSoftMax ))
-               pTmpPot = ((CSoftMaxCPD*)(*assFactsIt))->ConvertWithEvidenceToTabularPotential( pEvidence);
-            else
-            pTmpPot = (*assFactsIt)->ConvertWithEvidenceToPotential( pEvidence,
-                sumOnMixtureNode );
+            
+            EDistributionType dt = (*assFactsIt)->GetDistribFun()->GetDistributionType();
+                        
+            intVector domain;
+            (*assFactsIt)->GetDomain(&domain);
+            int FactorNode = domain[domain.size()-1];
+            
+            if (dt == dtSoftMax)
+            {
+                if (allDiscrObs)
+                {
+                    floatVector MeanContParents;
+                    C2DNumericDenseMatrix<float>* CovContParents;
+            
+                    pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 1);
 
-            *pPot *= *pTmpPot;
+                    static_cast<const CSoftMaxCPD*>(*assFactsIt)->
+                        CreateMeanAndCovMatrixForNode(FactorNode, pEvidence, pBNet, 
+                        MeanContParents, &CovContParents);
+                    
+                    pTmpPot = static_cast<const CSoftMaxCPD*>(*assFactsIt)->
+                        ConvertWithEvidenceToGaussianPotential( pEvidence, MeanContParents, 
+                        CovContParents);
+                    
+                    pTmpPot->Dump();
+                }
+                else 
+                    if (allCountObs)
+                    {
+                        pTmpPot = ((CSoftMaxCPD*)(*assFactsIt))->
+                            ConvertWithEvidenceToTabularPotential( pEvidence);
+                        pTmpPot->Dump();
+                    }
+                
+            } 
+            else 
+                if (dt == dtCondSoftMax)
+                {
+                    if (allDiscrObs)
+                    {
+                        floatVector MeanContParents;
+                        C2DNumericDenseMatrix<float>* CovContParents;
+            
+                        pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 1);
+    
+                        static_cast<const CSoftMaxCPD*>(*assFactsIt)->
+                            CreateMeanAndCovMatrixForNode(FactorNode, pEvidence, pBNet, 
+                            MeanContParents, &CovContParents);
 
-            delete pTmpPot;
+                        intVector discParents;
+                        pBNet->GetDiscreteParents(FactorNode, &discParents);
+                        
+                        int *parentComb = new int [discParents.size()];
+                        
+                        intVector pObsNodes;
+                        pConstValueVector pObsValues;
+                        pConstNodeTypeVector pNodeTypes;
+                        pEvidence->GetObsNodesWithValues(&pObsNodes, &pObsValues, &pNodeTypes);
+                        
+                        int location;
+                        for ( k = 0; k < discParents.size(); k++)
+                        {
+                            location = 
+                                std::find(pObsNodes.begin(), pObsNodes.end(), discParents[k]) 
+                                - pObsNodes.begin();
+                            parentComb[k] = pObsValues[location]->GetInt();
+                        }
+                        
+                        pTmpPot = static_cast<const CSoftMaxCPD*>(*assFactsIt)->
+                            ConvertWithEvidenceToGaussianPotential( pEvidence, 
+                            MeanContParents, CovContParents, parentComb );
+
+                        pTmpPot->Dump();
+                        
+                        delete [] parentComb;
+                    }
+                    else 
+                        if (allCountObs)
+                        {
+                            pTmpPot = ((CSoftMaxCPD*)(*assFactsIt))->
+                                ConvertWithEvidenceToTabularPotential( pEvidence);
+                            pTmpPot->Dump();
+                        }
+                }
+                else
+                {
+                    intVector Parents;
+                    pBNet->GetGraph()->GetParents(FactorNode, &Parents);
+
+                    for ( k = 0; k < Parents.size(); k++)
+                    {
+                        if (pBNet->GetFactor(Parents[k])->GetDistributionType() == dtSoftMax)
+                        {
+                            pBNet->GetModelDomain()->ChangeNodeType(Parents[k], 0);
+                        }
+                    }
+                        
+                    pTmpPot = (*assFactsIt)->ConvertWithEvidenceToPotential( pEvidence,
+                            sumOnMixtureNode );
+
+                    pTmpPot->Dump();
+                        
+                }  
+                
+                *pPot *= *pTmpPot;
+
+                pPot->Dump();              
+
+                delete pTmpPot;
         }
         
         *( m_nodePots.begin() + i ) = pPot;

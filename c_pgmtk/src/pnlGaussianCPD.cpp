@@ -265,125 +265,233 @@ CGaussianCPD::ConvertWithEvidenceToPotential(const CEvidence* pEvidence,
 {
     if( m_CorrespDistribFun->GetDistributionType() == dtGaussian )
     {
-	//need to convert to potential and after that add evidence
-	CPotential* potWithoutEv = ConvertToPotential();
-	CPotential* potWithEvid = potWithoutEv->ShrinkObservedNodes(pEvidence);
-	delete potWithoutEv;
-	return potWithEvid;
+	    //need to convert to potential and after that add evidence
+	    CPotential* potWithoutEv = ConvertToPotential();
+	    CPotential* potWithEvid = potWithoutEv->ShrinkObservedNodes(pEvidence);
+	    delete potWithoutEv;
+	    return potWithEvid;
     }
     else //it means m_CorrespDistribFun->GetDistributionType == dtCondGaussian
     {
-	    //need to enter discrete & continuous evidence separetly
-	    //before it create node types - if all nodes discrete
-	    //or there are only nodes of size 0 from continuous -
-	    // - result distribution type is Tabular
+        //need to enter discrete & continuous evidence separetly
+        //before it create node types - if all nodes discrete
+        //or there are only nodes of size 0 from continuous -
+        // - result distribution type is Tabular
+        
+        //collect information for enter discrete evidence & continuous
+        int domSize = m_Domain.size();
+        intVector obsDiscreteIndex;
+        obsDiscreteIndex.reserve( domSize );
+        //observed discrete values put into int vector
+        intVector obsDiscrVals;
+        obsDiscrVals.reserve( domSize );
+        //collect information about Gaussian observed indices
+        intVector obsGauIndex;
+        obsGauIndex.reserve( domSize );
+        //continuous observed values into vector of matrices
+        pnlVector<C2DNumericDenseMatrix<float>*> obsGauVals;
+        obsGauVals.reserve( domSize );
+        //create matrix to store observed value of node
+        C2DNumericDenseMatrix<float>* obsSelfVal = NULL;
+        //create vectors for storage temporary objects
+        int i;
+        int isTab;
+        for( i = 0; i < domSize; i++ )
+        {
+            int curNum = m_Domain[i];
+            if( pEvidence->IsNodeObserved(curNum) )
+            {
+                const CNodeType* nt = GetModelDomain()->GetVariableType( curNum );
+                isTab = nt->IsDiscrete();
+                if( isTab )
+                {
+                    obsDiscreteIndex.push_back( i );
+                    obsDiscrVals.push_back( pEvidence->GetValue(curNum)->GetInt() );
+                }
+                else
+                {
+                    int contSize = nt->GetNodeSize();
+                    //create matrices to call Enter continuous evidence
+                    floatVector val;
+                    val.resize(contSize);
+                    const Value* vFromEv = pEvidence->GetValue(curNum);
+                    for( int j = 0; j < contSize; j++ )
+                    {
+                        val[j] = vFromEv[j].GetFlt();
+                    }
+                    intVector dims;
+                    dims.assign( 2, 1 );
+                    dims[0] = contSize;
+                    if( i == domSize - 1 )
+                    {
+                        obsSelfVal = C2DNumericDenseMatrix<float>::Create(
+                            &dims.front(), &val.front());
+                    }
+                    else
+                    {
+                        //store only parent indices
+                        obsGauIndex.push_back( i );
+                        C2DNumericDenseMatrix<float>* obsGauVal =
+                            C2DNumericDenseMatrix<float>::Create(
+                            &dims.front(), &val.front() );
+                        obsGauVals.push_back( obsGauVal );
+                    }
+                }
+            }
+        } //        for( i = 0; i < domSize; i++ )
 
-	    //collect information for enter discrete evidence & continuous
-	    int domSize = m_Domain.size();
-	    intVector obsDiscreteIndex;
-	    obsDiscreteIndex.reserve( domSize );
-	    //observed discrete values put into int vector
-	    intVector obsDiscrVals;
-	    obsDiscrVals.reserve( domSize );
-	    //collect information about Gaussian observed indices
-	    intVector obsGauIndex;
-	    obsGauIndex.reserve( domSize );
-	    //continuous observed values into vector of matrices
-	    pnlVector<C2DNumericDenseMatrix<float>*> obsGauVals;
-	    obsGauVals.reserve( domSize );
-	    //create matrix to store observed value of node
-	    C2DNumericDenseMatrix<float>* obsSelfVal = NULL;
-	    //create vectors for storage temporary objects
-	    int i;
-	    int isTab;
-	    for( i = 0; i < domSize; i++ )
-	    {
-	        int curNum = m_Domain[i];
-	        if( pEvidence->IsNodeObserved(curNum) )
-	        {
-		    const CNodeType* nt = GetModelDomain()->GetVariableType( curNum );
-		    isTab = nt->IsDiscrete();
-		    if( isTab )
-		    {
-		        obsDiscreteIndex.push_back( i );
-		        obsDiscrVals.push_back( pEvidence->GetValue(curNum)->GetInt() );
-		    }
-		    else
-		    {
-		        int contSize = nt->GetNodeSize();
-		        //create matrices to call Enter continuous evidence
-		        floatVector val;
-		        val.resize(contSize);
-		        const Value* vFromEv = pEvidence->GetValue(curNum);
-		        for( int j = 0; j < contSize; j++ )
-		        {
-		            val[j] = vFromEv[j].GetFlt();
-		        }
-		        intVector dims;
-		        dims.assign( 2, 1 );
-		        dims[0] = contSize;
-		        if( i == domSize - 1 )
-		        {
-		           obsSelfVal = C2DNumericDenseMatrix<float>::Create(
-		                                     &dims.front(), &val.front());
-		        }
-		        else
-		        {
-		            //store only parent indices
-		            obsGauIndex.push_back( i );
-		            C2DNumericDenseMatrix<float>* obsGauVal =
-		                C2DNumericDenseMatrix<float>::Create(
-		                                &dims.front(), &val.front() );
-		            obsGauVals.push_back( obsGauVal );
-		        }
-		    }
-	    }
-	}
-	//can enter discrete evidence first if all continuous nodes observed
-	//need to check if all them observed!
-	CModelDomain* pMD = GetModelDomain();
-	CCondGaussianDistribFun* withDiscrEv =
-	    (static_cast<CCondGaussianDistribFun*>(m_CorrespDistribFun))->
-	    EnterDiscreteEvidence(obsDiscreteIndex.size(),
-	    &obsDiscreteIndex.front(), &obsDiscrVals.front(),
-	    pMD->GetObsTabVarType() );
-	//need to enter continuous evidence
-    //if after entering continuous evidence there isn't unobserved nodes - need to create scalar
-    CPotential* resPot = NULL;
-    if( obsDiscreteIndex.size() + obsGauIndex.size() + 1 == m_Domain.size() )
-    {
-        //result distribution is scalar
-        obsDiscreteIndex.insert(obsDiscreteIndex.end(), obsGauIndex.begin(),
-	        obsGauIndex.end());
-	    //child node is observed
-	    obsDiscreteIndex.insert(obsDiscreteIndex.end(), domSize-1);
-        resPot = CScalarPotential::Create( m_Domain, GetModelDomain(), obsDiscreteIndex );
-    }
-    else
-    {
-    	CTabularDistribFun* resDistr = withDiscrEv->
-	    	EnterFullContinuousEvidence( obsGauIndex.size(),
-		    &obsGauIndex.front(), obsSelfVal, &obsGauVals.front(),
-		    pMD->GetObsGauVarType() );
-	    //need to unite gaussian and tabular observed index
-	    obsDiscreteIndex.insert(obsDiscreteIndex.end(), obsGauIndex.begin(),
-	        obsGauIndex.end());
-	    //child node is observed
-	    obsDiscreteIndex.insert(obsDiscreteIndex.end(), domSize-1);
-	    resPot = CTabularPotential::Create(
-	        &m_Domain.front(), m_Domain.size(), GetModelDomain(), NULL,
-	        obsDiscreteIndex );
-	    resPot->SetDistribFun( resDistr );
-        delete resDistr;
-    }
-	delete withDiscrEv;
-	delete obsSelfVal;
-	for( i = 0; i < obsGauVals.size(); i++ )
-	{
-	    delete obsGauVals[i];
-	}
-	return resPot;
-	 //otherwise enter continuous evidence first!
+        //can enter discrete evidence first if all continuous nodes observed
+        //need to check if all them observed!
+        CModelDomain* pMD = GetModelDomain();
+        
+        //need to enter continuous evidence
+        //if after entering continuous evidence there isn't unobserved nodes - need to create scalar
+        CPotential* resPot = NULL;
+        if( obsDiscreteIndex.size() + obsGauIndex.size() == m_Domain.size() )
+        {
+            CCondGaussianDistribFun* withDiscrEv =
+                (static_cast<CCondGaussianDistribFun*>(m_CorrespDistribFun))->
+                EnterDiscreteEvidence(obsDiscreteIndex.size(),
+                &obsDiscreteIndex.front(), &obsDiscrVals.front(),
+                pMD->GetObsTabVarType() );
+            
+            //result distribution is scalar
+            obsDiscreteIndex.insert(obsDiscreteIndex.end(), obsGauIndex.begin(),
+                obsGauIndex.end());
+            //child node is observed
+            obsDiscreteIndex.insert(obsDiscreteIndex.end(), domSize-1);  // ??????????
+            resPot = CScalarPotential::Create( m_Domain, GetModelDomain(), obsDiscreteIndex );
+        }
+        else
+        {
+            const CNodeType* nt;
+            //if all discrete nodes are observed then distribution will be Gaussian (Bader - comment)
+            int allDiscrObs = 1;
+            int allContObs = 1;
+            int i;
+            int isTab;
+            int isCon;
+            for( i = 0; i < domSize; i++ )
+            {
+                int curNum = m_Domain[i];
+                nt = GetModelDomain()->GetVariableType( curNum );
+                isTab = nt->IsDiscrete();
+                isCon = !(isTab);
+                if( isTab )
+                    if( !(pEvidence->IsNodeObserved(curNum)) )
+                        allDiscrObs = 0;
+                    if( isCon )
+                        if( !(pEvidence->IsNodeObserved(curNum)) )
+                            allContObs = 0;
+            }
+            if (allContObs && (!allDiscrObs) )
+            {
+                CCondGaussianDistribFun* withDiscrEv =
+                    (static_cast<CCondGaussianDistribFun*>(m_CorrespDistribFun))->
+                    EnterDiscreteEvidence(obsDiscreteIndex.size(),
+                    &obsDiscreteIndex.front(), &obsDiscrVals.front(),
+                    pMD->GetObsTabVarType() );
+                
+                CTabularDistribFun* resDistr = withDiscrEv->
+                    EnterFullContinuousEvidence( obsGauIndex.size(),
+                    &obsGauIndex.front(), obsSelfVal, &obsGauVals.front(),
+                    pMD->GetObsGauVarType() );
+
+                //need to unite gaussian and tabular observed index
+                obsDiscreteIndex.insert(obsDiscreteIndex.end(), obsGauIndex.begin(),
+                    obsGauIndex.end());
+                //child node is observed
+                obsDiscreteIndex.insert(obsDiscreteIndex.end(), domSize-1);
+                resPot = CTabularPotential::Create(
+                    &m_Domain.front(), m_Domain.size(), GetModelDomain(), NULL,
+                    obsDiscreteIndex );
+                resPot->SetDistribFun( resDistr );
+                delete resDistr;
+            }
+            else
+            {
+                if (allDiscrObs && !allContObs)
+                {
+                    intVector discParents;
+                    
+                    for ( i = 0; i < m_Domain.size(); i++)
+                    {
+                        nt = GetModelDomain()->GetVariableType( m_Domain[i] );
+                        if (nt->IsDiscrete())
+                            discParents.push_back(m_Domain[i]);
+                    }
+                    
+                    int *parentComb = new int [discParents.size()];
+                    
+                    intVector pObsNodes;
+                    pConstValueVector pObsValues;
+                    pConstNodeTypeVector pNodeTypes;
+                    pEvidence->GetObsNodesWithValues(&pObsNodes, &pObsValues, &pNodeTypes);
+                    
+                    int j;
+                    int location;
+                    for ( j = 0; j < discParents.size(); j++)
+                    {
+                        location = 
+                            std::find(pObsNodes.begin(), pObsNodes.end(), discParents[j]) 
+                            - pObsNodes.begin();
+                        parentComb[j] = pObsValues[location]->GetInt();
+                    }
+                    
+                    const CGaussianDistribFun* resDistr = 
+                        static_cast<CCondGaussianDistribFun*>(m_CorrespDistribFun)->GetDistribution(parentComb);
+                    
+                    CDistribFun* newResDistr = resDistr->ConvertCPDDistribFunToPot();
+
+                    obsGauIndex.insert(obsGauIndex.end(), obsDiscreteIndex.begin(),
+                        obsDiscreteIndex.end());
+                    intVector gauSubDomain;
+                    for( j = 0; j < m_Domain.size(); j++)
+                    {
+                        nt = GetModelDomain()->GetVariableType( m_Domain[j] );
+                        if(!(nt->IsDiscrete()))
+                            gauSubDomain.push_back(m_Domain[j]);
+                    }
+                    resPot = CGaussianPotential::Create( &gauSubDomain.front(), 
+                        gauSubDomain.size(), GetModelDomain());
+                    resPot->SetDistribFun( newResDistr );
+                    delete newResDistr;
+                    delete [] parentComb;
+                }
+                else
+                {
+                   //can enter discrete evidence first if all continuous nodes observed
+                   //need to check if all them observed!
+                    CCondGaussianDistribFun* withDiscrEv =
+                        (static_cast<CCondGaussianDistribFun*>(m_CorrespDistribFun))->
+                        EnterDiscreteEvidence(obsDiscreteIndex.size(),
+                        &obsDiscreteIndex.front(), &obsDiscrVals.front(),
+                        pMD->GetObsTabVarType() );
+                    //need to enter continuous evidence
+                    CTabularDistribFun* resDistr = withDiscrEv->
+                        EnterFullContinuousEvidence( obsGauIndex.size(),
+                        &obsGauIndex.front(), obsSelfVal, &obsGauVals.front(),
+                        pMD->GetObsGauVarType() );
+                    //need to unite gaussian and tabular observed index
+                    obsDiscreteIndex.insert(obsDiscreteIndex.end(), obsGauIndex.begin(),
+                        obsGauIndex.end());
+                    //child node is observed
+                    obsDiscreteIndex.insert(obsDiscreteIndex.end(), domSize-1);
+                    resPot = CTabularPotential::Create(
+                        &m_Domain.front(), m_Domain.size(), GetModelDomain(), NULL,
+                        obsDiscreteIndex );
+                    resPot->SetDistribFun( resDistr );
+                    delete withDiscrEv;
+                    delete resDistr;
+                }
+            }
+        }
+        delete obsSelfVal;
+        for( i = 0; i < obsGauVals.size(); i++ )
+        {
+            delete obsGauVals[i];
+        }
+        return resPot;
     }
 }
 

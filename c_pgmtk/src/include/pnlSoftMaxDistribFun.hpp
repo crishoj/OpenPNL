@@ -68,6 +68,9 @@ public:
     const int **offsets) const;
 
   CDistribFun *ConvertCPDDistribFunToPot() const ;
+  
+  CDistribFun *ConvertCPDDistribFunToPotential(floatVector MeanContParents, 
+      C2DNumericDenseMatrix<float>* CovContParents, int r);
 
   CDistribFun *CPD_to_pi(CDistribFun *const* allPiMessages,
     int *multParentIndices, int numMultNodes, int posOfExceptParent = -1,
@@ -161,6 +164,15 @@ public:
 
   EMaximizingMethod GetMaximizingMethod();
  
+  inline int GetSoftMaxSize() const;
+
+  float CalculateKsi(floatVector MeanContParents, 
+      C2DNumericDenseMatrix<float>* CovContParents);
+  
+  float CalculateMeanAndCovariance(float OldKsi, float r, 
+      floatVector &MeanVector, 
+      C2DNumericDenseMatrix<float> **CovMatrix);
+
 protected:
   CSoftMaxDistribFun(int NodeNumber, const CNodeType *const* nodeTypes,
     const float *dataWeight, const float *dataOffset);
@@ -202,6 +214,13 @@ private:
 
   EMaximizingMethod m_MaximizingMethod;
   // defines method, which is used for Likelihood Maximizing
+
+  //canonocal characteristics
+  float m_g;
+  C2DNumericDenseMatrix<float> *m_pMatrixH;
+  C2DNumericDenseMatrix<float> *m_pMatrixK;
+
+
 };
 
 inline int CSoftMaxDistribFun::IsDistributionSpecific() const
@@ -215,8 +234,13 @@ inline int CSoftMaxDistribFun::IsDistributionSpecific() const
     return 0;
   }
 }
-//----------------------------------------------------------------------
 
+//----------------------------------------------------------------------
+inline int CSoftMaxDistribFun::GetSoftMaxSize() const
+{
+    return m_VectorOffset.size();
+}
+//----------------------------------------------------------------------
 PNL_END
 
 #endif //__PNLGAUSSIANDISTRIBFUN_HPP__

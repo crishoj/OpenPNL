@@ -19,6 +19,7 @@
 
 #include "pnlConfig.hpp"
 #include "pnlSoftMaxDistribFun.hpp"
+#include "pnlGaussianDistribFun.hpp"
 #include "pnlLog.hpp"
 #include <sstream>
 #include "pnlRng.hpp"
@@ -1000,6 +1001,133 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPot() const
   PNL_THROW(CNotImplemented, "haven't for CSoftMaxDistribFun now");
 
   return NULL;
+}
+// ----------------------------------------------------------------------------
+
+CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector MeanContParents, 
+  C2DNumericDenseMatrix<float>* CovContParents, int r) 
+{
+  CGaussianDistribFun* factData = NULL;
+  
+  int i, j, k;
+  int *multiindex = new int [2];
+  
+  int NumAllInweights = 0;
+  for( i = 0; i < m_NumberOfNodes - 1; i++ )
+  {
+    NumAllInweights += m_NodeTypes[i]->GetNodeSize();
+  }
+  
+  // ksi^2 = w'(sigma + mu*mu')w +2bw'mu + b^2
+  
+  float NewKsi = 0.0f;
+  NewKsi = CalculateKsi( MeanContParents, CovContParents);
+  float OldKsi = 0.0f;
+  
+  do
+  {
+    floatVector MeanVector;
+    C2DNumericDenseMatrix<float> *CovMatrix;
+    
+    OldKsi = NewKsi;
+    
+    CalculateMeanAndCovariance(OldKsi, r, MeanVector, &CovMatrix);
+    NewKsi = CalculateKsi( MeanVector, CovMatrix);
+  }
+  while(fabs(NewKsi - OldKsi) > 0.001);
+  
+  float ksi = NewKsi;
+  
+  // canonical characteristics
+  // g = log(sigma) + (1/2)(2r - 1)b - (1/2)ksi + lambda(b^2 - ksi^2);
+  // H = (1/2)(2r-1)w + 2lambda*b*w
+  // K = -2*lambda*w*w'
+  
+  float b = 0.0f;
+  b = m_VectorOffset[0];
+  
+  float sigma = 1 / ( 1 + exp(-ksi));
+  
+  float lambda = ((0.5f) - sigma)/(2*ksi);
+  m_g = log(sigma) + (0.5f)*(2*r - 1)*b - (0.5f)*ksi + lambda*(b*b - ksi*ksi);
+  
+  intVector ranges = intVector(2, NumAllInweights);
+  ranges[1] = 1;
+  floatVector ZeroData = floatVector( NumAllInweights, 0);
+  
+  C2DNumericDenseMatrix<float> *newMatWeights = 
+    C2DNumericDenseMatrix<float>::Create( &ranges.front(), &ZeroData.front());
+  float weight0, weight1;
+  for (i = 0; i < NumAllInweights; i++ )
+  {
+    multiindex[0] = i;
+    multiindex[1] = 0;
+    weight0 = m_pMatrixWeight->GetElementByIndexes(multiindex);
+    
+    multiindex[1] = 1;
+    weight1 = m_pMatrixWeight->GetElementByIndexes(multiindex);
+    
+    multiindex[1] = 0;
+    newMatWeights->SetElementByIndexes(weight0-weight1, multiindex);
+  }
+  
+  m_pMatrixH = 
+    C2DNumericDenseMatrix<float>::Create(&ranges.front(), &ZeroData.front() );
+  float value;
+  for (i = 0; i < ranges[0]; i++)
+  {
+    for (j = 0; j < ranges[1]; j++)
+    {
+      multiindex[0] = i;
+      multiindex[1] = j;
+      value = ((0.5f)*(2*r - 1) + 2*lambda*b)*
+        (newMatWeights->GetElementByIndexes(multiindex));
+      m_pMatrixH->SetElementByIndexes( value, multiindex);
+    }
+  }
+
+  const floatVector *hvec = NULL;
+  hvec = m_pMatrixH->GetVector();
+  floatVector vecH = floatVector((*hvec).size());
+  memcpy(&vecH[0], &(*hvec)[0], (*hvec).size()*sizeof(float));
+  
+  ranges[0] = NumAllInweights;
+  ranges[1] = NumAllInweights;
+  
+  m_pMatrixK = 
+    C2DNumericDenseMatrix<float>::Create(&ranges.front(), &ZeroData.front() );
+  
+  C2DNumericDenseMatrix<float> *newMatWeightsTrans = newMatWeights->Transpose();
+  m_pMatrixK = pnlMultiply( newMatWeights, newMatWeightsTrans, 0 );
+  
+  const floatVector *kvec = NULL;
+  kvec = m_pMatrixK->GetVector();
+  floatVector vecK = floatVector((*kvec).size());
+  memcpy(&vecK[0], &(*kvec)[0], (*kvec).size()*sizeof(float));
+
+  pNodeTypeVector *NodeTypes = new pNodeTypeVector();
+  bool         isDiscrete;
+  int          nodeSize;
+  EIDNodeState nodeState;
+  for (i = 0; i < m_NumberOfNodes - 1; i++)
+  {
+    isDiscrete = m_NodeTypes[i]->IsDiscrete();
+    nodeSize   = m_NodeTypes[i]->GetNodeSize();
+    nodeState  = m_NodeTypes[i]->GetNodeState();
+    
+    CNodeType *newType = new CNodeType(isDiscrete, nodeSize, nodeState);
+    NodeTypes->push_back(newType);
+  }
+  CNodeType *newType = new CNodeType(0, 0, nsChance);
+  NodeTypes->push_back(newType);
+  
+  factData = CGaussianDistribFun::CreateInCanonicalForm(m_NumberOfNodes, 
+    &NodeTypes->front(), &vecH.front(), &vecK.front(), m_g );
+  
+  delete [] multiindex;
+  delete newMatWeights;
+  delete newMatWeightsTrans;
+  return factData;
 }
 // ----------------------------------------------------------------------------
 
@@ -2023,59 +2151,264 @@ float CSoftMaxDistribFun::CalculateNorm(float ** grad_weights,
 //-----------------------------------------------------------------------------
 CNumericDenseMatrix<float>* CSoftMaxDistribFun:: GetProbMatrix(const CEvidence *pEvidence)
 {
-    int NumOfStates = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
-    int numOfNodes;
-    int *mIOfMatrWeight;
-    float norm = 0;
-    float scal = 0;
-    float curScal = 0;
-    float *probValues;
-    intVector pObsNodes;
-    pConstValueVector pObsValues;
-    pConstNodeTypeVector pNodeTypes;
-    pEvidence->GetObsNodesWithValues(&pObsNodes,&pObsValues,&pNodeTypes);
-    intVector SetOfContNodes;
-    floatVector SetofContNodesValues;
-    int i;
-    int j;
-    for(i = 0;i < pObsNodes.size(); i++)
+  int NumOfStates = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
+  int numOfNodes;
+  int *mIOfMatrWeight;
+  float norm = 0;
+  float scal = 0;
+  float curScal = 0;
+  float *probValues;
+  intVector pObsNodes;
+  pConstValueVector pObsValues;
+  pConstNodeTypeVector pNodeTypes;
+  pEvidence->GetObsNodesWithValues(&pObsNodes,&pObsValues,&pNodeTypes);
+  intVector SetOfContNodes;
+  floatVector SetofContNodesValues;
+  int i;
+  int j;
+  for(i = 0;i < pObsNodes.size(); i++)
+  {
+    if( !((pNodeTypes[i])->IsDiscrete()) )
     {
-        if( !((pNodeTypes[i])->IsDiscrete()) )
-        {
-            SetOfContNodes.push_back(pObsNodes[i]);
-            SetofContNodesValues.push_back(pObsValues[i]->GetFlt());
-        };
+      SetOfContNodes.push_back(pObsNodes[i]);
+      SetofContNodesValues.push_back(pObsValues[i]->GetFlt());
     };
-    numOfNodes = SetOfContNodes.size();
-    mIOfMatrWeight = new int[2];
-    probValues = new float[NumOfStates];
-    float temp;
-    for(i = 0; i < NumOfStates; i++)
-    {   
-        scal = 0; 
-        for(j = 0; j < numOfNodes; j++)
-        {
-            mIOfMatrWeight[1] = i;
-            mIOfMatrWeight[0] = j;
-            temp = (m_pMatrixWeight->GetElementByIndexes(mIOfMatrWeight))*SetofContNodesValues[j];
-            scal += temp;
-        };
-        norm += exp(scal+m_VectorOffset[i]);
-    }
-    for(i = 0; i < NumOfStates; i++)
+  };
+  numOfNodes = SetOfContNodes.size();
+  mIOfMatrWeight = new int[2];
+  probValues = new float[NumOfStates];
+  float temp;
+  for(i = 0; i < NumOfStates; i++)
+  {   
+    scal = 0; 
+    for(j = 0; j < numOfNodes; j++)
     {
-        curScal = 0;    
-        for(j = 0; j < numOfNodes; j++)
-        {
-            mIOfMatrWeight[1] = i;
-            mIOfMatrWeight[0] = j;
-            curScal+=m_pMatrixWeight->GetElementByIndexes(mIOfMatrWeight)*SetofContNodesValues[j];
-        };
-        probValues[i] = exp(curScal + m_VectorOffset[i])/norm;
+      mIOfMatrWeight[1] = i;
+      mIOfMatrWeight[0] = j;
+      temp = (m_pMatrixWeight->GetElementByIndexes(mIOfMatrWeight))*SetofContNodesValues[j];
+      scal += temp;
     };
-    CNumericDenseMatrix<float> *NewMatrix = CNumericDenseMatrix<float>::Create(1,&NumOfStates,probValues);
-    delete []mIOfMatrWeight;
-    delete []probValues;
-    return NewMatrix;
+    norm += exp(scal+m_VectorOffset[i]);
+  }
+  for(i = 0; i < NumOfStates; i++)
+  {
+    curScal = 0;    
+    for(j = 0; j < numOfNodes; j++)
+    {
+      mIOfMatrWeight[1] = i;
+      mIOfMatrWeight[0] = j;
+      curScal+=m_pMatrixWeight->GetElementByIndexes(mIOfMatrWeight)*SetofContNodesValues[j];
+    };
+    probValues[i] = exp(curScal + m_VectorOffset[i])/norm;
+  };
+  CNumericDenseMatrix<float> *NewMatrix = CNumericDenseMatrix<float>::Create(1,&NumOfStates,probValues);
+  delete []mIOfMatrWeight;
+  delete []probValues;
+  return NewMatrix;
 };
+
+// ----------------------------------------------------------------------------
+float CSoftMaxDistribFun::CalculateKsi(floatVector MeanContParents, 
+  C2DNumericDenseMatrix<float>* CovContParents)
+{
+  int i, j;
+  int *multiindex = new int [2];
+  
+  int NumAllInweights = 0;
+  for( i = 0; i < m_NumberOfNodes - 1; i++ )
+  {
+    NumAllInweights += m_NodeTypes[i]->GetNodeSize();
+  }
+  
+  // ksi^2 = w'(sigma + mu*mu')w +2bw'mu + b^2
+  float SqKsi = 0.0f;
+  
+  // the first component
+  intVector ranges = intVector(2, NumAllInweights);
+  floatVector ZeroData = floatVector( NumAllInweights*NumAllInweights, 0);
+  
+  C2DNumericDenseMatrix<float> *ProdMu = 
+    C2DNumericDenseMatrix<float>::Create( &ranges.front(), &ZeroData.front());
+  
+  for (i = 0; i < NumAllInweights; i++ )
+  {
+    for (j = 0; j < NumAllInweights; j++)
+    {
+      multiindex[0] = i;
+      multiindex[1] = j;
+      ProdMu->SetElementByIndexes(MeanContParents[i]*MeanContParents[j], multiindex);
+    }
+  }
+    
+  C2DNumericDenseMatrix<float> *SumMatr = static_cast<C2DNumericDenseMatrix<float>*>(
+    pnlCombineNumericMatrices( CovContParents, ProdMu, 1 ));
+    
+  ranges[1] = 1;
+  floatVector Zero = floatVector( NumAllInweights, 0);
+    
+  C2DNumericDenseMatrix<float> *newMatWeights = 
+    C2DNumericDenseMatrix<float>::Create( &ranges.front(), &Zero.front());
+    
+  float weight0, weight1;
+  for (i = 0; i < NumAllInweights; i++ )
+  {
+    multiindex[0] = i;
+    multiindex[1] = 0;
+    weight0 = m_pMatrixWeight->GetElementByIndexes(multiindex);
+    
+    multiindex[1] = 1;
+    weight1 = m_pMatrixWeight->GetElementByIndexes(multiindex);
+    
+    multiindex[0] = i;
+    multiindex[1] = 0;
+    newMatWeights->SetElementByIndexes(weight0-weight1, multiindex);
+  }
+  
+  C2DNumericDenseMatrix<float> *newMatWeightsTransp = newMatWeights->Transpose();
+  C2DNumericDenseMatrix<float> *matrixProd = pnlMultiply( newMatWeightsTransp, 
+    SumMatr, 0 );
+  
+  float prod1 = 1;
+  for (i = 0; i < NumAllInweights; i++ )
+  {
+    multiindex[0] = i;     
+    multiindex[1] = 0;
+    float val2 = newMatWeights->GetElementByIndexes(multiindex);
+    
+    multiindex[0] = 0;    
+    multiindex[1] = i;
+    float val1 = matrixProd->GetElementByIndexes(multiindex);
+    prod1 *= (val1)*(val2);
+  }
+  
+  // the second component
+  float prod = 1; 
+  for (i = 0; i < NumAllInweights; i++)
+  {
+    multiindex[0] = i;
+    multiindex[1] = 0;
+    prod += (newMatWeights->GetElementByIndexes(multiindex))*MeanContParents[i];
+  }
+  prod *= 2*m_VectorOffset[0]; 
+  
+  // the third component
+  float SqB = 0.0f;
+  SqB += m_VectorOffset[0]*m_VectorOffset[0];
+  
+  SqKsi = prod1 + prod + SqB;
+  
+  float ksi = sqrt(fabs(SqKsi));
+  
+  delete [] multiindex;
+  delete ProdMu; 
+  delete SumMatr;
+  delete newMatWeights; 
+  delete newMatWeightsTransp;
+  delete matrixProd;
+  
+  return ksi;
+}
+
+// ----------------------------------------------------------------------------
+float CSoftMaxDistribFun::CalculateMeanAndCovariance(float OldKsi, float r, 
+  floatVector &MeanVector, C2DNumericDenseMatrix<float> **CovMatrix)
+{
+  
+  int i, j;
+  int *multiindex = new int [2];
+  
+  int dims;
+  const int *rangs;
+  m_pMatrixWeight->GetRanges( &dims, &rangs );
+  
+  int NumAllInweights = 0;
+  for(i = 0; i < m_NumberOfNodes - 1; i++)
+  {
+    NumAllInweights += m_NodeTypes[i]->GetNodeSize();
+  }
+  
+  float sigma = 1 / ( 1 + exp(-OldKsi));
+  float lambda = ((0.5f) - sigma)/(2*OldKsi);
+  
+  intVector ranges = intVector(2);
+  ranges[0] = NumAllInweights;
+  ranges[1] = 1;
+  floatVector ZeroData = floatVector( NumAllInweights*NumAllInweights, 0.0f);
+  
+  // new covariance
+  C2DNumericDenseMatrix<float> *newMatWeights = 
+    C2DNumericDenseMatrix<float>::Create( &ranges.front(), &ZeroData.front());
+  
+  float weight0, weight1;
+  for (i = 0; i < NumAllInweights; i++ )
+  {
+    multiindex[0] = i;
+    multiindex[1] = 0;
+    weight0 = m_pMatrixWeight->GetElementByIndexes(multiindex);
+    
+    multiindex[1] = 1;
+    weight1 = m_pMatrixWeight->GetElementByIndexes(multiindex);
+    
+    multiindex[1] = 0;
+    newMatWeights->SetElementByIndexes(weight0-weight1, multiindex);
+  }
+  
+  C2DNumericDenseMatrix<float> *newMatWeightsTransp = newMatWeights->Transpose();
+  C2DNumericDenseMatrix<float> *matrixProd 
+    = pnlMultiply( newMatWeights, newMatWeightsTransp, 0 );
+  
+  float val;
+  for (i = 0; i < NumAllInweights; i++ )
+  {
+    for (j = 0; j < NumAllInweights; j++)
+    {
+      multiindex[0] = i;
+      multiindex[1] = j;
+      val = matrixProd->GetElementByIndexes(multiindex);
+      val *= (-2*lambda);
+      matrixProd->SetElementByIndexes(val, multiindex);
+    }
+  }
+    
+  ranges[1] = NumAllInweights;
+  C2DNumericDenseMatrix<float> *UnitaryMatrix = 
+    C2DNumericDenseMatrix<float>::Create( &ranges.front(), &ZeroData.front());
+  for (i = 0; i < NumAllInweights; i++ )
+  {
+    multiindex[0] = i;
+    multiindex[1] = i;
+    UnitaryMatrix->SetElementByIndexes(1.0f, multiindex);
+  }
+  C2DNumericDenseMatrix<float> *SumMatrix = static_cast<C2DNumericDenseMatrix<float>*>(
+    pnlCombineNumericMatrices( UnitaryMatrix, matrixProd, 0 ));
+  
+  *CovMatrix = SumMatrix->Inverse();
+  
+  // new mean
+  float Koeff = r - 0.5f + 2*lambda*m_VectorOffset[0];
+  for (i = 0; i < NumAllInweights; i++)
+  {
+    multiindex[0] = i;
+    multiindex[1] = 0;
+    val = newMatWeights->GetElementByIndexes(multiindex);
+    newMatWeights->SetElementByIndexes(Koeff*val, multiindex);
+  }
+  
+  C2DNumericDenseMatrix<float> *NewMeanMatrix = 
+    pnlMultiply( *CovMatrix, newMatWeights, 0 );
+  
+  const floatVector *kvec = NULL;
+  kvec = NewMeanMatrix->GetVector();
+  MeanVector.resize((*kvec).size());
+  memcpy(&MeanVector[0], &(*kvec)[0], (*kvec).size()*sizeof(float));
+  
+  delete [] multiindex;
+  delete newMatWeights;
+  delete newMatWeightsTransp;
+  delete matrixProd;
+  delete UnitaryMatrix;
+  delete SumMatrix;
+  delete NewMeanMatrix;
+}
+
 // end of file ----------------------------------------------------------------

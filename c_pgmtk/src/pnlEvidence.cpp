@@ -856,5 +856,60 @@ void CEvidence::Dump() const
      
  }
  
+bool CEvidence::IsAllDiscreteNodesObs(CGraphicalModel *pGrModel) const
+ {
+     intVector         obsNdsNums;
+     pConstValueVector obsNdsVals;
+     GetObsNodesWithValues( &obsNdsNums, &obsNdsVals );
+     
+     int counter = 0;
+     intVector discrObsNdsNums(0);
+     int i;
+     for ( i = 0; i < obsNdsNums.size(); i++)
+     {
+         if (pGrModel->GetNodeType(obsNdsNums[i])->IsDiscrete())
+             discrObsNdsNums.push_back(obsNdsNums[i]);
+     }
+
+     for ( i = 0; i < pGrModel->GetNumberOfNodes(); i++)
+         if (pGrModel->GetNodeType(i)->IsDiscrete())
+         {
+             counter++;
+         }
+
+     if ( counter == discrObsNdsNums.size())
+        return true;
+     else 
+        return false;
+         
+ }
+
+bool CEvidence::IsAllCountinuesNodesObs( CGraphicalModel *pGrModel) const
+{
+    intVector         obsNdsNums;
+    pConstValueVector obsNdsVals;
+    GetObsNodesWithValues( &obsNdsNums, &obsNdsVals );
+    
+    int counter = 0;
+    intVector contObsNdsNums(0);
+    int i;
+    for(i = 0; i < obsNdsNums.size(); i++)
+    {
+        if (!pGrModel->GetNodeType(obsNdsNums[i])->IsDiscrete())
+            contObsNdsNums.push_back(obsNdsNums[i]);
+    }
+
+    for (i = 0; i < pGrModel->GetNumberOfNodes(); i++)
+        if (!pGrModel->GetNodeType(i)->IsDiscrete())
+        {
+            counter++;
+        }
+    
+    if ( counter == contObsNdsNums.size())
+        return true;
+    else 
+        return false;
+    
+}
 
 PNL_END

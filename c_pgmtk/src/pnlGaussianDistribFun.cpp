@@ -40,7 +40,7 @@ CreateInMomentForm( int isPotential, int NumberOfNodes,
     int allNodesContinious = 1;
     for( int i=0; i<NumberOfNodes; i++ )
     {
-        if(  NodeTypes[i]->IsDiscrete()  )
+        if( (NodeTypes[i]->IsDiscrete()) && ( NodeTypes[i]->GetNodeSize() != 1 ) )
         {
             allNodesContinious = 0;
             break;
@@ -50,7 +50,7 @@ CreateInMomentForm( int isPotential, int NumberOfNodes,
     {
         PNL_THROW( CInconsistentType,
 	    "dtGaussian - not all nodes continious" )
-	    //some nodes are tabular - it cannot be Gaussian distrib fun
+	    //some nodes are tabular and not observed - it cannot be Gaussian distrib fun
     }
     else
     {
@@ -69,7 +69,7 @@ CGaussianDistribFun* CGaussianDistribFun::CreateInCanonicalForm(
     int allNodesContinious = 1;
     for( int i=0; i<NumberOfNodes; i++ )
     {
-        if(  NodeTypes[i]->IsDiscrete()  )
+        if(  NodeTypes[i]->IsDiscrete() && ( NodeTypes[i]->GetNodeSize() != 1 )   )
         {
             allNodesContinious = 0;
             break;
@@ -79,7 +79,7 @@ CGaussianDistribFun* CGaussianDistribFun::CreateInCanonicalForm(
     {
         PNL_THROW( CInconsistentType,
 	    "dtGaussian - not all nodes continious" )
-	    //some nodes are tabular - it cannot be Gaussian distrib fun
+	    //some nodes are tabular and not observed - it cannot be Gaussian distrib fun
     }
     else
     {
@@ -99,7 +99,7 @@ CGaussianDistribFun* CGaussianDistribFun::CreateDeltaDistribution(
     int allNodesContinious = 1;
     for( int i=0; i<NumberOfNodes; i++ )
     {
-        if(  nodeTypes[i]->IsDiscrete()  )
+        if(  nodeTypes[i]->IsDiscrete() && ( nodeTypes[i]->GetNodeSize() != 1 )  )
         {
             allNodesContinious = 0;
             break;
@@ -109,7 +109,7 @@ CGaussianDistribFun* CGaussianDistribFun::CreateDeltaDistribution(
     {
         PNL_THROW( CInconsistentType,
 	    "dtGaussian - not all nodes continious" )
-	    //some nodes are tabular - it cannot be Gaussian distrib fun
+	    //some nodes are tabular and not observed- it cannot be Gaussian distrib fun
     }
     else
     {
@@ -128,7 +128,7 @@ CGaussianDistribFun* CGaussianDistribFun::CreateUnitFunctionDistribution(
     int allNodesContinious = 1;
     for( int i=0; i<NumberOfNodes; i++ )
     {
-        if(  nodeTypes[i]->IsDiscrete()  )
+        if(  nodeTypes[i]->IsDiscrete() && ( nodeTypes[i]->GetNodeSize() != 1 )  )
         {
             allNodesContinious = 0;
             break;
@@ -137,7 +137,7 @@ CGaussianDistribFun* CGaussianDistribFun::CreateUnitFunctionDistribution(
     if( !allNodesContinious )
     {
         PNL_THROW( CInconsistentType,"dtGaussian - not all nodes continious" );
-        //some nodes are tabular - it cannot be Gaussian distrib fun
+        //some nodes are tabular and not observed - it cannot be Gaussian distrib fun
     }
     else
     {
@@ -407,7 +407,8 @@ m_bMoment(0), m_bCanonical(0), m_bDeltaFunction(0)
         m_bPotential = 1;
         for( i = 0; i < NumberOfNodes; i++ )
         {
-            NumberOfDimensions += nodeTypes[i]->GetNodeSize();
+            if (!nodeTypes[i]->IsDiscrete())
+                NumberOfDimensions += nodeTypes[i]->GetNodeSize();
         }
     }
     else
@@ -553,7 +554,8 @@ m_bMoment(0), m_bCanonical(0),m_bDeltaFunction(0)
     int NumberOfDimensions = 0;
     for( i = 0; i < NumberOfNodes; i++ )
     {
-        NumberOfDimensions += nodeTypes[i]->GetNodeSize();
+        if (!nodeTypes[i]->IsDiscrete())
+            NumberOfDimensions += nodeTypes[i]->GetNodeSize();
     }
     m_NumberOfNodes = NumberOfNodes;
     m_numberOfDims = NumberOfDimensions;
@@ -620,7 +622,8 @@ m_bMoment(0), m_bCanonical(0)
     int NumberOfDimensions = 0;
     for( i = 0; i < NumberOfNodes; i++ )
     {
-        NumberOfDimensions += (nodeTypes[i])->GetNodeSize();
+        if (!nodeTypes[i]->IsDiscrete())
+            NumberOfDimensions += (nodeTypes[i])->GetNodeSize();
     }
     m_numberOfDims = NumberOfDimensions;
     m_NumberOfNodes = NumberOfNodes;
@@ -667,7 +670,8 @@ m_bMoment(0), m_bCanonical(0)
     {
         for( int i = 0; i < NumberOfNodes; i++ )
         {
-            NumberOfDimensions += (nodeTypes[i])->GetNodeSize();
+            if (!nodeTypes[i]->IsDiscrete())
+                NumberOfDimensions += (nodeTypes[i])->GetNodeSize();
         }
     }
     else
@@ -1160,7 +1164,8 @@ void CGaussianDistribFun::AllocMatrix( const float *data, EMatrixType mType,
             int dimSizes = 0;
             for( i = 0; i < m_NumberOfNodes; i++ )
             {
-                dimSizes += m_NodeTypes[i]->GetNodeSize();
+               if (!m_NodeTypes[i]->IsDiscrete())
+                   dimSizes += m_NodeTypes[i]->GetNodeSize();
             }
             intVector dims;
             dims.assign( 2, 1 );
@@ -1383,7 +1388,8 @@ void CGaussianDistribFun::AttachMatrix( CMatrix<float>* pMatrix,
             int dimSize = 0;
             for( i = 0; i < m_NumberOfNodes; i++)
             {
-                dimSize += m_NodeTypes[i]->GetNodeSize();
+                if (!m_NodeTypes[i]->IsDiscrete())
+                    dimSize += m_NodeTypes[i]->GetNodeSize();
             }
             
             //we delete all matrices from another form
@@ -2564,7 +2570,8 @@ void CGaussianDistribFun::MultiplyInSelfData( const int *pBigDomain,
             int nodeSize;
             for( i = 0; i < size2; i++ )
             {
-                nodeSize = m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
+                nodeSize = m_NodeTypes[posOfSmallDomInBig[i]]->IsDiscrete()? 
+                    0:m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
                 m_offsetToNextMean.push_back(m_offsetToNextMean[
                     m_offsetToNextMean.size()-1]+nodeSize );
             }
@@ -2582,7 +2589,8 @@ void CGaussianDistribFun::MultiplyInSelfData( const int *pBigDomain,
                 for( i = 0; i <size2; i++ )
                 {
                     //get node sizes for compare
-                    int nodeSize = m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
+                    int nodeSize = m_NodeTypes[posOfSmallDomInBig[i]]->IsDiscrete() ?
+                        0:m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
                     for( j = 0; j < nodeSize; j++ )
                     {
                         if( fabs( mean1Data[posOfSmallDomInBig[i]+j] 
@@ -2625,7 +2633,8 @@ void CGaussianDistribFun::MultiplyInSelfData( const int *pBigDomain,
                             int offset = 0;
                             for( j = 0; j < location; j++ )
                             {
-                                offset += pGSmallData->m_NodeTypes[j]->GetNodeSize();
+                                offset += pGSmallData->m_NodeTypes[j]->IsDiscrete()? 
+                                    0:pGSmallData->m_NodeTypes[j]->GetNodeSize();
                             }
                             for( j = 0; j < thisPosSize; j++ )
                             {
@@ -2656,8 +2665,11 @@ void CGaussianDistribFun::MultiplyInSelfData( const int *pBigDomain,
                     int nodeSize;
                     for( i = 0; i < size2; i++ )
                     {
-                        nodeSize = 
+/*                        nodeSize = 
                             m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
+*/
+                        nodeSize = m_NodeTypes[posOfSmallDomInBig[i]]->IsDiscrete() ? 
+                            0:m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
                         m_offsetToNextMean.push_back(m_offsetToNextMean[
                             m_offsetToNextMean.size() - 1] + nodeSize );
                     }
@@ -2730,11 +2742,16 @@ void CGaussianDistribFun::MultiplyInSelfData( const int *pBigDomain,
                 floatVector newSmallH = floatVector( num, 0 );
                 intVector offsets = intVector(size1, 0);
                 intVector nodeSizesInBig = intVector(size1, 0);
-                nodeSizesInBig[0] = m_NodeTypes[0]->GetNodeSize();
+
+                nodeSizesInBig[0] = m_NodeTypes[0]->IsDiscrete() ? 
+                    0:m_NodeTypes[0]->GetNodeSize();
+//                nodeSizesInBig[0] = m_NodeTypes[0]->GetNodeSize();
                 offsets[0] = 0;
                 for( i = 1; i < size1; i++ )
                 {
-                    nodeSizesInBig[i] = m_NodeTypes[i]->GetNodeSize();
+//                    nodeSizesInBig[i] = m_NodeTypes[i]->GetNodeSize();
+                    nodeSizesInBig[i] = m_NodeTypes[i]->IsDiscrete() ? 
+                            0:m_NodeTypes[i]->GetNodeSize();
                     offsets[i] = nodeSizesInBig[i-1] + offsets[i-1];
                 }
                 intVector offSmall = intVector( size2,0 );
@@ -2949,11 +2966,16 @@ void CGaussianDistribFun::MultiplyInSelfData( const int *pBigDomain,
                     floatVector newSmallH( m_numberOfDims, 0 );
                     intVector offsets = intVector(size1, 0);
                     intVector nodeSizesInBig = intVector(size1, 0);
-                    nodeSizesInBig[0] = m_NodeTypes[0]->GetNodeSize();
+    
+                    nodeSizesInBig[0] = m_NodeTypes[0]->IsDiscrete() ? 
+                        0:m_NodeTypes[0]->GetNodeSize();
+//                    nodeSizesInBig[0] = m_NodeTypes[0]->GetNodeSize();
                     offsets[0] = 0;
                     for( i = 1; i < size1; i++ )
                     {
-                        nodeSizesInBig[i] = m_NodeTypes[i]->GetNodeSize();
+//                        nodeSizesInBig[i] = m_NodeTypes[i]->GetNodeSize();
+                        nodeSizesInBig[i] = m_NodeTypes[i]->IsDiscrete() ? 
+                            0:m_NodeTypes[i]->GetNodeSize();
                         offsets[i] = nodeSizesInBig[i-1] + offsets[i-1];
                     }
                     intVector offSmall = intVector( size2,0 );
@@ -3032,11 +3054,17 @@ void CGaussianDistribFun::MultiplyInSelfData( const int *pBigDomain,
                     floatVector newSmallH( m_numberOfDims, 0 );
                     intVector offsets(size1, 0);
                     intVector nodeSizesInBig(size1, 0);
-                    nodeSizesInBig[0] = m_NodeTypes[0]->GetNodeSize();
+
+                    nodeSizesInBig[0] = m_NodeTypes[0]->IsDiscrete() ? 
+                        0:m_NodeTypes[0]->GetNodeSize();
+
+//                    nodeSizesInBig[0] = m_NodeTypes[0]->GetNodeSize();
                     offsets[0] = 0;
                     for( i = 1; i < size1; i++ )
                     {
-                        nodeSizesInBig[i] = m_NodeTypes[i]->GetNodeSize();
+//                        nodeSizesInBig[i] = m_NodeTypes[i]->GetNodeSize();
+                        nodeSizesInBig[i] = m_NodeTypes[i]->IsDiscrete() ? 
+                          0:m_NodeTypes[i]->GetNodeSize();
                         offsets[i] = nodeSizesInBig[i-1] + offsets[i-1];
                     }
                     intVector offSmall( size2,0 );
@@ -4196,10 +4224,13 @@ void CGaussianDistribFun::MarginalizeData( const CDistribFun *pOldData,
     intVector nodeSizesOld = intVector( numNodes );
     intVector offsetsInOld = intVector( numNodes );
     offsetsInOld[0] = 0;
-    nodeSizesOld[0] = pData->m_NodeTypes[0]->GetNodeSize();
+//    nodeSizesOld[0] = pData->m_NodeTypes[0]->GetNodeSize();
+    nodeSizesOld[0] = pData->m_NodeTypes[0]->IsDiscrete()? 0:pData->m_NodeTypes[0]->GetNodeSize();
+
     for( i = 1; i < numNodes; i++ )
     {
-        nodeSizesOld[i] = pData->m_NodeTypes[i]->GetNodeSize();
+//        nodeSizesOld[i] = pData->m_NodeTypes[i]->GetNodeSize();
+        nodeSizesOld[i] =  pData->m_NodeTypes[i]->IsDiscrete() ? 0:pData->m_NodeTypes[i]->GetNodeSize();
         offsetsInOld[i] = offsetsInOld[i-1]+nodeSizesOld[i-1];
     }
     m_numberOfDims = 0;
