@@ -1986,19 +1986,20 @@ void CSoftMaxDistribFun::MaximumLikelihoodConjugateGradient(
 float CSoftMaxDistribFun::CalculateNorm(float ** grad_weights, 
   float * grad_offset)
 {
+  int i;
   float result = 0;
   int NumOfStates = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
   // quantity of SoftMax node states
   int NumOfContinousParents = m_NumberOfNodes - 1;
 
-  for (int i = 0; i < NumOfContinousParents; i++)
+  for ( i = 0; i < NumOfContinousParents; i++ )
   {
     for (int j = 0; j < NumOfStates - 1; j++)
     {
       result += pow(grad_weights[i][j], 2);
     }
   }
-  for (i = 0; i < NumOfStates - 1; i++)
+  for ( i = 0; i < NumOfStates - 1; i++ )
   {
     result += pow(grad_offset[i], 2);
   }
