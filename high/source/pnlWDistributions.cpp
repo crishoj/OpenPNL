@@ -21,6 +21,23 @@ WDistributions::WDistributions(TokenCover *pToken): m_pToken(pToken)
     SpyTo(m_pToken->Graph());
 }
 
+#if 0
+void WDistributions::SetMRF(bool mrfFlag /* = true */)
+{
+    m_MRFFlag = mrfFlag;
+    if(mrfFlag)
+    {
+	StopSpyTo(m_pToken->Graph());
+	m_CliquesObj = new Cliques(m_pToken->Graph());
+	SpyTo(m_CliquesObj);
+    }
+    else
+    {
+	ThrowInternalError("Not yet realized", "SetMRF(false)");
+    }
+}
+#endif
+
 void WDistributions::Setup(int iNode)
 {
     TokArr ta(Tok(m_pToken->Node(iNode)));
@@ -33,13 +50,20 @@ void WDistributions::Setup(int iNode)
     }
     delete m_aDistribution[iNode];
     if (nodeClass == eNodeClassDiscrete )
+    {
         m_aDistribution[iNode] = new WTabularDistribFun();
+    }
     else
+    {
         if (nodeClass == eNodeClassContinuous)
+	{
             m_aDistribution[iNode] = new WGaussianDistribFun();
+	}
         else
+	{
 	    ThrowUsingError("Uknown type", "Setup");
-
+	}
+    }
 
     Vector<int> aParent;
     
