@@ -23,6 +23,10 @@
 #include "pnlObject.hpp"
 #include "pnlPotential.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class CStaticGraphicalModel;
@@ -91,6 +95,17 @@ public:
 
     EInfTypes                    m_InfType;
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CInfEngine::m_TypeInfo;
+  }
+#endif
+
 protected:
 
     CInfEngine( EInfTypes infType, const CStaticGraphicalModel *pGM );
@@ -106,6 +121,9 @@ protected:
     
     CEvidence*                   m_pEvidenceMPE;
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif   
 private:
 
     static CNodeType             m_ObsTabNodeType;

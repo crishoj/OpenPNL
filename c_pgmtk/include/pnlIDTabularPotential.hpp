@@ -21,6 +21,10 @@
 
 #include "pnlIDPotential.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API CIDTabularPotential : public CIDPotential
@@ -45,11 +49,24 @@ public:
 
   virtual ~CIDTabularPotential(){}
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CIDTabularPotential::m_TypeInfo;
+  }
+#endif
 protected:
   CIDTabularPotential(const int *domain, int nNodes, CModelDomain* pMD);
 
   CIDTabularPotential(const CIDTabularPotential* potential);
 
+#ifdef PNL_RTTI
+  static const CPNLType m_TypeInfo;
+#endif
 private:
 };
 
