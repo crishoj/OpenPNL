@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "TestLIMID"=..\tests\make\TestLIMID.dsp - Package Owner=<4>
+Project: "TestLIMID"=..\examples\testLIMID\make\TestLIMID.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -18,7 +18,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "TestParPNL"=..\tests\make\TestParPNL.dsp - Package Owner=<4>
+Project: "TestParPNL"=..\examples\parPNLTest\make\TestParPNL.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -33,7 +33,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "TestSoftMax"=..\tests\make\TestSoftMax.dsp - Package Owner=<4>
+Project: "TestSoftMax"=..\examples\testSoftMax\make\TestSoftMax.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -91,12 +91,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name mixture_gaussian_bnet
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name TestLIMID
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name TestSoftMax
     End Project Dependency
 }}}
 
