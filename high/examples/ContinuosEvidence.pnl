@@ -1,0 +1,28 @@
+clear()
+AddNode("continuous^x", "dim1")
+AddNode("continuous^y", "dim1")
+AddNode("continuous^z", "dim1")
+AddArc("x", "y")
+AddArc("y", "z")
+SetGaussian("x", "0.0", "1.0")
+SetGaussian("y", "8.0", "1.0", "0.01")
+SetGaussian("z", "1.0", "0.01", "0.01")
+
+// set evidence
+editEvidence("y^dim1^2.2")
+print("start of inferences with evidence... ")
+
+JPD("x")
+
+CurEvidToBuf()
+AddEvidToBuf("y^dim1^0.7")
+saveEvidBuf("evid1.csv")
+
+ClearEvidBuf()
+ClearEvid()
+editEvidence("x^dim1^2.5")
+CurEvidToBuf()
+saveEvidBuf("alevid2.csv")
+
+loadEvidBuf("evid1.csv")
+saveEvidBuf("evid2.csv")
