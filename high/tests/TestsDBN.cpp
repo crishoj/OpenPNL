@@ -167,6 +167,8 @@ int testDBNMPE()
 	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("House-3^True Flat-3^False");
 	pDBN->CurEvidToBuf();
+
+        pDBN->SaveEvidBuf("evidences.csv");
 	//  inference property must be Viterbi
 	pDBN->SetProperty("Inference","viter");
 	// getting request 
@@ -202,10 +204,180 @@ int testDBNLearning()
 	// setting number of slices
 	pDBN->SetNumSlices(4);
 	//evidences generation
-	pDBN->GenerateEvidences("4 6 5 6");
+//	pDBN->GenerateEvidences("4 6 5 6");
+        pDBN->LoadEvidBuf("evidences.csv");
 	// learning execution
 	pDBN->LearnParameters();
 	// free memory
 	delete pDBN;
 	return result;
 }
+
+
+int testDBNSaveLoad()
+{
+	int result = -1;
+	// node values
+	TokArr aChoice = "True False MayBe";
+	// DBN creation
+	DBN *pDBN; 
+	pDBN = new DBN();
+	// prior slice nodes creation 
+	pDBN->AddNode(discrete ^ "Street-0", aChoice); 
+	pDBN->AddNode(discrete ^ "House-0", aChoice);
+	pDBN->AddNode(discrete ^ "Flat-0", aChoice);
+	// 1-st slice nodes creation 
+	pDBN->AddNode(discrete ^ "Street-1", aChoice); 
+	pDBN->AddNode(discrete ^ "House-1", aChoice);
+	pDBN->AddNode(discrete ^ "Flat-1", aChoice);
+	// edges creation
+	pDBN->AddArc("Street-0","House-0");
+	pDBN->AddArc("Street-0","Flat-0");
+	pDBN->AddArc("Street-1"," House-1");
+	pDBN->AddArc("Street-1","Flat-1");
+	pDBN->AddArc("Street-0","Street-1"); // setting interface nodes
+	// setting number of slices
+	pDBN->SetNumSlices(4);
+        
+        pDBN->SaveNet("dbn.xml");
+
+        DBN *newDBN;
+	newDBN = new DBN();
+        newDBN->LoadNet("dbn.xml");
+
+        // free memory
+	delete pDBN;
+        delete newDBN;
+	return result;
+}
+
+
+int testDBN()
+{
+    int result = -1;
+    // node values
+    TokArr aChoice = "True False MayBe";
+    // DBN creation
+    DBN *pDBN; 
+    pDBN = new DBN();
+    // prior slice nodes creation 
+    pDBN->AddNode(discrete ^ "Street-0", aChoice); 
+    pDBN->AddNode(discrete ^ "House-0", aChoice);
+    pDBN->AddNode(discrete ^ "Flat-0", aChoice);
+    // 1-st slice nodes creation 
+    pDBN->AddNode(discrete ^ "Street-1", aChoice); 
+    pDBN->AddNode(discrete ^ "House-1", aChoice);
+    pDBN->AddNode(discrete ^ "Flat-1", aChoice);
+    // edges creation
+    pDBN->AddArc("Street-0","House-0");
+    pDBN->AddArc("Street-0","Flat-0");
+    pDBN->AddArc("Street-1"," House-1");
+    pDBN->AddArc("Street-1","Flat-1");
+    pDBN->AddArc("Street-0","Street-1"); // setting interface nodes
+	// setting number of slices
+
+    pDBN->SetNumSlices(2);
+        /*SetPTabular("Burglary^true Burglary^false", "0.001 0.999")
+SetPTabular("Earthquake^true Earthquake^false", "0.002 0.998")
+SetPTabular("Alarm^true", "0.95", "Burglary^true Earthquake^true")
+*/
+    pDBN->SetPTabular("Street-0^True Street-0^False Street-0^MayBe", "0.3 0.5 0.2");
+    pDBN->SetPTabular("House-0^True House-0^False House-0^MayBe", "0.3 0.2 0.5", "Street-0^True"); 
+    pDBN->SetPTabular("House-0^True House-0^False House-0^MayBe", "0.3 0.2 0.5", "Street-0^False"); 
+    pDBN->SetPTabular("House-0^True House-0^False House-0^MayBe", "0.3 0.2 0.5", "Street-0^MayBe"); 
+    
+    pDBN->SetPTabular("Flat-0^True Flat-0^False Flat-0^MayBe", "0.5 0.3 0.2", "Street-0^True"); 
+    pDBN->SetPTabular("Flat-0^True Flat-0^False Flat-0^MayBe", "0.5 0.3 0.2", "Street-0^False"); 
+    pDBN->SetPTabular("Flat-0^True Flat-0^False Flat-0^MayBe", "0.5 0.3 0.2", "Street-0^MayBe"); 
+
+    pDBN->SetPTabular("Street-1^True Street-1^False Street-1^MayBe", "0.1 0.4 0.5", "Street-0^True"); 
+    pDBN->SetPTabular("Street-1^True Street-1^False Street-1^MayBe", "0.1 0.4 0.5", "Street-0^False"); 
+    pDBN->SetPTabular("Street-1^True Street-1^False Street-1^MayBe", "0.1 0.4 0.5", "Street-0^MayBe"); 
+
+    pDBN->SetPTabular("House-1^True House-1^False House-1^MayBe", "0.3 0.2 0.5", "Street-1^True"); 
+    pDBN->SetPTabular("House-1^True House-1^False House-1^MayBe", "0.3 0.2 0.5", "Street-1^False"); 
+    pDBN->SetPTabular("House-1^True House-1^False House-1^MayBe", "0.3 0.2 0.5", "Street-1^MayBe"); 
+
+    pDBN->SetPTabular("Flat-1^True Flat-1^False Flat-1^MayBe", "0.5 0.3 0.2", "Street-1^True"); 
+    pDBN->SetPTabular("Flat-1^True Flat-1^False Flat-1^MayBe", "0.5 0.3 0.2", "Street-1^False"); 
+    pDBN->SetPTabular("Flat-1^True Flat-1^False Flat-1^MayBe", "0.5 0.3 0.2", "Street-1^MayBe"); 
+
+    TokArr st0 = pDBN->GetPTabular("Street-0");
+    printf("%s\n",String(st0).c_str());
+
+    TokArr h0 = pDBN->GetPTabular("House-0");
+    printf("%s\n",String(h0).c_str());
+
+    TokArr f0 = pDBN->GetPTabular("Flat-0");
+    printf("%s\n",String(f0).c_str());
+
+    TokArr st1 = pDBN->GetPTabular("Street-1");
+    printf("%s\n",String(st1).c_str());
+
+    TokArr h1 = pDBN->GetPTabular("House-1");
+    printf("%s\n",String(h1).c_str());
+    
+    TokArr f1 = pDBN->GetPTabular("Flat-1");
+    printf("%s\n",String(f1).c_str());
+
+    printf("\nParents\n");
+    TokArr st0p = pDBN->GetParents("Street-0");
+    printf("%s\n",String(st0p).c_str());
+
+    TokArr h0p = pDBN->GetParents("House-0");
+    printf("%s\n",String(h0p).c_str());
+
+    TokArr f0p = pDBN->GetParents("Flat-0");
+    printf("%s\n",String(f0p).c_str());
+
+    TokArr st1p = pDBN->GetParents("Street-1");
+    printf("%s\n",String(st1p).c_str());
+
+    TokArr h1p = pDBN->GetParents("House-1");
+    printf("%s\n",String(h1p).c_str());
+
+    TokArr f1p = pDBN->GetParents("Flat-1");
+    printf("%s\n",String(f1p).c_str());
+
+    printf("\nChildren\n");
+    TokArr st0c = pDBN->GetChildren("Street-0");
+    printf("%s\n",String(st0c).c_str());
+
+    TokArr h0c = pDBN->GetChildren("House-0");
+    printf("%s\n",String(h0c).c_str());
+    
+    TokArr f0c = pDBN->GetChildren("Flat-0");
+    printf("%s\n",String(f0c).c_str());
+    
+    TokArr st1c = pDBN->GetChildren("Street-1");
+    printf("%s\n",String(st1c).c_str());
+    
+    TokArr h1c = pDBN->GetChildren("House-1");
+    printf("%s\n",String(h1c).c_str());
+    
+    TokArr f1c = pDBN->GetChildren("Flat-1");
+    printf("%s\n",String(f1c).c_str());
+    
+    printf("\nNeighbors\n");
+    TokArr st0n = pDBN->GetNeighbors("Street-0");
+    printf("%s\n",String(st0n).c_str());
+
+    TokArr h0n = pDBN->GetNeighbors("House-0");
+    printf("%s\n",String(h0n).c_str());
+
+    TokArr f0n = pDBN->GetNeighbors("Flat-0");
+    printf("%s\n",String(f0n).c_str());
+    
+    TokArr st1n = pDBN->GetNeighbors("Street-1");
+    printf("%s\n",String(st1n).c_str());
+
+    TokArr h1n = pDBN->GetNeighbors("House-1");
+    printf("%s\n",String(h1n).c_str());
+
+    TokArr f1n = pDBN->GetNeighbors("Flat-1");
+    printf("%s\n",String(f1n).c_str());
+    
+    // free memory
+    delete pDBN;
+    return result;
+} 
