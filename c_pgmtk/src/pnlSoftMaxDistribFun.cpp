@@ -1023,7 +1023,8 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
   float NewKsi = 0.0f;
   NewKsi = CalculateKsi( MeanContParents, CovContParents);
   float OldKsi = 0.0f;
-  
+  int iternum = 0;
+
   do
   {
     floatVector MeanVector;
@@ -1033,8 +1034,10 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
     
     CalculateMeanAndCovariance(OldKsi, r, MeanVector, &CovMatrix);
     NewKsi = CalculateKsi( MeanVector, CovMatrix);
+    iternum ++;
+
   }
-  while(fabs(NewKsi - OldKsi) > 0.001);
+  while((fabs(NewKsi - OldKsi) > 0.001)&&(iternum < 10));
   
   float ksi = NewKsi;
   
@@ -2287,7 +2290,7 @@ float CSoftMaxDistribFun::CalculateKsi(floatVector MeanContParents,
   {
     multiindex[0] = i;
     multiindex[1] = 0;
-    prod += (newMatWeights->GetElementByIndexes(multiindex))*MeanContParents[i];
+    prod *= (newMatWeights->GetElementByIndexes(multiindex))*MeanContParents[i];
   }
   prod *= 2*m_VectorOffset[0]; 
   
