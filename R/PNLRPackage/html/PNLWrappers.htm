@@ -121,8 +121,7 @@ AddNode(net, "discrete^NodeA discrete^NodeB", "true false")
 <p class="description">
 Add multivariate nodes "NodeA" with 2 dimensions "dim1" and "dim2" to bayes net:
 </p>
-<p class="example">
-AddNodee(net, "continuous^NodeA", "dim1 dim2")
+<p class="example">AddNode(net, "continuous^NodeA", "dim1 dim2")
 </p>
 <HR>
 
@@ -176,7 +175,7 @@ Get array of types of nodes "NodeA" and "NodeB":
 The output of this function call will be the following:
 </p>
 <p class="example">
-   "discrete discrete"
+   &quot;discrete&quot; &quot;discrete&quot;
 </P>
 <HR>
 
@@ -831,14 +830,14 @@ Get MPE for node "NodeA" with Junction Tree inference:
 </p>
 <p class="example">
 SetProperty(net, "Inference", "jtree")<br>
-TokArr jtreeMPENodeA = GetMPE(net, "NodeA")
+jtreeMPENodeA &lt;- GetMPE(net, &quot;NodeA&quot;)
 </P>
 <p class="description">
 Get MPE for nodes "NodeA" and "NodeB" with Pearl inference (nodes "NodeA" and "NodeB" must be from the same family):
 </p>
 <p class="example">
 SetProperty(net, "Inference", "pearl")<br>
-TokArr pearlMPENodeA = GetMPE(net, "NodeA NodeB")
+pearlMPENodeA &lt;- GetMPE(net, &quot;NodeA NodeB&quot;)
 </P>
 <HR>
 

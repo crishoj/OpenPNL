@@ -190,7 +190,7 @@ SetPTabular(net, &quot;Sprinkler^true Sprinkler^false&quot;, &quot;0.5 0.5&quot;
 To get the probability distribution of the node we must call of GetPTabular
 method:
 <pre>
-PCloudy &lt;- GetPTabular(net, &quot;Cloudy&quot;)
+PCloudy &lt;- GetPTabularString(net, &quot;Cloudy&quot;)
 </pre>
 The following values are now stored in the variables:
 <pre>
@@ -198,7 +198,7 @@ PCloudyStr		&quot;Cloudy^true^0.6 Cloudy^false^0.4&quot;
 </pre>
 For the conditional distribution it is possible to get probabilities for the indicated parents state configuration (or for the definite states of some parents):
 <p>
-<pre>PSprinkler &lt;- GetPTabular(net, &quot;Sprinkler&quot;, &quot;Cloudy^true&quot;)
+<pre>PSprinkler &lt;- GetPTabularString(net, &quot;Sprinkler&quot;, &quot;Cloudy^true&quot;)
 </pre>
 The values of the variables:
 <pre>&nbsp;</pre>
@@ -273,10 +273,10 @@ net.LearnParameters()
 As a result, the probability distributions on the nodes have been changed. To get new distributions GetPTabular method is used:
 <p>
 <pre>
-PCloudy &lt;- net.GetPTabular(&quot;Cloudy&quot;)
-PSprinkler &lt;- net.GetPTabular(&quot;Sprinkler&quot;)
-PRain &lt;- net.GetPTabular(&quot;Sprinkler&quot;)
-PWetGrass &lt;- net.GetPTabular(&quot;WetGrass&quot;)
+PCloudy &lt;- GetPTabularFloat(net, &quot;Cloudy&quot;)
+PSprinkler &lt;- GetPTabularFloat(net, &quot;Sprinkler&quot;)
+PRain &lt;- GetPTabularFloat(net, &quot;Sprinkler&quot;)
+PWetGrass &lt;- GetPTabularFloat(net, &quot;WetGrass&quot;)
 
 </pre>
 Now distributions are presented as String objects.&nbsp;
@@ -337,11 +337,11 @@ For calculating JPD and MPE current evidence is used. You can edit this evidence
 <br>
 You can use GetJPD method to get the marginal probability distribution of the node:  
 <pre>
-WetGrassMarg &lt;- GetJPD(net, &quot;WetGrass&quot;)
+WetGrassMarg &lt;- GetJPDString(net, &quot;WetGrass&quot;)
 </pre>
 It is possible to get joint distribution for the nodes from one family (family is the set, which consists of node and node parents):
 <pre>
-WetGrassAndSprinklerMarg &lt;- GetJPD(net, &quot;WetGrass Sprinkler&quot;)
+WetGrassAndSprinklerMarg &lt;- GetJPDString(net, &quot;WetGrass Sprinkler&quot;)
 </pre>
 You can use GetMPE method to get Maximum Probability Explanation for one node or for some set of nodes from one
 family:
@@ -372,7 +372,7 @@ These parameters can be changed with SetProperty method. Corresponding propertie
 SetProperty(net, &quot;PearlMaxNumberOfIterations&quot;, &quot;10&quot;)
 SetProperty(net, &quot;PearlTolerance&quot;, &quot;1e-5&quot;)
 SetProperty(net, &quot;Inference&quot;, &quot;pearl&quot;)
-WetGrassJPD &lt;- GetJPD(net, &quot;WetGrass&quot;)
+WetGrassJPD &lt;- GetJPDString(net, &quot;WetGrass&quot;)
 
 </pre>
 For Gibbs Sampling Inference number of iterations must be specified. Corresponding property name is "GibbsNumberOfIterations".
@@ -517,7 +517,7 @@ If Bayesian network and probability distributions have been already defined, we 
 <br>This possibility is well described for the discrete networks. For the continuous networks it is the same.
 <p>
 <pre>
-X3Marg &lt;- GetJPD(net, &quot;x3&quot;)
+X3Marg &lt;- GetJPDString(net, &quot;x3&quot;)
 X3MPE &lt;- GetMPE(net, &quot;x3&quot;)
 </pre>
 <hr>
@@ -621,7 +621,7 @@ EditEvidence(net, &quot;x^dim1^-15.0&quot;)
 
 EditEvidence(net, &quot;x^dim2^5.0 z^dim1^15.67&quot;)
 
-GetJPD(net, &quot;y z&quot;)
+GetJPDString(net, &quot;y z&quot;)
 
 </pre>
 <hr>
