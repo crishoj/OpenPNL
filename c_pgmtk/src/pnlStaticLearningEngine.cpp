@@ -96,6 +96,58 @@ void CStaticLearningEngine::SetData(const pConstEvidenceVector& evidencesIn )
 {
     SetData( evidencesIn.size(), &evidencesIn.front() );
 }
+// ----------------------------------------------------------------------------
+
+void CStaticLearningEngine::BuildFullEvidenceMatrix(float ***full_evid)
+{
+    int i, j;
+    CStaticGraphicalModel *grmodel = GetStaticModel();
+    const CEvidence* pCurrentEvid;
+    //valueVector *values = new valueVector();
+  
+    int NumOfNodes = grmodel->GetGraph()->GetNumberOfNodes();
+    int NumOfEvid = m_Vector_pEvidences.size();
+
+    (*full_evid) = new float * [NumOfNodes];
+    for (i = 0; i < NumOfNodes; i++)
+    {
+        (*full_evid)[i] = new float [NumOfEvid];
+    }
+
+    for (i = 0; i < NumOfNodes; i++)
+    {
+        for (j = 0; j < NumOfEvid; j++)
+        {
+            (*full_evid)[i][j] = -10000;
+        }
+    }
+
+    const int * obs;
+    for (j = 0; j < NumOfEvid; j++)
+    {
+        pCurrentEvid = m_Vector_pEvidences[j];
+        //int ObsNum = pCurrentEvid->GetNumberObsNodes();
+        obs = pCurrentEvid->GetAllObsNodes(); 
+        for (i = 0; i < (pCurrentEvid->GetNumberObsNodes()); i++)
+        {
+            float fl = (pCurrentEvid->GetValue(obs[i]))->GetFlt();
+            (*full_evid)[int(obs[i])][j] = fl;
+        }
+    }
+
+/*  printf ("\n My Full Evidence Matrix");
+    for (i=0; i<NumOfNodes; i++)
+    {
+        for (j=0; j<NumOfEvid; j++)
+        {
+            printf ("%f   ", (*full_evid)[i][j]);
+        }
+        printf("\n");
+    }
+*/            
+}
+// ----------------------------------------------------------------------------
+
 
 #ifdef PNL_RTTI
 const CPNLType CStaticLearningEngine::m_TypeInfo = CPNLType("CStaticLearningEngine", &(CLearningEngine::m_TypeInfo));

@@ -48,6 +48,8 @@ public:
 
   virtual CDistribFun* Clone() const;
 
+  float CalculateLikelihood(float **Observation, int NumberOfObservations);
+
   virtual CDistribFun* CloneWithSharedMatrices();
 
   virtual void AllocMatrix(const float *data, EMatrixType mType, 

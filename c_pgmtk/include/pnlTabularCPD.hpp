@@ -44,6 +44,9 @@ public:
 
     static CTabularCPD* CreateUnitFunctionCPD( const intVector& domainIn,
 	CModelDomain* pMD);
+
+    float GetMatrixValue(const CEvidence *pEv);
+
     virtual void CreateAllNecessaryMatrices(int typeOfMatrices = 1);
     //typeOfMatrices = 1 - all matrices are random
     //only Gaussian covariance matrix is matrix unit

@@ -543,3 +543,31 @@ void CTabularCPD::UpdateStatisticsML(CFactor *pPot)
 const CPNLType CTabularCPD::m_TypeInfo = CPNLType("CTabularCPD", &(CCPD::m_TypeInfo));
 
 #endif
+
+float CTabularCPD::GetMatrixValue(const CEvidence *pEv)
+{
+	int nIndexes;
+	int *indexes;
+	nIndexes = m_Domain.size();
+	indexes = new int[nIndexes];
+	intVector pObsNodes;
+	pConstValueVector pObsValues;
+	pConstNodeTypeVector pNodeTypes;
+	pEv->GetObsNodesWithValues(&pObsNodes,&pObsValues,&pNodeTypes);
+	int i,j;
+	for(i = 0; i < nIndexes; i++)
+	{
+		for(j = 0; j < pObsNodes.size(); j++)
+		{
+			if(pObsNodes[j] == m_Domain[i] )
+			{
+				indexes[i] = (pObsValues[j])->GetInt();
+			};
+		}
+	};
+	float value;
+	value = (m_CorrespDistribFun->GetMatrix(matTable))->GetElementByIndexes(indexes);
+	
+	delete []indexes;
+	return value;
+}

@@ -219,8 +219,8 @@ void CSoftMaxDistribFun::CreateDefaultMatrices(int typeOfMatrices)
   intVector dims;
   dims.resize(2);
   int chldNodeSize = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
-  dims[0] = chldNodeSize;
-  dims[1] = m_NumberOfNodes - 1;
+  dims[0] = m_NumberOfNodes - 1;
+  dims[1] = chldNodeSize;
   floatVector weight;
   int weightSize = dims[0] * dims[1];
   weight.assign(weightSize, 0.0f);
@@ -342,8 +342,36 @@ CSoftMaxDistribFun::CSoftMaxDistribFun(const CSoftMaxDistribFun & inpDistr)
 
 int CSoftMaxDistribFun::GetNumberOfFreeParameters() const
 {
-  // fixme - here we must calculate some value (see GaussianDistribFun)
-  return 0;
+	int i; 
+    intVector discrPar(0);
+    intVector contPar(0);
+    int numConf = 1;
+    int nDiscr = 0;
+    int nCont = 0;
+    int nW = 0;
+	
+    for (i = 0; i < m_NumberOfNodes - 1; i++ )
+    {
+        if (m_NodeTypes[i]->IsDiscrete())
+        {
+            discrPar.push_back(i);
+            numConf *= m_NodeTypes[i]->GetNodeSize();
+        }
+        else
+            contPar.push_back(i);
+    }
+	
+    for (i = 0; i < contPar.size(); i++ )
+    {
+        int ns = m_NodeTypes[contPar[i]]->GetNodeSize();
+        nW += ns * m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
+    }
+	
+    nCont = contPar.size() * (contPar.size() - 1) / 2; 
+	
+    //return nDiscr + nCont + nW + contPar.size() +1;
+	return nDiscr + nCont + nW;
+
 }
 // ----------------------------------------------------------------------------
 
@@ -1593,7 +1621,7 @@ void CSoftMaxDistribFun::MaximumLikelihoodGradient(float **Observations,
     }
   }
   while (((fabs((OldLikelihood - NewLikelihood) * 2 / 
-    (OldLikelihood + NewLikelihood)) > Accuracy)) && (iternum < 100000));
+    (OldLikelihood + NewLikelihood)) > Accuracy)) && (iternum < 1000));
 
   delete [] grad_offset;
   for (i = 0; i < NumOfContinousParents; i++)

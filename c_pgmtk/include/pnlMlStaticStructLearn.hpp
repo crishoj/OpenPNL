@@ -27,6 +27,9 @@
 #include "pnlTreeCPD.hpp"
 #include "pnlSparseMatrix.hpp"
 #include "pnlStaticLearningEngine.hpp"
+#include "pnlSoftMaxCPD.hpp"
+#include "pnlSoftMaxDistribFun.hpp"
+#include "pnlCondSoftMaxDistribFun.hpp"
 
 #ifdef PNL_RTTI
 #include "pnlpnlType.hpp"
@@ -47,6 +50,13 @@ typedef PNL_API enum
 	StructLearnMCMC	//Markov Chain Monte Carlo, not implemented	
 } EOptimizeTypes;
 
+typedef PNL_API enum
+{
+	MaxLh, //maximized likelihood
+	PreAs, //predictive assessment
+	MarLh	//marginal likelyhood ,not implemented yet
+} EScoreMethodTypes;
+
 class PNL_API CMlStaticStructLearn : public CStaticLearningEngine
 {
 public:
@@ -57,6 +67,7 @@ public:
 	const CBNet* GetResultBNet()const;
 	const CDAG*  GetResultDAG()const;
 	const int*   GetResultRenaming()const;
+	EScoreMethodTypes GetScoreMethod();
 	void  SetMinProgress(float minProgress);
 
 
@@ -65,6 +76,7 @@ public:
 	void  CreateResultBNet(CDAG* pDAG);
 
 	void  SetInitGraphicalModel(CGraphicalModel* pGrModel);
+	void SetScoreMethod(EScoreMethodTypes Type);
 	//used to re-learn from another initial DAG. nodes order and nodes types
 	//need to be the same as the original m_pGrModel. 
 
@@ -94,6 +106,7 @@ protected:
 	CDAG*		m_pResultDAG;
 	EScoreFunTypes	m_ScoreType;
 	EOptimizeTypes	m_Algorithm;
+	EScoreMethodTypes m_ScoreMethod;
 	
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;

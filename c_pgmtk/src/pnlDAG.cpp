@@ -610,7 +610,7 @@ bool CDAG::DoMove(int iStartNode, int iEndNode, EDAGChangeType iChangeType)
 
 void CDAG::GetAllValidMove(EDGEOPVECTOR *pvOutput, intVector* pvAncesstorVector, intVector* pvDescendantsVector, intVector* pvNotParents, intVector* pvNotChild)
 {
-    pvOutput->clear();
+ pvOutput->clear();
     bool bCheck = false;
     if(pvAncesstorVector != NULL && pvDescendantsVector!= NULL) // if one  set is empty all are valid
 	if(!pvAncesstorVector->empty() && !pvDescendantsVector->empty())
@@ -637,7 +637,7 @@ void CDAG::GetAllValidMove(EDGEOPVECTOR *pvOutput, intVector* pvAncesstorVector,
 			    eOP.originalEdge.startNode = i;
 			    eOP.originalEdge.endNode = j;
 			    eOP.DAGChangeType = DAG_DEL;
-			    if((!bCheck || CheckValid(*pvAncesstorVector, *pvDescendantsVector, eOP)) && (!bCheck2 || CheckValid2(*pvNotParents, *pvNotChild, eOP)))
+			    if(/*(!bCheck || CheckValid(*pvAncesstorVector, *pvDescendantsVector, eOP)) &&*/ (!bCheck2 || CheckValid2(*pvNotParents, *pvNotChild, eOP)))
 				pvOutput->push_back(eOP);
 			    //					if(!bCheck)
 			    //						pvOutput->push_back(eOP);
@@ -650,7 +650,7 @@ void CDAG::GetAllValidMove(EDGEOPVECTOR *pvOutput, intVector* pvAncesstorVector,
 			    eOP.originalEdge.startNode = i;
 			    eOP.originalEdge.endNode = j;
 			    eOP.DAGChangeType = DAG_REV;
-			    if((!bCheck || CheckValid(*pvAncesstorVector, *pvDescendantsVector, eOP)) && (!bCheck2 || CheckValid2(*pvNotParents, *pvNotChild, eOP)))
+			    if(/*(!bCheck || CheckValid(*pvAncesstorVector, *pvDescendantsVector, eOP)) && */(!bCheck2 || CheckValid2(*pvNotParents, *pvNotChild, eOP)))
 				pvOutput->push_back(eOP);
 			    //					if(!bCheck)
 			    //						pvOutput->push_back(eOP);
@@ -664,14 +664,13 @@ void CDAG::GetAllValidMove(EDGEOPVECTOR *pvOutput, intVector* pvAncesstorVector,
 			    eOP.originalEdge.startNode = i;
 			    eOP.originalEdge.endNode = j;
 			    eOP.DAGChangeType = DAG_ADD;
-			    if((!bCheck || CheckValid(*pvAncesstorVector, *pvDescendantsVector, eOP)) && (!bCheck2 || CheckValid2(*pvNotParents, *pvNotChild, eOP)))
+			    if(/*(!bCheck || CheckValid(*pvAncesstorVector, *pvDescendantsVector, eOP)) &&*/ (!bCheck2 || CheckValid2(*pvNotParents, *pvNotChild, eOP)))
 				pvOutput->push_back(eOP);
 			    //					if(!bCheck)
 			    //						pvOutput->push_back(eOP);
 			}
 		    }
 		}
-
 }
 
 bool CDAG::IsValidMove(int iStartNode, int iEndNode, EDAGChangeType iChangeType)
@@ -931,86 +930,125 @@ int CDAG::GetARandomNum(unsigned int nMax)
 
 CDAG* CDAG::RandomCreateADAG(int iNodeNumber, int nMaxFanIn, const intVector &vAncesstor, const intVector &vDescendants, intVector* pvNotParent, intVector* pvNotChild)
 {
-    if(vAncesstor.empty() || vDescendants.empty())// if one  set is empty all are valid
+	if(vAncesstor.empty() || vDescendants.empty())// if one  set is empty all are valid
     {
-	CDAG* pRet = CDAG::Create(iNodeNumber, NULL, NULL, NULL);
-	intVector vAllNodes;
-	for(int k=0; k<iNodeNumber; k++)
-	    vAllNodes.push_back(k);
-	pRet->RandomCreateASubDAG(vAllNodes, nMaxFanIn);
-	return pRet;
+		CDAG* pRet = CDAG::Create(iNodeNumber, NULL, NULL, NULL);
+		intVector vAllNodes;
+		for(int k=0; k<iNodeNumber; k++)
+			vAllNodes.push_back(k);
+		pRet->RandomCreateASubDAG(vAllNodes, nMaxFanIn);
+		return pRet;
     }
     bool bCheck = false;
     if(pvNotParent != NULL && pvNotChild!= NULL) // if one  set is empty all are valid
-	if(!pvNotParent->empty() && !pvNotChild->empty())
-	    bCheck = true;
-
-
-	CDAG* pRet = CDAG::Create(iNodeNumber, NULL, NULL, NULL);
-	pRet->CreateAncestorMatrix(); // must be all zeros
-	pRet->RandomCreateASubDAG(vAncesstor, nMaxFanIn-1);
-	pRet->RandomCreateASubDAG(vDescendants, nMaxFanIn-1);
-	int iRandomAddLink = GetARandomNum(vAncesstor.size() * vDescendants.size());
-	int i;
-
-	if(iRandomAddLink == 0)
-	    iRandomAddLink =1;
-	for(i=0; i<iRandomAddLink; i++)
-	{
-	    int iNode1 = GetARandomNum(vAncesstor.size());
-	    iNode1 = vAncesstor[iNode1];
-	    int iNode2 = GetARandomNum(vDescendants.size());
-	    iNode2 = vDescendants[iNode2];
-	    EDGEOP eOP;
-	    eOP.DAGChangeType = DAG_ADD;
-	    eOP.originalEdge.startNode = iNode1;
-	    eOP.originalEdge.endNode = iNode2;
-	    if(!bCheck || pRet->CheckValid2(*pvNotParent, *pvNotChild, eOP))
-	    {
-		pRet->DoMove(iNode1, iNode2, DAG_ADD);
-		if(pRet->GetMaxFanIn() > nMaxFanIn)
+		if(!pvNotParent->empty() && !pvNotChild->empty())
+			bCheck = true;
+		
+		
+		CDAG* pRet = CDAG::Create(iNodeNumber, NULL, NULL, NULL);
+		pRet->CreateAncestorMatrix(); // must be all zeros
+		pRet->RandomCreateASubDAG(vAncesstor, nMaxFanIn-1);
+		pRet->RandomCreateASubDAG(vDescendants, nMaxFanIn-1);
+		int iRandomAddLink = GetARandomNum(vAncesstor.size() * vDescendants.size());
+		int i;
+		
+		if(iRandomAddLink == 0)
+			iRandomAddLink =1;
+		for(i=0; i<iRandomAddLink; i++)
 		{
-		    pRet->DoMove(iNode1, iNode2, DAG_DEL);
+			int iNode1 = GetARandomNum(vAncesstor.size());
+			iNode1 = vAncesstor[iNode1];
+			int iNode2 = GetARandomNum(vDescendants.size());
+			iNode2 = vDescendants[iNode2];
+			EDGEOP eOP;
+			eOP.DAGChangeType = DAG_ADD;
+			int Orientation = GetARandomNum(2); 
+			if(Orientation == 0)
+			{
+				eOP.originalEdge.startNode = iNode1;
+				eOP.originalEdge.endNode = iNode2;
+				if(!bCheck || pRet->CheckValid2(*pvNotParent, *pvNotChild, eOP))
+				{
+					pRet->DoMove(iNode1, iNode2, DAG_ADD);
+					if(pRet->GetMaxFanIn() > nMaxFanIn)
+					{
+						pRet->DoMove(iNode1, iNode2, DAG_DEL);
+					}
+				}
+			}
+			else
+			{
+				eOP.originalEdge.startNode = iNode2;
+				eOP.originalEdge.endNode = iNode1;
+				if(!bCheck || pRet->CheckValid2(*pvNotParent, *pvNotChild, eOP))
+				{
+					pRet->DoMove(iNode2, iNode1, DAG_ADD);
+					//	pRet->Dump();
+					if(pRet->GetMaxFanIn() > nMaxFanIn)
+					{
+						pRet->DoMove(iNode2, iNode1, DAG_DEL);
+					}
+				}
+			};
+			
 		}
-	    }
-	}
-	if(iNodeNumber == int(vAncesstor.size() + vDescendants.size()))
-	    return pRet; // all nodes linked;
-
-	//link nodes that are not in vAncesstor or vDescendants;
-	int * pLinked = new int[iNodeNumber];
-	for(i=0; i<iNodeNumber; i++)
-	    pLinked[i] = 0;
-	for(i=0; i<vAncesstor.size(); i++)
-	    pLinked[vAncesstor[i]] =1;
-	for(i=0; i<vDescendants.size(); i++)
-	    pLinked[vDescendants[i]] =1;
-	for(i=0; i<iNodeNumber; i++)
-	{
-	    if(pLinked[i] == 0)
-	    {
-		int j;
-		do
+		if(iNodeNumber == int(vAncesstor.size() + vDescendants.size()))
+			return pRet; // all nodes linked;
+		
+		//link nodes that are not in vAncesstor or vDescendants;
+		int * pLinked = new int[iNodeNumber];
+		for(i=0; i<iNodeNumber; i++)
+			pLinked[i] = 0;
+		for(i=0; i<vAncesstor.size(); i++)
+			pLinked[vAncesstor[i]] =1;
+		for(i=0; i<vDescendants.size(); i++)
+			pLinked[vDescendants[i]] =1;
+		for(i=0; i<iNodeNumber; i++)
 		{
-		    j = GetARandomNum(iNodeNumber);
-		}while(j == i && pLinked[j] == 0);
-		EDGEOP eOP;
-		eOP.DAGChangeType = DAG_ADD;
-		eOP.originalEdge.startNode = i;
-		eOP.originalEdge.endNode = j;
-		if(!bCheck || pRet->CheckValid2(*pvNotParent, *pvNotChild, eOP))
-		{
-		    pRet->DoMove(i, j, DAG_ADD);
-		    if(pRet->GetMaxFanIn() > nMaxFanIn)
-		    {
-			pRet->DoMove(i, j, DAG_DEL);
-		    }
+			if(pLinked[i] == 0)
+			{
+				int j;
+				do
+				{
+					j = GetARandomNum(iNodeNumber);
+				}while(j == i && pLinked[j] == 0);
+				EDGEOP eOP;
+				eOP.DAGChangeType = DAG_ADD;
+				int Orientation = GetARandomNum(2); 
+				if(Orientation == 0)
+				{
+					eOP.originalEdge.startNode = j;
+					eOP.originalEdge.endNode = i;
+					if(!bCheck || pRet->CheckValid2(*pvNotParent, *pvNotChild, eOP))
+					{
+						pRet->DoMove(i, j, DAG_ADD);
+						if(pRet->GetMaxFanIn() > nMaxFanIn)
+						{
+							pRet->DoMove(i, j, DAG_DEL);
+						}
+					}
+				}
+				else
+				{
+					eOP.originalEdge.startNode = i;
+					eOP.originalEdge.endNode = j;
+					if(!bCheck || pRet->CheckValid2(*pvNotParent, *pvNotChild, eOP))
+					{
+						pRet->DoMove(j, i, DAG_ADD);
+						if(pRet->GetMaxFanIn() > nMaxFanIn)
+						{
+							pRet->DoMove(j,i,DAG_DEL);
+						}
+					}
+				};
+				/*	eOP.originalEdge.startNode = i;
+				eOP.originalEdge.endNode = j;*/
+				
+			}
 		}
-	    }
-	}
-
-	delete []pLinked;
-	return pRet;
+		
+		delete []pLinked;
+		return pRet;
 }
 
 void CDAG::RandomCreateASubDAG(const intVector &vSubNodes, int nMaxFanIn, intVector* pvNotParent, intVector* pvNotChild)

@@ -70,8 +70,6 @@ protected:
     void SetNumProcEv( int numEv );
     inline bool IsAllObserved() const;
     float UpdateModel();
-    void BuildFullEvidenceMatrix(float ***full_evid);
-    void BuildCurrentEvidenceMatrix(int Node, float ***full_evid, float ***evid);
 
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;

@@ -53,6 +53,7 @@ CMlStaticStructLearn::CMlStaticStructLearn(CStaticGraphicalModel *pGrModel,
     m_ScoreType = ScoreType;
     m_Algorithm = AlgorithmType;
     m_nMaxFanIn = nMaxFanIn;
+	m_ScoreMethod = MaxLh;
     m_vAncestor.assign(vAncestor.begin(), vAncestor.end());
     m_vDescent.assign(vDescent.begin(),vDescent.end());
     PNL_CHECK_RANGES(nMaxFanIn, 1, nnodes);
@@ -128,10 +129,109 @@ float CMlStaticStructLearn::ComputeFamilyScore(intVector vFamily)
 {
     int nFamily = vFamily.size();
 	CCPD* iCPD = this->CreateRandomCPD(nFamily, &vFamily.front(), m_pGrModel);
-    int ncases = m_Vector_pEvidences.size();
-    iCPD->UpdateStatisticsML( &m_Vector_pEvidences.front(), ncases );
-    float score = iCPD->ProcessingStatisticalData(ncases);
-    int dim = iCPD->GetNumberOfFreeParameters();
+	int ncases = m_Vector_pEvidences.size();
+	float score;
+	float pred = 0;
+	EDistributionType NodeType;
+    switch (m_ScoreMethod)
+	{
+	case MaxLh :
+		if ( !((iCPD->GetDistribFun()->GetDistributionType() == dtSoftMax) 
+			|| (iCPD->GetDistribFun()->GetDistributionType() == dtCondSoftMax)))
+		{
+			iCPD->UpdateStatisticsML( &m_Vector_pEvidences.front(), ncases );
+			score = iCPD->ProcessingStatisticalData(ncases);
+		}
+		else
+		{
+			float **evid = NULL;
+			float **full_evid = NULL;	
+			BuildFullEvidenceMatrix(&full_evid);	
+			CSoftMaxCPD* SoftMaxFactor = static_cast<CSoftMaxCPD*>(iCPD);
+			SoftMaxFactor->BuildCurrentEvidenceMatrix(&full_evid, &evid,
+				  vFamily,m_Vector_pEvidences.size());
+			SoftMaxFactor->InitLearnData(); 
+			SoftMaxFactor->SetMaximizingMethod(mmGradient);
+			SoftMaxFactor->MaximumLikelihood(evid, m_Vector_pEvidences.size(),
+				0.00001f, 0.01f);
+			SoftMaxFactor->CopyLearnDataToDistrib();
+			if (SoftMaxFactor->GetDistribFun()->GetDistributionType() == dtSoftMax)
+				
+			{
+				score = ((CSoftMaxDistribFun*)SoftMaxFactor->GetDistribFun())->CalculateLikelihood(evid,ncases);
+			}
+			else
+			{
+				score = ((CCondSoftMaxDistribFun*)SoftMaxFactor->GetDistribFun())->CalculateLikelihood(evid,ncases);  
+			};
+			for (int k = 0; k < SoftMaxFactor->GetDomainSize(); k++)
+			{
+				delete [] evid[k];
+			}
+			delete [] evid;
+			int i;
+			intVector obsNodes;
+			(m_Vector_pEvidences[0])->GetAllObsNodes(&obsNodes);
+			for (i=0; i<obsNodes.size(); i++)
+			{
+				delete [] full_evid[i];
+			}
+			delete [] full_evid;
+		};
+		break;
+	case PreAs :
+		int i;
+		NodeType = iCPD->GetDistributionType();
+		switch (NodeType)
+		{
+		case dtTabular : 
+			for(i = 0; i < ncases; i++)
+			{
+				
+				pConstEvidenceVector tempEv(0);
+				tempEv.push_back(m_Vector_pEvidences[i]);
+				iCPD->UpdateStatisticsML(&tempEv.front(), tempEv.size());
+				iCPD->ProcessingStatisticalData(tempEv.size());
+				pred += log(((CTabularCPD*)iCPD)->GetMatrixValue(m_Vector_pEvidences[i]));
+			}
+			break;
+		case dtGaussian :
+			for(i = 0; i < ncases; i += 1 )
+			{
+				
+				pConstEvidenceVector tempEv(0);
+				tempEv.push_back(m_Vector_pEvidences[i]);
+				
+				iCPD->UpdateStatisticsML(&tempEv.front(), tempEv.size());
+				float tmp = 0;
+				if (i != 0)
+				{
+					tmp =iCPD->ProcessingStatisticalData(1);
+					pred +=tmp;
+					
+				}
+				
+			}
+			break;
+		case dtSoftMax: 
+			PNL_THROW(CNotImplemented, 
+					 "This type score method has not been implemented yet");
+			break;
+		default: PNL_THROW(CNotImplemented, 
+					 "This type score method has not been implemented yet");
+			break;
+		};
+				
+		score = pred;
+		break;
+	case MarLh : PNL_THROW(CNotImplemented, 
+					 "This type score method has not been implemented yet");
+		break;
+	default : PNL_THROW(CNotImplemented, 
+				  "This type score method has not been implemented yet");
+		break;
+	}
+	int dim = iCPD->GetNumberOfFreeParameters();
     switch (m_ScoreType)
     {
     case BIC :
@@ -215,10 +315,40 @@ CMlStaticStructLearn::ComputeFactor(intVector vFamily, CGraphicalModel* pGrModel
 {
     int nFamily = vFamily.size();
 	CCPD* iCPD = this->CreateRandomCPD(nFamily, 
-		             &vFamily.front(), pGrModel);
+		&vFamily.front(), pGrModel);
     int ncases = m_Vector_pEvidences.size();
-    iCPD->UpdateStatisticsML( pEvidences, ncases );
-    iCPD->ProcessingStatisticalData(ncases);
+    if ( !(iCPD->GetDistributionType() == dtSoftMax))
+	{
+		iCPD->UpdateStatisticsML( pEvidences, ncases );
+		iCPD->ProcessingStatisticalData(ncases);
+    }
+	else
+	{
+		float **evid = NULL;
+		float **full_evid = NULL;	
+		BuildFullEvidenceMatrix(&full_evid);
+		CSoftMaxCPD* SoftMaxFactor = (CSoftMaxCPD*)iCPD;
+		SoftMaxFactor->BuildCurrentEvidenceMatrix(&full_evid, &evid,vFamily,
+			m_Vector_pEvidences.size());
+		SoftMaxFactor->InitLearnData();
+		SoftMaxFactor->SetMaximizingMethod(mmGradient);
+		SoftMaxFactor->MaximumLikelihood(evid, m_Vector_pEvidences.size(),
+			0.00001f, 0.01f);
+		SoftMaxFactor->CopyLearnDataToDistrib();
+		for (int k = 0; k < SoftMaxFactor->GetDomainSize(); k++)
+		{
+			delete [] evid[k];
+		}
+		delete [] evid;
+		int i;
+		intVector obsNodes;
+		(m_Vector_pEvidences[0])->GetAllObsNodes(&obsNodes);
+		for (i=0; i<obsNodes.size(); i++)
+        {
+            delete [] full_evid[i];
+        }
+        delete [] full_evid;
+	};
     return iCPD;
 }
 
@@ -229,7 +359,26 @@ CMlStaticStructLearn::CreateRandomCPD(int nfamily, const int* family, CGraphical
 	EDistributionType dt = pnlDetermineDistributionType( pMD, nfamily, family, NULL);
                  
     CCPD* pCPD;
-
+   
+	int i;
+	int j;
+    // checking SoftMax distribution 
+	 for( i = 0; i < nfamily; i++ )
+    {
+        if( (!pMD->GetVariableType(family[i])->IsDiscrete()) 
+			&& pMD->GetVariableType(family[nfamily-1])->IsDiscrete() )
+        {
+        for( j = 0; j < nfamily-1; j++ ) 
+			if(pMD->GetVariableType(family[j])->IsDiscrete())
+			{
+		     dt = dtCondSoftMax;
+			 break;
+			}; 
+		dt =  dtSoftMax;
+		break;
+        }
+    }
+   // end of checking
 	switch (dt)
     {
     case dtTabular :
@@ -246,11 +395,26 @@ CMlStaticStructLearn::CreateRandomCPD(int nfamily, const int* family, CGraphical
 		pCPD = CGaussianCPD::Create(family, nfamily, pMD);
 		pCPD->CreateAllNecessaryMatrices(1);
 		break;
+	case dtSoftMax:
+    case dtCondSoftMax:
+        pCPD = CSoftMaxCPD::Create(family, nfamily, pMD);  
+        pCPD->CreateAllNecessaryMatrices(1); 
+		break;
     default:
 		PNL_THROW(CNotImplemented, "This type of distribution has not been implemented yet");
 		break;
     }
 	return pCPD;
+}
+
+EScoreMethodTypes CMlStaticStructLearn::GetScoreMethod()
+{
+ return  m_ScoreMethod;
+}
+
+void CMlStaticStructLearn::SetScoreMethod(EScoreMethodTypes Type)
+{
+	m_ScoreMethod = Type;
 }
 
 #ifdef PNL_RTTI

@@ -6547,45 +6547,51 @@ CDistribFun* CGaussianDistribFun::CPD_to_lambda(const CDistribFun *lambda,
 
 int CGaussianDistribFun::GetNumberOfFreeParameters() const
 {
-    CMatrix<float>* pMatrix;
+  	 CMatrix<float>* pMatrix;
     int i, nDims, nMean, nCov, nWeights;
     int dimOfGaussian, nparents;
-    const int* Dims;
-    
-    if(m_bDeltaFunction)
-		nCov = 0;
-	else
-	{
-	pMatrix = this->GetMatrix(matCovariance);
-    pMatrix->GetRanges(&nDims, &Dims);
-    dimOfGaussian = Dims[0];
-    if( pMatrix->GetClampValue() )
-	nCov = 0;
-    else
+    const int* Dims; 
+    dimOfGaussian = 0;
+    nCov = 0;
+
+    if (!m_bDeltaFunction)
     {
-	nCov = dimOfGaussian * (dimOfGaussian-1) / 2;   //symmetric (and positive definite)
+        pMatrix = this->GetMatrix(matCovariance);
+        pMatrix->GetRanges(&nDims, &Dims);
+        dimOfGaussian = Dims[0];
+        if( pMatrix->GetClampValue() )
+            nCov = 0;
+        else
+        {
+            nCov = dimOfGaussian * (dimOfGaussian-1) / 2;   //symmetric (and positive definite)
+        }
     }
-	}
+
+
     pMatrix = this->GetMatrix(matMean);
     if( pMatrix->GetClampValue() )
-	nMean = 0;
+        nMean = 0;
     else
     {
-	nMean = dimOfGaussian;
+        nMean = dimOfGaussian;
     }
     nparents = GetNumberOfNodes()-1;
+
     nWeights = 0;
-    if(m_pMatricesWeight)
+    if (!m_bDeltaFunction)
     {
-	for(i=0; i<nDims-1; i++)
-	{
-	    pMatrix = GetMatrix(matWeights, i);
-	    if( !pMatrix->GetClampValue() )
-	    {
-		pMatrix->GetRanges(&nDims, &Dims);
-		nWeights += Dims[0] * Dims[1];
-	    }
-	}
+        if(m_pMatricesWeight)
+        {
+            for(i=0; i</*nDims-1*/nparents; i++)
+            {
+                pMatrix = GetMatrix(matWeights, i);
+                if( !pMatrix->GetClampValue() )
+                {
+                    pMatrix->GetRanges(&nDims, &Dims);
+                    nWeights += Dims[0] * Dims[1];
+                }
+            }
+        }
     }
     return nMean + nCov + nWeights;
 }

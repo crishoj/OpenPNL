@@ -67,6 +67,8 @@ protected:
     int m_maxIterIPF;
     float m_precisionIPF;
 	
+	void BuildFullEvidenceMatrix(float ***full_evid);
+
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
 #endif

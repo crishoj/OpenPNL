@@ -429,8 +429,49 @@ CCondSoftMaxDistribFun::CCondSoftMaxDistribFun(
 
 int CCondSoftMaxDistribFun::GetNumberOfFreeParameters() const
 {
-  // fixme - here we must calculate some value (see GaussianDistribFun)
-  return 0;
+   if( m_bUnitFunctionDistribution )
+    {
+        PNL_THROW( CInconsistentType,
+            "uniform distribution can't have any matrices with data" );
+    }
+    int numRanges;
+    const int* ranges;
+    m_distribution->GetRanges(&numRanges, &ranges);
+    int lineSize = 1;
+    int i;
+    for( i = 0; i < numRanges; i++ )
+    {
+        lineSize *= ranges[i];
+    }
+    
+    intVector pConvInd;
+    pConvInd.resize( numRanges );
+    int nline = 1;
+    for( i = numRanges - 1; i >= 0; i--)
+    {
+        pConvInd[i] = nline;
+        int nodeSize = ranges[i];
+        nline *= nodeSize;
+    }
+    
+    div_t result;
+    intVector index;
+    index.resize( numRanges );
+	int nparams = 0;
+    for( i = 0; i < lineSize; i++ )
+    {
+        int hres = i;
+        for( int k = 0; k < numRanges; k++ )
+        {
+            int pInd = pConvInd[k];
+            result = div( hres, pInd );
+            index[k] = result.quot;
+            hres = result.rem;
+        }
+        CSoftMaxDistribFun* theDistr = m_distribution->GetElementByIndexes(&index.front());
+        nparams += theDistr->GetNumberOfFreeParameters();
+    }
+	return nparams;
 }
 // ----------------------------------------------------------------------------
 
@@ -1217,4 +1258,81 @@ const CPNLType CCondSoftMaxDistribFun::m_TypeInfo = CPNLType("CCondSoftMaxDistri
 
 #endif
 
+//-----------------------------------------------------------------------------
+float  CCondSoftMaxDistribFun::CalculateLikelihood(float **Observation, int NumberOfObservations) 
+{
+   /* float loglik = 0.0f;
+
+    CMatrixIterator<CSoftMaxDistribFun*>* iterChanging =
+        m_distribution->InitIterator();
+    for (iterChanging; m_distribution->IsValueHere(iterChanging); 
+        m_distribution->Next(iterChanging))
+    {
+        loglik += (*(m_distribution->Value(iterChanging)))->
+            CalculateLikelihood(Observation, NumberOfObservations);
+    }
+    
+   return loglik;*/
+	float loglik = 0.0f;
+    float ll;
+
+    float **obsForConf = new float* [m_contParentsIndex.size() + 1];
+    int i, j;
+    for (i = 0; i < m_contParentsIndex.size() + 1; i++)
+    {
+        obsForConf[i] = new float [NumberOfObservations];
+    }
+    int NumberOfObsForThisConf;
+    
+    CMatrixIterator<CSoftMaxDistribFun*>* iterChanging =
+        m_distribution->InitIterator();
+    
+    for (iterChanging; m_distribution->IsValueHere(iterChanging); 
+    m_distribution->Next(iterChanging))
+    {
+        NumberOfObsForThisConf = 0;
+        CSoftMaxDistribFun* changingData = *(m_distribution->Value(iterChanging));
+        intVector index;
+        m_distribution->Index(iterChanging, &index);
+        for (i = 0; i < NumberOfObservations; i++)
+        {
+            int isObsForThisConf = 1;
+            for (j = 0; j < m_discrParentsIndex.size(); j++)
+            {
+                if (Observation[m_discrParentsIndex[j]][i] != index[j])
+                {
+                    isObsForThisConf = 0;
+                    break;
+                }
+            }
+            if (isObsForThisConf)
+            {
+                for (j = 0; j < m_contParentsIndex.size(); j++)
+                {
+                    obsForConf[j][NumberOfObsForThisConf] = 
+                        Observation[m_contParentsIndex[j]][i];
+                }
+                obsForConf[m_contParentsIndex.size()][NumberOfObsForThisConf] = 
+                    Observation[m_contParentsIndex.size() + m_discrParentsIndex.size()][i];
+                NumberOfObsForThisConf++;
+            }
+        }
+        
+        if (NumberOfObsForThisConf != 0)
+        {
+            ll = changingData->CalculateLikelihood(obsForConf, NumberOfObsForThisConf);
+            loglik += ll;
+        }
+    }
+
+    delete iterChanging;
+    for (i = 0; i < m_contParentsIndex.size() + 1; i++)
+    {
+        delete [] obsForConf[i];
+    }
+    delete [] obsForConf;
+
+   return loglik;
+
+}
 // end of file ----------------------------------------------------------------

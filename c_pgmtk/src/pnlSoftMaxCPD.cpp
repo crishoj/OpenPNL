@@ -695,7 +695,38 @@ void CSoftMaxCPD::CreateMeanAndCovMatrixForNode(int Node, const CEvidence* pEvid
     }
     delete [] multiindex;
 }
+
 //-----------------------------------------------------------------------------
+void CSoftMaxCPD::CreateAllNecessaryMatrices( int typeOfMatrices )
+{
+    PNL_CHECK_RANGES( typeOfMatrices, 1, 1 );
+    //we have only one type of matrices now
+    if( m_CorrespDistribFun->IsDistributionSpecific() == 1 )
+    {
+        PNL_THROW( CInconsistentType,
+            "uniform distribution can't have any matrices with data" );
+    }
+    m_CorrespDistribFun->CreateDefaultMatrices(typeOfMatrices);
+}
+//-------------------------------------------------------------------------------
+ void CSoftMaxCPD::BuildCurrentEvidenceMatrix(float ***full_evid, float ***evid,intVector family,int numEv)
+{
+  int i, j;
+  *evid = new float* [family.size()];
+  for (i = 0; i < family.size(); i++)
+  {
+    (*evid)[i] = new float [numEv];
+  }
+
+  for (i = 0; i < numEv; i++)
+  {
+    for (j = 0; j < family.size(); j++)
+    {
+      (*evid)[j][i] = (*full_evid)[family[j]][i];
+    }
+  }
+}
+//--------------------------------------------------------------------------------
 
 #ifdef PNL_RTTI
 const CPNLType CSoftMaxCPD::m_TypeInfo = CPNLType("CSoftMaxCPD", &(CCPD::m_TypeInfo));

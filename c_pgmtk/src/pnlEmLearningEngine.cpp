@@ -86,84 +86,7 @@ void  CEMLearningEngine::SetTerminationToleranceEM(float precision)
     m_precisionEM = precision;
 
 }
-// ----------------------------------------------------------------------------
 
-void CEMLearningEngine::BuildFullEvidenceMatrix(float ***full_evid)
-{
-    int i, j;
-    CStaticGraphicalModel *grmodel = GetStaticModel();
-    const CEvidence* pCurrentEvid;
-    //valueVector *values = new valueVector();
-  
-    int NumOfNodes = grmodel->GetGraph()->GetNumberOfNodes();
-    int NumOfEvid = m_Vector_pEvidences.size();
-
-    (*full_evid) = new float * [NumOfNodes];
-    for (i = 0; i < NumOfNodes; i++)
-    {
-        (*full_evid)[i] = new float [NumOfEvid];
-    }
-
-    for (i = 0; i < NumOfNodes; i++)
-    {
-        for (j = 0; j < NumOfEvid; j++)
-        {
-            (*full_evid)[i][j] = -10000;
-        }
-    }
-
-    const int * obs;
-    for (j = 0; j < NumOfEvid; j++)
-    {
-        pCurrentEvid = m_Vector_pEvidences[j];
-        //int ObsNum = pCurrentEvid->GetNumberObsNodes();
-        obs = pCurrentEvid->GetAllObsNodes(); 
-        for (i = 0; i < (pCurrentEvid->GetNumberObsNodes()); i++)
-        {
-            float fl = (pCurrentEvid->GetValue(obs[i]))->GetFlt();
-            (*full_evid)[int(obs[i])][j] = fl;
-        }
-    }
-
-/*  printf ("\n My Full Evidence Matrix");
-    for (i=0; i<NumOfNodes; i++)
-    {
-        for (j=0; j<NumOfEvid; j++)
-        {
-            printf ("%f   ", (*full_evid)[i][j]);
-        }
-        printf("\n");
-    }
-*/            
-}
-// ----------------------------------------------------------------------------
-
-void CEMLearningEngine::BuildCurrentEvidenceMatrix(int Node, float ***full_evid, float ***evid)
-{
-  int i, j;
-
-  CStaticGraphicalModel *grmodel = GetStaticModel();
-  intVector parents;
-  parents.resize(0);
-  grmodel->GetGraph()->GetParents(Node, &parents);
-  parents.push_back(Node);
-
-//  int NumOfNodes = grmodel->GetNumberOfNodes();
-  *evid = new float* [parents.size()];
-  for (i = 0; i < parents.size(); i++)
-  {
-    (*evid)[i] = new float [m_Vector_pEvidences.size()];
-  }
-
-  for (i = 0; i < m_Vector_pEvidences.size(); i++)
-  {
-    for (j = 0; j < parents.size(); j++)
-    {
-      (*evid)[j][i] = (*full_evid)[parents[j]][i];
-    }
-  }
-}
-// ----------------------------------------------------------------------------
 
 void CEMLearningEngine::SetMaximizingMethod(EMaximizingMethod met)
 {
@@ -312,9 +235,15 @@ void CEMLearningEngine::Learn()
             }
             else
             {
-                BuildCurrentEvidenceMatrix(i, &full_evid, &evid);
+                
+                intVector family;
+				family.resize(0);
+                pGrModel->GetGraph()->GetParents(i, &family);
+                family.push_back(i);
                 CSoftMaxCPD* SoftMaxFactor = static_cast<CSoftMaxCPD*>(factor);
-                SoftMaxFactor->InitLearnData();
+                SoftMaxFactor->BuildCurrentEvidenceMatrix(&full_evid, 
+					&evid,family,m_Vector_pEvidences.size());
+				SoftMaxFactor->InitLearnData();
                 SoftMaxFactor->SetMaximizingMethod(m_MaximizingMethod);
                 SoftMaxFactor->MaximumLikelihood(evid, m_Vector_pEvidences.size(),
                     0.00001f, 0.01f);
@@ -410,8 +339,13 @@ void CEMLearningEngine::Learn()
                 dt = factor->GetDistributionType();
                 if (dt == dtSoftMax)
                 {
-                    BuildCurrentEvidenceMatrix(i, &full_evid, &evid);
+					intVector family;
+				    family.resize(0);
+                    pGrModel->GetGraph()->GetParents(i, &family);
+                    family.push_back(i);
                     CSoftMaxCPD* SoftMaxFactor = static_cast<CSoftMaxCPD*>(factor);
+					SoftMaxFactor->BuildCurrentEvidenceMatrix(&full_evid, 
+						&evid,family,m_Vector_pEvidences.size());
                     SoftMaxFactor->InitLearnData();
                     SoftMaxFactor->SetMaximizingMethod(m_MaximizingMethod);
                     //        SoftMaxFactor->MaximumLikelihood(evid, m_numberOfLastEvidences, 

@@ -167,6 +167,8 @@ public:
 
   void SetMaximizingMethod(EMaximizingMethod met);
 
+  float CalculateLikelihood(float **Observation, int NumberOfObservations);
+
   EMaximizingMethod GetMaximizingMethod();
 
 #ifdef PAR_PNL
@@ -200,8 +202,6 @@ protected:
   CSoftMaxDistribFun(int NumberOfNodes, const CNodeType *const* nodeTypes);
 
   CSoftMaxDistribFun(const CSoftMaxDistribFun &inpDistr);
-
-  float CalculateLikelihood(float **Observation, int NumberOfObservations);
 
   void CalculateHessianForOffset(float ** pContVectorEvidence,
     int NumberOfObservations);
