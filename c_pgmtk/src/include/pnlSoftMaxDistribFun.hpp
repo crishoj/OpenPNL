@@ -24,13 +24,6 @@
 
 PNL_BEGIN
 
-typedef PNL_API enum
-{
-  mmGradient,    // gradient method
-  mmHessian,     // method with Hessian usage
-  mmConjGradient // conjugate gradient method
-} EMaximizingMethod;
-
 template <class Type> class C2DNumericDenseMatrix;
 
 class CSoftMaxDistribFun : public CDistribFun
@@ -40,7 +33,7 @@ public:
     const CNodeType *const* nodeTypes, const float *dataWeight,
     const float *dataOffset);
 
-  static CSoftMaxDistribFun* CreateUnitFunctionDistribution(int NodeNumber, 
+  static CSoftMaxDistribFun* CreateUnitFunctionDistribution(int NodeNumber,
     const CNodeType *const* nodeTypes);
 
   virtual void CreateDefaultMatrices(int typeOfMatrices = 1);
@@ -51,7 +44,7 @@ public:
 
   virtual CDistribFun* CloneWithSharedMatrices();
 
-  virtual void AllocMatrix(const float *data, EMatrixType mType, 
+  virtual void AllocMatrix(const float *data, EMatrixType mType,
     int numberOfWeightMatrix = -1, const int *parentIndices = NULL);
 
   virtual void AllocOffsetVector(const float *data);
@@ -67,44 +60,44 @@ public:
   virtual bool IsValid(std::string* descriptionOut = NULL) const;
 
   inline int IsDistributionSpecific() const;
-  // if 0 - full distribution (non delta, non uniform, non mixed, 
+  // if 0 - full distribution (non delta, non uniform, non mixed,
   //   can haven't valid form - use GetFlagMoment, GetFlagCanonical)
   // if 1 - uniform distribution - have no matrices, only size
 
-  int GetMultipliedDelta(const int **positions, const float **values, 
+  int GetMultipliedDelta(const int **positions, const float **values,
     const int **offsets) const;
 
   CDistribFun *ConvertCPDDistribFunToPot() const ;
 
-  CDistribFun *CPD_to_pi(CDistribFun *const* allPiMessages, 
-    int *multParentIndices, int numMultNodes, int posOfExceptParent = -1, 
+  CDistribFun *CPD_to_pi(CDistribFun *const* allPiMessages,
+    int *multParentIndices, int numMultNodes, int posOfExceptParent = -1,
     int maximizeFlag = 0) const;
 
-  CDistribFun *CPD_to_lambda(const CDistribFun *lambda, 
+  CDistribFun *CPD_to_lambda(const CDistribFun *lambda,
     CDistribFun *const* allPiMessages, int *multParentIndices,
     int numMultNodes, int posOfExceptNode = -1, int maximizeFlag = 0) const;
 
-  virtual void MarginalizeData(const CDistribFun* pOldData, 
+  virtual void MarginalizeData(const CDistribFun* pOldData,
     const int *DimOfKeep, int NumDimsOfKeep, int maximize);
 
   void ShrinkObservedNodes(const CDistribFun* pOldData,
     const int *pVarsObserved, const Value* const* pObsValues, int numObsVars,
     const CNodeType* pObsTabNT, const CNodeType* pObsGauNT);
 
-  void ExpandData(const int* pDimsToExtend, 
-    int numDimsToExpand, const Value* const* valuesArray, 
+  void ExpandData(const int* pDimsToExtend,
+    int numDimsToExpand, const Value* const* valuesArray,
     const CNodeType* const*allFullNodeTypes, int UpdateCanonical = 1);
 
-  virtual void MultiplyInSelfData(const int *pBigDomain, 
+  virtual void MultiplyInSelfData(const int *pBigDomain,
     const int *pSmallDomain, const CDistribFun *pOtherData);
 
-  virtual void SumInSelfData(const int *pBigDomain, 
+  virtual void SumInSelfData(const int *pBigDomain,
     const int *pSmallDomain, const CDistribFun *pOtherData);
 
-  virtual void DivideInSelfData(const int *pBigDomain, 
+  virtual void DivideInSelfData(const int *pBigDomain,
     const int *pSmallDomain, const CDistribFun *pOtherData) ;
 
-  virtual CMatrix<float> *GetMatrix(EMatrixType mType, 
+  virtual CMatrix<float> *GetMatrix(EMatrixType mType,
     int numWeightMat = -1, const int *parentIndices = NULL) const;
 
   floatVector *GetOffsetVector();
@@ -113,21 +106,21 @@ public:
 
   void CopyLearnDataToDistrib();
 
-  virtual CMatrix<float> *GetStatisticalMatrix(EStatisticalMatrix mType, 
+  virtual CMatrix<float> *GetStatisticalMatrix(EStatisticalMatrix mType,
     int *parentIndices = NULL) const;
 
   floatVector *GetStatisticalOffsetVector();
 
-  virtual void SetStatistics(const CMatrix<float> *pMat, 
+  virtual void SetStatistics(const CMatrix<float> *pMat,
     EStatisticalMatrix matrix, const int* parentsComb = NULL);
 
   void SetOffsetStatistics(const floatVector *pVec);
 
-  virtual void UpdateStatisticsEM(const CDistribFun* infData, 
+  virtual void UpdateStatisticsEM(const CDistribFun* infData,
     const CEvidence *pEvidence = NULL, float weightingCoeff = 1.0f,
     const int* domain = NULL);
 
-  virtual void UpdateStatisticsML(const CEvidence* const* pEvidences, 
+  virtual void UpdateStatisticsML(const CEvidence* const* pEvidences,
     int EvidenceNumber, const int *domain, float weightingCoeff = 1.0f);
 
   virtual void ClearStatisticalData();
@@ -174,7 +167,7 @@ protected:
 
   float CalculateLikelihood(float **Observation, int NumberOfObservations);
 
-  void CalculateHessianForOffset(float ** pContVectorEvidence, 
+  void CalculateHessianForOffset(float ** pContVectorEvidence,
     int NumberOfObservations);
 
   void CalculateHessianForWeights(float ** pContVectorEvidence,
@@ -182,7 +175,7 @@ protected:
 
   float CalculateNorm(float ** grad_weights, float * grad_offset);
 
-  void CalculateHessian(float ** pContVectorEvidence, 
+  void CalculateHessian(float ** pContVectorEvidence,
     int NumberOfObservations);
 
   void MaximumLikelihoodGradient(float **Observation,
@@ -197,12 +190,12 @@ protected:
 private:
   C2DNumericDenseMatrix<float> *m_pMatrixWeight;
   floatVector m_VectorOffset;
-  
+
   C2DNumericDenseMatrix<float> *m_pLearnMatrixWeight;
   floatVector m_LearnVectorOffset;
 
   C2DNumericDenseMatrix<float> *m_hessian;
-  
+
   EMaximizingMethod m_MaximizingMethod;
   // defines method, which is used for Likelihood Maximizing
 };
@@ -213,7 +206,7 @@ inline int CSoftMaxDistribFun::IsDistributionSpecific() const
   {
     return 1;
   }
-  else 
+  else
   {
     return 0;
   }

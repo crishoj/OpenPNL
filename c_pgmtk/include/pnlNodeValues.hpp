@@ -94,23 +94,29 @@ inline Value const* CNodeValues::GetValueBySerialNumber( int SerialNumber )const
 
 inline Value* CNodeValues::GetValueBySerialNumber( int SerialNumber )
 {
-	PNL_CHECK_RANGES( SerialNumber, 0, m_numberObsNodes );
-    
+	PNL_CHECK_RANGES( SerialNumber, 0, m_numberObsNodes - 1 );
+     
     return (&m_rawValues[m_offset[SerialNumber]]);
 }
 
 inline int CNodeValues::IsObserved( int SerialNumber ) const
 {
-	return m_isObsNow[SerialNumber];
+	PNL_CHECK_RANGES( SerialNumber, 0, m_numberObsNodes - 1 );
+	
+    return m_isObsNow[SerialNumber];
 }
 
 inline void CNodeValues::MakeNodeHiddenBySerialNum( int serialNumber )
 {
-	m_isObsNow[serialNumber] = 0;
+	PNL_CHECK_RANGES( serialNumber, 0, m_numberObsNodes - 1 );
+
+    m_isObsNow[serialNumber] = 0;
 }
 inline void CNodeValues::MakeNodeObservedBySerialNum( int serialNumber )
 {
-	m_isObsNow[serialNumber] = 1;
+	PNL_CHECK_RANGES( serialNumber, 0, m_numberObsNodes - 1 );
+
+    m_isObsNow[serialNumber] = 1;
 }
 
 #endif

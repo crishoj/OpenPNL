@@ -23,31 +23,33 @@
 
 PNL_BEGIN
 
-class PNL_API CIDTabularPotential : public CIDPotential  
+class PNL_API CIDTabularPotential : public CIDPotential
 {
 public:
   static CIDTabularPotential* Create(const intVector& domain,
     CModelDomain* pMD, const float* probData, const float* utilityData);
 
+#ifdef PNL_OBSOLETE
   static CIDTabularPotential* Create(const int *domain, int nNodes,
-    CModelDomain* pMD, const float* probData = NULL, 
+    CModelDomain* pMD, const float* probData = NULL,
     const float* utilityData = NULL);
+#endif
 
   static CIDTabularPotential* Copy(const CIDTabularPotential *pIDTabPotential);
 
   virtual CFactor* Clone() const;
 
   virtual CFactor* CloneWithSharedMatrices();
-  
+
   virtual void Dump()const;
-  
+
   virtual ~CIDTabularPotential(){}
 
 protected:
   CIDTabularPotential(const int *domain, int nNodes, CModelDomain* pMD);
 
   CIDTabularPotential(const CIDTabularPotential* potential);
-  
+
 private:
 };
 

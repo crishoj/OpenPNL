@@ -38,6 +38,13 @@ enum EAccumType
     PNL_ACCUM_TYPE_MUL = 4
 };
 
+typedef enum
+{
+  mmGradient,    // gradient method
+  mmHessian,     // method with Hessian usage
+  mmConjGradient // conjugate gradient method
+} EMaximizingMethod;
+
 template<class T> class GeneralAllocator: public std::allocator<T>
 {
 public:
@@ -93,14 +100,14 @@ public:
 #ifdef PNL_VC7
     bool operator<(const Value &nt) const
     {
-	return m_cVal < nt.m_cVal;
+  return m_cVal < nt.m_cVal;
     }
     bool operator==(const Value &nt) const
     {
-	return m_cVal == nt.m_cVal;
+  return m_cVal == nt.m_cVal;
     }
 #endif
-    
+
     Value() {}
     char IsDiscrete() const { return m_bInt; }
 
@@ -134,10 +141,10 @@ public:
     explicit pnlVector( size_type N, const Type& V = Type(),
                         const Allocator& Al = Allocator() )
         : std::vector<Type, Allocator>(N, V, Al) {}
-    
+
     pnlVector(const MyType& X)
         : std::vector<Type, Allocator>(X) {}
-    
+
 #ifndef PNL_VC6
     template< typename InputIterator >
     pnlVector( InputIterator first, InputIterator last, const Allocator &ator = Allocator() )
@@ -146,13 +153,13 @@ public:
     pnlVector( const_iterator F, const_iterator L, const allocator_type &Al = Allocator() )
         : std::vector<Type, Allocator>( F, L, Al ) {}
 #endif
-	    bool lexicographical_compare(iterator First1, iterator Last1,
-	    iterator First2, iterator Last2)
-	{
-	    return lexicographical_compare(
-		(const unsigned char *)First1, (const unsigned char *)Last1,
-		(const unsigned char *)First2, (const unsigned char *)Last2);
-	}
+      bool lexicographical_compare(iterator First1, iterator Last1,
+      iterator First2, iterator Last2)
+  {
+      return lexicographical_compare(
+    (const unsigned char *)First1, (const unsigned char *)Last1,
+    (const unsigned char *)First2, (const unsigned char *)Last2);
+  }
 
     MyType &operator=( const MyType &X )
     {

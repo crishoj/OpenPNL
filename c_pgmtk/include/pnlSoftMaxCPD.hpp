@@ -22,7 +22,6 @@
 
 #include "pnlCPD.hpp"
 #include "pnlTypeDefs.hpp"
-#include "pnlSoftMaxDistribFun.hpp"
 
 PNL_BEGIN
 
@@ -41,14 +40,14 @@ public:
 
   virtual CFactor* CloneWithSharedMatrices();
 
-  void AllocDistribution(const floatVector& weightsIn, 
+  void AllocDistribution(const floatVector& weightsIn,
     const floatVector& offsetIn,
     const intVector& parentCombination = intVector());
 
 #ifdef PNL_OBSOLETE
   static CSoftMaxCPD* Create(const int *domain, int nNodes, CModelDomain* pMD);
 
-  void AllocDistribution(const float* pWeights, 
+  void AllocDistribution(const float* pWeights,
     const float* pOffsets, const int* parentCombination = NULL);
 
 #endif //PNL_OBSOLETE
@@ -61,25 +60,25 @@ public:
 
   virtual float ProcessingStatisticalData(int numberOfEvidences);
 
-  virtual void UpdateStatisticsEM(const CPotential *pMargPot, 
+  virtual void UpdateStatisticsEM(const CPotential *pMargPot,
     const CEvidence *pEvidence = NULL);
 
   virtual void GenerateSample(CEvidence* evidenceIO, int maximize = 0) const;
 
   virtual CPotential* ConvertStatisticToPot(int numOfSamples) const;
 
-  virtual float GetLogLik(const CEvidence* pEv, 
+  virtual float GetLogLik(const CEvidence* pEv,
     const CPotential* pShrInfRes = NULL) const;
 
   void SetMaximizingMethod(EMaximizingMethod met);
 
   EMaximizingMethod GetMaximizingMethod();
 
-  void MaximumLikelihood(float **Observation, int NumberOfObservations, 
+  void MaximumLikelihood(float **Observation, int NumberOfObservations,
     float Accuracy, float step = 0.1);
 
 #ifdef PNL_OBSOLETE
-  virtual void UpdateStatisticsML(const CEvidence* const* pEvidencesIn, 
+  virtual void UpdateStatisticsML(const CEvidence* const* pEvidencesIn,
     int EvidenceNumber);
 #endif
 

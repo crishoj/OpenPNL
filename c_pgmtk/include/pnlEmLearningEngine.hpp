@@ -18,7 +18,6 @@
 #define __PNLEMLEARNINGENGINE_HPP__
 
 #include "pnlStaticLearningEngine.hpp"
-#include "pnlSoftMaxDistribFun.hpp"
 
 PNL_BEGIN
 
@@ -26,14 +25,14 @@ class PNL_API CEMLearningEngine : public CStaticLearningEngine
 {
 public:
     static CEMLearningEngine* Create(CStaticGraphicalModel *pGrModelIn, CInfEngine *pInfEng = NULL );
-    
+
     virtual ~CEMLearningEngine();
-    
+
     virtual void Learn();
-    
+
     void SetMaxIterEM(int Niter = 30);
     inline int GetMaxIterEM() const;
-    
+
     void SetTerminationToleranceEM(float precision = 0.001f);
     inline float GetPrecisionEM() const;
 
@@ -47,7 +46,7 @@ public:
 
 protected:
     CEMLearningEngine(CStaticGraphicalModel *pGrModel, CInfEngine *pInfEng,
-	ELearningTypes LearnType );
+  ELearningTypes LearnType );
     float _LearnPotentials();
     bool IsDomainObserved( int nnodes, const int* domain, int evNumber );
     inline const boolVector * GetObsFlags( int evNumber ) const;
@@ -64,7 +63,7 @@ private:
     boolVecVector m_obsFlags;
     bool m_bAllObserved;
     int m_numProcEv;
-    
+
     int m_maxIterEM;
     float m_precisionEM;
     EMaximizingMethod m_MaximizingMethod;
@@ -85,7 +84,7 @@ inline int CEMLearningEngine::GetMaxIterEM() const
 inline float CEMLearningEngine::GetPrecisionEM() const
 {
     return m_precisionEM;
-	
+
 }
 
 inline const boolVector * CEMLearningEngine::GetObsFlags( int evNumber ) const

@@ -277,6 +277,10 @@ void CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >
     this->evidence = evidence;
     this->maximize = maximize;
 
+#if 0
+    evidence->Dump();
+#endif
+    
     evidence->GetObsNodesWithValues( &nodes, &values, &node_types );
     dispenser.resize( decomposition.size() );
     dispenser_values.resize( decomposition.size() );
@@ -297,7 +301,7 @@ void CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >
         {
             evs[i] = CEvidence::Create( models[i], dispenser[i], dispenser_values[i] );
 #if 0
-            engines[i]->GetModel()->GetGraph()->Dump();
+            engines[i]->GetModel()->GetGraph()->\();
 #endif
             engines[i]->EnterEvidence( evs[i], maximize );
         }
@@ -377,6 +381,7 @@ void CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >
             }
         }
     }
+    query_JPD = 0;
 }
 
 // current implementation works inefficiently when evidence resides
