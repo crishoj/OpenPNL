@@ -291,7 +291,7 @@ void CEMLearningEngine::Learn()
         if ( dt == dtSoftMax ) IsCastNeed = true;
     }
 
-    float ** full_evid;
+    float ** full_evid = NULL;
     if (IsCastNeed)
     {
         BuildFullEvidenceMatrix(&full_evid);

@@ -1009,7 +1009,7 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
 {
   CGaussianDistribFun* factData = NULL;
   
-  int i, j, k;
+  int i, j;
   int *multiindex = new int [2];
   
   int NumAllInweights = 0;

@@ -1101,7 +1101,7 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
 
         for( ; assFactsIt != assFacts_end; ++assFactsIt )
         {
-            const CPotential *pTmpPot;
+            const CPotential *pTmpPot = NULL;
             
             EDistributionType dt = (*assFactsIt)->GetDistribFun()->GetDistributionType();
                         
