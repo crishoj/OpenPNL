@@ -114,14 +114,14 @@ CPersistFactor::Load(CContextLoad *pContext)
         case dtGaussian:
 	    pFactor = CGaussianCPD::Create(*pDomain, pMD);
 	    break;
+        case dtSoftMax:
+            pFactor = CSoftMaxCPD::Create(*pDomain, pMD);
+            break;
         case dtMixGaussian:
 	    floatVector *pX = static_cast<CCover<floatVector>*>(
 		pContext->Get("Probabilities"))->GetPointer();
 	    pFactor = CMixtureGaussianCPD::Create(*pDomain, pMD, *pX);
 	    break;
-        case dtSoftMax:
-            pFactor = CSoftMaxCPD::Create(*pDomain, pMD);
-            break;
         }
     }
 
