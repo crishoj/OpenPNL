@@ -27,6 +27,10 @@ CReferenceCounter::CReferenceCounter() : m_refCounter(0)
 {
 }
 
+CReferenceCounter::~CReferenceCounter()
+{
+}
+
 #else // NDEBUG
 #ifdef PAR_OMP
 inline int CReferenceCounter::GetNumOfReferences() const
