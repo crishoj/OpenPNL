@@ -9,6 +9,8 @@
 
 #include "pnlRng.hpp"
 
+using namespace std;
+
 static int sMode = 0;
 const int cShowPrediction = 1;
 const int cShowMatrix = 2;
@@ -1012,8 +1014,9 @@ pnl::CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<pnl::CEvi
 }
 
 
-TestMultivariateWrapperJPD()
+void TestMultivariateWrapperJPD()
 {
+    int i;
     vector<CEvidence*> evidences;
     CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));
 
@@ -1039,7 +1042,7 @@ TestMultivariateWrapperJPD()
       printf("JPD y\n");
       perlInfEng->GetQueryJPD()->Dump();
     */
-    for (int i = 0; i <  8; i++) 
+    for (i = 0; i <  8; i++) 
     {
 	int NNumber = 1;
 	
@@ -1077,7 +1080,7 @@ TestMultivariateWrapperJPD()
 }
 
 
-TestMultivariateWrapperLearn()
+void TestMultivariateWrapperLearn()
 {
     vector<CEvidence*> evidences;
     CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));
@@ -1360,7 +1363,7 @@ TestMultivariateWrapperLearn()
     }
 }
 
-TestMultivariateWrapperLearnPartOfObservation()
+void TestMultivariateWrapperLearnPartOfObservation()
 {
     vector<CEvidence*> evidences;
     CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));
@@ -1580,7 +1583,7 @@ TestMultivariateWrapperLearnPartOfObservation()
     }
 }
 
-TestMultivariateWrapperMPE()
+void TestMultivariateWrapperMPE()
 {
     vector<CEvidence*> evidences;
     CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));

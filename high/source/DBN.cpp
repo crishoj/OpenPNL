@@ -22,6 +22,10 @@
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
+#if !defined(WIN32)
+#define itoa(__val,__str,_rad) sprintf(__str, "%i", __val)
+#endif
+
 PNLW_BEGIN
 
 DBN::DBN(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
@@ -662,12 +666,14 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 				continue;
 			}
 			String colName(Net().NodeName(Net().Graph()->IOuter(iCol)));
+			String tmpStr;
 			const pnl::CNodeType &nt = *Model()->GetNodeType(iCol);
 			
 			aiCSVCol.push_back(iCol);
 			if(nt.IsDiscrete())
 			{
-				lex.PutValue(GetShortName(colName));
+				tmpStr = GetShortName(colName);
+				lex.PutValue(tmpStr);
 			}
 			else
 			{
@@ -676,7 +682,8 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 				{
 					subColName = colName;
 					subColName << "^" <<Net().Token()->Value(Net().Graph()->IOuter(iCol), i);
-					lex.PutValue(GetShortName(subColName));
+					tmpStr = GetShortName(subColName);
+					lex.PutValue(tmpStr);
 				}
 			}
 		}

@@ -162,7 +162,7 @@ int TokenCover::AddNode(Tok &node, TokArr &aValue)
     String nodeName = node.Name();
 
 #ifdef DEBUG_ADDNODE
-    std::deque<TokId> &aUnr = node.Unresolved(parentNode);
+    const std::deque<TokId> &aUnr = node.Unresolved(parentNode);
     pnl::pnlString str;
     
     str << nodeName << "#" << node.Node(parentNode)->tag << ":";

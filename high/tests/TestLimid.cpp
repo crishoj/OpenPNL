@@ -4,6 +4,7 @@
 #include <string>
 
 PNLW_USING
+using namespace std;
 
 std::ostream &operator<<(std::ostream &str, TokArr &ta)
 {

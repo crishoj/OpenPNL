@@ -6,11 +6,11 @@ PNLW_BEGIN
 
 void DumpMap(WCliques::Map *HashTable)
 {
-    cout << endl;
+    std::cout << std::endl;
     WCliques::Map::iterator it;
     for(it = HashTable->begin(); it != HashTable->end(); it++)
     {
-        cout << it->first << "  " << it->second << endl;
+        std::cout << it->first << "  " << it->second << std::endl;
     }
 }
 

@@ -49,7 +49,7 @@ void WDistributions::SetMRF(bool mrfFlag /* = true */)
 
 void WDistributions::Setup(int iNode)
 {
-    TokArr ta(Tok(Token().Node(iNode)));
+    TokArr ta(Tok(this->Token().Node(iNode)));
     int nodeClass = Token().NodesClassification(ta);
     if(iNode >= m_aDistribution.size())
     {
@@ -246,7 +246,7 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
 
     DropDistribution(iNode);
     
-    TokArr ta(Tok(Token().Node(iNode)));
+    TokArr ta(Tok(this->Token().Node(iNode)));
     int nodeClass = Token().NodesClassification(ta);
     
     if (nodeClass == eNodeClassDiscrete )
@@ -303,7 +303,7 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
 
     int index = Token().iNode(value[0]);
 
-    TokArr ta(Tok(Token().Node(index)));
+    TokArr ta(Tok(this->Token().Node(index)));
     int nodeClass = Token().NodesClassification(ta);
     if(parentValue.size())
     {
