@@ -24,51 +24,44 @@
 
 #include <string>
 
-//This is the main class for RTTI in PNL
-//It does not support multiple inheritance
+// This is the main class for RTTI in PNL
+// It does not support multiple inheritance
 class PNL_API CPNLType
 {
 public:
-  CPNLType(const std::string &TypeName, const CPNLType *const Parent = NULL):
-     m_TypeName(TypeName),
-     m_pParent(Parent)
-  {}
+    CPNLType(const std::string &TypeName, const CPNLType *const Parent = NULL):
+	m_TypeName(TypeName),
+	m_pParent(Parent)
+    {}
 
-  bool operator==(const CPNLType &OtherType) const
-  {
-    return (&OtherType == this);
-  }
-
-  bool IsDerived(const CPNLType &ParentType) const
-  {
-    if (ParentType == *this) 
+    bool operator==(const CPNLType &OtherType) const
     {
-      return true;
-    }
-    else 
-    {
-      if (this->m_pParent != NULL)
-      {
-        return this->m_pParent->IsDerived(ParentType);
-      }
-      else
-      {
-        return false;
-      }
+	return (&OtherType == this);
     }
 
-    return false;
-  }
+    bool IsDerived(const CPNLType &ParentType) const
+    {
+	if (ParentType == *this)
+	{
+	    return true;
+	}
 
-  const std::string &GetTypeName() const
-  {
-    return m_TypeName;
-  }
-  
-protected:
+	if (m_pParent != NULL)
+	{
+	    return m_pParent->IsDerived(ParentType);
+	}
+
+	return false;
+    }
+
+    const pnlString &GetTypeName() const
+    {
+	return m_TypeName;
+    }
+
 private:
-  const std::string m_TypeName;
-  const CPNLType *const m_pParent;
+    const pnlString m_TypeName;
+    const CPNLType *const m_pParent;
 };
 
 #endif
