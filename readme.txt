@@ -106,5 +106,3 @@ or on compiler changing
 
    If you have some error during compiling or if you want to view compiling
 message later, run 'make 2>&1 | tee compiling.log' instead  of 'make'
-
-
