@@ -1069,7 +1069,7 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
   // K = -2*lambda*w*w'
   
   float b = 0.0f;
-  b = m_VectorOffset[0];
+  b = m_VectorOffset[1]-m_VectorOffset[0];
   
   float sigma = 1 / ( 1 + exp(-ksi));
   
@@ -1093,7 +1093,7 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
     weight1 = m_pMatrixWeight->GetElementByIndexes(multiindex);
     
     multiindex[1] = 0;
-    newMatWeights->SetElementByIndexes(weight0-weight1, multiindex);
+    newMatWeights->SetElementByIndexes(weight1-weight0, multiindex);
   }
   
 	void *pObj = this;
@@ -2313,7 +2313,7 @@ float CSoftMaxDistribFun::CalculateKsi(floatVector MeanContParents,
     
     multiindex[0] = i;
     multiindex[1] = 0;
-    newMatWeights->SetElementByIndexes(weight0-weight1, multiindex);
+    newMatWeights->SetElementByIndexes(weight1-weight0, multiindex);
   }
   
   C2DNumericDenseMatrix<float> *newMatWeightsTransp = newMatWeights->Transpose();
@@ -2345,7 +2345,7 @@ float CSoftMaxDistribFun::CalculateKsi(floatVector MeanContParents,
   
   // the third component
   float SqB = 0.0f;
-  SqB += m_VectorOffset[0]*m_VectorOffset[0];
+  SqB += (m_VectorOffset[1]-m_VectorOffset[0])*(m_VectorOffset[1]-m_VectorOffset[0]);
   
   SqKsi = prod1 + prod + SqB;
   
