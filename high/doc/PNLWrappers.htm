@@ -108,6 +108,64 @@ rel=STYLESHEET>
 
     </LI></UL>
   </UL>
+<P>
+<UL>
+  <LI><A 
+  href="#decl_Class_LIMID">Class LIMID</A> 
+  <UL>
+    <LI><A 
+    href="#decl_AddArc_LIMID">AddArc</A> 
+
+    <LI><A 
+    href="#decl_AddNode_LIMID">AddNode</A> 
+
+    <LI><A 
+    href="#decl_DelArc_LIMID">DelArc</A> 
+
+    <LI><A 
+    href="#decl_DelNode_LIMID">DelNode</A> 
+
+    <LI><A 
+    href="#decl_GetExpectation">GetExpectation</A> 
+    
+    <LI><A 
+    href="#decl_GetPChance">GetPChance</A> 
+
+    <LI><A 
+    href="#decl_GetPDecision">GetPDecision</A> 
+
+    <LI><A 
+    href="#decl_GetPolitics">GetPolitics</A> 
+
+    <LI><A 
+    href="#decl_GetProperty_LIMID">GetProperty</A> 
+
+    <LI><A 
+    href="#decl_GetValueCost">GetValueCost</A> 
+
+    <LI><A 
+    href="#decl_LIMID">LIMID</A> 
+ 
+    <LI><A 
+    href="#decl_LoadNet_LIMID">LoadNet</A> 
+
+    <LI><A 
+    href="#decl_SaveNet_LIMID">SaveNet</A> 
+    
+    <LI><A 
+    href="#decl_SetPChance">SetPChance</A> 
+
+    <LI><A 
+    href="#decl_SetPDecision">SetPDecision</A> 
+
+    <LI><A 
+    href="#decl_SetProperty_LIMID">SetProperty</A> 
+
+    <LI><A 
+    href="#decl_SetValueCost">SetValueCost</A>  
+
+    </LI></UL>
+  </UL>
 
 <P></P>
 <HR>
@@ -1268,4 +1326,620 @@ Generate 100 samples for all nodes using current evidence. All nodes should cont
     GenerateEvidences( 100, false, whatNodesToSample);
 </P>
 <hr>
+
+<H2><A name=decl_Class_LIMID>Class LIMID</A></H2>
+<HR>
+
+<P>Class LIMID implements all functionality required for work with LImited Memory Influence Diagrams. 
+The following functional groups can be distinguished:
+<UL>
+    <LI>Network creation (addition/deletion of nodes and arcs)<BR>
+    <A href="#decl_AddNode_LIMID">AddNode</A>,
+    <A href="#decl_DelNode_LIMID">DelNode</A>,
+    <A href="#decl_AddArc_LIMID">AddArc</A>,
+    <A href="#decl_DelArc_LIMID">DelArc</A>.
+    </LI>
+    <LI>Setting/getting parameters<BR>
+    <A href="#decl_SetPChance">SetPChance</A>,
+    <A href="#decl_SetPDecision">SetPDecision</A>,
+    <A href="#decl_SetValueCost">SetValueCost</A>,
+    <A href="#decl_GetPChance">GetPChance</A>,
+    <A href="#decl_GetPDecision">GetPDecision</A>,
+    <A href="#decl_GetValueCost">GetValueCost</A>,
+    <A href="#decl_SetProperty_LIMID">SetProperty</A>,
+    <A href="#decl_GetProperty_LIMID">GetProperty</A>
+    </LI>
+    <LI>Getting utility<BR>
+    <A href="#decl_GetExpectation">GetExpectation</A>,
+    </LI>
+    <LI>Getting pure politics<BR>
+    <A href="#decl_GetPolitics">GetPolitics</A>
+    </LI>
+    <LI>File I/O<BR>
+    <A href="#decl_LoadNet_LIMID">LoadNet</A>,
+    <A href="#decl_SaveNet_LIMID">SaveNet</A>,
+    </LI>
+    <LI>more...</LI>
+</UL>
+</P>
+<HR>
+
+
+<H3><A name=decl_LIMID>LIMID</A></H3>
+<P class=Blurb>Constructor</P>
+<font class="interface">
+LIMID();
+</font>
+<DL>
+</DL>
+<H5>Discussion</H5>
+<p class="description">LIMID class has only default constructor.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Create empty LIMID:
+</p>
+<p class="example">
+LIMID net;
+</p>
+<HR>
+
+<H3><A name=decl_AddNode_LIMID>AddNode</A></H3>
+<P class=Blurb>Adds nodes</P>
+<font class="interface">
+void AddNode(TokArr nodes, TokArr subnodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>List of nodes with nodes states specifying. 
+  <DT>subnodes
+  <DD>Array of values that nodes can take. 
+</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function adds one or several nodes with the same probable states into the LIMID.</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Add one chance node "NodeA" with states "true" and "false" to LIMID:
+</p>
+<p class="example">
+net.AddNode(chance^"NodeA", "true false");
+</p>
+<p class="description">
+Add one decision node "NodeB" with states "true" and "false" to LIMID:
+</p>
+<p class="example">
+net.AddNode(decision^"NodeB", "true false");
+</p>
+<p class="description">
+Add one value node "NodeC" with one state "cost" to LIMID:
+</p>
+<p class="example">
+net.AddNode(value^"NodeC", "cost");
+</p>
+<HR>
+
+<H3><A name=decl_DelNode_LIMID>DelNode</A></H3>
+<P class=Blurb>Deletes nodes</P>
+<font class="interface">
+void DelNode(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of names of nodes to delete. 
+  </DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function deletes one or several nodes from LIMID together with all adjacent edges. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Delete nodes "NodeA" and "NodeB" from LIMID:
+</p>
+<p class="example">
+net.DelNode("NodeA NodeB");
+</P>
+<HR>
+
+<H3><A name=decl_AddArc_LIMID>AddArc</A></H3>
+<P class=Blurb>Adds arc</P>
+<font class="interface">
+void AddArc(TokArr from, TokArr to);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>from
+  <DD>Array of starting nodes of the arcs. 
+  <DT>to
+  <DD>Array of ending nodes of the arcs</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function adds one or several arcs to the LIMID. Each starting node is connected with each ending node.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Add edge from node "NodeA" to node "NodeB":
+</p>
+<p class="example">
+net.AddArc("NodeA", "NodeB");
+</P>
+<p class="description">
+Add two edges: from "NodeA" to "NodeB" and from "NodeA" to "NodeC":
+</p>
+<p class="example">
+net.AddArc("NodeA", "NodeB NodeC");
+</P>
+<p class="description">
+Add four edges: from "NodeA" to "NodeC", from "NodeA" to "NodeD", from "NodeB" to "NodeC" and from "NodeB" to "NodeD":
+</p>
+<p class="example">
+net.AddArc("NodeA NodeB", "NodeC NodeD");
+</P>
+<HR>
+
+<H3><A name=decl_DelArc_LIMID>DelArc</A></H3>
+<P class=Blurb>Deletes arcs</P>
+<font class="interface">
+void DelArc(TokArr from, TokArr to);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>from
+  <DD>Array of starting nodes of the arcs to delete. 
+  <DT>to
+  <DD>Array of ending nodes of the arcs to delete. 
+  </DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function deletes one or several arcs from the LIMID. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Delete edge from node "NodeA" to node "NodeB":
+</p>
+<p class="example">
+net.DelArc("NodeA", "NodeB");
+</P>
+<p class="description">
+Delete following two edges if they exist: from "NodeA" to "NodeB" and from "NodeA" to "NodeC":
+</p>
+<p class="example">
+net.DelArc("NodeA", "NodeB NodeC");
+</P>
+<p class="description">
+Delete all edges with starting node "NodeA" or "NodeB" and ending node "NodeC" or "NodeD":
+</p>
+<p class="example">
+net.DelArc("NodeA NodeB", "NodeC NodeD");
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetPChance>SetPChance</A></H3>
+<P class=Blurb>Assigns probability to one or several values of one chance node 
+</P>
+<font class="interface">
+void SetPChance(TokArr value, TokArr prob, TokArr parentValue = TokArr());
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>value
+  <DD>Array of node values for wich probabilities are set. 
+  <DT>prob
+  <DD>Array of values of probabilities.
+  <DT>parentValue
+  <DD>Array of values of parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets [conditional] probability for one or several values of the chance node 
+[for given values of parents]. Sizes of values array and probabilities array must be the same. While distribution 
+of probabilities is not specified it is considered uniform.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's node "NodeA" has no parents and can take on two values: "true" and "false". Its distribution of probabilities is unconditional. 
+</p>
+<p class="example">
+net.SetPChance("NodeA^true NodeA^false", "0.7 0.3");
+</P>
+<p class="description">
+Let's node "NodeB" can take on values "true" and "false" too and has only one parent "NodeA". Distribution of 
+probabilities of "NodeB" is conditional. It is necessary to call SetPChance method for each configuration of 
+parents values:  
+</p>
+<p class="example">
+net.SetPChance("NodeB^true NodeB^false", "0.99 0.01", "NodeA^true");<br>
+net.SetPChance("NodeB^true NodeB^false", "0.4 0.6", "NodeA^false");
+</P>
+<HR>
+
+
+<H3>
+<A name=decl_SetPDecision>SetPDecision</A></H3>
+<P class=Blurb>Assigns probability to one or several values of one decision node 
+</P>
+<font class="interface">
+void SetPDecision(TokArr value, TokArr prob, TokArr parentValue = TokArr());
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>value
+  <DD>Array of node values for wich probabilities are set. 
+  <DT>prob
+  <DD>Array of values of probabilities.
+  <DT>parentValue
+  <DD>Array of values of parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets [conditional] probability for one or several values of the decision node 
+[for given values of parents]. Sizes of values array and probabilities array must be the same. While distribution 
+of probabilities is not specified it is considered uniform.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's node "NodeA" has no parents and can take on two values: "true" and "false". Its distribution of probabilities is unconditional. 
+</p>
+<p class="example">
+net.SetPDecision("NodeA^true NodeA^false", "0.7 0.3");
+</P>
+<p class="description">
+Let's node "NodeB" can take on values "true" and "false" too and has only one parent "NodeA". Distribution of 
+probabilities of "NodeB" is conditional. It is necessary to call SetPDecision method for each configuration of 
+parents values:  
+</p>
+<p class="example">
+net.SetPDecision("NodeB^true NodeB^false", "0.99 0.01", "NodeA^true");<br>
+net.SetPDecision("NodeB^true NodeB^false", "0.4 0.6", "NodeA^false");
+</P>
+<HR>
+
+
+<H3><A 
+name=decl_SetValueCost>SetValueCost</A></H3>
+<P class=Blurb>Assigns utility function to one value node 
+</P>
+<font class="interface">
+void SetValueCost(TokArr value, TokArr cost, TokArr parentValue = TokArr());
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>value
+  <DD>Array of node values for wich probabilities are set. 
+  <DT>cost
+  <DD>Array of cost values.
+  <DT>parentValue
+  <DD>Array of values of discrete parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets utility function for value node for given values of parents. While utility function is not specified each cost value equals zero.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's node "NodeB" can take on value "cost" and has one parent "NodeA". Let's node "NodeA" can take on two values: "true" and "false". To set utility function of "NodeB" it is necessary to call SetValueCost method for each configuration of parent values:  
+</p>
+<p class="example">
+net.SetValueCost("NodeB^cost", "-1000.0", "NodeA^true");<br>
+net.SetValueCost("NodeB^cost", "300.0", "NodeA^false");
+</P>
+<HR>
+
+
+<H3><A 
+name=decl_GetPChance>GetPChance</A></H3>
+<P class=Blurb>Returns probability of chance node 
+</P>
+<font class="interface">
+TokArr GetPChance(TokArr node, TokArr parents = TokArr());
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>node
+  <DD>Name of node or array of node values whose probabilities are needed. 
+  <DT>parents
+  <DD>Values of parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns probability of chance node. If values of parents are given then probabilites only 
+for these parents configuration will be returned. If concrete values of node are given in array node then
+only probabilities of these values will be returned. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's consider getting of probabilities for node "NodeB" from example for SetPChance method. Some variants to get "NodeB"
+probabilities are available:
+</p>
+<p class="example">
+TokArr PNodeB = net.GetPChance("NodeB");<br>
+TokArr PNodeBTrue = net.GetPChance("NodeB^true");<br>
+TokArr PNodeBNodeATrue = net.GetPChance("NodeB", "NodeA^true");<br>
+TokArr PNodeBTrueNodeAFalse = net.GetPChance("NodeB^true", "NodeA^false");
+</P>
+<p class="description">
+Results of these calls:
+</p>
+<p class="example">
+<table>
+<tr>
+  <td>PNodeB</td>
+  <td>"NodeB^true^NodeA^true^0.99 NodeB^false^NodeA^true^0.01 NodeB^true^NodeA^false^0.4 NodeB^false^NodeA^false^0.6"</td>
+</tr>
+<tr>
+  <td>PNodeBTrue</td>
+  <td>"NodeB^true^NodeA^true^0.99 NodeB^true^NodeA^false^0.4"</td>
+</tr>
+<tr>
+  <td>PNodeBNodeATrue</td>
+  <td>"NodeB^true^NodeA^true^0.99 NodeB^false^NodeA^true^0.01"</td>
+</tr>
+<tr>
+  <td>PNodeBTrueNodeAFalse</td>
+  <td>"NodeB^true^NodeA^false^0.4"</td>
+</tr>
+</table>
+</P>
+<HR>
+
+
+<H3><A 
+name=decl_GetPDecision>GetPDecision</A></H3>
+<P class=Blurb>Returns probability of decision node 
+</P>
+<font class="interface">
+TokArr GetPDecision(TokArr node, TokArr parents = TokArr());
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>node
+  <DD>Name of node or array of node values whose probabilities are needed. 
+  <DT>parents
+  <DD>Values of parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns probability of decision node. If values of parents are given then probabilities only 
+for these parents configuration will be returned. If concrete values of node are given in array node then
+only probabilities of these values will be returned. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's consider getting of probabilities for node "NodeB" from example for SetPDecision method. Some variants to get "NodeB"
+probabilities are available:
+</p>
+<p class="example">
+TokArr PNodeB = net.GetPDecision("NodeB");<br>
+TokArr PNodeBTrue = net.GetPDecision("NodeB^true");<br>
+TokArr PNodeBNodeATrue = net.GetPDecision("NodeB", "NodeA^true");<br>
+TokArr PNodeBTrueNodeAFalse = net.GetPDecision("NodeB^true", "NodeA^false");
+</P>
+<p class="description">
+Results of these calls:
+</p>
+<p class="example">
+<table>
+<tr>
+  <td>PNodeB</td>
+  <td>"NodeB^true^NodeA^true^0.99 NodeB^false^NodeA^true^0.01 NodeB^true^NodeA^false^0.4 NodeB^false^NodeA^false^0.6"</td>
+</tr>
+<tr>
+  <td>PNodeBTrue</td>
+  <td>"NodeB^true^NodeA^true^0.99 NodeB^true^NodeA^false^0.4"</td>
+</tr>
+<tr>
+  <td>PNodeBNodeATrue</td>
+  <td>"NodeB^true^NodeA^true^0.99 NodeB^false^NodeA^true^0.01"</td>
+</tr>
+<tr>
+  <td>PNodeBTrueNodeAFalse</td>
+  <td>"NodeB^true^NodeA^false^0.4"</td>
+</tr>
+</table>
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetValueCost>GetValueCost</A></H3>
+<P class=Blurb>Returns utility function of value node 
+</P>
+<font class="interface">
+TokArr GetValueCost(TokArr node, TokArr parents = TokArr());
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>node
+  <DD>Name of node or array of node values whose utility function are needed. 
+  <DT>parents
+  <DD>Values of parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns utility function of value node. If values of parents are given then probabilites only 
+for these parents configuration will be returned. If concrete values of node are given in array node then
+only probabilities of these values will be returned. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's consider getting of utility function for node "NodeB" from example for SetValueCost method. Some variants to get "NodeB"
+utility function are available:
+</p>
+<p class="example">
+TokArr PNodeB = net.GetValueCost("NodeB");<br>
+TokArr PNodeBNodeATrue = net.GetValueCost("NodeB", "NodeA^true");<br>
+TokArr PNodeBTrueNodeAFalse = net.GetValueCost("NodeB^cost", "NodeA^false");
+</P>
+<p class="description">
+Results of these calls:
+</p>
+<p class="example">
+<table>
+<tr>
+  <td>PNodeB</td>
+  <td>"NodeB^cost^NodeA^true^-1000.0 NodeB^cost^NodeA^false^300.0"</td>
+</tr>
+<tr>
+  <td>PNodeBNodeATrue</td>
+  <td>"NodeB^cost^NodeA^true^-1000.0"</td>
+</tr>
+<tr>
+  <td>PNodeBTrueNodeAFalse</td>
+  <td>"NodeB^cost^NodeA^false^300.0"</td>
+</tr>
+</table>
+</P>
+<HR>
+
+
+<H3><A 
+name=decl_GetExpectation>GetExpectation</A></H3>
+<P class=Blurb>Returns expected utility 
+</P>
+<font class="interface">
+TokArr GetExpectation();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function returns expected utility.
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+TokArr exp = net.GetExpectation();<br>
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetPolitics>GetPolitics</A></H3>
+<P class=Blurb>Returns pure politics 
+</P>
+<font class="interface">
+TokArr GetPolitics();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function returns pure politics. 
+<H5>
+Example of usage
+</H5>
+<p class="example">
+TokArr politics = net.GetPolitics();<br>
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetProperty_LIMID>SetProperty</A></H3>
+<P class=Blurb>Sets value to the property
+</P>
+<font class="interface">
+void SetProperty(const char *name, const char *value);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>name
+  <DD>Name of property. 
+  <DT>value
+  <DD>Value of property.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets value to the property with given name. User can use this function to define his own
+properties. 
+</p>
+
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Set property "MyProperty":
+</p>
+<p class="example">
+net.SetProperty("MyProperty", "PropValue");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetProperty_LIMID>GetProperty</A></H3>
+<P class=Blurb>Returns value of the property with given name
+</P>
+<font class="interface">
+String GetProperty(const char *name) const;
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>name
+  <DD>Name of property.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns value of the property with given name. If property was not set with 
+<A href="#decl_SetProperty">SetProperty</A> method then empty string is returned.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+net.SetProperty("MyProperty", "PropValue");<br>
+String Property = net.GetProperty("MyProperty");<br>
+</P>
+<p class="description">
+As result string Property is "PropValue".
+</p>
+<HR>
+
+<H3><A 
+name=decl_SaveNet_LIMID>SaveNet</A></H3>
+<P class=Blurb>Saves LIMID to file
+</P>
+<font class="interface">
+void SaveNet(const char *filename);
+</font>
+<P>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">
+The function saves LIMID to file of "xml" format with given name. LIMID structure and nodes distributions 
+of probabilities are stored to file.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+net.SaveNet("net.xml");
+</P>
+<HR>
+
+
+<H3><A 
+name=decl_LoadNet_LIMID>LoadNet</A></H3>
+<P class=Blurb>Loads LIMID from file 
+</P>
+<font class="interface">
+void LoadNet(const char *filename);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function loads LIMID from file with given name. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Load LIMID structure and distributions from file "net.xml":
+</p>
+<p class="example">
+net.LoadNet("net.xml");
+</P>
+<HR>
+
 </DIV></BODY></HTML>
