@@ -42,6 +42,8 @@ typedef enum
 ,   ePushEvid
 ,   eGenerateEvidences
 ,   eLearnStructure
+,   eGaussianMean
+,   eGaussianCovar
 };
 
 typedef enum
