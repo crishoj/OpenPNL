@@ -1,0 +1,48 @@
+<html>
+<title>Influence Diagrams</title>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<body>
+<table width = "100%">
+	<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">Implementation</font></h2></td></tr>
+	<tr><td><pre><font class="code">
+void CLIMIDInfEngine::DoInference()
+{
+  m_FirstIter = true;
+  m_IterNum = 0;
+
+  InitAccordance(); 			<font class="comment">//creating the accordance between numbers of nodes in original </font>
+					<font class="comment">//graph and working subgraph</font>
+  InitEngine(); 			<font class="comment">//inference engine initialization </font>
+  InitMailBoxes(); 			<font class="comment">//mailboxes initialization</font>
+  BuildAllRootsOfTree();	 	<font class="comment">//building the roots of Junction tree</font>
+  BuildPathsBetweenRoots(); 		<font class="comment">//building paths between roots</font>
+  SetJTreeRootNode(m_Roots[0]); 	<font class="comment">//set the root of tree in the m_Roots[0] node</font>
+
+  <font class="comment">// main cycle</font>
+  bool IsStop = false;
+  while (!IsStop)
+  {
+   <font class="comment">// we need to update each of decision factor (policy)</font>
+    m_oldexp = m_exp;
+
+   <font class="comment">//cycle for all decision nodes (for all politics)</font>
+    for (int i = 0; i < m_decisionNodes.size(); i++)
+    {
+      <font class="comment">//for current decision node</font>
+      m_currIndexOfDecisionNode = m_IterNum % m_decisionNodes.size();
+      Retract(); 			<font class="comment">//retract step</font>
+      Collect(); 			<font class="comment">//collect step</font>
+      Marginalization(); 		<font class="comment">//marginalization step</font>
+      Contraction();			<font class="comment">//contraction step</font>
+      Optimization();			<font class="comment">//optimization step</font>
+      m_IterNum++;
+    }
+    <font class="comment">// check if it's time to stop</font>
+    IsStop = (CheckStopCondition() || 
+      ((m_IterNum / m_decisionNodes.size()) >= m_IterMax));
+  }
+}
+	</font></pre></td></tr>
+</table>
+</body>
+</html>

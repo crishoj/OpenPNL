@@ -1,0 +1,206 @@
+<html>
+
+<head>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<title>Reference manual</title>
+</head>
+
+<body>
+<font class="classes">
+<h3><span lang="EN-US">Class CIDNet</span></h3>
+        </font>
+<font class="description"></font>
+<table width="100%">
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">Create</font></p>
+			<p><font class="description">Returns CIDNet class object</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><font class="interface">static CIDNet* Create(int numberOfNodes,
+              int numberOfNodeTypes, <o:p>
+              </o:p>
+              </font>
+              <p><font class="interface">&nbsp;&nbsp;&nbsp; const CNodeType
+              *nodeTypesIn, const int *nodeAssociationIn, CGraph *pGraphIn);</font><td>
+			</tr>			
+		</table>
+		</td>
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="8"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">numberOfNodes</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Number of nodes in new
+                      Influence Diagram.</span></td>
+				</tr>
+				<tr>
+					<td><font class="argname">numberOfNodeTypes</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Number of node types in
+                      new Influence Diagram</span></td>
+				</tr>
+				<tr>
+					<td><font class="argname">nodeTypesIn</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to the array of
+                      node types</span></td>
+				</tr>
+				<tr>
+					<td><font class="argname">nodeAssociationIn</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to the array of
+                      node associations.</span></td>
+				</tr>
+				<tr>
+					<td><font class="argname">pGraphIn</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;mso-bidi-font-size:
+12.0pt;font-family:&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;
+mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Graph
+                      to be attached to the model</span><span lang="EN-US" style="font-size:11.5pt;
+font-family:&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;
+mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">.</span></td>
+				</tr>
+				<tr>
+					<td><font class="arg">Discussion</font></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td colspan="2"><span style="font-size:12.0pt;font-family:&quot;Times New Roman&quot;;
+mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:RU;mso-fareast-language:
+RU;mso-bidi-language:AR-SA">This function creates a CIDNet object from an input
+                      model and returns a pointer to it</span></td>
+				</tr>
+			</table></td>
+			</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">GetUnValueNodes<o:p>
+              </font><span lang="EN-US" style="font-size:15.0pt;font-family:Arial;color:#0033FF;mso-ansi-language:
+EN-US"><b></o:p>
+              </b></span></p>
+			<p><font class="description">Gets chance and decision nodes of the
+            input object.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">intVector* GetUnValueNodes() const;</font></p><td>
+			</tr>			
+		</table>
+		</td>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">GetDecisionNodes</font></p>
+              <p><font class="description">Gets decision nodes of the input
+              object</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void GetDecisionNodes(intVector&amp;
+              decisionNodesOut) const;</font></p><td>
+			</tr>			
+		</table>
+		</td>
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">decisionNodesOut</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Reference to an array
+                      where decision nodes will be stored</span></td>
+				</tr>
+			</table></td>
+			</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">GetValueNodes</font></p>
+              <p><font class="description">Gets utility nodes of the input
+              object</font><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA"><i>.</i></span></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void GetValueNodes(intVector&amp;
+              valueNodesOut) const;</font><span lang="EN-US" style="font-size:9.5pt;mso-bidi-font-size:
+12.0pt;font-family:&quot;Courier New&quot;;mso-ansi-language:EN-US"><b><o:p>
+              </o:p>
+              </b></span></p><td>
+			</tr>			
+		</table>
+		</td>
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">valueNodesOut</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Reference to an array
+                      where utility nodes will be stored</span></td>
+				</tr>
+			</table></td>
+			</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">IsLIMID</font></p>
+              <p><font class="description">Checks whether the net is Limited
+              Memory Influence Diagram or not</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">bool IsLIMID(void) const;<o:p>
+              </o:p>
+              </font></p><td>
+			</tr>			
+		</table>
+		</td>
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class="arg">Discussion</font></td></tr>
+				<tr>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+TimesNewRoman;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-bidi-font-family:
+Arial;color:black;mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:
+AR-SA">This function Checks whether the net is Limited Memory Influence Diagram
+                      or not by checking influences between different decision
+                      nodes</span><i><span lang="EN-US" style="font-size:11.5pt;font-family:&quot;Times New Roman&quot;;mso-fareast-font-family:
+&quot;Times New Roman&quot;;mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:
+AR-SA">.</span></i></td>
+				</tr>
+			</table></td>
+			</tr>
+			<tr>
+			<td>
+              <h3>&nbsp;</h3>
+</table>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<html>
+
+<head>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<title>Reference manual</title>
+</head>
+
+<body>
+
+<font class="classes"><p><span style="font-size: 12.0pt; font-family: Arial; mso-fareast-font-family: Times New Roman; mso-ansi-language: EN-US; mso-fareast-language: RU; mso-bidi-language: AR-SA; color: #0033FF" lang="EN-US"><b>Class</b></span><span style="font-size:12.0pt;font-family:&quot;Times New Roman&quot;;
+mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:RU;mso-fareast-language:
+RU;mso-bidi-language:AR-SA"> </span><span style="font-size: 12.0pt; font-family: Arial; mso-fareast-font-family: Times New Roman; mso-ansi-language: EN-US; mso-fareast-language: RU; mso-bidi-language: AR-SA; color: #0033FF" lang="EN-US"><b>CIDTabularPotential</b></span></p></font>
+<font class="description"><p><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;color:black;
+mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Class </span><span lang="EN-US" style="font-size:9.5pt;font-family:Courier;mso-fareast-font-family:
+&quot;Times New Roman&quot;;mso-bidi-font-family:&quot;Times New Roman&quot;;color:black;
+mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">CIDTabularPotential
+</span><span lang="EN-US" style="font-size:11.5pt;font-family:&quot;Times New Roman&quot;;
+mso-fareast-font-family:&quot;Times New Roman&quot;;color:black;mso-ansi-language:EN-US;
+mso-fareast-language:RU;mso-bidi-language:AR-SA">contains implementations of
+class </span><span lang="EN-US" style="font-size:9.5pt;font-family:Courier;
+mso-fareast-font-family:&quot;Times New Roman&quot;;mso-bidi-font-family:&quot;Times New Roman&quot;;
+mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">CIDPotential<span style="color:#0033FF">
+</span></span><span lang="EN-US" style="font-size:11.5pt;
+font-family:&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;
+color:black;mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:
+AR-SA">virtual functions. This class is used in inference algorithm for the nets,
+which are based on the</span><span lang="EN-US" style="font-size:11.5pt;
+font-family:&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;
+mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">
+Limited Memory Influence Diagram<span style="color:black">.</span></span></p></font>
+<table width="100%">
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">Clone</font></p>
+			<p><font class="description">Creates a new CFactor class object as
+            copy of the input object</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">virtual CFactor* Clone() const;</font></p><td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">Create</font></p>
+			<p><font class="description">Returns class object</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><font class="interface">static CIDTabularPotential* Create(const
+              int *domain, int nNodes, CModelDomain* pMD,<o:p>
+              </o:p>
+              </font>
+              <p><font class="interface">&nbsp;&nbsp;&nbsp; const float*
+              probData = NULL, const float* utilityData = NULL);</font><span lang="EN-US" style="font-size:9.5pt;mso-bidi-font-size:
+12.0pt;font-family:&quot;Courier New&quot;;mso-ansi-language:EN-US"><b><o:p>
+              </o:p>
+              </b></span><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="6"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">domain</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to the array of
+                      numbers of domain nodes.</span></td>
+				</tr>				
+				<tr>
+					<td><font class="argname">nNodes</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Number of nodes in domain</span></td>
+				</tr>				
+				<tr>
+					<td><font class="argname">pMD</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Graphical model which
+                      contains this potential</span></td>
+				</tr>				
+				<tr>
+					<td><font class="argname">probData</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to the array of
+                      float values of probabilities</span></td>
+				</tr>				
+				<tr>
+					<td><font class="argname">utilityData</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to the array of
+                      float values of utilities</span></td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+</table>
+</body>
+</html>

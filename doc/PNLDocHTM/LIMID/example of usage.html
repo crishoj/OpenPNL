@@ -1,0 +1,204 @@
+<html>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<title>Example of usage</title>
+<body>
+<table>
+	<tr>
+		<td align = "center"><h1><font color = "#0000ff">Example of usage for Limited Memory Influence Diagrams (LIMID)</h1></td>
+	</tr>
+	<tr>
+		<td><p>Document contains necessary information to start a simple test in LIMID algorithms that are realized in PNL. At first standard test “Pigs” is considered for LIMID. Further an example for this algorithm is described.</p></td>
+	</tr>
+	<tr>
+		<td bgcolor = "#0000ff"><h2><font color="#ffffff">Initial model</font></h2></td>
+	</tr>
+	<tr>
+		<td><p>Consider the following network.</p><img src="model.gif" align = "all"></img><br> <p>In this picture circles describe chance nodes. Each chance node has it’s probability distribution, which is shown near circles.</p>
+			<p>Squares describe decision nodes. We want to find out probability distributions for this nodes. That is why fields near the nodes are lived blank.</p>
+			<p>Diamonds describe utility nodes and the tables near the nodes show the distribution of the income.</p>
+			<p>To load this model you may use the following function:</p>
+			<font class = "code">
+			<pre>
+CIDNet* CreatePigsLIMID()
+{
+    const int nnodes = 14;
+    const int numberOfNodeTypes = 14;
+
+    int i;
+
+    CGraph *pGraph = CGraph::Create(0, NULL, NULL, NULL);
+    pGraph->AddNodes(nnodes);
+    pGraph->AddEdge(0,1,1);
+    pGraph->AddEdge(0,3,1);
+    pGraph->AddEdge(1,2,1);
+    pGraph->AddEdge(2,3,1);
+    pGraph->AddEdge(3,4,1);
+    pGraph->AddEdge(3,6,1);
+    pGraph->AddEdge(4,5,1);
+    pGraph->AddEdge(5,6,1);
+    pGraph->AddEdge(6,7,1);
+    pGraph->AddEdge(6,9,1);
+    pGraph->AddEdge(7,8,1);
+    pGraph->AddEdge(8,9,1);
+    pGraph->AddEdge(2,10,1);
+    pGraph->AddEdge(5,11,1);
+    pGraph->AddEdge(8,12,1);
+    pGraph->AddEdge(9,13,1);
+
+    CNodeType *nodeTypes = new CNodeType [numberOfNodeTypes];
+
+    nodeTypes[0].SetType(1, 2, nsChance);
+    nodeTypes[1].SetType(1, 2, nsChance);
+    nodeTypes[2].SetType(1, 2, nsDecision);
+    nodeTypes[3].SetType(1, 2, nsChance);
+    nodeTypes[4].SetType(1, 2, nsChance);
+    nodeTypes[5].SetType(1, 2, nsDecision);
+    nodeTypes[6].SetType(1, 2, nsChance);
+    nodeTypes[7].SetType(1, 2, nsChance);
+    nodeTypes[8].SetType(1, 2, nsDecision);
+    nodeTypes[9].SetType(1, 2, nsChance);
+    nodeTypes[10].SetType(1, 1, nsValue);
+    nodeTypes[11].SetType(1, 1, nsValue);
+    nodeTypes[12].SetType(1, 1, nsValue);
+    nodeTypes[13].SetType(1, 1, nsValue);
+
+    int *nodeAssociation = new int[nnodes];
+    for ( i = 0; i < nnodes; i++ )
+    {
+      nodeAssociation[i] = i;
+    }
+
+    CIDNet *pIDNet = CIDNet::Create( nnodes, numberOfNodeTypes, nodeTypes,
+    nodeAssociation, pGraph );
+
+    CModelDomain* pMD = pIDNet->GetModelDomain();
+    
+<font class="comment">//number of parameters is the same as number of nodes - one CPD per node    </font>
+    CFactor **myParams = new CFactor*[nnodes];
+    int *nodeNumbers = new int [nnodes];
+    
+    int domain0[] = { 0 };
+    nodeNumbers[0] =  1;
+    int domain1[] = { 0, 1 };
+    nodeNumbers[1] =  2;
+    int domain2[] = { 1, 2 };
+    nodeNumbers[2] =  2;
+    int domain3[] = { 2, 10 };
+    nodeNumbers[3] =  2;
+    int domain4[] = { 0, 2, 3 };
+    nodeNumbers[4] =  3;
+    int domain5[] = { 3, 4 };
+    nodeNumbers[5] =  2;
+    int domain6[] = { 4, 5 };
+    nodeNumbers[6] =  2;
+    int domain7[] = { 5, 11 };
+    nodeNumbers[7] =  2;
+    int domain8[] = { 3, 5, 6 };
+    nodeNumbers[8] =  3;
+    int domain9[] = { 6, 7 };
+    nodeNumbers[9] =  2;
+    int domain10[] = { 7, 8 };
+    nodeNumbers[10] =  2;
+    int domain11[] = { 8, 12 };
+    nodeNumbers[11] =  2;
+    int domain12[] = { 6, 8, 9 };
+    nodeNumbers[12] =  3;
+    int domain13[] = { 9, 13 };
+    nodeNumbers[13] =  2;
+
+    int *domains[] = { domain0, domain1, domain2, domain3, domain4,
+    domain5, domain6, domain7, domain8, domain9, domain10, domain11, 
+    domain12, domain13 };
+
+    pIDNet->AllocFactors();
+
+    for( i = 0; i < nnodes; i++ )
+    {
+      myParams[i] = CTabularCPD::Create( domains[i], nodeNumbers[i], pMD);
+    }
+    
+<font class="comment">// data creation for all CPDs of the model    </font>
+    float data0[] = {0.9f, 0.1f};
+    float data1[] = {0.1f, 0.9f, 0.8f, 0.2f};
+    float data2[] = {0.5f, 0.5f, 0.5f, 0.5f};
+    float data3[] = {-100.0f, 0.000000f};
+    float data4[] = {0.9f, 0.1f, 0.8f, 0.2f, 0.5f, 0.5f, 0.1f, 0.9f};
+    float data5[] = {0.1f, 0.9f, 0.8f, 0.2f};
+    float data6[] = {0.5f, 0.5f, 0.5f, 0.5f};
+    float data7[] = {-100.0f, 0.0f};
+    float data8[] = {0.9f, 0.1f, 0.8f, 0.2f, 0.5f, 0.5f, 0.1f, 0.9f};
+    float data9[] = {0.1f, 0.9f, 0.8f, 0.2f};
+    float data10[] = {0.5f, 0.5f, 0.5f, 0.5f};
+    float data11[] = {-100.0f, 0.0f};
+    float data12[] = {0.9f, 0.1f, 0.8f, 0.2f, 0.5f, 0.5f, 0.1f, 0.9f};
+    float data13[] = {1000.0f, 300.0f};
+
+    float *data[] = { data0, data1, data2, data3, data4,
+                      data5, data6, data7, data8, data9,
+                      data10, data11, data12, data13 };
+
+    for( i = 0; i < nnodes; i++ )
+    {
+        myParams[i]->AllocMatrix(data[i], matTable);
+        pIDNet->AttachFactor(myParams[i]);
+    }
+
+    delete [] nodeTypes;
+    delete [] nodeAssociation;
+
+    return pIDNet;
+}
+
+			</pre></font>
+		</td>
+	</tr>
+	<tr>
+		<td bgcolor = "#0000ff"><h2><font color="#ffffff">Implementation</font></h2></td>
+	</tr>
+	<tr>
+		<td>
+		To start inference with LIMID Inference Engine you may use the following source code.
+		<font class = "code">
+		<pre>
+int main()
+{
+    pPigs->GetGraph()->Dump();
+
+<font class="comment">// - LIMID creation ---------------------------------------------------------</font>
+  CIDNet* pPigs;
+  pPigs = CreatePigsLIMID();
+  
+  <font class="comment">// - Inference engine creation --------------------------------------------      </font>
+  CLIMIDInfEngine *pInfEng = NULL;
+  pInfEng = CLIMIDInfEngine::Create(pPigs);
+
+<font class="comment">  // - Run inference engine -------------------------------------------------</font>
+  pInfEng->DoInference();
+
+<font class="comment">// - Get politics -----------------------------------------------------------</font>
+    pFactorVector *Vec = pInfEng->GetPolitics();
+    printf("\n=====================\nPolitics are:\n");
+    for (int i = 0; i < Vec->size(); i++)
+    {
+      (*Vec)[i]->GetDistribFun()->Dump();
+    }
+    
+<font class="comment">// - Get expectation --------------------------------------------------------</font>
+   float res = pInfEng->GetExpectation();
+    printf("\nNumber of iterations is %d", pInfEng->GetIterNum());
+    printf("\nExpectation is %.3f", res);
+
+<font class="comment">// - Free the memory --------------------------------------------------------</font>
+  CLIMIDInfEngine::Release(&pInfEng);
+  delete pPigs;
+
+  return 0;
+}
+
+		</pre>
+		</font>
+		</td>
+	</tr>
+</table>
+<body>
+<html>

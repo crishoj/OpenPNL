@@ -1,0 +1,30 @@
+<html>
+<title>Influence Diagrams</title>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<body>
+<table width = "100%">
+	<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">Influence Diagram and Limited Memory Influence Diagram overview</font></h2></td></tr>
+	<tr><td>
+		<p>Influence diagrams are compact representations of decision problems under uncertainty. We will observe diagrams of ‘no forgetting’, i.e. that values of observed variables and decisions that have been taken are remembered at all later times. Such diagrams we will call Influence Diagrams (ID). We will contrast them with LIMIDs (LImited Memory Influence Diagrams). </p>
+		<p><b>Example 1 (PIGS)</b> </p>
+		<table><tr><td width="50"></td><td><p>A pig breeder is growing pigs for a period of four months and subsequently selling them. During this period the pig may or may not develop a certain disease. If the pig has the disease at the time when it must be sold, the pig must be sold for slaughtering and its expected market price is then 300 DKK (Danish kroner). If it is disease free, its expected market price as a breeding animal is 1000 DKK. </p>
+		<p>Once a month, a veterinary doctor sees the pig and makes a test for presence of the disease. If the pig is ill, the test will indicate this with probability .80, and if the pig is healthy, the test will indicate this with probability .90. At each monthly visit, the doctor may or may not treat the pig for the disease by injecting a certain drug. The cost of an injection is 100 DKK.</p>
+		<p>A pig has the disease in the first month with probability .10. A healthy pig develops the disease in the subsequent month with probability .20 without injection, whereas a healthy and treated pig develops the disease with probability .10, so the injection has some preventive effect. An untreated pig which is unhealthy will remain so in the subsequent month with probability .90, whereas the similar probability is .50 for an unhealthy pig which is treated. Thus spontaneous cure is possible but treatment is beneficial on average.</p>
+		</td></tr></table>
+		<p>The story now continues in two versions. In the traditional influence diagram (ID) version, the pig breeder will at all times know whether the pig has been treated earlier and also the previous test results. If we extend the story to continue for many months or to have weekly or daily examinations with potential injections associated, the complexity of finding an optimal treatment strategy becomes forbidding.</p>
+		<p align="ceter"><img src="figure_1.gif" align="center"></p>
+		<p>In the LIMID version of the story, the pig breeder does not keep individual records for his pigs and has to make his decision knowing only the test result for the given month and the age of the pig. The memory has been limited to the extreme of only remembering the present.</p>
+		<p align="ceter"><img src="figure_2.gif"></p>
+		<p>LIMIDs are represented by directed acyclic graphs (DAGs) with three types of nodes. Chance nodes, displayed as circles, represent random variables. Decision nodes, displayed as squares, correspond to alternative choices available to the decision maker. Finally value nodes, displayed as diamonds, represent additive components of the joint utility function. We assume that the joint utility of a configuration of the chance and decision variables can be represented as the sum of the local utility functions associated with the value nodes.</p>
+		<p>A LIMID can be viewed as a special type of Bayesian network, where the state of each decision variable is to be imposed from the decision maker to meet an optimization objective, and where the variables at the value nodes are completely determined from its parent configurations. A LIMID differs from a traditional ID representation of a decision problem in two ways:</p>
+		<ol>
+			<li>The sequence in which decisions are to be taken is not specified other than through it being compatible with the partial order induced by the DAG, i.e. if d2 is a descendant of _the d1 decision d1 must be taken before d2 .</li>
+			<li>The parents of a decision node d represent exactly the variables whose values are known and taken into consideration when d is to be taken. In traditional IDs, this relation is more complicated and varies somewhat between authors. </li>
+		</ol>
+		<p>Thus, LIMIDs allow for multiple or forgetful decision makers.</p>
+	   </td>
+
+	</tr>
+</table>
+</body>
+</html>

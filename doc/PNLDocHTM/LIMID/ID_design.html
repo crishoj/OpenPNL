@@ -1,0 +1,54 @@
+<html>
+<title>Influence Diagrams</title>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<body>
+<table width = "100%">
+	<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">Design</font></h2></td></tr>
+	<tr><td>
+		<br>
+		<font class = "method">Class CIDPotential </font> <font class = "description">implements basic operations with factors. This class is an abstract one, so it can’t be used itself.</font><br>
+			<p>Operations that can be performed with a CIDPotential object are as follows:</p>
+			<ul>
+				<li>combination and division of CIDPotential objects</li>
+				<li>contraction of  CIDPotential objects</li>
+				<li>marginalization</li>
+			</ul>
+			<br>Methods of this class are:
+		<table border=1 width=100%>
+			<tr><td>Combine</td><td>Combines two factors and returns product</td></tr>
+			<tr><td>Contraction</td><td>Multiplies utility and probability parts of factor and returns the product</td></tr>
+			<tr><td>DivideInSelf</td><td>Provides division and puts the result to potential</td></tr>
+			<tr><td>InsertPoliticsInSelf</td><td>Inserts new politics to the current CIDPotential object</td></tr>
+			<tr><td>SetProbDistribFun</td><td>Sets the probability part of potential</td></tr>
+			<tr><td>SetUtilityDistribFun</td><td>Sets the utility part of potential</td></tr>
+		</table>
+		<br>
+		<font class = "method">Class CIDTabularPotential </font> <font class = "description"> contains implementations of class CIDPotential virtual functions. This class is used in inference algorithm for the nets, which are based on the Limited Memory Influence Diagram.</font><br><br>Methods of this class are:
+		<table border=1 width=100%>
+			<tr><td>Create</td><td>Returns CIDTabularPotential class object</td></tr>
+			<tr><td>Clone</td><td>Creates a new CFactor class object as copy of the input object</td></tr>
+		</table>
+		<br>
+		<font class = "method">Class CIDNet </font> <font class = "description"> represents Influence Diagrams. This class is a descendant of CBNet class. We can consider Influence Diagrams as a specific case of Bayesian networks with three different types of nodes.</font><br><br>Methods of this class are:
+		<table border=1 width=100%>
+			<tr><td>Create</td><td>Returns CIDNet class object</td></tr>
+			<tr><td>GetUnValueNodes</td><td>Gets chance and decision nodes of the input object</td></tr>
+			<tr><td>GetDecisionNodes</td><td>Gets decision nodes of the input object.</td></tr>
+			<tr><td>GetValueNodes</td><td>Gets utility nodes of the input object</td></tr>
+			<tr><td>IsLIMID</td><td>Checks whether the net is Limited Memory Influence Diagram or not</td></tr>
+		</table>
+		<br>
+		<font class = "method">Class CLIMIDInfEngine </font> <font class = "description"> is a main class for carrying out an inference in Limited Memory influence Diagrams. This class is a descendant of CPNLBase class because inference process in LIMIDs is not the same with such process in Bayesian networks.</font><br><br>Methods of this class are:
+		<table border=1 width=100%>
+			<tr><td>Create</td><td>Returns CLIMIDInfEngine class object</td></tr>
+			<tr><td>Release</td><td>Destroys the inference engine</td></tr>
+			<tr><td>SetIterMax</td><td>Sets maximum quantity of iterations</td></tr>
+			<tr><td>DoInference</td><td>Main method, which does inference in Limited Memory Influence Diagrams</td></tr>
+			<tr><td>GetPolitics</td><td>Gets optimal politics after the inference</td></tr>
+			<tr><td>GetExpectation</td><td>Gets expectation after the inference</td></tr>
+		</table>
+		<br>
+	</td></tr>
+</table>
+</body>
+</html>

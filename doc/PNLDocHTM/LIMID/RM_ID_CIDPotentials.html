@@ -1,0 +1,339 @@
+<html>
+
+<head>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<title>Reference manual</title>
+</head>
+
+<body>
+<table width="100%" border=0>
+	<tr>
+		<td ><img src = "cover.gif"></td>
+		<td ><br><font size=14><i>Probabilistic Network Library</i></font><br><hr width="100%"><br><font size=6><i>Reference Manual</i></font></td>
+	</tr>
+</table>
+<font class="classes"><p><b><span lang="EN-US" style="font-size:13.0pt;font-family:
+Arial;mso-fareast-font-family:&quot;Times New Roman&quot;;color:#0033FF;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Class </span><span lang="EN-US" style="font-size:12.0pt;font-family:Arial;mso-fareast-font-family:
+&quot;Times New Roman&quot;;color:#0033FF;mso-ansi-language:EN-US;mso-fareast-language:
+RU;mso-bidi-language:AR-SA">CIDPotentials</span></b></p><p></font><span lang="EN-US" style="font-size:11.5pt;color:black;mso-ansi-language:
+EN-US">Class </span><span lang="EN-US" style="font-size:9.5pt;font-family:Courier;
+color:black;mso-ansi-language:EN-US">CIDPotential </span><span lang="EN-US" style="font-size:11.5pt;color:black;mso-ansi-language:EN-US">implements
+basic operations with factors. This class is an abstract one, so it can’t be
+used itself.<o:p>
+</o:p>
+</span></p><p><span lang="EN-US" style="font-size:11.5pt;mso-ansi-language:EN-US">Operations
+that can be performed with a </span><span lang="EN-US" style="font-size:9.5pt;
+font-family:Courier;mso-ansi-language:EN-US">CIDPotential </span><span lang="EN-US" style="font-size:11.5pt;mso-ansi-language:EN-US">object
+are as follows:<o:p>
+</o:p>
+</span></p><p><span lang="EN-US" style="font-size:11.5pt;mso-ansi-language:
+EN-US">— combination and division of </span><span lang="EN-US" style="font-size:
+9.5pt;font-family:Courier;mso-ansi-language:EN-US">CIDPotential </span><span lang="EN-US" style="font-size:11.5pt;mso-ansi-language:EN-US">object</span></p><p><span lang="EN-US" style="font-size:11.5pt;mso-ansi-language:
+EN-US">— contraction of<span style="mso-spacerun: yes">&nbsp; </span></span><span lang="EN-US" style="font-size:9.5pt;font-family:Courier;mso-ansi-language:EN-US">CIDPotential
+</span><span lang="EN-US" style="font-size:11.5pt;mso-ansi-language:EN-US">objects<o:p>
+</o:p>
+</span></p><span lang="EN-US" style="font-size:11.5pt;font-family:&quot;Times New Roman&quot;;
+mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:EN-US;mso-fareast-language:
+RU;mso-bidi-language:AR-SA">— marginalization</span>
+<p>&nbsp;</p>
+<table width="100%">
+	<tr>
+		<td width="100%">
+		<table width = 100% height="212">
+			<tr>
+			<td width="100%" height="89"><hr width="100%"><p><font class="method">Combine</font></p>
+			<p><font class="description">Combines two factors and returns
+            product.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td height="10"><font class="interface">virtual CIDPotential*
+              Combine(const CIDPotential *pOtherFactor, <o:p>
+              </o:p>
+              </font>
+              <p><font class="interface">&nbsp;&nbsp;&nbsp; CIDPotential* output
+              = NULL) const;</font><span lang="EN-US" style="font-size:9.5pt;mso-bidi-font-size:
+12.0pt;font-family:&quot;Courier New&quot;;mso-ansi-language:EN-US"><b><o:p>
+              </o:p>
+              </b></span><td height="10">
+			</tr>
+
+			<tr>
+			<td height="101"><table>
+				<tr><td width="100" Rowspan="3"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pOtherFactor</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to the multiplier
+                      factor</span></td>
+				</tr>				
+				<tr>
+					<td><font class="argname">output</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">If this argument is NULL,
+                      function creates a new CIDPotential object, else it only
+                      reloads factor.</span></td>
+				</tr>				
+				<tr>
+                    <td width="100"></td>
+					<td><font class="arg">Discussion</font></td>
+					<td></td>
+				</tr>				
+				<tr>
+                    <td width="100"></td>
+					<td colspan="2">
+                      <p class="MsoNormal" style="text-align: justify; mso-layout-grid-align: none; text-autospace: none; margin-left: 0"><span style="font-size: 11.5pt; font-family: Times New Roman; mso-ansi-language: EN-US; mso-fareast-font-family: Times New Roman; mso-fareast-language: RU; mso-bidi-language: AR-SA" lang="EN-US">This
+                      function returns pointer to a CIDPotential object, which
+                      is the product of two<o:p>
+                      </o:p>
+                      </span></p>
+                      <span style="font-size: 11.5pt; font-family: Times New Roman; mso-fareast-font-family: Times New Roman; mso-ansi-language: EN-US; mso-fareast-language: RU; mso-bidi-language: AR-SA" lang="EN-US">CIDPotential
+                      objects.</span></td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100% height="167">
+			<tr>
+			<td width="100%" height="89"><hr width="100%"><p><font class="method">Contraction</font></p>
+              <p><font class="description">Multiplies utility and probability
+              parts of factor and returns the product</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td height="15"><p><font class="interface">virtual CDenseMatrix&lt;float&gt;*
+              Contraction(CDenseMatrix&lt;float&gt;* output = NULL) const;</font><span lang="EN-US" style="font-size:9.5pt;mso-bidi-font-size:
+12.0pt;font-family:&quot;Courier New&quot;;mso-ansi-language:EN-US"><b><o:p>
+              </o:p>
+              </b></span></p><td height="15">
+			</tr>
+
+			<tr>
+			<td height="51"><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">output</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">If this argument is NULL,
+                      function creates a new CDenseMatrix object and fills it
+                      with the result of contraction.</span></td>
+				</tr>				
+				<tr>
+                    <td width="100"></td>
+					<td><font class="arg">Discussion</font></td>
+					<td></td>
+				</tr>				
+				<tr>
+                    <td width="100"></td>
+					<td colspan="2"><span lang="EN-US" style="font-size:11.5pt;font-family:
+TimesNewRoman;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-bidi-font-family:
+Arial;color:black;mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:
+AR-SA">This function returns pointer to a CDenseMatrix object, which is the
+                      product of contraction<span style="mso-spacerun: yes">&nbsp;
+                      </span>between utility and probability parts.</span></td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">DivideInSelf</font></p>
+              <p><font class="description">Provides division and puts the result
+              to potential.</font><span lang="EN-US" style="font-size:
+10.0pt;mso-ansi-language:EN-US"><o:p>
+              </o:p>
+              </span></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">virtual void DivideInSelf(const CCPD
+              *pOtherFactor) const;</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pOtherFactor</font></td>
+					<td >Pointer to the divider factor</td>
+				</tr>				
+				<tr><td><font class="arg">Discussion</font></td></tr>
+				<tr><td colspan = "2">
+                    <p class="MsoNormal" style="text-align: justify; mso-layout-grid-align: none; text-autospace: none; margin-left: 0"><span lang="EN-US" style="font-size:11.5pt;font-family:
+TimesNewRoman;mso-bidi-font-family:Arial;color:black;mso-ansi-language:EN-US">This
+                    function changes the object, for which it was called, by
+                    changing its data<o:p>
+                    </o:p>
+                    </span></p>
+                    <p class="MsoNormal" style="text-align: justify; mso-layout-grid-align: none; text-autospace: none; margin-left: 0"><span lang="EN-US" style="font-size:11.5pt;font-family:
+TimesNewRoman;mso-bidi-font-family:Arial;color:black;mso-ansi-language:EN-US">matrices.<o:p>
+                    </o:p>
+                    </span></td></tr>			
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><!--[if gte vml 1]><v:line id="_x0000_s1026" style='position:absolute;
+ z-index:1' from="0,-10.95pt" to="486pt,-10.95pt" strokeweight="1pt"/><![endif]-->
+              <span style="position: absolute; left: -1px; top: -16px; width: 651px; height: 3px; mso-ignore: vglayout; z-index: 0"><img src="refere.gif" v:shapes="_x0000_s1026" width="651" height="3"></span><font class="method">InsertPoliticsInSelf</font></p>
+              <p><font class="description"><span lang="EN-US" style="font-size:11.5pt;font-family:&quot;TimesNewRoman\,Italic&quot;;
+mso-bidi-font-family:Arial;color:black;mso-ansi-language:EN-US"><i>I</i></span>nserts
+              new politics to the current CIDPotential object<span lang="EN-US" style="font-size:11.5pt;font-family:&quot;TimesNewRoman\,Italic&quot;;
+mso-bidi-font-family:Arial;color:black;mso-ansi-language:EN-US"><i><o:p>
+              </o:p>
+              </i></span></font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">virtual void InsertPoliticsInSelf(const
+              CCPD *pOtherFactor) const;</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table width="782">
+				<tr><td width="100"></td><td colspan="2" width="668"><font class = "arg">Arguments</font></td></tr>
+				<tr><td width="100"></td><td width="141"><font class="argname">pOtherFactor</font></td><td width="521"><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to the factor,
+                    which contains new politics</span></td></tr>
+				<tr><td width="100" Rowspan="2"></td><td colspan="2" width="668"><font class = "arg">Discussion</font></td></tr>
+				<tr>
+					<td colspan="2" width="668"><span lang="EN-US" style="font-size:11.5pt;font-family:
+TimesNewRoman;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-bidi-font-family:
+Arial;color:black;mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:
+AR-SA">This function inserts new politics, which are described by argument, to
+                      current object</span></td>
+				</tr>				
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetProbDistribFun</font></p>
+			<p><font class="description">Sets the probability part of potential</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetProbDistribFun(const
+              CDistribFun* data);<o:p>
+              </o:p>
+              </font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">data</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to a CDistribFun
+                      object, which contains probability part of potential.</span></td>
+				</tr>				
+				<tr>
+                    <td width="100"></td>
+					<td><font class = "arg">Discussion</font></td>
+					<td></td>
+				</tr>				
+				<tr>
+                    <td width="100"></td>
+					<td colspan="2">
+                      <p class="MsoNormal" style="text-align: justify; mso-layout-grid-align: none; text-autospace: none; margin-left: 0; margin-right: 0"><span lang="EN-US" style="font-size:11.5pt;font-family:
+TimesNewRoman;mso-bidi-font-family:Arial;color:black;mso-ansi-language:EN-US">This
+                      function changes the object, for which it was called, by
+                      changing its data<o:p>
+                      </o:p>
+                      </span></p>
+                      <p style="margin-left: 0; margin-right: 0"><span lang="EN-US" style="font-size:11.5pt;font-family:TimesNewRoman;mso-fareast-font-family:
+&quot;Times New Roman&quot;;mso-bidi-font-family:Arial;color:black;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">matrices.</span></td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetUtilityDistribFun</font></p>
+			<p><font class="description">Sets the utility part of potential.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetUtilityDistribFun(const
+              CDistribFun* data);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="5"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">data</font></td>
+					<td><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to a CDistribFun
+                      object, which contains probability part of potential.</span></td>
+				</tr>				
+				<tr>
+					<td><font class="arg">Discussion</font></td>
+					<td></td>
+				</tr>				
+				<tr>
+					<td colspan="2">
+                      <p class="MsoNormal" style="text-align: justify; mso-layout-grid-align: none; text-autospace: none; margin-left: 0"><span lang="EN-US" style="font-size:11.5pt;font-family:
+TimesNewRoman;mso-bidi-font-family:Arial;color:black;mso-ansi-language:EN-US">This
+                      function changes the object, for which it was called, by
+                      changing its data<o:p>
+                      </o:p>
+                      </span></p>
+                      <span lang="EN-US" style="font-size:11.5pt;font-family:TimesNewRoman;mso-fareast-font-family:
+&quot;Times New Roman&quot;;mso-bidi-font-family:Arial;color:black;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">matrices.</span></td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<html>
+
+<head>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<title>Reference manual</title>
+</head>
+
+<body>
+<table>
+<tr>
+<td>
+
+              <h3><span lang="EN-US"><font class="classes">Class</font> <font class="classes">CLIMIDInfEngine</font></span></h3>
+            </td>
+			</tr>
+			<tr>
+			<td><hr width="100%">
+              <p><font class="method">Create</font></p>
+              <p><font class="description">Returns CLIMIDInfEngine class object</font></p>
+			<hr align="left" width="50%">
+            </td>
+			</tr>
+			<tr>
+			<td><font class="interface">static CLIMIDInfEngine* Create(const
+              CStaticGraphicalModel *pGM);<o:p>
+              </o:p>
+              </font></td>
+			</tr>
+			<tr>
+			<td>
+              <table border="0" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="12%" rowspan="4"></td>
+                  <td width="14%"><font class="arg">Arguments</font></td>
+                  <td width="74%"></td>
+                </tr>
+                <tr>
+                  <td width="14%"><font class="argname">pGM</font></td>
+                  <td width="74%"><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to a model, for
+                    which inference algorithm is to be </span><span lang="EN-US" style="font-size:
+12.0pt;font-family:&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;
+mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">carried
+                    out.</span></td>
+                </tr>
+                <tr>
+                  <td width="14%"><font class="arg">Discussion</font></td>
+                  <td width="74%"></td>
+                </tr>
+                <tr>
+                  <td width="88%" colspan="2"><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;color:black;
+mso-ansi-language:EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">This
+                    function creates a LIMID Inference algorithm object from an
+                    input graphical model and returns a pointer to it.</span></td>
+                </tr>
+              </table>
+            </td>
+			</tr>
+			<tr>
+			<td><hr width="100%">
+              <p><font class="method">Release</font></p>
+              <p><font class="description">Destroys the inference engine.</font></p>
+			<hr align="left" width="50%">
+            </td>
+			</tr>
+			<tr>
+			<td><font class="interface">static void Release(CLIMIDInfEngine**
+              pInfEng);<o:p>
+              </o:p>
+              </font></td>
+			</tr>
+			<tr>
+			<td>
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td width="13%" rowspan="2"></td>
+                  <td width="14%"><font class="arg">Arguments</font></td>
+                  <td width="73%"></td>
+                </tr>
+                <tr>
+                  <td width="14%"><font class="argname">pInfEngine</font></td>
+                  <td width="73%"><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">Pointer to a
+                    CLIMIDInfEngine object, which we are going to destroy.</span></td>
+                </tr>
+              </table>
+            </td>
+			</tr>
+			<tr>
+			<td><hr width="100%">
+              <p><font class="method">SetIterMax</font></p>
+              <p><font class="description">Sets maximum quantity of iterations</font></p>
+			<hr align="left" width="50%">
+            </td>
+			</tr>
+			<tr>
+			<td><font class="interface">void SetIterMax(int IterMax)</font><span lang="EN-US" style="font-size:9.5pt;mso-bidi-font-size:
+12.0pt;font-family:&quot;Courier New&quot;;mso-ansi-language:EN-US"><b>;<o:p>
+              </o:p>
+              </b></span></td>
+			</tr>
+			<tr>
+			<td>
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td width="14%" rowspan="2"></td>
+                  <td width="14%"><font class="arg">Arguments</font></td>
+                  <td width="72%"></td>
+                </tr>
+                <tr>
+                  <td width="14%"><font class="argname">IterMax</font></td>
+                  <td width="72%"><span lang="EN-US" style="font-size:11.5pt;font-family:
+&quot;Times New Roman&quot;;mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:
+EN-US;mso-fareast-language:RU;mso-bidi-language:AR-SA">New value of maximum
+                    quantity of iterations.</span></td>
+                </tr>
+              </table>
+            </td>
+			</tr>
+			<tr>
+			<td><hr width="100%">
+              <p><font class="method">DoInference</font></p>
+              <p><font class="description">Main method, which does inference in
+              Limited Memory Influence Diagrams.</font><span lang="EN-US" style="font-size:10.0pt;mso-ansi-language:EN-US"><o:p>
+              </o:p>
+              </span></p>
+			<hr align="left" width="50%">
+            </td>
+			</tr>
+			<tr>
+			<td><font class="interface">void DoInference()</font><span lang="EN-US" style="font-size:9.5pt;mso-bidi-font-size:
+12.0pt;font-family:&quot;Courier New&quot;;mso-ansi-language:EN-US"><b>;<o:p>
+              </o:p>
+              </b></span></td>
+			</tr>
+			<tr>
+			<td><hr width="100%">
+              <p><font class="method">GetPolitics</font></p>
+              <p><font class="description">Get optimal politics after the
+              inference.</font><span lang="EN-US" style="font-size:10.0pt;
+mso-ansi-language:EN-US"><o:p>
+              </o:p>
+              </span></p>
+			<hr align="left" width="50%">
+            </td>
+			</tr>
+			<tr>
+			<td><font class="interface">pFactorVector* GetPolitics(void) const;<o:p>
+              </o:p>
+              </font></td>
+			</tr>
+			<tr>
+			<td><hr width="100%">
+              <p><font class="method">GetExpectation</font></p>
+              <p><font class="description">Gets expectation after the inference.</font><span lang="EN-US" style="font-size:10.0pt;
+mso-ansi-language:EN-US"><o:p>
+              </o:p>
+              </span><font class="method"><o:p>
+              </font><span lang="EN-US" style="font-size:15.0pt;font-family:Arial;color:#0033FF;mso-ansi-language:
+EN-US"><b></o:p>
+              </b></span></p>
+			<hr align="left" width="50%">
+            </td>
+			</tr>
+			<tr>
+			<td><font class="interface">float GetExpectation();</font></td>
+			</tr>
+</table>
+</body>

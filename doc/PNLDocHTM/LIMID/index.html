@@ -1,0 +1,61 @@
+<html>
+<title>Limited Memory Influence Diagrams</title>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<body>
+<table>
+<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">About LIMIDs</font></h2></td></tr>
+<tr><td>
+	<p><font class="method">Overview</font></p>
+	<p>Influence diagrams are compact representations of decision problems under uncertainty. We will observe diagrams of ‘no forgetting’, i.e. that values of observed variables and decisions that have been taken are remembered at all later times. Such diagrams we will call Influence Diagrams (ID). We will contrast them with LIMIDs (LImited Memory Influence Diagrams).<br>
+	<pre>			<a href="ID_overview.html">details...</a></pre></p>
+
+	<p><font class="method">One of the inference methods</font></p>
+	<p>Algorithm proceeds by message passing in a suitable computational structure known as a junction tree. In the present subsection we describe how to construct this junction tree. As for similar local computation algorithms the construction involves first a moralization process, in which an undirected graph is constructed, then a triangulation, where additional edges are added, and finally the organization of the cliques of the triangulated graph into a junction tree.</p>
+	<pre>			<a href="ID_inference_method.html">details...</a></pre></p>
+
+	<p><font class="method">Design</font></p>
+	<p>To realize described algorithm, we had to add the following classes to the PNL library</p>
+	<pre>			<a href="ID_design.html">details...</a></pre></p>
+
+	<p><font class="method">Implementation</font></p>
+	<p>Here is the code of function, which proceeds inference in LIMIDs</p>
+	<pre>			<a href="ID_implementation.html">details...</a></pre></p>
+</td></tr>
+
+<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">Reference Manual</font></h2></td></tr>
+<tr><td>
+	<p><font class="method">Class CIDPotential</font></p>
+	<p>Class CIDPotential implements basic operations with factors. This class is an abstract one, so it can’t be used itself. <br> Operations that can be performed with a CIDPotential object are as follows: 
+		<ul>
+			<li>combination and division of CIDPotential object</li>
+			<li>contraction of  CIDPotential objects </li>
+			<li>contraction of  CIDPotential objects </li>
+		</ul>
+	</p>
+	<pre>			<a href="RM_ID_CIDPotentials.html">The main methods of this class...</a></pre></p>
+
+	<p><font class="method">Class CIDTabularPotential</font></p>
+	<p>Class CIDTabularPotential contains implementations of class CIDPotential virtual functions. This class is used in inference algorithm for the nets, which are based on the Limited Memory Influence Diagram</p>
+	<pre>			<a href="RM_ID_CIDTabularPotential.html">The main methods of this class...</a></pre></p>
+
+	<p><font class="method">Class CIDNet</font></p>
+	<p>Class CIDNet contains implementations of basic and specific operations with probabilistic nets, which represent LIMIDs</p>
+	<pre>			<a href="RM_ID_CIDNet.html">The main methods of this class...</a></pre></p>
+
+	<p><font class="method">Class CLIMIDInfEngine</font></p>
+	<p>Class CIDNet contains implementations of operations, which are necessary for representing inference in LIMIDs</p>
+	<pre>			<a href="RM_ID_CLIMIDInfEngine.html">The main methods of this class...</a></pre></p>
+
+</tr></td>
+
+<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">Example of usage</font></h2></td></tr>
+
+<tr><td>
+	<p>Here is a document, which shows how to create a Limited Memory Influence Diagram and how to carry out inference in this net.</p>
+	<pre>			<a href="example of usage.html">details...</a></pre></p>
+</td></tr>
+
+
+</table>
+</body>
+</html>
