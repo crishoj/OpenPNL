@@ -1207,6 +1207,7 @@ void CParJtreeInfEngine::DoPropagateOMP(
 void CParJtreeInfEngine::EnterEvidence(const CEvidence *pEvidence,
     int maximize, int sumOnMixtureNode)
 {
+    int i;
     ShrinkObserved(pEvidence, maximize, sumOnMixtureNode);
 
     DivideNodes();
@@ -1220,8 +1221,9 @@ void CParJtreeInfEngine::EnterEvidence(const CEvidence *pEvidence,
 
     DistributeEvidence();
 
-    for(int i = 0; i < m_CollectRanks.size(); i++)
+    for( i = 0; i < m_CollectRanks.size(); i++)
         CollectFactorsOnProcess(m_CollectRanks[i]);
+
 }
 #endif // PAR_MPI
 // ----------------------------------------------------------------------------
@@ -1420,7 +1422,6 @@ void CParJtreeInfEngine::DistributeEvidence()
     }
     
     BuildRoutes();
-    
     m_IsPropagated.resize(m_NodesOfProcess.size());
     for(int i = 0; i < m_NodesOfProcess.size(); i++)
         if (m_NodesOfProcess[i] == m_Roots[m_MyRank])
@@ -1436,7 +1437,7 @@ void CParJtreeInfEngine::DistributeEvidence()
     const int *nbr, *nbrs_end;
     boolVector nodesSentMessages(numOfClqs, false);
     intQueue source;
-    
+
     source.push(m_Roots[m_MyRank]);
     while(!source.empty())
     {
@@ -2455,7 +2456,7 @@ void CParJtreeInfEngine::ProcessRoutes()
     int numNdsInSepDom;
     const int *sepDom;
     int i, j;
-    
+
     // find on which process main root is
     int NumProcOfMainRoot=0;
     while (m_Roots[NumProcOfMainRoot] != GetJTreeRootNode())
@@ -2526,11 +2527,14 @@ void CParJtreeInfEngine::ProcessRoutes()
         {
             for (j = (m_Routes[i].size()) - 1; j > 1; j-- )
             {
-                PropagateBetweenClqs(m_Routes[i][j], m_Routes[i][j-1], false);
                 int index = 0;
                 while (m_NodesOfProcess[index] != m_Routes[i][j - 1])
                     index++;
-                m_IsPropagated[index] = true;
+                if (!m_IsPropagated[index])
+                {
+                    PropagateBetweenClqs(m_Routes[i][j], m_Routes[i][j-1], false);
+                    m_IsPropagated[index] = true;
+                }
             }
             
             potSep = GetJTree()->GetSeparatorPotential(m_Routes[i][1], m_Routes[i][0]);
