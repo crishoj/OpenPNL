@@ -8,7 +8,7 @@ include \$(top_srcdir)/Makefile.incl
 INCLUDES=\$(PNL_INCL) -I../include -I\$(top_srcdir)/trs/include
 tests_pnl_c_SOURCES=\\"
 ls *.c* \
-| grep -v -e MATLAB -e TJTreeInference\\.cpp -e DSLPNLConverter -e parPNLTest\\.cpp -e TestSoftMax -e TestLIMID -e SamplesOfIDNet -e SamplesOfSMNet \
+| grep -v -e MATLAB -e TJTreeInference\\.cpp -e DSLPNLConverter \
 | sed -e 's/^/     /' -e 's/$/     \\/' \
 | sed -e '$ s/     \\$//'
 echo '

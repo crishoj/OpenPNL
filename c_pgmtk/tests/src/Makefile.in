@@ -63,8 +63,8 @@ am_tests_pnl_c_OBJECTS = A1_5JTreeInfDBNCondGauss.$(OBJEXT) \
 	AGetParametersTest.$(OBJEXT) AGibbsInfEngine.$(OBJEXT) \
 	AGraph.$(OBJEXT) AInfForRndBNet.$(OBJEXT) \
 	AJTreeInfDBN.$(OBJEXT) AJtreeInfMixtureDBN.$(OBJEXT) \
-	ALearningCondGaussDBN.$(OBJEXT) ALog.$(OBJEXT) \
-	ALWInfEngine.$(OBJEXT) AMarginalize.$(OBJEXT) \
+	ALearningCondGaussDBN.$(OBJEXT) ALIMIDInfEngine.$(OBJEXT) \
+	ALog.$(OBJEXT) ALWInfEngine.$(OBJEXT) AMarginalize.$(OBJEXT) \
 	AMixtureGaussainLearning.$(OBJEXT) \
 	AMixtureGaussainModel.$(OBJEXT) AMRF2PearlInf.$(OBJEXT) \
 	AMultiDMatrix.$(OBJEXT) AMultiDMatrix_exp.$(OBJEXT) \
@@ -80,10 +80,10 @@ am_tests_pnl_c_OBJECTS = A1_5JTreeInfDBNCondGauss.$(OBJEXT) \
 	AReferenceCounter.$(OBJEXT) ARockPaperScissors.$(OBJEXT) \
 	ASaveLoadEvidences.$(OBJEXT) ASetStatistics.$(OBJEXT) \
 	ASparseMatrixInfernceBNet.$(OBJEXT) ASparseReduceOp.$(OBJEXT) \
-	AStackAllocator.$(OBJEXT) AStructureLearning.$(OBJEXT) \
-	ATreeCPDLearn.$(OBJEXT) AUnrollDBN.$(OBJEXT) \
-	CreateBNets.$(OBJEXT) LoadBNet.$(OBJEXT) LoadIDNet.$(OBJEXT) \
-	SEEvidence.$(OBJEXT) SEGaussian.$(OBJEXT) \
+	AStackAllocator.$(OBJEXT) \
+	AStructuralLearningWithJTreeInference.$(OBJEXT) \
+	AStructureLearning.$(OBJEXT) ATreeCPDLearn.$(OBJEXT) \
+	AUnrollDBN.$(OBJEXT) SEEvidence.$(OBJEXT) SEGaussian.$(OBJEXT) \
 	SEParameter.$(OBJEXT) TBKInference.$(OBJEXT) \
 	tCreateArHMMwithGaussObs.$(OBJEXT) \
 	tCreateIncineratorBNet.$(OBJEXT) tCreateKjaerulffDBN.$(OBJEXT) \
@@ -256,6 +256,7 @@ tests_pnl_c_SOURCES = \
      AJTreeInfDBN.cpp     \
      AJtreeInfMixtureDBN.cpp     \
      ALearningCondGaussDBN.cpp     \
+     ALIMIDInfEngine.cpp     \
      ALog.cpp     \
      ALWInfEngine.cpp     \
      AMarginalize.cpp     \
@@ -287,12 +288,10 @@ tests_pnl_c_SOURCES = \
      ASparseMatrixInfernceBNet.cpp     \
      ASparseReduceOp.cpp     \
      AStackAllocator.cpp     \
+     AStructuralLearningWithJTreeInference.cpp     \
      AStructureLearning.cpp     \
      ATreeCPDLearn.cpp     \
      AUnrollDBN.cpp     \
-     CreateBNets.cpp     \
-     LoadBNet.cpp     \
-     LoadIDNet.cpp     \
      SEEvidence.cpp     \
      SEGaussian.cpp     \
      SEParameter.cpp     \

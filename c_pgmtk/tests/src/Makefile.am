@@ -33,6 +33,7 @@ tests_pnl_c_SOURCES=\
      AJTreeInfDBN.cpp     \
      AJtreeInfMixtureDBN.cpp     \
      ALearningCondGaussDBN.cpp     \
+     ALIMIDInfEngine.cpp     \
      ALog.cpp     \
      ALWInfEngine.cpp     \
      AMarginalize.cpp     \
@@ -64,12 +65,10 @@ tests_pnl_c_SOURCES=\
      ASparseMatrixInfernceBNet.cpp     \
      ASparseReduceOp.cpp     \
      AStackAllocator.cpp     \
+     AStructuralLearningWithJTreeInference.cpp     \
      AStructureLearning.cpp     \
      ATreeCPDLearn.cpp     \
      AUnrollDBN.cpp     \
-     CreateBNets.cpp     \
-     LoadBNet.cpp     \
-     LoadIDNet.cpp     \
      SEEvidence.cpp     \
      SEGaussian.cpp     \
      SEParameter.cpp     \
