@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "PNLGeNIe_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MD /w /W0 /GX /Zi /Od /I "..\..\GeNIe" /I "..\..\..\c_pgmtk\include" /I "..\..\..\c_pgmtk\src\include" /I "..\..\..\cxcore\cxcore\include" /I "..\..\include" /I "..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "PNLGeNIe_EXPORTS" /FR /FD /GZ /c
+# ADD CPP /nologo /MD /w /W0 /GR /GX /Zi /Od /I "..\..\GeNIe" /I "..\..\..\c_pgmtk\include" /I "..\..\..\c_pgmtk\src\include" /I "..\..\..\cxcore\cxcore\include" /I "..\..\include" /I "..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "PNLGeNIe_EXPORTS" /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -94,11 +94,23 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\source\pnlGeNIe.cpp
+SOURCE=..\source\networkPNLH.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\source\pnlGeNIeDLL.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\XMLBindingPNLH.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\XMLReaderPNLH.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\XMLWriterPNLH.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -106,7 +118,27 @@ SOURCE=..\source\pnlGeNIeDLL.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\include\pnlGeNIe.hpp
+SOURCE=..\include\networkPNLH.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\typesPNLH.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\XMLBindingPNLH.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\XMLContainer.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\XMLReaderPNLH.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\XMLWriterPNLH.hpp
 # End Source File
 # End Group
 # Begin Group "Resource Files"

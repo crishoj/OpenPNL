@@ -1,143 +1,77 @@
 #undef _DEBUG
+#undef DEBUG
 #include <vector>
 
 #include "enginefactory.h"
-#include "pnlGeNIe.hpp"
-#include "xmlreader.h"
-#include "xmlwriter.h"
-#include "pnlHighConf.hpp"
-#include "pnl_dll.hpp"
-#include "pnlString.hpp"
+#include "mechanism.h"
+
+#include "XMLReaderPNLH.hpp"
+#include "XMLWriterPNLH.hpp"
+#include "XMLBindingPNLH.hpp"
+#include "networkPNLH.hpp"
 
 extern "C" __declspec(dllexport) IEngineFactory *__cdecl GetFactory();
 
-// FORWARDS
-class IXmlWriterPNLH;
-class IXmlReaderPNLH;
-class INetworkPNL;
-
-class IXmlWriterPNLH: public IXmlWriter
+class StructureMatrixPNLH: public IStructureMatrix
 {
 public:
-    IXmlWriterPNLH(): m_pFile(0) {}
-    virtual ~IXmlWriterPNLH() { if(m_pFile) fclose(m_pFile); }
-    virtual bool OpenFile(const char * filename);
-    virtual bool CloseFile();
+    virtual void Delete()
+    {
+	delete this;
+    }
 
-    virtual void OpenElement(const char * name);
-    virtual void CloseElement(const char * name);
+    virtual bool InstantiateMechanism(const IMechanism *mechanism) { return false; }
+    virtual IStructureMatrix* Clone() { return new StructureMatrixPNLH(); }
+    virtual void Serialize(ISerializer *serializer) {}
+    virtual void Deserialize(ISerializer *serializer) {}
 
-    virtual void WriteElement(
-	const char * name, 
-	const char * content = NULL, 
-	bool escapeWhitespace = false);
+    virtual void SetErrorOutput(IErrorOutput *errOut) {}
+    virtual void GetVariableIds(std::vector<std::string> &varIds) {}
+    virtual void GetUndeterminedVariables(std::vector<std::string> &varIds) {}
+    virtual void GetVarName(const std::string &id, std::string & name) {}
+    virtual void GetVarDescription(const std::string &id, std::string & description) {}
+    virtual void GetVarEquation(const std::string & id, std::string & equation) {}
+    virtual void GetVarMechanism(const std::string & id, std::string & mechanism) {}
 
-    virtual void PushAttribute(const char *name, const char * value);
-    virtual void PushAttribute(const char *name, int value);
-    virtual void PushAttribute(const char *name, bool value);
-    virtual void PushAttribute(const char *name, double value);
-    virtual void Delete();
+    virtual void GetCausalMapping(std::vector<std::pair<std::string, std::vector<std::string> > > &causal) {}
+    virtual bool MakeExogenous(const std::string & id, double value, const std::string & mechToRelease) { return false; }
+    virtual bool ReleaseExogenous(const std::string &id) { return false; }
+    virtual void GetMechanisms(std::vector<std::string> &mechanisms) {}
+    virtual void GetReleasableMechanisms(const std::string & variable, std::vector<std::string> &mechanisms) {}
+    virtual void GetMechanismEquation(const std::string & mechanism, std::string &equation) {}
+    virtual void GetMechanismName(const std::string & mechanism, std::string &name) {}
+    virtual bool RemoveMechanism(const std::string & mechanism) { return false; }
 
-private:
-    FILE *m_pFile;
-    std::vector<pnl::pnlString> m_aElement;
+    virtual bool ChangeVariableId(const std::string &oldId, const std::string &newId) { return false; }
+    virtual bool ChangeVariableName(const std::string &id, const std::string &name) { return false; }
+    virtual bool IsSelfContained() { return false; }
+    virtual bool Merge(const std::string & varId,  IStructureMatrix *matrix2, const std::string & varId2) { return false; }
+    virtual bool ReplaceVariable(const std::string &id1, const std::string &id2) { return false; }
+    virtual bool IsExogenous(const std::string & varId) { return false; }
+    virtual bool IsEndogenous(const std::string & varId) { return false; }
+    virtual bool IsManipulable(const std::string & varId) { return false; }
+    virtual bool Solve(std::vector<std::pair<std::string, std::pair<double, double> > > &values) { return false; }
+    virtual void GetMatrix(std::vector<std::string> &variables, std::vector<std::string> &equations, std::vector<bool> &values) {}
+    virtual void GetControllableCandidates(const std::string & mechanism, std::vector<std::string> & candidates) {}
+
+    virtual void XmlWrite(IXmlWriter *xmlWriter) {}
+    virtual IXmlBinding* CreateXmlBinding() { return 0; }
+
+    virtual ITradeoffAnalyzer* CreateTradeoffAnalyzer() { return 0; }
 };
 
 class EngineFactoryPNLH: public IEngineFactory
 {
 public:
-    virtual INetwork* CreateNetwork() { return new INetworkPNL; }
-    virtual IStructureMatrix* CreateStructureMatrix() { return 0; }
+    virtual INetwork* CreateNetwork() { return new NetworkPNL; }
+    virtual IStructureMatrix* CreateStructureMatrix() { return new StructureMatrixPNLH; }
     virtual IMechLibrary* CreateMechLibrary() { return 0; }
-    virtual IXmlReader* CreateXmlReader() { return 0; }
-    virtual IXmlWriter* CreateXmlWriter() { return new IXmlWriterPNLH; }
+    virtual IXmlReader* CreateXmlReader() { return new XmlReaderPNLH; }
+    virtual IXmlWriter* CreateXmlWriter() { return new XmlWriterPNLH; }
 };
-
-static IEngineFactory *sPNLHFactory;
 
 IEngineFactory *GetFactory()
 {
     return new EngineFactoryPNLH;
-    if(!sPNLHFactory)
-    {
-	sPNLHFactory = new EngineFactoryPNLH;
-    }
-
-    return sPNLHFactory;
 }
 
-bool IXmlWriterPNLH::OpenFile(const char * filename)
-{
-    m_pFile = fopen(filename, "w");
-    
-    return m_pFile != 0;
-}
-
-bool IXmlWriterPNLH::CloseFile()
-{
-    if(!m_pFile)
-    {
-	return false;
-    }
-
-    fclose(m_pFile);
-
-    return true;
-}
-
-void IXmlWriterPNLH::OpenElement(const char * name)
-{
-    m_aElement.push_back(name);
-    fprintf(m_pFile, "<%s", name);
-}
-
-void IXmlWriterPNLH::CloseElement(const char * name)
-{
-    if(!m_aElement.size() || !(m_aElement.back() == pnl::pnlString(name)))
-    {
-	ThrowInternalError("Unopen element is closed",
-	    "XmlWriterPNLH::CloseElement");
-    }
-
-    fprintf(m_pFile, "</%s>", name);
-    m_aElement.pop_back();
-}
-
-void IXmlWriterPNLH::WriteElement(
-	const char * name, 
-	const char * content, 
-	bool escapeWhitespace)
-{
-    // Now we ignore 'escapeWhitespace' argument
-
-    fprintf(m_pFile, ">%s", content);
-}
-
-void IXmlWriterPNLH::PushAttribute(const char *name, const char * value)
-{
-    fprintf(m_pFile, " %s='%s'", name, value);
-}
-
-void IXmlWriterPNLH::PushAttribute(const char *name, int value)
-{
-    fprintf(m_pFile, " %s='%i'", name, value);
-}
-
-void IXmlWriterPNLH::PushAttribute(const char *name, bool value)
-{
-    fprintf(m_pFile, " %s='%c'", name, value ? 'y':'n');
-}
-
-void IXmlWriterPNLH::PushAttribute(const char *name, double value)
-{
-    fprintf(m_pFile, " %s='%.8lf'", name, value);
-}
-
-void IXmlWriterPNLH::Delete()
-{
-    delete this;
-}
-
-#if 0
-class 
-#endif
