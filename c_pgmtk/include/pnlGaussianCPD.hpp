@@ -18,6 +18,7 @@
 #ifndef __PNLGAUSSIANCPD__HPP__
 #define __PNLGAUSSIANCPD__HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlCPD.hpp"
 #include "pnlTypeDefs.hpp"
 
@@ -75,6 +76,11 @@ public:
 #ifdef PNL_OBSOLETE
     virtual void UpdateStatisticsML(const CEvidence* const* pEvidencesIn, int EvidenceNumber);
 #endif
+
+#ifdef PAR_OMP
+    virtual void UpdateStatisticsML(CFactor *pPot);
+#endif
+
 protected:
     CGaussianCPD( const int *domain, int nNodes, CModelDomain* pMD );
     CGaussianCPD( const CGaussianCPD& GauCPD );

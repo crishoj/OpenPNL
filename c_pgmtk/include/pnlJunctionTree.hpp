@@ -16,6 +16,7 @@
 #ifndef __PNLJUNCTIONTREE_HPP__
 #define __PNLJUNCTIONTREE_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlMNet.hpp"
 #include "pnlPotential.hpp"
 #include "pnlLog.hpp"
@@ -91,8 +92,16 @@ public:
     potentials for nodes and separators of junction tree) */
     void InitCharge( const CStaticGraphicalModel *pGrModel,
                      const CEvidence *pEvidence, int sumOnMixtureNode = 1 );
-    
+#ifdef PAR_OMP
+    void InitChargeOMP( const CStaticGraphicalModel *pGrModel,
+                        const CEvidence *pEvidence, int sumOnMixtureNode = 1 );
+#endif // PAR_OMP
+
     void ClearCharge();
+#ifdef PAR_OMP
+    void ClearChargeOMP();
+#endif // PAR_OMP
+
     
     /* checks if the structure of the input JTree matches with the structure
     of the JTree for which the member function is called */
@@ -179,7 +188,11 @@ protected:
     /* assigns nodes to cliques so that each node is assigned to a clique */
     void AssignFactorsToClq(const CStaticGraphicalModel* pGrahicalModel)
         const;
-    
+#ifdef PAR_OMP
+    void AssignFactorsToClqOMP(const CStaticGraphicalModel* pGrahicalModel)
+        const;
+#endif // PAR_OMP
+
     /* initializes potentials for the nodes of the junction tree */
     /* two functions are necessary cause the initialization is carried out
     differently for the case of BNet and MNet models */
@@ -188,7 +201,11 @@ protected:
     
     void InitNodePotsFromBNet( const CBNet *pBNet, const CEvidence *pEvidence,
                                int sumOnMixtureNode = 1);
-    
+#ifdef PAR_OMP
+    void InitNodePotsFromBNetOMP( const CBNet *pBNet, const CEvidence *pEvidence,
+                                  int sumOnMixtureNode = 1);
+#endif // PAR_OMP
+
     inline bool IsChargeInitialized() const;
     
     /* initializes potentials for separators of the junction tree */

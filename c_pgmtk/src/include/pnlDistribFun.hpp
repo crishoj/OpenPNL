@@ -18,6 +18,7 @@
 #ifndef __PNLDISTRIBFUN_HPP__
 #define __PNLDISTRIBFUN_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlObject.hpp"
 #include "pnlNodeType.hpp"
 #include "pnlEvidence.hpp"
@@ -123,6 +124,11 @@ public:
 	virtual int GetNumberOfFreeParameters() const = 0;
 
     ~CDistribFun(){}
+
+#ifdef PAR_OMP
+    virtual void UpdateStatisticsML(CDistribFun *pDF) = 0;
+#endif
+
 protected:
     CDistribFun(EDistributionType dt, int numNodes,
 		const CNodeType* const* nodeTypes,

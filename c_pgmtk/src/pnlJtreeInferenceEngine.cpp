@@ -1469,3 +1469,105 @@ void CJtreeInfEngine::DoPropagate(pnl::CNumericDenseMatrix<float> *sourceMatrix,
     
     delete [] offsets;
 }
+
+#ifdef PAR_RESULTS_RELIABILITY
+bool pnl::EqualResults(CJtreeInfEngine& eng1, CJtreeInfEngine& eng2,
+    float epsilon, int doPrint, int doFile, float *maxDiff)
+{
+    CJunctionTree *JTree1, *JTree2;
+    JTree1 = eng1.GetJTree();
+    JTree2 = eng2.GetJTree();
+    int NumOfNds1 = JTree1->GetNumberOfNodes();
+    int NumOfNds2 = JTree2->GetNumberOfNodes();
+    int numOfNdsInClq;
+    const int *clique;
+    const floatVector *myVector;
+    int node;
+
+#if 0
+    FILE *out;
+    if (doFile)
+    {
+        out = fopen( "jtree1.out", "w" );
+
+        for(node = 0; node < NumOfNds1; node++)
+        {
+            JTree1->GetNodeContent(node, &numOfNdsInClq, &clique);
+            fprintf(out, "Nodes of clique %d :\n", node);
+            for (int i = 0; i < numOfNdsInClq; i++)
+                fprintf(out, "%d   ", clique[i]);
+            CMatrix<float>* mat = NULL;
+            CPotential* p = JTree1->GetNodePotential(node);
+            mat = p->GetDistribFun()->GetMatrix(matTable);
+            CNumericDenseMatrix<float>* myMatrix = 
+                static_cast<CNumericDenseMatrix<float>*>(mat->ConvertToDense());
+            fprintf(out,"\nMatrix of potential of clique %d:\n", node);
+            myVector = (myMatrix)->GetVector();
+            for(int j = 0; j < myVector->size(); j++)
+            {
+                fprintf(out,"%f   ",(*myVector)[j]);
+            }
+            fprintf(out,"\n\n");
+        }
+        fclose( out );
+
+        out = fopen( "jtree2.out", "w" );
+
+        for(node = 0; node < NumOfNds2; node++)
+        {
+            JTree2->GetNodeContent(node, &numOfNdsInClq, &clique);
+            fprintf(out, "Nodes of clique %d :\n", node);
+            for (int i = 0; i < numOfNdsInClq; i++)
+                fprintf(out, "%d   ", clique[i]);
+            CMatrix<float>* mat = JTree2->GetNodePotential(node)->
+                GetDistribFun()->GetMatrix(matTable);
+            CNumericDenseMatrix<float>* myMatrix = 
+                static_cast<CNumericDenseMatrix<float>*>(mat->ConvertToDense());
+            fprintf(out,"\nMatrix of potential of clique %d:\n", node);
+            const floatVector *myVector = (myMatrix)->GetVector();
+            for(int j = 0; j < myVector->size(); j++)
+            {
+                fprintf(out,"%f   ",(*myVector)[j]);
+            }
+            fprintf(out,"\n\n");
+        }
+        fclose( out );
+    }
+#endif
+
+    bool res = 1;
+    if (NumOfNds1 != NumOfNds2) 
+        res = 0;
+    CDistribFun* distrib1;
+    if (maxDiff)
+    {
+        *maxDiff = 0;
+    }
+    float maxDifference;
+    for(node = 0; node < NumOfNds1; node++)
+    {
+        distrib1 = JTree1->GetNodePotential(node)->GetDistribFun();
+        if (!(distrib1->IsEqual(JTree2->GetNodePotential(node)->
+            GetDistribFun(), epsilon, 1, &maxDifference)))
+        {
+            res = 0;
+            if (maxDiff && (*maxDiff < maxDifference))
+            {
+                *maxDiff = maxDifference;
+            }
+#if 0
+            if (doPrint) 
+                printf("clique %d:  notOK  maxDiff = %.6f\n", node, maxDifference);
+#endif
+        }
+        else
+        {
+#if 0
+            if (doPrint)
+                printf("clique %d:  OK\n", node);
+#endif
+        }
+    }
+    return res;
+}
+#endif // PAR_RESULTS_RELIABILITY

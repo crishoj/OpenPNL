@@ -2222,7 +2222,14 @@ CNumericDenseMatrix<float>* CSoftMaxDistribFun:: GetProbMatrix(const CEvidence *
   delete []probValues;
   return NewMatrix;
 };
-
+//-----------------------------------------------------------------------------
+#ifdef PAR_OMP
+void CSoftMaxDistribFun::UpdateStatisticsML(CDistribFun *pPot)
+{
+    PNL_THROW(CNotImplemented,
+        "UpdateStatisticsML for CSoftMaxDistribFun not implemented yet");
+};
+#endif // PAR_OMP
 // ----------------------------------------------------------------------------
 float CSoftMaxDistribFun::CalculateKsi(floatVector MeanContParents, 
   C2DNumericDenseMatrix<float>* CovContParents)

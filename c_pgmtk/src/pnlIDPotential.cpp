@@ -618,4 +618,14 @@ void CIDPotential::UpdateStatisticsML(const CEvidence* const* pEvidencesIn,
 {
   PNL_THROW( CNotImplemented, "this method is for only CPotential and CCPD");
 }
+// ----------------------------------------------------------------------------
+
+#ifdef PAR_OMP
+void CIDPotential::UpdateStatisticsML(CFactor *pPot)
+{
+  PNL_THROW(CNotImplemented, 
+      "UpdateStatisticsML for CIDPotential not implemented yet");
+};
+#endif // PAR_OMP
+
 // end of file ----------------------------------------------------------------

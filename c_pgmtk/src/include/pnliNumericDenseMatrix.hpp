@@ -20,7 +20,7 @@
 #include <float.h>
 #include <math.h>
 
-#ifdef _OPENMP
+#if defined(_OPENMP) && !defined(PAR_OMP)
 #include <omp.h>
 #endif
 
@@ -1397,7 +1397,7 @@ CMatrix<T> *iCNumericDenseMatrix<T>::Marg_omp( int const *dims_to_keep,
                                                          CNumericDenseMatrix< T > *output,
                                                          EAccumType accum_type ) const
 {
-#ifdef _OPENMP
+#if defined(_OPENMP) && !defined(PAR_OMP)
     PNL_USING
 
     int i, j, k;
@@ -1705,7 +1705,7 @@ CMatrix<T> *iCNumericDenseMatrix<T>::Marg( int const *dims_to_keep,
                                                      CNumericDenseMatrix< T > *output,
                                                      EAccumType accum_type ) const
 {
-#ifdef _OPENMP
+#if defined(_OPENMP) && !defined(PAR_OMP)
     return Marg_omp( dims_to_keep, num_dims_to_keep, marg_type, output, accum_type );
 #else
     return Marg_plain( dims_to_keep, num_dims_to_keep, marg_type, output, accum_type );
@@ -2413,7 +2413,7 @@ void iCNumericDenseMatrix< T >::MultiplyInSelf_omp( CMatrix< T > const *mat,
                                                          int const *dims_to_mul,
                                                          int, T const )
 {
-#ifdef _OPENMP
+#if defined(_OPENMP) && !defined(PAR_OMP)
     PNL_USING
 
     int i, j, k;
@@ -2673,7 +2673,7 @@ void iCNumericDenseMatrix< T >::MultiplyInSelf( CMatrix< T > const *mat,
 {
         if (m_Dim > 2)
         {
-#ifdef _OPENMP
+#if defined(_OPENMP) && !defined(PAR_OMP)
                 MultiplyInSelf_omp( mat, num_dims_to_mul, dims_to_mul );
 #else
                 MultiplyInSelf_plain( mat, num_dims_to_mul, dims_to_mul );

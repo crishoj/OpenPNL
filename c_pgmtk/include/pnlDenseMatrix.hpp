@@ -1039,7 +1039,7 @@ void CDenseMatrix<Type>::Index( CMatrixIterator<Type>* current,
         }                                                                 \
     }
 
-#if 1
+#if 0
 PNL_API int margBlockize(int *aDim, int nDim, const int *aRange, int &blockSize,
 		 int desired, int limit);
 

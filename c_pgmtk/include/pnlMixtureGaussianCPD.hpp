@@ -18,6 +18,7 @@
 #ifndef __PNLMIXTUREGAUSSIANCPD__HPP__
 #define __PNLMIXTUREGAUSSIANCPD__HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlCPD.hpp"
 #include "pnlTypeDefs.hpp"
 //#include "pnlCondGaussianDistribFun.hpp"
@@ -76,6 +77,11 @@ public:
 #ifdef PNL_OBSOLETE
     virtual void UpdateStatisticsML(const CEvidence* const* pEvidencesIn, int EvidenceNumber);
 #endif
+
+#ifdef PAR_OMP
+    virtual void UpdateStatisticsML(CFactor *pPot);
+#endif
+
 protected:
     CMixtureGaussianCPD( const int *domain, int nNodes, CModelDomain* pMD,
 	const float* probabilities );

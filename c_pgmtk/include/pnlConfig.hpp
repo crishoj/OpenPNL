@@ -16,6 +16,7 @@
 #ifndef __PNLCONFIG_HPP__
 #define __PNLCONFIG_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlConfig.h"
 
 #if defined(WIN32) && defined(_DEBUG)

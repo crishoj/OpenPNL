@@ -28,7 +28,7 @@ public:
     
     
     static CGibbsSamplingInfEngine* Create( const CStaticGraphicalModel 
-	*pGraphicalModelIn );
+        *pGraphicalModelIn );
     
     virtual ~CGibbsSamplingInfEngine();
     
@@ -63,14 +63,18 @@ protected:
     pFactorVector * GetQueryFactors( );
     void DestroyQueryFactors();
     void ConsDSep(intVecVector &queryes, boolVector *resultNds, const CEvidence *pEv ) const;
+
+    inline intVecVector& GetQueryes();
+
+    inline bool GetSignOfUsingDSeparation() const;
     
 private:
     
     CPotential              *m_pPotMPE;
-    intVector		    m_queryNodes;
+    intVector               m_queryNodes;
     intVecVector            m_queryes;
     pFactorVector           m_queryFactors;
-    bool		    m_bUsingDSep;
+    bool                    m_bUsingDSep;
     
 };
 
@@ -82,6 +86,16 @@ inline void CGibbsSamplingInfEngine::GetQueryFactors( pFactorVector *pFactors )
 inline pFactorVector * CGibbsSamplingInfEngine::GetQueryFactors( )
 {
     return &m_queryFactors;
+}
+
+inline intVecVector& CGibbsSamplingInfEngine::GetQueryes()
+{
+    return m_queryes;
+}
+
+inline bool CGibbsSamplingInfEngine::GetSignOfUsingDSeparation() const
+{
+    return m_bUsingDSep;
 }
 
 

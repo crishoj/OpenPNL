@@ -18,6 +18,7 @@
 #ifndef __PNLTABULARCPD__HPP__
 #define __PNLTABULARCPD__HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlCPD.hpp"
 
 PNL_BEGIN
@@ -69,7 +70,11 @@ public:
     virtual float GetLogLik( const CEvidence* pEv, const CPotential* pShrInfRes = NULL ) const;
     
     bool IsValid(std::string* descriptionOut = NULL) const;
-    
+
+#ifdef PAR_OMP
+    virtual void UpdateStatisticsML(CFactor *pPot);
+#endif
+
 protected:
     CTabularCPD( const int *domain, int nNodes, CModelDomain* pMD );
     CTabularCPD( const CTabularCPD& TabCPD );

@@ -20,6 +20,7 @@
 #ifndef __PNLTABULARPOTENTIAL_HPP__
 #define __PNLTABULARPOTENTIAL_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlPotential.hpp"
 //#include "TabularData.hpp"
 
@@ -74,6 +75,11 @@ public:
     
 
 	~CTabularPotential(){}
+
+#ifdef PAR_OMP
+    void UpdateStatisticsML(CFactor *pPot);
+#endif
+
 protected:
 	CTabularPotential( const int *domain, int nNodes, CModelDomain* pMD,
         const intVector& obsIndicesIn = intVector() );

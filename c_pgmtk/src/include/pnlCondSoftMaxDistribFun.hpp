@@ -20,6 +20,7 @@
 #ifndef __PNLCONDSOFTMAXDISTRIBFUN_HPP__
 #define __PNLCONDSOFTMAXDISTRIBFUN_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlDistribFun.hpp"
 #include "pnlSoftMaxDistribFun.hpp"
 //#include "pnl2DNumericDenseMatrix.hpp"
@@ -172,6 +173,10 @@ public:
 
   void MaximumLikelihood(float **Observation, int NumberOfObservations, 
     float Accuracy, float step = 0.1);
+
+#ifdef PAR_OMP
+  virtual void UpdateStatisticsML(CDistribFun *pPot);
+#endif
 
   inline CMatrix<CSoftMaxDistribFun*>* GetMatrixWithDistribution();
 

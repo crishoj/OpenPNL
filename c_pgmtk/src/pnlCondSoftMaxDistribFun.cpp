@@ -1193,7 +1193,14 @@ CNumericDenseMatrix<float>* CCondSoftMaxDistribFun:: GetProbMatrix(const CEviden
      delete []Values;
      return NewMatrix;
 };
-
+//-----------------------------------------------------------------------------
+#ifdef PAR_OMP
+void CCondSoftMaxDistribFun::UpdateStatisticsML(CDistribFun *pPot)
+{
+    PNL_THROW(CNotImplemented, 
+        "UpdateStatisticsML for CCondSoftMaxDistribFun not implemented yet");
+};
+#endif // PAR_OMP
 //-----------------------------------------------------------------------------
 int CCondSoftMaxDistribFun::GetSoftMaxSize() const
 {

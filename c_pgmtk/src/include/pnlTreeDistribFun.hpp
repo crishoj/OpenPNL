@@ -19,6 +19,7 @@
 #ifndef __PNLTREEDISTRIBFUN_HPP__
 #define __PNLTREEDISTRIBFUN_HPP__
 
+#include "pnlParConfig.hpp"
 #include "cart/cvcart.h"
 #include "pnlDistribFun.hpp"
 
@@ -122,7 +123,11 @@ public:
     float GetLogLik( const CEvidence* pEv ) const;
 
 	virtual int GetNumberOfFreeParameters() const;
-    
+
+#ifdef PAR_OMP
+    void UpdateStatisticsML(CDistribFun *pDF);
+#endif
+
 protected:
     CTreeDistribFun::CTreeDistribFun(int NodeNumber, 
         const CNodeType *const* NodeTypes,

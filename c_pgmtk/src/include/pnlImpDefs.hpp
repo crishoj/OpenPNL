@@ -294,7 +294,7 @@ struct autobuf_wrapper_t
 #if 0
 inline void PNL_OMP_BARRIER()
 {
-    #ifdef _OPENMP
+    #if defined(_OPENMP) && !defined(PAR_OMP)
     #pragma omp barrier
     #endif
 }

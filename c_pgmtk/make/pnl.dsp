@@ -22,6 +22,8 @@ CFG=pnl - Win32 Debug Static
 !MESSAGE "pnl - Win32 Release Static" (based on "Win32 (x86) Static Library")
 !MESSAGE "pnl - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "pnl - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "pnl - Win32 Parallel Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "pnl - Win32 Parallel Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -150,6 +152,73 @@ LINK32=link.exe
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\bin\pnl.dll" /implib:"..\..\lib\pnl.lib" /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
 # SUBTRACT LINK32 /pdb:none
 
+!ELSEIF  "$(CFG)" == "pnl - Win32 Parallel Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "pnl___Win32_Parallel_Debug"
+# PROP BASE Intermediate_Dir "pnl___Win32_Parallel_Debug"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "..\..\temp\pnl\ParallelDebug"
+# PROP Intermediate_Dir "..\..\temp\pnl\ParallelDebug"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+LIB32=link.exe -lib
+CPP=cl.exe
+# ADD BASE CPP /nologo /MDd /W4 /GR /GX /Zi /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /I "..\include\cart" /I "..\..\..\cxcore\cxcore\include\\" /D "_DEBUG" /D "_WINDOWS" /D "PNL_EXPORTS" /D "CV_DLL" /D "WIN32" /FR /FD /GZ /c
+# ADD CPP /nologo /MDd /w /W0 /GR /GX /Zi /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /I "..\include\cart" /I "..\..\..\cxcore\cxcore\include\\" /D "_DEBUG" /D "_WINDOWS" /D "PNL_EXPORTS" /D "CV_DLL" /D "WIN32" /D "BUILD_MPI" /D "BUILD_OMP" /FR /FD /GZ /Qopenmp /c
+MTL=midl.exe
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
+# ADD BASE RSC /l 0x419 /d "_DEBUG"
+# ADD RSC /l 0x419 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /nodefaultlib:"libcmt.lib" /nodefaultlib:"msvcrt.lib" /out:"..\..\bin\pnld.dll" /implib:"..\..\lib\pnld.lib" /pdbtype:sept /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
+# SUBTRACT BASE LINK32 /pdb:none /nodefaultlib
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /nodefaultlib:"libcmt.lib" /nodefaultlib:"msvcrt.lib" /out:"..\..\bin\pnld.dll" /implib:"..\..\lib\pnld.lib" /pdbtype:sept /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
+# SUBTRACT LINK32 /pdb:none /nodefaultlib
+
+!ELSEIF  "$(CFG)" == "pnl - Win32 Parallel Release"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "pnl___Win32_Parallel_Release"
+# PROP BASE Intermediate_Dir "pnl___Win32_Parallel_Release"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "..\..\temp\pnl\ParallelRelease"
+# PROP Intermediate_Dir "..\..\temp\pnl\ParallelRelease"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+LIB32=link.exe -lib
+CPP=cl.exe
+# ADD BASE CPP /nologo /MD /W4 /GR /GX /Zi /O2 /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "NDEBUG" /D "_WINDOWS" /D "PNL_EXPORTS" /D "CV_DLL" /D "WIN32" /FD /c
+# SUBTRACT BASE CPP /Fr /YX /Yc /Yu
+# ADD CPP /nologo /MD /w /W0 /GR /GX /Zi /O2 /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "NDEBUG" /D "_WINDOWS" /D "PNL_EXPORTS" /D "CV_DLL" /D "WIN32" /D "BUILD_MPI" /D "BUILD_OMP" /FD /Qopenmp /c
+MTL=midl.exe
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
+# ADD BASE RSC /l 0x419 /d "NDEBUG"
+# ADD RSC /l 0x419 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\bin\pnl.dll" /implib:"..\..\lib\pnl.lib" /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\bin\pnl.dll" /implib:"..\..\lib\pnl.lib" /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
+# SUBTRACT LINK32 /pdb:none
+
 !ENDIF 
 
 # Begin Target
@@ -158,6 +227,8 @@ LINK32=link.exe
 # Name "pnl - Win32 Release Static"
 # Name "pnl - Win32 Debug"
 # Name "pnl - Win32 Release"
+# Name "pnl - Win32 Parallel Debug"
+# Name "pnl - Win32 Parallel Release"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -251,6 +322,30 @@ SOURCE=..\src\pnliNumericDenseMatrix.cpp
 # Begin Source File
 
 SOURCE=..\src\pnliNumericSparseMatrix.cpp
+# ADD CPP /Yu"pnlConfig.hpp"
+# End Source File
+# End Group
+# Begin Group "parallel"
+
+# PROP Default_Filter "cpp"
+# Begin Source File
+
+SOURCE=..\src\pnlParConfig.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlParJtreeInferenceEngine.cpp
+# ADD CPP /Yu"pnlConfig.hpp"
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlParNewDelete.cpp
+# ADD CPP /Yu"pnlConfig.hpp"
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlParPearlInferenceEngine.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
 # End Source File
 # End Group
@@ -764,6 +859,30 @@ SOURCE=..\include\pnlNumericSparseMatrix.hpp
 # Begin Source File
 
 SOURCE=..\include\pnlSparseMatrix.hpp
+# End Source File
+# End Group
+# Begin Group "parallel.headers"
+
+# PROP Default_Filter "hpp;h"
+# Begin Source File
+
+SOURCE=..\include\ParPNLCRTDBG.H
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlParConfig.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlParJtreeInferenceEngine.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlParNewDelete.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlParPearlInferenceEngine.hpp
 # End Source File
 # End Group
 # Begin Source File

@@ -20,6 +20,7 @@
 #ifndef __PNLGAUSSIANPOTENTIAL_HPP__
 #define __PNLGAUSSIANPOTENTIAL_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlPotential.hpp"
 //#include "GaussianData.hpp"
 
@@ -104,6 +105,11 @@ public:
     virtual float GetLogLik( const CEvidence* pEv, const CPotential* pShrInfRes = NULL ) const;
     
     ~CGaussianPotential(){}
+
+#ifdef PAR_OMP
+    void UpdateStatisticsML(CFactor *pPot);
+#endif
+
 protected:
 	CGaussianPotential( const int *domain, int nNodes, CModelDomain* pMD,
         const intVector& obsIndicesIn = intVector() );

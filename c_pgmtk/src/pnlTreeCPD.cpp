@@ -174,3 +174,11 @@ float CTreeCPD::GetLogLik( const CEvidence* pEv, const CPotential* ) const
 void CTreeCPD :: NormalizeCPD()
 {
 }
+
+#ifdef PAR_OMP
+void CTreeCPD::UpdateStatisticsML(CFactor *pPot)
+{
+    PNL_THROW(CNotImplemented, 
+        "UpdateStatisticsML for CTreeCPD not implemented yet");
+};
+#endif // PAR_OMP

@@ -646,3 +646,11 @@ int CTreeDistribFun::GetNumberOfFreeParameters() const
 {
     return m_pCART->num_nodes;	
 }
+
+#ifdef PAR_OMP
+void CTreeDistribFun::UpdateStatisticsML(CDistribFun *pPot)
+{
+    PNL_THROW(CNotImplemented, 
+        "UpdateStatisticsML for CTreeDistribFun not implemented yet");
+}
+#endif // PAR_OMP

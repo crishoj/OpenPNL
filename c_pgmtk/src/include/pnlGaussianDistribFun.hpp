@@ -19,6 +19,7 @@
 #ifndef __PNLGAUSSIANDISTRIBFUN_HPP__
 #define __PNLGAUSSIANDISTRIBFUN_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlDistribFun.hpp"
 //#include "pnl2DNumericDenseMatrix.hpp"
 //#include "pnl2DMatrix.hpp"
@@ -163,6 +164,10 @@ public:
     //asLog = 2 - return exponential order without processing of coefficient
 
 	virtual int GetNumberOfFreeParameters() const;
+
+#ifdef PAR_OMP
+    void UpdateStatisticsML(CDistribFun *pDF);
+#endif
 
 protected:
     void ReleaseAllMatrices();

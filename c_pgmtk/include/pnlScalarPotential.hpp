@@ -20,6 +20,7 @@
 #ifndef __PNLSCALARPOTENTIAL_HPP__
 #define __PNLSCALARPOTENTIAL_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlPotential.hpp"
 //#include "ScalarData.hpp"
 
@@ -55,6 +56,11 @@ public:
     
 
 	~CScalarPotential(){}
+
+#ifdef PAR_OMP
+    virtual void UpdateStatisticsML(CFactor *pPot);
+#endif
+
 protected:
 	CScalarPotential( const int *domain, int nNodes, CModelDomain* pMD,
         const intVector& obsIndicesIn = intVector());

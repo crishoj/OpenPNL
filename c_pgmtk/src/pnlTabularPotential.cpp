@@ -608,3 +608,16 @@ GetLogLik( const CEvidence* pEv, const CPotential* pShrInfRes ) const
         return logLik;
     }
 }
+
+#ifdef PAR_OMP
+void CTabularPotential::UpdateStatisticsML(CFactor *pPot)
+{
+    //Проверка на правильность pPot
+    if (pPot->GetDistributionType() != dtTabular)
+        PNL_THROW(CInconsistentType, 
+        "Can not use function CTabularPotential::UpdateStatisticsML with wrong distribution type");
+
+    CDistribFun *pDF = pPot->GetDistribFun();
+    m_CorrespDistribFun->UpdateStatisticsML( pDF );
+};
+#endif // PAR_OMP

@@ -80,7 +80,7 @@ CPearlInfEngine(const CStaticGraphicalModel* pGrModel)
                 m_beliefs(m_numOfNdsInModel),
                 m_selfMessages(m_numOfNdsInModel),
                 m_messagesFromNeighbors(m_numOfNdsInModel),
-                m_tolerance(1e-7f)
+                m_tolerance(1e-6f)
 {
     CreateMessagesStorage();
 }
@@ -928,7 +928,7 @@ void CPearlInfEngine::ParallelProtocol()
         if (iter > 0)
         {
 #ifdef _OPENMP
-#pragma omp parallel for
+//#pragma omp parallel for
 #endif
             for( i = 0; i < nAllMes	; i++)
             {
@@ -942,7 +942,7 @@ void CPearlInfEngine::ParallelProtocol()
             //compute beliefs
             changed = 0;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) reduction(+:changed)
+//#pragma omp parallel for schedule(dynamic) reduction(+:changed)
 #endif
             for( i=0; i < nNodes; i++ )
             {
@@ -963,7 +963,7 @@ void CPearlInfEngine::ParallelProtocol()
         const ENeighborType *orientation;
         
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
+//#pragma omp parallel for schedule(dynamic)
 #endif
         for( i = 0; i < nNodes; i++ )
         {
@@ -988,7 +988,7 @@ void CPearlInfEngine::ParallelProtocol()
         }
     }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
+//#pragma omp parallel for schedule(dynamic)
 #endif
     for( i=0; i < nNodes; i++ )
     {
@@ -1006,4 +1006,33 @@ void CPearlInfEngine::ParallelProtocol()
 void CPearlInfEngine::TreeProtocol()
 {
 }
+/////////////////////////////////////////////////////////////////////////////
+
+messageVector& CPearlInfEngine::GetCurBeliefs()
+{
+    return m_beliefs;
+}
+/////////////////////////////////////////////////////////////////////////////
+
+#ifdef PAR_RESULTS_RELIABILITY
+bool pnl::EqualResults(CPearlInfEngine& eng1, CPearlInfEngine& eng2,
+    float epsilon)
+{
+    bool res = true;
+    messageVector& firstBels = eng1.GetCurBeliefs();
+    messageVector& secBels   = eng2.GetCurBeliefs();
+
+    if (firstBels.size() != secBels.size())
+        res = false;
+    else
+    {
+        for (int i = 0; i < firstBels.size(); i++)
+            if (!firstBels[i]->IsEqual(secBels[i], epsilon))
+            {
+                res = false;
+            }
+    }
+    return res;
+}
+#endif // PAR_RESULTS_RELIABILITY
 /////////////////////////////////////////////////////////////////////////////

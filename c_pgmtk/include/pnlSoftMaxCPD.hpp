@@ -20,6 +20,7 @@
 #ifndef __PNLSOFTMAXCPD__HPP__
 #define __PNLSOFTMAXCPD__HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlCPD.hpp"
 #include "pnlTypeDefs.hpp"
 #include "pnlBNet.hpp"
@@ -107,7 +108,11 @@ public:
     virtual void UpdateStatisticsML(const CEvidence* const* pEvidencesIn,
         int EvidenceNumber);
 #endif
-    
+
+#ifdef PAR_OMP
+  virtual void UpdateStatisticsML(CFactor *pPot);
+#endif
+
 protected:
     CSoftMaxCPD(const int *domain, int nNodes, CModelDomain* pMD);
     

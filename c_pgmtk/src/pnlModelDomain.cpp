@@ -20,6 +20,413 @@
 
 PNL_USING
 
+#ifdef PAR_OMP
+
+CModelDomain*
+CModelDomain::Create(int numVariables, const CNodeType& commonVariableType,
+		     CGraphicalModel* pCreaterOfMD )
+{
+    PNL_CHECK_LEFT_BORDER( numVariables, 1 );
+
+    CModelDomain* resDomain = new CModelDomain( numVariables, commonVariableType );
+    PNL_CHECK_IF_MEMORY_ALLOCATED(resDomain);
+    return resDomain;
+}
+
+CModelDomain*
+CModelDomain::Create(const nodeTypeVector& variableTypes,
+		     const intVector& variableAssociation,
+		     CGraphicalModel* pCreaterOfMD )
+{
+    int numVarTypes = variableTypes.size();
+    int numVars = variableAssociation.size();
+#if 1
+    if( numVars < numVarTypes )
+    {
+	PNL_THROW( CInconsistentSize,
+	    "number of all variable types must be not more than number of variables" )
+    }
+#endif
+    CModelDomain* resDomain = new CModelDomain( variableTypes,
+	variableAssociation, pCreaterOfMD );
+    PNL_CHECK_IF_MEMORY_ALLOCATED( resDomain );
+    return resDomain;
+}
+
+
+int CModelDomain::AttachFactor(const CFactor *pFactor)
+{
+    int retNum;
+
+    int myid = omp_get_thread_num();
+
+    omp_set_lock(&(m_heap_lock[myid]));
+
+    if( m_freeNumsInHeap[myid].size() > 0 )
+    {
+	retNum = m_freeNumsInHeap[myid].front();
+	m_freeNumsInHeap[myid].pop();
+
+	m_factorsHeap[myid][retNum] = pFactor;
+    }
+    else
+    {
+	retNum = m_factorsHeap[myid].size();
+
+	m_factorsHeap[myid].push_back(pFactor);
+    }
+
+    omp_unset_lock(&(m_heap_lock[myid]));
+
+    return retNum;
+}
+
+void CModelDomain::ReleaseFactor(const CFactor *pFactor)
+{
+    int myid = omp_get_thread_num();
+
+    int factorNum = pFactor->GetNumInHeap();
+
+    omp_set_lock(&(m_heap_lock[myid]));
+
+    if (m_factorsHeap[myid][factorNum] == pFactor) 
+    {
+        m_factorsHeap[myid][factorNum] = NULL;
+        m_freeNumsInHeap[myid].push(factorNum);
+
+        omp_unset_lock(&(m_heap_lock[myid]));
+    }
+    else
+    {
+        omp_unset_lock(&(m_heap_lock[myid]));
+
+        int index = 0;
+        bool stop = false;
+
+        while ((index < c_MaxThreadNumber) && (!stop)) {
+
+            omp_set_lock(&(m_heap_lock[index]));
+
+            if (factorNum < m_factorsHeap[index].size())
+            {
+                if (m_factorsHeap[index][factorNum] != pFactor)
+                    ++index;
+                else 
+                    stop = true;
+            }
+            else 
+                ++index;
+
+            if (stop)
+                omp_unset_lock(&(m_heap_lock[index]));
+            else 
+                omp_unset_lock(&(m_heap_lock[index-1]));
+        }; //while ((index < ...
+
+        if (index != c_MaxThreadNumber) {
+            
+            omp_set_lock(&(m_heap_lock[index]));
+
+            m_factorsHeap[index][factorNum] = NULL;
+            m_freeNumsInHeap[index].push(factorNum);
+
+            omp_unset_lock(&(m_heap_lock[index]));
+        }
+    }
+}
+
+bool CModelDomain::IsAFactorOwner(const CFactor *pFactor)
+{
+    int myid = omp_get_thread_num();
+
+    int numInHeap = pFactor->GetNumInHeap();
+    /*if( numInHeap >= m_factorsHeap[myid].size())
+    {
+        return 0;
+    }*/
+    PNL_CHECK_LEFT_BORDER(numInHeap, 0);
+
+    bool stop = false;
+
+    omp_set_lock(&(m_heap_lock[myid]));
+
+    if (numInHeap < m_factorsHeap[myid].size())
+    {
+        if (m_factorsHeap[myid][numInHeap] == pFactor)
+            stop = true;
+    }
+
+    omp_unset_lock(&(m_heap_lock[myid]));
+
+    if (stop)
+        return true;
+
+    int index = 0;
+
+    while ((index < c_MaxThreadNumber) && (!stop)) 
+    {
+        if (index == myid)
+        {
+            index++;
+            continue;
+        };
+
+        omp_set_lock(&(m_heap_lock[index]));
+
+        if (numInHeap < m_factorsHeap[index].size())
+        {
+            if (m_factorsHeap[index][numInHeap] != pFactor)
+                ++index;
+            else 
+                stop = true;
+        }
+        else 
+            ++index;
+
+        if (stop)
+            omp_unset_lock(&(m_heap_lock[index]));
+        else 
+            omp_unset_lock(&(m_heap_lock[index-1]));
+    };
+
+    if (index != c_MaxThreadNumber) 
+        return true;
+    else 
+        return false;
+}
+
+const CNodeType* CModelDomain::GetVariableType(int nodeNumber) const
+{
+    int numNodesInModelDom = m_variableAssociation.size();
+    PNL_CHECK_RANGES( nodeNumber, 0, numNodesInModelDom - 1 );
+
+    return &(m_variableTypes[m_variableAssociation[nodeNumber]]);
+}
+
+void CModelDomain::GetVariableTypes(intVector& vars,
+	                            pConstNodeTypeVector* varTypes ) const
+{
+    int numNodesInModelDom = m_variableAssociation.size();
+    int numVarTypes = vars.size();
+    varTypes->resize( numVarTypes );
+    for( int i = 0; i < numVarTypes; i++ )
+    {
+	int nodeNumber = vars[i];
+	PNL_CHECK_RANGES( nodeNumber, 0, numNodesInModelDom - 1 );
+	(*varTypes)[i] = &m_variableTypes[m_variableAssociation[nodeNumber]];
+    }
+}
+
+void CModelDomain::GetVariableTypes( nodeTypeVector* varTypes )const
+{
+    PNL_CHECK_IS_NULL_POINTER( varTypes );
+
+    varTypes->assign( m_variableTypes.begin(), m_variableTypes.end() );
+}
+
+void CModelDomain::GetVariableTypes( pConstNodeTypeVector* varTypes ) const
+{
+    PNL_CHECK_IS_NULL_POINTER( varTypes );
+
+    int numVars = m_variableTypes.size();
+    varTypes->resize( numVars );
+    for( int i = 0; i < numVars; i++ )
+    {
+	(*varTypes)[i] = &m_variableTypes[m_variableAssociation[i]];
+    }
+}
+
+void CModelDomain::GetVariableAssociations(intVector* nodeAssociation) const
+{
+    PNL_CHECK_IS_NULL_POINTER( nodeAssociation );
+
+    nodeAssociation->assign(m_variableAssociation.begin(),
+	m_variableAssociation.end());
+}
+
+
+CModelDomain::~CModelDomain()
+{
+    // destroy all the data
+    int numOfRefModels = GetNumOfReferences();
+
+    if( numOfRefModels > 1 )
+    {
+        PNL_THROW( CInvalidOperation, " can't release model domain,"
+        " there are models exist attached to it " );
+    }
+    else
+    {
+        if( ( ( numOfRefModels == 1 ) && m_bSelfCreated )
+            || ( numOfRefModels == 0 ) )
+        {
+            for (int fi = 0; fi < c_MaxThreadNumber; fi++)
+            {
+                int heapSize = m_factorsHeap[fi].size();
+
+                int i = 0;
+
+                for( ; i < heapSize; ++i )
+                {
+                    delete m_factorsHeap[fi][i];
+                }
+
+                m_factorsHeap[fi].clear();
+            }
+        }
+        else
+        {
+            PNL_THROW( CInvalidOperation,
+                " can't release model domain,"
+                " there are models exist attached to it " );
+        }
+    }
+
+    for (int lock = 0; lock < c_MaxThreadNumber; lock++) 
+        omp_destroy_lock(&(m_heap_lock[lock]));
+}
+
+static int IsNodeTypeNotInitialized(CNodeType nt)
+{
+    return nt.GetNodeSize() == -1;
+}
+
+CModelDomain::CModelDomain( int numVariables,
+			   const CNodeType& commonVariableType,
+			   CGraphicalModel* pCreaterOfMD )
+			   : m_variableTypes( 1, commonVariableType ),
+			   m_variableAssociation( numVariables, 0 ),
+			   m_obsGauVarType( 0, 0 ),
+			   m_obsTabVarType( 1, 1 ),
+			   m_bSelfCreated(false)
+{
+    if( pCreaterOfMD == NULL )
+    {
+	AddRef(this);
+
+	m_bSelfCreated = true;
+    }
+    else
+    {
+	AddRef(pCreaterOfMD);
+    }
+
+    for (int lock = 0; lock < c_MaxThreadNumber; lock++) 
+        omp_init_lock(&(m_heap_lock[lock]));
+}
+
+CModelDomain::CModelDomain( const nodeTypeVector& variableTypes,
+			   const intVector& variableAssociation,
+			   CGraphicalModel* pCreaterOfMD)
+			   : m_variableTypes( variableTypes.begin(),
+			   variableTypes.end() ),
+			   m_variableAssociation( variableAssociation.begin(),
+			   variableAssociation.end()),
+			   m_obsGauVarType( 0, 0 ),
+			   m_obsTabVarType( 1, 1 ),
+			   m_bSelfCreated(false)
+{
+    for (int lock = 0; lock < c_MaxThreadNumber; lock++) 
+        omp_init_lock(&(m_heap_lock[lock]));
+
+    for (int fi = 0; fi < c_MaxThreadNumber; fi++) 
+        m_factorsHeap[fi].clear();
+    nodeTypeVector::const_iterator ntIter;
+
+    ntIter = std::find_if( m_variableTypes.begin(), m_variableTypes.end(),
+	IsNodeTypeNotInitialized );
+
+    if( ntIter != m_variableTypes.end() )
+    {
+	PNL_THROW( CInconsistentType,
+	    " variable types have not been initialized " );
+    }
+    /* variable types validity check end */
+
+    /* variable association validity check */
+    intVector::const_iterator naIter = m_variableAssociation.begin();
+
+    int numVarTypes = m_variableAssociation.size();
+
+#if 1
+    for( ; naIter != m_variableAssociation.end(); ++naIter )
+    {
+	PNL_CHECK_RANGES( *naIter, 0, numVarTypes - 1 );
+    }
+#endif
+
+    if( pCreaterOfMD == NULL )
+    {
+	AddRef(this);
+
+	m_bSelfCreated = true;
+    }
+    else
+    {
+	AddRef(pCreaterOfMD);
+    }
+}
+
+void CModelDomain::AddRef(void* pObjectIn)
+{
+//#ifdef _DEBUG
+    omp_set_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+//#endif
+    CReferenceCounter::AddRef(pObjectIn);
+//#ifdef _DEBUG
+    omp_unset_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+//#endif
+};
+
+void CModelDomain::Release(void* pObjectIn)
+{
+//#ifdef _DEBUG
+    omp_set_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+//#endif
+    CReferenceCounter::Release(pObjectIn);
+//#ifdef _DEBUG
+    omp_unset_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+//#endif
+};
+
+int  CModelDomain::GetNumOfReferences()
+{
+//#ifdef _DEBUG
+    omp_set_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+//#endif
+    int num = CReferenceCounter::GetNumOfReferences();
+//#ifdef _DEBUG
+    omp_unset_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+//#endif
+    return num;
+}; 
+
+void CModelDomain::ChangeNodeType(int NodeNumber, bool ToCont)
+{
+    int i;
+    for (i = 0; i < m_variableTypes.size(); i++)
+    {
+        if (ToCont)
+        {
+            if ((!m_variableTypes[i].IsDiscrete())&&(m_variableTypes[i].GetNodeSize() == 1))
+            {
+                m_variableAssociation[NodeNumber] = i;
+                break;
+            }
+        }
+        else
+        {
+            if ((m_variableTypes[i].IsDiscrete())&&(m_variableTypes[i].GetNodeSize() == 2))
+            {
+                m_variableAssociation[NodeNumber] = i;
+                break;
+            }
+        }
+    }
+}
+
+#else // PAR_OMP
+
 CModelDomain*
 CModelDomain::Create(int numVariables, const CNodeType& commonVariableType,
 		     CGraphicalModel* pCreaterOfMD )
@@ -149,31 +556,31 @@ CModelDomain::~CModelDomain()
 
     if( numOfRefModels > 1 )
     {
-	PNL_THROW( CInvalidOperation, " can't release model domain,"
-	    " there are models exist attached to it " );
+        PNL_THROW( CInvalidOperation, " can't release model domain,"
+        " there are models exist attached to it " );
     }
     else
     {
-	if( ( ( numOfRefModels == 1 ) && m_bSelfCreated )
-	    || ( numOfRefModels == 0 ) )
-	{
-	    int heapSize = m_factorsHeap.size();
+        if( ( ( numOfRefModels == 1 ) && m_bSelfCreated )
+            || ( numOfRefModels == 0 ) )
+        {
+            int heapSize = m_factorsHeap.size();
 
-	    int i = 0;
+            int i = 0;
 
-	    for( ; i < heapSize; ++i )
-	    {
-	        delete m_factorsHeap[i];
-	    }
+            for( ; i < heapSize; ++i )
+            {
+                delete m_factorsHeap[i];
+            }
 
-	    m_factorsHeap.clear();
-	}
-	else
-	{
-	    PNL_THROW( CInvalidOperation,
-	        " can't release model domain,"
-	        " there are models exist attached to it " );
-	}
+            m_factorsHeap.clear();
+        }
+        else
+        {
+            PNL_THROW( CInvalidOperation,
+                " can't release model domain,"
+                " there are models exist attached to it " );
+        }
     }
 }
 
@@ -274,3 +681,5 @@ void CModelDomain::ChangeNodeType(int NodeNumber, bool ToCont)
         }
     }
 }
+
+#endif // PAR_OMP

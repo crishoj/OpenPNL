@@ -994,3 +994,11 @@ float CGaussianCPD::GetLogLik( const CEvidence* pEv, const CPotential* pShrInfRe
 	return 0.f;
     }
 }
+
+#ifdef PAR_OMP
+void CGaussianCPD::UpdateStatisticsML(CFactor *pPot)
+{
+    PNL_THROW(CNotImplemented, 
+        "UpdateStatisticsML for CGaussianCPD not implemented yet");
+};
+#endif // PAR_OMP

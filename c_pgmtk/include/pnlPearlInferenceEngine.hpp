@@ -18,6 +18,7 @@
 #ifndef __PNLPEARLINFERENCEENGINE_HPP__
 #define __PNLPEARLINFERENCEENGINE_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlInferenceEngine.hpp"
 #include "pnlTabularDistribFun.hpp"
 #include "pnlGaussianDistribFun.hpp"
@@ -38,10 +39,19 @@ typedef pnlVector<messageVector> messageVecVector;
 %rename(IsModelValid) CPearlInfEngine::IsInputModelValid(const CStaticGraphicalModel*);
 #endif
 
+#ifdef PAR_RESULTS_RELIABILITY
+class CPearlInfEngine;
+bool PNL_API EqualResults(CPearlInfEngine& eng1, CPearlInfEngine& eng2,
+    float epsilon = 1e-6);
+#endif
 
 class PNL_API CPearlInfEngine : public CInfEngine
 {
 public:
+
+#ifdef PAR_RESULTS_RELIABILITY
+    friend bool EqualResults(CPearlInfEngine&, CPearlInfEngine&, float);
+#endif
 
     static CPearlInfEngine* Create(const CStaticGraphicalModel* pGrModel);
 
@@ -52,12 +62,18 @@ public:
 
     //set max number of iterations for parallel protocol
     inline void       SetMaxNumberOfIterations(int maxNumOfIters);
+
+    // returns the maximal number of iterations for parallel protocol
+    inline int        GetMaxNumberOfIterations() const;
     
     // returns the number of iterations Pearl Inference was running
     inline int        GetNumberOfProvideIterations() const;
     
     //set tolerance for check convergency
     inline  void      SetTolerance(float tolerance);
+
+    // returns value of tolerance for check convergency
+    inline float      GetTolerance() const;
     
     // this function add evidence to the model and provide inference
     void              EnterEvidence( const CEvidence* evidence,
@@ -77,6 +93,10 @@ public:
 
 protected:
 
+    int                 m_IterationCounter;
+    
+    EDistributionType   m_modelDt;
+    
     CPearlInfEngine( const CStaticGraphicalModel *pGraphicalModel );
 
   
@@ -114,6 +134,20 @@ protected:
     
     void           TreeProtocol();
 
+    inline const int            GetNumberOfNodesInModel() const;
+
+    inline const CGraph*        GetModelGraph() const;
+
+    inline intVector&           GetConnectedNodes();
+
+    inline intVector&           GetSignsOfReallyObserved();
+
+    inline messageVector&       GetSelfMessages();
+
+    virtual messageVector&      GetCurBeliefs();
+
+    inline messageVecVector&    GetMessagesFromNeighbors();
+
 private:
 
     const int           m_numOfNdsInModel;
@@ -131,11 +165,7 @@ private:
     
     int                 m_maxNumberOfIterations;
     
-    int                 m_IterationCounter;
-    
     float               m_tolerance;//tolerance to compare beliefs
-    
-    EDistributionType   m_modelDt;
     
     intVector           m_connNodes;//we need to have it for Gaussian models -  fixme
     
@@ -159,11 +189,23 @@ inline void CPearlInfEngine::SetMaxNumberOfIterations(int maxNumOfIters)
 }
 /////////////////////////////////////////////////////////////////////////////
 
+inline int CPearlInfEngine::GetMaxNumberOfIterations() const
+{
+    return m_maxNumberOfIterations;
+}
+/////////////////////////////////////////////////////////////////////////////
+
 inline void CPearlInfEngine::SetTolerance( float tolerance)
 {
     PNL_CHECK_RANGES( tolerance, FLT_MIN, FLT_MAX );
 
     m_tolerance = tolerance;
+}
+/////////////////////////////////////////////////////////////////////////////
+
+inline float CPearlInfEngine::GetTolerance() const
+{
+    return m_tolerance;
 }
 /////////////////////////////////////////////////////////////////////////////
 
@@ -253,6 +295,43 @@ inline message CPearlInfEngine::InitMessage( int destination,
     return retMes;
 }
 /////////////////////////////////////////////////////////////////////////////
+
+inline const int CPearlInfEngine::GetNumberOfNodesInModel() const
+{
+    return m_numOfNdsInModel;
+}
+/////////////////////////////////////////////////////////////////////////////
+
+inline const CGraph* CPearlInfEngine::GetModelGraph() const
+{
+    return m_pModelGraph;
+}
+/////////////////////////////////////////////////////////////////////////////
+
+inline intVector& CPearlInfEngine::GetConnectedNodes()
+{
+    return m_connNodes;
+}
+/////////////////////////////////////////////////////////////////////////////
+
+inline intVector& CPearlInfEngine::GetSignsOfReallyObserved()
+{
+    return m_areReallyObserved;
+}
+/////////////////////////////////////////////////////////////////////////////
+
+inline messageVector& CPearlInfEngine::GetSelfMessages()
+{
+    return m_selfMessages;
+}
+/////////////////////////////////////////////////////////////////////////////
+
+inline messageVecVector& CPearlInfEngine::GetMessagesFromNeighbors()
+{
+    return m_messagesFromNeighbors;
+}
+/////////////////////////////////////////////////////////////////////////////
+
 
 #endif
 

@@ -765,4 +765,17 @@ float CGaussianPotential::GetLogLik( const CEvidence* pEv, const CPotential* pSh
     }
 }
 
+#ifdef PAR_OMP
+void CGaussianPotential::UpdateStatisticsML(CFactor *pPot)
+{
+    //Проверка на правильность pPot
+    if (pPot->GetDistributionType() != dtGaussian)
+        PNL_THROW(CInconsistentType, 
+        "Can not use function CGaussianPotential::UpdateStatisticsML with wrong distribution type");
+
+    CDistribFun *pDF = pPot->GetDistribFun();
+    m_CorrespDistribFun->UpdateStatisticsML( pDF );
+}
+#endif // PAR_OMP
+
 PNL_END

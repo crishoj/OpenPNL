@@ -20,6 +20,7 @@
 #ifndef __PNLSOFTMAXDISTRIBFUN_HPP__
 #define __PNLSOFTMAXDISTRIBFUN_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlDistribFun.hpp"
 
 PNL_BEGIN
@@ -163,7 +164,11 @@ public:
   void SetMaximizingMethod(EMaximizingMethod met);
 
   EMaximizingMethod GetMaximizingMethod();
- 
+
+#ifdef PAR_OMP
+  void UpdateStatisticsML(CDistribFun *pDF);
+#endif
+
   inline int GetSoftMaxSize() const;
 
   float CalculateKsi(floatVector MeanContParents, 

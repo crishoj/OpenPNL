@@ -19,6 +19,7 @@
 #ifndef __PNLSCALARDISTRIBFUN_HPP__
 #define __PNLSCALARDISTRIBFUN_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlDistribFun.hpp"
 
 PNL_BEGIN
@@ -117,7 +118,11 @@ public:
 	virtual int GetNumberOfFreeParameters()const;      
 
     ~CScalarDistribFun(){}
-    
+
+#ifdef PAR_OMP
+    void UpdateStatisticsML(CDistribFun *pDF);
+#endif
+
 protected:
     CScalarDistribFun( int NodeNumber, const CNodeType *const* nodeTypes,
         int asDense = 1);

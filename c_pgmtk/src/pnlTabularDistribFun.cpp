@@ -2597,3 +2597,55 @@ void CTabularDistribFun::SetCheckNegative(bool val)
 {
   m_bCheckNegative = val;
 }
+
+#ifdef PAR_OMP
+void CTabularDistribFun::UpdateStatisticsML(CDistribFun *pDF)
+{
+    if (pDF->GetDistributionType()!=dtTabular)
+        PNL_THROW(CInconsistentType, 
+        "Can not use function CTabularDistribFun::UpdateStatisticsML with wrong distribution type");
+
+    int NumDims;
+    const int *ranges;
+
+    if(!m_pLearnMatrix)
+    {
+        int sz = 1;
+        int i;
+        const pConstNodeTypeVector *nt = GetNodeTypesVector();
+        intVector nodeSizes;
+        nodeSizes.resize(nt->size());
+        for( i = 0; i < nt->size(); i++ )
+        {
+            nodeSizes[i] = (*nt)[i]->GetNodeSize();
+            sz *= nodeSizes[i];
+        }
+        if( m_pMatrix )
+        {
+            m_pLearnMatrix = m_pMatrix->CreateEmptyMatrix(nodeSizes.size(),
+                &nodeSizes.front(), 0); 
+        }
+        else
+        {
+            floatVector data(sz, 0.0f);
+            m_pLearnMatrix = CNumericDenseMatrix<float>::Create(nodeSizes.size(),
+                &nodeSizes.front(), &data.front() );
+        }        
+    }
+
+    m_pLearnMatrix->GetRanges(&NumDims, &ranges);
+
+    //  int NDims = m_pLearnMatrix->GetNumberDims();
+    int *array = new int[NumDims];
+
+    for (int y = 0; y < NumDims; y++)
+    {
+        array[y] = y;
+    };
+
+    m_pLearnMatrix->SumInSelf(pDF->GetStatisticalMatrix(stMatTable),
+        NumDims, array);
+
+    delete array;
+};
+#endif // PAR_OMP

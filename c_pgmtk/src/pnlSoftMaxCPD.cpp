@@ -502,6 +502,15 @@ int CSoftMaxCPD::GetSoftMaxSize() const
 }
 //-----------------------------------------------------------------------------
 
+#ifdef PAR_OMP
+void CSoftMaxCPD::UpdateStatisticsML(CFactor *pPot)
+{
+    PNL_THROW(CNotImplemented,
+        "UpdateStatisticsML for CSoftMaxCPD not implemented yet");
+};
+#endif // PAR_OMP
+//-----------------------------------------------------------------------------
+
 void CSoftMaxCPD::CreateMeanAndCovMatrixForNode(int Node, const CEvidence* pEvidence, 
     const CBNet *pBNet, floatVector &Mean, 
     C2DNumericDenseMatrix<float>**CovContParents) const

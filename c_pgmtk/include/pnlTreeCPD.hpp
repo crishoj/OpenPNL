@@ -18,6 +18,7 @@
 #ifndef __PNLTREECPD__HPP__
 #define __PNLTREECPD__HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlCPD.hpp"
 #include "pnlTypeDefs.hpp"
 
@@ -45,6 +46,11 @@ public:
     virtual void UpdateStatisticsML(const CEvidence* const* pEvidencesIn,
 	int EvidenceNumber);
 #endif
+
+#ifdef PAR_OMP
+    virtual void UpdateStatisticsML(CFactor *pPot);
+#endif
+
 protected:
     CTreeCPD( const int *domain, int nNodes, CModelDomain* pMD );
     CTreeCPD( const CTreeCPD& TreeCPD );

@@ -854,3 +854,11 @@ float CMixtureGaussianCPD::GetLogLik( const CEvidence* pEv, const CPotential* pS
     delete tmpEv;
     return logLik;
 }
+
+#ifdef PAR_OMP
+void CMixtureGaussianCPD::UpdateStatisticsML(CFactor *pPot)
+{
+    PNL_THROW(CNotImplemented, 
+        "UpdateStatisticsML for CMixtureGaussianCPD not implemented yet");
+};
+#endif // PAR_OMP

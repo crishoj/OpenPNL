@@ -472,3 +472,11 @@ int CScalarDistribFun::GetNumberOfFreeParameters()const
 {
         PNL_THROW( CInvalidOperation, "ScalarDistribution does not has free parameters");
 }
+
+#ifdef PAR_OMP
+void CScalarDistribFun::UpdateStatisticsML(CDistribFun *pPot)
+{
+    PNL_THROW(CNotImplemented, 
+        "UpdateStatisticsML for CScalarDistribFun not implemented yet");
+};
+#endif // PAR_OMP

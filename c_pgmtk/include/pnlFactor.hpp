@@ -18,6 +18,7 @@
 #ifndef __PNLFACTOR_HPP__
 #define __PNLFACTOR_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlObject.hpp"
 #include "pnlNodeType.hpp"
 #include "pnlTypeDefs.hpp"
@@ -168,6 +169,10 @@ public:
 #endif
     inline int AreThereAnyObsPositions() const;
     ~CFactor();
+
+#ifdef PAR_OMP
+    virtual void UpdateStatisticsML(CFactor *pPot) = 0;
+#endif
 
 protected:
 

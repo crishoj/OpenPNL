@@ -19,6 +19,7 @@
 #ifndef __PNLCONDGAUSSIANDISTRIBFUN_HPP__
 #define __PNLCONDGAUSSIANDISTRIBFUN_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlDistribFun.hpp"
 #include "pnlGaussianDistribFun.hpp"
 #include "pnlTabularDistribFun.hpp"
@@ -170,6 +171,10 @@ public:
     virtual int GetNumberOfFreeParameters() const;
     virtual void ResetNodeTypes(pConstNodeTypeVector &nodeTypes);
 
+
+#ifdef PAR_OMP
+    virtual void UpdateStatisticsML(CDistribFun *pPot);
+#endif
 
 protected:
     CCondGaussianDistribFun( int isFactor, int nNodes,

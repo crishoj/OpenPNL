@@ -16,6 +16,7 @@
 #ifndef __PNLJTREEINFERENCEENGINE_HPP__
 #define __PNLJTREEINFERENCEENGINE_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlInferenceEngine.hpp"
 #include "pnlJunctionTree.hpp"
 #include "pnlEvidence.hpp"
@@ -24,6 +25,13 @@
 
 PNL_BEGIN
 
+#ifdef PAR_RESULTS_RELIABILITY
+class CJtreeInfEngine;
+bool PNL_API EqualResults(CJtreeInfEngine& eng1, CJtreeInfEngine& eng2,
+    float epsilon = 1e-6, int doPrint = 0, int doFile = 0, 
+    float *maxDiffOut = NULL);
+#endif
+
 #ifdef SWIG
 %rename(CreateFromJTree) CJtreeInfEngine::Create( const CStaticGraphicalModel *, CJunctionTree *);
 #endif
@@ -31,6 +39,11 @@ PNL_BEGIN
 class PNL_API CJtreeInfEngine : public CInfEngine
 {
 public:
+
+#ifdef PAR_RESULTS_RELIABILITY
+    friend bool EqualResults(CJtreeInfEngine&, CJtreeInfEngine&,
+        float, int, int, float*);
+#endif
 
 #ifdef PNL_OBSOLETE
     // static functions of Junction Tree Inf creation
@@ -137,6 +150,13 @@ public:
 
 protected:
     
+    typedef enum
+    {
+        opsNotStarted, opsShrinkEv, opsCollect, opsDistribute, opsMargNodes
+    } EOperations;
+    
+    EOperations          m_lastOpDone;
+    
     CJtreeInfEngine( const CStaticGraphicalModel *pGraphicalModel, 
                      int numOfSubGrToConnect, const int *SubGrToConnectSizes, 
                      const int **SubgrToConnect );
@@ -163,26 +183,30 @@ protected:
         pnl::CNumericDenseMatrix<float> *sinkMatrix, int *dims_to_mul, 
         int num_dims_to_mul, bool isCollect);
     
-    
+    inline intVecVector& GetCollectSequence() const;
+
+    inline CJunctionTree* GetOriginalJTree() const;
+
+    inline CJunctionTree* GetJTree() const;
+
+    inline void SetJTree(CJunctionTree* pJt);
+
+    inline intVector& GetActuallyObservedNodes();
+
+    inline void SetNormalizeCoefficient(float val);
+
 private:
-    
-    typedef enum
-    {
-        opsNotStarted, opsShrinkEv, opsCollect, opsDistribute, opsMargNodes
-    } EOperations;
     
     CPotential *m_pPotMPE;
     
-    mutable int	         m_JTreeRootNode;
+    mutable int          m_JTreeRootNode;
     mutable intVecVector m_collectSequence;
     
-    intVector	         m_actuallyObsNodes;
+    intVector            m_actuallyObsNodes;
     //const CEvidence      *m_pEvidence;
     
     CJunctionTree *m_pOriginalJTree;
     CJunctionTree *m_pJTree;
-    
-    EOperations          m_lastOpDone;
     
     void RebuildTreeFromRoot() const;
     
@@ -271,6 +295,42 @@ CJtreeInfEngine::GetNodesConnectedByUser( int nodeSetNum,
     GetNodesConnectedByUser( nodeSetNum, &numOfNds, &pNds );
     
     nds->assign( pNds, pNds + numOfNds );
+}
+
+inline intVecVector& 
+CJtreeInfEngine::GetCollectSequence() const
+{
+    return m_collectSequence;
+}
+
+inline CJunctionTree* 
+CJtreeInfEngine::GetOriginalJTree() const
+{
+    return m_pOriginalJTree;
+}
+
+inline CJunctionTree*
+CJtreeInfEngine::GetJTree() const
+{
+    return m_pJTree;
+}
+
+inline void CJtreeInfEngine::SetJTree(CJunctionTree* pJt)
+{
+    PNL_CHECK_IS_NULL_POINTER(pJt)
+
+    m_pJTree = pJt;
+}
+
+inline intVector& 
+CJtreeInfEngine::GetActuallyObservedNodes()
+{
+    return m_actuallyObsNodes;
+}
+
+inline void CJtreeInfEngine::SetNormalizeCoefficient(float val)
+{
+    m_norm = val;
 }
 
 #endif // SWIG

@@ -7103,3 +7103,66 @@ C2DNumericDenseMatrix<float> * CGaussianDistribFun::FormCov(intVector& nsVec, fl
     return matYY;
     
 }
+
+#ifdef PAR_OMP
+void CGaussianDistribFun::UpdateStatisticsML(CDistribFun *pDF)
+{
+    if (pDF->GetDistributionType() != dtGaussian)
+        PNL_THROW(CInconsistentType, 
+        "Can not use function CGaussianDistribFun::UpdateStatisticsML with wrong distribution type");
+
+    if( !m_pLearnMatrixMean || !m_pLearnMatrixCov)
+    {
+        int length = 0;    
+        for (int node = 0; node < m_NumberOfNodes; node++)
+        {
+            length += ( m_NodeTypes[node]->GetNodeSize() );
+        }
+        float *data = new float [length];
+        int *ranges = new int [2];
+        ranges[0] = length;
+        ranges[1] = 1;
+        m_pLearnMatrixMean = C2DNumericDenseMatrix<float>::Create( ranges, data );
+        m_pLearnMatrixMean->ClearData();
+        delete []data;
+        ranges[1] = length;
+        data = new float [length*length];
+        m_pLearnMatrixCov = C2DNumericDenseMatrix<float>::Create( ranges, data );
+        m_pLearnMatrixCov->ClearData();
+        delete []data;
+        delete []ranges;
+    }
+
+    CGaussianDistribFun *pGDF = dynamic_cast <CGaussianDistribFun *>(pDF);
+    C2DNumericDenseMatrix<float> *pLearnMatrixMean = 
+        dynamic_cast<C2DNumericDenseMatrix<float>*>(pGDF->GetStatisticalMatrix(stMatMu));
+    C2DNumericDenseMatrix<float> *pLearnMatrixCov = 
+        dynamic_cast<C2DNumericDenseMatrix<float>*>(pGDF->GetStatisticalMatrix(stMatSigma));
+
+    int NumDims;
+    const int *ranges;
+
+    m_pLearnMatrixCov->GetRanges(&NumDims, &ranges);
+
+    int coordinate_i_size = ranges[0];
+    int coordinate_j_size = ranges[1];
+
+    int offset = 0;
+    float value;
+
+    for( int coordinate_i = 0; coordinate_i < coordinate_i_size; coordinate_i++)
+    {
+        value = ( m_pLearnMatrixMean->GetElementByOffset( coordinate_i ) ) 
+            + pLearnMatrixMean->GetElementByOffset ( coordinate_i ) /** NSamples*/;
+        m_pLearnMatrixMean -> SetElementByOffset(value, coordinate_i);
+
+        for ( int coordinate_j = 0; coordinate_j < coordinate_j_size; coordinate_j++)
+        {
+            value = ( m_pLearnMatrixCov -> GetElementByOffset( offset ) )
+                + pLearnMatrixCov -> GetElementByOffset( offset ) /** NSamples*/;
+            m_pLearnMatrixCov -> SetElementByOffset( value, offset );
+            offset++;
+        }
+    }
+};
+#endif // PAR_OMP

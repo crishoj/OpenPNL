@@ -27,6 +27,10 @@
 #include "pnlDistribFun.hpp"
 #include <sstream>
 
+#ifdef PAR_OMP
+#include <omp.h>
+#endif
+
 PNL_USING
 
 static inline bool IsNodeObserved( int nodeToCheck,
@@ -773,6 +777,37 @@ void CJunctionTree::InitCharge( const CStaticGraphicalModel *pGrModel,
 }
 //////////////////////////////////////////////////////////////////////////
 
+#ifdef PAR_OMP
+void CJunctionTree::InitChargeOMP( const CStaticGraphicalModel *pGrModel,
+    const CEvidence *pEvidence, int sumOnMixtureNode )
+{
+    // bad-args check
+    PNL_CHECK_IS_NULL_POINTER(pGrModel);
+    PNL_CHECK_IS_NULL_POINTER(pEvidence);
+    // bad-args check end
+
+    AssignFactorsToClqOMP(pGrModel);
+
+    SetNodeTypes( pGrModel, pEvidence );
+
+    if( pGrModel->GetModelType() == mtBNet )
+    {
+        InitNodePotsFromBNetOMP( static_cast<const CBNet*>(pGrModel),
+            pEvidence, sumOnMixtureNode );
+    }
+    else
+    {
+        InitNodePotsFromMNet( static_cast<const CMNet*>(pGrModel),
+            pEvidence );
+    }
+
+    InitSeparatorsPots( pGrModel, pEvidence );
+
+    m_bChargeInitialized = true;
+}
+#endif // PAR_OMP
+//////////////////////////////////////////////////////////////////////////
+
 void CJunctionTree::ClearCharge()
 {
     if( m_bChargeInitialized )
@@ -802,6 +837,74 @@ void CJunctionTree::ClearCharge()
         m_bChargeInitialized = false;
     }
 }
+//////////////////////////////////////////////////////////////////////////
+
+#ifdef PAR_OMP
+void CJunctionTree::ClearChargeOMP()
+{
+    if( m_bChargeInitialized )
+    {
+        int i, j;
+
+        omp_lock_t **sep_lock;
+        sep_lock = new omp_lock_t* [m_numberOfNodes];
+        for (i = 0; i < m_numberOfNodes; i++)
+        {
+            sep_lock[i] = new omp_lock_t [m_numberOfNodes];
+            for (j = 0; j < m_numberOfNodes; j++)
+            {
+                omp_init_lock(&sep_lock[i][j]);
+            }
+        }
+
+        #pragma omp parallel for private(i)
+        for (i = 0; i < m_numberOfNodes; ++i)
+        {
+            delete m_nodePots[i];
+
+            int                 numOfNbrs;
+            const int           *nbrs;
+            const ENeighborType *nbrsTypes;
+
+            m_pGraph->GetNeighbors( i, &numOfNbrs, &nbrs, &nbrsTypes );
+
+            const int *nbrsIt = nbrs;
+            const int *nbrs_end = nbrs + numOfNbrs;
+
+            for (; nbrsIt != nbrs_end; ++nbrsIt)
+            {
+                omp_set_lock(&sep_lock[*nbrsIt][i]);
+                omp_set_lock(&sep_lock[i][*nbrsIt]);
+                delete m_separatorPots[i][*nbrsIt];
+                omp_unset_lock(&sep_lock[i][*nbrsIt]);
+                omp_unset_lock(&sep_lock[*nbrsIt][i]);
+            }
+        }
+
+        for (i = 0; i < m_numberOfNodes; i++)
+        {
+            for (j = 0; j < m_numberOfNodes; j++)
+            {
+                omp_destroy_lock(&sep_lock[i][j]);
+            } 
+            delete [] sep_lock[i];
+        }
+        delete [] sep_lock;
+
+        m_factAssignToClq.clear();
+
+        m_nodeTypes.clear();
+
+        m_nodeAssociation.clear();
+
+        m_nodePots.clear();
+
+        m_separatorPots.clear();
+
+        m_bChargeInitialized = false;
+    }
+}
+#endif // PAR_OMP
 //////////////////////////////////////////////////////////////////////////
 
 void CJunctionTree::AssignFactorsToClq(const CStaticGraphicalModel
@@ -839,6 +942,46 @@ void CJunctionTree::AssignFactorsToClq(const CStaticGraphicalModel
         }
     }
 }
+//////////////////////////////////////////////////////////////////////////
+
+#ifdef PAR_OMP
+void CJunctionTree::AssignFactorsToClqOMP(
+    const CStaticGraphicalModel *pGrahicalModel) const
+{
+    // assigns a potential of original graphical model to a clique of jtree
+    int i;
+
+    int numOfFacs = pGrahicalModel->GetNumberOfFactors();
+    int numOfClqs = m_numberOfNodes;
+
+    m_factAssignToClq.assign(numOfFacs, -1);
+
+    #pragma omp parallel for private (i)
+    for (i = 0; i < numOfFacs; ++i)
+    {
+        int domSize;
+        const int *domain;
+        pGrahicalModel->GetFactor(i)->GetDomain(&domSize, &domain);
+
+        int j;
+        for(j = 0; j < numOfClqs; ++j)
+        {
+            if (IsASubClq(domSize, domain, j))
+            {
+                *(m_factAssignToClq.begin() + i) = j;
+            }
+        }
+
+        //if( *( m_factAssignToClq.begin() + i ) == -1 )
+        //{
+        /* means that there was no clique found which contains
+            all nodes from the potential domain */
+            //PNL_THROW( CInconsistentState,
+                //" no clique found to match the domain " );
+        //}
+    }
+}
+#endif // PAR_OMP
 //////////////////////////////////////////////////////////////////////////
 
 void CJunctionTree::SetNodeTypes( const CStaticGraphicalModel
@@ -1249,6 +1392,161 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
         assignedFactors.clear();
     }
 }
+//////////////////////////////////////////////////////////////////////////
+
+#ifdef PAR_OMP
+void CJunctionTree::InitNodePotsFromBNetOMP( const CBNet* pBNet,
+    const CEvidence* pEvidence, int sumOnMixtureNode )
+{
+    // bad-args check
+    PNL_CHECK_IS_NULL_POINTER(pBNet);
+    PNL_CHECK_IS_NULL_POINTER(pEvidence);
+    // bad-args check end
+
+    // cannot initialize, if the initialization have been carried out already
+    if(m_bChargeInitialized)
+    {
+        PNL_THROW(CInvalidOperation,
+            " cannot reinitialize pots, run Clear() first ");
+    }
+
+    intVector         obsNdsNums;
+    pConstValueVector obsNdsVals;
+
+    pEvidence->GetObsNodesWithValues(&obsNdsNums, &obsNdsVals);
+
+    // number of potentials is equal to the number of nodes in jtree
+    m_nodePots.resize(m_numberOfNodes);
+
+    intVector::iterator factAssToClq_begin = m_factAssignToClq.begin(),
+                        factAssToClq_end   = m_factAssignToClq.end();
+
+#pragma omp parallel
+{
+    int i;
+    int nProcs = omp_get_num_procs();
+    int threadNum = omp_get_thread_num();
+    int nNdsOfProc = m_numberOfNodes / nProcs;
+    int leftBound = threadNum * nNdsOfProc;
+    int rightBound = leftBound + nNdsOfProc;
+    if (threadNum == nProcs - 1)
+    {
+        rightBound = m_numberOfNodes;
+    }
+
+    intVecVector::const_iterator ndContIt = m_nodeContents.begin() + leftBound;
+
+    for(i = leftBound; i < rightBound; ++i, ++ndContIt)
+    {
+        pConstNodeTypeVector nodeTypes;
+
+        pConstCPDVector assignedFactors;
+
+        // finding out if the unit function is to be sparse or not
+        bool bDenseUnitFunction = true;
+
+        intVector::iterator potsAssIt = std::find(factAssToClq_begin, 
+            factAssToClq_end, i);
+
+        intVector summarizeNodes;
+
+        while(potsAssIt != factAssToClq_end)
+        {
+            CCPD* pAssCPD = static_cast<CCPD*>(pBNet
+                ->GetFactor(potsAssIt - factAssToClq_begin));
+
+            assignedFactors.push_back(pAssCPD);
+
+            if(pAssCPD->IsSparse())
+            {
+                bDenseUnitFunction = false;
+            }
+            if(sumOnMixtureNode)
+            {
+                if(pAssCPD->GetDistributionType() == dtMixGaussian)
+                {
+                    summarizeNodes.push_back(static_cast<CMixtureGaussianCPD*>
+                        (pAssCPD)->GetNumberOfMixtureNode());            
+                }
+            }
+
+            potsAssIt = std::find(++potsAssIt, factAssToClq_end, i);
+        }
+
+        intVector::const_iterator clqIt   = ndContIt->begin(),
+            clq_end = ndContIt->end();
+        intVector obsPositionsInDom;
+
+        for(; clqIt != clq_end; ++clqIt)
+        {
+            if( std::find( summarizeNodes.begin(), summarizeNodes.end(),
+                *clqIt ) != summarizeNodes.end() )
+            {
+                nodeTypes.push_back(CInfEngine::GetObsTabNodeType());
+                obsPositionsInDom.push_back( clqIt - ndContIt->begin() );
+            }
+            else if(IsNodeObserved( *clqIt, obsNdsNums ))
+            {
+                pBNet->GetNodeType(*clqIt)->IsDiscrete()?
+                    nodeTypes.push_back(CInfEngine::GetObsTabNodeType())
+                    : nodeTypes.push_back(CInfEngine::GetObsGauNodeType());
+                obsPositionsInDom.push_back( clqIt - ndContIt->begin() );
+            }
+            else
+            {
+                nodeTypes.push_back(pBNet->GetNodeType(*clqIt));
+            }
+        }
+        //find observed posittions in this domain
+        
+        
+        // creating the unit function itself
+        CPotential *pPot = NULL;
+        const CNodeType nT = m_nodeTypes[m_nodeAssociation[i]];
+        if((nT.IsDiscrete()) && (nT.GetNodeSize() == 0))
+        {
+            pPot = CScalarPotential::Create( &ndContIt->front(),
+                ndContIt->size(), m_pMD, obsPositionsInDom );
+        }
+        else
+        {
+            if(nT.IsDiscrete())
+            {
+                pPot = CTabularPotential::CreateUnitFunctionDistribution(
+                    &ndContIt->front(), ndContIt->size(), m_pMD, bDenseUnitFunction, 
+                    obsPositionsInDom);
+            }
+            else
+            {
+                pPot = CGaussianPotential::CreateUnitFunctionDistribution(
+                    &ndContIt->front(), ndContIt->size(), m_pMD, 1,
+                    obsPositionsInDom);
+            }
+        }
+
+        // multiplying unit function by all the BNet's CPDs attached to it
+        pConstCPDVector::const_iterator
+            assFactsIt   = assignedFactors.begin(),
+            assFacts_end = assignedFactors.end();
+
+        for (; assFactsIt != assFacts_end; ++assFactsIt)
+        {
+            const CPotential *pTmpPot;
+            
+            pTmpPot = (*assFactsIt)->ConvertWithEvidenceToPotential(pEvidence,
+                sumOnMixtureNode);
+
+            *pPot *= *pTmpPot;
+
+            delete pTmpPot;
+        }
+
+        *(m_nodePots.begin() + i) = pPot;
+    }
+} // end of parallel section
+
+}
+#endif // PAR_OMP
 //////////////////////////////////////////////////////////////////////////
 
 void CJunctionTree::InitNodePotsFromMNet( const CMNet *pMNet,

@@ -127,3 +127,11 @@ CPotential(pScalarPotential)
 {
     
 }
+
+#ifdef PAR_OMP
+void CScalarPotential::UpdateStatisticsML(CFactor *pPot)
+{
+    PNL_THROW(CNotImplemented, 
+        "UpdateStatisticsML for CScalarPotential not implemented yet");
+};
+#endif // PAR_OMP

@@ -19,6 +19,7 @@
 #ifndef __PNLTABULARDISTRIBFUN_HPP__
 #define __PNLTABULARDISTRIBFUN_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlDistribFun.hpp"
 #include "pnlNumericDenseMatrix.hpp"
 #include "pnlNumericSparseMatrix.hpp"
@@ -150,6 +151,10 @@ public:
     virtual int GetNumberOfFreeParameters() const;
 
     void SetCheckNegative(bool val);
+
+#ifdef PAR_OMP
+    void UpdateStatisticsML(CDistribFun *pDF);
+#endif
 
 protected:
     CTabularDistribFun(int NodeNumber, const CNodeType *const* nodeTypes,

@@ -1849,6 +1849,13 @@ void CCondGaussianDistribFun::GetNormExp(doubleVector &expOrders, floatVector *n
         
 }
 
+#ifdef PAR_OMP
+void CCondGaussianDistribFun::UpdateStatisticsML(CDistribFun *pPot)
+{
+    PNL_THROW(CNotImplemented, 
+        "UpdateStatisticsML for CCondGaussianDistribFun not implemented yet");
+};
+#endif // PAR_OMP
 
 void CCondGaussianDistribFun::ResetNodeTypes(pConstNodeTypeVector &nodeTypes)
 {

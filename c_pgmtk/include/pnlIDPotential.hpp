@@ -19,6 +19,7 @@
 #ifndef __PNLIDPOTENTIAL_HPP__
 #define __PNLIDPOTENTIAL_HPP__
 
+#include "pnlParConfig.hpp"
 #include "pnlConfig.hpp"
 #include "pnlFactor.hpp"
 #include "pnlLog.hpp"
@@ -95,6 +96,10 @@ public:
   void SetProbDistribFun(const CDistribFun* data);
 
   void SetUtilityDistribFun(const CDistribFun* data);
+
+#ifdef PAR_OMP
+  virtual void UpdateStatisticsML(CFactor *pPot);
+#endif
 
 protected:
   CIDPotential(EDistributionType dt, EFactorType pt, const int *domain,
