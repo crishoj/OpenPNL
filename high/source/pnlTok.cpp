@@ -91,7 +91,7 @@ void TokIdNode::Unalias( TokId const &id )
             for ( nd = v_prev; nd; nd = nd->v_prev )
             {
                 it = nd->desc.find( id );
-                for ( ; it != nd->desc.end() && it->first.Match( id ); )
+                for ( ; it != nd->desc.end() && it->first.Match( id ); ++it)
                 {
                     if ( it->second == this )
                     {

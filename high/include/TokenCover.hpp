@@ -46,14 +46,18 @@ public:
     Vector<TokIdNode*> Nodes(Vector<int> aiNode);
     WGraph *Graph() const { return m_pGraph; }
 
-    // from BayesNet
-    void RenameGraph(const int *renaming);
     Vector<TokIdNode*> ExtractNodes(TokArr &aValue) const;
     int NodesClassification(TokArr &aValue) const;
 
     // Properties support
     void AddProperty(const char *name, const char **aValue, int nValue);
     void GetPropertyVariants(const char *name, Vector<String> &aValue) const;
+
+    void SetGraph(WGraph *graph, bool bStableNamesNotIndices);
+
+    int Index(Tok &tok);
+    static int SIndex(Tok &tok);
+    static int Index(TokIdNode *node);
 
 protected:
     virtual void DoNotify(int message, int iNode, ModelEngine *pObj);

@@ -769,17 +769,7 @@ void ProbabilisticNet::ExtractTokArr(TokArr &aNode, Vector<int> *paiNode, Vector
 
 int ProbabilisticNet::GetInt(TokIdNode *node)
 {
-    for(int i = node->id.size(); --i >= 0;)
-    {
-	TokId &tid = node->id[i];
-	if(tid.is_int)
-	{
-	    return tid.int_id;
-	}
-    }
-    
-    ThrowInternalError("must have integer id (may be wrong Tok?)", "GetInt");
-    return -1;
+    return TokenCover::Index(node);
 }
 
 pnl::CNodeType ProbabilisticNet::pnlNodeType(int i)
@@ -899,6 +889,34 @@ TokArr ProbabilisticNet::CutReq( Vector<int>& queryNds, Vector<int>& queryVls,
 int ProbabilisticNet::NodesClassification(TokArr &aValue) const
 {
     return Token()->NodesClassification(aValue);
+}
+
+// assume that this function is called seldom. It isn't optimal.
+void ProbabilisticNet::SetTopologicalOrder(const int *renaming, pnl::CGraph *pnlGraph)
+{
+    WGraph *newGraph = new WGraph;
+    WGraph *oldGraph;
+    Vector<int> aiNode(renaming, renaming + Graph()->nNode());
+    Vector<String> aName(Graph()->NodeNames(aiNode));
+    int i;
+
+    for(i = 0; i < aName.size(); ++i)
+    {
+	newGraph->AddNode(aName[i]);
+	Distributions()->DropDistribution(renaming[i]);
+    }
+    newGraph->Reset(*pnlGraph);
+    oldGraph = Graph();
+    StopSpyTo(oldGraph);
+    m_pGraph = newGraph;
+    Token()->SetGraph(newGraph, true /* bStableNamesNotIndices */);
+    Distributions()->StopSpyTo(oldGraph);
+    Distributions()->SpyTo(newGraph);
+    for(i = 0; i < aName.size(); ++i)
+    {
+	Distributions()->Setup(i);
+    }
+    delete oldGraph;
 }
 
 pnl::CGraphicalModel *ProbabilisticNet::Model()

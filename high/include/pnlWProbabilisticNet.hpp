@@ -3,7 +3,7 @@
 
 #include <string>
 #include "pnlHighConf.hpp"
-#include "pnlTok.hpp"
+#include "ModelEngine.hpp"
 #include "pnlWEvidence.hpp"
 
 // FORWARDS
@@ -25,7 +25,7 @@ namespace pnl
     template<typename Type> class CMatrix;
 }
 
-class PNLHIGH_API ProbabilisticNet: public pnl::CPNLBase
+class PNLHIGH_API ProbabilisticNet: protected ModelEngine
 {
 public:
     typedef Vector<int> IIMap;
@@ -71,6 +71,7 @@ public:
     bool IsNode(Tok &node) const;
     WEvidence *EvidenceBoard() { return &m_EvidenceBoard; }
     Vector<pnl::CEvidence *> *EvidenceBuf() { return &m_aEvidence; }
+    virtual void DoNotify(int message, int iNode, ModelEngine *pObj) {/* realize! */}
 
 public:// Bayes node name (or TokIdNode) <-> index
     String NodeName(int iNode) const;
@@ -91,6 +92,7 @@ public:
 			const pnl::CMatrix<float> * mat ) const;
 
     int NodesClassification(TokArr &aValue) const;
+    void SetTopologicalOrder(const int *renaming, pnl::CGraph *pnlGraph);
 
 public:// inlines for access to object fields
     WGraph *Graph() const { return m_pGraph; }

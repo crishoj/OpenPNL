@@ -75,6 +75,30 @@ void WDistributions::GetNodeTypeInfo(bool *pbDiscrete, int *pSize, int iNode)
     *pSize = m_pToken->nValue(iNode);
 }
 
+void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
+{
+    const float *pData;
+    int nElement;
+
+    DropDistribution(iNode);
+    static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->GetRawData(&nElement, &pData);
+    Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
+}
+
+void WDistributions::FillData(TokArr &value, TokArr &probability, TokArr &parentValue)
+{
+    PNL_CHECK_FOR_ZERO(value.size());
+
+    int index = Token().Index(value[0]);
+
+    if(parentValue.size())
+    {
+	Token().Resolve(parentValue);
+    }
+
+    Distribution(index)->FillData(pnl::matTable, value, probability, parentValue);
+}
+
 void WDistributions::DoNotify(int message, int iNode, ModelEngine *pObj)
 {
     switch(message)
@@ -99,4 +123,9 @@ void WDistributions::DoNotify(int message, int iNode, ModelEngine *pObj)
 	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
 	return;
     }
+}
+
+WGraph &WDistributions::Graph()
+{
+    return *Token().Graph();
 }

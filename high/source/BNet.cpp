@@ -82,16 +82,7 @@ static int cmpTokIdNode(TokIdNode *node1, TokIdNode *node2)
 // It is inner DistribFun
 void BayesNet::SetP(TokArr value, TokArr prob, TokArr parentValue)
 {
-    PNL_CHECK_FOR_NON_ZERO(value.size() - 1);
-
-    int index = Net().NodeIndex(Net().Token()->ExtractNodes(value)[0]);
-
-    if(parentValue.size())
-    {
-	Net().Token()->ExtractNodes(parentValue);// now we can extract inside distribution - to do!!!
-    }
-
-    Net().Distributions()->Distribution(index)->FillData(pnl::matTable, value, prob, parentValue);
+    Net().Distributions()->FillData(value, prob, parentValue);
 }
 
 TokArr BayesNet::P(TokArr child, TokArr parents)
@@ -344,10 +335,23 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 
     pLearning->SetData(Net().EvidenceBuf()->size(), &Net().EvidenceBuf()->front() );
     pLearning->Learn();
+    
     const int* pRenaming = pLearning->GetResultRenaming();
+    Vector<int> vRename(pRenaming, pRenaming + Model()->GetNumberOfNodes());
+
+    pRenaming = &vRename.front();
     pLearning->CreateResultBNet(const_cast<pnl::CDAG*>(pLearning->GetResultDAG()));
     
     pnl::CBNet* newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
+
+    int i;
+
+    Net().SetTopologicalOrder(pRenaming, newNet->GetGraph());
+
+    for(i = 0; i < Net().Graph()->nNode(); ++i)
+    {
+	Net().Distributions()->ResetDistribution(i, *newNet->GetFactor(i));
+    }
 
     //change ordering in current stuff
     // Note! it may happen that old ordering of nodes is consistent (i.e. is topological)
@@ -355,14 +359,12 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     //this would be good to have such function in PNL that checks this situation and reorder
     //new network to old ordering. So we would not have to do all below
 
-    //reorder list of names
-
     //add nodes 
     int nnodes = newNet->GetNumberOfNodes();
-    Net().Token()->RenameGraph(pRenaming);
+//    Net().Token()->RenameGraph(pRenaming);
 
     //reassign model
-    Net().SetModel(newNet);
+    Net().SetModel(0);
 
     //clear learning engine
     delete m_Learning;
@@ -411,20 +413,12 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 	    pEv[i] = CEvidence::Create(m_pResultBNet, nnodes, &obsnodes.front(), new_data);
 	     
 
-
-
-
-
         CEvidence* newEv = CEvidence::Create(
 
         old->
-
-
            */
     }
 }
-
-
 #endif
 
 TokArr BayesNet::MPE(TokArr nodes)

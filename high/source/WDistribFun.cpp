@@ -3,6 +3,7 @@
 #include "pnlString.hpp"
 #include "pnlTok.hpp"
 #include "BNet.hpp"
+#include "TokenCover.hpp"
 
 using namespace pnl;
 
@@ -39,7 +40,7 @@ bool DistribFunDesc::getIndexAndValue(int *index, int *value, Tok &tok)
     {
 	if(node == m_aNode[*index])
 	{
-	    *value = INDEX(tok.Node());
+	    *value = TokenCover::Index(tok.Node());
 	    return true;
 	}
     }
@@ -211,7 +212,7 @@ Vector<int> WTabularDistribFun::Dimensions(int matrixType)
 
 WTabularDistribFun::~WTabularDistribFun()
 {
-    delete m_pMatrix;
+    //delete m_pMatrix;
     delete desc();
 }
 

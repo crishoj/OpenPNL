@@ -220,18 +220,6 @@ bool TokenCover::DelNode(Tok &nodeName)
     return true;
 }
 
-Vector<TokIdNode*> TokenCover::Nodes(Vector<int> aiNode)
-{
-    Vector<TokIdNode *> result;
-
-    result.resize(aiNode.size());
-    for(int i = aiNode.size(); --i >= 0;)
-    {
-	result[i] = Node(aiNode[i]);
-    }
-    return result;
-}
-
 int TokenCover::nValue(int iNode)
 {
     TokIdNode *value = Node(iNode)->v_next;
@@ -339,6 +327,49 @@ void TokenCover::GetValues(int iNode, Vector<String> &aValue)
     }
 }
 
+Vector<TokIdNode*> TokenCover::Nodes(Vector<int> aiNode)
+{
+    Vector<TokIdNode *> result;
+
+    result.resize(aiNode.size());
+    for(int i = aiNode.size(); --i >= 0;)
+    {
+	result[i] = Node(aiNode[i]);
+    }
+    return result;
+}
+
+void TokenCover::SetGraph(WGraph *graph, bool bStableNamesNotIndices)
+{
+    int i;
+    TokIdNode *node;
+
+    if(bStableNamesNotIndices)
+    {
+	Vector<String> aName(Graph()->Names());
+	for(i = 0; i < aName.size(); ++i)
+	{
+	    node = Node(Tok(aName[i]));
+	    node->Unalias(Graph()->INode(aName[i].c_str()));
+	}
+
+	StopSpyTo(m_pGraph);
+	m_pGraph = graph;
+	SpyTo(graph);
+
+	aName = Graph()->Names();
+	for(i = 0; i < aName.size(); ++i)
+	{
+	    node = Node(Tok(aName[i]));
+	    node->Alias(Graph()->INode(aName[i].c_str()));
+	}
+    }
+    else
+    {
+	ThrowInternalError("Not yet realized", "SetGraph(eSTABLE_INDICES)");
+    }
+}
+
 Vector<TokIdNode*> TokenCover::ExtractNodes(TokArr &aValue) const
 {
     Vector<TokIdNode*> result;
@@ -396,11 +427,6 @@ int TokenCover::NodesClassification(TokArr &aValue) const
     return result;
 }
 
-void TokenCover::RenameGraph(const int *renaming)
-{
-    ThrowInternalError("not yet realized", "RenameGraph");
-}
-
 void TokenCover::AddProperty(const char *name, const char **aValue, int nValue)
 {
     TokIdNode *node = m_pProperties->Add(name);
@@ -426,6 +452,31 @@ void TokenCover::GetPropertyVariants(const char *name, Vector<String> &aValue) c
     {
 	aValue.push_back(node->Name());
     }
+}
+
+int TokenCover::Index(Tok &tok)
+{
+    return Index(tok.Node(Root()));
+}
+
+int TokenCover::SIndex(Tok &tok)
+{
+    return Index(tok.Node());
+}
+
+int TokenCover::Index(TokIdNode *node)
+{
+    for(int i = node->id.size(); --i >= 0;)
+    {
+	TokId &tid = node->id[i];
+	if(tid.is_int)
+	{
+	    return tid.int_id;
+	}
+    }
+
+    ThrowInternalError("must have integer id (may be wrong Tok?)", "GetInt");
+    return -1;
 }
 
 void TokenCover::DoNotify(int message, int iNode, ModelEngine *pObj)
