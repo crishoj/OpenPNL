@@ -16,7 +16,7 @@
 //  Author(s):  (in alphabetical order)                                    //
 //             Abrosimova, Bader, Chernishova, Gergel, Senin, Sidorov,     //
 //             Sysoyev, Vinogradov                                         //
-//             NNSU                                                        //             //
+//             NNSU                                                        //             
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 #include "trsapi.h"
@@ -25,7 +25,6 @@
 #include <conio.h>
 #include <algorithm>
 #include <math.h>
-#include <time.h>
 #include "pnlSoftMaxCPD.hpp"
 #include "pnlSoftMaxDistribFun.hpp"
 
@@ -87,7 +86,7 @@ CBNet* CreateSevenNodesNetForTests()
   variableTypes.resize( nVariableTypes );
    
   variableTypes[0].SetType( 0, 1 ); // continuous node
-  variableTypes[1].SetType( 1, 2 ); //discrete node, node size is 2
+  variableTypes[1].SetType( 1, 2 ); // discrete node, node size is 2
   
   variableTypes[2].SetType( 1, 3 ); // discrete node, node size is 3
   variableTypes[3].SetType( 1, 4 ); // discrete node, node size is 4
@@ -97,9 +96,9 @@ CBNet* CreateSevenNodesNetForTests()
   variableAssociation.assign(nnodes, 1);
   variableAssociation[0] = 0;
   variableAssociation[1] = 0;
-  variableAssociation[2] = 1;
+  variableAssociation[2] = 2;
   variableAssociation[3] = 1;
-  variableAssociation[4] = 1;
+  variableAssociation[4] = 2;
   variableAssociation[5] = 0;
   variableAssociation[6] = 1;
 
@@ -130,7 +129,7 @@ CBNet* CreateSevenNodesNetForTests()
 
   int nnodes2 = 1;
   int domain2[] = { 2 };
-  float table2[] = { 0.3f, 0.7f};
+  float table2[] = { 0.3f, 0.4f, 0.3f};
   CTabularCPD *pCPD2 = CTabularCPD::Create( domain2, nnodes2, pMD, table2 );
   pCPD2->AllocMatrix(table2, matTable);
   pBNet->AttachParameter(pCPD2);
@@ -140,26 +139,28 @@ CBNet* CreateSevenNodesNetForTests()
   CSoftMaxCPD *pCPD3 = CSoftMaxCPD::Create( domain3, nnodes3, pMD );
 
   int parInd30[] = { 0 };
-//  float weight30[] = { 0.5f, 0.5f, 0.5f, 0.7f, 0.3f, 0.7f };
-//  float offset30[] = { 0.3f, 0.5f, 1.2f };
-  float weight30[] = { 0.5f, 0.5f, 0.5f, 0.7f, 1.0f, -0.5f, 0.3f, 0.1f };
-  float offset30[] = { 0.3f, 0.5f, 0.7f, 1.0f };
+  float weight30[] = { 0.5f, 0.5f, 0.5f, 0.7f, 1.0f, -0.5f };
+  float offset30[] = { 0.3f, 0.5f, 0.7f};
 
   pCPD3->AllocDistribution( weight30, offset30, parInd30 );
   
   int parInd31[] = { 1 };
-  float weight31[] = { 0.5f, 0.5f, 0.5f, 0.7f, 0.5f, 0.7f, 1.0f, -0.5f };
-  float offset31[] = { 0.3f, 0.5f, 1.0f, -0.5f };
-//  float weight31[] = { 0.5f, 0.5f, 0.5f, 0.7f, 0.3f, 0.7f };
-//  float offset31[] = { 0.3f, 0.5f, 5.4f };
+  float weight31[] = { 0.5f, 0.5f, 0.5f, 0.7f, 0.5f, 0.7f};
+  float offset31[] = { 0.3f, 0.5f, 1.0f };
 
   pCPD3->AllocDistribution( weight31, offset31, parInd31 );
+
+  int parInd32[] = { 2 };
+  float weight32[] = { 0.5f, 0.5f, 0.5f, 0.7f, 0.5f, 0.7f };
+  float offset32[] = { 0.3f, 0.5f, 1.0f };
+
+  pCPD3->AllocDistribution( weight32, offset32, parInd32 );
+
   pBNet->AttachFactor( pCPD3 );
 
   int nnodes4 = 2;
   int domain4[] = { 3, 4 };
-  float table4[] = { 0.3f, 0.7f, 0.5f, 0.5f, 0.1f, 0.9f, 0.4f, 0.6f };
-//  float table4[] = { 0.3f, 0.7f, 0.5, 0.5, 0.1, 0.9 };
+  float table4[] = { 0.3f, 0.4f, 0.3f, 0.5f, 0.1f, 0.4f };
 
   CTabularCPD *pCPD4 = CTabularCPD::Create( domain4, nnodes4, pMD, table4 );
   pCPD4->AllocMatrix(table4, matTable);
@@ -178,8 +179,8 @@ CBNet* CreateSevenNodesNetForTests()
   float cov51 = 0.5f;
   int parInd51[] = { 1 };
   pCPD5->AllocDistribution( &mean51, &cov51, 1.0f, NULL, parInd51 );
- 
-/*  float mean52 = 0.0f;
+/* 
+  float mean52 = 0.0f;
   float cov52 = 1.f;
   int parInd52[] = { 2 };
   pCPD5->AllocDistribution( &mean52, &cov52, 1.0f, NULL, parInd52 );
@@ -203,12 +204,17 @@ CBNet* CreateSevenNodesNetForTests()
   
   int parInd61[] = { 1 };
 
-//  float weight61[] = { 0.8f, 0.2f, 0.5f };
-//  float offset61[] = { 0.1f, 0.9f, 1.9f };
   float weight61[] = { 0.8f, 0.2f, 0.7f };
   float offset61[] = { 0.1f, 0.9f, 1.7f };
 
   pCPD6->AllocDistribution( weight61, offset61, parInd61 );
+
+  int parInd62[] = { 2 };
+
+  float weight62[] = { 0.8f, 0.2f, 0.7f };
+  float offset62[] = { 0.1f, 0.9f, 1.7f };
+
+  pCPD6->AllocDistribution( weight62, offset62, parInd62 );
 
   pBNet->AttachFactor( pCPD6 );
 
@@ -227,7 +233,7 @@ void GenerateEvidence(CStaticGraphicalModel *pBNet, float StartVal,
   int *NumOfNodeVal = new int[nObsNds];
   for (i = 0; i < nObsNds; i++)
   {
-    nodeTypes = pBNet->GetNodeType(obsNds[i]);
+    nodeTypes = pBNet->GetNodeType(i);
     NumOfNodeVal[i] = nodeTypes->GetNodeSize();
   }
 
@@ -239,7 +245,7 @@ void GenerateEvidence(CStaticGraphicalModel *pBNet, float StartVal,
     {
       int valInt = rand() % NumOfNodeVal[i];
 #ifdef SM_TEST
-  printf("%3d\t", valInt);
+  printf("%3d", valInt);
 #endif
 
       (vls)[i].SetInt(valInt);
@@ -256,7 +262,8 @@ void GenerateEvidence(CStaticGraphicalModel *pBNet, float StartVal,
 #ifdef SM_TEST
   printf("\n");
 #endif
-    delete [] NumOfNodeVal;
+  delete [] NumOfNodeVal;
+
 }
 //------------------------------------------------------------------------------
 void GenerateSoftMaxEvidence(CStaticGraphicalModel *pBNet, float StartVal,
@@ -302,6 +309,7 @@ void GenerateSoftMaxEvidence(CStaticGraphicalModel *pBNet, float StartVal,
     
     
     printf("\n");
+    delete [] NumOfNodeVal;
 
 }
 //-------------------------------------------------------------------------------
@@ -338,7 +346,6 @@ void SetRandomEvidences(CBNet* pBNet, CEMLearningEngine *pLearnEng,
 
   int NumOfNodes = pBNet->GetNumberOfNodes();
   CEvidence **m_pEv;
-//  m_pEv = new CEvidence *[NumOfNodes];
   m_pEv = new CEvidence *[NumOfEvidences];
   
   int nObsNds = NumOfNodes;
@@ -362,8 +369,6 @@ int testConditionalSoftMaxInfAndLearn()
     
     int ret = TRS_OK;
     std::cout<<"Test on inference on seven nodes net with all continuous nodes observed "<<std::endl;
-    //std::cout<<"Press any key "<<endl;
-   // getch();
     std::cout<<"0  1   2 "<<std::endl;
     std::cout<<"|\\ \\  / "<<std::endl;
     std::cout<<"| \\ \\ / "<<std::endl;
@@ -377,6 +382,8 @@ int testConditionalSoftMaxInfAndLearn()
     std::cout<<" 2, 4 - discrete nodes "<<std::endl;     
     
     CBNet* pBNet = NULL;
+    CEvidence *pEvidence = NULL;
+
     pBNet = CreateSevenNodesNetForTests();
     
     if (pBNet == NULL)
@@ -391,6 +398,7 @@ int testConditionalSoftMaxInfAndLearn()
     };
     
     CJtreeInfEngine *pInfEng = CJtreeInfEngine::Create(pBNet); 
+
     if (pInfEng == NULL)
     {
         ret = TRS_FAIL;
@@ -399,21 +407,24 @@ int testConditionalSoftMaxInfAndLearn()
     }
     else
     {
-        
         std::cout<<"Junction tree inference creation OK"<<std::endl; 
     }
+
+    std::cout<<"Test on inference on seven nodes net with all discrete nodes observed "<<std::endl;  
+
+    int numOfObsNds  = 5;
+    const int obsNds[] = { 0, 2, 3, 4, 6 };
     
+    valueVector obsNdsVals(numOfObsNds);
+    obsNdsVals[0].SetFlt(0);
+    obsNdsVals[1].SetInt(1);
+    obsNdsVals[2].SetInt(0);
+    obsNdsVals[3].SetInt(1);
+    obsNdsVals[4].SetInt(1);
+    std::cout<<"All discrete nodes are observed "<<std::endl;
+    std::cout<<"Observed nodes are 0, 2, 3, 4, 6  "<<std::endl;
     
-    const int numOfObsNds  = 3;
-    const int obsNds[] = { 0, 1, 5 };
-    
-    valueVector obsNdsVals(3);
-    obsNdsVals[0].SetFlt(1);
-    obsNdsVals[1].SetFlt(1);
-    obsNdsVals[2].SetFlt(1);
-    std::cout<<"Observed nodes are 0, 1, 5 with values 1   "<<std::endl;
-    
-    CEvidence *pEvidence = CEvidence::Create(pBNet, numOfObsNds, obsNds, obsNdsVals);
+    pEvidence = CEvidence::Create(pBNet, numOfObsNds, obsNds, obsNdsVals);
     
     if (pEvidence == NULL)
     {
@@ -425,36 +436,60 @@ int testConditionalSoftMaxInfAndLearn()
     {
         std::cout<<"Evidence creation OK"<<std::endl; 
     };
-    CFactor *pF = pBNet->GetFactor(3);
-    
-    const int numOfCurObsNds  = 2;
-    const int obsCurNds[] = { 0, 1 };
-    valueVector obsCurNdsVals(2);
-    obsCurNdsVals[0].SetFlt(1);
-    obsCurNdsVals[1].SetFlt(1);
-    CEvidence *pCurEv = CEvidence::Create(pBNet, numOfCurObsNds, obsCurNds, obsCurNdsVals);
-    //end of creating and start of DumpMatrix function
-    
-    ((CSoftMaxDistribFun*)pF->GetDistribFun())->DumpMatrix((const CEvidence*)pCurEv);
-    // end of DunmMAtrix function
+
     pInfEng->EnterEvidence(pEvidence);
-    
+
     const int querySz = 1;
-    const int query[] = { 3 };
-    
+    int query[] = { 1 };
     pInfEng->MarginalNodes(query,querySz);
     printf("\nDump function results\n");
     pInfEng->GetQueryJPD()->Dump();
-    delete pBNet;
-    delete pInfEng;
     delete pEvidence;
-    delete pCurEv;
+
+    std::cout<<"Next test. Press any key "<<endl;
+    getch();
+    std::cout<<"Test on inference on seven nodes net with all continuous nodes observed "<<std::endl;  
+
+    numOfObsNds  = 4;
+    const int obsNodes[] = { 0, 1, 2, 5 };
+    
+    obsNdsVals.resize(numOfObsNds);
+    obsNdsVals[0].SetFlt(0);
+    obsNdsVals[1].SetFlt(1);
+    obsNdsVals[2].SetInt(0);
+    obsNdsVals[2].SetFlt(0);
+    std::cout<<"All continuous nodes are observed "<<std::endl;
+    std::cout<<"Observed nodes are 0, 1, 2, 5 "<<std::endl;
+
+    pEvidence = CEvidence::Create(pBNet, numOfObsNds, obsNodes, obsNdsVals);
+    
+    if (pEvidence == NULL)
+    {
+        ret = TRS_FAIL;
+        return trsResult( ret, ret == TRS_OK ? "No errors" : 
+        "FAIL in evidence creation");
+    }
+    else
+    {
+        std::cout<<"Evidence creation OK"<<std::endl; 
+    };
+
+    pInfEng->EnterEvidence(pEvidence);
+
+    query[0] = 3;
+    pInfEng->MarginalNodes(query, querySz);
+    printf("\nDump function results\n");
+    pInfEng->GetQueryJPD()->Dump();
+    delete pEvidence;
+    delete pInfEng;
+
     std::cout<<"Next test. Press any key "<<endl;
     getch();
     std::cout<<"Test on learning on seven nodes net with all nodes observed "<<std::endl;  
+  
     CEMLearningEngine *pLearnEng = NULL;  
-    pBNet = CreateSevenNodesNetForTests();
     pLearnEng = CEMLearningEngine::Create(pBNet);
+
     if (pLearnEng == NULL)
     {
         ret = TRS_FAIL;
@@ -463,7 +498,6 @@ int testConditionalSoftMaxInfAndLearn()
     }
     else
     {
-        
         std::cout<<"Learning creation OK"<<std::endl; 
     }
     
@@ -472,27 +506,11 @@ int testConditionalSoftMaxInfAndLearn()
     int i;
     for(i = 0; i < nObsNdsLearn; i++)
         obsNdsLearn[i] = i; 
+
     SetRandEvidences(pBNet, pLearnEng, -1.0, 1.0, 20, nObsNdsLearn, obsNdsLearn);
-    
     pLearnEng->SetMaximizingMethod(mmGradient);
-    //  pLearnEng->SetMaximizingMethod(mmConjGradient);
     
     pLearnEng->Learn();
-    
-    
-/*    switch(pLearnEng->GetMaximizingMethod())
-    {
-    case mmGradient:
-        {
-            printf("\nMaximizeMethod - GRADIENT\n");
-            break;
-        }
-    case mmConjGradient:
-        {
-            printf("\nMaximizeMethod - CONJ GRADIENT\n");
-            break;
-        }
-    }*/
     
     printf("\nResults\n========\n");
     int numOfNdsTmp = pBNet->GetNumberOfNodes();
@@ -501,15 +519,12 @@ int testConditionalSoftMaxInfAndLearn()
         pBNet->GetFactor(i)->GetDistribFun()->Dump();
     }
     
-    
     delete pLearnEng;
-    delete pBNet;
-    
+
     std::cout<<"Next test. Press any key "<<endl;
     getch();
     std::cout<<"Test on learning on seven nodes net with all continuous nodes observed "<<std::endl;   
-    std::cout<<"Graph view "<<endl;
-    pBNet = CreateSevenNodesNetForTests();
+
     pLearnEng = CEMLearningEngine::Create(pBNet);
     
     int nObsNdsLearnForConExp = 3;
@@ -517,41 +532,23 @@ int testConditionalSoftMaxInfAndLearn()
     obsNdsLearnForConExp[0] = 0; 
     obsNdsLearnForConExp[1] = 1;
     obsNdsLearnForConExp[2] = 5;
-    SetRandEvidences(pBNet, pLearnEng, -1.0, 1.0, 20, nObsNdsLearnForConExp, obsNdsLearnForConExp);
-    
+
+    SetRandEvidences(pBNet, pLearnEng, -1.0, 1.0, 20, nObsNdsLearnForConExp, 
+        obsNdsLearnForConExp);
     pLearnEng->SetMaximizingMethod(mmGradient);
-    //  pLearnEng->SetMaximizingMethod(mmConjGradient);
     
     pLearnEng->Learn();
-    
-    
-   /* switch(pLearnEng->GetMaximizingMethod())
-    {
-    case mmGradient:
-        {
-            printf("\nMaximizeMethod - GRADIENT\n");
-            break;
-        }
-    case mmConjGradient:
-        {
-            printf("\nMaximizeMethod - CONJ GRADIENT\n");
-            break;
-        }
-    }*/
-    
+           
     printf("\nResults\n========\n");
-    int numOfNdsTmp1 = pBNet->GetNumberOfNodes();
-    for (i = 0; i < numOfNdsTmp1; i++)
+    for (i = 0; i < pBNet->GetNumberOfNodes(); i++)
     {
         pBNet->GetFactor(i)->GetDistribFun()->Dump();
     }
-    
     
     delete pLearnEng;
     delete pBNet;
     
     return trsResult( ret, ret == TRS_OK ? "No errors" : "Tests FAILED");
-
 }
 
 void initACondSoftMaxAndSoftMaxInfAndLearn()
