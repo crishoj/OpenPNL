@@ -215,6 +215,7 @@ protected:
 
     void RebuildTreeFromRoot() const;
 
+
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
 #endif 
@@ -230,7 +231,7 @@ private:
     
     CJunctionTree *m_pOriginalJTree;
     CJunctionTree *m_pJTree;
-    
+
     //void RebuildTreeFromRoot() const;
     
     void MarginalizeCliqueToQuery( int clqNum, int querySz,
