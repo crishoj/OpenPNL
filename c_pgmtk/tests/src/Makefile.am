@@ -14,9 +14,11 @@ tests_pnl_c_SOURCES=\
      AComputeLikelihood.cpp     \
      ACondGaussian.cpp     \
      AConditionalGaussianLearning.cpp     \
+     ACondSoftMaxAndSoftMax.cpp     \
      ADetermineDistrType.cpp     \
      ADSeparation.cpp     \
      AExInfEngine.cpp     \
+     AExLearnEngine.cpp     \
      AFactorGraph.cpp     \
      AGaussianFactorOperations.cpp     \
      AGaussianInference.cpp     \
@@ -62,10 +64,12 @@ tests_pnl_c_SOURCES=\
      ASparseMatrixInfernceBNet.cpp     \
      ASparseReduceOp.cpp     \
      AStackAllocator.cpp     \
-     AStackAllocator.cpp_     \
      AStructureLearning.cpp     \
      ATreeCPDLearn.cpp     \
      AUnrollDBN.cpp     \
+     CreateBNets.cpp     \
+     LoadBNet.cpp     \
+     LoadIDNet.cpp     \
      SEEvidence.cpp     \
      SEGaussian.cpp     \
      SEParameter.cpp     \

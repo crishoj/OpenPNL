@@ -27,6 +27,7 @@ libpnl_la_SOURCES=      \
      pnlBKInferenceEngine.cpp     \
      pnlBNet.cpp     \
      pnlCondGaussianDistribFun.cpp     \
+     pnlCondSoftMaxDistribFun.cpp     \
      pnlConfig.cpp     \
      pnlContext.cpp     \
      pnlContextPersistence.cpp     \
@@ -56,12 +57,16 @@ libpnl_la_SOURCES=      \
      pnlGraph.cpp     \
      pnlGraphicalModel.cpp     \
      pnli2DNumericDenseMatrix.cpp     \
+     pnlIDNet.cpp     \
+     pnlIDPotential.cpp     \
+     pnlIDTabularPotential.cpp     \
      pnlInferenceEngine.cpp     \
      pnliNumericDenseMatrix.cpp     \
      pnliNumericSparseMatrix.cpp     \
      pnlJtreeInferenceEngine.cpp     \
      pnlJunctionTree.cpp     \
      pnlLearningEngine.cpp     \
+     pnlLIMIDInfEngine.cpp     \
      pnlLog.cpp     \
      pnlLogDriver.cpp     \
      pnlLogMultiplexor.cpp     \
@@ -78,6 +83,12 @@ libpnl_la_SOURCES=      \
      pnlNodeType.cpp     \
      pnlNodeValues.cpp     \
      pnlObjHandler.cpp     \
+     pnlParConfig.cpp     \
+     pnlParEmLearningEngine.cpp     \
+     pnlParGibbsSamplingInferenceEngine.cpp     \
+     pnlParJtreeInferenceEngine.cpp     \
+     pnlParNewDelete.cpp     \
+     pnlParPearlInferenceEngine.cpp     \
      pnlPearlInferenceEngine.cpp     \
      pnlPersistCover.cpp     \
      pnlPersistCPD.cpp     \
@@ -93,10 +104,13 @@ libpnl_la_SOURCES=      \
      pnlSamplingInferenceEngine.cpp     \
      pnlScalarDistribFun.cpp     \
      pnlScalarPotential.cpp     \
+     pnlSoftMaxCPD.cpp     \
+     pnlSoftMaxDistribFun.cpp     \
      pnlSparseMatrix.cpp     \
      pnlSpecPearlInferenceEngine.cpp     \
      pnlStaticGraphicalModel.cpp     \
      pnlStaticLearningEngine.cpp     \
+     pnlString.cpp     \
      pnlTabularCPD.cpp     \
      pnlTabularDistribFun.cpp     \
      pnlTabularPotential.cpp     \
@@ -106,7 +120,4 @@ libpnl_la_SOURCES=      \
      pnlXMLRead.cpp
 
 libpnl_la_LDFLAGS = -no-undefined -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -release $(LT_RELEASE) @LD_FLAGS@
-
-cvcart.cpp: cart/cvcart.cpp
-	cp cart/cvcart.cpp .
 
