@@ -139,3 +139,4 @@ Note: it is normal for w2k_vc6 autobuilds to have "bad_build" code coverage summ
 06/30/04 04:44:09	w2k_icc	crashed	bad_build	testExLearnEngine
 06/30/04 20:20:02	w2k_icc	crashed	bad_build	testExLearnEngine
 07/01/04 20:20:02	w2k_icc	success	bad_build	
+07/02/04 20:20:02	w2k_icc	success	bad_build	
