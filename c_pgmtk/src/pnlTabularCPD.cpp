@@ -232,6 +232,9 @@ bool CTabularCPD::IsValid(std::string* description) const
     }
     return 0;
   }
+
+  //bogus return (suppress compiler warning) - below line will not be reached 
+  return 0;
 }
 
 void CTabularCPD :: NormalizeCPD()
