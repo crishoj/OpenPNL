@@ -315,6 +315,23 @@ inline bool CTimerAndLogWriter::AreAllNResultsSaved() const
 #endif // DO_TIMING
 //////////////////////////////////////////////////////////////////////////
 
+// For inner use only - it is not exported
+class CTimer
+{
+public:
+    CTimer();
+    void Start();
+    void Stop();
+    void Reset() { m_Duration = 0; }
+    double Duration() const { return m_Duration; }
+    double DurationLast() const { return m_DurationLast; }
+
+private:
+    double m_Duration;
+    double m_DurationLast;
+    char m_InnerUnionBuf[32];
+};
+
 PNL_END
 
 #endif // __PNLTIMER_HPP__
