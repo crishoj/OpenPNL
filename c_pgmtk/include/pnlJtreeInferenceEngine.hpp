@@ -134,7 +134,6 @@ public:
 #else
     ;
 #endif
-    
 
 protected:
     
@@ -152,6 +151,17 @@ protected:
 
     inline void GetObservedDomains(const CEvidence *pEv, intVector* domains ) const;
 
+    int GetDataForMargAndMult(const int source, const int sink, 
+        pnl::CNumericDenseMatrix<float> **margMatrix, int **dims_to_keep,
+        int &num_dims_to_keep, pnl::CNumericDenseMatrix<float> **outputMatrix, 
+        pnl::CNumericDenseMatrix<float> **sinkMatrix, int **dims_to_mul, 
+        int &num_dims_to_mul);
+    
+    void DoPropagate(pnl::CNumericDenseMatrix<float> *sourceMatrix, 
+        int *dims_to_keep, int num_dims_to_keep, 
+        pnl::CNumericDenseMatrix<float> *sepMatrix, 
+        pnl::CNumericDenseMatrix<float> *sinkMatrix, int *dims_to_mul, 
+        int num_dims_to_mul, bool isCollect);
     
     
 private:

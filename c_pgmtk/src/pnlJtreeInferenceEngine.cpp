@@ -573,51 +573,83 @@ const CEvidence* CJtreeInfEngine::GetMPE() const
     return m_pEvidenceMPE;
 }
 
-void CJtreeInfEngine::PropagateBetweenClqs( int source, int sink, bool isCollect )
+void CJtreeInfEngine::PropagateBetweenClqs(int source, int sink, bool isCollect)
 {
-    // bad-args check
     PNL_CHECK_RANGES( source, 0, m_pJTree->GetNumberOfNodes() - 1 );
     PNL_CHECK_RANGES( sink,   0, m_pJTree->GetNumberOfNodes() - 1 );
-    // bad-args check end
     
-    // operation validity check
-    if( source == sink )
+    if (source == sink)
     {
-        PNL_THROW( CInvalidOperation, " source and sink should differ " );
+        PNL_THROW(CInvalidOperation, " source and sink should differ ");
     }
     
-    if( !m_pJTree->GetGraph()->IsExistingEdge( source, sink ) )
+    if (!m_pJTree->GetGraph()->IsExistingEdge(source, sink))
     {
-        PNL_THROW( CInvalidOperation,
-            " there is no edge between source and sink " );
+        PNL_THROW(CInvalidOperation,
+            " there is no edge between source and sink ");
     }
-    /* operation validity check end */
     
-    int       numNdsInSepDom;
-    const int *sepDom;
-    
+    bool isDense = true;
+    if(!m_pJTree->GetNodeType(source)->IsDiscrete() || !m_pJTree->GetNodeType(sink)->IsDiscrete())
+    {
+        isDense = false;
+    }
     CPotential *potSource = m_pJTree->GetNodePotential(source),
         *potSink   = m_pJTree->GetNodePotential(sink);
     
-    CPotential *potSep    = m_pJTree->GetSeparatorPotential( source, sink );
+    if(potSource->IsSparse() || potSink->IsSparse())
+    {
+        isDense = false;
+    }
     
-    CPotential *newPotSep, *updateRatio;
-    
-    potSep->GetDomain( &numNdsInSepDom, &sepDom );
-
-    newPotSep = potSource->Marginalize( sepDom, numNdsInSepDom, m_bMaximize );
-    
-    updateRatio = newPotSep->Divide(potSep);
-    
-    *potSink *= *updateRatio;
-    
-    MyNormalize(potSink, isCollect);
-    //potSink->Normalize();
-    
-    potSep->SetDistribFun(newPotSep->GetDistribFun());
-    
-    delete newPotSep;
-    delete updateRatio;
+    // check that nodes source and sink are discrete
+    if(isDense)
+    {
+        pnl::CNumericDenseMatrix< float > *sorceMatrix, *sepMatrix, *sinkMatrix;
+        int *dims_to_keep, *dims_to_mul;
+        int num_dims_to_keep, num_dims_to_mul;
+        
+        if (GetDataForMargAndMult(source, sink, &sorceMatrix, &dims_to_keep,
+            num_dims_to_keep, &sepMatrix, &sinkMatrix, &dims_to_mul, num_dims_to_mul))
+        {
+            DoPropagate(sorceMatrix, dims_to_keep,
+                num_dims_to_keep, sepMatrix, sinkMatrix, dims_to_mul, num_dims_to_mul, isCollect);
+            delete [] dims_to_keep;
+            delete [] dims_to_mul;
+        }
+        else
+        {
+            CPotential *potSink = m_pJTree->GetNodePotential(sink);
+            potSink->Normalize();
+        }
+    }
+    else
+    {
+        int       numNdsInSepDom;
+        const int *sepDom;
+        
+        int       numNdsInSDom;
+        const int *sDom;
+        potSource->GetDomain( &numNdsInSDom, &sDom );
+        CPotential *potSep    = m_pJTree->GetSeparatorPotential( source, sink );
+        
+        CPotential *newPotSep, *updateRatio;
+        
+        potSep->GetDomain( &numNdsInSepDom, &sepDom );
+        
+        newPotSep = potSource->Marginalize( sepDom, numNdsInSepDom, m_bMaximize );
+        
+        updateRatio = newPotSep->Divide(potSep);
+        
+        *potSink *= *updateRatio;
+        
+        potSink->Normalize();
+        
+        potSep->SetDistribFun(newPotSep->GetDistribFun());
+        
+        delete newPotSep;
+        delete updateRatio;
+    }
 }
 
 void CJtreeInfEngine::
@@ -963,4 +995,457 @@ void CJtreeInfEngine::GetObservedDomains(const CEvidence *pEv, intVector* domain
 	    domains->push_back(i);
 	}
     }
+}
+
+int CJtreeInfEngine::GetDataForMargAndMult(const int source, const int sink,
+      pnl::CNumericDenseMatrix< float > **sorceMatrix, int **dims_to_keep,
+      int &num_dims_to_keep, pnl::CNumericDenseMatrix< float > **sepMatrix, 
+      pnl::CNumericDenseMatrix< float > **sinkMatrix, int **dims_to_mul,
+      int &num_dims_to_mul)
+{
+    // bad-args check
+    PNL_CHECK_RANGES(source, 0, m_pJTree->GetNumberOfNodes() - 1);
+    PNL_CHECK_RANGES(sink, 0, m_pJTree->GetNumberOfNodes() - 1);
+    // bad-args check end
+    
+    if (source == sink)
+    {
+        PNL_THROW(CInvalidOperation, " source and sink should differ ");
+    }
+    if (!m_pJTree->GetGraph()->IsExistingEdge(source, sink))
+    {
+        PNL_THROW(CInvalidOperation, " there is no edge between source and sink");
+    }
+    
+    CPotential *potSource = m_pJTree->GetNodePotential(source),
+        *potSink   = m_pJTree->GetNodePotential(sink);
+    
+    int numNdsInSourceDom, numNdsInSinkDom;
+    const int *sourceDom, *sinkDom;
+    potSource->GetDomain(&numNdsInSourceDom, &sourceDom);
+    potSink->GetDomain(&numNdsInSinkDom, &sinkDom);
+    
+    CPotential *potSep = m_pJTree->GetSeparatorPotential(source, sink);
+    int numNdsInSepDom;
+    const int *sepDom;
+    potSep->GetDomain(&numNdsInSepDom, &sepDom);
+    
+    EDistributionType sepDistType = potSep->GetDistributionType();
+    
+    num_dims_to_keep = numNdsInSepDom;
+    *dims_to_keep = new int [num_dims_to_keep];
+    
+    int* pEquivPos;
+    for (int i = 0; i < numNdsInSepDom; i++)
+    {
+        pEquivPos = (int*)std::find(sourceDom, sourceDom + numNdsInSourceDom, sepDom[i]);
+        if (pEquivPos != sourceDom + numNdsInSourceDom)
+        {
+            (*dims_to_keep)[i] = (pEquivPos - sourceDom);
+        }
+        else 
+        {
+            PNL_THROW( CInconsistentSize, "small domain isn't subset of domain")
+            return NULL;
+        }
+        //check that pSmallDom is m_Domain's subset
+    }
+    switch (sepDistType)
+    {
+    case dtTabular:
+        {
+            CDistribFun *sepDistrFun = potSep -> GetDistribFun();
+            CDistribFun *sourceDistrFun = potSource -> GetDistribFun();
+            CDistribFun *sinkDistrFun = potSink -> GetDistribFun();
+            if (!sourceDistrFun->IsValid())
+            {
+                PNL_THROW( CInconsistentType, "MarginalizeData is invalid" )
+            }
+            
+            //check if distribution of potSource is Unit Function - do nothing
+            if(sourceDistrFun->IsDistributionSpecific())
+            {
+                return 0;
+            }
+            
+            if ( sepDistrFun->IsDistributionSpecific() )
+            {
+                sepDistrFun->SetUnitValue(0);
+            }
+            
+            
+            *sorceMatrix = static_cast<CNumericDenseMatrix<float> *>(sourceDistrFun->
+                GetMatrix(matTable));
+            *sepMatrix = static_cast<CNumericDenseMatrix<float> *>(sepDistrFun->
+                GetMatrix(matTable));
+            
+            EDistributionType dtsink = sinkDistrFun->GetDistributionType();
+            if ((dtsink != dtTabular) && (dtsink != dtScalar))
+            {
+                PNL_THROW(CInvalidOperation, "we can multiply only tabulars")
+            }
+            
+            int location;
+            num_dims_to_mul = numNdsInSepDom;
+            *dims_to_mul = new int [num_dims_to_mul];
+            
+            for (int i = 0; i < numNdsInSepDom; i++)
+            {
+                location = 
+                    std::find(sinkDom, sinkDom + numNdsInSinkDom, sepDom[i]) - sinkDom;
+                if (location < numNdsInSinkDom)
+                {
+                    (*dims_to_mul)[i] = location;
+                }
+            }
+            
+            if(sinkDistrFun->IsDistributionSpecific())
+            {
+                sinkDistrFun->SetUnitValue(0);
+                floatVector *Vector = 
+                    (floatVector *)((CDenseMatrix<float>*)sinkDistrFun->
+                    GetMatrix(matTable))->GetVector();
+                for (float *V = Vector->begin(); V != Vector->end(); *V = 1, V++);
+            }
+            
+            *sinkMatrix = static_cast<CNumericDenseMatrix<float>*>(sinkDistrFun->
+                GetMatrix(matTable));
+            
+            break;
+        }
+    case dtScalar:
+        {
+            // propagate isn't need
+            return 0;
+        }
+    default:
+        {
+            PNL_THROW(CNotImplemented, "we have only Tabular now");
+            return 0;
+        }
+    }
+    
+    if (numNdsInSepDom == 0)
+    {
+        PNL_THROW(COutOfRange, "domain size should be positive");
+    }
+    return 1;
+}
+
+void CJtreeInfEngine::DoPropagate(pnl::CNumericDenseMatrix<float> *sourceMatrix,
+       int *dims_to_keep, int num_dims_to_keep, 
+       pnl::CNumericDenseMatrix<float> *sepMatrix,
+       pnl::CNumericDenseMatrix<float> *sinkMatrix,
+       int *dims_to_mul, int num_dims_to_mul, bool isCollect)
+{
+    PNL_USING
+        
+    // we suppose that number of vertex in clique can not be more than MAX_SIZE
+    const int MAX_SIZE = 100; 
+    int i, j;
+    int src_num_dims;
+    int const *src_ranges;
+    float const *src_bulk;
+    int safe_bulk_size;
+    
+    float *sep_bulk;
+    int sep_bulk_size, safe_sep_bulk_size;
+    int safe_sep_num_dims;
+    int const *safe_sep_ranges;
+    
+    int sink_num_dims;
+    int const *sink_ranges;
+    float *sink_bulk;
+    int sink_bulk_size;
+    sinkMatrix->GetRanges(&sink_num_dims, &sink_ranges);
+    sinkMatrix->GetRawData(&sink_bulk_size, (float const **)&sink_bulk);
+    
+    sourceMatrix->GetRanges(&src_num_dims, &src_ranges);
+    sourceMatrix->GetRawData(&safe_bulk_size, &src_bulk);
+    
+    int sep_ranges[MAX_SIZE];
+    
+    for (i = num_dims_to_keep, sep_bulk_size = 1; i--;)
+    {
+        sep_bulk_size *= sep_ranges[i] = src_ranges[dims_to_keep[i]];
+    }
+    
+    if (sepMatrix)
+    {
+        sepMatrix->GetRanges(&safe_sep_num_dims, &safe_sep_ranges);
+        sepMatrix->GetRawData(&safe_sep_bulk_size, (float const **)&sep_bulk);
+        if (safe_sep_bulk_size < sep_bulk_size)
+        {
+            PNL_THROW(CInconsistentSize, "Marg: matrix of separator does not fit");
+        }
+    }
+    else
+    {
+        PNL_THROW(CInconsistentSize, "Marg: matrix of separator does not fit");
+        // matrix must exist!!!
+    }
+    
+    // --- marg section -----------------------------------------------------------
+    int dst_sum_count = safe_bulk_size / sep_bulk_size;
+    
+    int dims_unkeep[MAX_SIZE];
+    int loc, pos = 0;
+    for (i = 0; i < src_num_dims; i++)
+    {
+        loc = 0;
+        for (j = 0; j < num_dims_to_keep; j++)
+        {
+            if (i == dims_to_keep[j])
+            {
+                loc = 1;
+            }
+        }
+        if (!loc)
+        {
+            dims_unkeep[pos++] = i;
+        }
+    }
+    
+    int steps1[MAX_SIZE];
+    int step = 1;
+    for (i = src_num_dims - 1; i >=0; i--)
+    {
+        steps1[i] = step;
+        step *= src_ranges[i];
+    }
+    
+    int steps[MAX_SIZE];
+    int srcranges[MAX_SIZE];
+    
+    for (i = 0; i < num_dims_to_keep; i++)
+    {
+        srcranges[i] = src_ranges[dims_to_keep[num_dims_to_keep - i - 1]];
+        steps[i] = steps1[dims_to_keep[num_dims_to_keep - i - 1]];
+    }
+    
+    for (i = num_dims_to_keep; i < src_num_dims; i++)
+    {
+        srcranges[i] = src_ranges[dims_unkeep[src_num_dims - i - 1]];
+        steps[i] = steps1[dims_unkeep[src_num_dims - i - 1]];
+    }
+    
+    int bsteps[MAX_SIZE];
+    for (i = src_num_dims - 1; i >=0; i--)
+    {
+        bsteps[i] = steps[i] * srcranges[i];
+    }
+    
+    int *offsets = new int[dst_sum_count];
+    
+    int counts[MAX_SIZE];
+    memset(counts, 0, src_num_dims * sizeof(int));
+    
+    pos = 0;
+    int k = num_dims_to_keep;
+    for (j = 0; j < dst_sum_count; j++)
+    {
+        while (counts[k] == srcranges[k])
+        {
+            counts[k] = 0;
+            pos -= bsteps[k];
+            k++;
+            counts[k]++;
+            pos += steps[k];
+        }
+        k = num_dims_to_keep;
+        offsets[j] = pos;
+        counts[k]++;
+        pos += steps[k];
+    }
+    
+    for (i = 0; i < src_num_dims - 1; i++)
+    {
+        bsteps[i] = steps[i + 1] - bsteps[i];
+    }
+    
+    int fsteps[MAX_SIZE];
+    fsteps[0] = steps[0];
+    for (i = 1; i < num_dims_to_keep; i++)
+    {
+        fsteps[i] = fsteps[i - 1] + bsteps[i - 1];
+    }
+    fsteps[num_dims_to_keep] = steps[num_dims_to_keep];
+    for (i = num_dims_to_keep + 1; i < src_num_dims; i++)
+    {
+        fsteps[i] = fsteps[i - 1] + bsteps[i - 1];
+    }
+    
+    int keep_steps[MAX_SIZE];
+    step = 1;
+    for (i = num_dims_to_keep - 1; i >=0; i--)
+    {
+        keep_steps[i] = step;
+        step *= sep_ranges[i];
+    }
+    
+    int dsteps1[MAX_SIZE];
+    memset(dsteps1, 0, src_num_dims * sizeof(int));
+    for (i = num_dims_to_keep - 1; i >=0; i--)
+    {
+        dsteps1[dims_to_keep[i]] = keep_steps[i];
+    }
+    int dsteps[MAX_SIZE];
+    pos = num_dims_to_keep - 1;
+    for (i = 0; i < src_num_dims; i++)
+    {
+        if (dsteps1[i] != 0)
+            dsteps[pos--] = dsteps1[i];
+    }
+    
+    int bdsteps[MAX_SIZE];
+    for (i = 0; i < num_dims_to_keep; i++)
+    {
+        bdsteps[i] = dsteps[i] * srcranges[i];
+    }
+    for (i = 0; i < num_dims_to_keep - 1; i++)
+    {
+        bdsteps[i] = dsteps[i + 1] - bdsteps[i];
+    }
+    
+    int fdsteps[MAX_SIZE];
+    fdsteps[0] = dsteps[0];
+    for (i = 1; i < num_dims_to_keep; i++)
+    {
+        fdsteps[i] = fdsteps[i - 1] + bdsteps[i - 1];
+    }
+    
+    // --- mult section -----------------------------------------------------------
+    int num_dims_unkeep_mult = sink_num_dims - safe_sep_num_dims;
+    
+    int keep_steps_mult[MAX_SIZE];
+    step = 1;
+    for (i = safe_sep_num_dims - 1; i >=0; i--)
+    {
+        keep_steps_mult[i] = step;
+        step *= sink_ranges[dims_to_mul[i]];
+    }
+    
+    int dims_unkeep_mult[MAX_SIZE];
+    pos = 0;
+    for (i = 0; i < sink_num_dims; i++)
+    {
+        loc = 0;
+        for (j = 0; j < safe_sep_num_dims; j++)
+        {
+            if (i == dims_to_mul[j])
+            {
+                loc = 1;
+            }
+        }
+        if (!loc)
+        {
+            dims_unkeep_mult[pos++] = i;
+        }
+    }
+    
+    int smal_steps_mult[MAX_SIZE];
+    for (i = safe_sep_num_dims - 1; i >=0; i--)
+    {
+        smal_steps_mult[dims_to_mul[i]] = keep_steps_mult[i];
+    }
+    for (i = num_dims_unkeep_mult - 1; i >=0; i--)
+    {
+        smal_steps_mult[dims_unkeep_mult[i]] = 0;
+    }
+    int dbsteps_mult[MAX_SIZE];
+    for (i = sink_num_dims - 1; i >=0; i--)
+    {
+        dbsteps_mult[i] = smal_steps_mult[i] * sink_ranges[i];
+    }
+    for (i = 0; i < sink_num_dims - 1; i++)
+    {
+        dbsteps_mult[i] = smal_steps_mult[i] - dbsteps_mult[i + 1];
+    }
+    
+    // --- Main Loop (marg) -------------------------------------------------------
+    int p = 0;
+    int src_start;
+    float sep_el_old;
+    src_start = 0 - steps[0];
+    memset(counts, 0, src_num_dims * sizeof(int));
+    if (!isCollect)
+    {
+        for (i = 0; i < sep_bulk_size; i++)
+        {
+            while (counts[p] == srcranges[p])
+            {
+                counts[p] = 0;
+                p++;
+                counts[p]++;
+            }
+            src_start += fsteps[p];
+            p = 0;
+            counts[p]++;
+            
+            sep_el_old = sep_bulk[i];
+            sep_bulk[i] = 0;
+            for (j = 0; j < dst_sum_count; j++)
+            {
+                sep_bulk[i] += src_bulk[src_start + offsets[j]];
+            }
+            if (sep_el_old)
+            {
+                sep_bulk[i] /= sep_el_old;
+            }
+        }
+    }
+    else
+    {
+        for (i = 0; i < sep_bulk_size; i++)
+        {
+            while (counts[p] == srcranges[p])
+            {
+                counts[p] = 0;
+                p++;
+                counts[p]++;
+            }
+            src_start += fsteps[p];
+            p = 0;
+            counts[p]++;
+            
+            sep_bulk[i] = 0;
+            for (j = 0; j < dst_sum_count; j++)
+            {
+                sep_bulk[i] += src_bulk[src_start + offsets[j]];
+            }
+        }
+    }
+    
+    // --- Main Loop (mult) -------------------------------------------------------
+    float sum = 0;
+    int counts_mult[MAX_SIZE];
+    memset(counts_mult, 0, sink_num_dims * sizeof(int));
+    int dst_pos = 0;
+    p = sink_num_dims - 1;
+    for (i = 0; i < sink_bulk_size; i++)
+    {
+        while (counts_mult[p] == sink_ranges[p])
+        {
+            counts_mult[p] = 0;
+            p--;
+            counts_mult[p]++;
+            dst_pos += dbsteps_mult[p];
+        }
+        
+        sink_bulk[i] *= sep_bulk[dst_pos];
+        sum += sink_bulk[i];
+        
+        p = sink_num_dims - 1;
+        counts_mult[p]++;
+        dst_pos += smal_steps_mult[p];
+    }
+    
+    float reciprocalSum = 1 / sum;
+    
+    for (i = 0; i < sink_bulk_size; i++)
+    {
+        *(sink_bulk + i) *= reciprocalSum;
+    }
+    
+    delete [] offsets;
 }
