@@ -1,6 +1,6 @@
 
 ------------------------------------------------------------------
- PNL -- Probabilistic Networks Library. Beta 1.0. 17-Febrary-2004
+ PNL -- Probabilistic Networks Library. Beta 2.0.    30-March-2004
 ------------------------------------------------------------------
 
 Requirements
