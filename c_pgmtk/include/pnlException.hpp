@@ -25,7 +25,8 @@
 
 #ifdef PNL_RTTI
 #include "pnlpnlType.hpp"
-#endif 
+#endif
+
 PNL_BEGIN
 
 class PNL_API CException : public CPNLBase
@@ -549,45 +550,45 @@ protected:
 	__descr += (#__lr);				  \
 	__descr += " and ";				  \
 	__descr += (#__rr);				  \
-	PNL_THROW( COutOfRange, __descr ); }
+	PNL_THROW( pnl::COutOfRange, __descr ); }
 
 #define PNL_CHECK_LEFT_BORDER(__var, __lr)		  \
     if( (__var) < (__lr) ) {				  \
 	std::string __descr( (#__var) );		  \
 	__descr += " should be greater than or equal to ";\
 	__descr += (#__lr);				  \
-	PNL_THROW( COutOfRange, __descr ); }
+	PNL_THROW( pnl::COutOfRange, __descr ); }
 
 #define PNL_CHECK_RIGHT_BORDER(__var, __rr)		  \
 	if( (__var) > (__rr) ) {			  \
     std::string __descr( (#__var) );			  \
     __descr += " should be smaller than or equal to ";    \
 	__descr += (#__rr);                               \
-    PNL_THROW( COutOfRange, __descr ); }
+    PNL_THROW( pnl::COutOfRange, __descr ); }
 
 #define PNL_CHECK_IS_NULL_POINTER(__var)                  \
 	if( (__var) == NULL ) {                           \
     std::string __descr( (#__var) );                      \
 	__descr += " should not be a NULL pointer ";      \
-    PNL_THROW( CNULLPointer, __descr ); }
+    PNL_THROW( pnl::CNULLPointer, __descr ); }
 
 #define PNL_CHECK_FOR_ZERO(__var)                         \
 	if( (__var) == 0 ) {                              \
     std::string __descr( (#__var) );                      \
 	__descr += " should not be equal to zero ";       \
-    PNL_THROW( COutOfRange, __descr ); }
+    PNL_THROW( pnl::COutOfRange, __descr ); }
 
 #define PNL_CHECK_FOR_NON_ZERO(__var)                     \
     if( (__var) != 0 ) {                                  \
     std::string __descr( (#__var) );                      \
 	__descr += " should be equal to zero ";           \
-    PNL_THROW( COutOfRange, __descr ); }
+    PNL_THROW( pnl::COutOfRange, __descr ); }
 
 #define PNL_CHECK_IF_MEMORY_ALLOCATED(__var)              \
     if( (__var) == NULL ) {                               \
     std::string __descr(" not enough memory to allocate ");\
 	__descr += (#__var);				  \
-    PNL_THROW( CNotEnoughMemory, __descr ); }
+    PNL_THROW( pnl::CNotEnoughMemory, __descr ); }
 
 PNL_END
 
