@@ -14,88 +14,97 @@ rel=STYLESHEET>
   href="#decl_Class_BayesNet">Class BayesNet</A> 
   <UL>
     <LI><A 
-    href="#decl_BayesNet">BayesNet</A> 
+    href="#decl_AddArc">AddArc</A> 
+
+    <LI><A 
+    href="#decl_AddEvidToBuf">AddEvidToBuf</A> 
 
     <LI><A 
     href="#decl_AddNode">AddNode</A> 
 
     <LI><A 
-    href="#decl_DelNode">DelNode</A> 
-
-    <LI><A 
-    href="#decl_NodeType">NodeType</A> 
-
-    <LI><A 
-    href="#decl_AddArc">AddArc</A> 
-
-    <LI><A 
-    href="#decl_DelArc">DelArc</A> 
-
-    <LI><A 
-    href="#decl_Neighbours">Neighbours</A> 
-
-    <LI><A 
-    href="#decl_Parents">Parents</A> 
-
-    <LI><A 
-    href="#decl_Children">Children</A> 
-
-    <LI><A 
-    href="#decl_Ancestors">Ancestors</A> 
-
-    <LI><A 
-    href="#decl_Descendants">Descendants</A> 
-
-    <LI><A 
-    href="#decl_SetP">SetP</A> 
-
-    <LI><A 
-    href="#decl_P">P</A> 
-
-    <LI><A 
-    href="#decl_SetGaussian">SetGaussian</A> 
-
-    <LI><A 
-    href="#decl_Evid">Evid</A> 
-
-    <LI><A 
-    href="#decl_PushEvid">PushEvid</A> 
+    href="#decl_BayesNet">BayesNet</A> 
 
     <LI><A 
     href="#decl_ClearEvid">ClearEvid</A> 
 
     <LI><A 
-    href="#decl_ClearEvidHistory">ClearEvidHistory</A> 
+    href="#decl_ClearEvidBuf">ClearEvidBuf</A> 
 
     <LI><A 
-    href="#decl_Learn">Learn</A> 
+    href="#decl_CurEvidToBuf">CurEvidToBuf</A> 
 
     <LI><A 
-    href="#decl_MPE">MPE</A> 
+    href="#decl_DelArc">DelArc</A> 
 
     <LI><A 
-    href="#decl_GaussianMean">GaussianMean</A> 
+    href="#decl_DelNode">DelNode</A> 
 
     <LI><A 
-    href="#decl_GaussianCovar">GaussianCovar</A> 
+    href="#decl_EditEvidence">EditEvidence</A> 
 
     <LI><A 
-    href="#decl_SaveNet">SaveNet</A> 
+    href="#decl_GenerateEvidences">GenerateEvidences</A> 
 
     <LI><A 
-    href="#decl_SaveLearnBuf">SaveLearnBuf</A> 
+    href="#decl_GetChildren">GetChildren</A> 
+
+    <LI><A 
+    href="#decl_GetGaussianMean">GetGaussianMean</A> 
+
+    <LI><A 
+    href="#decl_GetGaussianCovar">GetGaussianCovar</A> 
+
+    <LI><A 
+    href="#decl_GetJPD">GetJPD</A> 
+
+    <LI><A 
+    href="#decl_GetMPE">GetMPE</A> 
+
+    <LI><A 
+    href="#decl_GetNeighbours">GetNeighbours</A> 
+
+    <LI><A 
+    href="#decl_GetNodeType">GetNodeType</A> 
+
+    <LI><A 
+    href="#decl_GetParents">GetParents</A> 
+
+    <LI><A 
+    href="#decl_GetProperty">GetProperty</A> 
+
+    <LI><A 
+    href="#decl_GetPTabular">GetPTabular</A> 
+
+    <LI><A 
+    href="#decl_LearnParameters">LearnParameters</A> 
+
+    <LI><A 
+    href="#decl_LearnStructure">LearnStructure</A> 
+
+    <LI><A 
+    href="#decl_LoadEvidBuf">LoadEvidBuf</A> 
 
     <LI><A 
     href="#decl_LoadNet">LoadNet</A> 
 
     <LI><A 
-    href="#decl_LoadLearnBuf">LoadLearnBuf</A> 
+    href="#decl_MaskEvidBuf">MaskEvidBuf</A> 
 
     <LI><A 
-    href="#decl_MakeUniformDistribution">MakeUniformDistribution</A> 
+    href="#decl_SaveEvidBuf">SaveEvidBuf</A> 
 
     <LI><A 
-    href="#decl_GenerateEvidences">GenerateEvidences</A> 
+    href="#decl_SaveNet">SaveNet</A> 
+
+    <LI><A 
+    href="#decl_SetPGaussian">SetPGaussian</A> 
+
+    <LI><A 
+    href="#decl_SetProperty">SetProperty</A> 
+
+    <LI><A 
+    href="#decl_SetPTabular">SetPTabular</A> 
 
     </LI></UL>
   </UL>
@@ -115,12 +124,42 @@ The following functional groups can be distinguished:
     <A href="#decl_AddArc">AddArc</A>,
     <A href="#decl_DelArc">DelArc</A>.
     </LI>
-    <LI>Setting/getting parameters</LI>
-    <LI>Learning parameters</LI>
-    <LI>Learning network structure (not implemented)</LI>
-    <LI>Inference in network</LI>
-    <LI>Data sampling (not implemented)</LI>
-    <LI>File I/O</LI>
+    <LI>Setting/getting parameters<BR>
+    <A href="#decl_SetPTabular">SetPTabular</A>,
+    <A href="#decl_GetPTabular">GetPTabular</A>,
+    <A href="#decl_SetPGaussian">SetPGaussian</A>,
+    <A href="#decl_GetGaussianMean">GetGaussianMean</A> ,
+    <A href="#decl_GetGaussianCovar">GetGaussianCovar</A>,
+    <A href="#decl_EditEvidence">EditEvidence</A>,
+    <A href="#decl_ClearEvid">ClearEvid</A>,
+    <A href="#decl_CurEvidToBuf">CurEvidToBuf</A>,
+    <A href="#decl_AddEvidToBuf">AddEvidToBuf</A>,
+    <A href="#decl_ClearEvidBuf">ClearEvidBuf</A>,
+    <A href="#decl_GetChildren">GetChildren</A>,
+    <A href="#decl_GetParents">GetParents</A>,
+    <A href="#decl_GetNeighbours">GetNeighbours</A>,
+    <A href="#decl_SetProperty">SetProperty</A>,
+    <A href="#decl_GetProperty">GetProperty</A>
+    </LI>
+    <LI>Learning parameters<BR>
+    <A href="#decl_LearnParameters">LearnParameters</A>
+    </LI>
+    <LI>Learning network structure<BR>
+    <A href="#decl_LearnStructure">LearnStructure</A>
+    </LI>
+    <LI>Inference in network<BR>
+    <A href="#decl_GetJPD">GetJPD</A>,
+    <A href="#decl_GetMPE">GetMPE</A>
+    </LI>
+    <LI>Data sampling<BR>
+    <A href="#decl_GenerateEvidences">GenerateEvidences</A>
+    </LI>
+    <LI>File I/O<BR>
+    <A href="#decl_LoadNet">LoadNet</A>,
+    <A href="#decl_SaveNet">SaveNet</A>,
+    <A href="#decl_LoadEvidBuf">LoadEvidBuf</A>,
+    <A href="#decl_SaveEvidBuf">SaveEvidBuf</A>
+    </LI>
     <LI>more...</LI>
 </UL>
 </P>
@@ -356,7 +395,7 @@ name=decl_AddEvidToBuf>AddEvidToBuf</A></H3>
 <HR>
 
 <H3><A 
-name=decl_ClearEvidHistory>ClearEvidHistory</A></H3>
+name=decl_ClearEvidBuf>ClearEvidBuf</A></H3>
 <P class=Blurb>Clears evidence buffer. 
 </P><PRE>void ClearEvidBuf();
 </PRE>
