@@ -1,0 +1,329 @@
+/*M///////////////////////////////////////////////////////////////////////////////////////
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                        Intel License Agreement
+//                For Open Source Computer Vision Library
+//
+// Copyright (C) 2000, Intel Corporation, all rights reserved.
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of Intel Corporation may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// In no event shall the Intel Corporation or contributors be liable for any direct,
+// indirect, incidental, special, exemplary, or consequential damages
+// (including, but not limited to, procurement of substitute goods or services;
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+//M*/
+
+
+
+#ifndef speed_h
+
+#define speed_h
+
+
+
+
+
+
+
+// CONSTANT DEFINITIONS ////////////////////////////////////////
+
+
+
+    // GENERIC CONSTANTS ///////////////////////////////////////
+
+#define MAXCLOCKS       150     // Maximum number of cycles per
+
+                                //   BSF instruction
+
+
+
+#define EOA             0       // End of Array variable.
+
+
+
+#define CLONE_MASK      0x8000  // Mask to be 'OR'ed with proc-
+
+                                //   essor family type
+
+
+
+    // ACCURACY AFFECTING CONSTANTS ////////////////////////////
+
+#define ITERATIONS      4000    // Number of times to repeat BSF
+
+                                //   instruction in samplings.
+
+                                //   Initially set to 4000.
+
+
+
+#define INITIAL_DELAY   3       // Number of ticks to wait
+
+                                //   through before starting
+
+                                //   test sampling. Initially
+
+                                //   set to 3.
+
+
+
+#define SAMPLING_DELAY  60      // Number of ticks to allow to
+
+                                //   to elapse during sampling.
+
+                                //   Initially set to 60.
+
+
+
+#define TOLERANCE       1       // Number of MHz to allow
+
+                                //   samplings to deviate from
+
+                                //   average of samplings.
+
+                                //   Initially set to 2.
+
+
+
+#define MAX_TRIES       20      // Maximum number of samplings
+
+                                //   to allow before giving up
+
+                                //   and returning current
+
+                                //   average. Initially set to
+
+                                //   20.
+
+
+
+#define SAMPLINGS       10      // Number of BSF sequence
+
+                                //   samplings to make.
+
+                                //   Initially set to 10.
+
+
+
+#define TOL386          2       // Number of MHz above normal-
+
+                                //   ised value to normalise
+
+                                //   down to the current normal-
+
+                                //   ised speed. Initially set
+
+                                //   to 2.
+
+
+
+#define TOL486          4       // Number of MHz above normal-
+
+                                //   ised value to normalise
+
+                                //   down to the current normal-
+
+                                //   ised speed. Initially set
+
+                                //   to 4.
+
+
+
+#define TOLP5           5       // Number of MHz above normal-
+
+                                //   ised value to normalise
+
+                                //   down to the current normal-
+
+                                //   ised speed. Initially set
+
+                                //   to 5.
+
+
+
+#define TOLP6           5       // Number of MHz above normal-
+
+                                //   ised value to normalise
+
+                                //   down to the current normal-
+
+                                //   ised speed. Initially set
+
+                                //   to 5.
+
+
+
+
+
+
+
+// VARIABLE STRUCTURE DEFINITIONS //////////////////////////////
+
+struct FREQ_INFO
+
+{
+
+    unsigned long in_cycles;    // Internal clock cycles during
+
+                                //   test
+
+
+
+    unsigned long ex_ticks;     // Microseconds elapsed during
+
+                                //   test
+
+
+
+    unsigned long raw_freq;     // Raw frequency of CPU in MHz
+
+
+
+    unsigned long norm_freq;    // Normalized frequency of CPU
+
+                                //   in MHz.
+
+};
+
+
+
+
+
+typedef unsigned short ushort;
+
+typedef unsigned long  ulong;
+
+
+
+
+
+
+
+/***************************************************************
+
+* BOOL WINAPI DllMain()
+
+*
+
+* Inputs:   hDLL       - handle of DLL
+
+*           dwReason   - indicates why DLL called
+
+*           lpReserved - reserved
+
+*
+
+* Return Value: TRUE (always)
+
+***************************************************************/
+
+BOOL WINAPI DllMain (HINSTANCE hDLL,
+
+                     DWORD dwReason,
+
+                     LPVOID lpReserved);
+
+
+
+
+
+/***************************************************************
+
+* CpuSpeed() -- Return the raw clock rate of the host CPU.
+
+*
+
+* Inputs:
+
+*   clocks:     NULL: Use default value for number of cycles
+
+*                  per BSF instruction.
+
+*               Positive Integer: Use clocks value for number
+
+*                  of cycles per BSF instruction.
+
+*
+
+* Returns:
+
+*       If error then return all zeroes in FREQ_INFO structure
+
+*       Else return FREQ_INFO structure containing calculated
+
+*       clock frequency, normalized clock frequency, number of
+
+*       clock cycles during test sampling, and the number of
+
+*       microseconds elapsed during the sampling.
+
+***************************************************************/
+
+struct FREQ_INFO cpuspeed(int clocks);
+
+
+
+
+
+/***************************************************************
+
+* NormFreq() -- Given an approximate  clock frequency of the
+
+*               host processor, return nearest actual frequency
+
+*               value, e.g. 64 MHz on i486(TM) would return 66
+
+*               MHz.
+
+*
+
+* Inputs:
+
+*   processor   Processor type
+
+*   freq        Raw processor clock frequency
+
+*
+
+* Returns:
+
+*   Normalized processor frequency
+
+***************************************************************/
+
+static ulong NormFreq(ushort processor,ulong freq);
+
+
+
+
+
+#endif speed_h
+
+ 
+

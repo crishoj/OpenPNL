@@ -1,0 +1,303 @@
+;///////////////////////////////////////////////////////////////////////////////////////
+;//
+;//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+;//
+;//  By downloading, copying, installing or using the software you agree to this license.
+;//  If you do not agree to this license, do not download, install,
+;//  copy or use the software.
+;//
+;//
+;//                        Intel License Agreement
+;//                For Open Source Computer Vision Library
+;//
+;// Copyright (C) 2000, Intel Corporation, all rights reserved.
+;// Third party copyrights are property of their respective owners.
+;//
+;// Redistribution and use in source and binary forms, with or without modification,
+;// are permitted provided that the following conditions are met:
+;//
+;//   * Redistribution's of source code must retain the above copyright notice,
+;//     this list of conditions and the following disclaimer.
+;//
+;//   * Redistribution's in binary form must reproduce the above copyright notice,
+;//     this list of conditions and the following disclaimer in the documentation
+;//     and/or other materials provided with the distribution.
+;//
+;//   * The name of Intel Corporation may not be used to endorse or promote products
+;//     derived from this software without specific prior written permission.
+;//
+;// This software is provided by the copyright holders and contributors "as is" and
+;// any express or implied warranties, including, but not limited to, the implied
+;// warranties of merchantability and fitness for a particular purpose are disclaimed.
+;// In no event shall the Intel Corporation or contributors be liable for any direct,
+;// indirect, incidental, special, exemplary, or consequential damages
+;// (including, but not limited to, procurement of substitute goods or services;
+;// loss of use, data, or profits; or business interruption) however caused
+;// and on any theory of liability, whether in contract, strict liability,
+;// or tort (including negligence or otherwise) arising in any way out of
+;// the use of this software, even if advised of the possibility of such damage.
+;//
+
+EXPORTS
+    cxAdd
+    cxAddS
+    cxAddWeighted
+    cxAlloc
+    cxAnd
+    cxAndS
+    cxAttrValue
+    cxAvg
+    cxAvgSdv
+    cxBoxPoints
+    cxCalcCovarMatrix
+    cxCartToPolar
+    cxChangeSeqBlock
+    cxCheckArr
+    cxCheckTermCriteria
+    cxCircle
+    cxCircleAA
+    cxClearGraph
+    cxClearMemStorage
+    cxClearND
+    cxClearSeq
+    cxClearSet
+    cxClone
+    cxCloneGraph
+    cxCloneImage
+    cxCloneMat
+    cxCloneMatND
+    cxCloneSparseMat
+    cxCmp
+    cxCmpS
+    cxColorToScalar
+    cxConvertScale
+    cxConvertScaleAbs
+    cxCopy
+    cxCountNonZero
+    cxCreateChildMemStorage
+    cxCreateData
+    cxCreateGraph
+    cxCreateImage
+    cxCreateImageHeader
+    cxCreateMat
+    cxCreateMatHeader
+    cxCreateMatND
+    cxCreateMatNDHeader
+    cxCreateMemStorage
+    cxCreateSeq
+    cxCreateSeqBlock
+    cxCreateSet
+    cxCreateSparseMat
+    cxCrossProduct
+    cxCxtPixToPlane
+    cxCxtPlaneToPix
+    cxCxtSeqToArray
+    cxDCT
+    cxDFT
+    cxDet
+    cxDiv
+    cxDotProduct
+    cxDrawContours
+    cxEigenVV
+    cxEllipse
+    cxEllipseAA
+    cxEndProfile
+    cxEndScanGraph
+    cxEndWriteSeq
+    cxEndWriteStruct
+    cxError
+    cxErrorFromStatus
+    cxErrorStr
+    cxExp
+    cxFastArctan
+    cxFillConvexPoly
+    cxFillPoly
+    cxFindGraphEdge
+    cxFindGraphEdgeByPtr
+    cxFindType
+    cxFirstType
+    cxFlip
+    cxFlushSeqWriter
+    cxFree
+    cxGEMM
+    cxGet1D
+    cxGet2D
+    cxGet3D
+    cxGetCallStack
+    cxGetCols
+    cxGetDiag
+    cxGetDimSize
+    cxGetDims
+    cxGetElemType
+    cxGetErrMode
+    cxGetErrStatus
+    cxGetFileNode
+    cxGetImage
+    cxGetImageCOI
+    cxGetImageROI
+    cxGetLibraryInfo_cxcore
+    cxGetMat
+    cxGetND
+    cxGetRawData
+    cxGetReal1D
+    cxGetReal2D
+    cxGetReal3D
+    cxGetRealND
+    cxGetRows
+    cxGetSeqElem
+    cxGetSeqReaderPos
+    cxGetSetElem
+    cxGetSize
+    cxGetSubRect
+    cxGetTextSize
+    cxGetTickCount
+    cxGetTickFrequency
+    cxGraphAddEdge
+    cxGraphAddEdgeByPtr
+    cxGraphAddVtx
+    cxGraphRemoveEdge
+    cxGraphRemoveEdgeByPtr
+    cxGraphRemoveVtx
+    cxGraphRemoveVtxByPtr
+    cxGraphVtxDegree
+    cxGraphVtxDegreeByPtr
+    cxGuiBoxReport
+    cxInRange
+    cxInRangeS
+    cxInitFont
+    cxInitImageHeader
+    cxInitMatHeader
+    cxInitMatNDHeader
+    cxInitNArrayIterator
+    cxInitSparseMatIterator
+    cxInitTreeNodeIterator
+    cxInsertNodeIntoTree
+    cxInvert
+    cxKMeans2
+    cxLUT
+    cxLine
+    cxLineAA
+    cxLoadPrimitives
+    cxLog
+    cxMahalanobis
+    cxMakeSeqHeaderForArray
+    cxMatMulAdd
+    cxMatMulAddS
+    cxMax
+    cxMaxRect
+    cxMaxS
+    cxMemStorageAlloc
+    cxMin
+    cxMinMaxLoc
+    cxMinS
+    cxMul
+    cxMulCcs
+    cxMulTransposed
+    cxNextGraphItem
+    cxNextNArraySlice
+    cxNextTreeNode
+    cxNorm
+    cxNot
+    cxNulDevReport
+    cxOpenFileStorage
+    cxOr
+    cxOrS
+    cxPartitionSeq
+    cxPolarToCart
+    cxPolyLine
+    cxPolyLineAA
+    cxPow
+    cxPrevTreeNode
+    cxPtr1D
+    cxPtr2D
+    cxPtr3D
+    cxPtrND
+    cxPutText
+    cxRand
+    cxRandInit
+    cxRandSetRange
+    cxRawDataToScalar
+    cxReadElem
+    cxReadFileNode
+    cxRectangle
+    cxRedirectError
+    cxRegisterPrimitives
+    cxRegisterType
+    cxRelease
+    cxReleaseData
+    cxReleaseFileStorage
+    cxReleaseImage
+    cxReleaseImageHeader
+    cxReleaseMat
+    cxReleaseMemStorage
+    cxReleaseSparseMat
+    cxRemoveNodeFromTree
+    cxRemoveProfile
+    cxRepeat
+    cxResetImageROI
+    cxReshape
+    cxReshapeMatND
+    cxRestoreMemStoragePos
+    cxSVBkSb
+    cxSVD
+    cxSaveMemStoragePos
+    cxScalarToRawData
+    cxScaleAdd
+    cxSeqElemIdx
+    cxSeqInsert
+    cxSeqInsertSlice
+    cxSeqInvert
+    cxSeqPop
+    cxSeqPopFront
+    cxSeqPopMulti
+    cxSeqPush
+    cxSeqPushFront
+    cxSeqPushMulti
+    cxSeqRemove
+    cxSeqRemoveSlice
+    cxSeqSlice
+    cxSeqSort
+    cxSet
+    cxSet1D
+    cxSet2D
+    cxSet3D
+    cxSetAdd
+    cxSetData
+    cxSetErrMode
+    cxSetErrStatus
+    cxSetIPLAllocators
+    cxSetIdentity
+    cxSetImageCOI
+    cxSetImageROI
+    cxSetMemoryManager
+    cxSetND
+    cxSetProfile
+    cxSetReal1D
+    cxSetReal2D
+    cxSetReal3D
+    cxSetRealND
+    cxSetRemove
+    cxSetSeqBlockSize
+    cxSetSeqReaderPos
+    cxSetZero
+    cxSliceLength
+    cxSolve
+    cxStartAppendToSeq
+    cxStartProfile
+    cxStartReadSeq
+    cxStartScanGraph
+    cxStartWriteSeq
+    cxStartWriteStruct
+    cxStdErrReport
+    cxSub
+    cxSubRS
+    cxSum
+    cxTrace
+    cxTranspose
+    cxTreeToNodeSeq
+    cxTypeOf
+    cxUnregisterType
+    cxWrite
+    cxWriteElem
+    cxXor
+    cxXorS

@@ -1,0 +1,63 @@
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//                INTEL CORPORATION PROPRIETARY INFORMATION                //
+//   This software is supplied under the terms of a license agreement or   //
+//  nondisclosure agreement with Intel Corporation and may not be copied   //
+//   or disclosed except in accordance with the terms of that agreement.   //
+//       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        //
+//                                                                         //
+//  File:      pnlPersistDistribFun.hpp                                    //
+//                                                                         //
+//  Purpose:   Implementation of                                           //
+//             saving/loading                                              //
+//  Author(s):                                                             //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+
+#ifndef __PNLPERSISTDISTRIBFUN_HPP__
+#define __PNLPERSISTDISTRIBFUN_HPP__
+
+#include "pnlPersistence.hpp"
+
+PNL_BEGIN
+
+class PNL_API CPersistGaussianDistribFun: public CPersistence
+{
+public:
+    virtual const char *Signature() { return "GaussianDistribFun"; }
+    virtual void Save(CPNLBase *pObj, CContextSave *pContext);
+    virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+};
+
+class PNL_API CPersistTabularDistribFun: public CPersistence
+{
+public:
+    virtual const char *Signature() { return "TabularDistribFun"; }
+    virtual void Save(CPNLBase *pObj, CContextSave *pContext);
+    virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+};
+
+class PNL_API CPersistCondGaussianDistribFun: public CPersistence
+{
+public:
+    virtual const char *Signature() { return "ConditionalGaussianDistribFun"; }
+    virtual void Save(CPNLBase *pObj, CContextSave *pContext);
+    virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+};
+
+class PNL_API CPersistScalarDistribFun: public CPersistence
+{
+public:
+    virtual const char *Signature() { return "ScalarDistribFun"; }
+    virtual void Save(CPNLBase *pObj, CContextSave *pContext);
+    virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+};
+
+PNL_END
+
+#endif // include guard

@@ -1,0 +1,529 @@
+  * Changes, bug fixes
+  + Additions, new features
+  - Deletions
+  ! Known bugs
+
+-----------------------------------------------------------------
+Build 22                                            25-March-2004
+-----------------------------------------------------------------
++ Compilation under linux by gcc 3.x.x and icc 8.0.061
+
+* Fix some problems related to Gaussian and Mixture Gaussian 
+  distributions and inference for models with them (entering 
+  evidence to Junction Tree inference for Gaussian Models, 
+  entering evidence to Mixture Gaussian family, repeated 
+  multiplication in Gaussian distributions, entering full 
+  evidence to Gaussian CPDs, marginalization of Delta 
+  distributions, expanding Gaussian distributions).
+
+* Bug: CGraph constructor by matrix contained accessing to vector
+  after clear(). Fixed.
+
+* Value has been changed: default value and SetAsUnknownAsFlt
+
+! Test AFactorGraph fail.
+
+-----------------------------------------------------------------
+Build 21                                         09-December-2003
+-----------------------------------------------------------------
++ New documentation
+
+- Old documentation
+
++ Add persistence of Graphical Models (saving to XML and
+  loading from XML)
+
++ Add function that create static graphical model based on
+  CModelDomain and CGraph, with default random matrices
+  (with tests)
+
++ Add PearlInference without memory allocation during parallel
+  protocol - SpecPearlInfEngine (only for Tabular MRF2 now)
+
++ Add example of creation mixture Gaussian model
+
++ Add possibility for getting value of difference between
+  distribution functions 
+
++ Add possibility for getting description of invalidity for 
+  any graphical model and any its part if it's invalid
+
++ Add method of getting loglikelihood from junction tree
+  inference engine 
+
+* Renaming of function (removing leading underscore symbol)
+
+* Examples of usage have been updated
+
+* Throwing exception with macroses was fixed (now it points
+  file and line where exception is generated)
+
+* AllocParameters (AllocFactors according new name) have made
+  optional, it's functionality moved to AllocFactor()
+  or AttachFactor() functions
+
+* Add possibility for creation Tabular Factors without data and 
+  filling the matrix using matrix iterator
+
+* Function that change the object by its normalizing renamed
+  into Normalize() and the function that return new object
+  as result of normalization - into GetNormalized()
+
+-----------------------------------------------------------------
+Build 20                                         06-November-2003
+-----------------------------------------------------------------
++ Add normalization in place for both sparse & dense matrices.
+
++ Add marginalization in place for sparse matrices.
+
+* Change implementation of Tabular Distribution function
+ so it doesn't allocate/release the memory during change its type 
+ from unit function distribution and backwards.
+-----------------------------------------------------------------
+Build 19 patch 1                                  30-October-2003
+-----------------------------------------------------------------
+* Replace all cv prefix at cvcore library by cx.
+
++ Add possibility for Factors set statistics and provide learning 
+ on this factor taking into account this statistics.
+
+! Test "AConditionalGaussianLearning" fail.
+-----------------------------------------------------------------
+Build 19                                          24-October-2003
+-----------------------------------------------------------------
++ Add posibility for matrices to marginalize in place 
+ specified before. Now support by dense matrices only.
+
++ Add Gibbs sampling with annealing.
+
+* Fix the problems at Factor Graph shrinking (entering evidence), 
+ Gaussian multiplication and Pearl inference for MRF2
+ (see build 18).
+
+! Test "AMultiply" work unstable.
+
+-----------------------------------------------------------------
+Build 18, patch1                                  15-October-2003
+-----------------------------------------------------------------
+* Fixed some bugs. Tests 'GaussianMRF2' and 'GaussianInf'
+  passes ok. Detailed description see in next build.
+
+-----------------------------------------------------------------
+Build 18                                          10-October-2003
+-----------------------------------------------------------------
++ Gaussian MRF2 is supported now by Pearl, Naive and FactorGraph 
+        inferences.
+! test 'GaussianMRF2' (Release version only, Visual C++) crashes
+! test 'GaussianInf' (Release version only, Visual C++) fails
+
+-----------------------------------------------------------------
+Build 17                                        26-September-2003
+-----------------------------------------------------------------
++ Random number generation can optionally use Intel MKL library 
+  instead of default implementation. 
+  To use this option you should have MKL installed.
+  To build PNL with MKL random number generation you need:
+  1) Specify paths to MKL headers (*.h) and library (*lib) files
+     in Microsoft Visual Studio
+  2) Define USE_VSL key in compiler options
+
++ Added MPE computations for Gibbs inference engine
+
+* Fixed the problem with random number generation. 
+  Changed the scheme of generating. 
+  Default implementation uses OpenCV generator. 
+
+* Fixed the problem with multiplication Gaussian distributions by delta distribution.
+  (see build 15)
+
+! Random number generation is not thread safe yet. Be aware! 
+
+
+-----------------------------------------------------------------
+Build 16                                        16-September-2003
+-----------------------------------------------------------------
++ Class 'Value' is fully supported in ifMatLab.
+  You may pass simple scalar (int32, double, single) as 'Value'.
+  You may pass array of scalars as 'valueVector'.
+  Translation between value and MatLab's scalar is performed
+  automatically.
+  Pay attention that class 'Value' was removed from ifMatLab.
+
+* Fixed the problem with creating the graph by sparse matrices. 
+ (See build 15)
+
+! Test testConditionalGaussianLearning fails
+
+! Release version of 'inf_learn_dbn' example may crash, when
+  building with Intel compiler (we using version 7.0)
+
+! CEvidence::getValue doesn't throw exception on non-observed node
+
+-----------------------------------------------------------------
+Build 15                                            29-August-2003
+-----------------------------------------------------------------
++ Added possibility to create and learn CART CPDs in BNet, now to do this
+  you need to manually change the return value of pnlDetermineDistributionType to 
+  dtTree ( because now factor type is determined automatically, this will be
+  resolved later ).
++ Added  Boyen-Koller approximate Inference for DBN
+
+* OpenCv library used for operations with Sparse Matrices was replaced by cxcore library.
+The sourse code and binary files of cxcore library distribute with PNL library now. 
+ \bin\cv(d).dll replaced by \bin\cxcore(d).dll 
+
+* Names conflict with MFC classes names issue resolved.
+
+* Value now is object. It can hold 'int' or 'float'. But sizeof(Value) != sizeof(float)
+
+* Fixed bugs at compute likelihood.
+
+! Creation the Graph based on sparse adjacency matrix doesn't work now.
+
+! Mixture Gaussian learning doesn't work now.
+
+! Multiplication of gaussian distribution by delta function works incorrectly.
+   
+-----------------------------------------------------------------
+Build 14                                            08-August-2003
+-----------------------------------------------------------------
++ Added 2-dimensional bitwise matrix.
+
++ Added Static Structure ML learning.
+
++ Added DAG object.
+
++ Added new methods for creating copies of Distribution functions and Factors.
+
+* Fixed bugs at factor graph.
+
+* Fixed bugs at factor graph inference.
+
+- Remove some obsolete files.
+
+-----------------------------------------------------------------
+Build 13                                              25-July-2003
+-----------------------------------------------------------------
+
+* Known bug from Build 12 for the factor graph sum\max product
+  algorithm's been fixed. Probability distribution for nodes in one
+  family can be inquired
+
+* Pearl Inference Engine 10-15 percent speed-up
+
+* EM Learning Engine uses Junction Tree inference as a default engine
+
+* Fixes: Project can be compiled with Intel Compiler 7.0 now
+
+-----------------------------------------------------------------
+Build 12                                              11-July-2003
+-----------------------------------------------------------------
+
++ Class CBayesLearningEngine added. Intended to learn conjugate 
+  distributions of CPD parameters. Initial version supports only
+  tabular CPD with Dirichlet parameters distributions.
+
++ Documentation has been updated.
+
+! Factor graph sum/max product algorithm have some problems with
+  expanding potentials on marginalization stage. 
+
+! Sample generation is unstable for Gaussian model factors
+
+! Some of memory leaks are remain
+
+* Multiple memory leaks have been found and eliminated
+    
+-----------------------------------------------------------------
+Build 11                                              27-June-2003
+-----------------------------------------------------------------
+
++ IMPORTANT: PNL own vector type has been implemented on top of std::vector.
+  You should change all instances of std::vector to pnlVector in your code.
+
++ Added factor graph object and sum/product algorithm. Works unstable,
+  is under investigation
+
++ MatLab interface uses pnl.dll now
+
+* Fixed bugs in gaussian mixture 
+
+* Fixed bug in gaussian mixture samples generation
+
+* Fixed bug in Gibbs sampling
+
+* ReduceOp for dense matrices has been speeded up 2-3 times
+
+* Jtree copying issue in DBN inference has been resolved
+
+* Bug in jtree inference (Adam report) has been corrected
+
+* Multiple memory leaks have been found and eliminated
+
+* Fixed the bug in the logging system causing user app to crash on exit
+
+! Due to optimizations, the compile time for PNL with optimization for speed
+  turned on has significantly increased and may exceed an hour.
+
+! You can't recompile MATLAB interface. Use pnl_full.dll.
+
+-----------------------------------------------------------------
+Build 10                                              26-May-2003
+-----------------------------------------------------------------
+
++ Added model Domain object. This contains information about variable
+ types of any graphical model. Method of creation Graphical Model uses 
+ Model Domain as parameter or creates it automatically. At that Model 
+ Domain can be arrived from the graphical model. Evidence and some methods 
+ of Factor now need Model Domain as parameter.
+
++ Added scalar distributions. Fully observed families or cliques becomes scalar.
+
++ Added learning engine support for Mixture Gaussian Model. 
+ Automatic data can be generate for them also. 
+
++ Added Gibbs sampling inference engine.
+
+* Changed the type of storing evidences.
+ Now both int and float values keeped in union. 
+
+* Gaussian family can be observed now.
+  (this is a bug fix for a known bug in build 7)
+
+* The bug with size of result of inference for Mixture Gaussian fixed. 
+ (bug fix for a known bug in build 8)
+
+* Addition of Model Domain bring bug fix for problem with copying of 
+Graphical Models.(known bug in build 8)
+
+! Pearl inference results are incorrect for Gaussian model. 
+
+! Mixture Gaussian learning work unstable. It is in close inspection now.
+
+! Gibbs inference for Gaussian Model works incorrect.
+ The problem is in resulting mean value.
+
+
+-----------------------------------------------------------------
+Build 9                                           31-March-2003
+-----------------------------------------------------------------
+
+* Learning of Graphical Models with conditional gaussian distribution
+works correctly if all continuous nodes are observed and discrete nodes are
+either observed or hidden (this is a bug fix for a known bug in build 8)
+
+! Mixture Gaussian matrix is of incorrect size. This is because it's been implemented
+with an additional node representing a mixture. Fix coming soon.
+
+
+-----------------------------------------------------------------
+Build 8                                           18-March-2003
+-----------------------------------------------------------------
+
++ Added 1.5 Slice Junction Tree inference engine
+
++ Added MPE computations for all inference engines
+
++ Added Parameter Learning for DBNs
+
++ Added Mixture of Gaussians distribution
+
+* All inference engines work fine with sparse models
+
++ Added PNL Matlab API with several examples of usage
+
+! Learning graphical models with conditional gaussian distribution and mixture of gaussians
+distribution work correctly only in the case of all nodes being observed
+
+! Copying of Graphical Models of any type fails, because of keeping
+  Node Type objects in static graphical model. This is going to be fixed after Model
+  Domain is added to the library.
+
+! Several tests have been commented out of the main() function in tsys.cpp file due to
+  to one bug, which is that from now on creation of Mnet models is not allowed from graph
+
++ Added automated learning data generator 
+
+-----------------------------------------------------------------
+Build 7                                           31-January-2003
+-----------------------------------------------------------------
+
++ Added Junction Tree inference 
+
++ Added DBN model
+
++ Added Conditional Gaussian Probability Distributions
+
++ Added Sparse Matrices as part of template classes CMatrix
+
+- Construction of parameters of Graphical Model based on CMultiDMatrix
+ doesn't support from this point - use instantiation of CMatrix template for float
+
+* Conditional Gaussian Probability distributions works only with all 
+Gaussian nodes observed
+
+* All nodes of the gaussian family cannot be observed at the same time in
+terms of PNL. This is to be fixed by implementing lazy computations
+
+* Sparse matrix can be created and only attached to factor of the model,
+ allocation of matrix involves dense matrix creation.
+
+* CMultiDMatrix was replaced by an abstract CMatrix<float>, this class hasn't raw data
+ (it is base for both sparse and dense matrices) - 
+ to get raw data it shold be casted to CDenseMatrix<float>.
+ Both sparse and dense matrices support setting/getting values of elements by multidimentional indices.
+ 
+
+* Learning doesn't support sparse matrices now.
+
+* Any numeric matrix can be created by corresponding method in classes CNumericDenseMatrix<float>
+ or CNumericSparseMatrix<float>, or C2DNumericDenseMatrix<float>.
+
+-----------------------------------------------------------------
+Build 6                                               5-July-2002
+-----------------------------------------------------------------
+
++ Added gaussian parameters 
+
++ Added ML and EM learning for gaussian parameters
+
++ Added structure learning for discrete and gaussian parameters
+
++ Added C API
+
++ Added junction tree construction
+
++ Added documentation (users guide and reference manual)
+
+! Pearl inference engine is not working for gaussian parameters
+
+-----------------------------------------------------------------
+Build 5                                               13-May-2002
+-----------------------------------------------------------------
+
++ Some functionality added to the Mnet, BNet and MRF2 for the inference routine
+
++ Junction tree class implementation is in progress
+
++ Ml and EM Learning Engine classes were implemented for discrete-nodes models
+
++ An example of usage for the EM Learning was implemented
+
++ Some functionality added to TabularData, TabularCPD and TabularFactor classes
+
++ Pearl inference engine implemented and tested
+
++ Some functionality added to the CPGMTabularData class for the Pearl Inference routine
+
++ CPGMValues class was added to the library. Its a base class for the CPGMEvidence class
+
++ Added CPGMException and nested classes for error handling
+
++ Added PGMCalc application (interactive work with BNets)
+
+* Some functionality of the CPGMEvidence class moved to CPGMValues class
+
+* Some bugs fixed at NaiveInferenceEngine and PearlInferenceEngine
+
+- CPGMJDPD class removed from the library - no special functionality for it found
+
+-----------------------------------------------------------------
+Build 4                                               8-Apr-2002
+-----------------------------------------------------------------
+
++ Naive inference engine written
+
++ Test for the Naive inference engine written
+
++ Test for data marginalization added (see readme!.txt in tests for instructions)
+  
++ Pearl inference engine implementation is in progress
+
++ Data normalization method added to the tabular CPD class
+
++ Some functionality added to the multi dimensional matrix class for marginalization
+
++ Tests on multi dimensional matrix and CPD
+
++ Some functionality added to the Tabular Data class
+
++ Learning Engine class and MLLearning Engine class implemented
+
++ An example of usage is written for the Learning engine (learn_param project)
+
++ Junction Tree class added
+
++ Topological Sort and Moralization added to the Graph class
+
++ Some functionality added to BNet and MNet for the parameter handling
+
++ BNT_structure document updated
+
+! Test on Naive Inference Engine fails 
+
+* Marginalization method's been moved from the Parameter class to the 
+    Multi Dimensional Matrix class
+
+* Some known bugs fixed
+
+
+-----------------------------------------------------------------
+Build 3                                               22-Mar-2002
+-----------------------------------------------------------------
+
++ Normalization and multiplication for tabular parameters are implemented
+
++ Recalculating a parameter given evidence (Parameter::TakeObservedInto) 
+  is implemented and tested
+
++ Tests on parameter contruction, marginalization, multiplication, 
+  normalization are written
+
++ Test on Graph class is written
+
+* clamping method is moved to MultiDMatrix class
+
+* MultiDMatrix classes implementation changed after code review
+
+* pgm prefix from class methods are removed
+
+* documentation is updated
+
+! test on multiply parameters failed
+
+
+-----------------------------------------------------------------
+Build 2                                               06-Mar-2002
+-----------------------------------------------------------------
++ marginalization of parameters is implemented
+
++ example of usage for multidimensional matrices (use_matrix) is added
+
++ 2 algorithmic tests on reference counter and matrix added
+
++ evidence class is implemented
+
++ example of working with evidence (ex_param) is added
+
++ implementation of naive inference engine is in progress
+
++ BNT_structure document is updated
+
+* minor changes in graph class interface to allow changing of graph easier
+
++ example of operating with graph (trial) is added
+
++ new constructor of graphical model is implemented that receive graph 
+  in the form of cliques list
+
++ BNet class implementation is in progress
+
+  
+  
+  
+
+
+
+
+
+

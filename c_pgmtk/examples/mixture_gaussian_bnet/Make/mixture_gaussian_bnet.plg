@@ -1,0 +1,33 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: mixture_gaussian_bnet - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\abrusinx\LOCALS~1\Temp\RSP49C.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "..\..\..\include" /I "..\..\..\src\include" /I "..\..\..\..\cxcore\cxcore\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"..\..\..\..\temp\mixture_gaussian_bnet\Debug/mixture_gaussian_bnet.pch" /YX /Fo"..\..\..\..\temp\mixture_gaussian_bnet\Debug/" /Fd"..\..\..\..\temp\mixture_gaussian_bnet\Debug/" /FD /GZ /c 
+"C:\PGMT\c_pgmtk\examples\mixture_gaussian_bnet\Src\mixture_gaussian_bnet.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\abrusinx\LOCALS~1\Temp\RSP49C.tmp" 
+Creating temporary file "C:\DOCUME~1\abrusinx\LOCALS~1\Temp\RSP49D.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:console /incremental:yes /pdb:"..\..\..\..\temp\mixture_gaussian_bnet\Debug/mixture_gaussian_bnetd.pdb" /debug /machine:I386 /out:"..\..\..\..\bin\mixture_gaussian_bnetd.exe" /pdbtype:sept /libpath:"..\..\..\lib" /libpath:"..\..\..\..\cxcore\lib" 
+\PGMT\temp\mixture_gaussian_bnet\Debug\mixture_gaussian_bnet.obj
+\PGMT\lib\pnld.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\abrusinx\LOCALS~1\Temp\RSP49D.tmp"
+<h3>Output Window</h3>
+Compiling...
+mixture_gaussian_bnet.cpp
+Linking...
+
+
+
+<h3>Results</h3>
+mixture_gaussian_bnetd.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

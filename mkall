@@ -1,0 +1,16 @@
+DISTROOT=`pwd`
+for i in `find . -name Makefile.sh`
+do
+	cd `dirname $i`
+	sh ./Makefile.sh
+	cd $DISTROOT
+done
+aclocal
+libtoolize --force --copy
+#autoheader
+automake --foreign --add-missing --ignore-deps
+autoconf
+#sed libtool
+./configure --enable-maintainer-mode
+#./configure --enable-maintainer-mode
+#make all

@@ -1,0 +1,260 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "_build_all"=.\_build_all.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name trial
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name trs
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tests_pnl_c
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ex_param
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name use_matrix
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name learn_param
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name inf_learn_bnet
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name inf_learn_dbn
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name testSL
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "_clean_all"=.\_clean_all.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "_clean_temp"=.\_clean_temp.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ex_param"=..\EXAMPLES\Ex_Param\Make\ex_param.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "gibbs"=..\examples\gibbs\Make\gibbs.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "inf_learn_bnet"=..\examples\inf_learn_bnet\Make\inf_learn_bnet.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "inf_learn_dbn"=..\examples\ex_inf_learn_dbn\make\inf_learn_dbn.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "learn_param"=..\examples\learn_param\make\learn_param.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mixture_gaussian_bnet"=..\examples\mixture_gaussian_bnet\Make\mixture_gaussian_bnet.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "pnl"=.\pnl.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "testSL"=..\EXAMPLES\testSL\testSL.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "tests_pnl_c"=..\tests\make\tests_pnl_c.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name trs
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "trial"=..\EXAMPLES\Trial\Make\trial.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "trs"=..\..\trs\make\trs.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "use_matrix"=..\examples\use_matrix\make\use_matrix.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+
