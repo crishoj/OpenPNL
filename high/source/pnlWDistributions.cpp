@@ -10,6 +10,7 @@
 #include "TokenCover.hpp"
 #include "pnlWGraph.hpp"
 #include "pnlWDistributions.hpp"
+#include "WCliques.hpp"
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
@@ -17,28 +18,34 @@
 
 PNLW_BEGIN
 
-WDistributions::WDistributions(TokenCover *pToken): m_pToken(pToken)
+WDistributions::WDistributions(TokenCover *pToken): m_pToken(pToken), m_bMRF(false)
 {
     SpyTo(m_pToken);
     SpyTo(m_pToken->Graph());
 }
 
-#if 0
+WDistributions::~WDistributions()
+{
+    if(m_bMRF)
+    {
+	delete m_pCliques;
+    }
+}
+
 void WDistributions::SetMRF(bool mrfFlag /* = true */)
 {
-    m_MRFFlag = mrfFlag;
+    m_bMRF = mrfFlag;
     if(mrfFlag)
     {
 	StopSpyTo(m_pToken->Graph());
-	m_CliquesObj = new Cliques(m_pToken->Graph());
-	SpyTo(m_CliquesObj);
+	m_pCliques = new WCliques(m_pToken->Graph());
+	SpyTo(m_pCliques);
     }
     else
     {
 	ThrowInternalError("Not yet realized", "SetMRF(false)");
     }
 }
-#endif
 
 void WDistributions::Setup(int iNode)
 {

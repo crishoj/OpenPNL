@@ -420,6 +420,27 @@ Vector<TokIdNode*> TokenCover::ExtractNodes(TokArr &aValue) const
     return result;
 }
 
+Vector<TokIdNode*> TokenCover::ExtractNodes(Tok &aValue) const
+{
+    Vector<TokIdNode*> result;
+    //int j = TokIdNode::root->desc.count(aValue.Name());
+    Vector<TokIdNode *> nodes = aValue.Nodes(m_aNode);
+    for(int i = 0; i < nodes.size(); ++i)
+    {
+        if(nodes[i]->tag == eTagValue)
+        {
+            nodes[i] = nodes[i]->v_prev;
+        }
+        if(nodes[i]->tag != eTagNetNode)
+        {
+            ThrowUsingError("There is must be node", "ExtractNodes");
+        }
+        result.push_back(nodes[i]);
+    }
+    
+    return result;
+}
+
 int TokenCover::NodesClassification(TokArr &aValue) const
 {
     int result = 0;

@@ -615,13 +615,13 @@ void Tok::Resolve( int hint_num_nodes,
             {
                 for ( j = 0; j < unres[k].size(); ++j )
                 {
-                    rr = TokIdNode::Resolve( 0, unres[k].begin() + j, unres[k].size() - j,
+                    rr = TokIdNode::Resolve( 0, unres[k].begin(), unres[k].size(),
                                              hard_context, soft_context, subroot );
                     if ( rr.second == 0 )
                     {
                         continue;
                     }
-                    unres[k].erase( unres[k].begin() + j, unres[k].begin() + j + rr.second );
+                    unres[k].erase( unres[k].begin(), unres[k].begin() + rr.second );
                     node.insert( node.begin() + k, rr.first );
                     unres.insert( unres.begin() + k, std::deque< TokId >() );
                     ++k;

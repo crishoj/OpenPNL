@@ -52,6 +52,7 @@ public:
     WGraph *Graph() const { return m_pGraph; }
 
     Vector<TokIdNode*> ExtractNodes(TokArr &aValue) const;
+    Vector<TokIdNode*> ExtractNodes(Tok &aValue) const;
     int NodesClassification(TokArr &aValue) const;
 
     int iNode(Tok &tok) const;

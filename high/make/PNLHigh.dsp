@@ -123,6 +123,14 @@ SOURCE=..\source\ModelEngine.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\source\MRF.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\MRFCB.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\source\PersistProbNet.cpp
 # End Source File
 # Begin Source File
@@ -156,6 +164,10 @@ SOURCE=..\source\pnlWProbabilisticNet.cpp
 # Begin Source File
 
 SOURCE=..\source\TokenCover.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\WCliques.cpp
 # End Source File
 # Begin Source File
 
@@ -207,6 +219,14 @@ SOURCE=..\include\ModelEngine.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\MRF.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\MRFCB.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\NetCallBack.hpp
 # End Source File
 # Begin Source File
@@ -252,6 +272,10 @@ SOURCE=..\include\pnlWProbabilisticNet.hpp
 # Begin Source File
 
 SOURCE=..\include\TokenCover.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\WCliques.hpp
 # End Source File
 # Begin Source File
 

@@ -1097,6 +1097,118 @@ void ProbabilisticNet::ExtractTokArr(TokArr &aNode, Vector<int> *paiNode, Vector
     }
 }
 
+void ProbabilisticNet::ExtractTok(Tok &aNode, Vector<int> *paiNode,
+	Vector<int> *paiValue, float &probValue, IIMap *pMap) const
+{
+    static const char fname[] = "ExtractTok";
+    Vector<TokIdNode*> apNode = Token()->ExtractNodes(aNode);
+    int i, j, nNode;
+    bool bValue = false;
+    bool bMustBeValue = false && (paiValue == 0);
+    // replace 'false' with meaningful condition
+
+    nNode = apNode.size();
+    paiNode->resize(nNode);
+    if(paiValue)
+    {
+	paiValue->resize(0);
+    }
+
+    for(i = 0; i < nNode; ++i)
+    {
+	(*paiNode)[i] = NodeIndex(apNode[i]);
+	bool bValueForCurr = (aNode.Node(Token()->Root()) != apNode[i]);
+	if(bMustBeValue)
+	{
+	    if(!bValueForCurr)
+	    {
+		ThrowUsingError("Must be value for every node", fname);
+	    }
+	}
+	else if(bValueForCurr)
+	{
+	    bValue = paiValue != 0;
+	}
+    }
+    
+/*
+    if(pMap)
+    {
+	for(i = paiNode->size(); --i >= 0;)
+	{
+	    (*paiNode)[i] = (*pMap)[(*paiNode)[i]];
+	    if((*paiNode)[i] == -1)
+	    {
+		pnl::pnlString str;
+
+		str << "Unknown node " << apNode[i]->Name() << " in family";
+		ThrowUsingError(str.c_str(), fname);
+	    }
+	    // check for unexistence?
+	}
+    }
+*/
+    
+    if(bValue)
+    {
+        for(i = 0; i < nNode; ++i)
+        {
+            Vector<TokIdNode *> pValue = aNode.Nodes(Token()->Root());
+            for (j = 0; j < pValue.size(); j++)
+            {
+                if(pValue[i] != apNode[i])
+                {
+                    if(pValue[i]->tag != eTagValue)
+                    {
+                        ThrowInternalError("Inner error or wrong usage of bayes net",
+                            fname);
+                    }
+                    if(paiValue && paiValue->size() != nNode)
+                    {
+                        paiValue->assign(nNode, -1);
+                    }
+                    (*paiValue)[i] = GetInt(pValue[i]);
+                }
+            }
+        }
+    }
+
+    probValue = aNode.FltValue();
+    
+/*
+    if(pMap)
+    {// sort parent by index
+	bool bReverse = true;
+	int tmp;
+	Tok ttmp;
+
+	for(; bReverse;)
+	{// bubble sort - assume that we work with small numbers of nodes
+	    bReverse = false;
+	    for(i = 1; i < nNode; ++i)
+	    {
+		if((*paiNode)[i - 1] > (*paiNode)[i])
+		{// exchange
+		    tmp = (*paiNode)[i - 1];
+		    (*paiNode)[i - 1] = (*paiNode)[i];
+		    (*paiNode)[i] = tmp;
+		    ttmp = aNode[i - 1];
+		    aNode[i - 1] = aNode[i];
+		    aNode[i] = ttmp;
+		    if(paiValue)
+		    {
+			tmp = (*paiValue)[i - 1];
+			(*paiValue)[i - 1] = (*paiValue)[i];
+			(*paiValue)[i] = tmp;
+		    }
+		    bReverse = true;
+		}
+	    }
+	}
+    }
+    */
+}
+
 int ProbabilisticNet::GetInt(TokIdNode *node)
 {
     return TokenCover::Index(node);

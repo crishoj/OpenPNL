@@ -102,6 +102,8 @@ public:// Bayes node name (or TokIdNode) <-> index
     String DiscreteValue(int iNode, int value) const;
     void ExtractTokArr(TokArr &aNode, Vector<int> *paiNode,
 	Vector<int> *paiValue, IIMap *pMap = 0) const;
+    void ExtractTok(Tok &aNode, Vector<int> *paiNode,
+	Vector<int> *paiValue, float &probValue, IIMap *pMap = 0) const;
     static int GetInt(TokIdNode *node);
 
 public:

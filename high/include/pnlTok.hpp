@@ -586,6 +586,7 @@ struct PNLHIGH_API Tok
     inline TokIdNode *Node( Tok const & ) const;
     inline TokIdNode *Node( int i, TokIdNode const * = TokIdNode::root ) const;
     inline TokIdNode *Node( int i, Tok const & ) const;
+    inline Vector<TokIdNode *> Nodes(TokIdNode const * = TokIdNode::root) const;
     inline String Name() const;
     inline std::deque< TokId > Unresolved( TokIdNode const *context = TokIdNode::root );
     inline std::deque< TokId > Unresolved( Tok const &context );
@@ -1241,6 +1242,13 @@ PNLHIGH_API TokIdNode *Tok::Node( int i, TokIdNode const *context ) const
         PNL_THROW( pnl::CBadArg, "inexistant node requested" );
     }
     return t.node[i];
+}
+
+PNLHIGH_API Vector<TokIdNode *> Tok::Nodes(TokIdNode const *context) const
+{
+    Tok t = *this;
+    t.Resolve( context );
+    return t.node;
 }
 
 PNLHIGH_API TokIdNode *Tok::Node( int i, Tok const &context ) const
