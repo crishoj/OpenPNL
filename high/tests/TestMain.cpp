@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
     //    TestGaussianModelCreate();// del arc
         TestGaussianInference();
         TestGaussianParamLearning();// too long
+	TestGetLogLik();
         TestMultivariateWrapperJPD();
         TestMultivariateWrapperLearn();
         TestMultivariateWrapperLearnPartOfObservation();

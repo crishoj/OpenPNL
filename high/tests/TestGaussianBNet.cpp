@@ -426,6 +426,63 @@ void TestGaussianParamLearning()
     cout << "TestGaussianParamLearning is completed successfully" << endl;
 }
 
+void TestGetLogLik()
+{
+    BayesNet *net = PolytreeModel();
+    BayesNet *netToLearn = PolytreeModel();
+    float eps = 1e-2f;
+
+    int nEvid = 500;
+    netToLearn->GenerateEvidences(nEvid);
+
+    int i, j;
+
+    float logLikBest = 0.0f;
+    TokArr bufLiks = netToLearn->GetEvidBufLogLik();
+    for(i = 0; i < nEvid; i++)
+    {
+	logLikBest += bufLiks[i].FltValue();
+    }
+
+    netToLearn->SetProperty("Learning", "em");
+    netToLearn->LearnParameters();
+
+    float logLikRes = netToLearn->GetEMLearningCriterionValue();
+
+    cout << "Best logarithm of likelihood = " << logLikBest << endl;
+
+    cout << "Result logarithm of likelihood = " << logLikRes << endl;
+    if( fabs(logLikRes) < fabs(logLikBest) )
+    {
+	// compare logLikRes and logLikBest with tolerance eps:
+	// check that exponent parts are equal and compare fixed 
+	// point parts with tolerance eps
+
+	int exp1 = 0;
+	while(floor(abs(logLikRes)) > 0)
+	{
+	    logLikRes /= 10.0;
+	    exp1++;
+	}
+	int exp2 = 0;
+	while(floor(abs(logLikBest)) > 0)
+	{
+	    logLikBest /= 10.0;
+	    exp2++;
+	}
+	if(exp1 != exp2)
+	{
+            PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+	}
+	if(fabs(logLikBest) - fabs(logLikRes) > eps)
+	{
+            PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+	}
+    }
+
+    cout << "TestGetLogLik is completed successfully" << endl;
+}
+
 void SimpleModel()
 {
     BayesNet net;
