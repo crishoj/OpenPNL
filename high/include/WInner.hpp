@@ -37,6 +37,7 @@ typedef enum
 ,   eClearEvidHistory
 ,   eLearn
 ,   eMPE
+,   eJPD
 ,   eSaveLearnBuf
 ,   eLoadLearnBuf
 ,   ePushEvid
