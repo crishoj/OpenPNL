@@ -29,9 +29,13 @@ int testDBNSmothing()
 	pDBN->SetNumSlices(4);
 	//evidences creation
 	pDBN->EditEvidence("Street-0^True Flat-0^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("House-1^True Flat-1^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("Street-2^True Flat-2^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("House-3^True Flat-3^False");
+	pDBN->CurEvidToBuf();
 	// setting inference property: Smoothing
 	pDBN->SetProperty("Inference","Smoothing");
 	// getting request 
@@ -69,9 +73,13 @@ int testDBNFixLagSmothing()
 	pDBN->SetNumSlices(4);
 	//evidences creation
 	pDBN->EditEvidence("Street-0^True Flat-0^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("House-1^True Flat-1^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("Street-2^True Flat-2^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("House-3^True Flat-3^False");
+	pDBN->CurEvidToBuf();
 	// setting inference property:FixLagSmoothing
 	pDBN->SetProperty("Inference","fix");
 	// getting request 
@@ -108,9 +116,13 @@ int testDBNFiltering()
 	pDBN->SetNumSlices(4);
 	//evidences creation
 	pDBN->EditEvidence("Street-0^True Flat-0^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("House-1^True Flat-1^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("Street-2^True Flat-2^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("House-3^True Flat-3^False");
+	pDBN->CurEvidToBuf();
 	// setting inference property:Filtering
 	pDBN->SetProperty("Inference","filt");
 	// getting request 
@@ -147,9 +159,13 @@ int testDBNMPE()
 	pDBN->SetNumSlices(4);
 	//evidences creation
 	pDBN->EditEvidence("Street-0^True Flat-0^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("House-1^True Flat-1^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("Street-2^True Flat-2^False");
+	pDBN->CurEvidToBuf();
 	pDBN->EditEvidence("House-3^True Flat-3^False");
+	pDBN->CurEvidToBuf();
 	//  inference property must be Viterbi
 	pDBN->SetProperty("Inference","viter");
 	// getting request 

@@ -264,9 +264,10 @@ TokArr DBN::GetJPD( TokArr nodes)
 	Inference().DefineProcedure(pnl::ptFiltering,0 );
 	Inference().EnterEvidence( &(pEvid[nSlice]), 1 );
 	Inference().Filtering( nSlice );
+	break;		
+    default:
+	ThrowUsingError("Setted wrong property", fname);
 	break;
-    case 'v':break;
-    default:break;
     };
     
     for(i = 0; i < nodes.size(); i++)
@@ -357,12 +358,9 @@ void DBN::EditEvidence(TokArr values)
 	if(GetSliceNum(tmpName) == nSlice)
 	{
 	    tmpStr = GetShortName(tmpName);
-	    tmpStr.append("-0",2);
-	    tmpStr.append("^",1);
-	    tmp = GetValue(values[i]);
-            tmpStr.append(tmp.c_str(),tmp.length());
-	    pTok = new Tok(tmpStr);
-	    NewQue.push_back(*pTok);
+	    tmpStr << "-0^";
+            tmpStr << GetValue(values[i]);
+	    NewQue.push_back(tmpStr);
 	}
 	else
 	{
@@ -374,14 +372,23 @@ void DBN::EditEvidence(TokArr values)
 	    pTok = new Tok(tmpStr);
 	    NewQue.push_back(*pTok);
 	};
-    };
-    
-    Net().EditEvidence(NewQue);
-    
+    };    
+    Net().EditEvidence(NewQue); 
+    m_curSlice = nSlice;
+}
+
+void DBN::CurEvidToBuf()
+{
     pnl::CEvidence *evid = NULL; 
     evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
-    (m_AllEvidences[nSlice]).push_back(evid);
-    
+    (m_AllEvidences[m_curSlice]).push_back(evid);
+}
+
+// adds evidence to the buffer
+void DBN::AddEvidToBuf(TokArr values)
+{
+    EditEvidence(values);
+    CurEvidToBuf();
 }
 
 void DBN::PushEvid(TokArr const values[], int nValue)
@@ -429,14 +436,6 @@ ThrowInternalError("inconsistent learning process", "Learn");
     
       
 }*/
-    
-    if(nSample)
-    {
-	for(int i = 0; i < nSample; ++i)
-	{
-	    EditEvidence(aSample[i]);
-	}
-    }
     
     Learning().SetData(static_cast<const pnl::pEvidencesVecVector>(m_AllEvidences));
     Learning().Learn();
@@ -586,7 +585,7 @@ void DBN::LoadNet(const char *filename)
     
     delete &Net();
     m_pNet = pNewNet;
-    //!!!!!!!!!!!!!!!1    m_pNet->SetCallback(new DBNCallback());
+    m_pNet->SetCallback(new DBNCallback());
     
     // We must load net-specific data here.
     // DBN haven't any specific data for now
@@ -668,7 +667,7 @@ const char DBN::PropertyAbbrev(const char *name) const
 	
 	if(infName.length() == 0)
 	{
-	    return 'f';
+	    return 's';
 	}
 	pnl::pnlVector<char> infNameVec(infName.length());
 	for(int i = 0; i < infName.length(); ++i)
@@ -677,7 +676,7 @@ const char DBN::PropertyAbbrev(const char *name) const
 	}
 	char *pInfName = &infNameVec.front();
 	
-	if(strstr(pInfName, "smoth"))
+	if(strstr(pInfName, "smooth"))
 	{
 	    return 's';
 	}
@@ -698,14 +697,15 @@ const char DBN::PropertyAbbrev(const char *name) const
 	    return 's';
 	}
     }
-    if(!strcmp(name,"Learning"))
+    if(!strcmp(name,"NumSlices"))
     {
-	String learnName = GetProperty("Learning");
-	pnl::pnlVector<char> learnNameVec(learnName.length());
-	for(int i = 0; i < learnName.length(); ++i)
+	String NumSlices = GetProperty("NumSlices");
+	pnl::pnlVector<char> learnNameVec(NumSlices.length());
+	for(int i = 0; i < NumSlices.length(); ++i)
 	{
-	    learnNameVec[i] = tolower(learnName[i]);
+	    learnNameVec[i] = tolower(NumSlices[i]);
 	}
+
 	char *pLearnName = &learnNameVec.front();
 	
 	if(strstr(pLearnName, "em"))
@@ -846,4 +846,153 @@ TokArr DBN::ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice)
 	return bnetQue;
     }
     
+}
+
+TokArr DBN::GetNeighbors(TokArr nodes)
+{
+    TokArr nodeNeighbors, nodeChildren;
+    int i;
+    nodeNeighbors = GetParents(nodes);
+    nodeChildren = GetChildren(nodes);
+    for(i = 0; i < nodeChildren.size(); i++)
+    {
+	nodeNeighbors.push_back(nodeChildren[i]);
+    };
+    return nodeNeighbors;
+}
+
+TokArr DBN::GetParents(TokArr nodes)
+{
+    TokArr NewQue, tmpParents, nodesParents;
+    String tmpStr;
+    Tok *pTok;
+    int i;
+    
+    tmpStr = nodes[nodes.size() - 1].Name();
+    int nSlice = GetSliceNum(tmpStr);
+    
+    for(i = 0; i < nodes.size(); i++)
+    {
+	tmpStr = nodes[i].Name();
+	if(nSlice != 0)
+	{	    
+		tmpStr = GetShortName(tmpStr);
+		tmpStr.append("-1",2);
+		pTok = new Tok(tmpStr);
+		NewQue.push_back(*pTok);
+	}
+	else
+	{
+	    NewQue.push_back(nodes[i]);
+	}
+    };
+    
+    tmpParents = Net().GetParents(NewQue);
+    
+    for(i = 0; i < tmpParents.size(); i++)
+    {
+	tmpStr = tmpParents[i].Name();
+	if(nSlice != 0)
+	{
+	    if(GetSliceNum(tmpStr) == 1)
+	    {
+		tmpStr = GetShortName(tmpStr);
+		tmpStr.append("-",1);
+		char c[2];  
+	        itoa(nSlice,c,10);
+		tmpStr.append(c,strlen(c));
+		pTok = new Tok(tmpStr);
+		nodesParents.push_back(*pTok);
+	    }
+	    else
+	    {
+		tmpStr = GetShortName(tmpStr);
+                tmpStr.append("-",1);
+		char c[2];  
+	        itoa(nSlice - 1,c,10);
+		tmpStr.append(c,strlen(c));
+		pTok = new Tok(tmpStr);
+		nodesParents.push_back(*pTok);
+	    };
+	}
+	else
+	{
+	    nodesParents.push_back(nodes[i]);
+	}
+    };
+
+    return nodesParents;
+}
+
+TokArr DBN::GetChildren(TokArr nodes)
+{
+    TokArr NewQue1, NewQue2, tmpChildren1,tmpChildren2, nodesChildren;
+    String tmpStr;
+    Tok *pTok;
+    int i;
+    
+    tmpStr = nodes[nodes.size() - 1].Name();
+    int nSlice = GetSliceNum(tmpStr);
+    
+    for(i = 0; i < nodes.size(); i++)
+    {
+	tmpStr = nodes[i].Name();
+	if(nSlice != 0)
+	{	    
+		tmpStr = GetShortName(tmpStr);
+		tmpStr.append("-0",2);
+		const char *s = tmpStr.c_str();
+
+		NewQue1.push_back(tmpStr);
+
+		tmpStr.resize(tmpStr.length() - 2);
+		tmpStr.append("-0",2);
+		NewQue2.push_back(tmpStr);
+		
+	}
+	else
+	{
+	    NewQue2.push_back(nodes[i]);
+	}
+    };
+    tmpChildren1 = Net().GetChildren(NewQue1);
+    tmpChildren2 = Net().GetChildren(NewQue2);
+
+    
+    for(i = 0; i < tmpChildren1.size(); i++)
+    {
+	tmpStr = tmpChildren1[i].Name();
+	if(GetSliceNum(tmpStr) == 1)
+	{
+	    tmpStr = GetShortName(tmpStr);
+	    tmpStr.append("-",1);
+	    char c[2];  
+	    itoa(nSlice,c,10);
+	    tmpStr.append(c,strlen(c));
+	    pTok = new Tok(tmpStr);
+	    nodesChildren.push_back(*pTok);
+	}	    
+    }
+    for(i = 0; i < tmpChildren2.size(); i++)
+    {
+	tmpStr = tmpChildren2[i].Name();
+	if(nSlice != 0)
+	{
+	if(GetSliceNum(tmpStr) == 1)
+	{
+	    tmpStr = GetShortName(tmpStr);
+	    tmpStr.append("-",1);
+	    char c[2];  
+	    itoa(nSlice + 1,c,10);
+	    tmpStr.append(c,strlen(c));
+	    pTok = new Tok(tmpStr);
+	    nodesChildren.push_back(*pTok);
+	}
+	}
+	else
+	{
+	nodesChildren.push_back(tmpChildren2[i]);
+	}
+    }
+    return nodesChildren;
 }

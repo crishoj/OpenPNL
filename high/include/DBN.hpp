@@ -40,9 +40,12 @@ public:
     void AddNode(TokArr nodes, TokArr subnodes);
     
     // remove node
-    void DelNode(TokArr nodes);
-   
+    void DelNode(TokArr nodes);  
 	
+    TokArr GetNeighbors(TokArr nodes);
+    TokArr GetParents(TokArr nodes);
+    TokArr GetChildren(TokArr nodes);
+
     // returns one of "categoric" or "continuous"
     TokArr GetNodeType(TokArr nodes);
     
@@ -71,6 +74,9 @@ public:
     // set parameters for gaussian distribution
     void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
     
+    // adds evidence to the buffer
+    void AddEvidToBuf(TokArr values);
+
     // setting evidence on the board 
     void EditEvidence(TokArr values = TokArr());
     
@@ -83,8 +89,11 @@ public:
     // clears evidence history
     void ClearEvidBuf();
 
-	void SetNumSlices(int nSlices);
-	// sets number of slices
+    // stores current evidence to the buffer
+    void CurEvidToBuf();
+
+    void SetNumSlices(int nSlices);
+    // sets number of slices
     
     // learns using current evidence and evidence history
     void LearnParameters(TokArr aValue[] = NULL, int nValue = 0);
@@ -147,6 +156,7 @@ private:// DATA members
     pnl::CDynamicLearningEngine *m_Learning;   // learning, if it exists
     int m_nLearnedEvidence;
     int m_nSlices;
+    int m_curSlice;
 //	int m_Lag;
     pnl::pEvidencesVecVector m_AllEvidences; //all evidences matrix 
 
