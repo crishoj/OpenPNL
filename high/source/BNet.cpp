@@ -209,6 +209,18 @@ TokArr BayesNet::JPD( TokArr nodes )
 	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
     }
     
+    pnl::CGibbsSamplingInfEngine *infGibbs; 
+    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(&Inference());
+    if(infGibbs != NULL)
+    {
+	Vector<int> queryVls;
+	pnl::intVecVector queries(1);
+	queries[0].clear();
+
+	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
+	infGibbs->SetQueries( queries ); 
+    }
+    
     Inference().EnterEvidence( evid );
     
     int nnodes = nodes.size();
@@ -488,6 +500,18 @@ TokArr BayesNet::MPE(TokArr nodes)
     else
     {
 	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
+    }
+    
+    pnl::CGibbsSamplingInfEngine *infGibbs; 
+    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(&Inference());
+    if(infGibbs != NULL)
+    {
+	Vector<int> queryVls;
+	pnl::intVecVector queries(1);
+	queries[0].clear();
+
+	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
+	infGibbs->SetQueries( queries ); 
     }
     
     Inference().EnterEvidence(evid, 1);
