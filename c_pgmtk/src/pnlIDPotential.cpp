@@ -157,7 +157,7 @@ CIDPotential* CIDPotential::Marginalize(const int *pSmallDom, int domSize,
     {
       CDistribFun *tempDistr = CTabularDistribFun::Copy(
         (CTabularDistribFun* const)(m_UtilityDistribFun));
-      tempDistr->MultiplyInSelfData(m_Domain.begin(), m_Domain.begin(),
+      tempDistr->MultiplyInSelfData(&m_Domain.front(), &m_Domain.front(),
         m_CorrespDistribFun);
       if (!output)
       {

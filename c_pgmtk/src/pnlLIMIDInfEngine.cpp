@@ -218,7 +218,7 @@ void CLIMIDInfEngine::InitEngine()
 #endif
 
     m_nodePots[i] = CIDTabularPotential::Create(OldContent, NodeContentSize,
-      m_pJTree->GetModelDomain(), probData.begin(), UtilityData.begin());
+      m_pJTree->GetModelDomain(), &probData.front(), &UtilityData.front());
   }
 
   EIDNodeState NodeState;
@@ -315,7 +315,7 @@ void CLIMIDInfEngine::InitEngine()
 
         CDistribFun* smallDistrib = CTabularDistribFun::Create(
 //          nodeDomainSize - 1, nodeTypes->begin(), data);
-          nodeDomainSize, nodeTypes->begin(), data);
+          nodeDomainSize, &nodeTypes->front(), data);
 
 #ifdef LIMID_TEST
   cout<<endl<<"input to "<<ClqWithFam<<endl;

@@ -44,7 +44,7 @@ CDistribFun* CSoftMaxDistribFun::Clone() const
   }
 
   CSoftMaxDistribFun* resData = CSoftMaxDistribFun::Create(m_NumberOfNodes, 
-    m_NodeTypes.begin(), NULL, NULL);
+    &m_NodeTypes.front(), NULL, NULL);
   resData->m_bUnitFunctionDistribution = m_bUnitFunctionDistribution;
 
   if (m_bUnitFunctionDistribution)
@@ -69,7 +69,7 @@ CDistribFun* CSoftMaxDistribFun::CloneWithSharedMatrices()
     PNL_THROW(CInconsistentState, "can't clone invalid data");
   }
   CSoftMaxDistribFun* resData = CSoftMaxDistribFun::Create(m_NumberOfNodes, 
-    m_NodeTypes.begin(), NULL, NULL);
+    &m_NodeTypes.front(), NULL, NULL);
   resData->m_bUnitFunctionDistribution = m_bUnitFunctionDistribution;
 
   if (m_bUnitFunctionDistribution)
@@ -228,7 +228,7 @@ void CSoftMaxDistribFun::CreateDefaultMatrices(int typeOfMatrices)
   m_pMatrixWeight->AddRef(pObj);
   
   // create offsets vector
-  PNL_CHECK_FOR_NON_ZERO (m_VectorOffset.size);    
+  PNL_CHECK_FOR_NON_ZERO (m_VectorOffset.size());    
   m_VectorOffset.assign(chldNodeSize, 0.0f);
   pnlRand(chldNodeSize, &m_VectorOffset.front(), -5.0f, 5.0f);
 }
