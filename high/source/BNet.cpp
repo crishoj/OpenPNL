@@ -116,7 +116,7 @@ TokArr BayesNet::GetGaussianMean(TokArr vars)
     return Net().ConvertMatrixToToken(mat);
 }
 
-TokArr BayesNet::GetGaussianCovar(TokArr var, TokArr vars)
+TokArr BayesNet::GetGaussianCovar(TokArr var)
 {
     static const char fname[] = "GetGaussianCovar";
 
@@ -212,8 +212,10 @@ TokArr BayesNet::GetJPD( TokArr nodes )
 	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
     }
     
+    pnl::CInfEngine *infEngine = &Inference();
+
     pnl::CGibbsSamplingInfEngine *infGibbs; 
-    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(&Inference());
+    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(infEngine);
     if(infGibbs != NULL)
     {
 	Vector<int> queryVls;
@@ -223,8 +225,8 @@ TokArr BayesNet::GetJPD( TokArr nodes )
 	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
 	infGibbs->SetQueries( queries ); 
     }
-    
-    Inference().EnterEvidence( evid );
+
+    infEngine->EnterEvidence( evid );
 
     int nnodes = nodes.size();
     Vector<int> queryNds, queryVls;
@@ -233,10 +235,10 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     {
 	queryVls.assign(nnodes, -1);
     }
-    
-    Inference().MarginalNodes(&queryNds.front(), queryNds.size());
+  
+    infEngine->MarginalNodes(&queryNds.front(), queryNds.size());
 
-    const pnl::CPotential *pot = Inference().GetQueryJPD();
+    const pnl::CPotential *pot = infEngine->GetQueryJPD();
 
     TokArr res = "";
     if (pot->GetDistribFun()->GetDistributionType() == pnl::dtTabular)
@@ -246,14 +248,30 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     }
     else
     {
-        const pnl::CMatrix<float> *mean = pot->GetMatrix(pnl::matMean);
-        res << Net().ConvertMatrixToToken(mean);
-        const pnl::CMatrix<float> *cov = pot->GetMatrix(pnl::matCovariance);
-        res << Net().ConvertMatrixToToken(cov);
+        if (pot->GetDistribFun()->IsDistributionSpecific() != 1)
+        {
+            const pnl::CMatrix<float> *mean = pot->GetMatrix(pnl::matMean);
+            res << Net().ConvertMatrixToToken(mean);
+
+            if (pot->GetDistribFun()->IsDistributionSpecific() != 2)
+            {
+                const pnl::CMatrix<float> *cov = pot->GetMatrix(pnl::matCovariance);
+                res << Net().ConvertMatrixToToken(cov);
+            }
+            else
+            {
+                res << "0";
+            }
+        }
+        else
+        {
+        // ?
+            res << "uniform";
+            res << "distribution";
+        }
     }
 
     delete evid;
-    
     return res;
 }
 
@@ -671,22 +689,12 @@ pnl::CInfEngine &BayesNet::Inference()
     case 'g': // Gibbs Sampling
 	if(m_Inference)
 	{
-	    pnl::CGibbsSamplingInfEngine *infGibbs;
-	    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(m_Inference);
-	    if(!infGibbs)
-	    {		    
-		delete m_Inference;
-		m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model()); 
-		((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetMaxTime( 10000 );
-		((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetBurnIn( 1000 );
-	    }
-	} 
-	else
-	{
-            m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model()); 
-	    ((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetMaxTime( 10000 );
-            ((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetBurnIn( 1000 );
-	}
+            delete m_Inference;
+        }
+
+        m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model()); 
+        ((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetMaxTime( 10000 );
+        ((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetBurnIn( 1000 );
 	break; 
     case 'n': // Naive inference
 	if(m_Inference)
@@ -814,7 +822,7 @@ String BayesNet::GetProperty(const char *name) const
 
 const char BayesNet::PropertyAbbrev(const char *name) const
 {   
-    if(!strcmp(name,"Infrernce"))
+    if(!strcmp(name,"Inference"))
     {
 	String infName = GetProperty("Inference");
 	pnl::pnlVector<char> infNameVec(infName.length());
