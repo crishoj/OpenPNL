@@ -13,7 +13,7 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-SOURCES = $(testDBN_SOURCES) $(testLIMID_SOURCES) $(testMultivariate_SOURCES)
+SOURCES = $(test_high_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -36,8 +36,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_triplet = @host@
-check_PROGRAMS = testMultivariate$(EXEEXT) testLIMID$(EXEEXT) \
-	testDBN$(EXEEXT)
+check_PROGRAMS = test_high$(EXEEXT)
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.incl
 subdir = high/tests
@@ -45,19 +44,14 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.in
 mkinstalldirs = $(mkdir_p)
 CONFIG_CLEAN_FILES =
-am_testDBN_OBJECTS = TestsDBN.$(OBJEXT)
-testDBN_OBJECTS = $(am_testDBN_OBJECTS)
+am_test_high_OBJECTS = TestCommon.$(OBJEXT) Test.$(OBJEXT) \
+	TestGaussianBNet.$(OBJEXT) TestLimid.$(OBJEXT) \
+	TestMain.$(OBJEXT) TestMRF.$(OBJEXT) TestNumeration.$(OBJEXT) \
+	TestsDBN.$(OBJEXT)
+test_high_OBJECTS = $(am_test_high_OBJECTS)
 am__DEPENDENCIES_1 = $(PNLBUILDD)/src/libpnl.la \
 	$(top_builddir)/cxcore/cxcore/src/libcxcore.a
-testDBN_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(top_builddir)/high/source/libhigh.la
-am_testLIMID_OBJECTS = TestLimid.$(OBJEXT)
-testLIMID_OBJECTS = $(am_testLIMID_OBJECTS)
-testLIMID_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(top_builddir)/high/source/libhigh.la
-am_testMultivariate_OBJECTS = Test.$(OBJEXT)
-testMultivariate_OBJECTS = $(am_testMultivariate_OBJECTS)
-testMultivariate_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+test_high_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(top_builddir)/high/source/libhigh.la
 DEFAULT_INCLUDES = -I. -I$(srcdir)
 depcomp =
@@ -70,10 +64,8 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(testDBN_SOURCES) $(testLIMID_SOURCES) \
-	$(testMultivariate_SOURCES)
-DIST_SOURCES = $(testDBN_SOURCES) $(testLIMID_SOURCES) \
-	$(testMultivariate_SOURCES)
+SOURCES = $(test_high_SOURCES)
+DIST_SOURCES = $(test_high_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -195,12 +187,17 @@ PNLBUILDD = $(top_builddir)/c_pgmtk
 PNL_LIBS = $(PNLBUILDD)/src/libpnl.la $(top_builddir)/cxcore/cxcore/src/libcxcore.a
 PNL_INCL = -I$(top_srcdir)/cxcore/cxcore/include -I$(PNLD)/include -I$(PNLD)/src/include/cart -I$(PNLD)/src/include
 INCLUDES = $(PNL_INCL) -I$(srcdir)/../include -I$(srcdir)/../examples -I$(srcdir)
-testMultivariate_SOURCES = Test.cpp
-testMultivariate_LDADD = $(PNL_LIBS) $(top_builddir)/high/source/libhigh.la
-testLIMID_SOURCES = TestLimid.cpp
-testLIMID_LDADD = $(PNL_LIBS) $(top_builddir)/high/source/libhigh.la
-testDBN_SOURCES = TestsDBN.cpp
-testDBN_LDADD = $(PNL_LIBS) $(top_builddir)/high/source/libhigh.la
+test_high_SOURCES = \
+     TestCommon.cpp     \
+     Test.cpp     \
+     TestGaussianBNet.cpp     \
+     TestLimid.cpp     \
+     TestMain.cpp     \
+     TestMRF.cpp     \
+     TestNumeration.cpp     \
+     TestsDBN.cpp
+
+test_high_LDADD = $(PNL_LIBS) $(top_builddir)/high/source/libhigh.la
 all: all-am
 
 .SUFFIXES:
@@ -241,15 +238,9 @@ clean-checkPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-testDBN$(EXEEXT): $(testDBN_OBJECTS) $(testDBN_DEPENDENCIES) 
-	@rm -f testDBN$(EXEEXT)
-	$(CXXLINK) $(testDBN_LDFLAGS) $(testDBN_OBJECTS) $(testDBN_LDADD) $(LIBS)
-testLIMID$(EXEEXT): $(testLIMID_OBJECTS) $(testLIMID_DEPENDENCIES) 
-	@rm -f testLIMID$(EXEEXT)
-	$(CXXLINK) $(testLIMID_LDFLAGS) $(testLIMID_OBJECTS) $(testLIMID_LDADD) $(LIBS)
-testMultivariate$(EXEEXT): $(testMultivariate_OBJECTS) $(testMultivariate_DEPENDENCIES) 
-	@rm -f testMultivariate$(EXEEXT)
-	$(CXXLINK) $(testMultivariate_LDFLAGS) $(testMultivariate_OBJECTS) $(testMultivariate_LDADD) $(LIBS)
+test_high$(EXEEXT): $(test_high_OBJECTS) $(test_high_DEPENDENCIES) 
+	@rm -f test_high$(EXEEXT)
+	$(CXXLINK) $(test_high_LDFLAGS) $(test_high_OBJECTS) $(test_high_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
