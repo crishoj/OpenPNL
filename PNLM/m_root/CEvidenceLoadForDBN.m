@@ -8,13 +8,20 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [result] = LoadForDBN(varargin)
+%% [result, OUTPUTOut2] = LoadForDBN(varargin)
 %%
-%% C++ prototype: bool pnl::CEvidence::Load(char const *fname,pnl::pEvidencesVecVector *evVec,pnl::CModelDomain const *pMD)
+%% C++ prototype: bool pnl::CEvidence::Load(char const *fname,pnl::pEvidencesVecVector *OUTPUT,pnl::CModelDomain const *pMD)
 %%
 
-function [result] = LoadForDBN(varargin)
+function [result, OUTPUTOut2] = LoadForDBN(varargin)
 
-[result] = feval('pnl_full', 'CEvidence_LoadForDBN_wrap', varargin{:});
-
+[result, OUTPUTOut2] = feval('pnl_full', 'CEvidence_LoadForDBN_wrap', varargin{:});
+for i = 1:length(OUTPUTOut2)
+    tmp = OUTPUTOut2{i};
+    for j = 1:length(tmp)
+        tmp{j} = CEvidence('%%@#DefaultCtor', tmp{j});
+        end
+    OUTPUTOut2{i} = tmp;
+    end
+clear tmp;
 return

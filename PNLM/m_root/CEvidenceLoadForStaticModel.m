@@ -8,13 +8,16 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [result] = LoadForStaticModel(varargin)
+%% [result, OUTPUTOut2] = LoadForStaticModel(varargin)
 %%
-%% C++ prototype: bool pnl::CEvidence::Load(char const *fname,pnl::pEvidencesVector *evVec,pnl::CModelDomain const *pMD)
+%% C++ prototype: bool pnl::CEvidence::Load(char const *fname,pnl::pEvidencesVector *OUTPUT,pnl::CModelDomain const *pMD)
 %%
 
-function [result] = LoadForStaticModel(varargin)
+function [result, OUTPUTOut2] = LoadForStaticModel(varargin)
 
-[result] = feval('pnl_full', 'CEvidence_LoadForStaticModel_wrap', varargin{:});
+[result, OUTPUTOut2] = feval('pnl_full', 'CEvidence_LoadForStaticModel_wrap', varargin{:});
+for k = 1:length(OUTPUTOut2)
+    OUTPUTOut2{k} = CEvidence('%%@#DefaultCtor', OUTPUTOut2{k});
+end
 
 return
