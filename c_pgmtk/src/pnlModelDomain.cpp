@@ -248,7 +248,7 @@ void CModelDomain::GetVariableAssociations(intVector* nodeAssociation) const
 CModelDomain::~CModelDomain()
 {
     // destroy all the data
-    int numOfRefModels = GetNumOfReferences();
+    int numOfRefModels = CReferenceCounter::GetNumOfReferences();
 
     if( numOfRefModels > 1 )
     {
