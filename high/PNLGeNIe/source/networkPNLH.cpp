@@ -573,21 +573,8 @@ void NetworkPNL::GetValue(int node, bool &valueValid, std::vector<int> &parents,
 
     Vector<int> aiNode, aiValue;
 
-    String xx, x;
+    String x;
     int i;
-    for(i = 0; i < evid.size(); ++i)
-    {
-	Vector< std::deque< TokId > > unres = evid[i].unres;
-
-	for(int j = 0; j < unres.size(); ++j)
-	{
-	    for(int k = 0; k < unres[j].size(); ++k)
-	    {
-		xx << String(unres[j][k]) << " ";
-	    }
-	    xx << "\n";
-	}
-    }
 
     x = String(evid);
 

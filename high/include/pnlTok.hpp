@@ -1,3 +1,8 @@
+#define NEW_TOKENS
+#ifdef NEW_TOKENS
+#include "Tokens.hpp"
+#else
+
 #ifndef __PNLTOK_HPP__
 #define __PNLTOK_HPP__
 
@@ -650,4 +655,6 @@ inline void vistok(Tok const &t)
 
 PNLW_END
 
-#endif
+#endif // include guard
+
+#endif // temporary redirector

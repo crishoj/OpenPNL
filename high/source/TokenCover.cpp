@@ -567,8 +567,9 @@ void TokenCover::DoNotify(int message, int iNode, ModelEngine *pObj)
 	{
 	    PNL_CHECK_IS_NULL_POINTER(m_pGraph);
 	    Tok tokNode(iNode);
+	    Tok::Matcher matcher(eTagNetNode);
 
-	    tokNode.Resolve(Tok::Matcher(eTagNetNode), m_aNode);
+	    tokNode.Resolve(m_aNode, &matcher);
 	    
 	    TokIdNode *node = tokNode.Node();
 	    String name = m_pGraph->NodeName(iNode);

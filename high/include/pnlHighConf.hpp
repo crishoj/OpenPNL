@@ -40,7 +40,7 @@ namespace NetConst
 
 // FORWARDS
 PNLW_BEGIN
-struct TokArr;
+class TokArr;
 PNLW_END
 
 namespace pnl

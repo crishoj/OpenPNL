@@ -8,7 +8,7 @@
 // FORWARDS
 PNLW_BEGIN
 
-struct TokIdNode;
+class TokIdNode;
 
 typedef enum
 {   eAddNode

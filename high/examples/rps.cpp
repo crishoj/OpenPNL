@@ -458,10 +458,44 @@ int rpsMain()
     return 0;
 }
 
+MRF *CreateMRFModel()
+{
+//    node0 -- node1 -- node2
+//      |        |        |
+//    node3 -- node4 -- node5
+//      |        |        |
+//    node6 -- node7 -- node8
+    // node values
+    TokArr aChoice = "value0 value1";// possible values for nodes
+    // MRF creation
+    MRF *pMRF; 
+    pMRF = new MRF();
+    // nodes creation 
+    pMRF->AddNode(discrete ^ "node0 node1 node2 node3 node4 node5 node6 node7 node8", aChoice); 
+   
+    pMRF->SetClique("node0 node1"); 
+    pMRF->SetPTabular("node0 node1", "0.3 0.39 0.1 0.21");
+    pMRF->SetPTabular("node1 node2", "0.26 0.34 0.24 0.16");
+    pMRF->SetPTabular("node0 node3", "0.29 0.26 0.14 0.31");
+    pMRF->SetPTabular("node1 node4", "0.45 0.04 0.33 0.18");
+    pMRF->SetPTabular("node2 node5", "0.17 0.3 0.3 0.23");
+    pMRF->SetPTabular("node3 node4", "0.4 0.06 0.34 0.2");
+    pMRF->SetPTabular("node4 node5", "0.23 0.4 0.15 0.22");
+    pMRF->SetPTabular("node6 node3", "0.34 0.24 0.33 0.09");
+    pMRF->SetPTabular("node4 node7", "0.34 0.29 0.17 0.2");
+    pMRF->SetPTabular("node5 node8", "0.14 0.31 0.14 0.41");
+    pMRF->SetPTabular("node6 node7", "0.15 0.34 0.01 0.5");
+    pMRF->SetPTabular("node7 node8", "0.14 0.46 0.21 0.19");
+
+    return pMRF;
+}
+
 int main(int ac, char **av)
 {
     int result = -1;
     
+    CreateMRFModel();
+
     if(ac > 1 && av[1][0] == '-' && tolower(av[1][1]) == 's')
     {
 	Scripting scr;

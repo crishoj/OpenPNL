@@ -1,7 +1,6 @@
 #include "pnlHigh.hpp"
 #include "DBN.hpp"   
 
-
 PNLW_USING
 
 int testDBNSmothing()
@@ -210,16 +209,3 @@ int testDBNLearning()
 	delete pDBN;
 	return result;
 }
-
-int main(int ac, char **av)
-{
-	int res;
-	res = testDBNSmothing();
-	res = testDBNFixLagSmothing();
-	res = testDBNFiltering();
-	res = testDBNMPE();
-	res = testDBNLearning();
-	return res;
-}
-
-

@@ -139,8 +139,6 @@ public:
     String GetProperty(const char *name) const;
 
 private:
-    typedef Vector<int> IIMap;
-
     pnl::CMatrix<float> *Matrix(int iNode) const;
     pnl::CDynamicInfEngine &Inference();
     pnl::CDynamicLearningEngine &Learning();

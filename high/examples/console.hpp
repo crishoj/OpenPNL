@@ -6,7 +6,7 @@
 // FORWARDS
 namespace pnlw {
 class BayesNet;
-struct TokArr;
+class TokArr;
 };
 
 PNLW_USING

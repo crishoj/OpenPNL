@@ -8,7 +8,7 @@
 
 // FORWARDS
 PNLW_BEGIN
-struct TokIdNode;
+class TokIdNode;
 class WGraph;
 class WDistribFun;
 PNLW_END

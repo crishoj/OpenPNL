@@ -4,6 +4,8 @@
 
 #include "pnlTok.hpp"
 
+#ifndef NEW_TOKENS
+
 PNLW_BEGIN
 
 TokIdNode *TokIdNode::root = new(TokIdNode)("");
@@ -788,20 +790,25 @@ void Tok::Resolve(int hint_num_nodes,
             }
             if(k == 0 || rr.second == 0)
             {
+		int lastIns = -1;
                 for(j = 0; j < unres[k].size(); ++j)
                 {
-                    rr = TokIdNode::Resolve(0, unres[k].begin(), unres[k].size(),
+                    rr = TokIdNode::Resolve(0, unres[k].begin() + j, unres[k].size() - j,
                                             hard_matcher, soft_matcher,
 					    hard_context, soft_context, subroot);
                     if(rr.second == 0)
                     {
                         continue;
                     }
-                    unres[k].erase(unres[k].begin(), unres[k].begin() + rr.second);
+                    unres[k].erase(unres[k].begin() + j, unres[k].begin() + rr.second + j);
                     node.insert(node.begin() + k, rr.first);
-                    unres.insert(unres.begin() + k, std::deque< TokId >());
-                    ++k;
+		    lastIns = j;
+                    unres[k].insert(unres[k].begin() + j, TokId(""));
                 }
+		if(lastIns >= 0)
+		{
+		    unres[k].erase(unres[k].begin() + lastIns);
+		}
                 continue;
             }
             while(rr.second--)
@@ -1813,3 +1820,5 @@ int main()
 #endif
 
 PNLW_END
+
+#endif

@@ -7,7 +7,7 @@ PNLW_BEGIN
 
 // FORWARDS
 class WGraph;
-struct TokIdNode;
+class TokIdNode;
 
 class PNLHIGH_API WCliques: public ModelEngine
 {
