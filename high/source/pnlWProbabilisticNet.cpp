@@ -172,10 +172,27 @@ int ProbabilisticNet::SaveEvidBuf(const char *filename, NetConst::ESavingType mo
     // write header and fill node indices vector
     for(iCol = 0; iCol < nUsingCol.size(); ++iCol)
     {
-	if(nUsingCol[iCol])
+	if(!nUsingCol[iCol])
 	{
-	    aiCSVCol.push_back(iCol);
-	    lex.PutValue(NodeName(iCol));
+	    continue;
+	}
+	String colName(NodeName(Graph()->IOuter(iCol)));
+	const pnl::CNodeType &nt = *Model()->GetNodeType(iCol);
+
+	aiCSVCol.push_back(iCol);
+	if(nt.IsDiscrete())
+	{
+	    lex.PutValue(colName);
+	}
+	else
+	{
+	    String subColName;
+	    for(i = 0; i < nt.GetNodeSize(); ++i)
+	    {
+		subColName = colName;
+		subColName << "^" << Token()->Value(Graph()->IOuter(iCol), i);
+		lex.PutValue(subColName);
+	    }
 	}
     }
 
@@ -222,7 +239,6 @@ int ProbabilisticNet::SaveEvidBuf(const char *filename, NetConst::ESavingType mo
 		    else
 		    {
 			str << v[j].GetFlt();
-//			ThrowInternalError("Not yes realized", "SaveLearnBuf");
 		    }
 		    
 		    lex.PutValue(String(str.c_str()));
@@ -262,12 +278,11 @@ int ProbabilisticNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mo
 	{
 	    continue;
 	}
-	Tok tok(colName);
+	TokIdNode *node = Tok(colName).Node();
 
-	// now it must be node - we handling Discrete value only
-	if(IsNode(tok))
+	if(node->tag == eTagNetNode || node->tag == eTagValue)
 	{
-	    header.push_back(tok);
+	    header.push_back(colName);
 	    nColInUse++;
 	}
 	else
@@ -642,11 +657,12 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
     for(i = nValueIn; --i >= 0;)
     {
 	j = aOffset[aiNode[i]];
-	pnl::CNodeType nt = pnlNodeType(Graph()->IOuter(i));
+	pnl::CNodeType nt = pnlNodeType(Graph()->IOuter(aiNode[i]));
 	if(!nt.IsDiscrete())
 	{
 	    j += aiValue[i];
 	}
+	// check for repeating
 	if(vValue[j].GetInt())
 	{
 	    pnl::pnlString str;
@@ -657,7 +673,7 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
     }
 
     // here aiNode is sorted
-    for(i = 0, nValue = 0; i < aValue.size(); ++i)
+    for(i = 0, nValue = 0; i < nValueIn; ++i)
     {
 	pnl::CNodeType nt = pnlNodeType(Graph()->IOuter(aiNode[i]));
 
@@ -686,6 +702,10 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
 		    ThrowUsingError("Absent value for node", fname);
 		}
 		aiValue[i] = 0;
+	    }
+	    if(aValue[i].fload.size() != 1)// There is must be one value - check
+	    {
+		ThrowUsingError("Incorrect evidence - number of values isn't 1", fname);
 	    }
 	    vValue[aOffset[aiNode[i]] + aiValue[i]] = aValue[i].FltValue(0).fl;
 	}
