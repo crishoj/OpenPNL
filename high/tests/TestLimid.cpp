@@ -371,49 +371,49 @@ void DelNodes()
     
     TokArr aIncome = "Cost";// possible values for nodes   
 
-    net->AddNode(chance ^"h1", aCh);
-    net->AddNode(decision^"d1", aChoice);
-    net->AddNode(chance ^ "h2", aCh);
-    net->AddNode(decision^"d2", aChoice);
+    net->AddNode(chance ^"hhh1", aCh);
+    net->AddNode(decision^"ddd1", aChoice);
+    net->AddNode(chance ^ "hhh2", aCh);
+    net->AddNode(decision^"ddd2", aChoice);
 
-    net->AddNode(value^"u1", aIncome);
-    net->AddNode(value^"u2", aIncome);
+    net->AddNode(value^"uuu1", aIncome);
+    net->AddNode(value^"uuu2", aIncome);
 
-    net->AddArc("h1", "h2");
-    net->AddArc("h1", "u1");
-    net->AddArc("d1", "u2");
-    net->AddArc("d1", "h2");
-    net->AddArc("d2", "u1");
-    net->AddArc("h2", "d2");
+    net->AddArc("hhh1", "hhh2");
+    net->AddArc("hhh1", "uuu1");
+    net->AddArc("ddd1", "uuu2");
+    net->AddArc("ddd1", "hhh2");
+    net->AddArc("ddd2", "uuu1");
+    net->AddArc("hhh2", "ddd2");
 
-    net->SetPChance("h1^False h1^True h1^MayBe", "0.5 0.3 0.2");
+    net->SetPChance("hhh1^False hhh1^True hhh1^MayBe", "0.5 0.3 0.2");
 
-    net->SetPDecision("d1^False d1^True", "0.5 0.5");
+    net->SetPDecision("ddd1^False ddd1^True", "0.5 0.5");
 
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.1 0.3 0.6", "h1^False d1^False");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^False d1^True");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.3 0.4 0.3", "h1^True d1^False");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^True d1^True");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.5 0.4 0.1", "h1^MayBe d1^False");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^MayBe d1^True");
+    net->SetPChance("hhh2^False hhh2^True hhh2^MayBe", "0.1 0.3 0.6", "hhh1^False ddd1^False");
+    net->SetPChance("hhh2^False hhh2^True hhh2^MayBe", "0.333333 0.333333 0.333333", "hhh1^False ddd1^True");
+    net->SetPChance("hhh2^False hhh2^True hhh2^MayBe", "0.3 0.4 0.3", "hhh1^True ddd1^False");
+    net->SetPChance("hhh2^False hhh2^True hhh2^MayBe", "0.333333 0.333333 0.333333", "hhh1^True ddd1^True");
+    net->SetPChance("hhh2^False hhh2^True hhh2^MayBe", "0.5 0.4 0.1", "hhh1^MayBe ddd1^False");
+    net->SetPChance("hhh2^False hhh2^True hhh2^MayBe", "0.333333 0.333333 0.333333", "hhh1^MayBe ddd1^True");
     
-    net->SetPDecision("d2^False d2^True", "0.5 0.5", "h2^False");
-    net->SetPDecision("d2^False d2^True", "0.5 0.5", "h2^True");
-    net->SetPDecision("d2^False d2^True", "0.5 0.5", "h2^MayBe");
+    net->SetPDecision("ddd2^False ddd2^True", "0.5 0.5", "hhh2^False");
+    net->SetPDecision("ddd2^False ddd2^True", "0.5 0.5", "hhh2^True");
+    net->SetPDecision("ddd2^False ddd2^True", "0.5 0.5", "hhh2^MayBe");
  
-    net->SetValueCost("u1^Cost", "-70000.0", "h1^False d2^False");
-    net->SetValueCost("u1^Cost", "0.0", "h1^False d2^True");
-    net->SetValueCost("u1^Cost", "50000.0", "h1^True d2^False");
-    net->SetValueCost("u1^Cost", "0.0", "h1^True d2^True");
-    net->SetValueCost("u1^Cost", "200000.0", "h1^MayBe d2^False");
-    net->SetValueCost("u1^Cost", "0.0", "h1^MayBe d2^True");
+    net->SetValueCost("uuu1^Cost", "-70000.0", "hhh1^False ddd2^False");
+    net->SetValueCost("uuu1^Cost", "0.0", "hhh1^False ddd2^True");
+    net->SetValueCost("uuu1^Cost", "50000.0", "hhh1^True ddd2^False");
+    net->SetValueCost("uuu1^Cost", "0.0", "hhh1^True ddd2^True");
+    net->SetValueCost("uuu1^Cost", "200000.0", "hhh1^MayBe ddd2^False");
+    net->SetValueCost("uuu1^Cost", "0.0", "hhh1^MayBe ddd2^True");
 
-    net->SetValueCost("u2^Cost", "-10000.0", "d1^False");
-    net->SetValueCost("u2^Cost", "0.0", "d1^True");
+    net->SetValueCost("uuu2^Cost", "-10000.0", "ddd1^False");
+    net->SetValueCost("uuu2^Cost", "0.0", "ddd1^True");
 
-    TokArr h2 = net->GetPChance("h2");
-    TokArr d2 = net->GetPDecision("d2");
-    TokArr u2 = net->GetValueCost("u2");
+    TokArr h2 = net->GetPChance("hhh2");
+    TokArr d2 = net->GetPDecision("ddd2");
+    TokArr u2 = net->GetValueCost("uuu2");
 
     if ((h2[0].FltValue() != 0.1f)||(h2[1].FltValue() != 0.3f) || (h2[2].FltValue() != 0.6f) )
     {
@@ -428,7 +428,7 @@ void DelNodes()
        PNL_THROW(pnl::CAlgorithmicException, "Error get");
     }
 
-    net->DelNode("u2");
+    net->DelNode("uuu2");
 
     TokArr exp;
     exp = net->GetExpectation();
@@ -438,9 +438,9 @@ void DelNodes()
     politics = net->GetPolitics();
     cout << politics << "\n";
 
-    net->AddNode(value^"u2", aIncome);
-    net->AddArc("d1", "u2");
-    net->DelArc("h2", "d2");
+    net->AddNode(value^"uuu2", aIncome);
+    net->AddArc("ddd1", "uuu2");
+    net->DelArc("hhh2", "ddd2");
 
     TokArr exp1;
     exp1 = net->GetExpectation();
@@ -465,28 +465,28 @@ void LimidTopology()
     
     TokArr aIncome = "Cost";// possible values for nodes   
 
-    net->AddNode(decision^"d1", aChoice);
-    net->AddNode(value^"u1", aIncome);
-    net->AddArc("d1", "u1");
+    net->AddNode(decision^"d01", aChoice);
+    net->AddNode(value^"u01", aIncome);
+    net->AddArc("d01", "u01");
 
-    net->AddNode(chance ^"h1", aCh);
-    net->AddNode(chance ^ "h2", aCh);
-    net->AddArc("h1", "h2");
+    net->AddNode(chance ^"h01", aCh);
+    net->AddNode(chance ^ "h02", aCh);
+    net->AddArc("h01", "h02");
  
-    net->AddArc("h2", "d1");
+    net->AddArc("h02", "d01");
 
-    net->SetPChance("h1^False h1^True h1^MayBe", "0.1 0.3 0.6");
+    net->SetPChance("h01^False h01^True h01^MayBe", "0.1 0.3 0.6");
 
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^False");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.3 0.4 0.3", "h1^True");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.5 0.4 0.1", "h1^MayBe");
+    net->SetPChance("h02^False h02^True h02^MayBe", "0.333333 0.333333 0.333333", "h01^False");
+    net->SetPChance("h02^False h02^True h02^MayBe", "0.3 0.4 0.3", "h01^True");
+    net->SetPChance("h02^False h02^True h02^MayBe", "0.5 0.4 0.1", "h01^MayBe");
 
-    net->SetPDecision("d1^False d1^True", "0.5 0.5", "h2^False");
-    net->SetPDecision("d1^False d1^True", "0.5 0.5", "h2^True");
-    net->SetPDecision("d1^False d1^True", "0.5 0.5", "h2^MayBe");
+    net->SetPDecision("d01^False d01^True", "0.5 0.5", "h02^False");
+    net->SetPDecision("d01^False d01^True", "0.5 0.5", "h02^True");
+    net->SetPDecision("d01^False d01^True", "0.5 0.5", "h02^MayBe");
 
-    net->SetValueCost("u1^Cost", "-10000.0", "d1^False");
-    net->SetValueCost("u1^Cost", "20.0", "d1^True");
+    net->SetValueCost("u01^Cost", "-10000.0", "d01^False");
+    net->SetValueCost("u01^Cost", "20.0", "d01^True");
 
     TokArr exp;
     exp = net->GetExpectation();
@@ -507,22 +507,22 @@ void PureLimidModel1()
     
     TokArr aIncome = "Cost";// possible values for nodes   
 
-    net->AddNode(chance ^"h1", aCh);
-    net->AddNode(chance ^ "h2", aCh);
-    net->AddNode(value^"u1", aIncome);
+    net->AddNode(chance ^"hh1", aCh);
+    net->AddNode(chance ^ "hh2", aCh);
+    net->AddNode(value^"uu1", aIncome);
 
-    net->AddArc("h1", "h2");
-    net->AddArc("h2", "u1");
+    net->AddArc("hh1", "hh2");
+    net->AddArc("hh2", "uu1");
 
-    net->SetPChance("h1^False h1^True h1^MayBe", "0.1 0.3 0.6");
+    net->SetPChance("hh1^False hh1^True hh1^MayBe", "0.1 0.3 0.6");
 
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^False");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.3 0.4 0.3", "h1^True");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.5 0.4 0.1", "h1^MayBe");
+    net->SetPChance("hh2^False hh2^True hh2^MayBe", "0.333333 0.333333 0.333333", "hh1^False");
+    net->SetPChance("hh2^False hh2^True hh2^MayBe", "0.3 0.4 0.3", "hh1^True");
+    net->SetPChance("hh2^False hh2^True hh2^MayBe", "0.5 0.4 0.1", "hh1^MayBe");
 
-    net->SetValueCost("u1^Cost", "-10000.0", "h2^False");
-    net->SetValueCost("u1^Cost", "0.0", "h2^True");
-    net->SetValueCost("u1^Cost", "500.0", "h2^MayBe");
+    net->SetValueCost("uu1^Cost", "-10000.0", "hh2^False");
+    net->SetValueCost("uu1^Cost", "0.0", "hh2^True");
+    net->SetValueCost("uu1^Cost", "500.0", "hh2^MayBe");
 
     TokArr exp;
     exp = net->GetExpectation();
@@ -546,22 +546,22 @@ void PureLimidModel2()
     
     TokArr aIncome = "Cost";// possible values for nodes   
 
-    net->AddNode(chance ^"h1", aCh);
-    net->AddNode(chance ^ "h2", aCh);
-    net->AddNode(decision^"d1", aChoice);
+    net->AddNode(chance ^"h11", aCh);
+    net->AddNode(chance ^ "h21", aCh);
+    net->AddNode(decision^"d11", aChoice);
 
-    net->AddArc("h1", "h2");
-    net->AddArc("h2", "d1");
+    net->AddArc("h11", "h21");
+    net->AddArc("h21", "d11");
 
-    net->SetPChance("h1^False h1^True h1^MayBe", "0.1 0.3 0.6");
+    net->SetPChance("h11^False h11^True h11^MayBe", "0.1 0.3 0.6");
 
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^False");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.3 0.4 0.3", "h1^True");
-    net->SetPChance("h2^False h2^True h2^MayBe", "0.5 0.4 0.1", "h1^MayBe");
+    net->SetPChance("h21^False h21^True h21^MayBe", "0.333333 0.333333 0.333333", "h11^False");
+    net->SetPChance("h21^False h21^True h21^MayBe", "0.3 0.4 0.3", "h11^True");
+    net->SetPChance("h21^False h21^True h21^MayBe", "0.5 0.4 0.1", "h11^MayBe");
 
-    net->SetPDecision("d1^False d1^True", "0.5 0.5", "h2^False");
-    net->SetPDecision("d1^False d1^True", "0.5 0.5", "h2^True");
-    net->SetPDecision("d1^False d1^True", "0.5 0.5", "h2^MayBe");
+    net->SetPDecision("d11^False d11^True", "0.5 0.5", "h21^False");
+    net->SetPDecision("d11^False d11^True", "0.5 0.5", "h21^True");
+    net->SetPDecision("d11^False d11^True", "0.5 0.5", "h21^MayBe");
 
     TokArr exp;
     exp = net->GetExpectation();
@@ -585,15 +585,15 @@ void PureLimidModel3()
     
     TokArr aIncome = "Cost";// possible values for nodes   
 
-    net->AddNode(decision^"d1", aChoice);
-    net->AddNode(value^"u1", aIncome);
+    net->AddNode(decision^"d31", aChoice);
+    net->AddNode(value^"u31", aIncome);
 
-    net->AddArc("d1", "u1");
+    net->AddArc("d31", "u31");
 
-    net->SetPDecision("d1^False d1^True", "0.5 0.5");
+    net->SetPDecision("d31^False d31^True", "0.5 0.5");
 
-    net->SetValueCost("u1^Cost", "-10000.0", "d1^False");
-    net->SetValueCost("u1^Cost", "0.0", "d1^True");
+    net->SetValueCost("u31^Cost", "-10000.0", "d31^False");
+    net->SetValueCost("u31^Cost", "0.0", "d31^True");
 
     TokArr exp;
     exp = net->GetExpectation();
