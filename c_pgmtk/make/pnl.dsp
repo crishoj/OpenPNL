@@ -325,6 +325,10 @@ SOURCE=..\src\pnlCondGaussianDistribFun.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\pnlCondSoftMaxDistribFun.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\pnlConfig.cpp
 # ADD CPP /Yc"pnlConfig.hpp"
 # End Source File
@@ -595,6 +599,14 @@ SOURCE=..\src\pnlScalarPotential.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\pnlSoftMaxCPD.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlSoftMaxDistribFun.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\pnlSpecPearlInferenceEngine.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
 # End Source File
@@ -817,6 +829,10 @@ SOURCE=..\include\pnlBNet.hpp
 # Begin Source File
 
 SOURCE=..\src\include\pnlcondgaussiandistribfun.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\include\pnlCondSoftMaxDistribFun.hpp
 # End Source File
 # Begin Source File
 
@@ -1057,6 +1073,14 @@ SOURCE=..\src\include\pnlScalarDistribFun.hpp
 # Begin Source File
 
 SOURCE=..\include\pnlScalarPotential.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlSoftMaxCPD.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\include\pnlSoftMaxDistribFun.hpp
 # End Source File
 # Begin Source File
 

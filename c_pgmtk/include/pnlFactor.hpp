@@ -39,7 +39,9 @@ typedef PNL_API enum
         dtMixGaussian,
         dtScalar,
         dtTree,
-        dtInvalid
+        dtInvalid,
+        dtSoftMax,
+        dtCondSoftMax
 } EDistributionType;
 
 typedef PNL_API enum

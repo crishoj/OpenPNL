@@ -18,6 +18,21 @@ Package=<4>
 
 ###############################################################################
 
+Project: "TestSoftMax"=..\tests\make\TestSoftMax.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name pnl
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "_build_all"=.\_build_all.dsp - Package Owner=<4>
 
 Package=<5>

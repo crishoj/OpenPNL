@@ -40,8 +40,8 @@ typedef PNL_API enum
     stMatTable,
     stMatMu,
     stMatSigma,
-    stMatCoeff
-    
+    stMatCoeff,
+    stMatWeight
 } EStatisticalMatrix;
 
 typedef PNL_API enum 

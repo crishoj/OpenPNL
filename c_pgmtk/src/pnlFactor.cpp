@@ -16,7 +16,9 @@
 #include "pnlConfig.hpp"
 #include "pnlTabularDistribFun.hpp"
 #include "pnlGaussianDistribFun.hpp"
+#include "pnlSoftMaxDistribFun.hpp"
 #include "pnlCondGaussianDistribFun.hpp"
+#include "pnlCondSoftMaxDistribFun.hpp"
 #include "pnlScalarDistribFun.hpp"
 #include "pnlTreeDistribFun.hpp"
 
@@ -217,6 +219,56 @@ CFactor::CFactor( EDistributionType dt,
             default:
                 {
                     PNL_THROW( CNotImplemented, "mixture gaussian potential" );  
+                }
+            }
+            break;
+        }
+    case dtSoftMax:
+        {
+            switch (pt)
+            {
+            case ftPotential:
+                {
+                  PNL_THROW( CNotImplemented, "only CPD yet" );
+                    break;
+                }
+            case ftCPD:
+                {
+                    //can check if there are both Continuous & Discrete nodes
+                    int noDiscrete = 1;
+                    for( int i = 0; i < nNodes-1; i++ )
+                    {
+                        if( nt[i]->IsDiscrete() )
+                        {
+                            noDiscrete = 0;
+                            break;
+                        }
+                    }
+                    if( noDiscrete )
+                    {
+                        m_CorrespDistribFun = 
+                            CSoftMaxDistribFun::Create( nNodes,
+                            &nt.front(), NULL, NULL );
+                        break;
+                    }
+                    else
+                    {
+                        m_CorrespDistribFun = 
+                            CCondSoftMaxDistribFun::Create( nNodes, &nt.front() );
+                        break;
+                    }
+/*
+                  //can check if there are both Continuous & Discrete nodes
+                        m_CorrespDistribFun = 
+                            CSoftMaxDistribFun::CreateUnitFunctionDistribution( nNodes, &nt.front() );
+                        break;
+*/
+                }
+            default:
+                {
+                    PNL_THROW( CBadConst, 
+                        "no competent type as EFactorType" );
+                    break;
                 }
             }
             break;

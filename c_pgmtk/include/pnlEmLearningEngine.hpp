@@ -18,7 +18,7 @@
 #define __PNLEMLEARNINGENGINE_HPP__
 
 #include "pnlStaticLearningEngine.hpp"
-
+#include "pnlSoftMaxDistribFun.hpp"
 
 PNL_BEGIN
 
@@ -38,10 +38,12 @@ public:
     inline float GetPrecisionEM() const;
 
 #ifndef SWIG
-    
     virtual void AppendData(int dim, const CEvidence* const* pEvidences);
-
 #endif
+
+    void SetMaximizingMethod(EMaximizingMethod met);
+
+    EMaximizingMethod GetMaximizingMethod();
 
 protected:
     CEMLearningEngine(CStaticGraphicalModel *pGrModel, CInfEngine *pInfEng,
@@ -53,6 +55,7 @@ protected:
     void SetNumProcEv( int numEv );
     inline bool IsAllObserved() const;
     float UpdateModel();
+    void BuildEvidenceMatrix(int Node, float ***evid);
 
 private:
     CInfEngine *m_pInfEngine;
@@ -64,7 +67,7 @@ private:
     
     int m_maxIterEM;
     float m_precisionEM;
-    
+    EMaximizingMethod m_MaximizingMethod;
 };
 
 #ifndef SWIG

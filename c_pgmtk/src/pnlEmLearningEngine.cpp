@@ -22,30 +22,24 @@
 #include "pnlNaiveInferenceEngine.hpp"
 #include "pnlJtreeInferenceEngine.hpp"
 #include "pnlExInferenceEngine.hpp"
+#include "pnlSoftMaxCPD.hpp"
 
 PNL_USING
 
 CEMLearningEngine::CEMLearningEngine(CStaticGraphicalModel *pGrModel,
-				     CInfEngine *pInfEng,
-				     ELearningTypes LearnType):
-CStaticLearningEngine( pGrModel, LearnType ),
-m_maxIterEM(5),
-m_precisionEM(0.01f),
-m_pInfEngine(pInfEng),
-m_obsFlags(0),
-m_bAllObserved(true),
-m_numProcEv(0),
-m_bDelInf( pInfEng == NULL)
+  CInfEngine *pInfEng, ELearningTypes LearnType):
+  CStaticLearningEngine( pGrModel, LearnType ),
+  m_maxIterEM(5), m_precisionEM(0.01f), m_pInfEngine(pInfEng), m_obsFlags(0),
+  m_bAllObserved(true), m_numProcEv(0), m_bDelInf( pInfEng == NULL)
 {
-    
 }
 
 CEMLearningEngine::~CEMLearningEngine()
 {
-    if( m_bDelInf )
-    {
-	delete m_pInfEngine;
-    }
+  if( m_bDelInf )
+  {
+    delete m_pInfEngine;
+  }
 }
 
 CEMLearningEngine * CEMLearningEngine::
@@ -92,100 +86,166 @@ void  CEMLearningEngine::SetTerminationToleranceEM(float precision)
 
 }
 
+void CEMLearningEngine::BuildEvidenceMatrix(int Node, float ***evid)
+{
+  int i, j;
+  const CEvidence* pCurrentEvid;
+  CStaticGraphicalModel *grmodel = GetStaticModel();
+
+  intVector parents;
+  parents.resize(0);
+  grmodel->GetGraph()->GetParents(Node, &parents);
+  parents.push_back(Node);
+
+  int NumOfNodes = grmodel->GetNumberOfNodes();
+  *evid = new float* [parents.size()];
+  for (i = 0; i < parents.size(); i++)
+  {
+    (*evid)[i] = new float [m_Vector_pEvidences.size()];
+  }
+
+  valueVector *values = new valueVector();
+  values->resize(NumOfNodes);
+
+  for (i = 0; i < m_Vector_pEvidences.size(); i++)
+  {
+    pCurrentEvid = m_Vector_pEvidences[i];
+    pCurrentEvid->GetRawData(values);
+    for (j = 0; j < parents.size(); j++)
+    {
+      (*evid)[j][i] = (*values)[parents[j]].GetFlt();
+    }
+  }
+}
+// ----------------------------------------------------------------------------
+
+void CEMLearningEngine::SetMaximizingMethod(EMaximizingMethod met)
+{
+  m_MaximizingMethod = met;
+}
+// ----------------------------------------------------------------------------
+
+EMaximizingMethod CEMLearningEngine::GetMaximizingMethod()
+{
+  return m_MaximizingMethod;
+}
+// ----------------------------------------------------------------------------
+
 void CEMLearningEngine::Learn()
 {
-    CStaticGraphicalModel *pGrModel =  this->GetStaticModel();
-    PNL_CHECK_IS_NULL_POINTER(pGrModel);
-    PNL_CHECK_LEFT_BORDER(GetNumEv() - GetNumberProcEv() , 1 );
-
-    CInfEngine *pInfEng = NULL;
-    if( m_pInfEngine )
+  CStaticGraphicalModel *pGrModel =  this->GetStaticModel();
+  PNL_CHECK_IS_NULL_POINTER(pGrModel);
+  PNL_CHECK_LEFT_BORDER(GetNumEv() - GetNumberProcEv() , 1);
+  
+  CInfEngine *pInfEng = NULL;
+  if (m_pInfEngine)
+  {
+    pInfEng = m_pInfEngine;
+  }
+  else
+  {
+    if (!m_bAllObserved)
     {
-	pInfEng = m_pInfEngine;
+      pInfEng = CJtreeInfEngine::Create(pGrModel);
+      m_pInfEngine = pInfEng;
     }
-    else
+  }
+  
+  float loglik = 0.0f;
+  
+  int nFactors = pGrModel->GetNumberOfFactors();
+  const CEvidence *pEv;
+  CFactor *pFactor;
+  
+  int iteration = 0;
+  int ev;
+  if (IsAllObserved())
+  {
+    int i;
+    float **evid = NULL;
+    EDistributionType dt;
+    CFactor *factor = NULL;
+    for (i = 0; i < nFactors; i++)
     {
-	if( !m_bAllObserved )
-	{
-	    pInfEng = CJtreeInfEngine::Create(pGrModel);
-	    m_pInfEngine = pInfEng;
-	}
+      factor = pGrModel->GetFactor(i);
+      dt = factor->GetDistributionType();
+      if (dt != dtSoftMax)
+      {
+        factor->UpdateStatisticsML(&m_Vector_pEvidences[GetNumberProcEv()], 
+          GetNumEv() - GetNumberProcEv());
+      }
+      else
+      {
+        BuildEvidenceMatrix(i, &evid);
+        CSoftMaxCPD* SoftMaxFactor = static_cast<CSoftMaxCPD*>(factor);
+        SoftMaxFactor->InitLearnData();
+        SoftMaxFactor->SetMaximizingMethod(m_MaximizingMethod);
+//        SoftMaxFactor->MaximumLikelihood(evid, m_numberOfLastEvidences, 
+        SoftMaxFactor->MaximumLikelihood(evid, m_Vector_pEvidences.size(),
+          0.00001f, 0.01f);
+        SoftMaxFactor->CopyLearnDataToDistrib();
+        for (int k = 0; k < factor->GetDomainSize(); k++)
+        {
+          delete [] evid[k];
+        }
+        delete [] evid;
+      }
     }
-
-    float loglik = 0.0f;
-    
-    int nFactors = pGrModel->GetNumberOfFactors();
-    const CEvidence *pEv;
-    CFactor *pFactor;
-    
-    int iteration = 0;
-    int ev;
-    if( IsAllObserved() )
+    m_critValue.push_back(UpdateModel());
+  }
+  else
+  {
+    bool bContinue;
+    do
     {
-	int i;
-	for( i = 0; i < nFactors; i++ )
-	{
-	    
-	    pGrModel->GetFactor(i)->UpdateStatisticsML( &m_Vector_pEvidences[GetNumberProcEv()], 
-		GetNumEv() - GetNumberProcEv() );
-	}
-	m_critValue.push_back( UpdateModel() );
-	
-    }
-    else
-    {
-	
-	bool bContinue;
-	do 
-	{
-	    ClearStatisticData();
-	    iteration++;
-	    for( ev = GetNumberProcEv(); ev < GetNumEv() ; ev++ )
-	    {
-		bool bInfIsNeed = !GetObsFlags(ev)->empty(); 
-		pEv = m_Vector_pEvidences[ev];
-		if( bInfIsNeed )
-		{
-		    pInfEng->EnterEvidence(pEv, 0, 0);
-		}
-		int i;
-		for( i = 0; i < nFactors; i++ )
-		{
-		    pFactor = pGrModel->GetFactor(i);
-		    int nnodes;
-		    const int * domain;
-		    pFactor->GetDomain( &nnodes, &domain );
-		    if( bInfIsNeed && !IsDomainObserved(nnodes, domain, ev ) )
-		    {
-			pInfEng->MarginalNodes( domain, nnodes, 1 );
-			pFactor->UpdateStatisticsEM( pInfEng->GetQueryJPD(), pEv );
-		    }
-		    else
-		    {
-			pFactor->UpdateStatisticsML( &pEv, 1 );
-		    }
-		}
-	    }
-	    
-	    loglik = UpdateModel();
-	    
-	    if( GetMaxIterEM() != 1)
-	    {
-		bool flag = iteration == 1 ? true : 
-		(fabs(2*(m_critValue.back()-loglik)/(m_critValue.back() + loglik)) > GetPrecisionEM() );
-		
-		bContinue = GetMaxIterEM() > iteration && flag;
-	    }
-	    else
-	    {
-		bContinue = false;
-	    }
-	    m_critValue.push_back(loglik);
-	    
-	}while(bContinue);
-    }
-    SetNumProcEv( GetNumEv() );
-    
+      ClearStatisticData();
+      iteration++;
+      for( ev = GetNumberProcEv(); ev < GetNumEv() ; ev++ )
+      {
+        bool bInfIsNeed = !GetObsFlags(ev)->empty(); 
+        pEv = m_Vector_pEvidences[ev];
+        if( bInfIsNeed )
+        {
+          pInfEng->EnterEvidence(pEv, 0, 0);
+        }
+        int i;
+        for( i = 0; i < nFactors; i++ )
+        {
+          pFactor = pGrModel->GetFactor(i);
+          int nnodes;
+          const int * domain;
+          pFactor->GetDomain( &nnodes, &domain );
+          if( bInfIsNeed && !IsDomainObserved(nnodes, domain, ev ) )
+          {
+            pInfEng->MarginalNodes( domain, nnodes, 1 );
+            pFactor->UpdateStatisticsEM( pInfEng->GetQueryJPD(), pEv );
+          }
+          else
+          {
+            pFactor->UpdateStatisticsML( &pEv, 1 );
+          }
+        }
+      }
+      
+      loglik = UpdateModel();
+      
+      if( GetMaxIterEM() != 1)
+      {
+        bool flag = iteration == 1 ? true : 
+        (fabs(2*(m_critValue.back()-loglik)/(m_critValue.back() + loglik)) > GetPrecisionEM() );
+        
+        bContinue = GetMaxIterEM() > iteration && flag;
+      }
+      else
+      {
+        bContinue = false;
+      }
+      m_critValue.push_back(loglik);
+      
+    }while(bContinue);
+  }
+  SetNumProcEv( GetNumEv() );
+  
 }
 
 
@@ -409,35 +469,36 @@ bool CEMLearningEngine::IsDomainObserved( int nnodes, const int* domain, int evN
 
 float CEMLearningEngine::UpdateModel()
 {
-    CStaticGraphicalModel *pGrModel = GetStaticModel();
-    int nFactors = pGrModel->GetNumberOfFactors();
-    float loglik = 0.0f;
-    switch ( pGrModel->GetModelType())
-    {
+  CStaticGraphicalModel *pGrModel = GetStaticModel();
+  int nFactors = pGrModel->GetNumberOfFactors();
+  float loglik = 0.0f;
+  switch ( pGrModel->GetModelType())
+  {
     case mtBNet:
-	{
-	    
-	    int i;
-	    for( i = 0; i < nFactors; i++ )
-	    {
-		loglik += pGrModel->GetFactor(i)->
-		    ProcessingStatisticalData( GetNumEv() );
-		
-	    }
-	    break;
-	}
+    {
+      
+      int i;
+      for( i = 0; i < nFactors; i++ )
+      {
+        if (pGrModel->GetFactor(i)->GetDistributionType() != dtSoftMax)
+        {
+          loglik += pGrModel->GetFactor(i)->
+            ProcessingStatisticalData( GetNumEv() );
+        }
+      }
+      break;
+    }
     case mtMRF2:
     case mtMNet:
-	{
-	    loglik = _LearnPotentials();
-	    break;
-	}
-    default:
-	{
-	    PNL_THROW(CBadConst, "model type" )
-		break;
-	}
+    {
+      loglik = _LearnPotentials();
+      break;
     }
-    return loglik;
-    
+    default:
+    {
+      PNL_THROW(CBadConst, "model type" )
+        break;
+    }
+  }
+  return loglik;
 }
