@@ -42,15 +42,13 @@ int main(int argc, char* argv[])
 {
   CBNet* pBNet = NULL;
   CEMLearningEngine *pLearnEng = NULL;
-  valueVector vls;
-//  vls.resize(1);
 
   #ifdef CREATE_SOFTMAX_BY_FUNCTION
 //    pBNet = CreateTwoNodeEx();
     pBNet = CreateSixNodeEx();
   #endif
   #ifdef LOAD_LIMID_BY_XML
-    //pBNet = LoadIDNetFromXML(argv[1]);
+    //pBNet = Load...
   #endif
 
   pLearnEng = CEMLearningEngine::Create(pBNet);
@@ -59,7 +57,6 @@ int main(int argc, char* argv[])
   SetRandomEvidences(pBNet, pLearnEng, -1.0, 1.0, 5);
 
   pLearnEng->SetMaximizingMethod(mmGradient);
-//  pLearnEng->SetMaximizingMethod(mmHessian);
 //  pLearnEng->SetMaximizingMethod(mmConjGradient);
 
   pLearnEng->Learn();
@@ -70,11 +67,6 @@ int main(int argc, char* argv[])
       case mmGradient:
       {
         printf("\nMaximizeMethod - GRADIENT\n");
-        break;
-      }
-      case mmHessian:
-      {
-        printf("\nMaximizeMethod - HESSIAN\n");
         break;
       }
       case mmConjGradient:

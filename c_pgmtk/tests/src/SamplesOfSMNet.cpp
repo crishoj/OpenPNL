@@ -19,6 +19,11 @@
 
 #include "SamplesOfSMNet.h"
 #include "pnlSoftMaxCPD.hpp"
+// ----------------------------------------------------------------------------
+
+#ifdef _DEBUG
+  #define SM_TEST
+#endif
 
 PNL_USING
 
@@ -250,22 +255,26 @@ CBNet* CreateSixNodeEx(void)
   weight30 = GenerateFloatArray((variableTypes[1].GetNodeSize()) * 
     (numOfNds - 1), 1.0f, 5.0f);
 
+#ifdef SM_TEST
   printf("\nweight30\n");
   for (i = 0; i < SizeOfWeight; i++)
   {
     printf("%f\t", weight30[i]);
   }
+#endif
 
   float *offset30;
   int SizeOfOffset = variableTypes[1].GetNodeSize();
   offset30 = GenerateFloatArray(variableTypes[1].GetNodeSize(), 1.0f, 5.0f);
 
+#ifdef SM_TEST
   printf("\noffset30\n");
   for (i = 0; i < SizeOfOffset; i++)
   {
     printf("%f\t", offset30[i] );
   }
   printf("\n\n");
+#endif
 
   pCPD5->AllocDistribution(weight30, offset30, parInd0);
 
@@ -298,17 +307,28 @@ void GenerateSoftMaxEvidence(CStaticGraphicalModel *pBNet, float StartVal,
     if ((dt == dtSoftMax) || (dt == dtTabular))
     {
       int valInt = rand() % NumOfNodeVal[i];
-      printf("%3d", valInt);
+
+#ifdef SM_TEST
+  printf("%3d", valInt);
+#endif
+
       (vls)[i].SetInt(valInt);
     }
     if (dt == dtGaussian)
     {
       float valFl = pnlRand(StartVal, FinishVal);
-      printf("%f\t", valFl);
+
+#ifdef SM_TEST
+  printf("%f\t", valFl);
+#endif
+
       (vls)[i].SetFlt(valFl);
     }
   }
+
+#ifdef SM_TEST
   printf("\n");
+#endif
 }
 // ----------------------------------------------------------------------------
 

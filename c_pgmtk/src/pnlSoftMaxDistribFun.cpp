@@ -1287,7 +1287,10 @@ void CSoftMaxDistribFun::MaximumLikelihoodGradient(float **Observations,
   //(NumberOfObservations) X (NumberOfNodes) - size of matrix of Observations
   
   NewLikelihood = CalculateLikelihood(Observations, NumOfObservations);
+
+#ifdef SM_TEST
   printf("OLD lIKELIHOOD %g\n", exp(NewLikelihood));
+#endif
 
   do
   {
