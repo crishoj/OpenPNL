@@ -8,20 +8,6 @@
 // FORWARDS
 struct TokIdNode;
 
-// bitwise flags for m_Objects member of BayesNet object
-const int eGraph       = 1;
-const int eModel       = 2;
-const int eInference   = 4;
-const int eLearning    = 8;
-const int eAllObjects  =15;
-
-const int nTypesObject = 4;
-
-#define NEED(A) ((A) & ((1 << nTypesObject) - 1))
-#define GET_NEEDS(A) NEED(A)
-#define PROHIBIT(A) ((A) << nTypesObject)
-#define GET_PROHIBITION(A) (((A) >> nTypesObject) & ((1 << nTypesObject) - 1))
-
 typedef enum
 {   eAddNode
 ,   eLoadNet

@@ -86,11 +86,7 @@ public:
     void Learn(TokArr aValue[] = NULL, int nValue = 0);
     
     //learn structure of the network using input evidences or evidence history
-#if 0 
-    BayesNet* LearnStructure(TokArr aValue[], int nValue); //maybe return some quality measure?
-#else
-    void LearnStructure(TokArr aValue[] = NULL, int nValue = 0); //maybe return some quality measure?
-#endif
+    void LearnStructure(TokArr aValue[], int nValue); //maybe return some quality measure?
 
     // returns MPE for nodes using current evidence
     TokArr MPE(TokArr nodes);

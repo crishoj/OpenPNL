@@ -30,7 +30,7 @@ namespace NetConst
     } ESavingType;    
 };
 
-#define INDEX(pTok) ((char*)pTok->data - (char*)0)
+//#define INDEX(pTok) ((char*)pTok->data - (char*)0)
 
 // FORWARDS
 struct TokArr;

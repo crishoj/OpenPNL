@@ -142,15 +142,13 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
     {
         Distribution(index)->FillData(pnl::matTable, value, probability, parentValue);
     }
-    else 
+    else
+    {
         if (nodeClass == eNodeClassContinuous)
         {
             if (static_cast<WGaussianDistribFun*>(Distribution(index))->
                 IsDistributionSpecific() == 1)
             {
-/*                if (m_aDistribution[index] != 0)
-                    delete m_aDistribution[index];
-*/
                   static_cast<WGaussianDistribFun*>(Distribution(index))->CreateDefaultDistribution();
             }
 
@@ -159,7 +157,8 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
         else
         {
 	    ThrowUsingError("Unsupported type of node", fname);
-        };
+        }
+    }
 }
 
 void WDistributions::DoNotify(int message, int iNode, ModelEngine *pObj)
