@@ -12,9 +12,6 @@ class TokenCover;
 class WDistributions;
 class NetCallback;
 class ProbabilisticNet;
-#if 0
-class WDistribFun;
-#endif
 
 namespace pnl
 {
@@ -35,8 +32,6 @@ class PNLHIGH_API BayesNet: public pnl::CPNLBase
 public:
     BayesNet();
     ~BayesNet();
-    friend class PersistWBNet;
-    friend class Scripting;
 
     // add node
     // examples: AddNode( "categoric^wheather", "sunny rainy" );

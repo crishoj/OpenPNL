@@ -89,7 +89,7 @@ void WDistributions::FillData(TokArr &value, TokArr &probability, TokArr &parent
 {
     PNL_CHECK_FOR_ZERO(value.size());
 
-    int index = Token().Index(value[0]);
+    int index = Token().iNode(value[0]);
 
     if(parentValue.size())
     {
