@@ -439,7 +439,25 @@ CPotential* CSoftMaxCPD::ConvertWithEvidenceToGaussianPotential(
                 m_CorrespDistribFun, MeanContParents, CovContParents);
 
             CPotential *pot2 = NULL;
-            if (pot->GetDomainSize() >= 3)
+
+            int domSize = pot->GetDomainSize();
+            bool IsAllContUnobserved = true;
+            const pConstNodeTypeVector* ntVec = pot->GetDistribFun()->GetNodeTypesVector();
+            for( int i = 0; i < domSize-1; i++  )    
+            {
+              intVector Domain;
+              pot->GetDomain(&Domain);
+              int curNode =  Domain[i];
+              if( (pEvidence->IsNodeObserved(curNode)))
+              {
+                if( !(*ntVec)[i]->IsDiscrete() )
+                {
+                  IsAllContUnobserved = false;
+                }
+              }
+            }
+
+            if ((pot->GetDomainSize() >= 3)&&(!IsAllContUnobserved))
             {
               pot2 = pot->ShrinkObservedNodes(pEvidence);
             }
@@ -508,8 +526,26 @@ CPotential* CSoftMaxCPD::ConvertWithEvidenceToGaussianPotential(
             
             resFactor->SetDistribFun( gauFactData );
 
+
             CPotential *pot = NULL;
-            if (resFactor->GetDomainSize() >= 3)
+
+            int domSize = resFactor->GetDomainSize();
+            bool IsAllContUnobserved = true;
+            const pConstNodeTypeVector* ntVec = resFactor->GetDistribFun()->GetNodeTypesVector();
+            for( i = 0; i < domSize-1; i++  )    
+            {
+              intVector Domain;
+              resFactor->GetDomain(&Domain);
+              int curNode =  Domain[i];
+              if( (pEvidence->IsNodeObserved(curNode)))
+              {
+                if( !(*ntVec)[i]->IsDiscrete() )
+                {
+                  IsAllContUnobserved = false;
+                }
+              }
+            }
+            if ((resFactor->GetDomainSize() >= 3)&&(!IsAllContUnobserved))
             {
               pot = resFactor->ShrinkObservedNodes(pEvidence);
             }
@@ -561,6 +597,9 @@ CPotential *CSoftMaxCPD::ConvertToGaussianPotential(const CEvidence* pEvidence,
         m_Domain.size(), GetModelDomain());
     
     resFactor->SetDistribFun( gauFactData );
+    //resFactor->Dump();
+    //resFactor = resFactor->ShrinkObservedNodes(pEvidence);
+    //resFactor->Dump();
     delete gauFactData;
     return resFactor;
 }
