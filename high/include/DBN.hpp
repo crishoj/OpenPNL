@@ -4,7 +4,6 @@
 #include <string>
 #include "pnlHighConf.hpp"
 #include "pnlTok.hpp"
-#include "Wcsv.hpp"
 
 // FORWARDS
 PNLW_BEGIN
@@ -151,7 +150,6 @@ private:
     pnl::CDBN *Model();
 
     const char PropertyAbbrev(const char *name) const;
-//    void RebindFrom(DBN *bnet);
 
 private:// DATA members
     pnl::CDynamicInfEngine *m_Inference;// inference, if it exists

@@ -1,5 +1,6 @@
 #include "DBN.hpp"
 #include "WInner.hpp"
+#include "Wcsv.hpp"
 #include "pnlWProbabilisticNet.hpp"
 #include "pnlWDistributions.hpp"
 #include "pnlWGraph.hpp"
