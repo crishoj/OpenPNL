@@ -31,7 +31,8 @@ typedef PNL_API enum
     itStructLearnBIC,
     itDBNParamLearnEm,
     itStructLearnML,
-    itDBNStructLearnML
+    itDBNStructLearnML,
+	itStructLearnSEM
 } ELearningTypes;
 
 class PNL_API CLearningEngine : public CPNLBase
