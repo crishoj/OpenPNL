@@ -1,0 +1,126 @@
+tab-separated fields are: coordinated universal date and time (it is nearly date and time of checkout), environment id, autobuild summary, code coverage summary, space-separated list of failed/crashed tests
+Note: it is normal for w2k_vc6 autobuilds to have "bad_build" code coverage summary -- vc6 just crashes with internal error trying to compile instrumented tests.
+02/03/04 xx:xx:xx	w2k_icc	failed	crashed_74.1	testSetStatistics
+02/03/04 xx:xx:xx	w2k_icc	crashed	not_demanded	testConditionalGaussianLearning
+02/04/04 xx:xx:xx	w2k_icc	crashed	unknown	testBKInfDBN testBKInfUsingClusters testConditionalGaussianLearning testGibbsInference testMixtureGaussianLearning testMultiply testSetStatistics
+02/04/04 xx:xx:xx	w2k_icc	failed	74.1	testConditionalGaussianLearning
+02/06/04 xx:xx:xx	w2k_icc	bad_build	skipped	
+02/06/04 13:29:14	w2k_icc	bad_build	skipped	
+02/06/04 13:51:22	w2k_icc	bad_build	skipped	
+02/06/04 14:39:54	w2k_icc	bad_build	skipped	
+02/09/04 10:57:46	w2k_icc	failed	unknown	testConditionalGaussianLearning
+02/09/04 23:20:02	w2k_vc6	crashed	crashed_0	testBKInfUsingClusters testSaveLoadEvidences
+02/11/04 11:13:28	w2k_vc6	crashed	crashed_0	testSaveLoadEvidences
+02/11/04 23:20:03	w2k_vc6	crashed	bad_build	testBKInfDBN
+02/12/04 23:20:01	w2k_icc	crashed	unknown	testGenerateEvidences
+02/13/04 14:08:13	w2k_icc	failed	unknown	testConditionalGaussianLearning
+02/13/04 23:22:02	w2k_icc	unknown	crashed_57.6	
+02/14/04 23:20:02	w2k_icc	crashed	unknown	testGibbsInference
+02/15/04 18:41:30	lin_gcc	crashed	not_demanded	
+02/15/04 23:20:02	w2k_icc	failed	crashed_57.5	testConditionalGaussianLearning
+02/16/04 13:08:52	lin_gcc	crashed	unknown	testBKInfDBN
+02/16/04 13:28:21	lin_gcc	crashed	unknown	testBKInfDBN testBayesLearningEngine testFactorLearningEngine testGaussianFactorLearningEngine testLearnParamDBN
+02/17/04 10:37:47	lin_gcc	failed	crashed_74.8	testConditionalGaussianLearning
+02/17/04 23:20:23	w2k_icc	success	unknown	
+02/18/04 23:20:02	w2k_icc	bad_build	skipped	
+02/19/04 11:23:04	w2k_icc	failed	74.7	testLearningCondGaussDBN
+02/19/04 23:20:06	w2k_icc	crashed	unknown	testConditionalGaussianLearning
+02/20/04 23:20:02	w2k_icc	success	unknown	
+02/21/04 23:20:02	w2k_icc	failed	unknown	testConditionalGaussianLearning testLearningCondGaussDBN
+02/22/04 23:20:01	w2k_icc	crashed	unknown	testConditionalGaussianLearning testGibbsInference testMixtureGaussianLearning
+02/23/04 23:20:01	w2k_icc	crashed	75.2	testConditionalGaussianLearning testGibbsInference
+02/24/04 23:20:05	w2k_icc	success	unknown	
+02/25/04 23:20:05	w2k_icc	crashed	unknown	testConditionalGaussianLearning
+02/26/04 23:20:04	w2k_icc	failed	unknown	testLearningCondGaussDBN
+03/01/04 23:20:02	w2k_icc	crashed	unknown	testConditionalGaussianLearning
+03/02/04 23:20:02	w2k_icc	failed	75.2	testLearningCondGaussDBN
+03/03/04 23:20:03       w2k_icc crashed unknown unknown
+03/05/04 14:07:04	w2k_vc6	crashed	bad_build	testConditionalGaussianLearning
+03/05/04 23:21:10	w2k_vc6	crashed	bad_build	testConditionalGaussianLearning
+03/06/04 23:20:01	w2k_vc6	failed	bad_build	testConditionalGaussianLearning testLearningCondGaussDBN
+03/07/04 23:20:01	w2k_vc6	success	bad_build	
+03/08/04 23:20:02	w2k_icc	crashed	crashed_44.0	test2TPFInfDBN testLearningCondGaussDBN
+03/09/04 23:20:02	w2k_icc	crashed	crashed_43.8	test2TPFInfDBN
+03/10/04 23:20:03	w2k_icc	crashed	unknown	
+03/11/04 23:20:02	w2k_vc6	bad_build	skipped	
+03/12/04 23:20:03	w2k_vc6	crashed	bad_build	test2TPFInfDBN
+03/13/04 23:20:02	w2k_icc	crashed	crashed_44.0	test2TPFInfDBN
+03/15/04 23:20:02	w2k_icc	crashed	crashed_44.1	test2TPFInfDBN
+03/16/04 23:20:02	w2k_icc	crashed	unknown	
+03/17/04 14:18:09	w2k_icc	crashed	crashed_44.0	test2TPFInfDBN testLearningCondGaussDBN testSetStatistics
+03/17/04 15:35:35	w2k_icc	not_demanded	crashed_44.3	test2TPFInfDBN testLearningCondGaussDBN testSetStatistics
+03/17/04 16:57:29	w2k_icc	crashed	unknown	test2TPFInfDBN testGaussianFactorLearningEngine testGaussianInf testGaussianMRF2 testLearningCondGaussDBN testSetStatistics
+03/17/04 23:20:02	w2k_icc	crashed	unknown	test2TPFInfDBN testLearningCondGaussDBN testSetStatistics
+03/18/04 11:28:23	w2k_icc	crashed	unknown	test2TPFInfDBN
+03/18/04 14:34:52	w2k_icc	crashed	crashed_43.9	test2TPFInfDBN testShrinkObservedNodes
+03/18/04 16:07:58	w2k_icc	crashed	bad_build	test2TPFInfDBN
+03/18/04 23:20:06	w2k_icc	crashed	unknown	test2TPFInfDBN
+03/19/04 14:05:54	lin_gcc	bad_build	skipped	
+03/19/04 23:20:02	w2k_vc6	crashed	bad_build	testInfForRndBNet
+03/20/04 23:20:01	w2k_vc6	failed	bad_build	testLearningCondGaussDBN
+03/21/04 23:20:01	w2k_vc6	failed	bad_build	testLearningCondGaussDBN
+03/22/04 09:31:15	w2k_icc	success	not_demanded	
+03/22/04 23:20:02	w2k_icc	crashed	crashed_0	testGaussianFactorLearningEngine
+03/23/04 13:47:07	w2k_vc6	success	not_demanded	
+03/23/04 23:20:02	w2k_icc	success	bad_build	
+03/24/04 13:37:27	w2k_icc	not_demanded	76.2	
+03/24/04 23:20:02	w2k_icc	success	76.1	
+03/25/04 23:20:02	w2k_icc	success	unknown	
+03/26/04 23:20:10	w2k_icc	success	76.0	
+03/28/04 22:20:02	w2k_icc	success	76.1	
+04/01/04 22:20:06	w2k_icc	success	76.1	
+04/02/04 22:20:02	w2k_icc	success	crashed_0	
+04/03/04 22:20:02	w2k_icc	success	76.1	
+04/05/04 22:20:03	w2k_icc	success	76.1	
+04/06/04 22:20:03	w2k_icc	bad_build	skipped	
+04/07/04 22:20:05	w2k_icc	bad_build	skipped	
+04/08/04 22:20:05	w2k_icc	bad_build	skipped	
+04/09/04 22:20:05	w2k_icc	success	76.3	
+04/11/04 22:20:03	w2k_icc	success	76.3	
+04/12/04 22:20:03	w2k_vc6	failed	bad_build	testGenerateEvidences
+04/13/04 13:37:26	w2k_vc6	failed	not_demanded	
+04/13/04 14:17:06	w2k_vc6	success	not_demanded	
+04/13/04 22:20:01	w2k_vc6	success	bad_build	
+04/14/04 22:20:02	w2k_vc6	success	bad_build	
+04/16/04 22:20:09	w2k_icc	failed	74.6	testGaussianMRF2
+04/19/04 12:53:46	w2k_icc	failed	74.7	testGaussianMRF2
+04/19/04 22:20:56	w2k_icc	failed	75.4	testGaussianMRF2
+04/20/04 22:20:02	w2k_vc6	crashed	bad_build	testGaussianMRF2 testGibbsInference testInfForRndBNet
+04/21/04 22:20:02	w2k_vc6	failed	bad_build	testGaussianMRF2
+04/22/04 22:20:01	w2k_icc	failed	75.5	testGaussianMRF2
+04/23/04 22:20:02	w2k_icc	failed	75.5	testGaussianMRF2
+04/26/04 22:20:54	w2k_icc	failed	75.4	testGaussianMRF2
+04/27/04 22:20:02	w2k_icc	success	crashed_27.2	
+04/28/04 22:20:02	w2k_icc	success	77.0	
+04/29/04 22:20:02	w2k_icc	success	75.9	
+04/30/04 22:20:02	w2k_icc	success	75.9	
+05/03/04 22:20:02	w2k_icc	success	75.9	
+05/05/04 22:20:02	w2k_vc6	success	bad_build	
+05/06/04 22:20:57	w2k_vc6	success	bad_build	
+05/07/04 22:20:02	w2k_vc6	success	bad_build	
+05/08/04 22:20:01	w2k_vc6	success	bad_build	
+05/09/04 22:20:01	w2k_vc6	success	bad_build	
+05/10/04 22:20:02	w2k_icc	success	75.8	
+05/11/04 22:20:02	w2k_icc	failed	75.8	testMixtureGaussianLearning
+05/12/04 22:20:11	w2k_icc	success	75.9	
+05/13/04 22:20:01	w2k_icc	success	75.9	
+05/14/04 22:20:02	w2k_icc	success	75.9	
+05/17/04 22:20:04	w2k_icc	success	75.8	
+05/19/04 22:20:08	w2k_icc	success	75.8	
+05/20/04 22:20:03	w2k_icc	success	75.9	
+05/21/04 22:20:02	w2k_vc6	failed	bad_build	testBKInfUsingClusters
+05/22/04 22:20:01	w2k_vc6	success	bad_build	
+05/23/04 22:20:02	w2k_vc6	success	bad_build	
+05/24/04 22:20:01	w2k_icc	success	75.9	
+05/25/04 22:20:02	w2k_icc	success	75.9	
+05/26/04 22:20:01	w2k_icc	success	75.9	
+05/27/04 22:20:02	w2k_icc	failed	75.9	testGibbsInference
+05/28/04 22:20:02	w2k_icc	success	75.9	
+05/29/04 22:20:01	w2k_icc	success	75.8	
+05/31/04 22:20:01	w2k_icc	success	75.8	
+06/01/04 22:20:01	w2k_icc	success	crashed_73.9	
+06/02/04 22:20:02	w2k_icc	success	75.9	
+06/03/04 22:20:02	w2k_icc	success	75.7	
+06/06/04 22:20:01	w2k_icc	success	75.7	
+06/07/04 22:20:01	w2k_icc	crashed	75.7	testGaussianFactorLearningEngine
+06/08/04 20:20:02	w2k_icc	failed	75.7	testLWInference
