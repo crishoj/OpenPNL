@@ -2,10 +2,12 @@
 #include "pnlException.hpp"
 #include "pnl_dll.hpp"
 
+using namespace std;
+
 const string nameOfModel = "Model";
 const string nameOfEvidence = "my_ev";
 
-std::ostream &operator<<(std::ostream &str, TokArr &ta)
+std::ostream &operator<<(std::ostream &str, const TokArr &ta)
 {
     return str << String(ta);
 }

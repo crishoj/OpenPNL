@@ -32,7 +32,9 @@ static const char *round(int *best, int *result, int human, int computer)
 
 std::ostream &operator<<(std::ostream &str, TokArr &ta)
 {
-    return str << String(ta);
+    String ta_str(ta);
+    return str << ta_str;
+//    return str << String(ta);
 }
 
 // used by ReadHumanResponse

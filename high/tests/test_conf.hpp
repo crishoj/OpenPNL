@@ -11,7 +11,7 @@ namespace pnl
 
 PNLW_USING
 
-std::ostream &operator<<(std::ostream &str, TokArr &ta);
+std::ostream &operator<<(std::ostream &str, const TokArr &ta);
 void SimpleModel();
 
 int testDBN();
@@ -24,7 +24,7 @@ int testDBNMPE();
 int testDBNLearning();
 int testDBNSaveLoad();
 
-pnl::CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<pnl::CEvidence*>* pEv);
+pnl::CGraphicalModel* LoadGrModelFromXML(const std::string& xmlname, std::vector<pnl::CEvidence*>* pEv);
 void PureLimidModel1();
 void PureLimidModel2();
 void PureLimidModel3();

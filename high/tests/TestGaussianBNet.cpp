@@ -457,7 +457,7 @@ void SimpleModel()
     float cov = CovarX2[0].FltValue();
 
     net.SetProperty("Inference", "jtree");
-    TokArr X3Marg = net.GetJPD("x3");
+    const TokArr X3Marg = net.GetJPD("x3");
     Tok x3Mean = X3Marg[0];
     Tok x3Cov = X3Marg[1];
 

@@ -2,6 +2,10 @@
 #include "pnlException.hpp"
 #include "pnl_dll.hpp"
 
+#if !defined(WIN32)
+#define itoa(__val,__str,__rad) sprintf((__str), "%i", (__val))
+#endif
+
 PNLW_USING
 using namespace std;
 
