@@ -208,6 +208,8 @@ bool bTokArrEqual(TokArr first, TokArr second, float eps)
     int i;
     for(i = 0; i < first.size(); i++)
     {
+	first[i].Resolve();
+	second[i].Resolve();
         if(first[i].FltValue() - second[i].FltValue() > eps)
         {
             return false;
@@ -283,13 +285,13 @@ void TestMRFGetJPD()
             PNL_THROW(pnl::CAlgorithmicException, "Results of Pearl and Naive inferences are diferent");
         }
         
-        /*net->SetProperty("Inference", "gibbs");
+        net->SetProperty("Inference", "gibbs");
         gJPD = net->GetJPD(nodeName);
         
-        if(!bTokArrEqual(gJPD, nJPD, eps2))
+        if(!bTokArrEqual(gJPD, nJPD, eps3))
         {
             PNL_THROW(pnl::CAlgorithmicException, "Results of Gibbs and Naive inferences are diferent");
-        }*/
+        }
     }
     net->SetProperty("Inference", "jtree");
     jJPD = net->GetJPD("node7 node6");
