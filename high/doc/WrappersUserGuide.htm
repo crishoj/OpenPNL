@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+sre<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html><head>
 <link rel="STYLESHEET" href="style.css" charset="ISO-8859-1" type="text/css">
 <title>PNL Wrappers: User Guide</title>
@@ -701,6 +701,15 @@ net.AddNode("continuous^x4", "dim1");
 </p>
 The first argument of this method is type and name of the new node.  The second argument is the name of dimension. In our example all nodes have only one dimension, and that is why the second argument is always the same – the name of single dimension. The name of dimension is essential only for user, it can be chosen at will.
 </p>
+If the node has only one dimension it is possible not to use name of dimension.<p>
+<pre>
+net.AddNode("continuous^x0"); 
+net.AddNode("continuous^x1"); 
+net.AddNode("continuous^x2"); 
+net.AddNode("continuous^x3"); 
+net.AddNode("continuous^x4");
+</pre>
+</p>
 <hr>
 
 <h3><a name="AddEdgesGau">Adding edges</a></h3>
@@ -725,8 +734,8 @@ Now we can specify the probabilities on the network nodes. Default probability d
 Let's set distributions on the nodes x0 and x1.
 <p>
 <pre>
-net.SetPGaussian("x0", "1.0", "4.0")
-net.SetPGaussian("x1", "1.0", "1.0")
+net.SetPGaussian("x0", "1.0", "4.0");
+net.SetPGaussian("x1", "1.0", "1.0");
 </pre>
 </p>
 The first argument of this function is the name of the node. The second is the mean of the corresponding variate, the third – dispersion.
@@ -763,14 +772,14 @@ Here we will describe the way of working with evidences in wrappers. BayesNet cl
 <br>Default current evidence is empty. User can edit it with the EditEvidence method:
 <p>
 <pre>
-net.EditEvidence("x0^dim1^0.4");
+net.EditEvidence("x0^0.4");
 </pre>
 </p>
 While defining the observation on the continuous node, it is necessary to specify the name of the node, the name of the dimension and the observed value. 
 <br>You can also put evidence to evidence buffer without editing. Call AddEvidToBuf method:
 <p>
 <pre>
-net.AddEvidToBuf("x0^dim1^0.4");
+net.AddEvidToBuf("x0^0.4");
 </pre>
 </p>
 Usage of the other functions, which are calling to work with evidences (CurEvidToBuf, ClearEvid, ClearEvidBuf, SaveEvidBuffer, LoadEvidBuffer, GenerateEvidences), is similar to the discrete case.
@@ -804,7 +813,28 @@ If Bayesian network and probability distributions have been already defined, we 
 TokArr X3Marg = net.GetJPD("x3");
 TokArr X3MPE = net.GetMPE("x3");
 </pre>
+<p>Now it is possible to represent marginal distribution as float numbers: 
+<p>
+<pre>
+Tok x3Mean = X3Marg[0];
+Tok x3Cov = X3Marg[1];
+<p>
+float x3M = x3Mean.FltValue(0).fl;
+float x3C = x3Cov.FltValue(0).fl;
+</pre>
+<p>The following values are now stored in the variables: 
+<p><pre>
+x3M	-0.924000	
+x3C	4.698897		
+</pre>
 </p>
+<p>
+It is possible to represent MPE as float number:
+</p>
+<pre>
+float x3MPE = X3MPE[0].FltValue(0).fl;
+</pre>
+
 <hr>
 
 <h2><a name="MultiGau">Multivariate Gaussian case</a></h2>
