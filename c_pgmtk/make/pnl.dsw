@@ -92,6 +92,12 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name mixture_gaussian_bnet
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name TestLIMID
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name TestSoftMax
+    End Project Dependency
 }}}
 
 ###############################################################################
