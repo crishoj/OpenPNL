@@ -26,6 +26,7 @@
 
 PNL_BEGIN
 
+PNL_API CPotential* pnlMultiply(CPotential* Pot1, CPotential* Pot2, CModelDomain* pMD);
 
 class PNL_API CPotential : public CFactor  
 {

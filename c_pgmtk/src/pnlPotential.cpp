@@ -26,6 +26,68 @@
 #include "pnlLogDriver.hpp"
 #include "pnlLogUsing.hpp"
 
+PNL_BEGIN
+//currently can only deal with dtTabular, dtGaussian & dtScalar
+CPotential* pnlMultiply( CPotential* Pot1, CPotential* Pot2, CModelDomain* pMD )
+{
+	EDistributionType dt1 = Pot1->GetDistributionType();
+	EDistributionType dt2 = Pot2->GetDistributionType();
+	if( (dt1 != dtTabular && dt1 !=dtGaussian && dt1 != dtScalar) &&
+		(dt2 != dtTabular && dt2 !=dtGaussian && dt2 != dtScalar) )
+	{
+		PNL_THROW(CInvalidOperation, "only implemented for tabular/gaussian/scalar potential");
+	}
+	if(dt1 != dt2)
+	{
+		if((dt1 != dtScalar) && (dt2 != dtScalar))
+			PNL_THROW(CInvalidOperation, "at least one should be dtScalar");
+	}
+	EDistributionType dt;
+	if(dt1 != dtScalar)
+		dt = dt1;
+	else
+		dt = dt2;
+
+	int loc, bigSize;
+	intVector Domain1, Domain2, bigDomain;
+	intVector Obspos1, Obspos2, Obspos;
+	intVector Obsnodes1, Obsnodes2, Obsnodes;
+	Pot1->GetDomain(&Domain1);
+	Pot2->GetDomain(&Domain2);
+	bigDomain = pnlSetUnion(Domain2.size(), Domain2.begin(), Domain1.size(), Domain1.begin());
+
+	Pot1->GetObsPositions(&Obspos1);
+	Pot2->GetObsPositions(&Obspos2);
+	for(int i=0; i<Obspos1.size(); i++)
+	{
+		Obsnodes1.push_back(Domain1[Obspos1[i]]);
+	}
+	for(i=0; i<Obspos2.size(); i++)
+	{
+		Obsnodes2.push_back(Domain2[Obspos2[i]]);
+	}
+	Obsnodes = pnlSetUnion(Obsnodes1.size(), Obsnodes1.begin(), Obsnodes2.size(), Obsnodes2.begin());
+	bigSize = bigDomain.size();
+	for(i=0; i<Obsnodes.size(); i++)
+	{
+		loc = std::find(bigDomain.begin(), bigDomain.end(), Obsnodes[i]) - bigDomain.begin();
+		if( loc < bigSize )
+			Obspos.push_back(loc);
+	}
+	CPotential* bigPotential;
+	if(dt == dtTabular || dt == dtScalar)
+		bigPotential = CTabularPotential::CreateUnitFunctionDistribution(
+				bigDomain.begin(), bigDomain.size(), pMD, 1, Obspos);
+	else
+		bigPotential = CGaussianPotential::CreateUnitFunctionDistribution(
+				bigDomain.begin(), bigDomain.size(), pMD, 1, Obspos);
+
+	*bigPotential *= *Pot1;
+	*bigPotential *= *Pot2;
+	return bigPotential;
+}
+PNL_END
+
 PNL_USING
 
 CPotential::CPotential( EDistributionType dt, EFactorType ft, CModelDomain* pMD )
