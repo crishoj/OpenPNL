@@ -18,6 +18,8 @@
 #ifndef __PNLSTRING_HPP__
 #define __PNLSTRING_HPP__
 
+#include <stdio.h>
+
 PNL_BEGIN
 
 // FORWARDS
