@@ -399,7 +399,7 @@ CBNet* CreateInitSimpleBNet()
 
 void main()
 {
-    int nodes=11;
+    int nodes = 11;
 	CBNet* pMix = Create1DMixBNet();
     pEvidencesVector evidences;
 	int nEv = 1000;
@@ -416,7 +416,16 @@ void main()
 	CStaticStructLearnSEM* pLearn = CStaticStructLearnSEM::Create(pInit, itStructLearnSEM, 3);
     pLearn -> SetData(nEv, evidences.begin());
 
-	pLearn->Learn();
+    pLearn->Learn();
+    CBNet *resBNet;
+    resBNet = pLearn->GetCurrBNet();
+    
+    resBNet->GetGraph()->Dump();
+    
+    printf("\n Result Factors\n");
+    for (i = 0; i < resBNet->GetGraph()->GetNumberOfNodes(); i++)
+        resBNet->GetFactor(i)->GetDistribFun()->Dump();
+    
 	delete pLearn;
 	delete pInit;
 	delete pMix;
