@@ -34,6 +34,7 @@
 #include "pnlMixtureGaussianCPD.hpp"
 #include "pnlTabularCPD.hpp"
 #include "pnlGaussianCPD.hpp"
+#include "pnlSoftMaxCPD.hpp"
 #include "pnlTreeCPD.hpp"
 #include <sstream>
 
@@ -839,6 +840,18 @@ CFactor* CFactor::CopyWithNewDomain(const CFactor *factor, intVector &domain,
                 {
                     pNewFactor = CGaussianCPD::
                         Copy(static_cast<const CGaussianCPD*>(factor));
+                    break;
+                }
+            case dtSoftMax:
+                {
+                    pNewFactor = CSoftMaxCPD::
+                        Copy(static_cast<const CSoftMaxCPD*>(factor));
+                    break;
+                }
+            case dtCondSoftMax:
+                {
+                    pNewFactor = CSoftMaxCPD::
+                        Copy(static_cast<const CSoftMaxCPD*>(factor));
                     break;
                 }
             case dtMixGaussian:
