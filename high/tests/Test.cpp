@@ -1078,6 +1078,510 @@ TestMultivariateWrapperJPD()
     };
 }
 
+
+TestMultivariateWrapperLearn()
+{
+    vector<CEvidence*> evidences;
+    CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));
+
+    int nSamples = 20;  
+    pEvidencesVector evidBnet(nSamples);
+    intVector obsNodes(5);
+    obsNodes[0] = 0;
+    obsNodes[1] = 1;
+    obsNodes[2] = 2;
+    obsNodes[3] = 3;
+    obsNodes[4] = 4;
+
+    valueVector obsValues(10);
+
+    for (int ev = 0; ev < nSamples; ev++)
+    {
+	switch (ev)
+	{
+	case 0:
+	    obsValues[0].SetFlt(-1.314024);
+	    obsValues[1].SetFlt(2.792187);
+	    obsValues[2].SetFlt(2.959786);
+	    obsValues[3].SetFlt(0.586695);
+	    obsValues[4].SetFlt(3.930957);
+	    obsValues[5].SetFlt(3.473877);
+	    obsValues[6].SetFlt(13.123615);
+	    obsValues[7].SetFlt(18.016819);
+	    obsValues[8].SetFlt(22.066160);
+	    obsValues[9].SetFlt(142.535583);
+	    break;
+	case 1:
+	    obsValues[0].SetFlt(1.516309);
+	    obsValues[1].SetFlt(-2.071994);
+	    obsValues[2].SetFlt(1.431869);
+	    obsValues[3].SetFlt(0.513529);
+	    obsValues[4].SetFlt(1.555178);
+	    obsValues[5].SetFlt(2.488395);
+	    obsValues[6].SetFlt(7.941903);
+	    obsValues[7].SetFlt(7.503506);
+	    obsValues[8].SetFlt(12.018921);
+	    obsValues[9].SetFlt(74.253006);
+	    break;
+   	case 2:
+	    obsValues[0].SetFlt(0.772414);
+	    obsValues[1].SetFlt(1.280176);
+	    obsValues[2].SetFlt(2.784338);
+	    obsValues[3].SetFlt(0.592082);
+	    obsValues[4].SetFlt(0.847529);
+	    obsValues[5].SetFlt(4.232452);
+	    obsValues[6].SetFlt(8.659535);
+	    obsValues[7].SetFlt(12.584901);
+	    obsValues[8].SetFlt(17.584988);
+	    obsValues[9].SetFlt(108.877640);
+	    break;
+	case 3:
+	    obsValues[0].SetFlt(	2.969814	);
+	    obsValues[1].SetFlt(	0.690449	);
+	    obsValues[2].SetFlt(	-0.161992	);
+	    obsValues[3].SetFlt(	2.977564	);
+	    obsValues[4].SetFlt(	1.232187	);
+	    obsValues[5].SetFlt(	3.291015	);
+	    obsValues[6].SetFlt(	8.872681	);
+	    obsValues[7].SetFlt(	15.076061	);
+	    obsValues[8].SetFlt(	18.509748	);
+	    obsValues[9].SetFlt(	115.510925	);
+	    break;
+	case 4:
+	    obsValues[0].SetFlt(	1.951843	);
+	    obsValues[1].SetFlt(	-0.308100	);
+	    obsValues[2].SetFlt(	1.074400	);
+	    obsValues[3].SetFlt(	0.251534	);
+	    obsValues[4].SetFlt(	3.094074	);
+	    obsValues[5].SetFlt(	1.402124	);
+	    obsValues[6].SetFlt(	7.841857	);
+	    obsValues[7].SetFlt(	11.138101	);
+	    obsValues[8].SetFlt(	12.521315	);
+	    obsValues[9].SetFlt(	84.961678	);
+	    break;
+	case 5:
+	    obsValues[0].SetFlt(	0.747681	);
+	    obsValues[1].SetFlt(	1.348657	);
+	    obsValues[2].SetFlt(	1.818290	);
+	    obsValues[3].SetFlt(	-0.420393	);
+	    obsValues[4].SetFlt(	1.441154	);
+	    obsValues[5].SetFlt(	1.523428	);
+	    obsValues[6].SetFlt(	5.019363	);
+	    obsValues[7].SetFlt(	7.473093	);
+	    obsValues[8].SetFlt(	11.312609	);
+	    obsValues[9].SetFlt(	67.377525	);
+
+	    break;
+	case 6:
+	    obsValues[0].SetFlt(	0.312565	);
+	    obsValues[1].SetFlt(	0.441745	);
+	    obsValues[2].SetFlt(	1.035443	);
+	    obsValues[3].SetFlt(	0.038601	);
+	    obsValues[4].SetFlt(	1.209402	);
+	    obsValues[5].SetFlt(	1.733555	);
+	    obsValues[6].SetFlt(	5.187507	);
+	    obsValues[7].SetFlt(	6.917145	);
+	    obsValues[8].SetFlt(	9.996355	);
+	    obsValues[9].SetFlt(	61.404808	);
+	    break;
+	case 7:
+	    obsValues[0].SetFlt(	2.718882	);
+	    obsValues[1].SetFlt(	-0.785555	);
+	    obsValues[2].SetFlt(	3.049016	);
+	    obsValues[3].SetFlt(	1.716233	);
+	    obsValues[4].SetFlt(	-0.760518	);
+	    obsValues[5].SetFlt(	2.427294	);
+	    obsValues[6].SetFlt(	5.681553	);
+	    obsValues[7].SetFlt(	8.862487	);
+	    obsValues[8].SetFlt(	12.503481	);
+	    obsValues[9].SetFlt(	74.564087	);
+	    break;
+	case 8:
+	    obsValues[0].SetFlt(	-1.121321	);
+	    obsValues[1].SetFlt(	1.733628	);
+	    obsValues[2].SetFlt(	1.306383	);
+	    obsValues[3].SetFlt(	0.293589	);
+	    obsValues[4].SetFlt(	0.543559	);
+	    obsValues[5].SetFlt(	3.344014	);
+	    obsValues[6].SetFlt(	6.040576	);
+	    obsValues[7].SetFlt(	9.374549	);
+	    obsValues[8].SetFlt(	13.150803	);
+	    obsValues[9].SetFlt(	80.041092	);
+	    break;
+	case 9:
+	    obsValues[0].SetFlt(	-0.360260	);
+	    obsValues[1].SetFlt(	1.217422	);
+	    obsValues[2].SetFlt(	2.224474	);
+	    obsValues[3].SetFlt(	0.466464	);
+	    obsValues[4].SetFlt(	1.284630	);
+	    obsValues[5].SetFlt(	1.706728	);
+	    obsValues[6].SetFlt(	9.596039	);
+	    obsValues[7].SetFlt(	10.672682	);
+	    obsValues[8].SetFlt(	13.843320	);
+	    obsValues[9].SetFlt(	90.556984	);
+	    break;
+	case 10:
+	    obsValues[0].SetFlt(	1.109505	);
+	    obsValues[1].SetFlt(	-0.030694	);
+	    obsValues[2].SetFlt(	1.439583	);
+	    obsValues[3].SetFlt(	1.614625	);
+	    obsValues[4].SetFlt(	2.275853	);
+	    obsValues[5].SetFlt(	2.585066	);
+	    obsValues[6].SetFlt(	10.824589	);
+	    obsValues[7].SetFlt(	12.524777	);
+	    obsValues[8].SetFlt(	16.171900	);
+	    obsValues[9].SetFlt(	101.475403	);
+	    break;
+	case 11:
+	    obsValues[0].SetFlt(	-0.391896	);
+	    obsValues[1].SetFlt(	1.590519	);
+	    obsValues[2].SetFlt(	3.769660	);
+	    obsValues[3].SetFlt(	1.700410	);
+	    obsValues[4].SetFlt(	-1.098416	);
+	    obsValues[5].SetFlt(	2.047136	);
+	    obsValues[6].SetFlt(	9.699523	);
+	    obsValues[7].SetFlt(	11.976645	);
+	    obsValues[8].SetFlt(	12.292547	);
+	    obsValues[9].SetFlt(	86.394669	);
+	    break;
+	case 12:
+	    obsValues[0].SetFlt(	2.213909	);
+	    obsValues[1].SetFlt(	-0.018399	);
+	    obsValues[2].SetFlt(	1.968136	);
+	    obsValues[3].SetFlt(	0.594479	);
+	    obsValues[4].SetFlt(	0.980654	);
+	    obsValues[5].SetFlt(	2.739914	);
+	    obsValues[6].SetFlt(	7.519217	);
+	    obsValues[7].SetFlt(	9.284959	);
+	    obsValues[8].SetFlt(	12.982949	);
+	    obsValues[9].SetFlt(	82.558670	);
+	    break;
+	case 13:
+	    obsValues[0].SetFlt(	0.906269	);
+	    obsValues[1].SetFlt(	-0.191971	);
+	    obsValues[2].SetFlt(	1.248619	);
+	    obsValues[3].SetFlt(	1.601107	);
+	    obsValues[4].SetFlt(	1.852811	);
+	    obsValues[5].SetFlt(	1.027700	);
+	    obsValues[6].SetFlt(	5.874196	);
+	    obsValues[7].SetFlt(	10.684824	);
+	    obsValues[8].SetFlt(	12.331678	);
+	    obsValues[9].SetFlt(	79.168434	);
+	    break;
+	case 14:
+	    obsValues[0].SetFlt(	-0.363741	);
+	    obsValues[1].SetFlt(	-0.154812	);
+	    obsValues[2].SetFlt(	2.758295	);
+	    obsValues[3].SetFlt(	0.883432	);
+	    obsValues[4].SetFlt(	0.878577	);
+	    obsValues[5].SetFlt(	1.137673	);
+	    obsValues[6].SetFlt(	4.925128	);
+	    obsValues[7].SetFlt(	7.360548	);
+	    obsValues[8].SetFlt(	10.508783	);
+	    obsValues[9].SetFlt(	64.697655	);
+	    break;
+	case 15:
+	    obsValues[0].SetFlt(	-0.444381	);
+	    obsValues[1].SetFlt(	-0.658948	);
+	    obsValues[2].SetFlt(	2.038244	);
+	    obsValues[3].SetFlt(	-0.678944	);
+	    obsValues[4].SetFlt(	0.299459	);
+	    obsValues[5].SetFlt(	0.842612	);
+	    obsValues[6].SetFlt(	3.658324	);
+	    obsValues[7].SetFlt(	3.702670	);
+	    obsValues[8].SetFlt(	6.275494	);
+	    obsValues[9].SetFlt(	39.931580	);
+	    break;
+	case 16:
+	    obsValues[0].SetFlt(	0.380659	);
+	    obsValues[1].SetFlt(	-0.114203	);
+	    obsValues[2].SetFlt(	1.262064	);
+	    obsValues[3].SetFlt(	0.992305	);
+	    obsValues[4].SetFlt(	2.888480	);
+	    obsValues[5].SetFlt(	3.225816	);
+	    obsValues[6].SetFlt(	10.485537	);
+	    obsValues[7].SetFlt(	16.212713	);
+	    obsValues[8].SetFlt(	17.348351	);
+	    obsValues[9].SetFlt(	116.609734	);
+	    break;
+	case 17:
+	    obsValues[0].SetFlt(	1.728963	);
+	    obsValues[1].SetFlt(	1.383902	);
+	    obsValues[2].SetFlt(	1.616821	);
+	    obsValues[3].SetFlt(	0.478158	);
+	    obsValues[4].SetFlt(	-0.505311	);
+	    obsValues[5].SetFlt(	2.282217	);
+	    obsValues[6].SetFlt(	6.962461	);
+	    obsValues[7].SetFlt(	10.439819	);
+	    obsValues[8].SetFlt(	10.104074	);
+	    obsValues[9].SetFlt(	75.615761	);
+	    break;
+	case 18:
+	    obsValues[0].SetFlt(	0.776983	);
+	    obsValues[1].SetFlt(	1.884337	);
+	    obsValues[2].SetFlt(	1.044936	);
+	    obsValues[3].SetFlt(	-1.312427	);
+	    obsValues[4].SetFlt(	0.476133	);
+	    obsValues[5].SetFlt(	3.073510	);
+	    obsValues[6].SetFlt(	0.751903	);
+	    obsValues[7].SetFlt(	6.565332	);
+	    obsValues[8].SetFlt(	10.350166	);
+	    obsValues[9].SetFlt(	56.209145	);
+	    break;
+	case 19:
+	    obsValues[0].SetFlt(	-0.713351	);
+	    obsValues[1].SetFlt(	0.111894	);
+	    obsValues[2].SetFlt(	1.480657	);
+	    obsValues[3].SetFlt(	0.156705	);
+	    obsValues[4].SetFlt(	2.330819	);
+	    obsValues[5].SetFlt(	3.500447	);
+	    obsValues[6].SetFlt(	11.273463	);
+	    obsValues[7].SetFlt(	10.621621	);
+	    obsValues[8].SetFlt(	14.949851	);
+	    obsValues[9].SetFlt(	96.590942	);
+	    break;
+
+	};
+
+	evidBnet[ev] = pnl::CEvidence::Create(pBNet, obsNodes, obsValues);
+    };
+
+   
+    pnl::CEMLearningEngine *m_Learning = pnl::CEMLearningEngine::Create(pBNet);
+
+    m_Learning->SetData( nSamples, &evidBnet.front() );
+    m_Learning->SetMaxIterEM(10);
+
+    m_Learning->Learn();
+
+    for( int i = 0; i < 5; i++ )
+    {
+	std::cout<<"\n ___ node "<<i<<"_________________________\n";
+	std::cout<<"\n____ BNet_________________________________\n";
+	pBNet->GetFactor(i)->GetDistribFun()->Dump();
+    }
+}
+
+TestMultivariateWrapperLearnPartOfObservation()
+{
+    vector<CEvidence*> evidences;
+    CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));
+
+    int nSamples = 20;  
+    pEvidencesVector evidBnet(nSamples);
+    intVector obsNodes(3);
+    obsNodes[0] = 0;
+    obsNodes[1] = 2;
+    obsNodes[2] = 3;
+
+
+    valueVector obsValues(7);
+
+    for (int ev = 0; ev < nSamples; ev++)
+    {
+	switch (ev)
+	{
+	case 0:
+	    obsValues[0].SetFlt(-1.314024);
+	    obsValues[1].SetFlt(0.586695);
+	    obsValues[2].SetFlt(3.930957);
+	    obsValues[3].SetFlt(3.473877);
+	    obsValues[4].SetFlt(13.123615);
+	    obsValues[5].SetFlt(18.016819);
+	    obsValues[6].SetFlt(22.066160);
+	    break;
+	case 1:
+	    obsValues[0].SetFlt(1.516309);
+	    obsValues[1].SetFlt(0.513529);
+	    obsValues[2].SetFlt(1.555178);
+	    obsValues[3].SetFlt(2.488395);
+	    obsValues[4].SetFlt(7.941903);
+	    obsValues[5].SetFlt(7.503506);
+	    obsValues[6].SetFlt(12.018921);
+	    break;
+   	case 2:
+	    obsValues[0].SetFlt(0.772414);
+	    obsValues[1].SetFlt(0.592082);
+	    obsValues[2].SetFlt(0.847529);
+	    obsValues[3].SetFlt(4.232452);
+	    obsValues[4].SetFlt(8.659535);
+	    obsValues[5].SetFlt(12.584901);
+	    obsValues[6].SetFlt(17.584988);
+	    break;
+	case 3:
+	    obsValues[0].SetFlt(	2.969814	);
+	    obsValues[1].SetFlt(	2.977564	);
+	    obsValues[2].SetFlt(	1.232187	);
+	    obsValues[3].SetFlt(	3.291015	);
+	    obsValues[4].SetFlt(	8.872681	);
+	    obsValues[5].SetFlt(	15.076061	);
+	    obsValues[6].SetFlt(	18.509748	);
+	    break;
+	case 4:
+	    obsValues[0].SetFlt(	1.951843	);
+	    obsValues[1].SetFlt(	0.251534	);
+	    obsValues[2].SetFlt(	3.094074	);
+	    obsValues[3].SetFlt(	1.402124	);
+	    obsValues[4].SetFlt(	7.841857	);
+	    obsValues[5].SetFlt(	11.138101	);
+	    obsValues[6].SetFlt(	12.521315	);
+	    break;
+	case 5:
+	    obsValues[0].SetFlt(	0.747681	);
+	    obsValues[1].SetFlt(	-0.420393	);
+	    obsValues[2].SetFlt(	1.441154	);
+	    obsValues[3].SetFlt(	1.523428	);
+	    obsValues[4].SetFlt(	5.019363	);
+	    obsValues[5].SetFlt(	7.473093	);
+	    obsValues[6].SetFlt(	11.312609	);
+	    break;
+	case 6:
+	    obsValues[0].SetFlt(	0.312565	);
+	    obsValues[1].SetFlt(	0.038601	);
+	    obsValues[2].SetFlt(	1.209402	);
+	    obsValues[3].SetFlt(	1.733555	);
+	    obsValues[4].SetFlt(	5.187507	);
+	    obsValues[5].SetFlt(	6.917145	);
+	    obsValues[6].SetFlt(	9.996355	);
+	    break;
+	case 7:
+	    obsValues[0].SetFlt(	2.718882	);
+	    obsValues[1].SetFlt(	1.716233	);
+	    obsValues[2].SetFlt(	-0.760518	);
+	    obsValues[3].SetFlt(	2.427294	);
+	    obsValues[4].SetFlt(	5.681553	);
+	    obsValues[5].SetFlt(	8.862487	);
+	    obsValues[6].SetFlt(	12.503481	);
+	    break;
+	case 8:
+	    obsValues[0].SetFlt(	-1.121321	);
+	    obsValues[1].SetFlt(	0.293589	);
+	    obsValues[2].SetFlt(	0.543559	);
+	    obsValues[3].SetFlt(	3.344014	);
+	    obsValues[4].SetFlt(	6.040576	);
+	    obsValues[5].SetFlt(	9.374549	);
+	    obsValues[6].SetFlt(	13.150803	);
+	    break;
+	case 9:
+	    obsValues[0].SetFlt(	-0.360260	);
+	    obsValues[1].SetFlt(	0.466464	);
+	    obsValues[2].SetFlt(	1.284630	);
+	    obsValues[3].SetFlt(	1.706728	);
+	    obsValues[4].SetFlt(	9.596039	);
+	    obsValues[5].SetFlt(	10.672682	);
+	    obsValues[6].SetFlt(	13.843320	);
+	    break;
+	case 10:
+	    obsValues[0].SetFlt(	1.109505	);
+	    obsValues[1].SetFlt(	1.614625	);
+	    obsValues[2].SetFlt(	2.275853	);
+	    obsValues[3].SetFlt(	2.585066	);
+	    obsValues[4].SetFlt(	10.824589	);
+	    obsValues[5].SetFlt(	12.524777	);
+	    obsValues[6].SetFlt(	16.171900	);
+	    break;
+	case 11:
+	    obsValues[0].SetFlt(	-0.391896	);
+	    obsValues[1].SetFlt(	1.700410	);
+	    obsValues[2].SetFlt(	-1.098416	);
+	    obsValues[3].SetFlt(	2.047136	);
+	    obsValues[4].SetFlt(	9.699523	);
+	    obsValues[5].SetFlt(	11.976645	);
+	    obsValues[6].SetFlt(	12.292547	);
+	    break;
+	case 12:
+	    obsValues[0].SetFlt(	2.213909	);
+	    obsValues[1].SetFlt(	0.594479	);
+	    obsValues[2].SetFlt(	0.980654	);
+	    obsValues[3].SetFlt(	2.739914	);
+	    obsValues[4].SetFlt(	7.519217	);
+	    obsValues[5].SetFlt(	9.284959	);
+	    obsValues[6].SetFlt(	12.982949	);
+	    break;
+	case 13:
+	    obsValues[0].SetFlt(	0.906269	);
+	    obsValues[1].SetFlt(	1.601107	);
+	    obsValues[2].SetFlt(	1.852811	);
+	    obsValues[3].SetFlt(	1.027700	);
+	    obsValues[4].SetFlt(	5.874196	);
+	    obsValues[5].SetFlt(	10.684824	);
+	    obsValues[6].SetFlt(	12.331678	);
+	    break;
+	case 14:
+	    obsValues[0].SetFlt(	-0.363741	);
+	    obsValues[1].SetFlt(	0.883432	);
+	    obsValues[2].SetFlt(	0.878577	);
+	    obsValues[3].SetFlt(	1.137673	);
+	    obsValues[4].SetFlt(	4.925128	);
+	    obsValues[5].SetFlt(	7.360548	);
+	    obsValues[6].SetFlt(	10.508783	);
+	    break;
+	case 15:
+	    obsValues[0].SetFlt(	-0.444381	);
+	    obsValues[1].SetFlt(	-0.678944	);
+	    obsValues[2].SetFlt(	0.299459	);
+	    obsValues[3].SetFlt(	0.842612	);
+	    obsValues[4].SetFlt(	3.658324	);
+	    obsValues[5].SetFlt(	3.702670	);
+	    obsValues[6].SetFlt(	6.275494	);
+	    break;
+	case 16:
+	    obsValues[0].SetFlt(	0.380659	);
+	    obsValues[1].SetFlt(	0.992305	);
+	    obsValues[2].SetFlt(	2.888480	);
+	    obsValues[3].SetFlt(	3.225816	);
+	    obsValues[4].SetFlt(	10.485537	);
+	    obsValues[5].SetFlt(	16.212713	);
+	    obsValues[6].SetFlt(	17.348351	);
+	    break;
+	case 17:
+	    obsValues[0].SetFlt(	1.728963	);
+	    obsValues[1].SetFlt(	0.478158	);
+	    obsValues[2].SetFlt(	-0.505311	);
+	    obsValues[3].SetFlt(	2.282217	);
+	    obsValues[4].SetFlt(	6.962461	);
+	    obsValues[5].SetFlt(	10.439819	);
+	    obsValues[6].SetFlt(	10.104074	);
+	    break;
+	case 18:
+	    obsValues[0].SetFlt(	0.776983	);
+	    obsValues[1].SetFlt(	-1.312427	);
+	    obsValues[2].SetFlt(	0.476133	);
+	    obsValues[3].SetFlt(	3.073510	);
+	    obsValues[4].SetFlt(	0.751903	);
+	    obsValues[5].SetFlt(	6.565332	);
+	    obsValues[6].SetFlt(	10.350166	);
+	    break;
+	case 19:
+	    obsValues[0].SetFlt(	-0.713351	);
+	    obsValues[1].SetFlt(	0.156705	);
+	    obsValues[2].SetFlt(	2.330819	);
+	    obsValues[3].SetFlt(	3.500447	);
+	    obsValues[4].SetFlt(	11.273463	);
+	    obsValues[5].SetFlt(	10.621621	);
+	    obsValues[6].SetFlt(	14.949851	);
+	    break;
+	};
+
+	evidBnet[ev] = pnl::CEvidence::Create(pBNet, obsNodes, obsValues);
+    };
+
+   
+    pnl::CEMLearningEngine *m_Learning = pnl::CEMLearningEngine::Create(pBNet);
+
+    m_Learning->SetData( nSamples, &evidBnet.front() );
+    m_Learning->SetMaxIterEM(10);
+
+    m_Learning->Learn();
+
+    for( int i = 0; i < 5; i++ )
+    {
+	std::cout<<"\n ___ node "<<i<<"_________________________\n";
+	std::cout<<"\n____ BNet_________________________________\n";
+	pBNet->GetFactor(i)->GetDistribFun()->Dump();
+    }
+}
+
 int main(char* argv[], int argc)
 {
 	bool IsTestOK = true;
@@ -1090,6 +1594,8 @@ int main(char* argv[], int argc)
 	try 
 	{
 		TestMultivariateWrapperJPD();
+		TestMultivariateWrapperLearn();
+		TestMultivariateWrapperLearnPartOfObservation();
 	}
 	catch(pnl::CException e)
 	{
