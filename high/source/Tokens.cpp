@@ -244,7 +244,7 @@ TokIdNode::TokIdNode(TokId id): h_next(0), h_prev(0), v_next(0), v_prev(0), leve
     Alias(id);
 }
 
-std::pair<TokIdNode *, int> TokIdNode::ResolveOne(ResolveContext &resContext)
+std::pair<TokIdNode *, int> TokIdNode::ResolveOne(const ResolveContext &resContext)
 {
     Map::const_iterator it, itEnd;
     const Map &desc = resContext.m_Context->desc;

@@ -24,7 +24,7 @@
 #endif
 
 #if !defined(WIN32)
-#define itoa(__val,__str,_rad) sprintf(__str, "%i", __val)
+#define itoa(__val,__str,_rad) sprintf((__str), "%i", (__val))
 #endif
 
 PNLW_BEGIN
@@ -745,7 +745,9 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 		    }
 		    else
 		    {
-			lex.PutValue(String());
+			tmpstr.resize(0);
+			tmpstr = String();
+			lex.PutValue(tmpstr);
 		    }
 		}
 

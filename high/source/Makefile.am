@@ -17,10 +17,12 @@ libhigh_la_SOURCES =      \
      MRF.cpp     \
      MRFCB.cpp     \
      ModelEngine.cpp     \
+     NetCallBack.cpp     \
      PersistProbNet.cpp     \
      PersistWNodeInfo.cpp     \
      PersistWTypes.cpp     \
      TokenCover.cpp     \
+     Tokens.cpp     \
      WCliques.cpp     \
      WCover.cpp     \
      WDistribFun.cpp     \

@@ -94,7 +94,7 @@ public:
     static TokIdNode *GetNextLeaf(TokIdNode const *node, TokIdNode const *subroot = root);
     static TokIdNode *GetNext(TokIdNode const *node, TokIdNode const *subroot = root);
 
-    static std::pair< TokIdNode *, int > ResolveOne(ResolveContext &resContext);
+    static std::pair< TokIdNode *, int > ResolveOne(const ResolveContext &resContext);
 
     static bool Match(TokIdNode const *node1, std::deque< TokId >::const_iterator unres1, int len1,
 		      TokIdNode const *node2, std::deque< TokId >::const_iterator unres2, int len2);

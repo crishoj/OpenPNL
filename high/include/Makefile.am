@@ -17,6 +17,7 @@ nobase_highinclude_HEADERS =      \
      PersistWNodeInfo.hpp     \
      PersistWTypes.hpp     \
      TokenCover.hpp     \
+     Tokens.hpp     \
      WCliques.hpp     \
      WCover.hpp     \
      WDistribFun.hpp     \
