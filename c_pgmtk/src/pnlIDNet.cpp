@@ -19,7 +19,7 @@
 #include "pnlConfig.hpp"
 #include "pnlIDNet.hpp"
 #include <sstream>
-#include <xstring>
+#include <string>
 // ----------------------------------------------------------------------------
 
 PNL_USING
