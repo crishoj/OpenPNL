@@ -1,4 +1,5 @@
 #include "WDistribFun.hpp"
+#include "WInner.hpp"
 #include "pnl_dll.hpp"
 #include "pnlString.hpp"
 #include "pnlTok.hpp"
@@ -89,10 +90,24 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
     Vector<int> aIndex(desc()->nNode(), -1);
     int i, mIndex, mValue;
     TokIdNode *valueBayesNode = value[0].Node();
+    TokIdNode *node = (valueBayesNode->tag != eTagNetNode) ? valueBayesNode->v_prev:valueBayesNode;
 
+    if(!node || node->tag != eTagNetNode)
+    {
+	ThrowUsingError("Token must point to Bayes node", fname);
+    }
     for(i = value.size(); --i >= 1;)
     {
-	if(value[i].Node() != valueBayesNode)
+	TokIdNode *tnode = value[i].Node();
+	if(tnode->tag != eTagNetNode)
+	{
+	    tnode = tnode->v_prev;
+	}
+	if(!tnode || tnode->tag != eTagNetNode)
+	{
+	    ThrowUsingError("Token must point to Bayes node", fname);
+	}
+	if(tnode != node)
 	{
 	    ThrowUsingError("Node must be same for all values", fname);
 	}
