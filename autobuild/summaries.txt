@@ -181,3 +181,4 @@ Note: it is normal for w2k_vc6 autobuilds to have "bad_build" code coverage summ
 08/25/04 20:20:02	w2k_icc	crashed	70.6	testComputeLikelihood testInfForRndBNet testMixtureGaussianLearning
 08/26/04 20:20:02	w2k_icc	failed	70.5	testComputeLikelihood
 08/27/04 20:20:02	w2k_icc	failed	70.5	testComputeLikelihood
+08/30/04 20:20:02	w2k_icc	failed	70.5	testComputeLikelihood
