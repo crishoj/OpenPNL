@@ -6,7 +6,7 @@
 //   or disclosed except in accordance with the terms of that agreement.   //
 //       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        //
 //                                                                         //
-//  File:      pnlGaussianDistribFun.cpp                                   //
+//  File:      pnlSoftMaxDistribFun.cpp                                   //
 //                                                                         //
 //  Purpose:   CSoftMaxDistribFun class member functions implementation    //
 //                                                                         //
@@ -1156,13 +1156,13 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
   floatVector vecK = floatVector((*kvec).size());
   memcpy(&vecK[0], &(*kvec)[0], (*kvec).size()*sizeof(float));
 
-  pNodeTypeVector *NodeTypes = new pNodeTypeVector();
+  pConstNodeTypeVector *NodeTypes = new pConstNodeTypeVector();
   for (i = 0; i < m_NumberOfNodes - 1; i++)
   {   
-    CNodeType *newType = m_NodeTypes[i];
+    const CNodeType *newType = m_NodeTypes[i];
     NodeTypes->push_back(newType);
   }
-  CNodeType *newType = &m_ZeroNT;
+  const CNodeType *newType = &m_ZeroNT;
   NodeTypes->push_back(newType);
   
   factData = CGaussianDistribFun::CreateInCanonicalForm(m_NumberOfNodes, 
@@ -2465,6 +2465,6 @@ void CSoftMaxDistribFun::CalculateMeanAndCovariance(float OldKsi, float r,
 }
 
 // ----------------------------------------------------------------------------
-CNodeType CSoftMaxDistribFun::m_ZeroNT = CNodeType(0,0,nsChance);
+const CNodeType CSoftMaxDistribFun::m_ZeroNT = CNodeType(0,0,nsChance);
 
 // end of file ----------------------------------------------------------------

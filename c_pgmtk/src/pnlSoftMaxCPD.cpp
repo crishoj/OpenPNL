@@ -131,7 +131,7 @@ void CSoftMaxCPD::AllocDistribution(const float* pWeights,
 {
     PNL_CHECK_IS_NULL_POINTER(pWeights);
     PNL_CHECK_IS_NULL_POINTER(pOffsets);
-
+    
 ////////////////////////////////////////////////
     const CNodeType *nt;
     nt = GetModelDomain()->GetVariableType( m_Domain[m_Domain.size()-1] );
@@ -240,8 +240,27 @@ void CSoftMaxCPD::UpdateStatisticsML(const CEvidence* const* pEvidences,
 
 void CSoftMaxCPD::GenerateSample(CEvidence* evidence, int maximize) const
 {
-    PNL_THROW(CNotImplemented, "haven't for CSoftMaxCPD now ");
+  //need to check
+  //is all parents observed
+  int NNodes = m_Domain.size();
+  bool isObserved = true;
+
+  for (int node = 0; node < NNodes - 1; node++) 
+    if (!evidence->IsNodeObserved(m_Domain[node]))
+      isObserved = false;
+     
+  CPotential *pTabPot;
+
+  if (!isObserved) {
+		PNL_THROW(CAlgorithmicException, "all parents must be observed");
+	}
+
+  pTabPot = ConvertWithEvidenceToTabularPotential(evidence);
+  pTabPot->GenerateSample(evidence);
+
+  delete pTabPot;
 }
+
 // ----------------------------------------------------------------------------
 
 CPotential* CSoftMaxCPD::ConvertStatisticToPot(int numOfSamples) const
@@ -393,9 +412,9 @@ CPotential *CSoftMaxCPD::ConvertToTabularPotential(const CEvidence* pEvidence) c
         }
     }
 
-    delete pCopyEvidence;
     delete [] parentIndexes;
     delete [] obsNodes;
+    delete pCopyEvidence;
     return resFactor;
 }
 
@@ -424,6 +443,7 @@ CPotential* CSoftMaxCPD::ConvertWithEvidenceToGaussianPotential(
         {
             int i;
             const CSoftMaxDistribFun* dtSM;
+
             dtSM = 
                 static_cast<CCondSoftMaxDistribFun*>(m_CorrespDistribFun)->
                 GetDistribution(parentIndices);
