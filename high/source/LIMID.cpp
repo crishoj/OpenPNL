@@ -261,7 +261,7 @@ TokArr LIMID::GetP(TokArr child, TokArr parents)
     int i;
     Net().ExtractTokArr(child, &childNd, &childVl);
     
-    Net().Graph()->IGraph( &childNd, &childNdInner);
+    Net().Graph().IGraph( &childNd, &childNdInner);
     
     // node for all child must be same (its may differ by combination only)
     for(i = childNd.size(); --i > 0; ++i)
@@ -283,7 +283,7 @@ TokArr LIMID::GetP(TokArr child, TokArr parents)
     if( nparents )
     {
         Net().ExtractTokArr(parents, &parentNds, &parentVls);
-        Net().Graph()->IGraph( &parentNds, &parentNdsInner);
+        Net().Graph().IGraph( &parentNds, &parentNdsInner);
         if( parentVls.size() == 0 ||
             std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
         {
@@ -314,7 +314,7 @@ TokArr LIMID::GetP(TokArr child, TokArr parents)
         result << Net().CutReq( parentNds, parentVls, mat);
     }
     
-    Net().Token()->SetContext(result);
+    Net().Token().SetContext(result);
     return result;
 }
 

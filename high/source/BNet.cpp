@@ -348,7 +348,7 @@ void BayesNet::SetInferenceProperties(TokArr &nodes)
 	pnl::intVecVector queries(1);
 	queries[0].clear();
 	
-	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls, &Net().Graph()->MapOuterToGraph());
+	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls, &Net().Graph().MapOuterToGraph());
 	infGibbs->SetQueries( queries );
 	
 	if(GetProperty("GibbsNumberOfIterations").length())
@@ -463,7 +463,7 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     Vector<int> queryNds, queryVls;
     Vector<int> queryNdsInner;
     Net().ExtractTokArr(nodes, &queryNds, &queryVls);
-    Net().Graph()->IGraph(&queryNds, &queryNdsInner);
+    Net().Graph().IGraph(&queryNds, &queryNdsInner);
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
