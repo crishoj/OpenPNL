@@ -87,30 +87,30 @@ CPersistenceZoo *GetZoo()
     {
         CPersistenceZoo *pZoo = persistenceZooHolder.m_pZoo
             = new CPersistenceZoo;
-        pZoo->Register(new CGraphPersistence());
-        pZoo->Register(new CPersistNodeType());
-        pZoo->Register(new CPersistNodeValues());
-        pZoo->Register(new CPersistNumericVector<int>("int"));
-        pZoo->Register(new CPersistNumericVector<float>("float"));
-        pZoo->Register(new CPersistNumericVecVector<int>("int"));
-        pZoo->Register(new CPersistValueVector());
-        pZoo->Register(new CPersistGaussianDistribFun());
-        pZoo->Register(new CPersistTabularDistribFun());
-        pZoo->Register(new CPersistSoftMaxDistribFun());
-        pZoo->Register(new CPersistCondGaussianDistribFun());
-        pZoo->Register(new CPersistCondSoftMaxDistribFun());
-        pZoo->Register(new CPersistScalarDistribFun());
-        pZoo->Register(new CPersistModelDomain());
-        pZoo->Register(new CPersistBNet());
-        pZoo->Register(new CPersistIDNet());
-        pZoo->Register(new CPersistMNet());
-        pZoo->Register(new CPersistMRF2());
-        pZoo->Register(new CPersistFactor());
-        pZoo->Register(new CPersistNodeTypeVector());
-        pZoo->Register(new CPersistPNodeTypeVector());
-        pZoo->Register(new CPersistMatrixFlt());
-        pZoo->Register(new CPersistMatrixDistribFun());
-        pZoo->Register(new CPersistEvidence());
+        new CGraphPersistence();
+        new CPersistNodeType();
+        new CPersistNodeValues();
+        new CPersistNumericVector<int>("int");
+        new CPersistNumericVector<float>("float");
+        new CPersistNumericVecVector<int>("int");
+        new CPersistValueVector();
+        new CPersistGaussianDistribFun();
+        new CPersistTabularDistribFun();
+        new CPersistSoftMaxDistribFun();
+        new CPersistCondGaussianDistribFun();
+        new CPersistCondSoftMaxDistribFun();
+        new CPersistScalarDistribFun();
+        new CPersistModelDomain();
+        new CPersistBNet();
+        new CPersistIDNet();
+        new CPersistMNet();
+        new CPersistMRF2();
+        new CPersistFactor();
+        new CPersistNodeTypeVector();
+        new CPersistPNodeTypeVector();
+        new CPersistMatrixFlt();
+        new CPersistMatrixDistribFun();
+        new CPersistEvidence();
     }
 
     return persistenceZooHolder.m_pZoo;
@@ -181,10 +181,9 @@ void CPersistenceZoo::RescanIfNeed()
     if(m_iUpdate != siQueueUpdate)
     {
 	CPersistence *pPers = spQueueHead;
-	Map::iterator it = m_aFuncMap.find(pPers->Signature());
 	
 	// register without checking all unregistered CPersistence
-	for(;(it = m_aFuncMap.find(pPers->Signature())) == m_aFuncMap.end();
+	for(;pPers && m_aFuncMap.find(pPers->Signature()) == m_aFuncMap.end();
 	    pPers = pPers->m_pNext)
 	{
 	    m_aFuncMap[pPers->Signature()] = pPers;
