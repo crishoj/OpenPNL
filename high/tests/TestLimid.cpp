@@ -8,6 +8,42 @@ std::ostream &operator<<(std::ostream &str, TokArr &ta)
     return str << String(ta);
 }
 
+const string nameOfModel = "Model";
+const string nameOfEvidence = "my_ev";
+
+
+pnl::CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<pnl::CEvidence*>* pEv)
+{
+    pnl::CGraphicalModel* pGM = NULL;
+    
+    pnl::CContextPersistence ContextLoad;
+    if ( !ContextLoad.LoadXML(xmlname) )
+    {
+        cout << "\nfile " << xmlname.c_str() << "isn't correct as XML";
+        return NULL;
+    }
+    pGM = static_cast<pnl::CGraphicalModel*>(ContextLoad.Get(nameOfModel.c_str()));    
+    if (NULL == pGM)
+    {
+        cout << "\nfile " << xmlname.c_str() << 
+            "isn't containing an object with name: " << nameOfModel.c_str();
+        return NULL;
+    }
+
+    if (pEv)
+    {
+        pnl::CEvidence* ev = NULL;
+        
+        pEv->clear();
+        ev = static_cast<pnl::CEvidence*>(
+            ContextLoad.Get(string(nameOfEvidence + "0").c_str()));
+        if (ev) 
+            pEv->push_back(ev);
+    }
+    
+    return pGM;
+}
+
 OilTest()
 {
     LIMID *net;
@@ -167,26 +203,75 @@ TestPigs()
     net->SetValueCost("u4^Cost", "1000.0", "h4^False");
     net->SetValueCost("u4^Cost", "300.0", "h4^True");
 
-    net->SaveNet("pigs.xml");
+/*    net->SaveNet("pigs.xml");
 
     LIMID *newNet;
     newNet = new LIMID();
 
     newNet->LoadNet("pigs.xml");
 
-//    newNet->SetIterMax(5);
-
+*/
     TokArr exp;
-    exp = newNet->GetExpectation();
+    exp = net->GetExpectation();
     cout << exp;
     cout <<"\n";
 
-/*    TokArr politics;
+    TokArr politics;
     politics = net->GetPolitics();
     cout << politics;
     cout <<"\n";
+
+    delete net;
+}
+
+void testRandom()
+{
+    // wrapper works
+    int i;
+    LIMID *net;
+    net = new LIMID();
+
+//    net->LoadNet("random15.xml");
+    net->LoadNet("random20.xml");
+//    net->LoadNet("random25.xml");
+    
+    TokArr exp;
+    exp = net->GetExpectation();
+    cout << exp;
+    cout <<"\n";
+
+    TokArr politics;
+    politics = net->GetPolitics();
+    cout << politics;
+    cout <<"\n";
+    delete net;
+
+    // PNL works
+
+//    pnl::CIDNet *pIDNet = dynamic_cast<pnl::CIDNet*>(LoadGrModelFromXML("random15.xml", NULL));
+    pnl::CIDNet *pIDNet = dynamic_cast<pnl::CIDNet*>(LoadGrModelFromXML("random20.xml", NULL));
+//    pnl::CIDNet *pIDNet = dynamic_cast<pnl::CIDNet*>(LoadGrModelFromXML("random25.xml", NULL));
+    
+    pnl::CLIMIDInfEngine *pInfEng = NULL;
+    pInfEng = pnl::CLIMIDInfEngine::Create(pIDNet);
+  
+/*    for (int i =0; i<pIDNet->GetGraph()->GetNumberOfNodes(); i++ )
+      pIDNet->GetFactor(i)->GetDistribFun()->Dump();
 */
-//    delete net;
+    pInfEng->DoInference();
+    
+    pnl::pFactorVector *Vec = pInfEng->GetPolitics();
+    printf("\n=====================\nPolitics are:\n");
+    for ( i = 0; i < Vec->size(); i++)
+    {
+        (*Vec)[i]->GetDistribFun()->Dump();
+    }
+    float res = pInfEng->GetExpectation();
+    printf("\nExpectation is %.3f", res);
+    
+    pnl::CLIMIDInfEngine::Release(&pInfEng);
+    delete pIDNet;
+
 }
 
 int main(char* argv[], int argc)
@@ -195,8 +280,9 @@ int main(char* argv[], int argc)
 	
 	try 
 	{
-            TestPigs();
+//            TestPigs();
 //            OilTest();
+            testRandom();
 	}
 	catch(pnl::CException e)
 	{
