@@ -5,11 +5,19 @@ highincludedir = $(prefix)/high/include
 nobase_highinclude_HEADERS =      \
      BNet.hpp     \
      BNetCB.hpp     \
+     DBN.hpp     \
+     DBNCB.hpp     \
+     LIMID.hpp     \
+     LIMIDCB.hpp     \
+     MRF.hpp     \
+     MRFCB.hpp     \
      ModelEngine.hpp     \
      NetCallBack.hpp     \
-     PersistWBNet.hpp     \
+     PersistProbNet.hpp     \
      PersistWNodeInfo.hpp     \
+     PersistWTypes.hpp     \
      TokenCover.hpp     \
+     WCliques.hpp     \
      WCover.hpp     \
      WDistribFun.hpp     \
      WInner.hpp     \
