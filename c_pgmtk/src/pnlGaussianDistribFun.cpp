@@ -1955,7 +1955,7 @@ void CGaussianDistribFun::UpdateMomentForm()
             //{
                 //we recompute it if m_g takes the specified value
                 //but its all right if it takes this value accidentally - no problem
-                float p1 = (float)pow((double)(2*PNL_PI), (n/2) );
+                float p1 = (float)pow((double)(2*PNL_PI), (n/2.0f) );
                 float detCov = m_pMatrixCov->Determinant();
                 if( detCov < 0 )
                 {
@@ -2454,8 +2454,8 @@ int CGaussianDistribFun::IsEqual( const CDistribFun *dataToCompare,
                                 ? 1:0;
                             if( maxDifference && !ret )
                             {
-                                *maxDifference = ( difMean > difNormCoeff )
-                                    ? difMean:difNormCoeff;
+                                *maxDifference = ( difMean > difCov )
+                                    ? difMean:difCov;
                             }
                         }
                         else
