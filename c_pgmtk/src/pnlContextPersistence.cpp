@@ -152,6 +152,13 @@ bool CContextPersistence::LoadXML(const std::string &filename)
     return true;
 }
 
+bool CContextPersistence::LoadXMLToContainer(CXMLContainer *container, const std::string &filename)
+{
+    CContextLoadXML xml(filename);
+
+    return xml.SwallowXMLToContainer(container);
+}
+
 
 void CContextSave::BeginTraverseObject(const pnlString &typeName, TreeEntry& rEntry)
 {
@@ -398,6 +405,75 @@ Error:      return false;
 	    if(arg1.length() && arg1[0] == '/')// tag without inserted tags or body
 	    {
                 stackOpened.pop_back();
+	    }
+            break;
+        }
+    }
+}
+
+bool
+CContextLoadXML::SwallowXMLToContainer(CXMLContainer *container)
+{
+    int token;
+    CXMLRead tokenSource(&m_File);
+    pnlString arg1;
+    pnlVector<pnlString> stackOpened;
+
+    token = tokenSource.GetToken(arg1);
+    if(token == CXMLRead::eTOKEN_STRING)
+    {// skip for '<?xml version="1.0"?>'
+	token = tokenSource.GetToken(arg1);
+    }
+
+    stackOpened.reserve(10);
+    for(;;token = tokenSource.GetToken(arg1))
+    {
+        switch(token)
+        {
+        case CXMLRead::eTOKEN_STRING:
+	    if(!stackOpened.size())
+	    {
+		goto Error;
+	    }
+	    container->AddContent(arg1);
+            break;
+        case CXMLRead::eTOKEN_EOF:
+        default:
+            if(stackOpened.size() < 1)
+            {
+                return true;
+            }
+            // FALLTHROUGH
+Error:      return false;
+        case CXMLRead::eTOKEN_TAG:
+            if(arg1[0] == '/')
+            {
+                // closing tag
+                ASSERT(stackOpened.back() == (arg1.data() + 1));
+                stackOpened.pop_back();
+		container->Close();
+                if((token = tokenSource.GetToken(arg1)) != CXMLRead::eTOKEN_TAG_END)
+                {
+                    goto Error;
+                }
+
+                continue;
+            }
+	    stackOpened.push_back(arg1);
+	    container->CreateNode(arg1);
+	    while((token = tokenSource.GetToken(arg1)) == CXMLRead::eTOKEN_ATTRIBUTE)
+	    {
+		container->AddAttribute(arg1, tokenSource.GetTokenArg2());
+	    }
+            
+            if(token != CXMLRead::eTOKEN_TAG_END)
+            {
+                goto Error;
+            }
+	    if(arg1.length() && arg1[0] == '/')// tag without inserted tags or body
+	    {
+                stackOpened.pop_back();
+		container->Close();
 	    }
             break;
         }

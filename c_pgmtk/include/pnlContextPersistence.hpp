@@ -30,6 +30,7 @@ PNL_BEGIN
 
 // FORWARDS
 class CXMLWriter;
+class CXMLContainer;
 
 class PNL_API CContextPersistence: public CContext
 {
@@ -38,6 +39,7 @@ public:
     bool SaveAsXML(const std::string &filename) const;
     bool SaveViaWriter(CXMLWriter *writer) const;
     bool LoadXML(const std::string &filename);
+    bool LoadXMLToContainer(CXMLContainer *container, const std::string &filename);
 };
 
 
@@ -284,6 +286,7 @@ public:
 
     virtual void BeginTraverseObject(const pnlString &typeName, TreeEntry& rEntry);
     bool SwallowXML();
+    bool SwallowXMLToContainer(CXMLContainer *container);
 
 private:
     CContextLoadXML(const CContextLoadXML &) // deny copy-ctor
