@@ -76,7 +76,8 @@
 </DistributionFunction>
 </Factor4>
 </Model>
-<NodeInfo TypeName="ProbabilisticNet" NumberOfNodes="5">
+<WrapperInfo TypeName="Group">
+<Nodes TypeName="ProbabilisticNet" ModelType="bnet" NumberOfNodes="5">
 <Node0 TypeName="WNode" NodeName="Burglary">
 [true false]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
 </NodeType>
@@ -97,6 +98,7 @@
 [true false]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
 </NodeType>
 </Node4>
-</NodeInfo>
+</Nodes>
+</WrapperInfo>
 
 </PNLObjects>

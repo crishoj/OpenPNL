@@ -63,7 +63,8 @@
 </DistributionFunction>
 </Factor3>
 </Model>
-<NodeInfo TypeName="ProbabilisticNet" NumberOfNodes="4">
+<WrapperInfo TypeName="Group">
+<Nodes TypeName="ProbabilisticNet" ModelType="bnet" NumberOfNodes="4">
 <Node0 TypeName="WNode" NodeName="Node0">
 [First Second]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
 </NodeType>
@@ -80,6 +81,7 @@
 [First Second]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
 </NodeType>
 </Node3>
-</NodeInfo>
+</Nodes>
+</WrapperInfo>
 
 </PNLObjects>
