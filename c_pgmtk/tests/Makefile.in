@@ -166,7 +166,8 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-SUBDIRS = src
+SUBDIRS = src include testdata
+EXTRA_DIST = !readme!.txt
 all: all-recursive
 
 .SUFFIXES:
