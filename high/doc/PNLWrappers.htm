@@ -108,6 +108,7 @@ rel=STYLESHEET>
 
     </LI></UL>
   </UL>
+
 <P>
 <UL>
   <LI><A 
@@ -238,7 +239,7 @@ BayesNet();
 Example of usage
 </H5>
 <p class="description">
-Create empty bayes net:
+Create empty Bayessian net:
 </p>
 <p class="example">
 BayesNet net;
@@ -269,7 +270,7 @@ Add one discrete node "NodeA" with states "true" and "false" to bayes net:
 net.AddNode(discrete^"NodeA", "true false");
 </p>
 <p class="description">
-Add one-dimensional continuous node "NodeA" to bayes net:
+Add one-dimensional continuous node "NodeA" to Bayessian net:
 </p>
 <p class="example">
 net.AddNode(continuous^"NodeA", "dim1");
@@ -299,7 +300,7 @@ void DelNode(TokArr nodes);
 Example of usage
 </H5>
 <p class="description">
-Delete nodes "NodeA" and "NodeB" from bayes net:
+Delete nodes "NodeA" and "NodeB" from Bayessian net:
 </p>
 <p class="example">
 net.DelNode("NodeA NodeB");
@@ -398,7 +399,7 @@ Delete following two edges if they exist: from "NodeA" to "NodeB" and from "Node
 net.DelArc("NodeA", "NodeB NodeC");
 </P>
 <p class="description">
-Add all edges with starting node "NodeA" or "NodeB" and ending node "NodeC" or "NodeD":
+Delete all edges with starting node "NodeA" or "NodeB" and ending node "NodeC" or "NodeD":
 </p>
 <p class="example">
 net.DelArc("NodeA NodeB", "NodeC NodeD");
@@ -417,7 +418,7 @@ TokArr GetNeighbours(TokArr nodes);
   <DT>nodes
   <DD>One or several nodes whose neighbours are need.</DD></DL>
 <H5>Discussion</H5>
-<p class="description">The function returns list of neighbours for given node or some nodes. If neighbours of several nodes are demanded then neighbors of every node are in the result, each neighbor is once to be found in list.
+<p class="description">The function returns list of neighbours for given node or some nodes. If neighbours of several nodes are demanded then neighbors of every node are in the result.
 </p>
 <H5>
 Example of usage
@@ -429,7 +430,7 @@ Get neighbors of node "NodeA":
 TokArr NodeANeighbors = net.GetNeighbours("NodeA");
 </P>
 <p class="description">
-Get neighbors of node "NodeA" and neighbors of node "NodeB". If node "NodeC" is neighbor both "NodeA" and "NodeB" then it is once to be found in result list of neighbors:
+Get neighbors of node "NodeA" and neighbors of node "NodeB". If node "NodeC" is neighbor of both "NodeA" and "NodeB" then it is once in result list of neighbors:
 </p>
 <p class="example">
 TokArr NodeAandBNeighbors = net.GetNeighbours("NodeA NodeB");
@@ -448,7 +449,7 @@ TokArr GetParents(TokArr nodes);
   <DT>nodes
   <DD>One or several nodes whose parents are need.</DD></DL>
 <H5>Discussion</H5>
-<p class="description">The function returns list of parents for given node or some nodes. If parents of several nodes are demanded then parents of every node are in the result, each parent is once to be found in result list.
+<p class="description">The function returns list of parents for given node or some nodes. If parents of several nodes are demanded then parents of every node are in the result.
 </p>
 <H5>
 Example of usage
@@ -460,7 +461,7 @@ Get parents of node "NodeA":
 TokArr NodeAParents = net.GetParents("NodeA");
 </P>
 <p class="description">
-Get parents of node "NodeA" and parents of node "NodeB". If node "NodeC" is parent both "NodeA" and "NodeB" then it is once to be found in result list of parents:
+Get parents of node "NodeA" and parents of node "NodeB". If node "NodeC" is parent of both "NodeA" and "NodeB" then it is once in result list of parents:
 </p>
 <p class="example">
 TokArr NodeAandBParents = net.GetParents("NodeA NodeB");
@@ -491,7 +492,7 @@ Get children of node "NodeA":
 TokArr NodeAChildren = net.GetChildren("NodeA");
 </P>
 <p class="description">
-Get children of node "NodeA" and children of node "NodeB". If node "NodeC" is child both "NodeA" and "NodeB" then it is once to be found in result list of children:
+Get children of node "NodeA" and children of node "NodeB". If node "NodeC" is child both "NodeA" and "NodeB" then it is once in result list of children:
 </p>
 <p class="example">
 TokArr NodeAandBChildren = net.GetChildren("NodeA NodeB");
@@ -522,13 +523,13 @@ of probabilities is not specified it is considered uniform.
 Example of usage
 </H5>
 <p class="description">
-Lets node "NodeA" has not parents and can take on two values: "true" and "false". Its distribution of probabilities is unconditional. 
+Let's node "NodeA" has no parents and can take on two values: "true" and "false". Its distribution of probabilities is unconditional. 
 </p>
 <p class="example">
 net.SetPTabular("NodeA^true NodeA^false", "0.7 0.3");
 </P>
 <p class="description">
-Lets node "NodeB" can take on values "true" and "false" too and has only one parent "NodeA". Distribution of 
+Let's node "NodeB" can take on values "true" and "false" too and has only one parent "NodeA". Distribution of 
 probabilities of "NodeB" is conditional. It is necessary to call SetPTabular method for each configuration of 
 parents values:  
 </p>
@@ -540,7 +541,7 @@ net.SetPTabular("NodeB^true NodeB^false", "0.4 0.6", "NodeA^false");
 
 <H3><A 
 name=decl_GetPTabular>GetPTabular</A></H3>
-<P class=Blurb>Returns probability of discrete node. 
+<P class=Blurb>Returns probability of discrete node 
 </P>
 <font class="interface">
 TokArr GetPTabular(TokArr node, TokArr parents = TokArr());
@@ -548,19 +549,19 @@ TokArr GetPTabular(TokArr node, TokArr parents = TokArr());
 <H5>Arguments</H5>
 <DL>
   <DT>node
-  <DD>Name of node or array of node values whose probabiliteis are needed. 
+  <DD>Name of node or array of node values whose probabilities are needed. 
   <DT>parents
   <DD>Values of parents of the node.</DD></DL>
 <H5>Discussion</H5>
-<p class="description">The function returns probability of discrete node. If values of parents are given then probabilites only 
-for these parents configurations will be returned. If concrete values of node are diven in array node then
+<p class="description">The function returns probability of discrete node. If values of parents are given then probabilities only 
+for these parents configuration will be returned. If concrete values of node are given in array node then
 only probabilities of these values will be returned. 
 </p>
 <H5>
 Example of usage
 </H5>
 <p class="description">
-Lets consider getting probabilities for node "NodeB" from example for SetPTabular method. Some variants to get "NodeB"
+Let's consider getting of probabilities for node "NodeB" from example for SetPTabular method. Some variants to get "NodeB"
 probabilites are available:
 </p>
 <p class="example">
@@ -596,7 +597,7 @@ Results of these calls:
 
 <H3><A 
 name=decl_SetPGaussian>SetPGaussian</A></H3>
-<P class=Blurb>Sets parameters for one-dimensional gaussian variate. 
+<P class=Blurb>Sets parameters for one-dimensional gaussian variate 
 </P>
 <font class="interface">
 void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
@@ -612,7 +613,7 @@ void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr()
   <DT>weight
   <DD>Matrix of weights - vector for one-dimensional variate.</DD></DL>
 <H5>Discussion</H5>
-<p class="description">The function set parameters for one-dimensional gaussian variate. 
+<p class="description">The function sets parameters for one-dimensional gaussian variate. 
 </p>
 <H5>
 Example of usage
@@ -644,7 +645,7 @@ void EditEvidence(TokArr values);
   <DD>Array of observed nodes with values.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function sets or edits current evidence. New observed nodes are added to current evidence
-with EditEvidence method or old vales of observed nodes are changed.
+with EditEvidence method or old values of observed nodes are changed.
 </p>
 <H5>
 Example of usage
@@ -662,7 +663,7 @@ In current evidence there are three observed nodes now: "NodeA", "NodeB" (both a
 
 <H3><A 
 name=decl_ClearEvid>ClearEvid</A></H3>
-<P class=Blurb>Clears current evidence. 
+<P class=Blurb>Clears current evidence 
 </P>
 <font class="interface">
 void ClearEvid();
@@ -684,7 +685,7 @@ Current evidence is empty now.
 
 <H3><A 
 name=decl_CurEvidToBuf>CurEvidToBuf</A></H3>
-<P class=Blurb>Stores current evidence to the evidence buffer. 
+<P class=Blurb>Stores current evidence to the evidence buffer 
 </P>
 <font class="interface">
 void CurEvidToBuf();
@@ -713,7 +714,7 @@ takes on value "true". In second one "NodeA" takes on value "false", "NodeB" and
 
 <H3><A 
 name=decl_AddEvidToBuf>AddEvidToBuf</A></H3>
-<P class=Blurb>Adds evidence to the evidence buffer. 
+<P class=Blurb>Adds evidence to the evidence buffer 
 </P>
 <font class="interface">
 void AddEvidToBuf(TokArr values);
@@ -740,7 +741,7 @@ In second one "NodeA" takes on value "false" and "NodeC" takes on value "true".
 
 <H3><A 
 name=decl_ClearEvidBuf>ClearEvidBuf</A></H3>
-<P class=Blurb>Clears evidence buffer. 
+<P class=Blurb>Clears evidence buffer 
 </P>
 <font class="interface">
 void ClearEvidBuf();
@@ -766,7 +767,7 @@ Evidence buffer is empty now.
 
 <H3><A 
 name=decl_MaskEvidBuf>MaskEvidBuf</A></H3>
-<P class=Blurb>Hides nodes of current learning buffer with given probability. 
+<P class=Blurb>Hides nodes of current learning buffer with given probability 
 </P>
 <font class="interface">
 void MaskEvidBuf(TokArr whatNodes = "");
@@ -789,7 +790,7 @@ Example of usage
 
 <H3><A 
 name=decl_LearnParameters>LearnParameters</A></H3>
-<P class=Blurb>Learns network parameters. 
+<P class=Blurb>Learns network parameters 
 </P>
 <font class="interface">
 void LearnParameters(TokArr aValue[] = NULL, int nValue = 0);
@@ -803,8 +804,8 @@ void LearnParameters(TokArr aValue[] = NULL, int nValue = 0);
 <H5>Discussion</H5>
 <p class="description">
 The function learns network parameters using evidence buffer. If function with parameters is called then new 
-evidences are added to evidence buffer then learning is started up. Learning algorithm is set to property "Learning" with 
-method <A href="#decl_SetProperty">SetProperty()</A>. By default EM learning is used. Besides Bayes learning is availabile.
+evidences are added to evidence buffer then learning is started up. Learning algorithm may be set to property "Learning" with 
+method <A href="#decl_SetProperty">SetProperty()</A>. By default EM learning is used. Besides Bayes learning is available.
 </p>
 <H5>
 Example of usage
@@ -830,7 +831,7 @@ net.LearnParameters(evidences);
 
 <H3><A 
 name=decl_LearnStructure>LearnStructure</A></H3>
-<P class=Blurb>Learns structure of the network. 
+<P class=Blurb>Learns structure of the network 
 </P>
 <font class="interface">
 void LearnStructure(TokArr aValue[], int nValue);
@@ -842,7 +843,7 @@ void LearnStructure(TokArr aValue[], int nValue);
   <DT>nValue
   <DD>Number of evidences.</DD></DL>
 <H5>Discussion</H5>
-<p class="description">The function learn structure of the network using evidence buffer. If function with parameters is called then new 
+<p class="description">The function learns structure of the network using evidence buffer. If function with parameters is called then new 
 evidences are added to evidence buffer then learning is started up. 
 </p>
 <H5>
@@ -869,7 +870,7 @@ net.LearnStructure(evidences);
 
 <H3><A 
 name=decl_GetMPE>GetMPE</A></H3>
-<P class=Blurb>Returns MPE. 
+<P class=Blurb>Returns MPE 
 </P>
 <font class="interface">
 TokArr GetMPE(TokArr nodes);
@@ -880,8 +881,8 @@ TokArr GetMPE(TokArr nodes);
   <DD>Array of nodes from one family.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function returns most probable explanation (MPE) for specified nodes using current evidence. The inference algorithm
-is set to property "Inference" with method <A href="#decl_SetProperty">SetProperty()</A>. By default Pearl inference is used. Besides Gibbs sampling,
-Junction Tree inference and Naive inference are availabile. Corresponding property "Inference" values are "pearl", "gibbs",
+may be set to property "Inference" with method <A href="#decl_SetProperty">SetProperty()</A>. By default Pearl inference is used. Besides Gibbs sampling,
+Junction Tree inference and Naive inference are available. Corresponding property "Inference" values are "pearl", "gibbs",
 "jtree", "naive".
 </font>
 <H5>
@@ -905,7 +906,7 @@ TokArr pearlMPENodeA = net.GetMPE("NodeA NodeB");
 
 <H3><A 
 name=decl_GetJPD>GetJPD</A></H3>
-<P class=Blurb>Returns JPD. 
+<P class=Blurb>Returns JPD 
 </P>
 <font class="interface">
 TokArr GetJPD(TokArr nodes);
@@ -916,8 +917,8 @@ TokArr GetJPD(TokArr nodes);
   <DD>Array of nodes from one family.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function returns joint probability distribution (JPD) for specified nodes using current evidence. The inference algorithm
-is set to property "Inference" with method <A href="#decl_SetProperty">SetProperty()</A>. By default Pearl inference is used. Besides Gibbs sampling,
-Junction Tree inference and Naive inference are availabile. Corresponding property "Inference" values are "pearl", "gibbs",
+may be set to property "Inference" with method <A href="#decl_SetProperty">SetProperty()</A>. By default Pearl inference is used. Besides Gibbs sampling,
+Junction Tree inference and Naive inference are available. Corresponding property "Inference" values are "pearl", "gibbs",
 "jtree", "naive".
 </font>
 <H5>
@@ -941,7 +942,7 @@ TokArr pearlJPDNodeA = net.GetJPD("NodeA NodeB");
 
 <H3><A 
 name=decl_SetProperty>SetProperty</A></H3>
-<P class=Blurb>Sets value to the property.
+<P class=Blurb>Sets value to the property
 </P>
 <font class="interface">
 void SetProperty(const char *name, const char *value);
@@ -951,7 +952,7 @@ void SetProperty(const char *name, const char *value);
   <DT>name
   <DD>Name of property. 
   <DT>value
-  <DD>Array of nodes from one family.</DD></DL>
+  <DD>Value of property.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function sets value to the property with given name. The function is used to specify algorithms
 for learning and getting MPE and JPD and to specify parameters of algorithms. User can use this function to define his own
@@ -1028,7 +1029,7 @@ Set maximum of iterations for Pearl inference:
 net.SetProperty("PearlMaxNumberOfIterations", "50");
 </P>
 <p class="description">
-Set Bayes learning as algorithm for parameters learning:
+Set Bayessian learning as algorithm for parameters learning:
 </p>
 <p class="example">
 net.SetProperty("Learning", "em");
@@ -1043,7 +1044,7 @@ net.SetProperty("IterationsNumber", "100");
 
 <H3><A 
 name=decl_GetProperty>GetProperty</A></H3>
-<P class=Blurb>Returns value of the property with given name.
+<P class=Blurb>Returns value of the property with given name
 </P>
 <font class="interface">
 String GetProperty(const char *name) const;
@@ -1071,7 +1072,7 @@ As result string inferenceType is "pearl" and string learningType is empty.
 
 <H3><A 
 name=decl_GetGaussianMean>GetGaussianMean</A></H3>
-<P class=Blurb>Returns mean of gaussian distribution. 
+<P class=Blurb>Returns mean of gaussian distribution 
 </P>
 <font class="interface">
 TokArr GetGaussianMean(TokArr nodes);
@@ -1094,7 +1095,7 @@ TokArr MeanX2 = net.GetGaussianMean("x2");
 
 <H3><A 
 name=decl_GetGaussianCovar>GetGaussianCovar</A></H3>
-<P class=Blurb>Returns variance of gaussian distribution. 
+<P class=Blurb>Returns variance of gaussian distribution 
 </P>
 <font class="interface">
 TokArr GetGaussianCovar(TokArr nodes);
@@ -1117,7 +1118,7 @@ TokArr CovarX2 = net.GetGaussianCovar("x2");
 
 <H3><A 
 name=decl_SaveNet>SaveNet</A></H3>
-<P class=Blurb>Saves network to file. 
+<P class=Blurb>Saves network to file 
 </P>
 <font class="interface">
 void SaveNet(const char *filename);
@@ -1142,7 +1143,7 @@ net.SaveNet("net.xml");
 
 <H3><A 
 name=decl_SaveEvidBuf>SaveEvidBuf</A></H3>
-<P class=Blurb>Saves evidence buffer content to file. 
+<P class=Blurb>Saves evidence buffer content to file 
 </P>
 <font class="interface">
 int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
@@ -1152,7 +1153,7 @@ int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCS
   <DT>filename
   <DD>File name. 
   <DT>mode
-  <DD>Separating character depends on this parameter. Two separating characters are available: ',' (if mode is set to eCSV)
+  <DD>This parameter specifies separating character. Two separating characters are available: ',' (if mode is set to eCSV)
 and tab (if mode is set to eTSV).</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function saves evidence buffer content to file of "cvs" format. 
@@ -1182,7 +1183,7 @@ net.SaveEvidBuf("evidence2.csv", NetConst::eTSV);
 
 <H3><A 
 name=decl_LoadNet>LoadNet</A></H3>
-<P class=Blurb>Loads network from file. 
+<P class=Blurb>Loads network from file 
 </P>
 <font class="interface">
 void LoadNet(const char *filename);
@@ -1207,7 +1208,7 @@ net.LoadNet("net.xml");
 
 <H3><A 
 name=decl_LoadEvidBuf>LoadEvidBuf</A></H3>
-<P class=Blurb>Loads evidence buffer content from file. 
+<P class=Blurb>Loads evidence buffer content from file 
 </P>
 <pre>
 <font class="interface">
@@ -1221,7 +1222,7 @@ int LoadEvidBuf(const char *filename,
   <DT>filename
   <DD>File name. 
   <DT>mode
-  <DD>Separating character used in file is explained by this parameter. Two separating characters are available: 
+  <DD>Separating character used in file is passed in this parameter. Two separating characters are available: 
 ',' (if mode is set to eCSV) and tab (if mode is set to eTSV). 
   <DT>columns
   <DD>Names of nodes.</DD></DL>
@@ -1244,7 +1245,7 @@ net.LearnParameters();
 <!--
 <H3><A 
 name=decl_MakeUniformDistribution>MakeUniformDistribution</A></H3>
-<P class=Blurb>Sets uniform distribution on all nodes. 
+<P class=Blurb>Sets uniform distribution on all nodes 
 </P>
 <font class="interface">
 void MakeUniformDistribution();
@@ -1264,7 +1265,7 @@ Example of usage
 -->
 <H3><A 
 name=decl_GenerateEvidences>GenerateEvidences</A></H3>
-<P class=Blurb>Generate samples for the network. 
+<P class=Blurb>Generate samples for the network 
 </P>
 <font class="interface">
 void GenerateEvidences( int nSamples, bool ignoreCurrEvid = false, TokArr whatNodes = "");
@@ -1326,7 +1327,6 @@ Generate 100 samples for all nodes using current evidence. All nodes should cont
     GenerateEvidences( 100, false, whatNodesToSample);
 </P>
 <hr>
-
 <H2><A name=decl_Class_LIMID>Class LIMID</A></H2>
 <HR>
 
@@ -1941,5 +1941,4 @@ Load LIMID structure and distributions from file "net.xml":
 net.LoadNet("net.xml");
 </P>
 <HR>
-
 </DIV></BODY></HTML>
