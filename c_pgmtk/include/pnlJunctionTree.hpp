@@ -126,6 +126,8 @@ public:
     
     inline void DumpNodeContents() const;
     
+    bool IsAllNodesInClsObs(int NumCls, const CEvidence *pEvidence );
+
 protected:
     
 #ifdef PNL_OBSOLETE
