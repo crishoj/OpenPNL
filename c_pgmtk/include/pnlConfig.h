@@ -42,6 +42,12 @@
 #if _MSC_VER >= 1300 && _MSC_VER < 1311
 #define PNL_VC7
 #endif
+#else
+#ifdef __GNUG__ 
+#define GCC_VERSION ( __GNUC__ * 10000 \
+                      + __GNUC_MINOR__ * 100 \
+                      + __GNUC_PATCHLEVEL__ )
+#endif // __GNUG__
 #endif // WIN32
 
 #if defined(PNL_VC6) || defined(PNL_VC7)

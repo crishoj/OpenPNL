@@ -59,8 +59,11 @@ typedef struct _TreeNodeFields
 template<class T> class GeneralAllocator: public std::allocator<T>
 {
 public:
-    //typedef typename std::allocator<T>::pointer pointer;
-    //typedef typename std::allocator<T>::size_type size_type;
+
+#if GCC_VERSION >= 30300
+    typedef typename std::allocator<T>::pointer pointer;
+    typedef typename std::allocator<T>::size_type size_type;
+#endif
 
     GeneralAllocator() {}
 #ifndef PNL_VC6
