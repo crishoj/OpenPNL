@@ -90,8 +90,36 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
     int nElement;
 
     DropDistribution(iNode);
-    static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->GetRawData(&nElement, &pData);
-    Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
+    
+    int nodeClass = m_pToken->NodesClassification(TokArr(Tok(m_pToken->Node(iNode))));
+    if (nodeClass == eNodeClassCategoric )
+    {
+        static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->GetRawData(&nElement, &pData);
+        Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
+    }
+    else
+        if (nodeClass == eNodeClassContinuous)
+        {
+            static_cast<WGaussianDistribFun*>(Distribution(iNode))->CreateDefaultDistribution();
+            static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matMean))
+                ->GetRawData(&nElement, &pData);
+            static_cast<WGaussianDistribFun*>(Distribution(iNode))
+                ->SetData(pnl::matMean, pData);
+
+            static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matCovariance))
+                ->GetRawData(&nElement, &pData);
+            static_cast<WGaussianDistribFun*>(Distribution(iNode))
+                ->SetData(pnl::matCovariance, pData);
+
+            int NumOfNodes = ft.GetDomainSize();
+            if (NumOfNodes > 1)
+            {
+                static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matWeights, 0))
+                    ->GetRawData(&nElement, &pData);
+                static_cast<WGaussianDistribFun*>(Distribution(iNode))->
+                    SetData(pnl::matWeights, pData);
+            }
+        }
 }
 
 void WDistributions::FillData(TokArr &value, TokArr &probability,
@@ -117,7 +145,8 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
     else 
         if (nodeClass == eNodeClassContinuous)
         {
-            if (static_cast<WGaussianDistribFun*>(Distribution(index))->IsDistributionSpecific() == 1)
+            if (static_cast<WGaussianDistribFun*>(Distribution(index))->
+                IsDistributionSpecific() == 1)
             {
 /*                if (m_aDistribution[index] != 0)
                     delete m_aDistribution[index];
