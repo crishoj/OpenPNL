@@ -188,6 +188,9 @@ private:
         list <int>::const_iterator *pNodesListIterator, int *pCurrentRoot,
         int *pPrevCurrentRoot);
 
+    // get type of jtree (all cliques are tabular, gaussian or scalar)
+    EDistributionType GetJTreeType();
+
     // get weight of a subtree 
     double GetSubTreeWeight(int nodenum);
 
