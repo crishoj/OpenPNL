@@ -6416,15 +6416,15 @@ CDistribFun* CGaussianDistribFun::CPD_to_pi(CDistribFun *const*allPiMessages,
     int numNonInif = nonUnitFunction.size();
     CGaussianDistribFun *resData = CGaussianDistribFun::CreateInMomentForm( 1,
         1, &m_NodeTypes[m_NumberOfNodes-1], NULL, NULL, NULL );
-    //C2DNumericDenseMatrix<float> *matrixMean = m_pMatrixMean;
-    //C2DNumericDenseMatrix<float> *matrixCov = m_pMatrixCov;
-    #ifndef PAR_OMP
+    
+#ifndef PAR_OMP
     C2DNumericDenseMatrix<float> *matrixMean = m_pMatrixMean;
     C2DNumericDenseMatrix<float> *matrixCov = m_pMatrixCov;
-    #else
+#else
     C2DNumericDenseMatrix<float> *matrixMean = m_pMatrixMean->Clone();
     C2DNumericDenseMatrix<float> *matrixCov = m_pMatrixCov->Clone();
-    #endif;            
+#endif
+    
     matrixMean->AddRef(resData);
     matrixCov->AddRef(resData);
     C2DNumericDenseMatrix<float> *prodMat1 = NULL;
@@ -6551,15 +6551,15 @@ CDistribFun* CGaussianDistribFun::CPD_to_lambda(const CDistribFun *lambda,
     C2DNumericDenseMatrix<float> *matrixK = NULL;
     C2DNumericDenseMatrix<float> *matrixH = NULL;
     //we need to compute the same product as in CPD_to_pi - we can do the same without creation new data
-    //C2DNumericDenseMatrix<float> *matMeanPi = m_pMatrixMean;
-    #ifndef PAR_OMP
+
+#ifndef PAR_OMP
     C2DNumericDenseMatrix<float> *matMeanPi = m_pMatrixMean;
     C2DNumericDenseMatrix<float> *matCovPi = m_pMatrixCov;
-    #else
+#else
     C2DNumericDenseMatrix<float> *matMeanPi = m_pMatrixMean->Clone();
     C2DNumericDenseMatrix<float> *matCovPi = m_pMatrixCov->Clone();
-    #endif;    
-    //C2DNumericDenseMatrix<float> *matCovPi = m_pMatrixCov;    
+#endif
+
     matMeanPi->AddRef(resData);
     matCovPi->AddRef(resData);
     C2DNumericDenseMatrix<float> *prodMat1 = NULL;
