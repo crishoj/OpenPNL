@@ -14,7 +14,7 @@
 #if defined(_MSC_VER)
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
-
+using namespace pnl;
 WDistributions::WDistributions(TokenCover *pToken): m_pToken(pToken)
 {
     SpyTo(m_pToken);
@@ -94,18 +94,41 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
     Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
 }
 
-void WDistributions::FillData(TokArr &value, TokArr &probability, TokArr &parentValue)
+void WDistributions::FillData(TokArr &value, TokArr &probability, TokArr &parentValue, pnl::EMatrixType matType)
 {
+    static const char fname[] = "FillData";
+
     PNL_CHECK_FOR_ZERO(value.size());
 
     int index = Token().iNode(value[0]);
+
+    int nodeClass = m_pToken->NodesClassification(TokArr(Tok(m_pToken->Node(index))));
 
     if(parentValue.size())
     {
 	Token().Resolve(parentValue);
     }
 
-    Distribution(index)->FillData(pnl::matTable, value, probability, parentValue);
+    if (nodeClass == eNodeClassCategoric)
+    {
+        Distribution(index)->FillData(pnl::matTable, value, probability, parentValue);
+    }
+    else 
+        if (nodeClass == eNodeClassContinuous)
+        {
+/*            if (static_cast<WGaussianDistribFun*>(Distribution(index))->IsDistributionSpecific() == 1)
+            {
+//                if (m_aDistribution[index] != 0)
+//                    delete m_aDistribution[index];
+                  static_cast<WGaussianDistribFun*>(Distribution(index))->CreateDefaultDistribution();
+}
+ */
+            Distribution(index)->FillData(matType, value, probability, parentValue);
+        }
+        else
+        {
+	    ThrowUsingError("Unsupported type of node", fname);
+        };
 }
 
 void WDistributions::DoNotify(int message, int iNode, ModelEngine *pObj)
