@@ -48,13 +48,16 @@ TopologicalSort::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aPar
 
 	    register int k;
 
-	    candidate = j;
 	    for(k = aParent[j].size(); --k >= 0 && aNode[aParent[j][k]] == -1;);
 	    if(k < 0)
 	    {
 		result[i++] = j;
 		aNode[j] = -1;
 		bChange = true;
+	    }
+	    else
+	    {
+		candidate = aParent[j][k];
 	    }
 	}
 
@@ -82,75 +85,92 @@ TopologicalSort::GetOrder(IIMap *pDirect, IIMap *pReverse,
 			  const Vector<char> &abValid)
 {
     bool result = GetOrderDirect(pDirect, aParent, abValid);
+    int i, j;
 
     if(!result)
     {
 	return false;
     }
-    //for(int i = 0; i < 
-    return false;
+    pReverse->assign((i = pDirect->size()), -1);
+    for(; --i >= 0;)
+    {
+	j = (*pDirect)[i];
+	if(j < 0)
+	{
+	    continue;
+	}
+	(*pReverse)[j] = i;
+    }
+    
+    return true;
 }
 
 bool
 TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aParent,
 				   const Vector<char> &abValid)
 {
-    std::vector<int> aNode;
+    std::vector<int> aNode, aNodeSecSlice;
     int candidate;
     bool bChange;
-    int i, j, half;
+    int i, j, jh, half;
     IIMap &result = *pResult;
     Vector<int>::const_iterator it, itEnd;
 
     aNode.resize(abValid.size(), 0);
+    aNodeSecSlice.resize(abValid.size(), -1);
     result.assign(aNode.size(), -1);
     half = 0;
     for(i = 0; i < abValid.size(); ++i)
     {
 	if(!abValid[i])
 	{
-	    aNode[i] = -1;
+	    aNode[m_Map[i]] = -1;
 	    half++;
 	}
     }
+    if(half != m_Map.size())
+    {
+	ThrowInternalError("inconsistence between mapping and graph",
+	    "TopologicalSortDBN::GetOrderDirect");
+    }
     half >>= 1;
+    // mark second slice nodes
+    for(i = 0; i < half; ++i)
+    {
+	aNode[m_Map[half + i]] = 1;
+	aNodeSecSlice[m_Map[i]] = m_Map[i + half];
+    }
     for(i = 0; i < aNode.size();)
     {
 	candidate = -1;
 	bChange = false;
-	// walk thru all nodes and add nodes without non-marked parent
-	// to topological order vector
-	for(j = 0; j < half; ++j)
+	for(j = 0; j < aNode.size(); ++j)
 	{
-	    if(aNode[j] < 0)
+	    if(aNode[j] != 0)
 	    {
 		continue;
 	    }
 
-	    candidate = j;
 	    it = aParent[j].begin();
 	    itEnd = aParent[j].end();
-	    for(; it != itEnd && aNode[*it] == -1;);
+	    for(; it != itEnd && aNode[*it] == -1; it++);
 	    if(it != itEnd)
 	    {
+		candidate = *it;
 		continue;
 	    }
-	    it = aParent[j + half].begin();
-	    itEnd = aParent[j + half].end();
-	    for(; it != itEnd;)
-	    {
-		if(*it >= half && aNode[*it] >= 0)
-		{
-		    break;
-		}
-	    }
+	    jh = aNodeSecSlice[j];
+	    it = aParent[jh].begin();
+	    itEnd = aParent[jh].end();
+	    for(; (it != itEnd) && (aNode[*it] != 1); it++);
 	    if(it != itEnd)
 	    {
+		candidate = j;
 		continue;
 	    }
 	    result[i] = j;
-	    result[i + half] = j + half;
-	    aNode[j] = aNode[j + half] = -1;
+	    result[i + half] = jh;
+	    aNode[j] = aNode[jh] = -1;
 	    i++;
 	    bChange = true;
 	}
@@ -160,8 +180,8 @@ TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &a
 	    if(candidate >= 0)
 	    {
 		result[i] = candidate;
-		result[i + half] = candidate + half;
-		aNode[candidate] = aNode[candidate + half] = -1;
+		result[i + half] = aNodeSecSlice[candidate];
+		aNode[candidate] = aNode[aNodeSecSlice[candidate]] = -1;
 		i++;
 	    }
 	    else
@@ -175,7 +195,7 @@ TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &a
     return true;
 }
 
-WGraph::WGraph(): m_pGraph(0), m_bTouched(false)
+WGraph::WGraph(): m_pGraph(0), m_bTouched(false), m_pSort(0)
 {}
 
 WGraph::WGraph(const WGraph &g): m_iNodeMap(g.m_iNodeMap),
@@ -214,76 +234,13 @@ pnl::CGraph *WGraph::Graph(bool bForget)
 		nbrsTypesList[i].reserve(nodes/2);
 	    }
 	}
+
+	if(!m_pSort)
+	{
+	    m_pSort = new TopologicalSort;
+	}
 	
-	m_IndicesGraphToOuter.resize(nodes);
-	m_IndicesOuterToGraph.resize(m_aNode.size());
-#if !defined(GET_TOPOLOGICAL_ORDERED_GRAPH)
-	for(i = j = 0; i < m_aNode.size(); ++i)
-	{
-	    if(m_abValid[i] == 0)
-	    {
-		continue;
-	    }
-	    m_IndicesGraphToOuter[j] = i;
-	    m_IndicesOuterToGraph[i] = j++;
-	}
-#else
-	{
-	    std::vector<int> aNode;
-	    int candidate;
-	    bool bChange;
-
-	    aNode.resize(m_abValid.size(), 0);
-	    for(i = 0; i < m_abValid.size(); ++i)
-	    {
-		if(!m_abValid[i])
-		{
-		    aNode[i] = -1;
-		}
-	    }
-	    for(i = 0; i < m_aNode.size();)
-	    {
-		candidate = -1;
-		bChange = false;
-		// walk thru all nodes and add nodes without non-marked parent
-		// to topological order vector
-		for(j = 0; j < aNode.size(); ++j)
-		{
-		    if(aNode[j] < 0)
-		    {
-			continue;
-		    }
-
-		    register int k;
-
-		    candidate = j;
-		    for(k = m_aParent[j].size(); --k >= 0 && aNode[m_aParent[j][k]] == -1;);
-		    if(k < 0)
-		    {
-			m_IndicesGraphToOuter[i] = j;
-			m_IndicesOuterToGraph[j] = i++;
-			aNode[j] = -1;
-			bChange = true;
-		    }
-		}
-
-		if(!bChange)
-		{
-		    if(candidate >= 0)
-		    {
-			m_IndicesGraphToOuter[i] = candidate;
-			m_IndicesOuterToGraph[candidate] = i++;
-			aNode[j] = -1;
-		    }
-		    else
-		    {
-			ThrowInternalError("incorrect algo of topological sort",
-			    "WGraph::Graph");
-		    }
-		}
-	    }
-	}
-#endif
+	m_pSort->GetOrder(&m_IndicesGraphToOuter, &m_IndicesOuterToGraph, m_aParent, m_abValid);
 
 	for(i = nodes; --i >= 0;)
 	{

@@ -25,15 +25,22 @@ class PNLHIGH_API TopologicalSort
 public:
     TopologicalSort() {}
     virtual ~TopologicalSort() {}
-    virtual bool GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
-    bool GetOrder(IIMap *pDirect, IIMap *pReverse, const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
+    virtual bool GetOrderDirect(IIMap *pResult,
+	const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
+    bool GetOrder(IIMap *pDirect, IIMap *pReverse,
+	const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
 };
 
 class PNLHIGH_API TopologicalSortDBN
 {
 public:
     TopologicalSortDBN() {}
-    virtual bool GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
+    virtual bool GetOrderDirect(IIMap *pResult,
+	const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
+    void SetMapping(const Vector<int> &mapping) { m_Map = mapping; }
+
+private:
+    Vector<int> m_Map;
 };
 
 class PNLHIGH_API WGraph: public ModelEngine
@@ -121,6 +128,13 @@ public:
     // Reset graph information (neighbours for each node) from the graph
     void Reset(pnl::CGraph &graph);
 
+    void SetSorter(TopologicalSort *pSort)
+    {
+	delete m_pSort;
+	m_pSort = pSort;
+	m_bTouched = true;
+    }
+
 protected:
     typedef std::map<String, int> MapSI;
     virtual void DoNotify(int message, int iNode, ModelEngine *pObj) {}
@@ -139,6 +153,7 @@ private:
     IIMap m_IndicesOuterToGraph;// map from outer to inner indices
     Vector<char> m_abValid;	// validity flag for nodes. This member mustn't be used
 				// in functions except {IsValidINode, AddNode, DelNode}
+    TopologicalSort *m_pSort;	// object, that calculates some order of vertices
 };
 
 PNLW_END
