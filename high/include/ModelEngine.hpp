@@ -4,6 +4,11 @@
 #include <map>
 #include "pnlHighConf.hpp"
 
+// ModelEngine is base class for all interacting entities under cover
+// of user class (Graph object or Distribution object for example)
+//
+// Purpose of ModelEngine - to deliver message about model changing to all
+// objects who interested in it
 class PNLHIGH_API ModelEngine
 {
 public:
@@ -16,7 +21,7 @@ public:
     };
 
     ModelEngine() {}
-    virtual ~ModelEngine() {}
+    virtual ~ModelEngine();
     void Notify(int message, int iNode)
     {
 	for(int i = m_apSpy.size(); --i >= 0;)
