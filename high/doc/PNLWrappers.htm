@@ -3,7 +3,7 @@
 <META http-equiv=Content-Type content="text/html; charset=windows-1251"><LINK 
 href="style.css" type=text/css charset=ISO-8859-1 
 rel=STYLESHEET>
-<META content="MSHTML 6.00.2800.1400" name=GENERATOR></HEAD>
+<META content="Microsoft FrontPage 4.0" name=GENERATOR></HEAD>
 <BODY>
 <H1>PNL high-level interface</H1>
 <HR>
@@ -366,7 +366,6 @@ rel=STYLESHEET>
 
     </LI></UL>
   </UL>
-</P>
 <HR>
 
 <H2><A name=decl_Class_BayesNet>Class BayesNet</A></H2>
@@ -420,7 +419,6 @@ The following functional groups can be distinguished:
     </LI>
     <LI>more...</LI>
 </UL>
-</P>
 <HR>
 
 
@@ -797,7 +795,6 @@ Results of these calls:
   <td>"NodeB^true^NodeA^false^0.4"</td>
 </tr>
 </table>
-</P>
 <HR>
 
 <H3><A 
@@ -869,7 +866,6 @@ Let's set gaussian distribution for two - dimentional node with three two - dime
   <td>12.0</td>
 </tr>
 </table>
-</p>
 <p class="example">
 net.SetPGaussian("x2", "1.0 2.5", "4.0 0.1 0.1 4.0", "1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0 12.0");
 </P>
@@ -1031,19 +1027,31 @@ TokArr GetEvidBufLogLik();
 Example of usage
 </H5>
 <p class="description">
-Let's generate evidences in buffer and find their sum.
+Let's generate evidences, put them to buffer and find the sum of theif
+logarifmic likelihood.
 </p>
-<pre>
+<pre>&nbsp;</pre>
 <p class="example">
-net.GenerateEvidences(1000);
-TokArr bufLogLiks = net.GetEvidBufLogLik();
-float logLikBest = 0.0f;
-for(int i = 0; i < 1000; i++)
-{
-    logLikBest += bufLogLiks[i].FltValue();
+net.GenerateEvidences(1000);&nbsp;
+</p>
+<p class="example">
+TokArr bufLogLiks = net.GetEvidBufLogLik();&nbsp;
+</p>
+<p class="example">
+float logLikBest = 0.0f;&nbsp;
+</p>
+<p class="example">
+for(int i = 0; i < 1000; i++)&nbsp;
+</p>
+<p class="example">
+{&nbsp;
+</p>
+<p class="example">
+&nbsp;&nbsp;&nbsp; logLikBest += bufLogLiks[i].FltValue();&nbsp;
+</p>
+<p class="example">
 }
 </p>
-</pre>
 <HR>
 
 <H3><A 
@@ -1138,20 +1146,15 @@ net.LearnParameters(evidences);
 
 <H3><A 
 name=decl_GetEMLearningCriterionValue>GetEMLearningCriterionValue</A></H3>
-<P class=Blurb>Returns criterion value for last EM learning performance 
+<P class=Blurb>Returns criterion value for last EM learning execution 
 </P>
 <font class="interface">
 float GetEMLearningCriterionValue();
 </font>
-<H5>Arguments</H5>
-<DL>
-  <DT>aValue
-  <DD>Array of evidences. Each evidence is array of observed nodes with values. 
-  <DT>nValue
-  <DD>Number of evidences.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">
-The function returns criterion value that was got during last EM learning performance.
+The function returns criterion value that was got during last EM learning
+execution.
 </p>
 <H5>
 Example of usage
@@ -1737,7 +1740,6 @@ The following functional groups can be distinguished:
     </LI>
     <LI>more...</LI>
 </UL>
-</P>
 <HR>
 
 
@@ -2030,7 +2032,6 @@ int GetNumSlives();
 <H5>Discussion</H5>
 <p class="description">The function returnes number of network slices. 
 </p>
-</font>
 <HR>
 
 <H3><A 
@@ -2153,7 +2154,6 @@ Results of these calls:
   <td>"NodeB-1^true^NodeA-0^false^0.4"</td>
 </tr>
 </table>
-</P>
 <HR>
 
 <H3><A 
@@ -2363,7 +2363,6 @@ void LearnParameters();
 <DL>
   <DT>aValue
 </DL>
-</font>
 <H5>
 Example of usage
 </H5>
@@ -2784,7 +2783,6 @@ The following functional groups can be distinguished:
     </LI>
     <LI>more...</LI>
 </UL>
-</P>
 <HR>
 
 
@@ -3111,7 +3109,6 @@ Results of these calls:
   <td>"NodeB^true^NodeA^false^0.4"</td>
 </tr>
 </table>
-</P>
 <HR>
 
 
@@ -3168,7 +3165,6 @@ Results of these calls:
   <td>"NodeB^true^NodeA^false^0.4"</td>
 </tr>
 </table>
-</P>
 <HR>
 
 <H3><A 
@@ -3219,7 +3215,6 @@ Results of these calls:
   <td>"NodeB^cost^NodeA^false^300.0"</td>
 </tr>
 </table>
-</P>
 <HR>
 
 
@@ -4496,4 +4491,4 @@ Generate 100 samples for all nodes using current evidence. All nodes should cont
 </P>
 
 <HR>
-</DIV></BODY></HTML>
+</BODY></HTML>
