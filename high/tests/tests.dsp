@@ -66,7 +66,7 @@ LINK32=xilink6.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\include" /I "..\..\c_pgmtk\include" /I "..\..\c_pgmtk\src\include" /I "..\..\cxcore\cxcore\include" /I "..\examples" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "TEST" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /w /W0 /Gm /GR /GX /Zi /Od /I "..\include" /I "..\..\c_pgmtk\include" /I "..\..\c_pgmtk\src\include" /I "..\..\cxcore\cxcore\include" /I "..\examples" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "TEST" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x419 /d "_DEBUG"
 # ADD RSC /l 0x419 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -88,6 +88,32 @@ LINK32=xilink6.exe
 # Begin Source File
 
 SOURCE=.\Test.cpp
+
+!IF  "$(CFG)" == "tests - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tests - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\TestLimid.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TestsDBN.cpp
+
+!IF  "$(CFG)" == "tests - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tests - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Group "Header Files"
