@@ -1,18 +1,54 @@
-IMPORTANT:  READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.  By downloading, copying, installing or using the software you agree to this license.  If you do not agree to this license, do not download, install, copy or use the software.
+IMPORTANT:  READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.  
+By downloading, copying, installing or using the software you agree 
+to this license.  If you do not agree to this license, do not download, 
+install, copy or use the software.
 
 PNL Software License 
 
-Copyright (c) 1996-2003 Intel Corporation 
+Copyright (c) 1996-2004 Intel Corporation 
 All rights reserved. 
-Redistribution of the PNL software in source and binary forms, with or without modification, is permitted provided that the following conditions are met: 
 
-1       Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 
-2       Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. 
-3       Licensee agrees to use commercially reasonable efforts to complete the survey set forth below.
-4       Neither the name of the Intel Corporation nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+Redistribution of the PNL software in source and binary forms, 
+with or without modification, is permitted provided that the 
+following conditions are met: 
+
+1	Redistributions of source code must retain the above copyright notice, 
+	this list of conditions and the following disclaimer. 
+
+2	Redistributions in binary form must reproduce the above copyright 
+	notice, this list of conditions and the following disclaimer in the 
+	documentation and/or other materials provided with the distribution. 
+
+3	Licensee agrees to use commercially reasonable efforts to complete 
+	the survey set forth below.
+
+4	Neither the name of the Intel Corporation nor the names of its 
+	contributors may be used to endorse or promote products derived 
+	from this software without specific prior written permission.
+
+USER SUBMISSIONS:  You agree that any code, material, information or other 
+communication, including all data, images, sounds, text, and other things 
+embodied therein, you transmit or post to an Intel website will be considered 
+non-confidential ("Contributions"). Intel will have no confidentiality obligations 
+with respect to the Contributions.  You agree that Intel and its designees will be 
+free to copy, modify, create derivative works, publicly display, disclose, 
+distribute, license and sublicense through multiple tiers of distribution and 
+licensees, incorporate and otherwise use the Contributions, including derivative 
+works thereto, for any and all commercial or non-commercial purposes.  You warrant 
+that by submitting Contributions to Intel that you have the right to license such 
+Contributions.
  
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS’’ 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+THE IMPLIED WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT AND FITNESS 
+FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR 
+ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY 
+OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
@@ -26,12 +62,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS'' AN
 PNL Software License Survey
 
 FORM:
-Send to:        Denver.h.dash@intel.com 
+Send to:	Denver.h.dash@intel.com 
 Subject line:    PNL form
 
-NOTICE:  PARTICIPATION IN THIS SURVEY COMPLETES THE LICENSE REQUIREMENTS OF THIS PNL SOFTWARE LICENSE. PARTICIPATION IN THIS SURVEY IS NOT A PASS-THROUGH OBLIGATION. 
+NOTICE:  PARTICIPATION IN THIS SURVEY COMPLETES THE LICENSE REQUIREMENTS OF 
+THIS PNL SOFTWARE LICENSE. PARTICIPATION IN THIS SURVEY IS NOT A PASS-THROUGH 
+OBLIGATION. 
 
-PRIVACY POLICY: SURVEY DATA COLLECTED WILL NOT BE USED OR DISTRIBUTED OUTSIDE OF INTEL. SURVEY DATA INFORMATION IS INTENDED TO IDENTIFY INTEREST IN PNL SOFTWARE AND AREAS FOR POTENTIAL CONTINUED DEVELOPMENT.
+PRIVACY POLICY: SURVEY DATA COLLECTED WILL NOT BE USED OR DISTRIBUTED OUTSIDE 
+OF INTEL. SURVEY DATA INFORMATION IS INTENDED TO IDENTIFY INTEREST IN PNL 
+SOFTWARE AND AREAS FOR POTENTIAL CONTINUED DEVELOPMENT.
 
 
 Your Name:
@@ -40,20 +80,23 @@ Email:
 URL:
 
 Intended use of PNL Software:
-[Commercial use; internal applications; corporate research and development; academic research; other - explain]
+[Commercial use; internal applications; corporate research and development; 
+academic research; other – explain]
 
 
 Rate your effort from 1 (not serious) to 10 (very serious):
-[Example: 1: just exploring, part-time; 5: still researching; if we get results, it could go; 10: if the algorithm is faster, it'll be incorporated into our product.]
+[Example: 1: just exploring, part-time; 5: still researching; if we get results, 
+it could go; 10: if the algorithm is faster, it’ll be incorporated into our 
+product.]
 
 
 Intended application or research: 
-[Please provide key words and a short paragraph describing the application or research]
+[Please provide key words and a short paragraph describing the application or 
+research]
 [ex of key words: medical diagnostic; computer vision; manufacturing diagnostics]
 
 
 
-Please send completed form to: Denver.h.dash@intel.com with subject line "PNL form"
-Please send updates to information at any time or when (1) research or application focus changes; (2) if your product ships.
-
-
+Please send completed form to: Denver.h.dash@intel.com with subject line “PNL form”
+Please send updates to information at any time or when (1) research or application 
+focus changes; (2) if your product ships.
