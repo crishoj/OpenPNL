@@ -152,6 +152,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 		    args[2] = ptr;
 		}
 		Print(args[2]);
+		break;
 	    }
 	case -11:/* checkOrCreate */ CheckOrCreate(args[0].c_str(), args[1].c_str(), args[2].c_str());break;
 	case eAddNode:	    BNet().AddNode(args[0], args[1]); break;
