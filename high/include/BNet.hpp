@@ -126,8 +126,6 @@ public:
     String Property(const char *name) const;
 
 private:
-    typedef Vector<int> IIMap;
-
     pnl::CMatrix<float> *Matrix(int iNode) const;
     pnl::CInfEngine &Inference();
     pnl::CStaticLearningEngine &Learning();

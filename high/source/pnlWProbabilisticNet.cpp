@@ -606,86 +606,88 @@ void ProbabilisticNet::Reset(const pnl::CGraphicalModel &model)
 pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
 {
     PNL_CHECK_FOR_ZERO(aValue.size());// empty aValue is prohibited
-    Vector<char> aNodeFlag;
-    pnl::intVector aiNode;
+    Vector<int> aiNode, aiValue, aNodeFlag;
+    Vector<int> aOffset; // offset for every node in vValue
+    pnl::intVector aiNodeEvidence;
     pnl::valueVector vValue;
     int j, i, nValue;
     int nValueIn = aValue.size();
     static const char fname[] = "CreateEvidence";
 
-    aNodeFlag.assign(nNetNode(), '\0');
-    aiNode.resize(nValueIn);
+    for(i = aNodeFlag.size(); --i >= 0; aNodeFlag[i] = i);// zero mapping
+    ExtractTokArr(aValue, &aiNode, &aiValue, &Graph()->MapOuterToGraph());
+    aNodeFlag.assign(nNetNode(), 0);
 
-    // check for every pair variable-value
-    for(i = nValueIn, nValue = 0; --i >= 0;)
+    // mark nodes for evidence (aNodeFlag)
+    for(i = nValueIn; --i >= 0;)
     {
-	TokIdNode *node = Token()->Node(aValue[i]);
-        PNL_CHECK_IS_NULL_POINTER(node);
-	TokIdNode *bayesNode = (node->tag == eTagNetNode) ? node:node->v_prev;
-	if(!bayesNode || bayesNode->tag != eTagNetNode)
+	++aNodeFlag[aiNode[i]];
+    }
+
+    // setup offset for nodes in vValue
+    aOffset.assign(aNodeFlag.size(), -1);
+    for(j = i = 0; i < aNodeFlag.size(); ++i)
+    {
+	if(aNodeFlag[i])
 	{
-	    ThrowUsingError("Wrong name for node or value of Bayes Net", fname);
+	    pnl::CNodeType nt = pnlNodeType(Graph()->IOuter(i));
+	    aOffset[i] = j;
+	    j += (nt.IsDiscrete() ? 1:nt.GetNodeSize());
 	}
-	int idx = NodeIndex(bayesNode);
+    }
 
-	aiNode[i] = idx;
+    nValue = j;
 
-	if(aNodeFlag[idx])
+    // check for unambiguity
+    vValue.resize(nValue, pnl::Value(0));
+    for(i = nValueIn; --i >= 0;)
+    {
+	j = aiNode[i];
+	if(vValue[j].GetInt())
 	{
 	    pnl::pnlString str;
-	    str << "Variable " << bayesNode->Name() << " is used twice or more";
+	    str << "Ambiguous using of variable " << NodeName(Graph()->IOuter(j));
 	    ThrowUsingError(str.c_str(), fname);
 	}
-
-	aNodeFlag[idx] = 1;
-	pnl::CNodeType nt = pnlNodeType(idx);
-
-	if(nt.IsDiscrete() && node == bayesNode)
-	{
-	    String s = aValue[i];
-	    if(aValue[i].fload.size() != 1)
-	    {
-		ThrowUsingError("Number of values for discrete value must be 1", fname);
-	    }
-	    j = aValue[i].IntValue();
-	    if(j < 0 || j >= nt.GetNodeSize())
-	    {
-		pnl::pnlString str;
-		str << "Bad value " << j
-		    << ". Value for discrete variable " << bayesNode->Name()
-		    << " must be more than 0 and less than " << nt.GetNodeSize();
-		ThrowUsingError(str.c_str(), fname);
-	    }
-	}
-	nValue += (nt.IsDiscrete() ? 1:nt.GetNodeSize());
+	vValue[j] = 1;
     }
 
-    vValue.reserve(nValue);
+    // here aiNode is sorted
     for(i = 0, nValue = 0; i < aValue.size(); ++i)
     {
-	pnl::CNodeType nt = pnlNodeType(aiNode[i]);
-	TokIdNode *node = Token()->Node(aValue[i]);
-	TokIdNode *bayesNode = (node->tag == eTagNetNode) ? node:node->v_prev;
-	// we assume that .fl for aValue[i] if defined
-	if(node == bayesNode)
+	pnl::CNodeType nt = pnlNodeType(Graph()->IOuter(aiNode[i]));
+
+	if(nt.IsDiscrete())
 	{
-	    vValue.push_back(nt.IsDiscrete()
-		? pnl::Value(int(aValue[i].FltValue(0).fl))
-		:pnl::Value(aValue[i].FltValue(0).fl));
+	    pnl::Value &value = vValue[aOffset[aiNode[i]]];
+	    if(aiValue[i] == -1)
+	    {
+		if(aValue[i].FltValue(0).IsUndef())
+		{
+		    ThrowUsingError("Absent value for node", fname);
+		}
+		value = pnl::Value(int(aValue[i].FltValue(0).fl));
+	    }
+	    else
+	    {
+		value = aiValue[i];
+	    }
 	}
-	else if(nt.IsDiscrete())
+	else // continuous
 	{
-	    //vValue.push_back(pnl::Value(aValue[i].IntValue()));
-	    vValue.push_back(pnl::Value(GetInt(aValue[i].Node())));
-	}
-	else
-	{
-	    vValue.push_back(pnl::Value(aValue[i].FltValue(0).fl));
-//            ThrowInternalError("Not implemented", fname);
+	    if(aiValue[i] == -1)
+	    {
+		if(nt.GetNodeSize() != 1)
+		{
+		    ThrowUsingError("Absent value for node", fname);
+		}
+		aiValue[i] = 0;
+	    }
+	    vValue[aOffset[aiNode[i]] + aiValue[i]] = aValue[i].FltValue(0).fl;
 	}
     }
 
-    return pnl::CEvidence::Create(Model(), aiNode, vValue);
+    return pnl::CEvidence::Create(Model(), aiNodeEvidence, vValue);
 }
 
 void ProbabilisticNet::GetTokenByEvidence(TokArr *tEvidence, pnl::CEvidence *evidence)
@@ -841,6 +843,7 @@ void ProbabilisticNet::ExtractTokArr(TokArr &aNode, Vector<int> *paiNode, Vector
     {// sort parent by index
 	bool bReverse = true;
 	int tmp;
+	Tok ttmp;
 
 	for(; bReverse;)
 	{// bubble sort - assume that we work with small numbers of nodes
@@ -852,6 +855,9 @@ void ProbabilisticNet::ExtractTokArr(TokArr &aNode, Vector<int> *paiNode, Vector
 		    tmp = (*paiNode)[i - 1];
 		    (*paiNode)[i - 1] = (*paiNode)[i];
 		    (*paiNode)[i] = tmp;
+		    ttmp = aNode[i - 1];
+		    aNode[i - 1] = aNode[i];
+		    aNode[i] = ttmp;
 		    if(paiValue)
 		    {
 			tmp = (*paiValue)[i - 1];
@@ -1040,4 +1046,9 @@ pnl::CGraphicalModel *ProbabilisticNet::Model()
 void ProbabilisticNet::SetModel(pnl::CGraphicalModel* pModel)
 {
     m_Model = pModel;
+}
+
+int ProbabilisticNet::iNodeMax() const
+{
+    return Graph()->iNodeMax();
 }

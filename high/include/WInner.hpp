@@ -66,4 +66,6 @@ typedef enum
 TokIdNode* flatSearch(TokIdNode *parent, const char *name);
 TokIdNode *ancestorByTagValue(TokIdNode *node, int tag, int value);
 
+typedef Vector<int> IIMap;
+
 #endif // __WINNER_HPP__

@@ -5,6 +5,7 @@
 #include "pnlHighConf.hpp"
 #include "ModelEngine.hpp"
 #include "pnlWEvidence.hpp"
+#include "WInner.hpp"
 
 // FORWARDS
 class WDistribFun;
@@ -29,8 +30,6 @@ namespace pnl
 class PNLHIGH_API ProbabilisticNet: protected ModelEngine
 {
 public:
-    typedef Vector<int> IIMap;
-
     ProbabilisticNet();
     virtual ~ProbabilisticNet();
 
@@ -111,8 +110,10 @@ public:// inlines for access to object fields
     WDistributions *Distributions() const { return m_paDistribution; }
     pnl::CGraphicalModel *Model();
     void SetModel(pnl::CGraphicalModel* pModel);
-
     Tok ConvertMatrixToToken(const pnl::CMatrix<float> *mat);
+
+private:
+    int iNodeMax() const;
 
 private:// DATA members
     // Tree for bnet:

@@ -94,7 +94,8 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
     Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
 }
 
-void WDistributions::FillData(TokArr &value, TokArr &probability, TokArr &parentValue, pnl::EMatrixType matType)
+void WDistributions::FillData(TokArr &value, TokArr &probability,
+			      TokArr &parentValue, pnl::EMatrixType matType)
 {
     static const char fname[] = "FillData";
 
