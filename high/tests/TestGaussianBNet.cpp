@@ -44,7 +44,6 @@ void TestGaussianModelCreate()
 
     net->SetPGaussian("NodeA", "0.6", "12.0", "0.35");
 
-    cout << String(net->GetGaussianWeights("NodeA", "NodeC")) << endl;
     if( net->GetGaussianMean("NodeA")[0].FltValue() != 0.6f ||
         net->GetGaussianCovar("NodeA")[0].FltValue() != 12.0f ||
         net->GetGaussianWeights("NodeA", "NodeC")[0].FltValue() != 0.35f )
@@ -397,11 +396,11 @@ void TestGaussianParamLearning()
     {
         LearnParam = netToLearn->GetGaussianMean(nodes[i]);
         Param = net->GetGaussianMean(nodes[i]);
-        if(LearnParam.size() != Param.size())
+        if(LearnParam[0].fload.size() != Param[0].fload.size())
         {
             PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
         }
-        for(j = 0; j < LearnParam.size(); j++)
+        for(j = 0; j < LearnParam[0].fload.size(); j++)
         {
             if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
             {
@@ -411,11 +410,11 @@ void TestGaussianParamLearning()
 
         LearnParam = netToLearn->GetGaussianCovar(nodes[i]);
         Param = net->GetGaussianCovar(nodes[i]);
-        if(LearnParam.size() != Param.size())
+        if(LearnParam[0].fload.size() != Param[0].fload.size())
         {
             PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
         }
-        for(j = 0; j < LearnParam.size(); j++)
+        for(j = 0; j < LearnParam[0].fload.size(); j++)
         {
             if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
             {

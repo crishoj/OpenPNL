@@ -59,7 +59,7 @@ Vector<int> DistribFunDesc::GetValuesAsIndex(Tok &tok)
     Vector<TokIdNode *> aIdValue = tok.Nodes();
     if(aIdValue.size() != nNode())
     {
-        ThrowUsingError("Values must be set for each node of domain once", fname);
+        ThrowUsingError("Numbers of nodes in domain and in tok are different", fname);
     }
     Vector<int> result(aIdValue.size(), -1);
     int index, mValue;

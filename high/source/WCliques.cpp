@@ -107,7 +107,7 @@ bool WCliques::DestroyClique(const Vector<int> &aIndex)
                 itEnd1 = m_HashTable.upper_bound(indHash);
                 for(; it1 != itEnd1; it1++)
                 {
-                    if(it1->second == m_aCliques.size())
+                    if(it1->second == m_aCliques.size() - 1)
                     {
                         it1->second = iClq;
                         break;

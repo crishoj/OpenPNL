@@ -173,6 +173,10 @@ void WDistributions::ApplyNew(int iDistribution)
 	if (nt.GetNodeState() != pnl::nsValue)
 	{
 	    pDistribution->SetDefaultDistribution();
+            if(IsMRF())
+            {
+                pDistribution->Matrix(pnl::matTable)->Normalize();
+            }
 	}
 	else
 	{

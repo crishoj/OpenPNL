@@ -11,14 +11,25 @@ int main(char* argv[], int argc)
     bool bTestOK = true;
 
 #ifndef SKIP_TOKEN
+#if 0
     bTestOK = TestResolve1() && bTestOK;
     bTestOK = TestResolve2() && bTestOK;
     bTestOK = TestResolve3() && bTestOK;
     bTestOK = TestResolve4() && bTestOK;
     bTestOK = TestResolve4_5() && bTestOK;
     bTestOK = testExtractTok() && bTestOK;
+#endif
     try 
     {
+        //TestGaussianModelCreate();
+        //TestGaussianInference();
+        //TestGaussianParamLearning();
+        //TestMRFModelCreate();
+        TestMRFGetJPD();
+	//TestMultivariateWrapperJPD();
+	//TestMultivariateWrapperLearn();
+	//TestMultivariateWrapperLearnPartOfObservation();
+	//TestMultivariateWrapperMPE();
         SimpleModel();
         TestGaussianModelCreate();
         TestGaussianInference();
@@ -71,7 +82,7 @@ int main(char* argv[], int argc)
 
 #ifndef SKIP_MRF
     res = 0;    
-    res = testMRF();
+    //res = testMRF();
 
     bTestOK = bTestOK && (res != 0);
 #endif

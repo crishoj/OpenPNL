@@ -188,7 +188,10 @@ TokArr MRF::GetFullScale(TokArr aValue) const
         }
     }
 
-    return TokArr(&aTok.front(), nVal);
+    TokArr result(&aTok.front(), nVal);
+    Net().Token().SetContext(result);
+
+    return result;
 
 }
 
@@ -219,7 +222,6 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
     for(i = 0; i < nVal; i++)
     {
        aScaleValue[i] ^= prob[i];
-       //cout << String(aScaleValue[i]) << endl;
     }
 
     Net().Distributions().FillDataNew(pnl::matTable, aScaleValue);
