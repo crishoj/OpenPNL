@@ -4,7 +4,6 @@
 #include "pnlHighConf.hpp"
 #include "pnlTok.hpp"
 #include "pnl_dll.hpp"
-//#include "pnlPersistence.hpp"
 
 // FORWARDS
 
@@ -14,7 +13,7 @@ struct PNLHIGH_API WNodeInfo: public pnl::CPNLBase
     WNodeInfo() {}
 
     String m_Name;
-    TokArr m_aValue;
+    String m_aValue;
     pnl::CNodeType m_NodeType;
 };
 

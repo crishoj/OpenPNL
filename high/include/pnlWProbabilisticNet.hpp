@@ -23,6 +23,7 @@ namespace pnl
     class CBayesLearningEngine;
     class pnlString;
     template<typename Type> class CMatrix;
+    class CContextPersistence;
 }
 
 class PNLHIGH_API ProbabilisticNet: protected ModelEngine
@@ -47,6 +48,12 @@ public:
     int SaveLearnBuf(const char *filename, NetConst::ESavingType mode);
     int LoadLearnBuf(const char *filename, NetConst::ESavingType mode, TokArr columns);
     // other variants same as after SaveLearnBuf
+
+    // save net. return true if successful saving
+    bool SaveNet(pnl::CContextPersistence *saver);
+    // load net. return true if successful loading
+    static ProbabilisticNet* LoadNet(pnl::CContextPersistence *loader);
+
     //add several evidences to learning buffer
     //nSample - number of evidences to generate
     //whatNodes - which nodes should be included. By default - all
@@ -63,6 +70,9 @@ public:
 
     void SetProperty(const char *name, const char *value);
     String Property(const char *name) const;
+
+    // now assume that model has same number of node as 'this'
+    void Reset(const pnl::CGraphicalModel &model);
 
 public:
     pnl::CEvidence *CreateEvidence(TokArr &aValue);

@@ -8,86 +8,74 @@
 #include "pnlWGraph.hpp"
 #include "TokenCover.hpp"
 
+#include "pnlPersistCover.hpp"
+
 #if defined(_MSC_VER)
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
 const char *PersistWBNet::Signature()
 {
-    return "BayesNet";
+    return "ProbabilisticNet";
 }
 
 void PersistWBNet::Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext)
 {
-    BayesNet *bnet = static_cast<BayesNet*>(pObj);
-#ifdef OldB
-    int mask = bnet->m_Objects & (eGraph | eModel);
+    ProbabilisticNet *net = static_cast<pnl::CCover<ProbabilisticNet>*>(pObj)->GetPointer();
 
-    if(mask != (eGraph | eModel))
-    {
-	ThrowUsingError("BayesNet cann't be saved while model isn't exists", "SaveBayesNet");
-    }
-#endif
-
-    pContext->AddAttribute("NumberOfNodes", bnet->Net().nNetNode());
+    pContext->AddAttribute("NumberOfNodes", net->nNetNode());
 }
 
 pnl::CPNLBase *PersistWBNet::Load(pnl::CContextLoad *pContext)
 {
     int nNode = -1;
     int i;
-    pnl::pnlVector<WNodeInfo*> aNodeInfo;
-    BayesNet *bnet = new BayesNet;
+    WNodeInfo* pNodeInfo;
+    ProbabilisticNet *net = new ProbabilisticNet;
     
     pContext->GetAttribute(&nNode, "NumberOfNodes");
-    aNodeInfo.resize(nNode);
     for(i = 0; i < nNode; ++i)
     {
 	pnl::pnlString name("Node");
 
 	name << i;
 
-	aNodeInfo[i] = static_cast<pnl::CCover<WNodeInfo>*>(pContext->Get(
-	    name.c_str()))->GetPointer();
-	bnet->AddNode((aNodeInfo[i]->m_NodeType.IsDiscrete() ? categoric:continuous)
-	    ^ aNodeInfo[i]->m_Name, aNodeInfo[i]->m_aValue);
+	pNodeInfo = static_cast<WNodeInfo*>(pContext->Get(name.c_str()));
+	net->AddNode((pNodeInfo->m_NodeType.IsDiscrete() ? categoric:continuous)
+	    ^ pNodeInfo->m_Name, pNodeInfo->m_aValue);
     }
 
-#ifdef OldB
-    bnet->m_Model = static_cast<pnl::CBNet*>(pContext->Get("Model"));
-    bnet->m_Objects |= (eGraph | eModel);
-#endif
-
-    return 0;
+    return new pnl::CCover<ProbabilisticNet>(net);
 }
 
 void PersistWBNet::TraverseSubobject(pnl::CPNLBase *pObj, pnl::CContext *pContext)
 {
-    BayesNet *bnet = static_cast<BayesNet*>(pObj);
-    int nNode = bnet->Net().nNetNode();
+    ProbabilisticNet *net = static_cast<pnl::CCover<ProbabilisticNet>*>(pObj)->GetPointer();
+    int i, j;
+    int nNode = net->nNetNode();
+    Vector<String> aValue;
 
-	pContext->Put(bnet->Net().Model(), "Model");
-
-    for(int i = 0; i < nNode; ++i)
+    for(i = 0; i < nNode; ++i)
     {
 	pnl::pnlString name("Node");
-	WNodeInfo *nodeInfo = new WNodeInfo(bnet->Net().NodeName(i), bnet->Net().pnlNodeType(i));
+	WNodeInfo *nodeInfo = new WNodeInfo(net->NodeName(i), net->pnlNodeType(i));
 
 	name << i;
-	pnl::CCover<WNodeInfo> *pCov = new pnl::CCoverDel<WNodeInfo>(nodeInfo);
-	Tok tok(nodeInfo->m_Name);
+	net->Token()->GetValues(i, aValue);
+	nodeInfo->m_aValue << aValue[0];
+	for(j = 1 ; j < aValue.size(); ++j)
+	{
+	    nodeInfo->m_aValue << ' ' << aValue[j];
+	}
 
-	bnet->Net().Token()->Resolve(tok);
-	nodeInfo->m_aValue = tok.GetDescendants(eTagValue);
-	
-	pContext->AutoDelete(pCov);
-	pContext->Put(pCov, name.c_str());
+	pContext->AutoDelete(nodeInfo);
+	pContext->Put(nodeInfo, name.c_str());
     }
 }
 
 bool PersistWBNet::IsHandledType(pnl::CPNLBase *pObj) const
 {
-    return dynamic_cast<BayesNet*>(pObj) != 0;
+    return dynamic_cast<pnl::CCover<ProbabilisticNet>*>(pObj) != 0;
 }
 
 // this class holds saver/loader for high-level API objects

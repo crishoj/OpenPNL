@@ -14,6 +14,7 @@
 #pragma warning(pop)
 #include "Wcsv.hpp"
 #include "WInner.hpp"
+#include "pnlPersistCover.hpp"
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
@@ -25,7 +26,7 @@ static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, 
 TokArr categoric("nodes^categoric");
 TokArr continuous("nodes^continuous");
 
-ProbabilisticNet::ProbabilisticNet(): m_Model(0)
+ProbabilisticNet::ProbabilisticNet(): m_Model(0), m_pCallback(0)
 {
     m_pGraph = new WGraph();
     m_pTokenCov = new TokenCover("bnet", m_pGraph, true);
@@ -328,6 +329,66 @@ int ProbabilisticNet::LoadLearnBuf(const char *filename, NetConst::ESavingType m
     return nEvid;
 }
 
+bool ProbabilisticNet::SaveNet(pnl::CContextPersistence *saver)
+{
+    saver->Put(Model(), "Model");
+    saver->Put(new pnl::CCover<ProbabilisticNet>(this), "NodeInfo", true);
+
+    return true;
+}
+
+ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
+{
+    pnl::CCover<ProbabilisticNet>* pCovNet = static_cast<pnl::CCover<ProbabilisticNet>*>(
+	loader->Get("NodeInfo"));
+    ProbabilisticNet *net;
+    pnl::CGraphicalModel *model = static_cast<pnl::CGraphicalModel*>(
+	loader->Get("Model"));
+
+    if(!model)
+    {
+	ThrowUsingError("File doesn't contain BayesNet - bad file?", "LoadNet");
+    }
+    else
+    {
+	loader->AutoDelete(model);
+    }
+    if(!pCovNet)
+    {
+	int iNode, iValue;
+	String nodeName;
+	String aValue;
+
+	net = new ProbabilisticNet;
+	for(iNode = 0; iNode < model->GetNumberOfNodes(); ++iNode)
+	{
+	    nodeName = "Node";
+	    nodeName << iNode;
+	    aValue.resize(0);
+
+	    const pnl::CNodeType &nt = *model->GetNodeType(iNode);
+	    for(iValue = 0; iValue < nt.GetNodeSize(); ++iValue)
+	    {
+		if(iValue)
+		{
+		    aValue << ' ';
+		}
+		aValue << "State" << iValue;
+	    }
+
+	    net->AddNode((nt.IsDiscrete() ? categoric:continuous) ^ nodeName, aValue);
+	}
+    }
+    else
+    {
+	net = pCovNet->GetPointer();
+    }
+
+    net->Reset(*model);
+
+    return net;
+}
+
 // whatNodes is array of tokens which specify the list of variables and optionally 
 // the required portion of observed nodes
 // For example, if whatNodes = TokArr("Node1")
@@ -522,6 +583,22 @@ String ProbabilisticNet::Property(const char *name) const
     SSMap::const_iterator it = m_aPropertyValue.find(String(name));
 
     return (it == m_aPropertyValue.end()) ? String():it->second;
+}
+
+void ProbabilisticNet::Reset(const pnl::CGraphicalModel &model)
+{
+    if(nNetNode() != model.GetNumberOfNodes())
+    {
+	ThrowInternalError("Reset by model with different number of nodes isn't yet implemented", "Reset");
+    }
+    Graph()->Reset(*model.GetGraph());
+
+    int i;
+
+    for(i = 0; i < nNetNode(); ++i)
+    {
+	Distributions()->ResetDistribution(i, *model.GetFactor(i));
+    }
 }
 
 //=== inner functions ===

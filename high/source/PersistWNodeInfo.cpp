@@ -14,7 +14,7 @@ WNodeInfo::WNodeInfo(String &name, pnl::CNodeType nt): m_Name(name), m_NodeType(
 }
 
 
-// Persistence
+// Persistence for WNodeInfo
 const char *PersistWNodeInfo::Signature()
 {
     return "WNode";
@@ -22,9 +22,12 @@ const char *PersistWNodeInfo::Signature()
 
 void PersistWNodeInfo::Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext)
 {
-    WNodeInfo *nodeInfo = dynamic_cast<pnl::CCover<WNodeInfo>*>(pObj)->GetPointer();
+    WNodeInfo *nodeInfo = dynamic_cast<WNodeInfo*>(pObj);
 
     pContext->AddAttribute("NodeName", nodeInfo->m_Name.c_str());
+    pContext->AddText("[");
+    pContext->AddText(nodeInfo->m_aValue.c_str());
+    pContext->AddText("]");
 }
 
 pnl::CPNLBase *PersistWNodeInfo::Load(pnl::CContextLoad *pContext)
@@ -35,27 +38,39 @@ pnl::CPNLBase *PersistWNodeInfo::Load(pnl::CContextLoad *pContext)
 
     pnl::CNodeType *nodeType = static_cast<pnl::CNodeType*>(pContext->Get("NodeType"));
     nodeInfo->m_NodeType = *nodeType;
-    pContext->AutoDelete(nodeType);
+    //pContext->AutoDelete(nodeType);
 
-    pnl::CCover<TokArr> *pCov = static_cast<pnl::CCover<TokArr>*>(pContext->Get("Values"));
-    nodeInfo->m_aValue = *pCov->GetPointer();
+    String text;
+
+    pContext->GetText(text);
+
+    int iBeg, iEnd;
+
+    for(iBeg = 0; text[iBeg] && text[iBeg] != '[' && iBeg < text.length(); iBeg++);
+    if(text[iBeg] == '[')
+    {
+	++iBeg;
+    }
+    for(iEnd = text.size() - 1; iEnd > iBeg && text[iEnd] != ']'; --iEnd);
+
+    if(iEnd > iBeg)
+    {
+	nodeInfo->m_aValue.append(text.c_str() + iBeg, iEnd - iBeg);
+    }
 
     return nodeInfo;
 }
 
 void PersistWNodeInfo::TraverseSubobject(pnl::CPNLBase *pObj, pnl::CContext *pContext)
 {
-    WNodeInfo *nodeInfo = dynamic_cast<pnl::CCover<WNodeInfo>*>(pObj)->GetPointer();
+    WNodeInfo *nodeInfo = dynamic_cast<WNodeInfo*>(pObj);
 
     pContext->Put(&nodeInfo->m_NodeType, "NodeType");
-    pnl::CCover<TokArr> *pCov = new pnl::CCover<TokArr>(&nodeInfo->m_aValue);
-    pContext->AutoDelete(pCov);
-    pContext->Put(pCov, "Values");
 }
 
 bool PersistWNodeInfo::IsHandledType(pnl::CPNLBase *pObj) const
 {
-    return dynamic_cast<pnl::CCover<WNodeInfo>*>(pObj) != 0;
+    return dynamic_cast<WNodeInfo*>(pObj) != 0;
 }
 
 // TokArr
@@ -85,7 +100,11 @@ pnl::CPNLBase *PersistTokenArray::Load(pnl::CContextLoad *pContext)
 
     int iBeg, iEnd;
 
-    for(iBeg = 0; text[iBeg] && text[iBeg] != '['; iBeg++);
+    for(iBeg = 0; text[iBeg] && text[iBeg] != '[' && iBeg < text.length(); iBeg++);
+    if(text[iBeg] == '[')
+    {
+	++iBeg;
+    }
     for(iEnd = text.size() - 1; iEnd > iBeg && text[iEnd] != ']'; --iEnd);
 
     pnl::pnlString textStripped;

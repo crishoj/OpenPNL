@@ -13,6 +13,8 @@
 #include "pnlWDistributions.hpp"
 #include "pnlWProbabilisticNet.hpp"
 
+#include "pnlGraph.hpp"
+
 void INetworkPNL::Delete()
 {
     MarkCallFunction("Delete", true);

@@ -4,7 +4,6 @@
 #include <string>
 #include "pnlHighConf.hpp"
 #include "pnlTok.hpp"
-#include "WCover.hpp"
 
 // FORWARDS
 class WGraph;
@@ -25,9 +24,7 @@ namespace pnl
     template<typename Type> class CMatrix;
 }
 
-#include "pnl_dll.hpp"
-
-class PNLHIGH_API BayesNet: public pnl::CPNLBase
+class PNLHIGH_API BayesNet
 {
 public:
     BayesNet();
@@ -103,10 +100,8 @@ public:
     
     void SaveNet(const char *filename);
     int SaveLearnBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
-    // or SaveEvidences or SaveLearnData or SaveHistory or SaveEvidHistory
     void LoadNet(const char *filename);
     int LoadLearnBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV, TokArr columns = TokArr());
-    // other variants same as after SaveLearnBuf
 
     // sets all distributions to uniform;
     // This function temporary here - I think it should be external function

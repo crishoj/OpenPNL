@@ -505,12 +505,17 @@ void BayesNet::SaveNet(const char *filename)
 {
     pnl::CContextPersistence saver;
 
-    saver.Put(Model(), "Model");
-    saver.Put(this, "BayesNet");
+    if(!Net().SaveNet(&saver))
+    {
+	ThrowInternalError("Can't save file", "SaveNet");
+    }
+
     if(!saver.SaveAsXML(filename))
     {
 	ThrowInternalError("Can't save file", "SaveNet");
     }
+    // we must save net-specific data here.
+    // BayesNet haven't any specific data for now
 }
 
 int BayesNet::SaveLearnBuf(const char *filename, NetConst::ESavingType mode)
@@ -527,14 +532,18 @@ void BayesNet::LoadNet(const char *filename)
 	ThrowUsingError("Can't load file - bad file?", "LoadNet");
     }
 
-    BayesNet *bnet = static_cast<BayesNet*>(loader.Get("BayesNet"));
-
-    if(!bnet)
+    ProbabilisticNet *pNewNet = ProbabilisticNet::LoadNet(&loader);
+    if(!pNewNet)
     {
-	ThrowUsingError("File doesn't contain BayesNet - bad file?", "LoadNet");
+	ThrowUsingError("Can't load file - bad file?", "LoadNet");
     }
 
-    //delete bnet;
+    delete &Net();
+    m_pNet = pNewNet;
+    m_pNet->SetCallback(new BayesNetCallback());
+
+    // We must load net-specific data here.
+    // BayesNet haven't any specific data for now
 }
 
 int BayesNet::LoadLearnBuf(const char *filename, NetConst::ESavingType mode, TokArr columns)

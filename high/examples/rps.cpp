@@ -1,5 +1,7 @@
+#include <time.h>
 #include "pnlHigh.hpp"
 #include "console.hpp"
+#include "pnl_dll.hpp"
 
 static int sMode = 0;
 const int cShowPrediction = 1;
