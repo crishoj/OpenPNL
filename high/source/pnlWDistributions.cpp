@@ -99,7 +99,7 @@ void WDistributions::Setup(int iNode)
 
 void WDistributions::SetupNew(int iDistribution)
 {
-    pnl::CNodeType nt = NodeType(iDistribution);
+    pnl::CNodeType nt = DistributionType(iDistribution);
 
     if(iDistribution >= m_aDistribution.size())
     {
@@ -127,20 +127,11 @@ void WDistributions::SetupNew(int iDistribution)
     {
 	pDistribution = new WTabularDistribFun();
 	pDistribution->Setup(node, parentTokIds);
-	if (nt.GetNodeState() != pnl::nsValue)
-	{
-	    pDistribution->SetDefaultDistribution();
-	}
-	else
-	{
-	    static_cast<WTabularDistribFun*>(pDistribution)->SetDefaultUtilityFunction();
-	}
     }
     else
     {
 	pDistribution = new WGaussianDistribFun();
 	pDistribution->Setup(node, parentTokIds);
-	pDistribution->SetDefaultDistribution();
     }
 
     m_aDistribution[iDistribution] = pDistribution;
@@ -149,6 +140,12 @@ void WDistributions::SetupNew(int iDistribution)
 
 void WDistributions::DropDistribution(int iNode)
 {
+    if(iNode >= m_aDistribution.size())
+    {
+	m_aDistribution.resize(iNode + 1, 0);
+	m_abValid.resize(iNode + 1, false);
+	return;
+    }
     delete m_aDistribution[iNode];
     m_aDistribution[iNode] = 0;
     if(m_abValid.size() > iNode)
@@ -171,7 +168,7 @@ void WDistributions::ApplyNew(int iDistribution)
 
     if(m_abDiscrete[iDistribution])
     {
-	pnl::CNodeType nt = NodeType(iDistribution);
+	pnl::CNodeType nt = DistributionType(iDistribution);
 
 	if (nt.GetNodeState() != pnl::nsValue)
 	{
@@ -214,20 +211,29 @@ WDistributions::GetNodeTypeInfo(bool *pbDiscrete, int *pSize,
 
 pnl::CNodeType WDistributions::NodeType(int iDistribution) const
 {
+    TokIdNode *tokNode = Token().Node(iDistribution);
+
+    for(; tokNode && tokNode->tag != eTagNodeType; tokNode = tokNode->v_prev);
+    PNL_CHECK_IS_NULL_POINTER(tokNode);
+    PNL_CHECK_IS_NULL_POINTER(tokNode->data);
+    pnl::CNodeType &refType = *(pnl::CNodeType*)tokNode->data;
+    
+    return pnl::CNodeType(refType.IsDiscrete(), Token().nValue(iDistribution), refType.GetNodeState());
+}
+
+pnl::CNodeType WDistributions::DistributionType(int iDistribution) const
+{
+    if(!IsMRF())
+    {
+	return NodeType(iDistribution);
+    }
+
+    Vector<int> clique;
     int iNode;
 
-    if(IsMRF())
-    {
-	Vector<int> clique;
-
-	m_pCliques->GetClique(iDistribution, &clique);
-	PNL_CHECK_LEFT_BORDER(clique.size(), 1);
-	iNode = clique.back();
-    }
-    else
-    {
-	iNode = iDistribution;
-    }
+    m_pCliques->GetClique(iDistribution, &clique);
+    PNL_CHECK_LEFT_BORDER(clique.size(), 1);
+    iNode = clique.back();
 
     TokIdNode *tokNode = Token().Node(iNode);
 

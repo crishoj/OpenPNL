@@ -44,6 +44,7 @@ public:
     void DropDistribution(int iNode);
     void GetNodeTypeInfo(bool *pbDiscrete, int *pSize, pnl::EIDNodeState *, int iNode);
     pnl::CNodeType NodeType(int iDistribution) const;
+    pnl::CNodeType DistributionType(int iDistribution) const;
     void ResetDistribution(int iNode, pnl::CFactor &ft);
     void FillData(TokArr &value, TokArr &probability, const TokArr &parentValue, 
         pnl::EMatrixType matType = pnl::matTable);
