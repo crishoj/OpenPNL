@@ -22,100 +22,96 @@
 PNL_BEGIN
 
 typedef PNL_API enum
-{
-  nsChance = 0,
-  nsDecision = 1,
-  nsValue = 2
+{   nsChance = 0,
+    nsDecision,
+    nsValue
 } EIDNodeState;
 
 /* a class to represent node types structure and operations */
 class PNL_API CNodeType : public CPNLBase
 {
 public:
-  inline bool IsDiscrete() const;
+    inline bool IsDiscrete() const;
 
-  inline int GetNodeSize() const;
+    inline int GetNodeSize() const;
 
-  inline EIDNodeState GetNodeState() const;
+    inline EIDNodeState GetNodeState() const;
 
-  //  inline void SetType( bool IsDiscrete, int nodeSize );
-  inline void SetType(bool IsDiscrete, int nodeSize, 
-    EIDNodeState nodeState = nsChance);
+    //  inline void SetType( bool IsDiscrete, int nodeSize );
+    inline void SetType(bool IsDiscrete, int nodeSize,
+	EIDNodeState nodeState = nsChance);
 
-  inline bool operator==(const CNodeType &ntIn) const;
+    inline bool operator==(const CNodeType &ntIn) const;
 
-  inline bool operator!=(const CNodeType &ntIn) const;
-  
+    inline bool operator!=(const CNodeType &ntIn) const;
+
 #ifdef PNL_VC7
-  // VisualStudio 7 has non-standard STL realization.
-  // This STL (vector) requires operator<
-  inline bool operator<(const CNodeType &nt) const;
+    // VisualStudio 7 has non-standard STL realization.
+    // This STL (vector) requires operator<
+    inline bool operator<(const CNodeType &nt) const;
 #endif
-  //  explicit CNodeType( bool IsDiscrete = 0, int nodeSize = -1 )
-  explicit CNodeType(bool IsDiscrete = 0, int nodeSize = -1, 
-    EIDNodeState nodeState = nsChance)
+    explicit CNodeType(bool IsDiscrete = 0, int nodeSize = -1,
+	EIDNodeState nodeState = nsChance)
 #ifndef SWIG
-  : m_IsDiscrete( IsDiscrete ), m_nodeSize(nodeSize)
-  {
-    m_nodeState = nodeState;
-  }
+	: m_IsDiscrete( IsDiscrete ), m_nodeSize(nodeSize)
+    {
+	m_nodeState = nodeState;
+    }
 #else
-  ;
+    ;
 #endif
 
 private:
-  bool m_IsDiscrete;
-  int m_nodeSize;
-  EIDNodeState m_nodeState;
+    bool m_IsDiscrete;
+    int m_nodeSize;
+    EIDNodeState m_nodeState;
 };
 
 #ifndef SWIG
 
 inline bool CNodeType::IsDiscrete() const
 {
-  return m_IsDiscrete;
+    return m_IsDiscrete;
 }
 
 inline int CNodeType::GetNodeSize() const
 {
-  return m_nodeSize;
+    return m_nodeSize;
 }
 
 inline EIDNodeState CNodeType::GetNodeState() const
 {
-  return m_nodeState;
+    return m_nodeState;
 }
 
-inline void CNodeType::SetType(bool IsDiscrete, int nodeSize, 
-  EIDNodeState nodeState)
-//inline void CNodeType::SetType( bool IsDiscrete, int nodeSize )
+inline void CNodeType::SetType(bool IsDiscrete, int nodeSize,
+			       EIDNodeState nodeState)
 {
-  /* bad-args check */
-  PNL_CHECK_LEFT_BORDER( nodeSize, 0 );
-  /* bad-args check end */
-  
-  m_IsDiscrete = IsDiscrete;
-  m_nodeSize = nodeSize;
-  m_nodeState = nodeState;
+    /* bad-args check */
+    PNL_CHECK_LEFT_BORDER( nodeSize, 0 );
+    /* bad-args check end */
+
+    m_IsDiscrete = IsDiscrete;
+    m_nodeSize = nodeSize;
+    m_nodeState = nodeState;
 }
 
 inline bool CNodeType::operator==(const CNodeType &nt) const
 {
-//  return (m_IsDiscrete == nt.m_IsDiscrete) && (m_nodeSize == nt.m_nodeSize);
-  return (m_IsDiscrete == nt.m_IsDiscrete)
-    && (m_nodeSize == nt.m_nodeSize)
-    && (m_nodeState == nt.m_nodeState);
+    return (m_IsDiscrete == nt.m_IsDiscrete)
+	&& (m_nodeSize == nt.m_nodeSize)
+	&& (m_nodeState == nt.m_nodeState);
 }
 
 inline bool CNodeType::operator!=(const CNodeType &nt) const
 {
-  return !operator==(nt);
+    return !operator==(nt);
 }
 
 #ifdef PNL_VC7
 inline bool CNodeType::operator<(const CNodeType &nt) const
 {
-  return m_nodeSize < nt.m_nodeSize;
+    return m_nodeSize < nt.m_nodeSize;
 }
 #endif
 
