@@ -88,8 +88,14 @@ pnl::CGraphicalModel *BayesNetCallback::CreateModel(ProbabilisticNet &net)
                 PNL_CHECK_IS_NULL_POINTER(cov);
 
                 pnlNet->GetFactor(i)->AttachMatrix(mean, pnl::matMean);
-                pnlNet->GetFactor(i)->AttachMatrix(cov, pnl::matCovariance);
+                pnlNet->GetFactor(i)->AttachMatrix(mean->Copy(mean), pnl::matWishartMean);
 
+                pnlNet->GetFactor(i)->AttachMatrix(cov, pnl::matCovariance);
+                pnlNet->GetFactor(i)->AttachMatrix(cov->Copy(cov), pnl::matWishartCov);
+
+                dynamic_cast<pnl::CGaussianDistribFun*>(pnlNet->GetFactor(i)->GetDistribFun())
+                    ->SetFreedomDegrees(1 , cov->GetNumberDims() + 2); 
+                
                 int NumOfNds = pnlNet->GetFactor(i)->GetDistribFun()->GetNumberOfNodes();
                 if (NumOfNds > 1)
                 {
