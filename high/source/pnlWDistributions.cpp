@@ -71,7 +71,7 @@ void WDistributions::Setup(int iNode)
 	}
         else
 	{
-	    ThrowUsingError("Uknown type", "Setup");
+	    ThrowUsingError("Unknown type", "Setup");
 	}
     }
 
@@ -98,8 +98,80 @@ void WDistributions::Setup(int iNode)
     }
 }
 
-void WDistributions::SetupNew(int iNode)
+void WDistributions::SetupNew(int iDistribution)
 {
+    int nodeClass = eNodeClassDiscrete;
+
+    if(IsMRF())
+    {
+	// some sophisticated algo to determine type of clique
+	TokIdNode *tokNode = Token().Node("continuous");
+
+	if(tokNode->v_next)
+	{
+	    nodeClass = eNodeClassContinuous;
+	}
+    }
+    else
+    {
+	TokArr ta(Tok(m_pToken->Node(iDistribution)));
+	nodeClass = m_pToken->NodesClassification(ta);
+    }
+
+    if(iDistribution >= m_aDistribution.size())
+    {
+	m_aDistribution.resize(iDistribution + 1, 0);
+    }
+    else
+    {
+	delete m_aDistribution[iDistribution];
+    }
+
+    Vector<int> domain;
+
+    if (nodeClass == eNodeClassDiscrete )
+    {
+	m_aDistribution[iDistribution] = new WTabularDistribFun();
+    }
+    else
+    {
+	if (nodeClass == eNodeClassContinuous)
+	{
+	    m_aDistribution[iDistribution] = new WGaussianDistribFun();
+	}
+	else
+	{
+	    ThrowUsingError("Unknown type", "Setup");
+	}
+    }
+
+    if(IsMRF())
+    {
+	m_pCliques->GetClique(iDistribution, &domain);
+    }
+    else
+    {
+	m_pToken->Graph()->GetParents(&domain, iDistribution);
+    }
+
+    Vector<TokIdNode*> parTokId = m_pToken->Nodes(domain);
+    m_aDistribution[iDistribution]->Setup(m_pToken->Node(iDistribution), parTokId);
+    TokIdNode *tok = m_pToken->Node(iDistribution);
+    if (nodeClass == eNodeClassDiscrete )
+    {
+	if (NodeType(iDistribution).GetNodeState() != pnl::nsValue)
+	{
+	    m_aDistribution[iDistribution]->SetDefaultDistribution();
+	}
+	else
+	{
+	    static_cast<WTabularDistribFun*>(m_aDistribution[iDistribution])->SetDefaultUtilityFunction();
+	}
+    }
+    else
+    {
+	m_aDistribution[iDistribution]->SetDefaultDistribution();
+    }
 }
 
 void WDistributions::DropDistribution(int iNode)
@@ -141,6 +213,16 @@ void WDistributions::GetNodeTypeInfo(bool *pbDiscrete, int *pSize, pnl::EIDNodeS
 	    TokId = TokId->v_prev;
     }
     *nodeState = ((pnl::CNodeType*)(TokId->data))->GetNodeState();
+}
+
+pnl::CNodeType WDistributions::NodeType(int iDistribution)
+{
+    bool bDiscrete;
+    int sz;
+    pnl::EIDNodeState nodeState;
+    
+    GetNodeTypeInfo(&bDiscrete, &sz, &nodeState, iDistribution);
+    return pnl::CNodeType(bDiscrete, sz, nodeState);
 }
 
 void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
