@@ -372,6 +372,31 @@ void WDistributions::FillDataNew(pnl::EMatrixType matType, TokArr &matrix)
     Distribution(iDistrib)->FillDataNew(matType, matrix);
 }
 
+void WDistributions::ExtractData(pnl::EMatrixType matType, TokArr &matrix)
+{
+    static const char fname[] = "FillDataNew";
+
+    int i;
+
+    Vector<TokIdNode *> nodes = Token().ExtractNodes(matrix[0]);
+
+    int iDistrib = IDistribution(nodes);
+
+    // check that all elements from the same matrix
+    for(i = 1; i < matrix.size(); i++)
+    {
+        nodes = Token().ExtractNodes(matrix[i]);
+
+        if(iDistrib != IDistribution(nodes))
+        {
+            ThrowUsingError("All elements of matrix must be for the same distribution", fname);
+        }
+    }
+
+    // apply will be called in Distribution(iDistribution), if need
+    Distribution(iDistrib)->ExtractData(matType, matrix);
+}
+
 void WDistributions::DoNotify(int message, int iNode, ModelEngine *pObj)
 {
     switch(message)

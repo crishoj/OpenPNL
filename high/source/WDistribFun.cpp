@@ -325,6 +325,17 @@ void WDistribFun::FillDataNew(int matrixType, TokArr &matrix)
     }
 }
 
+void WDistribFun::ExtractData(int matrixType, TokArr &matrix)
+{
+    int i;
+    Vector<int> aIndex;
+    for(i = 0; i < matrix.size(); i++)
+    {
+        aIndex = desc()->GetValuesAsIndex(matrix[i]);
+        matrix[i] ^= GetAValue(matrixType, aIndex);
+    }
+}
+
 void WTabularDistribFun::SetDefaultDistribution()
 {
     if(desc() == 0)
@@ -402,6 +413,16 @@ void WTabularDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float prob
 	CreateMatrix();
     }
     m_pMatrix->SetElementByIndexes(probability, &aIndex.front());
+}
+
+// matrix must be created
+float WTabularDistribFun::GetAValue(int matrixId, Vector<int> &aIndex)
+{
+    if(!m_pMatrix)
+    {
+	ThrowUsingError("Matrix of probabilities does not exist", "GetAValue");
+    }
+    return m_pMatrix->GetElementByIndexes(&aIndex.front());
 }
 
 Vector<int> WTabularDistribFun::Dimensions(int matrixType)
@@ -581,6 +602,42 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
 	ThrowUsingError("Unsupported type of matrix in gaussian distribution", fname);
 	break;
     }
+}
+
+float WGaussianDistribFun::GetAValue(int matrixId, Vector<int> &aIndex)
+{
+    static const char fname[] = "GetAValue";
+
+    if(!m_pDistrib)
+    {
+	ThrowUsingError("Distribution does not exist", fname);
+    }
+
+    //In continuous case aIndex means an index in vectors mean or cov or weights
+
+    EMatrixType matType;
+    int Index[2];
+    CMatrix<float> * pMatrix;
+    switch (matrixId)
+    {
+    case matMean:
+	Index[0] = aIndex[0];
+	Index[1] = 0;
+	break;
+    case matCovariance:
+	Index[0] = aIndex[0];
+	Index[1] = aIndex[1];
+	break;
+    case matWeights:
+	Index[0] = aIndex[1];
+	Index[1] = aIndex[2];
+	break;
+    default:
+	ThrowUsingError("Unsupported type of matrix in gaussian distribution", fname);
+	break;
+    }
+
+    return m_pDistrib->GetMatrix(static_cast<EMatrixType>(matrixId))->GetElementByIndexes(Index);
 }
 
 //Changed: I changed sizes of dataMean and dataCov and dataWeight

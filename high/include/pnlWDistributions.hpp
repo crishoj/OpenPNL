@@ -48,6 +48,7 @@ public:
     void FillData(TokArr &value, TokArr &probability, const TokArr &parentValue, 
         pnl::EMatrixType matType = pnl::matTable);
     void FillDataNew(pnl::EMatrixType matType, TokArr &matrix);
+    void ExtractData(pnl::EMatrixType matType, TokArr &matrix);
 
     void SetMRF(bool mrfFlag /* = true */);
     bool IsMRF() const { return m_bMRF; }

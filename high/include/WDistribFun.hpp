@@ -47,6 +47,7 @@ public:
     void FillData(int matrixType, TokArr value, TokArr probability, TokArr parentValue = TokArr());
     void FillData(int matrixType, int index, double probability, int *parents = 0, int nParents = 0);
     void FillDataNew(int matrixType, TokArr &matrix);
+    void ExtractData(int matrixType, TokArr &matrix);
     void Setup(TokIdNode *node, Vector<TokIdNode*> &aParent);
     virtual void DoSetup() = 0;
     virtual pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1) const = 0;
@@ -56,6 +57,7 @@ protected:
     DistribFunDesc *desc() const { return m_pDesc; }
     // matrix must be created
     virtual void SetAValue(int matrixId, Vector<int> &aIndex, float probability) = 0;
+    virtual float GetAValue(int matrixType, Vector<int> &aIndex) = 0;
 
 private:
     DistribFunDesc *m_pDesc;
@@ -72,6 +74,7 @@ public:
 
     virtual Vector<int> Dimensions(int matrixType);
     virtual void SetAValue(int matrixType, Vector<int> &aIndex, float probability);
+    virtual float GetAValue(int matrixType, Vector<int> &aIndex);
     virtual pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1) const
     {
 	return m_pMatrix;
@@ -93,6 +96,7 @@ public:
     pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1) const;
     void CreateDistribution();
     void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
+    virtual float GetAValue(int matrixType, Vector<int> &aIndex);
     void CreateDefaultDistribution();
     int IsDistributionSpecific();
     void SetData(int matrixId, const float *probability, int numWeightMat = -1);
