@@ -282,8 +282,10 @@ CModelDomain::~CModelDomain()
         }
     }
 
-    for (int lock = 0; lock < c_MaxThreadNumber; lock++) 
+    for (int lock = 0; lock < c_MaxThreadNumber; lock++) {
         omp_destroy_lock(&(m_heap_lock[lock]));
+        m_heap_lock[lock] = NULL;
+    }
 }
 
 static int IsNodeTypeNotInitialized(CNodeType nt)
@@ -385,7 +387,8 @@ void CModelDomain::Release(void* pObjectIn)
 //#endif
     CReferenceCounter::Release(pObjectIn);
 //#ifdef _DEBUG
-    omp_unset_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
+    if (m_heap_lock[c_MaxThreadNumber-1]!=NULL)
+      omp_unset_lock(&(m_heap_lock[c_MaxThreadNumber-1]));
 //#endif
 };
 
