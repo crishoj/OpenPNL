@@ -199,6 +199,9 @@ GetGaussianMean.pnlBNet <- function(x, nodes) .Call("pnlGetGaussianMean", x, nod
 GetGaussianCovar <- function(x, nodes) UseMethod("GetGaussianCovar", x)
 GetGaussianCovar.pnlBNet <- function(x, nodes) .Call("pnlGetGaussianCovar", x, nodes)
 
+GetGaussianWeights <- function(x, nodes, parents) UseMethod("GetGaussianWeights", x)
+GetGaussianWeights.pnlBNet <- function(x, nodes, parents) .Call("pnlGetGaussianWeights", x, nodes, parents)
+
 SetProperty <- function(x, name, value) UseMethod("SetProperty", x)
 SetProperty.pnlBNet <- function(x, name, value) 
 {
