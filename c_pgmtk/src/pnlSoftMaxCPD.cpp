@@ -21,6 +21,7 @@
 #include "pnlSoftMaxCPD.hpp"
 #include "pnlSoftMaxDistribFun.hpp"
 #include "pnlCondSoftMaxDistribFun.hpp"
+#include "pnlTabularPotential.hpp"
 // ----------------------------------------------------------------------------
 
 PNL_USING
@@ -266,5 +267,95 @@ void CSoftMaxCPD::MaximumLikelihood(float **Observation,
     static_cast<CCondSoftMaxDistribFun*>(m_CorrespDistribFun)->
       MaximumLikelihood(Observation, NumberOfObservations, Accuracy);
   }
+}
+//------------------------------------------------------------------------------
+CPotential* CSoftMaxCPD::ConvertWithEvidenceToTabularPotential(
+        const CEvidence* pEvidence,
+        int flagSumOnMixtureNode ) const
+{
+    
+        //need to convert to potential and after that add evidence
+        CPotential* potWithoutEv = ConvertToTabularPotential(pEvidence);
+        CPotential* potWithEvid = potWithoutEv->ShrinkObservedNodes(pEvidence);
+        delete potWithoutEv;
+        return potWithEvid;
+    
+}
+//-----------------------------------------------------------------------------
+CPotential *CSoftMaxCPD::ConvertToTabularPotential(const CEvidence* pEvidence) const
+{
+
+    //searching discrite nodes in domain
+    intVector discriteNodesPosInDom;
+    int domSize = m_Domain.size();
+    int numSoftMaxNode;
+    int discrDomSize = 0;
+    int *parentIndexes;
+    int SoftMaxSize;
+    const pConstNodeTypeVector* ntVec = GetDistribFun()->GetNodeTypesVector();
+    int i;
+    for (i = 0; i < domSize; i++)
+    {
+        if ((*ntVec)[i]->IsDiscrete())
+        {
+            discriteNodesPosInDom.push_back(m_Domain[i]);
+            SoftMaxSize = (*ntVec)[i]->GetNodeSize();
+            numSoftMaxNode = i;
+        }
+    };
+    discrDomSize=discriteNodesPosInDom.size();
+    
+    //fill parents indexes vector
+    parentIndexes = new int[discrDomSize-1];
+    for( i = 0; i < discrDomSize-1; i++ )
+    {
+        parentIndexes[i]=discriteNodesPosInDom[i];
+    }    
+ 
+    // creating new evidece that contain all observed nodes in this domain
+    intVector pObsNodes;
+    pConstValueVector pObsValues;
+    pConstNodeTypeVector pNodeTypes;
+    pEvidence->GetObsNodesWithValues(&pObsNodes,&pObsValues,&pNodeTypes);
+    int *obsNodes;
+    int obsNodesSize;
+    obsNodesSize=pObsNodes.size();
+    obsNodes = new int[obsNodesSize];
+    for(i = 0;i < obsNodesSize; i++)
+        obsNodes[i] = pObsNodes[i];
+    CEvidence *pCopyEvidence;
+    valueVector cpyValVect(0);
+    for(i = 0; i < obsNodesSize; i++)
+        cpyValVect.push_back(*(pObsValues[i]));
+    
+    pCopyEvidence = CEvidence::Create(pEvidence->GetModelDomain(), obsNodesSize, 
+        obsNodes,(const valueVector&)cpyValVect);
+    for(i = 0; i < pObsNodes.size(); i++)
+    {
+        if((std::find(m_Domain.begin(),m_Domain.end(), pObsNodes[i])) == m_Domain.end())
+            pCopyEvidence->MakeNodeHidden(pObsNodes[i]);
+    };
+    
+    //creating tabular potential 
+    CTabularPotential *resFactor = CTabularPotential::Create(
+        GetModelDomain(),discriteNodesPosInDom);
+
+    if( m_DistributionType == dtSoftMax)
+        resFactor->AttachMatrix(((CSoftMaxDistribFun*)m_CorrespDistribFun)->GetProbMatrix(pCopyEvidence),matTable);
+    else
+    {
+        if(m_DistributionType == dtCondSoftMax)
+            resFactor->AttachMatrix(((CCondSoftMaxDistribFun*)m_CorrespDistribFun)->GetProbMatrix(pCopyEvidence),matTable);
+        
+        else
+        {
+            PNL_THROW( CInconsistentType,
+                "distribution must be SoftMax or conditional SoftMax" )
+        }
+    }
+    delete []parentIndexes;
+    delete []obsNodes;
+    return resFactor;
+
 }
 // end of file ----------------------------------------------------------------

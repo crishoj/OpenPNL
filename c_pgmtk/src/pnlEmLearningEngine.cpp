@@ -23,6 +23,7 @@
 #include "pnlJtreeInferenceEngine.hpp"
 #include "pnlExInferenceEngine.hpp"
 #include "pnlSoftMaxCPD.hpp"
+#include "pnlRng.hpp"
 
 PNL_USING
 
@@ -85,13 +86,59 @@ void  CEMLearningEngine::SetTerminationToleranceEM(float precision)
     m_precisionEM = precision;
 
 }
+// ----------------------------------------------------------------------------
 
-void CEMLearningEngine::BuildEvidenceMatrix(int Node, float ***evid)
+void CEMLearningEngine::BuildFullEvidenceMatrix(float ***full_evid)
+{
+    int i, j;
+    CStaticGraphicalModel *grmodel = GetStaticModel();
+    const CEvidence* pCurrentEvid;
+    valueVector *values = new valueVector();
+  
+    int NumOfNodes = grmodel->GetGraph()->GetNumberOfNodes();
+    int NumOfEvid = m_Vector_pEvidences.size();
+
+    (*full_evid) = new float * [NumOfNodes];
+    for (i=0; i<NumOfNodes; i++)
+    {
+        (*full_evid)[i] = new float [NumOfEvid];
+    }
+
+    for (i=0; i<NumOfNodes; i++)
+        for (j=0; j<NumOfEvid; j++)
+            (*full_evid)[i][j] = -10000;
+
+    const int * obs;
+    for (j=0; j<NumOfEvid; j++)
+    {
+        pCurrentEvid = m_Vector_pEvidences[j];
+        int ObsNum = pCurrentEvid->GetNumberObsNodes();
+        obs = pCurrentEvid->GetAllObsNodes(); 
+        for (i=0; i < (pCurrentEvid->GetNumberObsNodes()); i++)
+        {
+            float fl = (pCurrentEvid->GetValue(obs[i]))->GetFlt();
+            (*full_evid)[int(obs[i])][j] = fl;
+        }
+    }
+
+/*  printf ("\n My Full Evidence Matrix");
+    for (i=0; i<NumOfNodes; i++)
+    {
+        for (j=0; j<NumOfEvid; j++)
+        {
+            printf ("%f   ", (*full_evid)[i][j]);
+        }
+        printf("\n");
+    }*/
+            
+}
+// ----------------------------------------------------------------------------
+
+void CEMLearningEngine::BuildCurrentEvidenceMatrix(int Node, float ***full_evid, float ***evid)
 {
   int i, j;
-  const CEvidence* pCurrentEvid;
-  CStaticGraphicalModel *grmodel = GetStaticModel();
 
+  CStaticGraphicalModel *grmodel = GetStaticModel();
   intVector parents;
   parents.resize(0);
   grmodel->GetGraph()->GetParents(Node, &parents);
@@ -104,18 +151,16 @@ void CEMLearningEngine::BuildEvidenceMatrix(int Node, float ***evid)
     (*evid)[i] = new float [m_Vector_pEvidences.size()];
   }
 
-  valueVector *values = new valueVector();
-  values->resize(NumOfNodes);
-
+ /* printf("Current Evid Matrix: \n");
   for (i = 0; i < m_Vector_pEvidences.size(); i++)
   {
-    pCurrentEvid = m_Vector_pEvidences[i];
-    pCurrentEvid->GetRawData(values);
     for (j = 0; j < parents.size(); j++)
     {
-      (*evid)[j][i] = (*values)[parents[j]].GetFlt();
+      (*evid)[j][i] = (*full_evid)[parents[j]][i];
+      printf("%f,  ", (*evid)[j][i]);
     }
-  }
+    printf("\n");
+  }*/
 }
 // ----------------------------------------------------------------------------
 
@@ -131,121 +176,254 @@ EMaximizingMethod CEMLearningEngine::GetMaximizingMethod()
 }
 // ----------------------------------------------------------------------------
 
+void CEMLearningEngine::Cast(const CPotential * pot, int node, int ev, float *** full_evid)
+{
+    EDistributionType dt = pot->GetDistributionType();
+  //  if (dt == dtTabular) printf("Tabular distribFun\n");
+    
+    int dims;
+    dims = pot->GetDistribFun()->GetMatrix(matTable)->GetNumberDims();
+    const int * ranges;
+    pot->GetDistribFun()->GetMatrix(matTable)->GetRanges(&dims, &ranges);
+
+    float * segment = new float [ranges[dims-1]+1];
+    segment[0] = 0;
+
+    int i, j;
+
+    if (dims == 1)  //discrete node has no discrete parents
+    {
+        int * multiindex = new int [1];
+
+        for (i=1; i <= ranges[0]; i++)
+        {
+            multiindex[0] = i-1;
+            segment[i] = segment[i-1] + pot->GetDistribFun()->
+                GetMatrix(matTable)->GetElementByIndexes(multiindex); 
+        }
+        segment[0] = -0.001;
+
+        delete [] multiindex;
+    }
+
+    else //discrete node has discrete parents
+    {
+        int   data_length; 
+        const float * data;
+        (static_cast <CDenseMatrix <float> * >(pot->GetDistribFun()->GetMatrix(matTable)))->GetRawData (&data_length, &data);
+        
+        float  * probability = new float [ranges[dims-1]]; 
+        for (i=0; i< ranges[dims-1]; i++)
+        {
+            probability[i] = 0;
+        }
+
+        for (i=0; i< ranges[dims-1]; i++)
+        {
+            for (j=0; (j*ranges[dims-1]+i) < data_length; j++)
+            {
+                probability[i] += data[ j*ranges[dims-1] + i ];
+            }
+
+        }
+
+        for (i=1; i <= ranges[dims-1]; i++)
+        {
+            segment[i] = segment[i-1] + probability[i-1];
+        }
+
+        delete [] probability;
+    }
+
+    segment[0] = -0.001;
+    float my_val = pnlRand(0.0f, 1.0f);
+    for (i=1; i<=ranges[dims-1]; i++)
+    {
+        if ((my_val > segment[i-1]) && (my_val <= segment[i]))
+        {
+            (*full_evid)[node][ev] = i-1;
+        }
+    }
+    delete [] segment;
+    
+}
+// ----------------------------------------------------------------------------
+
 void CEMLearningEngine::Learn()
 {
-  CStaticGraphicalModel *pGrModel =  this->GetStaticModel();
-  PNL_CHECK_IS_NULL_POINTER(pGrModel);
-  PNL_CHECK_LEFT_BORDER(GetNumEv() - GetNumberProcEv() , 1);
-  
-  CInfEngine *pInfEng = NULL;
-  if (m_pInfEngine)
-  {
-    pInfEng = m_pInfEngine;
-  }
-  else
-  {
-    if (!m_bAllObserved)
+    CStaticGraphicalModel *pGrModel =  this->GetStaticModel();
+    PNL_CHECK_IS_NULL_POINTER(pGrModel);
+    PNL_CHECK_LEFT_BORDER(GetNumEv() - GetNumberProcEv() , 1);
+    
+    CInfEngine *pInfEng = NULL;
+    if (m_pInfEngine)
     {
-      pInfEng = CJtreeInfEngine::Create(pGrModel);
-      m_pInfEngine = pInfEng;
+        pInfEng = m_pInfEngine;
     }
-  }
-  
-  float loglik = 0.0f;
-  
-  int nFactors = pGrModel->GetNumberOfFactors();
-  const CEvidence *pEv;
-  CFactor *pFactor;
-  
-  int iteration = 0;
-  int ev;
-  if (IsAllObserved())
-  {
-    int i;
-    float **evid = NULL;
-    EDistributionType dt;
-    CFactor *factor = NULL;
-    for (i = 0; i < nFactors; i++)
+    else
     {
-      factor = pGrModel->GetFactor(i);
-      dt = factor->GetDistributionType();
-      if (dt != dtSoftMax)
-      {
-        factor->UpdateStatisticsML(&m_Vector_pEvidences[GetNumberProcEv()], 
-          GetNumEv() - GetNumberProcEv());
-      }
-      else
-      {
-        BuildEvidenceMatrix(i, &evid);
-        CSoftMaxCPD* SoftMaxFactor = static_cast<CSoftMaxCPD*>(factor);
-        SoftMaxFactor->InitLearnData();
-        SoftMaxFactor->SetMaximizingMethod(m_MaximizingMethod);
-//        SoftMaxFactor->MaximumLikelihood(evid, m_numberOfLastEvidences, 
-        SoftMaxFactor->MaximumLikelihood(evid, m_Vector_pEvidences.size(),
-          0.00001f, 0.01f);
-        SoftMaxFactor->CopyLearnDataToDistrib();
-        for (int k = 0; k < factor->GetDomainSize(); k++)
+        if (!m_bAllObserved)
         {
-          delete [] evid[k];
+            pInfEng = CJtreeInfEngine::Create(pGrModel);
+            m_pInfEngine = pInfEng;
         }
-        delete [] evid;
-      }
     }
-    m_critValue.push_back(UpdateModel());
-  }
-  else
-  {
-    bool bContinue;
-    do
+    
+    float loglik = 0.0f;
+    
+    int nFactors = pGrModel->GetNumberOfFactors();
+    const CEvidence *pEv;
+    CFactor *pFactor;
+    
+    int iteration = 0;
+    int ev;
+    
+    float ** full_evid;
+    BuildFullEvidenceMatrix(&full_evid);
+    
+    if (IsAllObserved())
     {
-      ClearStatisticData();
-      iteration++;
-      for( ev = GetNumberProcEv(); ev < GetNumEv() ; ev++ )
-      {
-        bool bInfIsNeed = !GetObsFlags(ev)->empty(); 
-        pEv = m_Vector_pEvidences[ev];
-        if( bInfIsNeed )
+        int i;
+        float **evid = NULL;
+        EDistributionType dt;
+        CFactor *factor = NULL;
+        for (i = 0; i < nFactors; i++)
         {
-          pInfEng->EnterEvidence(pEv, 0, 0);
+            factor = pGrModel->GetFactor(i);
+            dt = factor->GetDistributionType();
+            if (dt != dtSoftMax)
+            {
+                factor->UpdateStatisticsML(&m_Vector_pEvidences[GetNumberProcEv()], 
+                    GetNumEv() - GetNumberProcEv());
+            }
+            else
+            {
+                BuildCurrentEvidenceMatrix(i, &full_evid, &evid);
+                CSoftMaxCPD* SoftMaxFactor = static_cast<CSoftMaxCPD*>(factor);
+                SoftMaxFactor->InitLearnData();
+                SoftMaxFactor->SetMaximizingMethod(m_MaximizingMethod);
+                SoftMaxFactor->MaximumLikelihood(evid, m_Vector_pEvidences.size(),
+                    0.00001f, 0.01f);
+                SoftMaxFactor->CopyLearnDataToDistrib();
+                for (int k = 0; k < factor->GetDomainSize(); k++)
+                {
+                    delete [] evid[k];
+                }
+                delete [] evid;
+            }
         }
+        m_critValue.push_back(UpdateModel());
+    }
+    else
+    {
+        bool bContinue;
+        const CPotential * pot;
+        
+        bool IsCastNeed = false;
         int i;
         for( i = 0; i < nFactors; i++ )
         {
-          pFactor = pGrModel->GetFactor(i);
-          int nnodes;
-          const int * domain;
-          pFactor->GetDomain( &nnodes, &domain );
-          if( bInfIsNeed && !IsDomainObserved(nnodes, domain, ev ) )
-          {
-            pInfEng->MarginalNodes( domain, nnodes, 1 );
-            pFactor->UpdateStatisticsEM( pInfEng->GetQueryJPD(), pEv );
-          }
-          else
-          {
-            pFactor->UpdateStatisticsML( &pEv, 1 );
-          }
+            pFactor = pGrModel->GetFactor(i);
+            EDistributionType dt = pFactor->GetDistributionType();
+            if ( dt == dtSoftMax ) IsCastNeed = true;
         }
-      }
-      
-      loglik = UpdateModel();
-      
-      if( GetMaxIterEM() != 1)
-      {
-        bool flag = iteration == 1 ? true : 
-        (fabs(2*(m_critValue.back()-loglik)/(m_critValue.back() + loglik)) > GetPrecisionEM() );
         
-        bContinue = GetMaxIterEM() > iteration && flag;
-      }
-      else
-      {
-        bContinue = false;
-      }
-      m_critValue.push_back(loglik);
-      
-    }while(bContinue);
-  }
-  SetNumProcEv( GetNumEv() );
-  
+        do
+        {
+            ClearStatisticData();
+            iteration++;
+            for( ev = GetNumberProcEv(); ev < GetNumEv() ; ev++ )
+            {
+                bool bInfIsNeed = !GetObsFlags(ev)->empty(); 
+                pEv = m_Vector_pEvidences[ev];
+                if( bInfIsNeed )
+                {
+                    pInfEng->EnterEvidence(pEv, 0, 0);
+                }
+                int i;
+                for( i = 0; i < nFactors; i++ )
+                {
+                    pFactor = pGrModel->GetFactor(i);
+                    int nnodes;
+                    const int * domain;
+                    pFactor->GetDomain( &nnodes, &domain );
+                    if( bInfIsNeed && !IsDomainObserved(nnodes, domain, ev ) )
+                    {
+                        pInfEng->MarginalNodes( domain, nnodes, 1 );
+                        pot = pInfEng->GetQueryJPD(); 
+                        if ( (!(m_Vector_pEvidences[ev])->IsNodeObserved(i)) && (IsCastNeed) )
+                        {
+                            Cast(pot, i, ev, &full_evid);
+                        }
+                        EDistributionType dt;
+                        dt = pFactor->GetDistributionType();
+                        if ( !(dt == dtSoftMax) )
+                            pFactor->UpdateStatisticsEM( /*pInfEng->GetQueryJPD */ pot, pEv );
+                    }
+                    else
+                    {
+                        if ((pFactor->GetDistributionType()) != dtSoftMax)
+                            pFactor->UpdateStatisticsML( &pEv, 1 );
+                    }
+                }
+            }
+            
+            int i, j;
+/*
+            printf ("\n My Full Evidence Matrix");
+            for (i=0; i<nFactors; i++)
+            {
+                for (j=0; j<GetNumEv(); j++)
+                {
+                    printf ("%f   ", full_evid[i][j]);
+                }
+                printf("\n");
+            } 
+*/            
+            float **evid = NULL;
+            EDistributionType dt;
+            CFactor *factor = NULL;
+            // int i;
+            for (i = 0; i < nFactors; i++)
+            {
+                factor = pGrModel->GetFactor(i);
+                dt = factor->GetDistributionType();
+                if (dt == dtSoftMax)
+                {
+                    BuildCurrentEvidenceMatrix(i, &full_evid, &evid);
+                    CSoftMaxCPD* SoftMaxFactor = static_cast<CSoftMaxCPD*>(factor);
+                    SoftMaxFactor->InitLearnData();
+                    SoftMaxFactor->SetMaximizingMethod(m_MaximizingMethod);
+                    //        SoftMaxFactor->MaximumLikelihood(evid, m_numberOfLastEvidences, 
+                    SoftMaxFactor->MaximumLikelihood(evid, m_Vector_pEvidences.size(),
+                        0.00001f, 0.01f);
+                    SoftMaxFactor->CopyLearnDataToDistrib();
+                    for (int k = 0; k < factor->GetDomainSize(); k++)
+                    {
+                        delete [] evid[k];
+                    }
+                    delete [] evid;
+                }
+            }
+            
+            loglik = UpdateModel();
+            
+            if( GetMaxIterEM() != 1)
+            {
+                bool flag = iteration == 1 ? true : 
+                (fabs(2*(m_critValue.back()-loglik)/(m_critValue.back() + loglik)) > GetPrecisionEM() );
+                
+                bContinue = GetMaxIterEM() > iteration && flag;
+            }
+            else
+            {
+                bContinue = false;
+            }
+            m_critValue.push_back(loglik);
+            
+        }while(bContinue);
+    }
+    SetNumProcEv( GetNumEv() );
 }
 
 

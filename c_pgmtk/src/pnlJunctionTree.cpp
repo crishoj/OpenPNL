@@ -20,6 +20,7 @@
 #include "pnlGaussianPotential.hpp"
 #include "pnlScalarPotential.hpp"
 #include "pnlMixtureGaussianCPD.hpp"
+#include "pnlSoftMaxCPD.hpp"
 #include "pnlCPD.hpp"
 #include "pnlInferenceEngine.hpp"
 #include "pnlIDNet.hpp"
@@ -1082,7 +1083,10 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
         for( ; assFactsIt != assFacts_end; ++assFactsIt )
         {
             const CPotential *pTmpPot;
-            
+            if(((*assFactsIt)->GetDistributionType() == dtSoftMax)||
+                  ((*assFactsIt)->GetDistributionType() == dtCondSoftMax ))
+               pTmpPot = ((CSoftMaxCPD*)(*assFactsIt))->ConvertWithEvidenceToTabularPotential( pEvidence);
+            else
             pTmpPot = (*assFactsIt)->ConvertWithEvidenceToPotential( pEvidence,
                 sumOnMixtureNode );
 

@@ -920,6 +920,21 @@ void CCondSoftMaxDistribFun::Dump() const
   }
   delete iterThis;
 }
+//-----------------------------------------------------------------------------
+void CCondSoftMaxDistribFun::DumpMatrix(const CEvidence *pEvidence) 
+{
+    //It is very importaint, that pEvidence contains only observations 
+    // in this domain
+    CNumericDenseMatrix<float> *curMatrix = GetProbMatrix(pEvidence);
+    const float *data;
+    int size;
+    curMatrix->GetRawData(&size,&data);
+    int i;
+    printf("\nProbMatrix values are:\n");
+    for( i = 0; i < size; i++)
+        printf(" %f ",data[i]);
+
+}
 // ----------------------------------------------------------------------------
 
 int CCondSoftMaxDistribFun::IsSparse() const 
@@ -1068,7 +1083,7 @@ void CCondSoftMaxDistribFun::MaximumLikelihood(float ** Observation,
     obsForConf[i] = new float [NumberOfObservations];
   }
  
-  printf("\nObservation\n");
+/*  printf("\nObservation\n");
   for (i =0; i < m_contParentsIndex.size() + m_discrParentsIndex.size() + 1;
     i++)
   {
@@ -1078,7 +1093,7 @@ void CCondSoftMaxDistribFun::MaximumLikelihood(float ** Observation,
   }
   printf("\nm_discrParentsIndex\t");
   for (i = 0; i < m_discrParentsIndex.size(); i++)
-    printf("%d\t", m_discrParentsIndex[i]);
+    printf("%d\t", m_discrParentsIndex[i]);*/
  
   int NumberOfObsForThisConf;
   CMatrixIterator<CSoftMaxDistribFun*>* iterChanging =
@@ -1091,9 +1106,9 @@ void CCondSoftMaxDistribFun::MaximumLikelihood(float ** Observation,
       *(m_distribution->Value(iterChanging));
     intVector index;
     m_distribution->Index(iterChanging, &index);
-    printf("\nindex\t");
+    /*printf("\nindex\t");
     for (int k=0; k < index.size(); k++)
-      printf("%d\t", index[k]);
+      printf("%d\t", index[k]);*/
     for (i = 0; i < NumberOfObservations; i++)
     {
       int isObsForThisConf = 1;
@@ -1133,4 +1148,49 @@ void CCondSoftMaxDistribFun::MaximumLikelihood(float ** Observation,
   }
   delete [] obsForConf;
 }
+//-----------------------------------------------------------------------------
+CNumericDenseMatrix<float>* CCondSoftMaxDistribFun:: GetProbMatrix(const CEvidence *pEvidence)
+{
+    int NumOfStates = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
+    int SizeOfProbMatrix = NumOfStates * m_numOfDiscreteParConfs;
+    int IterationNum = 0;
+    int i = 0;
+    float *Values = new float[SizeOfProbMatrix];
+    int *multInd;
+    int numOfDiscrNodesInDomain = m_discrParentsIndex.size()+1;
+    multInd = new int[1];
+    const float *data;
+    CNumericDenseMatrix<float> *currentMatrix;
+
+    CMatrixIterator<CSoftMaxDistribFun*>* iterChanging =
+        m_distribution->InitIterator();
+    
+    for (iterChanging; m_distribution->IsValueHere(iterChanging); 
+    m_distribution->Next(iterChanging))
+    {
+         currentMatrix =  
+             (*(m_distribution->Value(iterChanging)))->GetProbMatrix(pEvidence);
+         currentMatrix->GetRawData(&NumOfStates,&data);
+        for(i = 0; i < NumOfStates; i++)
+        {
+            Values[IterationNum*NumOfStates+i] = data[i];       
+        };
+        IterationNum++;
+        
+    };
+    int dims;
+	const int* ranges;
+	
+	m_distribution->GetRanges( &dims, &ranges );
+   int *newRanges = new int[dims+1];
+    for(i = 0; i < dims; i++)
+        newRanges[i] = ranges[i];
+
+     newRanges[dims] = NumOfStates; 
+     CNumericDenseMatrix<float> *NewMatrix = CNumericDenseMatrix<float>::Create(dims+1,newRanges,Values);
+     delete []newRanges;
+     delete []multInd;
+     delete []Values;
+     return NewMatrix;
+};
 // end of file ----------------------------------------------------------------

@@ -57,6 +57,8 @@ public:
   virtual void AttachOffsetVector(const floatVector *pVector, 
     const int *parentIndices);
 
+  virtual CNumericDenseMatrix<float>* GetProbMatrix(const CEvidence *pEvidence);
+
   static CCondSoftMaxDistribFun* Copy(const CCondSoftMaxDistribFun* pInpDistr);
 
   void SetDistribFun(CSoftMaxDistribFun* inputDistr, 
@@ -157,6 +159,8 @@ public:
   virtual int IsDense() const;
 
   virtual void Dump() const;
+
+  virtual void DumpMatrix(const CEvidence *pEvidence);
 
   virtual int GetNumberOfFreeParameters() const;
 

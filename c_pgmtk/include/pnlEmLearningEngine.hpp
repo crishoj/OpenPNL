@@ -41,7 +41,7 @@ public:
 #endif
 
     void SetMaximizingMethod(EMaximizingMethod met);
-
+    void Cast(const CPotential * pot, int node, int ev, float *** full_evid);
     EMaximizingMethod GetMaximizingMethod();
 
 protected:
@@ -54,7 +54,8 @@ protected:
     void SetNumProcEv( int numEv );
     inline bool IsAllObserved() const;
     float UpdateModel();
-    void BuildEvidenceMatrix(int Node, float ***evid);
+    void BuildFullEvidenceMatrix(float ***full_evid);
+    void BuildCurrentEvidenceMatrix(int Node, float ***full_evid, float ***evid);
 
 private:
     CInfEngine *m_pInfEngine;

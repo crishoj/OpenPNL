@@ -125,6 +125,8 @@ public:
 
   virtual void ClearStatisticalData();
 
+  virtual CNumericDenseMatrix<float>* GetProbMatrix(const CEvidence *pEvidence);
+
   float ProcessingStatisticalData(float numEvidences);
 
   virtual int IsEqual(const CDistribFun *dataToCompare, float epsilon,
@@ -146,6 +148,8 @@ public:
 
   virtual void Dump() const;
 
+  virtual void DumpMatrix(const CEvidence *pEvidence);
+
   virtual int GetNumberOfFreeParameters() const;
 
   CSoftMaxDistribFun::~CSoftMaxDistribFun();
@@ -156,7 +160,7 @@ public:
   void SetMaximizingMethod(EMaximizingMethod met);
 
   EMaximizingMethod GetMaximizingMethod();
-
+ 
 protected:
   CSoftMaxDistribFun(int NodeNumber, const CNodeType *const* nodeTypes,
     const float *dataWeight, const float *dataOffset);

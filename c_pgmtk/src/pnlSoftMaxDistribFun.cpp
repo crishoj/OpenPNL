@@ -44,7 +44,7 @@ CDistribFun* CSoftMaxDistribFun::Clone() const
   }
 
   CSoftMaxDistribFun* resData = CSoftMaxDistribFun::Create(m_NumberOfNodes, 
-    &m_NodeTypes.front(), NULL, NULL);
+    m_NodeTypes.begin(), NULL, NULL);
   resData->m_bUnitFunctionDistribution = m_bUnitFunctionDistribution;
 
   if (m_bUnitFunctionDistribution)
@@ -69,7 +69,7 @@ CDistribFun* CSoftMaxDistribFun::CloneWithSharedMatrices()
     PNL_THROW(CInconsistentState, "can't clone invalid data");
   }
   CSoftMaxDistribFun* resData = CSoftMaxDistribFun::Create(m_NumberOfNodes, 
-    &m_NodeTypes.front(), NULL, NULL);
+    m_NodeTypes.begin(), NULL, NULL);
   resData->m_bUnitFunctionDistribution = m_bUnitFunctionDistribution;
 
   if (m_bUnitFunctionDistribution)
@@ -228,7 +228,7 @@ void CSoftMaxDistribFun::CreateDefaultMatrices(int typeOfMatrices)
   m_pMatrixWeight->AddRef(pObj);
   
   // create offsets vector
-  PNL_CHECK_FOR_NON_ZERO (m_VectorOffset.size());    
+  PNL_CHECK_FOR_NON_ZERO (m_VectorOffset.size);    
   m_VectorOffset.assign(chldNodeSize, 0.0f);
   pnlRand(chldNodeSize, &m_VectorOffset.front(), -5.0f, 5.0f);
 }
@@ -859,6 +859,21 @@ void CSoftMaxDistribFun::Dump() const
   }
   dump << "\n";
 }
+//-----------------------------------------------------------------------------
+void CSoftMaxDistribFun::DumpMatrix(const CEvidence *pEvidence) 
+{
+    //It is very importaint, that pEvidence contains only observations 
+    // in this domain
+    CNumericDenseMatrix<float> *curMatrix = GetProbMatrix(pEvidence);
+    const float *data;
+    int size;
+    curMatrix->GetRawData(&size,&data);
+    int i;
+    printf("\nProbMatrix values are:\n");
+    for( i = 0; i < size; i++)
+        printf(" %f ",data[i]);
+
+}
 // ----------------------------------------------------------------------------
 
 int CSoftMaxDistribFun::IsSparse() const
@@ -1267,7 +1282,7 @@ void CSoftMaxDistribFun::MaximumLikelihoodGradient(float **Observations,
     printf("%f   ", m_LearnVectorOffset[i]);
   printf("\n");
 
-  printf("\nMatrix of Observations\n");
+/*  printf("\nMatrix of Observations\n");
   for (i = 0; i < NumOfContinousParents+1; i++)
   {
     for (j = 0; j < NumOfObservations; j++)
@@ -1275,7 +1290,7 @@ void CSoftMaxDistribFun::MaximumLikelihoodGradient(float **Observations,
       printf("%f   ", Observations[i][j]);
     }
     printf("\n");
-  }
+  }*/
 #endif
 
   float *grad_offset = new float [NumOfStates - 1];
@@ -1769,7 +1784,7 @@ void CSoftMaxDistribFun::MaximumLikelihoodConjugateGradient(
     printf("%f   ", m_LearnVectorOffset[i]);
   printf("\n");
 
-  printf("\nMatrix of Observations\n");
+/*  printf("\nMatrix of Observations\n");
   for (i = 0; i < NumOfContinousParents+1; i++)
   {
     for (j = 0; j < NumOfObservations; j++)
@@ -1777,7 +1792,7 @@ void CSoftMaxDistribFun::MaximumLikelihoodConjugateGradient(
       printf("%f   ", Observations[i][j]);
     }
     printf("\n");
-  }
+  }*/
 #endif
 
   float *grad_offset = new float [NumOfStates - 1];
@@ -2005,4 +2020,62 @@ float CSoftMaxDistribFun::CalculateNorm(float ** grad_weights,
   }
   return result;
 }
+//-----------------------------------------------------------------------------
+CNumericDenseMatrix<float>* CSoftMaxDistribFun:: GetProbMatrix(const CEvidence *pEvidence)
+{
+    int NumOfStates = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
+    int numOfNodes;
+    int *mIOfMatrWeight;
+    float norm = 0;
+    float scal = 0;
+    float curScal = 0;
+    float *probValues;
+    intVector pObsNodes;
+    pConstValueVector pObsValues;
+    pConstNodeTypeVector pNodeTypes;
+    pEvidence->GetObsNodesWithValues(&pObsNodes,&pObsValues,&pNodeTypes);
+    intVector SetOfContNodes;
+    floatVector SetofContNodesValues;
+    int i;
+    int j;
+    for(i = 0;i < pObsNodes.size(); i++)
+    {
+        if( !((pNodeTypes[i])->IsDiscrete()) )
+        {
+            SetOfContNodes.push_back(pObsNodes[i]);
+            SetofContNodesValues.push_back(pObsValues[i]->GetFlt());
+        };
+    };
+    numOfNodes = SetOfContNodes.size();
+    mIOfMatrWeight = new int[2];
+    probValues = new float[NumOfStates];
+    float temp;
+    for(i = 0; i < NumOfStates; i++)
+    {   
+        scal = 0; 
+        for(j = 0; j < numOfNodes; j++)
+        {
+            mIOfMatrWeight[1] = i;
+            mIOfMatrWeight[0] = j;
+            temp = (m_pMatrixWeight->GetElementByIndexes(mIOfMatrWeight))*SetofContNodesValues[j];
+            scal += temp;
+        };
+        norm += exp(scal+m_VectorOffset[i]);
+    }
+    for(i = 0; i < NumOfStates; i++)
+    {
+        curScal = 0;    
+        for(j = 0; j < numOfNodes; j++)
+        {
+            mIOfMatrWeight[1] = i;
+            mIOfMatrWeight[0] = j;
+            curScal+=m_pMatrixWeight->GetElementByIndexes(mIOfMatrWeight)*SetofContNodesValues[j];
+        };
+        probValues[i] = exp(curScal + m_VectorOffset[i])/norm;
+    };
+    CNumericDenseMatrix<float> *NewMatrix = CNumericDenseMatrix<float>::Create(1,&NumOfStates,probValues);
+    delete []mIOfMatrWeight;
+    delete []probValues;
+    return NewMatrix;
+};
 // end of file ----------------------------------------------------------------

@@ -44,6 +44,14 @@ public:
     const floatVector& offsetIn,
     const intVector& parentCombination = intVector());
 
+   virtual CPotential* ConvertWithEvidenceToTabularPotential(
+        const CEvidence* pEvidence,
+        int flagSumOnMixtureNode = 1) const;
+
+ virtual CPotential *ConvertToTabularPotential(const CEvidence *pEvidence) const;
+
+
+
 #ifdef PNL_OBSOLETE
   static CSoftMaxCPD* Create(const int *domain, int nNodes, CModelDomain* pMD);
 
