@@ -47,6 +47,8 @@ CIDPotential::CIDPotential(EDistributionType dt, EFactorType pt,
     {
       m_UtilityDistribFun = CTabularDistribFun::Create(nNodes,
         &nt.front(), NULL);
+      ((CTabularDistribFun*)m_UtilityDistribFun)->SetCheckNegative(false);
+      ((CTabularDistribFun*)m_CorrespDistribFun)->SetCheckNegative(false);
       break;
     }
     default:
@@ -535,6 +537,7 @@ CIDPotential::~CIDPotential()
 void CIDPotential::SetProbDistribFun(const CDistribFun* data)
 {
   CFactor::SetDistribFun(data);
+  ((CTabularDistribFun*)m_CorrespDistribFun)->SetCheckNegative(false);
 }
 // ----------------------------------------------------------------------------
 
@@ -574,6 +577,7 @@ void CIDPotential::SetUtilityDistribFun(const CDistribFun* data)
   delete m_UtilityDistribFun;
   CDistribFun *dat = data->Clone();
   m_UtilityDistribFun = dat;
+  ((CTabularDistribFun*)m_UtilityDistribFun)->SetCheckNegative(false);
 }
 // ----------------------------------------------------------------------------
 

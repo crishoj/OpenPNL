@@ -146,18 +146,24 @@ public:
     
     CTabularDistribFun::~CTabularDistribFun();
 
-        virtual int GetNumberOfFreeParameters() const;
+    virtual int GetNumberOfFreeParameters() const;
+
+    void SetCheckNegative(bool val);
 
 protected:
-    CTabularDistribFun( int NodeNumber, const CNodeType *const* nodeTypes,
-        const float *data = NULL, int asDense = 1, int allocTheMatrices = 0 );
-    CTabularDistribFun( int NodeNumber, const CNodeType *const* nodeTypes,
-        int asDense );
+    CTabularDistribFun(int NodeNumber, const CNodeType *const* nodeTypes,
+        const float *data = NULL, int asDense = 1, int allocTheMatrices = 0,
+        bool CheckNegative = true);
+
+    CTabularDistribFun(int NodeNumber, const CNodeType *const* nodeTypes,
+        int asDense, bool CheckNegative = true);
+
     CTabularDistribFun( const CTabularDistribFun &inpDistr );
     CMatrix<float>* CreateUnitFunctionMatrix( int isDense = 1, int withoutData = 1) const;
     inline void CreateUnitFunctionData();
 private:
     int m_bDense;
+    bool m_bCheckNegative;
     CMatrix<float> *m_pMatrix;
     //the matrix is always presented here,
     //in case of unit distribution it contain stupid data

@@ -119,13 +119,14 @@ CDistribFun* CTabularDistribFun::Clone() const
     if( m_bUnitFunctionDistribution )
     {
         CDistribFun *retData = new CTabularDistribFun( m_NumberOfNodes, 
-            &m_NodeTypes.front(), m_bDense );
+            &m_NodeTypes.front(), m_bDense, m_bCheckNegative);
         return retData;
     }
     else
     {
         CTabularDistribFun *retData =  new CTabularDistribFun(
             m_NumberOfNodes, &m_NodeTypes.front() );
+        retData->m_bCheckNegative = m_bCheckNegative;
         retData->m_pMatrix = m_pMatrix->Clone();
         retData->m_pMatrix->AddRef(retData);
         retData->ChangeMatricesValidityFlag( GetMatricesValidityFlag() );
@@ -142,13 +143,14 @@ CDistribFun* CTabularDistribFun::CloneWithSharedMatrices()
     if( m_bUnitFunctionDistribution )
     {
         CDistribFun *retData = new CTabularDistribFun( m_NumberOfNodes, 
-            &m_NodeTypes.front(), m_bDense );
+            &m_NodeTypes.front(), m_bDense, m_bCheckNegative);
         return retData;
     }
     else
     {
         CDistribFun *retData = (CDistribFun*) new CTabularDistribFun(
             m_NumberOfNodes, &m_NodeTypes.front() );
+        ((CTabularDistribFun*)retData)->m_bCheckNegative = m_bCheckNegative;
         if( m_pMatrix )
         {
             retData->AttachMatrix( m_pMatrix, matTable );
@@ -158,12 +160,12 @@ CDistribFun* CTabularDistribFun::CloneWithSharedMatrices()
 }
 
 
-CTabularDistribFun::CTabularDistribFun( int numOfNds,
-                                        const CNodeType * const* nodeTypes,
-                                        const float *data, int asDense, int allocTheMatrices )
-                                        : CDistribFun(dtTabular, numOfNds,
-                                        nodeTypes, 0/*, allocTheMatrices*/)
+CTabularDistribFun::CTabularDistribFun(int numOfNds,
+  const CNodeType * const* nodeTypes, const float *data, int asDense,
+  int allocTheMatrices, bool CheckNegative)
+  :CDistribFun(dtTabular, numOfNds, nodeTypes, 0/*, allocTheMatrices*/)
 {
+    m_bCheckNegative = CheckNegative;
     if ((numOfNds)&&(nodeTypes))
     {
         intVector NodeSizes;
@@ -179,12 +181,17 @@ CTabularDistribFun::CTabularDistribFun( int numOfNds,
         if( data )
         {
             //check is the data nonnegative
-            for( i = 0; i < lineSize; i++ )
+            int nnodes = m_NodeTypes.size();
+            if ((m_NodeTypes[nnodes - 1]->GetNodeState() != nsValue) &&
+              (m_bCheckNegative))
             {
+              for( i = 0; i < lineSize; i++ )
+              {
                 if( data[i] < 0 )
                 {
                     PNL_THROW( CInconsistentType, "data for matrix must be nonnegative" );
                 }
+              }
             }
             m_pMatrix = CNumericDenseMatrix<float>::Create(numOfNds, &NodeSizes.front(),
                                                         data );
@@ -235,11 +242,11 @@ CTabularDistribFun::CTabularDistribFun( int numOfNds,
     m_pPseudoCounts = NULL;
 }
 
-CTabularDistribFun::
-CTabularDistribFun( int numOfNds, const CNodeType *const* nodeTypes,
-                    int asDense )
-                    : CDistribFun( dtTabular, numOfNds, nodeTypes, 1 )
+CTabularDistribFun::CTabularDistribFun(int numOfNds, 
+  const CNodeType *const* nodeTypes, int asDense, bool CheckNegative)
+  :CDistribFun(dtTabular, numOfNds, nodeTypes, 1)
 {
+    m_bCheckNegative = CheckNegative;
     intVector nodeSizes;
     nodeSizes.assign(numOfNds, 0);
     for ( int i = 0; i <numOfNds; i++ )
@@ -274,6 +281,7 @@ CTabularDistribFun::CTabularDistribFun(const CTabularDistribFun &inpDistr )
     m_bUnitFunctionDistribution = inpDistr.m_bUnitFunctionDistribution;
     
     m_bDense = inpDistr.m_bDense;
+    m_bCheckNegative = inpDistr.m_bCheckNegative;
     
     void *pObj = this;
     
@@ -357,6 +365,8 @@ CDistribFun& CTabularDistribFun::operator=(const CDistribFun &pInputDistr)
             }
         }
         ChangeMatricesValidityFlag( pInputDistr.GetMatricesValidityFlag() );
+        m_bCheckNegative = pTInputDistr.m_bCheckNegative;
+
         return *this;
     }
     else
@@ -466,9 +476,14 @@ void CTabularDistribFun::AttachMatrix( CMatrix<float>* pMatrix,
         }
     }
     //check data of matrix - is it nonnegative
+    float value;
+
+  int nnodes = m_NodeTypes.size();
+  if ((m_NodeTypes[nnodes - 1]->GetNodeState() != nsValue) &&
+    (m_bCheckNegative))
+  {
     CMatrixIterator<float>* iter = pMatrix->InitIterator();
     
-    float value;
     intVector index;
     for( iter; pMatrix->IsValueHere( iter ); pMatrix->Next(iter) )
     {
@@ -479,6 +494,7 @@ void CTabularDistribFun::AttachMatrix( CMatrix<float>* pMatrix,
         }
     }
     delete iter;
+  }
     if( pMatrix->GetMatrixClass() == mcNumericSparse )
     {
         value = static_cast<CNumericSparseMatrix<float>*>(pMatrix)->GetDefaultValue();
@@ -520,66 +536,70 @@ void CTabularDistribFun::AttachMatrix( CMatrix<float>* pMatrix,
 }
 
 void CTabularDistribFun::AllocMatrix(const float *data, EMatrixType mType, 
-                                      int numberOfWeightMatrix,
-                                      const int *parentIndices)
+  int numberOfWeightMatrix, const int *parentIndices)
 {
-    if( m_bUnitFunctionDistribution )
-    {
-        PNL_THROW( CInvalidOperation, "unit function doesn't need any matrices" )
-    }
-    
-    if (mType != matTable && mType != matDirichlet)
-    {
-        PNL_THROW( CInconsistentType, "matrix type isn't matTable or matDirichlet" )
-    }
-    intVector NodeSizes;
-    NodeSizes.resize( m_NumberOfNodes );
-    int lineSize = 1;
-    int i;
-    for( i = 0; i < m_NumberOfNodes; i++ )
-    {
-        int NodeSize = m_NodeTypes[i]->GetNodeSize();
-        NodeSizes[i] = NodeSize ? NodeSize : 1;
-        lineSize *= NodeSizes[i];
-    }
-    //need to check is data positive
+  if( m_bUnitFunctionDistribution )
+  {
+    PNL_THROW( CInvalidOperation, "unit function doesn't need any matrices" )
+  }
+  
+  if (mType != matTable && mType != matDirichlet)
+  {
+    PNL_THROW( CInconsistentType, "matrix type isn't matTable or matDirichlet" )
+  }
+  intVector NodeSizes;
+  NodeSizes.resize( m_NumberOfNodes );
+  int lineSize = 1;
+  int i;
+  for( i = 0; i < m_NumberOfNodes; i++ )
+  {
+    int NodeSize = m_NodeTypes[i]->GetNodeSize();
+    NodeSizes[i] = NodeSize ? NodeSize : 1;
+    lineSize *= NodeSizes[i];
+  }
+  //need to check is data positive
+  int nnodes = m_NodeTypes.size();
+  if ((m_NodeTypes[nnodes - 1]->GetNodeState() != nsValue) &&
+    (m_bCheckNegative))
+  {
     for( i = 0; i < lineSize; i++ )
     {
-        if( data[i] < 0 )
-        {
-            PNL_THROW( CInconsistentType, "data for matrix must be nonnegative" );
-        }
+      if( data[i] < 0 )
+      {
+        PNL_THROW( CInconsistentType, "data for matrix must be nonnegative" );
+      }
     }
-    
-    void *pObj = this;
-    if( mType == matTable )
+  }
+
+  void *pObj = this;
+  if( mType == matTable )
+  {
+    if( m_pMatrix )
     {
-        if( m_pMatrix )
-        {
-            if( m_pMatrix->GetMatrixClass() != mcNumericSparse )
-            {
-                static_cast<CNumericDenseMatrix<float>*>( m_pMatrix )->SetData(data);
-            }
-            else
-            {
-                PNL_THROW( CInvalidOperation, "the matrix type is Sparse, it can't set the array to sparse matrix" );
-            }
-        }
-        else
-        {
-            m_pMatrix = CNumericDenseMatrix<float>::Create( m_NumberOfNodes,
-                &NodeSizes.front(), data);
-            (m_pMatrix)->AddRef(pObj);
-        }
-        ChangeMatricesValidityFlag(1);
-        m_bDense = 1;
-    } 
-    else if( mType == matDirichlet )
+      if( m_pMatrix->GetMatrixClass() != mcNumericSparse )
+      {
+        static_cast<CNumericDenseMatrix<float>*>( m_pMatrix )->SetData(data);
+      }
+      else
+      {
+        PNL_THROW( CInvalidOperation, "the matrix type is Sparse, it can't set the array to sparse matrix" );
+      }
+    }
+    else
     {
-        m_pPseudoCounts = CNumericDenseMatrix<float>::Create( m_NumberOfNodes,
-            &NodeSizes.front(), data);
-        m_pPseudoCounts->AddRef(pObj);
-    }                                  
+      m_pMatrix = CNumericDenseMatrix<float>::Create( m_NumberOfNodes,
+        &NodeSizes.front(), data);
+      (m_pMatrix)->AddRef(pObj);
+    }
+    ChangeMatricesValidityFlag(1);
+    m_bDense = 1;
+  } 
+  else if( mType == matDirichlet )
+  {
+    m_pPseudoCounts = CNumericDenseMatrix<float>::Create( m_NumberOfNodes,
+      &NodeSizes.front(), data);
+    m_pPseudoCounts->AddRef(pObj);
+  }                                  
 }
 
 bool CTabularDistribFun::IsValid(std::string* description) const
@@ -601,6 +621,11 @@ bool CTabularDistribFun::IsValid(std::string* description) const
                 //need to check matrix validity - 
                 //is all the data present and it's nonnegative
                 bool allDataValid = 1;
+
+              int nnodes = m_NodeTypes.size();
+              if ((m_NodeTypes[nnodes - 1]->GetNodeState() != nsValue) &&
+                (m_bCheckNegative))
+              {
                 CMatrixIterator<float>* iter = m_pMatrix->InitIterator();
                 for( iter; m_pMatrix->IsValueHere( iter ); m_pMatrix->Next(iter) )
                 {
@@ -612,6 +637,7 @@ bool CTabularDistribFun::IsValid(std::string* description) const
                     }
                 }
                 delete iter;
+              }
                 if( m_pMatrix->GetMatrixClass() == mcNumericSparse )
                 {
                     const float val = static_cast<CNumericSparseMatrix<float>*>(
@@ -2560,4 +2586,9 @@ int CTabularDistribFun::GetNumberOfFreeParameters() const
 		}
 		return ns;
 	}
+}
+
+void CTabularDistribFun::SetCheckNegative(bool val)
+{
+  m_bCheckNegative = val;
 }
