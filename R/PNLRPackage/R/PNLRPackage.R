@@ -308,3 +308,12 @@ LoadNet.pnlBNet <- function (x, filename)
 		res
 	}
 }
+
+GetCurEvidenceLogLik <- function(x) UseMethod("GetCurEvidenceLogLik", x)
+GetCurEvidenceLogLik.pnlBNet <- function(x) .Call("pnlGetCurEvidenceLogLik", x)
+
+GetEvidBufLogLik <- function(x) UseMethod("GetEvidBufLogLik", x)
+GetEvidBufLogLik.pnlBNet <- function(x) .Call("pnlGetEvidBufLogLik", x)
+
+GetEMLearningCriterionValue <- function(x) UseMethod("GetEMLearningCriterionValue", x)
+GetEMLearningCriterionValue.pnlBNet <- function(x) .Call("pnlGetEMLearningCriterionValue", x)

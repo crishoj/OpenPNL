@@ -65,6 +65,14 @@ extern "C" __declspec(dllexport) SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNode
 extern "C" __declspec(dllexport) SEXP pnlSaveNet(SEXP net, SEXP file);
 extern "C" __declspec(dllexport) SEXP pnlLoadNet(SEXP net, SEXP filename);
 
+    /*float GetCurEvidenceLogLik();
+    TokArr GetEvidBufLogLik();
+    float GetEMLearningCriterionValue();*/
+
+extern "C" __declspec(dllexport) SEXP pnlGetCurEvidenceLogLik(SEXP net);
+extern "C" __declspec(dllexport) SEXP pnlGetEvidBufLogLik(SEXP net);
+extern "C" __declspec(dllexport) SEXP pnlGetEMLearningCriterionValue(SEXP net);
+
 
 PNLW_USING
 
@@ -1389,8 +1397,9 @@ extern "C"
         int NetNum = INTEGER_VALUE(net);
 
         PROTECT(name = AS_CHARACTER(name));
-        PROTECT(value = AS_CHARACTER(value));
         char * arg1 = CHAR(asChar(name));
+
+        PROTECT(value = AS_CHARACTER(value));
         char * arg2 = CHAR(asChar(value));
         
         try
@@ -1884,6 +1893,133 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         pres[0] = flag;
 
         UNPROTECT(3);
+        return (res);
+    }
+//----------------------------------------------------------------------------
+
+    SEXP pnlGetCurEvidenceLogLik(SEXP net)
+    {
+        SEXP res;
+        int flag = 0;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        float result;
+        try
+        {
+            result = pBNets[NetNum]->GetCurEvidenceLogLik();
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetPTabular function";
+            flag = 1;
+        }
+
+        if (flag == 1)
+        {
+            //there were exceptions during the function executions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+        else
+        {
+            //there were no exceptions
+            PROTECT(res = NEW_NUMERIC(1));
+            double * pRes = NUMERIC_POINTER(res);
+            pRes[0] = result;
+        }
+        UNPROTECT(2);
+        return (res);
+    }
+//----------------------------------------------------------------------------
+    SEXP pnlGetEvidBufLogLik(SEXP net)
+    {
+        SEXP res;
+        int flag = 0;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        TokArr ResTok;
+        try
+        {
+            ResTok = pBNets[NetNum]->GetEvidBufLogLik();
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetJPD function";
+            flag = 1;
+        }
+
+        if (flag == 1)
+        {
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+        else
+        {
+            int len = ResTok.size();
+            PROTECT(res = NEW_NUMERIC(len));
+            double * pRes = NUMERIC_POINTER(res);
+            for (int i=0; i < len; i++)
+            {
+                pRes[i] = ResTok[i].FltValue();
+            }
+        }
+
+        UNPROTECT(2);
+        return (res);
+    }
+//----------------------------------------------------------------------------
+    SEXP pnlGetEMLearningCriterionValue(SEXP net)
+    {
+        SEXP res;
+        int flag = 0;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        float result;
+        try
+        {
+            result = pBNets[NetNum]->GetEMLearningCriterionValue();
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetPTabular function";
+            flag = 1;
+        }
+
+        if (flag == 1)
+        {
+            //there were exceptions during the function executions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+        else
+        {
+            //there were no exceptions
+            PROTECT(res = NEW_NUMERIC(1));
+            double * pRes = NUMERIC_POINTER(res);
+            pRes[0] = result;
+        }
+        UNPROTECT(2);
         return (res);
     }
 //----------------------------------------------------------------------------
