@@ -30,6 +30,7 @@ PNL_BEGIN
 //currently can only deal with dtTabular, dtGaussian & dtScalar
 CPotential* pnlMultiply( CPotential* Pot1, CPotential* Pot2, CModelDomain* pMD )
 {
+    int i;
 	EDistributionType dt1 = Pot1->GetDistributionType();
 	EDistributionType dt2 = Pot2->GetDistributionType();
 	if( (dt1 != dtTabular && dt1 !=dtGaussian && dt1 != dtScalar) &&
@@ -58,7 +59,7 @@ CPotential* pnlMultiply( CPotential* Pot1, CPotential* Pot2, CModelDomain* pMD )
 
 	Pot1->GetObsPositions(&Obspos1);
 	Pot2->GetObsPositions(&Obspos2);
-	for(int i=0; i<Obspos1.size(); i++)
+	for(i=0; i<Obspos1.size(); i++)
 	{
 		Obsnodes1.push_back(Domain1[Obspos1[i]]);
 	}
