@@ -26,6 +26,7 @@
 #include <float.h>
 #include "pnlException.hpp"
 
+#include <time.h>
 PNL_USING
 
 /////////////////////////////////////////////////////////////////////////////
@@ -108,8 +109,12 @@ void CPearlInfEngine::EnterEvidence( const CEvidence* evidence,
     // initialize messages
     InitMessages(evidence);
 
+    int s = clock();
     // start inference
     ParallelProtocol();
+	double t = (double)(clock() - s) / CLOCKS_PER_SEC;
+	printf("\nParallelProtocol time = %.6f", t);
+	printf("\nNumber of iterations = %d", m_IterationCounter);
 }
 /////////////////////////////////////////////////////////////////////////////
 
@@ -674,9 +679,12 @@ message CPearlInfEngine::ComputeProductPi(int nodeNumber, int except) const
     //getting factor from the model
     
     int nodes = nodeNumber;
-    int numOfParams;
-    CFactor ** param;
-    m_pGraphicalModel->GetFactors(1, &nodes, &numOfParams, &param );
+    //int numOfParams;
+    //CFactor ** param;
+	//m_pGraphicalModel->GetFactors(1, &nodes, &numOfParams, &param );
+    pFactorVector param;
+	m_pGraphicalModel->GetFactors(1, &nodes, &param);
+	int numOfParams = param.size();
     
     if( !numOfParams )
     {
@@ -772,9 +780,12 @@ message CPearlInfEngine::ComputeProductLambda( int nodeNumber, message lambda,
     //getting factor from the model
     
     int nodes = nodeNumber;
-    int numOfParams;
-    CFactor ** param;
-    m_pGraphicalModel->GetFactors(1, &nodes, &numOfParams, &param );
+    //int numOfParams;
+    //CFactor ** param;
+    //m_pGraphicalModel->GetFactors(1, &nodes, &numOfParams, &param );
+    pFactorVector param;
+	m_pGraphicalModel->GetFactors(1, &nodes, &param);
+	int numOfParams = param.size();
     
     if( !numOfParams )
     {
@@ -942,6 +953,7 @@ void CPearlInfEngine::ParallelProtocol()
         }
     }
 #endif
+//	int s; double t;
     while ((!converged)&&(iter<m_maxNumberOfIterations))
     {
         //delete all old data
@@ -951,6 +963,7 @@ void CPearlInfEngine::ParallelProtocol()
 #ifdef _OPENMP
 //#pragma omp parallel for
 #endif
+//        s = clock();
             for( i = 0; i < nAllMes	; i++)
             {
                 for( j = 0; j <m_messagesFromNeighbors[i].size(); j++)
@@ -960,11 +973,14 @@ void CPearlInfEngine::ParallelProtocol()
                 }
             }
 
+//	    t = (double)(clock() - s) / CLOCKS_PER_SEC;
+//	     printf("\n%d\t%.6f",iter, t);
             //compute beliefs
             changed = 0;
 #ifdef _OPENMP
 //#pragma omp parallel for schedule(dynamic) reduction(+:changed)
 #endif
+//       s = clock();
             for( i=0; i < nNodes; i++ )
             {
                 if( !m_areReallyObserved[m_connNodes[i]])
@@ -976,6 +992,8 @@ void CPearlInfEngine::ParallelProtocol()
                     delete tempBel;
                 }
             }
+//	    t = (double)(clock() - s) / CLOCKS_PER_SEC;
+//	     printf("\t%.6f", t);
             converged = !(changed);
         }
         
@@ -986,6 +1004,7 @@ void CPearlInfEngine::ParallelProtocol()
 #ifdef _OPENMP
 //#pragma omp parallel for schedule(dynamic)
 #endif
+//        s = clock();
         for( i = 0; i < nNodes; i++ )
         {
             pGraph->GetNeighbors( m_connNodes[i], &numOfNeighb, 
@@ -996,10 +1015,13 @@ void CPearlInfEngine::ParallelProtocol()
                     neighbors[j], orientation[j] );
             }
         }
-        iter++;
+//	    t = (double)(clock() - s) / CLOCKS_PER_SEC;
+//	     printf("\t%.6f", t);
+         iter++;
     }//while ((!converged)&&(iter<m_numberOfIterations))
     //compute beliefs after last passing messages
 
+//	s = clock();
     for( i = 0; i < nAllMes	; i++)
     {
         for( j = 0; j <m_messagesFromNeighbors[i].size(); j++)
@@ -1020,6 +1042,8 @@ void CPearlInfEngine::ParallelProtocol()
             delete tempBel;
         }
     }
+//	t = (double)(clock() - s) / CLOCKS_PER_SEC;
+//	printf("\nafter while time = %.6f", t);
     m_IterationCounter = iter;
 }
 /////////////////////////////////////////////////////////////////////////////
