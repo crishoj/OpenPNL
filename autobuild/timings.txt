@@ -2405,3 +2405,27 @@ Data_begin
  everage time of inference doing,
  CPU Freq,
 ==
+08/17/04 20:20:02	w2k_icc	failed	crashed_35.6	testComputeLikelihood testJTreeInfDBN
+Header_begin
+  Processor,Pentium
+  OS,WindowsNT v5.0 build 2195
+  Start_Date,
+  Start_Time,Wed Aug 18 00:46:51 2004
+Header_end
+Data_begin
+  Flavour,Function,Value,Units,Comments,Param1,Param2,Param3,Param4
+  d,testPerformanceJTreeInf,1.282286e-004,5.283353e-004,3.579545e+004,
+ time of inference procedure creation,
+ everage time of inference doing,
+ CPU Freq,
+  d,timeBKInfEngine,2.716546e-003,4.627962e-003,3.579545e+004,
+ JTree inference creation ,
+ average time for entering evidence ,
+ CPU frequency ,
+Data_end
+Footer_begin
+  End_Date,
+  End_Time,Wed Aug 18 00:51:06 2004
+  Elapsed_Time,255.0
+Footer_end
+==
