@@ -42,13 +42,14 @@ void WDistributions::Setup(int iNode)
 {
     TokArr ta(Tok(m_pToken->Node(iNode)));
     int nodeClass = m_pToken->NodesClassification(ta);
-
     if(iNode >= m_aDistribution.size())
     {
 	m_aDistribution.resize(iNode + 1, 0);
 	m_abDiscrete.resize(iNode + 1, nodeClass == eNodeClassDiscrete );
+
     }
     delete m_aDistribution[iNode];
+
     if (nodeClass == eNodeClassDiscrete )
     {
         m_aDistribution[iNode] = new WTabularDistribFun();
@@ -96,7 +97,7 @@ bool WDistributions::IsValid(int iNode)
 	&& m_aDistribution[iNode]->Matrix(0);
 }
 
-void WDistributions::GetNodeTypeInfo(bool *pbDiscrete, int *pSize, int iNode)
+void WDistributions::GetNodeTypeInfo(bool *pbDiscrete, int *pSize, pnl::EIDNodeState *nodeState, int iNode)
 {
     if(iNode >= m_abDiscrete.size())
     {
@@ -108,6 +109,14 @@ void WDistributions::GetNodeTypeInfo(bool *pbDiscrete, int *pSize, int iNode)
     }
     *pbDiscrete = m_abDiscrete[iNode];
     *pSize = m_pToken->nValue(iNode);
+
+    TokIdNode *TokId = m_pToken->Node(iNode);
+    while(TokId && TokId->tag != eTagNodeType)
+    {
+	    TokId = TokId->v_prev;
+    }
+    *nodeState = ((CNodeType*)(TokId->data))->GetNodeState();
+
 }
 
 void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
@@ -119,32 +128,46 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
     
     TokArr ta(Tok(m_pToken->Node(iNode)));
     int nodeClass = m_pToken->NodesClassification(ta);
+    
     if (nodeClass == eNodeClassDiscrete )
     {
-        static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->GetRawData(&nElement, &pData);
+        static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->
+            GetRawData(&nElement, &pData);
         Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
     }
     else
         if (nodeClass == eNodeClassContinuous)
         {
             static_cast<WGaussianDistribFun*>(Distribution(iNode))->CreateDefaultDistribution();
-            static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matMean))
-                ->GetRawData(&nElement, &pData);
-            static_cast<WGaussianDistribFun*>(Distribution(iNode))
-                ->SetData(pnl::matMean, pData);
 
-            static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matCovariance))
-                ->GetRawData(&nElement, &pData);
-            static_cast<WGaussianDistribFun*>(Distribution(iNode))
-                ->SetData(pnl::matCovariance, pData);
-
-            int NumOfNodes = ft.GetDomainSize();
-	    for (int parent = 0; parent < (NumOfNodes-1); parent++)
+            if (ft.GetDistribFun()->IsDistributionSpecific() == 1)
             {
-                static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matWeights, parent))
+                static_cast<WGaussianDistribFun*>(Distribution(iNode))
+                ->CreateDistribution();
+            }
+            else
+            {
+                static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matMean))
                     ->GetRawData(&nElement, &pData);
-                static_cast<WGaussianDistribFun*>(Distribution(iNode))->
-                    SetData(pnl::matWeights, pData, parent);
+                static_cast<WGaussianDistribFun*>(Distribution(iNode))
+                    ->SetData(pnl::matMean, pData);
+                
+                if (ft.GetDistribFun()->IsDistributionSpecific() != 2)
+                {
+                    static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matCovariance))
+                        ->GetRawData(&nElement, &pData);
+                    static_cast<WGaussianDistribFun*>(Distribution(iNode))
+                        ->SetData(pnl::matCovariance, pData);
+                }
+               
+                int NumOfNodes = ft.GetDomainSize();
+                for (int parent = 0; parent < (NumOfNodes-1); parent++)
+                {
+                    static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matWeights, parent))
+                        ->GetRawData(&nElement, &pData);
+                    static_cast<WGaussianDistribFun*>(Distribution(iNode))->
+                        SetData(pnl::matWeights, pData, parent);
+                }
             }
         }
 }
@@ -160,7 +183,6 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
 
     TokArr ta(Tok(m_pToken->Node(index)));
     int nodeClass = m_pToken->NodesClassification(ta);
-
     if(parentValue.size())
     {
 	Token().Resolve(const_cast<TokArr&>(parentValue));
