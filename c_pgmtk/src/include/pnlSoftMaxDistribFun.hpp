@@ -169,7 +169,7 @@ public:
   float CalculateKsi(floatVector MeanContParents, 
       C2DNumericDenseMatrix<float>* CovContParents);
   
-  float CalculateMeanAndCovariance(float OldKsi, float r, 
+  void CalculateMeanAndCovariance(float OldKsi, float r, 
       floatVector &MeanVector, 
       C2DNumericDenseMatrix<float> **CovMatrix);
 

@@ -856,7 +856,7 @@ void CEvidence::Dump() const
      
  }
  
-bool CEvidence::IsAllDiscreteNodesObs(CGraphicalModel *pGrModel) const
+bool CEvidence::IsAllDiscreteNodesObs(const CStaticGraphicalModel *pGrModel) const
  {
      intVector         obsNdsNums;
      pConstValueVector obsNdsVals;
@@ -884,7 +884,7 @@ bool CEvidence::IsAllDiscreteNodesObs(CGraphicalModel *pGrModel) const
          
  }
 
-bool CEvidence::IsAllCountinuesNodesObs( CGraphicalModel *pGrModel) const
+bool CEvidence::IsAllCountinuesNodesObs( const CStaticGraphicalModel *pGrModel) const
 {
     intVector         obsNdsNums;
     pConstValueVector obsNdsVals;

@@ -91,8 +91,8 @@ public:
     void MakeNodeObserved( int nodeNumber );
     void MakeNodeHidden( int nodeNumber );
    
-    bool IsAllDiscreteNodesObs( CGraphicalModel *pGrModel) const;
-    bool IsAllCountinuesNodesObs( CGraphicalModel *pGrModel) const;
+    bool IsAllDiscreteNodesObs( const CStaticGraphicalModel *pGrModel) const;
+    bool IsAllCountinuesNodesObs( const CStaticGraphicalModel *pGrModel) const;
 
     inline const CModelDomain* GetModelDomain() const;
     void Dump() const;

@@ -395,7 +395,7 @@ CPotential* CSoftMaxCPD::ConvertWithEvidenceToGaussianPotential(
         else //it means m_CorrespDistribFun->GetDistributionType == dtCondSoftMax
         {
             int i;
-            CSoftMaxDistribFun* dtSM;
+            const CSoftMaxDistribFun* dtSM;
             dtSM = 
                 static_cast<CCondSoftMaxDistribFun*>(m_CorrespDistribFun)->
                 GetDistribution(parentIndices);
@@ -419,7 +419,7 @@ CPotential* CSoftMaxCPD::ConvertWithEvidenceToGaussianPotential(
                 PNL_THROW(CNotImplemented, "Not exist evidence");
             }
             
-            CDistribFun *gauFactData = static_cast<CSoftMaxDistribFun*>(dtSM)->
+            CDistribFun *gauFactData = const_cast<CSoftMaxDistribFun*>(dtSM)->
                 ConvertCPDDistribFunToPotential(MeanContParents, CovContParents, r);
             
             intVector gauSubDomain;
@@ -503,7 +503,7 @@ int CSoftMaxCPD::GetSoftMaxSize() const
 //-----------------------------------------------------------------------------
 
 void CSoftMaxCPD::CreateMeanAndCovMatrixForNode(int Node, const CEvidence* pEvidence, 
-    CBNet *pBNet, floatVector &Mean, 
+    const CBNet *pBNet, floatVector &Mean, 
     C2DNumericDenseMatrix<float>**CovContParents) const
 {
     int i, j, k;
@@ -515,7 +515,9 @@ void CSoftMaxCPD::CreateMeanAndCovMatrixForNode(int Node, const CEvidence* pEvid
     lineSizes.assign(2, contParents.size());
     floatVector zerodata;
     zerodata.assign(contParents.size()*contParents.size(), 0.0f);
-    *CovContParents = C2DNumericDenseMatrix<float>::Create( &lineSizes.front(), &zerodata );
+    
+    *CovContParents = 
+        C2DNumericDenseMatrix<float>::Create( &lineSizes.front(), &zerodata.front() );
     for (i = 0; i < contParents.size(); i++ )    
     {
         for (j = 0; j < contParents.size(); j++ )
@@ -555,7 +557,7 @@ void CSoftMaxCPD::CreateMeanAndCovMatrixForNode(int Node, const CEvidence* pEvid
             }
        }
                     
-       float *data;
+       const float *data;
        int datasize;
                     
        static_cast<CDenseMatrix<float>*>(param->GetMatrix(matMean, -1, parentComb))->

@@ -65,7 +65,7 @@ public:
         C2DNumericDenseMatrix<float>* CovContParents) const;
     
     void CreateMeanAndCovMatrixForNode(int Node, const CEvidence* pEvidence, 
-        CBNet *pBNet, floatVector &Mean, 
+        const CBNet *pBNet, floatVector &Mean, 
         C2DNumericDenseMatrix<float>**CovContParents) const;  
     
     int GetSoftMaxSize() const;

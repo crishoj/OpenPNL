@@ -2310,7 +2310,7 @@ float CSoftMaxDistribFun::CalculateKsi(floatVector MeanContParents,
 }
 
 // ----------------------------------------------------------------------------
-float CSoftMaxDistribFun::CalculateMeanAndCovariance(float OldKsi, float r, 
+void CSoftMaxDistribFun::CalculateMeanAndCovariance(float OldKsi, float r, 
   floatVector &MeanVector, C2DNumericDenseMatrix<float> **CovMatrix)
 {
   
@@ -2409,6 +2409,7 @@ float CSoftMaxDistribFun::CalculateMeanAndCovariance(float OldKsi, float r,
   delete UnitaryMatrix;
   delete SumMatrix;
   delete NewMeanMatrix;
+
 }
 
 // end of file ----------------------------------------------------------------
