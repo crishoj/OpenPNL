@@ -26,7 +26,6 @@
 #include <math.h>
 #include "pnlInferenceEngine.hpp"
 #include "pnlScalarPotential.hpp"
-#include "cxcore.h"
 
 PNL_USING
 
