@@ -115,6 +115,9 @@ private:
 
     omp_lock_t m_heap_lock[c_MaxThreadNumber];
 
+    //This is a temporary object
+    //We use it for correct working of the Release function
+    int *m_pStubObject;
 };
 
 #ifndef SWIG
