@@ -2,28 +2,28 @@ execute("alarmModel.pnl")
 
 // default inference
 print("start of default inference without evedences... ")
-JPD("Burglary")
+GetJPD("Burglary")
 
 // set evidence
-Evid("JohnCalls^true MaryCalls^false")
+EditEvidence("JohnCalls^true MaryCalls^false")
 
 print("start of inferences with evidence... ")
 // junction tree inference
 print("start of junction tree inference... ")
 SetProperty("Inference", "jtree")
-JPD("Burglary")
+GetJPD("Burglary")
 
 // Pearl inference
 Print("start of Pearl inference... ")
 SetProperty("Inference", "pearl")
-JPD("Burglary")
+GetJPD("Burglary")
 
 // Naive inference
 print("start of Naive inference... ")
 SetProperty("Inference", "naive")
-JPD("Burglary")
+GetJPD("Burglary")
 
 // Gibbs inference
 print("start of Gibbs inference... ")
 SetProperty("Inference", "gibbs")
-JPD("Burglary")
+GetJPD("Burglary")

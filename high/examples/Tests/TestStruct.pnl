@@ -1,11 +1,11 @@
 clear()
-AddNode("categoric^Node0", "First Second")
-AddNode("categoric^Node1", "First Second")
-AddNode("categoric^Node2", "First Second")
-AddNode("categoric^Node3", "First Second")
+AddNode("discrete^Node0", "First Second")
+AddNode("discrete^Node1", "First Second")
+AddNode("discrete^Node2", "First Second")
+AddNode("discrete^Node3", "First Second")
 print("Model creation - OK")
 
-LoadLearnBuf("EvidForStructurelearn.csv")
+LoadEvidBuf("EvidForStructurelearn.csv")
 print("Load evidences of structure learning - OK")
 
 learnstructure()

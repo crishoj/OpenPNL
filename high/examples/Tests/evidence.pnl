@@ -3,7 +3,7 @@ execute("alarmModel.pnl")
 // set evidence
 editEvidence("JohnCalls^true MaryCalls^false")
 editEvidence("JohnCalls^false")
-JPD("Burglary")
+GetJPD("Burglary")
 CurEvidToBuf()
 AddEvidToBuf("Alarm^true MaryCalls^false")
 AddEvidToBuf("JohnCalls^true MaryCalls^false")
