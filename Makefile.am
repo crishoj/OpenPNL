@@ -1,7 +1,7 @@
 # The top-level input Makefile for PNL
 
 ## Any directories that you want built and installed should go here.
-SUBDIRS = cxcore trs c_pgmtk
+SUBDIRS = cxcore trs c_pgmtk doc 
 
 am__configure_deps=@am__configure_deps@
 ## Any directories you want a part of the distribution should be listed
@@ -14,7 +14,8 @@ am__configure_deps=@am__configure_deps@
 #bin_SCRIPTS = pnl-config
 
 # All the rest of the distributed files
-#EXTRA_DIST = changes.txt readme.txt
+EXTRA_DIST = configure.gcc configure.icc \
+             changes.txt readme.txt pnlLicense.txt 
 
 # Rule to build tar-gzipped distribution package
 #$(PACKAGE)-$(VERSION).tar.gz: dist
