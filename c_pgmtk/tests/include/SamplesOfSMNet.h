@@ -29,11 +29,20 @@ CBNet* CreateTwoNodeEx(void);
 
 CBNet* CreateSixNodeEx(void);
 
+CBNet* CreateSevenNodeEx(void);
+
+CBNet* CreateGaussianExample(void);
+
 void GenerateSoftMaxEvidence(CStaticGraphicalModel *pBNet, float StartVal,
   float FinishVal, valueVector &vls);
 
 void SetRandomEvidences(CBNet* pBNet, CEMLearningEngine *pLearnEng, 
   float StartVal, float FinishVal, int NumOfEvidences);
 
+void SetRandEvidences(CBNet* pBNet, CEMLearningEngine *pLearnEng, 
+  float StartVal, float FinishVal, int NumOfEvidences, int nObsNds, int* obsNds);
+
+void GenerateEvidence(CStaticGraphicalModel *pBNet, float StartVal,
+  float FinishVal, valueVector &vls, int nObsNds, int* obsNds);
 
 #endif
