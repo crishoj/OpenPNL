@@ -1052,8 +1052,6 @@ TestMultivariateWrapperJPD()
 	perlInfEng->GetQueryJPD()->Dump();
     };
 
-
-
     printf("\n\n\nJPD Test (Pearl Inference, Evidences: x^dim1 = -15  x^dim2 = 5 z = 15.67)\n");
     int ObsNodes[] = {1, 4};
     valueVector obsValues(3);
@@ -1582,6 +1580,47 @@ TestMultivariateWrapperLearnPartOfObservation()
     }
 }
 
+TestMultivariateWrapperMPE()
+{
+    vector<CEvidence*> evidences;
+    CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));
+
+    const int nodes1[] = { 0 };
+    const int nodes2[] = { 1 };
+    const int nodes3[] = { 2 };
+    const int nodes4[] = { 3 };
+    const int nodes5[] = { 4 };
+    const int nodes6[] = { 0, 1, 2 };
+    const int nodes7[] = { 1, 3 };
+    const int nodes8[] = { 3, 4 };
+
+    const int *nodes[] = {nodes1, nodes2, nodes3, nodes4, nodes5, nodes6, nodes7, nodes8 };
+
+    printf("\n\n\nJPD Test (Pearl Inference, Evidences: x^dim1 = -15  x^dim2 = 5 z = 15.67)\n");
+    int ObsNodes[] = {1, 4};
+    valueVector obsValues(3);
+    obsValues[0].SetFlt(-15.0);
+    obsValues[1].SetFlt(5.0);
+    obsValues[2].SetFlt(15.67);
+    CEvidence *pEvid = CEvidence::Create(pBNet, 2, ObsNodes, obsValues);
+    CPearlInfEngine *perlInfEng = CPearlInfEngine::Create(pBNet);
+    perlInfEng = CPearlInfEngine::Create(pBNet);
+    perlInfEng->EnterEvidence(pEvid, true);
+
+    for (int i = 0; i <  8; i++) 
+    {
+	int NNumber = 1;
+	
+	if (i == 5) NNumber = 3;
+
+	if (i > 5) NNumber = 2;
+
+        perlInfEng->MarginalNodes(nodes[i], NNumber);
+	printf("JPD %d\n", i);
+	perlInfEng->GetMPE()->Dump();
+    };
+}
+
 int main(char* argv[], int argc)
 {
 	bool IsTestOK = true;
@@ -1596,6 +1635,7 @@ int main(char* argv[], int argc)
 		TestMultivariateWrapperJPD();
 		TestMultivariateWrapperLearn();
 		TestMultivariateWrapperLearnPartOfObservation();
+		TestMultivariateWrapperMPE();
 	}
 	catch(pnl::CException e)
 	{
