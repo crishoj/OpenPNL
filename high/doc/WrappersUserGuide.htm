@@ -13,7 +13,32 @@ PNL Wrappers: User Guide
 </td>
 </tr>
 </table></center>
+<HR>
 
+<P>
+  <h4>
+<UL>
+  <LI><A href="#Intro">Intro</A> 
+  <LI><A href="#CreateNet">Creating the net</A> 
+  <UL>
+    <LI><A href="#AddNodes">Adding nodes</A> 
+    <LI><A href="#AddEdges">Adding edges</A> 
+  </UL>
+  <LI><A href="#SpecProb">Specifying the probabilities</A> 
+  <LI><A href="#AddObserv">Adding observations</A> 
+  <LI><A href="#Learn">Learning the network</A> 
+  <LI><A href="#MPEandJPD">Getting MPE and JPD</A> 
+  <LI><A href="#Hints">Hints</A> 
+  <UL>
+    <LI><A href="#Operation1">“^” operation</A> 
+    <LI><A href="#Operation2">[ ] operation</A> 
+    <LI><A href="#StrAndFltMethods">String and FltValue methods</A> 
+  </UL>
+
+  </UL>
+  </h4>
+
+<P></P>
 <hr><h2><a name="Intro">Intro</a></h2>
 <hr>
 <P>
@@ -39,7 +64,7 @@ The graph structure of the model and the parameters are all shown in Figure 1:
 </P>
 <hr>
 <h4><a name="figWaterSprinkler">Figure1. Water-sprinkler model</a></h4>
-<img align=center src="imgname.gif">
+<img align=center src="WSModel.gif">
 <p>
 All nodes are discrete and can take on two values: true or false.
 </p>
@@ -295,6 +320,7 @@ TokArr WetGrassMPE = net.GetMPE("WetGrass Sprinkler");
 Now we are going to discuss some additional possibilities of parameters definition with the help of TokArr class.
 </p>
 <hr>
+
 <h3><a name="Operation1">“^” operation</a></h3>
 <p>
 If we use operation “^”, we can make parameters definition shorter. 
@@ -338,6 +364,7 @@ extern TokArr continuous;
 </pre>
 </p>
 <hr>
+
 <h3><a name="Operation2">[ ] operation</a></h3>
 <p>
 If  TokArr class object specifies some set of network nodes, then we can get every node with the help of  [] operation. Result of this operation is a Tok class object, which specifies only one node (TokArr = array of Tok):
@@ -351,6 +378,7 @@ Tok node3 = nodes[3];
 Tok class object can be converted into string. For example, the result of conversion of node0 into string ( node0.String() )  is “Cloudy”.
 </p>
 <hr>
+
 <h3><a name="StrAndFltMethods">String and FltValue methods</a></h3>
 <p>
 To convert TokArr and Tok class objects into strings String method is used:
