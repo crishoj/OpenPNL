@@ -1188,6 +1188,9 @@ CNumericDenseMatrix<float>* CCondSoftMaxDistribFun:: GetProbMatrix(const CEviden
 
      newRanges[dims] = NumOfStates; 
      CNumericDenseMatrix<float> *NewMatrix = CNumericDenseMatrix<float>::Create(dims+1,newRanges,Values);
+
+     delete iterChanging;
+     delete currentMatrix;
      delete []newRanges;
      delete []multInd;
      delete []Values;
