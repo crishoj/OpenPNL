@@ -14,8 +14,6 @@ class NetCallback;
 class ProbabilisticNet;
 PNLW_END
 
-using namespace pnlw;
-
 namespace pnl
 {
     class CPNLBase;
@@ -25,6 +23,8 @@ namespace pnl
     class pnlString;
     template<typename Type> class CMatrix;
 }
+
+PNLW_BEGIN
 
 class PNLHIGH_API LIMID
 {
@@ -78,5 +78,7 @@ private:// DATA members
     pnl::CLIMIDInfEngine *m_Inf;// inference, if it exists
     ProbabilisticNet *m_pLIMID;
 };
+
+PNLW_END
 
 #endif //__LIMID_HPP__

@@ -6,6 +6,8 @@
 
 #include "pnl_dll.hpp"
 
+PNLW_BEGIN
+
 static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, int size, 
                            pnl::EIDNodeState nodeState);
 
@@ -75,4 +77,4 @@ pnl::CGraphicalModel *LIMIDCallback::CreateModel(ProbabilisticNet &net)
     return pIDNet;
 }
 
-
+PNLW_END

@@ -5,6 +5,8 @@
 #include "example_common_funs.hpp"
 #include "script_lex.hpp"
 
+PNLW_USING
+
 /*
 struct FuncDesc
 {

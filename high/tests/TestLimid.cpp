@@ -3,6 +3,8 @@
 #include "pnl_dll.hpp"
 #include <string>
 
+PNLW_USING
+
 std::ostream &operator<<(std::ostream &str, TokArr &ta)
 {
     return str << String(ta);
@@ -44,7 +46,7 @@ pnl::CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<pnl::CEvi
     return pGM;
 }
 
-OilTest()
+void OilTest()
 {
     LIMID *net;
 
@@ -107,8 +109,7 @@ OilTest()
     delete net;
 }
 
-
-TestPigs()
+void TestPigs()
 {
     LIMID *net;
 

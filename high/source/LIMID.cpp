@@ -18,6 +18,8 @@
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
+PNLW_BEGIN
+
 LIMID::LIMID(): m_Inf(0)
 {
     m_pLIMID = new ProbabilisticNet("idnet");
@@ -290,3 +292,5 @@ TokArr LIMID::GetP(TokArr child, TokArr parents)
 
     return result;
 }
+
+PNLW_END
