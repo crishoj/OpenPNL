@@ -26,7 +26,7 @@ PNL_USING
 
 CScalarDistribFun*
 CScalarDistribFun::Create(int NodeNumber, const CNodeType *const* NodeTypes,
-			  int asDense )
+                          int asDense )
 {
     PNL_CHECK_IS_NULL_POINTER( NodeTypes );
     PNL_CHECK_RANGES( asDense, 0, 1 );
@@ -146,7 +146,7 @@ CMatrix<float>* CScalarDistribFun::GetMatrix( EMatrixType mType,
                                               int numWeightMat,
                                               const int *parentIndices ) const
 {
-    PNL_THROW( CInvalidOperation, "scalar distribution naven't any matrices" );
+    PNL_THROW( CInvalidOperation, "scalar distribution haven't any matrices" );
     
     return NULL;
 }
@@ -463,12 +463,12 @@ CDistribFun( dtScalar )
 
 
 void CScalarDistribFun::SetStatistics( const CMatrix<float> *pMat, 
-	EStatisticalMatrix matrix, const int* parentsComb)
+        EStatisticalMatrix matrix, const int* parentsComb)
 {
     PNL_THROW(CAlgorithmicException, "scalar distrib function couldn't have statistic")
 }
 
 int CScalarDistribFun::GetNumberOfFreeParameters()const
 {
-	PNL_THROW( CInvalidOperation, "ScalarDistribution does not has free parameters");
+        PNL_THROW( CInvalidOperation, "ScalarDistribution does not has free parameters");
 }
