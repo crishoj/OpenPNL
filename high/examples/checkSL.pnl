@@ -1,0 +1,12 @@
+AddNode("categoric^PreviousCompTurn", "Rock Paper Scissors")
+AddNode("categoric^PreviousHumanTurn", "Rock Paper Scissors")
+AddNode("categoric^CurrentHumanTurn", "Rock Paper Scissors")
+AddArc("PreviousCompTurn", "PreviousHumanTurn")
+AddArc("PreviousHumanTurn", "CurrentHumanTurn")
+print("create net, before loading from file...")
+LoadLearnBuf("SLDataRPS.csv")
+LearnStructure()
+SaveNet("checkSL.xml")
+// run console
+console()
+print("Learned, saved results, end, bye")

@@ -5,6 +5,7 @@
 #include "pnlWProbabilisticNet.hpp"
 
 #include "pnlConfig.h"
+#include "example_common_funs.hpp"
 
 enum EToken
 {   eTOKEN_ID
@@ -266,6 +267,7 @@ FuncDesc aFuncDesc[] =
 ,   "print",	    -7,		true,  0, 1, 1
 ,   "new",	    -8,		true,  0, 0, 0
 ,   "console",	    -9,		true,  0, 0, 0
+,   "comparefiles", -10,	true,  1, 3, 1
 ,   0, 0, 0, 0, 0, 0
 };
 
@@ -340,6 +342,11 @@ static void Print(Vector<String> &v)
 static void Print(TokArr &v)
 {
     cout << String(v) << "\n";
+}
+
+static void Print(String &s)
+{
+    cout << s << "\n";
 }
 
 static void PrintStripped(TokArr &v)
@@ -453,6 +460,21 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	    break;
 	case -8:/* new */ Enter(new BayesNet, true); break;
 	case -9:/* console */ Execute(stdin, &BNet()); break;
+	case -10:/* comparefiles */
+	    {
+		const char *ptr = (CompareFiles(args[0].c_str(), args[1].c_str()) == 0)
+		    ? "Ok":"FAILED";
+
+		if(args[2].length())
+		{
+		    args[2] << ": " << ptr;
+		}
+		else
+		{
+		    args[2] = ptr;
+		}
+		Print(args[2]);
+	    }
 	case eAddNode:	    BNet().AddNode(args[0], args[1]); break;
 	case eAddArc:	    BNet().AddArc (args[0], args[1]); break;
 	case eLoadNet:	    BNet().LoadNet(args[0].c_str());  break;

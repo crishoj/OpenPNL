@@ -93,6 +93,10 @@ SOURCE=.\console.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\example_common_funs.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\rps.cpp
 # End Source File
 # End Group
@@ -102,6 +106,10 @@ SOURCE=.\rps.cpp
 # Begin Source File
 
 SOURCE=.\console.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\example_common_funs.hpp
 # End Source File
 # End Group
 # Begin Group "Resource Files"
