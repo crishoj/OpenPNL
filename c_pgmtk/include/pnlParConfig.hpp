@@ -3,7 +3,7 @@
 
 #ifndef WIN32
 // for linux
-#define BUILD_OMP
+//#define BUILD_OMP
 //#define BUILD_MPI
 #endif
 
