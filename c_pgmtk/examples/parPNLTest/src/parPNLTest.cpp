@@ -10,8 +10,6 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
-//#define BUILD_OMP
-//#define BUILD_MPI
 #include "pnl_dll.hpp"
 
 #include "CreateBNets.h"
@@ -410,28 +408,35 @@ int RunTest(int argc, char* argv[])
   else
   if (strcmp(argv[2],"Gibbs") == 0)
   {
-    pEvidencesVector Evidences;
+    if (evidences.empty())
+    {
+      pEvidencesVector Evidences;
 
-    pBNet->GenerateSamples(&Evidences, 1);
-    pEvidence = Evidences[0];
-    const int ndsToToggle[] = { 1, 2, 5, 7 };
-    pEvidence->ToggleNodeState(4, ndsToToggle);
-
+      pBNet->GenerateSamples(&Evidences, 1);
+      pEvidence = Evidences[0];
+      const int ndsToToggle[] = { 1, 2, 5, 7 };
+      pEvidence->ToggleNodeState(4, ndsToToggle);
+    }
+    else
+    {
+      pEvidence = evidences.front();
+    }
+    
     queries.resize(2);
     queries[0].resize(0);
     queries[0].push_back(2);
-    queries[0].push_back(3);
-    queries[0].push_back(4);
-    queries[0].push_back(5);
-    queries[0].push_back(7);
-    queries.resize(2);
+    //queries[0].push_back(3);
+    //queries[0].push_back(4);
+    //queries[0].push_back(5);
+    //queries[0].push_back(7);
+    
     queries[1].resize(0);
     queries[1].push_back(1);
-    queries[1].push_back(2);
+    //queries[1].push_back(2);
   }
   else
   {
-    //if (evidences.empty())
+    if (evidences.empty())
     {
       const int numOfObsNds = 2;
       const int obsNds[] = { 0, 3 };
@@ -440,10 +445,10 @@ int RunTest(int argc, char* argv[])
       obsNdsVals[1].SetInt(0);
       pEvidence = CEvidence::Create(pBNet, numOfObsNds, obsNds, obsNdsVals);
     }
-    /*else
+    else
     {
       pEvidence = evidences.front();
-    }*/
+    }
   }
 
   int gibbs_max_time = 10000;
@@ -607,8 +612,8 @@ int RunTest(int argc, char* argv[])
           printf("\nINTEL %s engine results\n====================================\n\n", argv[2]);
           if (strcmp(argv[2],"Gibbs") == 0)
           {
-            const int querySz = 2;
-            const int query[] = {0,2};
+            const int querySz = 1;
+            const int query[] = {2};
             pInfEng->MarginalNodes(query, querySz);
             pInfEng->GetQueryJPD()->Dump();
           }
@@ -651,8 +656,8 @@ int RunTest(int argc, char* argv[])
         printf("\nPAR_PNL %s engine results\n====================================\n\n", argv[2]);
         if (strcmp(argv[2],"Gibbs") == 0)
         {
-          const int querySz = 2;
-          const int query[] = {0,2};
+          const int querySz = 1;
+          const int query[] = {2};
           pParInfEng->MarginalNodes(query, querySz);
           MPI_PRINT(0) pParInfEng->GetQueryJPD()->Dump();
         }

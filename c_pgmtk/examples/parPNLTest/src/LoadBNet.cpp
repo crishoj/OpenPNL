@@ -17,7 +17,7 @@
 PNL_USING
 using namespace std;
 
-const string nameOfModel = "BNet_model";
+const string nameOfModel = "RandomGraphicalModel";
 const string nameOfEvidence = "my_ev";
 
 CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<CEvidence*>* pEv)
@@ -38,12 +38,16 @@ CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<CEvidence*>* p
         return NULL;
     }
 
-    /*if (pEv)
+    if (pEv)
     {
+        CEvidence* ev = NULL;
+        
         pEv->clear();
-        pEv->push_back(static_cast<CEvidence*>(
-            ContextLoad.Get(string(nameOfEvidence + "0").c_str())));
-    }*/
+        ev = static_cast<CEvidence*>(
+            ContextLoad.Get(string(nameOfEvidence + "0").c_str()));
+        if (ev) 
+            pEv->push_back(ev);
+    }
     
     return pGM;
 }
