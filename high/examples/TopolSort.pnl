@@ -1,0 +1,6 @@
+clear()
+AddNode("x", "dim1 dim2")
+AddNode("y", "dim1 dim2")
+AddNode("z", "dim1 dim2")
+AddArc("y z", "x")
+GetJPD("x")
