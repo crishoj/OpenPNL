@@ -1,4 +1,3 @@
-#define PNL_I_WANT_CODE_COVERAGE
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 //                INTEL CORPORATION PROPRIETARY INFORMATION                //
