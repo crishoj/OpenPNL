@@ -551,7 +551,7 @@ void WGraph::Reset(pnl::CGraph &graph)
 
 void WGraph::IGraph(const Vector<int> *iNodes, Vector<int> *iGraph)
 {
-    if ((iNodes != NULL)||(iGraph != NULL))
+    if ((iNodes == NULL)||(iGraph == NULL))
     {
 	ThrowUsingError("NULL pointers", "WGraph::IGraph");
     }
@@ -572,7 +572,7 @@ void WGraph::IGraph(const Vector<int> *iNodes, Vector<int> *iGraph)
 
 void WGraph::IOuter(const Vector<int> *iGraph, Vector<int> *iNodes)
 {
-    if ((iNodes != NULL)||(iGraph != NULL))
+    if ((iNodes == NULL)||(iGraph == NULL))
     {
 	ThrowUsingError("NULL pointers", "WGraph::IGraph");
     }
