@@ -775,6 +775,12 @@ void BayesNet::LoadNet(const char *filename)
     m_pNet = pNewNet;
     m_pNet->SetCallback(new BayesNetCallback());
 
+    delete &Inference();
+    m_Inference = NULL;
+
+    delete &Learning();
+    m_Learning = NULL;
+
     // We must load net-specific data here.
     // BayesNet haven't any specific data for now
 }
