@@ -38,7 +38,7 @@ public:
     virtual bool IsHandledType(pnl::CPNLBase *pObj) const;
 };
 
-class PNLHIGH_API PersistMapSS: public pnl::CPersistence
+class PNLHIGH_API PersistSSMap: public pnl::CPersistence
 {
 public:
     virtual const char *Signature();

@@ -123,11 +123,15 @@ SOURCE=..\source\ModelEngine.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\source\PersistWBNet.cpp
+SOURCE=..\source\PersistProbNet.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\source\PersistWNodeInfo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\PersistWTypes.cpp
 # End Source File
 # Begin Source File
 
@@ -207,11 +211,15 @@ SOURCE=..\include\NetCallBack.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\PersistWBNet.hpp
+SOURCE=..\include\PersistProbNet.hpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\PersistWNodeInfo.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\PersistWTypes.hpp
 # End Source File
 # Begin Source File
 
