@@ -166,7 +166,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-SUBDIRS = doc include source examples
+SUBDIRS = doc include source examples tests
 EXTRA_DIST = readme.txt tokenology.txt
 all: all-recursive
 

@@ -17,13 +17,17 @@ nobase_highex_DATA =     \
      console.hpp     \
      example_common_funs.hpp     \
      script_lex.hpp     \
+     AddDeleteNodes.pnl     \
      checkSL.pnl     \
      ContinuosEvidence.pnl     \
      gaussian.pnl     \
      MultiGaussian.pnl     \
+     Numeration.pnl     \
      rpsCreate.pnl     \
      scripting.pnl     \
      testSetP.pnl     \
+     TopolSort2.pnl     \
+     TopolSort.pnl     \
      rpsLearn.csv     \
      SLDataRPS.csv     \
      bnet0.xml

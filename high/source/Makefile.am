@@ -10,10 +10,18 @@ lib_LTLIBRARIES = libhigh.la
 libhigh_la_SOURCES =      \
      BNet.cpp     \
      BNetCB.cpp     \
+     DBN.cpp     \
+     DBNCB.cpp     \
+     LIMID.cpp     \
+     LIMIDCB.cpp     \
+     MRF.cpp     \
+     MRFCB.cpp     \
      ModelEngine.cpp     \
-     PersistWBNet.cpp     \
+     PersistProbNet.cpp     \
      PersistWNodeInfo.cpp     \
+     PersistWTypes.cpp     \
      TokenCover.cpp     \
+     WCliques.cpp     \
      WCover.cpp     \
      WDistribFun.cpp     \
      WInner.cpp     \

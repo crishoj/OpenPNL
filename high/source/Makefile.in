@@ -48,9 +48,10 @@ am__installdirs = $(DESTDIR)$(libdir)
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libhigh_la_LIBADD =
-am_libhigh_la_OBJECTS = BNet.lo BNetCB.lo ModelEngine.lo \
-	PersistWBNet.lo PersistWNodeInfo.lo TokenCover.lo WCover.lo \
-	WDistribFun.lo WInner.lo Wcsv.lo pnlTok.lo \
+am_libhigh_la_OBJECTS = BNet.lo BNetCB.lo DBN.lo DBNCB.lo LIMID.lo \
+	LIMIDCB.lo MRF.lo MRFCB.lo ModelEngine.lo PersistProbNet.lo \
+	PersistWNodeInfo.lo PersistWTypes.lo TokenCover.lo WCliques.lo \
+	WCover.lo WDistribFun.lo WInner.lo Wcsv.lo pnlTok.lo \
 	pnlWDistributions.lo pnlWEvidence.lo pnlWGraph.lo \
 	pnlWProbabilisticNet.lo
 libhigh_la_OBJECTS = $(am_libhigh_la_OBJECTS)
@@ -192,10 +193,18 @@ lib_LTLIBRARIES = libhigh.la
 libhigh_la_SOURCES = \
      BNet.cpp     \
      BNetCB.cpp     \
+     DBN.cpp     \
+     DBNCB.cpp     \
+     LIMID.cpp     \
+     LIMIDCB.cpp     \
+     MRF.cpp     \
+     MRFCB.cpp     \
      ModelEngine.cpp     \
-     PersistWBNet.cpp     \
+     PersistProbNet.cpp     \
      PersistWNodeInfo.cpp     \
+     PersistWTypes.cpp     \
      TokenCover.cpp     \
+     WCliques.cpp     \
      WCover.cpp     \
      WDistribFun.cpp     \
      WInner.cpp     \
