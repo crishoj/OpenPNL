@@ -1676,7 +1676,7 @@ void CParJtreeInfEngine::CollectEvidence()
                                sepDomain.size(), pMD, dataMean, 1, obsIndicesIn);
                            static_cast<CGaussianDistribFun *>(updateRatio->GetDistribFun())->
                                UpdateCanonicalForm();
-                           delete [] dataMean;
+                           delete [] (float*)dataMean;
                        }
                        else
                        {
@@ -3477,7 +3477,7 @@ void CParJtreeInfEngine::ProcessRoutes()
                                 sepDomain.size(), pMD, dataMean, 1, obsIndicesIn);
                             static_cast<CGaussianDistribFun *>(UpdateRatio->GetDistribFun())->
                                 UpdateCanonicalForm();
-                            delete [] dataMean;
+                            delete [] (float*)dataMean;
                         }
                         else
                         {

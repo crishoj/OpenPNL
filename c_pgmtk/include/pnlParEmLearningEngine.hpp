@@ -50,7 +50,7 @@ public:
 
 #ifdef PAR_MPI
     void Learn();
-    void LearnContMPI()
+    void LearnContMPI();
 #endif
 
 #ifdef PAR_OMP
@@ -67,6 +67,7 @@ public:
     return CParEMLearningEngine::m_TypeInfo;
   }
 #endif
+
 protected:
 
     CParEMLearningEngine(CStaticGraphicalModel *pGrModel, CInfEngine *pInfEng,

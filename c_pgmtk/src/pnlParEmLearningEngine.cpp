@@ -343,8 +343,8 @@ void CParEMLearningEngine::LearnContMPI()
                 C2DNumericDenseMatrix<float> *matCovForSending;
                 int dataLengthM,dataLengthC;
                 
-                float *pMeanDataForSending;
-                float *pCovDataForSending;
+                const float *pMeanDataForSending;
+                const float *pCovDataForSending;
                 
                 matMeanForSending = static_cast<C2DNumericDenseMatrix<float>*>
                     ((parameter->GetDistribFun())->GetStatisticalMatrix(stMatMu));               
@@ -360,14 +360,14 @@ void CParEMLearningEngine::LearnContMPI()
                 float *pCovDataRecv = new float[dataLengthC];
                 MPI_Status status;                         
                 
-                MPI_Allreduce(pMeanDataForSending, pMeanDataRecv, dataLengthM, MPI_FLOAT, MPI_SUM,
+                MPI_Allreduce((void*)pMeanDataForSending, pMeanDataRecv, dataLengthM, MPI_FLOAT, MPI_SUM,
                     MPI_COMM_WORLD);
-                MPI_Allreduce(pCovDataForSending, pCovDataRecv, dataLengthC, MPI_FLOAT, MPI_SUM,
+                MPI_Allreduce((void*)pCovDataForSending, pCovDataRecv, dataLengthC, MPI_FLOAT, MPI_SUM,
                     MPI_COMM_WORLD);
                 
-                memcpy(pMeanDataForSending,pMeanDataRecv,dataLengthM*sizeof(float));
+                memcpy((void*)pMeanDataForSending,pMeanDataRecv,dataLengthM*sizeof(float));
                 
-                memcpy(pCovDataForSending,pCovDataRecv,dataLengthC*sizeof(float));
+                memcpy((void*)pCovDataForSending,pCovDataRecv,dataLengthC*sizeof(float));
             }                        
 
             loglik = UpdateModel();
@@ -388,7 +388,6 @@ void CParEMLearningEngine::LearnContMPI()
         }while(bContinue);
     }
     SetNumProcEv( GetNumEv() );
-    printf("\n ParPNL iteration = %d ",iteration);
 }
 #endif // PAR_MPI
 // ----------------------------------------------------------------------------
@@ -717,9 +716,11 @@ bool pnl::EqualResults(CEMLearningEngine& eng1, CEMLearningEngine& eng2,
             {
                 if (!IsEqualNumbers1(output1[j],output2[j],epsilon))
                 {
+#if 0
                     printf("\n after mean nodes %d ",i);
                     printf("\n 1-  %f ",output1[j]);
                     printf("\n 2-  %f ",output2[j]);
+#endif
                     result = 0;
                     result1 = 0;
                     break;
@@ -749,9 +750,11 @@ bool pnl::EqualResults(CEMLearningEngine& eng1, CEMLearningEngine& eng2,
             {
                 if (!IsEqualNumbers1(output1[j],output2[j],epsilon))
                 {
+#if 0
                     printf("\n after cov nodes %d ",i);
                     printf("\n 1-  %f ",output1[j]);
                     printf("\n 2-  %f ",output2[j]);
+#endif
                     result = 0;
                     result1 = 0;
                     break;
