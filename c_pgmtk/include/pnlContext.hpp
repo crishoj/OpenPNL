@@ -18,6 +18,14 @@
 #ifndef __PNLCONTEXT_HPP__
 #define __PNLCONTEXT_HPP__
 
+#ifndef __PNLEXCEPTION_HPP__
+#include "pnlException.hpp"
+#endif
+
+#ifndef __PNLSTRING_HPP__
+#include "pnlString.hpp"
+#endif
+
 PNL_BEGIN
 
 // FORWARDS
@@ -25,7 +33,8 @@ class CPNLBase;
 class CObjHandler;
 
 #ifndef ASSERT
-#define ASSERT(A)
+#define ASSERT(A)     if( (A) != true ) { PNL_THROW( CBadArg, #A " should be true"); }
+
 #endif
 
 class PNL_API CContext
@@ -65,7 +74,16 @@ public: // INTERFACE FOR INNER USE
 	    m_Tree[0].push_back(pContext->m_Tree[0][i].Clone());
 	}
     }
-
+    void SetAutoDeleteRootObjects()
+    {
+	for(int i = 0; i < m_Tree[0].size(); ++i)
+	{
+	    if(m_Tree[0][i].m_pObject)
+	    {
+		AutoDelete(m_Tree[0][i].m_pObject);
+	    }
+	}
+    }
 
 protected: // DATA TYPES
     bool IsEnumeration() { return m_bEnumeration; }
@@ -110,12 +128,12 @@ protected: // DATA TYPES
 	    : m_iSubTree(-1), m_pObject(0), m_pUser(0), m_bDup(false)
 	{}
 
-        TreeEntry(const std::string& name, int iSubTree, CPNLBase *pObject)
+        TreeEntry(const pnlString& name, int iSubTree, CPNLBase *pObject)
             : m_Name(name), m_iSubTree(iSubTree), m_pObject(pObject),
 	    m_pUser(0), m_bDup(false)
         {}
         
-        TreeEntry(const std::string& name, int iSubTree, void *pUser)
+        TreeEntry(const pnlString& name, int iSubTree, void *pUser)
             : m_Name(name), m_iSubTree(iSubTree), m_pObject(0),
 	    m_pUser(pUser), m_bDup(false)
         {}
@@ -156,7 +174,7 @@ protected: // DATA TYPES
 	    return TreeEntry(m_Name, -1, m_pObject);
 	}
 
-        std::string m_Name;
+        pnlString m_Name;
         int m_iSubTree;
         CPNLBase *m_pObject;
 	pnlVector<TreeLeafIndex<TreeEntry> > m_PathToReplacing;
@@ -170,7 +188,7 @@ protected: // DATA TYPES
     }
 
     virtual void GetObjWithObjTypeName(CPNLBase **ppObj,
-        std::string *pObjTypeName, const TreeEntry &rEntry)
+        pnlString *pObjTypeName, const TreeEntry &rEntry)
     {
 	if(rEntry.m_pObject)
 	{
@@ -191,9 +209,11 @@ protected: // DATA TYPES
     }
 
 protected: // FUNCTIONS
-    virtual void BeginTraverseObject(const std::string &, TreeEntry&) {}
-    virtual void   EndTraverseObject(const std::string &, TreeEntry&) {}
+    virtual void BeginTraverseObject(const pnlString &, TreeEntry&) {}
+    virtual void   EndTraverseObject(const pnlString &, TreeEntry&) {}
     virtual bool HandleObjectBeforeInterior() const { return true; }
+
+protected: // DATA
     pnlVector<TreeLeafIndex<TreeEntry> > m_Indices;
     pnlVector<pnlVector<TreeEntry> > m_Tree;
     CObjHandler *m_pObjectHandler;
@@ -201,8 +221,10 @@ protected: // FUNCTIONS
     bool m_bEnumeration;
     std::map<CPNLBase *, int, less<void*> > m_MapUniqueObj;
     pnlVector<pnlVector<TreeLeafIndex<TreeEntry> > > m_HeapUniqueObj;
+    int m_iAccelTree;
+    std::map<pnlString, int> m_Accelerator;
 
-private: // DATA
+private:
     const CContext& operator=(const CContext&) { return *this; } // deny copying
 };
 

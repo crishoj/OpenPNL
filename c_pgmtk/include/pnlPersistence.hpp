@@ -19,6 +19,10 @@
 #ifndef __PNLPERSISTENCE_HPP__
 #define __PNLPERSISTENCE_HPP__
 
+#ifndef __PNLSTRING_HPP__
+#include "pnlString.hpp"
+#endif
+
 PNL_BEGIN
 
 // FORWARDS
@@ -39,13 +43,13 @@ public:
 class PNL_API CPersistenceZoo
 {
 public:
-    typedef std::map<std::string, CPersistence*> Map;
+    typedef std::map<pnlString, CPersistence*> Map;
 
     void Register(CPersistence *pPersist);
 
     void Unregister(CPersistence *pPersist);
 
-    CPersistence *Function(std::string &name)
+    CPersistence *Function(pnlString &name)
     {
         Map::iterator it = m_aFuncMap.find(name);
         return (it == m_aFuncMap.end()) ? 0:(*it).second;

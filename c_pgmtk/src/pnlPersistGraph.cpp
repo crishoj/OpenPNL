@@ -22,7 +22,6 @@
 #include "pnlPersistGraph.hpp"
 #include "pnlGraph.hpp"
 
-
 PNL_USING
 
 static const char neighTypeSymbols[3] = { 'p', 'c', 'n' };
@@ -64,8 +63,8 @@ CGraphPersistence::Save(CPNLBase *pObj, CContextSave *pContext)
 CPNLBase *
 CGraphPersistence::Load(CContextLoad *pContext)
 {
-    std::string savingType;
-    std::string nNodeStr;
+    pnlString savingType;
+    pnlString nNodeStr;
     
     pContext->GetAttribute(savingType, "SavingType");
     pContext->GetAttribute(nNodeStr, "NumberOfNodes");
@@ -74,7 +73,7 @@ CGraphPersistence::Load(CContextLoad *pContext)
     intVecVector aNbrs;
     neighborTypeVecVector aNbrsTypes;
     pContext->GetText(nNodeStr);
-    std::istringstream buf(nNodeStr);
+    std::istringstream buf(nNodeStr.c_str());
     int j, k;
     char ch;
 
@@ -105,16 +104,21 @@ CGraphPersistence::Load(CContextLoad *pContext)
                 aNbrsTypes[i].push_back((const ENeighborType)k);
                 buf >> ch;
                 ASSERT(ch == ')');
-                buf.get(ch);
-                ASSERT(ch == ' ');
-                ch = (char)buf.peek();
-                if(ch == '\n')
+		while(isspace(buf.peek()))
+		{
+		    buf.get(ch);
+		    if(ch == '\n' || ch == '\r')
+		    {
+			break;
+		    }
+		}
+                if(ch == '\n' || ch == '\r')
                 {
                     break;
                 }
             }
         }
-        ASSERT(ch == '\n');
+        ASSERT(ch == '\n' || ch == '\r');
     }
 
     ASSERT(i == nNode);

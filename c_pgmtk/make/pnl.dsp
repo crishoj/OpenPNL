@@ -54,7 +54,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\Lib\pnld.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\pnlds.lib" /nodefaultlib
 
@@ -83,7 +83,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\Lib\pnl.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\pnls.lib" /nodefaultlib
 
@@ -622,6 +622,10 @@ SOURCE=..\src\pnlStaticLearningEngine.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\pnlString.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\pnlTabularCPD.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
 # End Source File
@@ -672,6 +676,10 @@ SOURCE=..\include\pnlExInferenceEngine.hpp
 # Begin Source File
 
 SOURCE=..\include\pnlObjHandler.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlPersistArray.hpp
 # End Source File
 # Begin Source File
 
@@ -1093,6 +1101,10 @@ SOURCE=..\include\pnlStaticGraphicalModel.hpp
 # Begin Source File
 
 SOURCE=..\include\pnlStaticLearningEngine.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlString.hpp
 # End Source File
 # Begin Source File
 

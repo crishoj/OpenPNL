@@ -17,6 +17,8 @@
 #ifndef __PNLXMLREAD_HPP__
 #define __PNLXMLREAD_HPP__
 
+#include "pnlString.hpp"
+
 PNL_BEGIN
 
 class CXMLRead
@@ -32,13 +34,13 @@ public:
     };
 
     // get token
-    int GetToken(std::string& str);   
+    int GetToken(pnlString& str);   
         
-    const std::string& GetTokenArg2()
+    const pnlString& GetTokenArg2()
     {   return m_Arg2; }
 
     CXMLRead(std::istream *pFile)
-        : m_bInsideTag(false), m_pFile(pFile), m_Ungetch(-70000)
+        : m_bInsideTag(false), m_pFile(pFile), m_Ungetch(-70000), m_BufSize(0), m_BufPos(0)
     {}
 
 protected:
@@ -49,16 +51,19 @@ protected:
     }
     int GetchAfterSpaces();
 
-    int GetTag(std::string& str);
-    int GetAttribute(std::string& str);
+    int GetTag(pnlString& str);
+    int GetAttribute(pnlString& str);
 
-    int GetField(std::string& str, const char* aDelimiter = NULL);
-    int GetQString(std::string& str, int quotationMark);
+    int GetField(pnlString& str, const char* aDelimiter = NULL);
+    int GetQString(pnlString& str, int quotationMark);
 
 private:
     std::istream *m_pFile;
     bool m_bInsideTag;
-    std::string m_Arg2;
+    pnlString m_Arg2;
+    unsigned char m_Buf[512];
+    int m_BufSize;
+    int m_BufPos;
     int m_Ungetch;
 };
 

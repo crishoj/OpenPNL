@@ -20,7 +20,7 @@
 PNL_USING
 
 int
-CXMLRead::GetToken(std::string& str)
+CXMLRead::GetToken(pnlString& str)
 {
     int ch = (m_bInsideTag) ? GetchAfterSpaces():Getch();
     
@@ -46,7 +46,7 @@ CXMLRead::GetToken(std::string& str)
 }
 
 int
-CXMLRead::GetTag(std::string& str)
+CXMLRead::GetTag(pnlString& str)
 {
     if(Getch() != '<')
     {
@@ -74,16 +74,19 @@ CXMLRead::GetTag(std::string& str)
 }
 
 int
-CXMLRead::GetField(std::string& str, const char* aDelimiter)
+CXMLRead::GetField(pnlString& str, const char* aDelimiter)
 {
     int ch;
     char bitmap[32];
     
     str.resize(0);
     memset((void*)bitmap, 0, sizeof(bitmap));
-    for(; aDelimiter && *aDelimiter; ++aDelimiter)
+    if(aDelimiter)
     {
-	bitmap[*aDelimiter >> 3] |= (1 << (*aDelimiter & 7));
+	for(; *aDelimiter; ++aDelimiter)
+	{
+	    bitmap[*aDelimiter >> 3] |= (1 << (*aDelimiter & 7));
+	}
     }
     for(;;)
     {
@@ -96,12 +99,12 @@ CXMLRead::GetField(std::string& str, const char* aDelimiter)
             Ungetch(ch);
             return eTOKEN_STRING;
 	}
-        str += char(ch);
+        str << char(ch);
     }
 }
 
 int
-CXMLRead::GetQString(std::string& str, int quotationMark)
+CXMLRead::GetQString(pnlString& str, int quotationMark)
 {
     char aDelimiter[2];
     
@@ -128,7 +131,7 @@ CXMLRead::GetchAfterSpaces()
 }
 
 int
-CXMLRead::GetAttribute(std::string& str)
+CXMLRead::GetAttribute(pnlString& str)
 {
     str.resize(0);
 
@@ -149,22 +152,30 @@ CXMLRead::GetAttribute(std::string& str)
 
 int CXMLRead::Getch()
 {
-    int ch;
-    
     if(m_Ungetch != -70000)
     {
-	ch = m_Ungetch;
+	int ch = m_Ungetch;
 	m_Ungetch = -70000;
 	return ch;
     }
     
-    ch = m_pFile->get();
-
-    if(m_pFile->eof())
+    if(m_BufPos < m_BufSize)
     {
-	ch = -1;
-	Ungetch(-1);
+	return m_Buf[m_BufPos++];
     }
 
-    return ch;
+    if(!m_pFile->eof())
+    {
+	m_pFile->read((char*)m_Buf, sizeof(m_Buf));
+	m_BufPos = 0;
+	m_BufSize = m_pFile->gcount();
+	if(m_BufPos < m_BufSize)
+	{
+	    return m_Buf[m_BufPos++];
+	}
+    }
+    
+    Ungetch(-1);
+
+    return -1;
 }

@@ -23,7 +23,6 @@
 #include "pnlPersistCover.hpp"
 #include "pnlModelDomain.hpp"
 
-
 PNL_USING
 
 void

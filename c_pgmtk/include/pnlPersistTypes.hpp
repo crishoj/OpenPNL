@@ -65,6 +65,14 @@ public:
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
 };
 
+class PNL_API CPersistValueVector: public CPersistence
+{
+public:
+    virtual const char *Signature() { return "ValueVector"; }
+    virtual void Save(CPNLBase *pObj, CContextSave *pContext);
+    virtual CPNLBase *Load(CContextLoad *pContext);
+};
+
 PNL_END
 
 #endif // include guard

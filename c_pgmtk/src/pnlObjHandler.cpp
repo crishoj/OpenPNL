@@ -18,27 +18,18 @@
 #include "pnlObjHandler.hpp"
 #include "pnlPersistence.hpp"
 #include "pnlContextPersistence.hpp"
-
+#include "pnlString.hpp"
 
 PNL_USING
 
 void
-CObjHandlerForPersistence::CallByName(std::string &name, CPNLBase *pObj, CContext *pContext)
+CObjHandlerForPersistence::CallByName(pnlString &name, CPNLBase *pObj, CContext *pContext)
 {
+    PNL_CHECK_FOR_ZERO(name.size());
     CPersistence *pPersist = m_pZoo->Function(name);
     if(pPersist)
     {
         Run(pPersist, pObj, pContext);
-    }
-    else
-    {
-	int i;
-	char t[10];
-
-	for(i = 0; i < 10; ++i)
-	{
-	    t[i] = name[i];
-	}
     }
     // else throw?
 }
@@ -52,7 +43,7 @@ void CObjSaver::Run(CPersistence *pPersist, CPNLBase *pObj, CContext *pContext)
     pContextSave->PlanForWriting();
 }
 
-void CObjSaver::CallByNameForDup(std::string &name, CPNLBase *pObj, CContext *pContext)
+void CObjSaver::CallByNameForDup(pnlString &name, CPNLBase *pObj, CContext *pContext)
 {
     static_cast<CContextSave*>(pContext)->PlanForWriting();
 }
@@ -65,7 +56,6 @@ void CObjInclusionEnumerator::Run(CPersistence *pPersist, CPNLBase *pObj, CConte
 void CObjLoader::Run(CPersistence *pPersist, CPNLBase *pObj, CContext *pContext)
 {
     CContextLoad *pContextLoad = static_cast<CContextLoad*>(pContext);
-    // ASSERT(pObj == NULL);
 
     m_pObject = pPersist->Load(pContextLoad);
 }

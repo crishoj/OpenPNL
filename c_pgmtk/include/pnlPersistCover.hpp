@@ -21,6 +21,7 @@
 #include <sstream>
 #include "pnlPersistence.hpp"
 #include "pnlContextPersistence.hpp"
+#include "pnlPersistArray.hpp"
 
 PNL_BEGIN
 
@@ -74,7 +75,7 @@ public:
 template<typename Type> class CPersistNumericVector: public CPersistence
 {
 public:
-    CPersistNumericVector(const std::string &typeName)
+    CPersistNumericVector(const pnlString &typeName)
     {
 	m_Name = typeName;
 	m_Name.append("Vector");
@@ -84,54 +85,25 @@ public:
     virtual CPNLBase *Load(CContextLoad *pContext);
 
 private:
-    std::string m_Name;
+    pnlString m_Name;
 };
 
 template<typename Type> void
 CPersistNumericVector<Type>::Save(CPNLBase *pObj, CContextSave *pContext)
 {
     CCover<pnlVector<Type> > *ptr = dynamic_cast<CCover<pnlVector<Type> >*>(pObj);
-    std::stringstream buf;
 
     PNL_CHECK_IS_NULL_POINTER(ptr);
+    
     pnlVector<Type> &vec = *ptr->GetPointer();
 
-    buf << '[';
-    for(int i = 0; i < vec.size(); ++i)
-    {
-        buf << vec[i] << ((i != int(vec.size()) - 1) ? ' ':']');
-    }
-
-    pContext->AddText(buf.str().c_str());
+    SaveArray(*pContext, &vec.front(), vec.size());
 }
 
 template<typename Type> CPNLBase *
 CPersistNumericVector<Type>::Load(CContextLoad *pContext)
 {
-    std::string str;
-    
-    pContext->GetText(str);
-    std::istringstream buf(str);
-    Type j;
-    char ch;
-    pnlVector<Type> *pVec = new pnlVector<Type>;
-
-    buf >> ch;
-    pVec->reserve((str.length() - 2) >> 2);
-    ASSERT(ch == '[');
-    for(int i = 0; buf.good() && !buf.eof(); ++i)
-    {
-	buf >> ch;
-	if(!isdigit(ch))
-	{
-	    break;
-	}
-	buf.unget();
-        buf >> j;
-	pVec->push_back(j);
-    }
-    ASSERT(ch == ']');
-
+    pnlVector<Type> *pVec = LoadArray<Type>(*pContext);
     CCover<pnlVector<Type> > *pCov =
 	new CCoverDel<pnlVector<Type> >(pVec);
     pContext->AutoDelete(pCov);
@@ -142,7 +114,7 @@ CPersistNumericVector<Type>::Load(CContextLoad *pContext)
 template<typename Type> class CPersistNumericVecVector: public CPersistence
 {
 public:
-    CPersistNumericVecVector(const std::string &typeName)
+    CPersistNumericVecVector(const pnlString &typeName)
     {
 	m_Name = typeName;
 	m_Name.append("VecVector");
@@ -152,7 +124,7 @@ public:
     virtual CPNLBase *Load(CContextLoad *pContext);
 
 private:
-    std::string m_Name;
+    pnlString m_Name;
 };
 
 template<typename Type> void
@@ -160,50 +132,45 @@ CPersistNumericVecVector<Type>::Save(CPNLBase *pObj, CContextSave *pContext)
 {
     CCover<pnlVector<pnlVector<Type> > > *ptr =
 	dynamic_cast<CCover<pnlVector<pnlVector<Type> > >*>(pObj);
-    std::stringstream buf;
+    pnlString buf, buf2;
 
     PNL_CHECK_IS_NULL_POINTER(ptr);
     pnlVector<pnlVector<Type> > &vec = *ptr->GetPointer();
 
-    char buf2[20];
-    
-    sprintf(buf2, "%i", vec.size());
-    
-    pContext->AddAttribute("nVector", buf2);
+    buf2 << int(vec.size());
+    pContext->AddAttribute("nVector", buf2.data());    
     
     for(int j = 0; j < vec.size(); ++j)
     {
-	buf << '[';
-	for(int i = 0; i < vec[j].size(); ++i)
-	{
-	    buf << vec[j][i] << ((i != int(vec[j].size()) - 1) ? ' ':']');
-	}
+	SaveArray(buf, &vec[j].front(), vec[j].size());
 	buf << '\n';
     }
 
-    pContext->AddText(buf.str().c_str());
+    pContext->AddText(buf.c_str());
 }
 
 template<typename Type> CPNLBase *
 CPersistNumericVecVector<Type>::Load(CContextLoad *pContext)
 {
-    std::string str;
-    std::string nVector;
+    pnlString str;
+    pnlString nVector;
     
     pContext->GetText(str);
-    std::istringstream buf(str);
+    std::istringstream buf(str.c_str());
     int j, k, nVect;
     char ch;
     pnlVector<pnlVector<Type> > *pVec = new pnlVector<pnlVector<Type> >;
+    pnlVector<Type> arrayFromString;
 
-    pContext->GetAttribute(nVector, std::string("nVector"));
+    pContext->GetAttribute(nVector, pnlString("nVector"));
     nVect = atoi(nVector.c_str());
-    buf >> ch;
     pVec->resize(nVect);
-    ASSERT(ch == '[');
+    arrayFromString.reserve(64);
     for(k = 0; k < nVect; ++k)
     {
-	(*pVec)[k].reserve(16);
+	buf >> ch;
+	ASSERT(ch == '[');
+	arrayFromString.resize(0);
 	for(int i = 0; buf.good() && !buf.eof(); ++i)
 	{
 	    buf >> ch;
@@ -213,8 +180,11 @@ CPersistNumericVecVector<Type>::Load(CContextLoad *pContext)
 	    }
 	    buf.unget();
 	    buf >> j;
-	    (*pVec)[k].push_back(j);
+	    arrayFromString.push_back(j);
 	}
+	j = arrayFromString.size();
+	(*pVec)[k].resize(j);
+	memcpy(&(*pVec)[k][0], &arrayFromString[0], sizeof(Type)*j);
 	if(ch != ']')
 	{// error?
 	    break;

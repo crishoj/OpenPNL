@@ -20,22 +20,22 @@
 #include "pnlPersistModel.hpp"
 #include "pnlPersistCover.hpp"
 #include "pnlBNet.hpp"
-#include "pnlIDNet.hpp"
 #include "pnlMRF2.hpp"
 #include "pnlDBN.hpp"
+#include "pnlIDNet.hpp"
 
 PNL_USING
 
 static void
 TraverseSubobjectOfGrModel(CGraphicalModel *pObj, CContext *pContext)
 {
-  if (dynamic_cast<CIDNet*>(pObj) == 0)
-  {
-    if(!pObj->IsValid())
+    if(dynamic_cast<CIDNet*>(pObj) != 0)
     {
-      PNL_THROW(CInvalidOperation, "Model is invalid")
+	if(!pObj->IsValid())
+	{
+	    PNL_THROW(CInvalidOperation, "Model is invalid")
+	}
     }
-  }
 
     pContext->Put(pObj->GetModelDomain(), "ModelDomain");
 
@@ -53,6 +53,7 @@ TraverseSubobjectOfGrModel(CGraphicalModel *pObj, CContext *pContext)
 static void
 SaveGrModel(CGraphicalModel *pModel, CContextSave *pContext)
 {
+    PNL_CHECK_IS_NULL_POINTER(pModel);
     pContext->AddAttribute("NumberOfFactors", pModel->GetNumberOfFactors());
 }
 
@@ -104,6 +105,7 @@ CPersistBNet::Load(CContextLoad *pContext)
     return pModel;
 }
 
+
 // IDNet
 
 void
@@ -132,6 +134,7 @@ CPersistIDNet::Load(CContextLoad *pContext)
 
     return pModel;
 }
+
 
 // DBN
 
@@ -180,7 +183,7 @@ CPersistMNet::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
 void
 CPersistMNet::Save(CPNLBase *pObj, CContextSave *pContext)
 {
-    SaveGrModel(dynamic_cast<CBNet*>(pObj), pContext);
+    SaveGrModel(dynamic_cast<CMNet*>(pObj), pContext);
 }
 
 CPNLBase *
@@ -208,7 +211,7 @@ CPersistMRF2::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
 void
 CPersistMRF2::Save(CPNLBase *pObj, CContextSave *pContext)
 {
-    SaveGrModel(dynamic_cast<CBNet*>(pObj), pContext);
+    SaveGrModel(dynamic_cast<CMRF2*>(pObj), pContext);
 }
 
 CPNLBase *

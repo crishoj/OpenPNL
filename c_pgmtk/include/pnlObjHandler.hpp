@@ -25,21 +25,22 @@ class CPNLBase;
 class CContext;
 class CPersistence;
 class CPersistenceZoo;
+class pnlString;
 
 class PNL_API CObjHandler
 {
 public:
     CObjHandler() {};
     virtual ~CObjHandler() {}
-    virtual void CallByName(std::string &name, CPNLBase *pObj, CContext *pContext) = 0;
-    virtual void CallByNameForDup(std::string &name, CPNLBase *pObj, CContext *pContext) {}
+    virtual void CallByName(pnlString &name, CPNLBase *pObj, CContext *pContext) = 0;
+    virtual void CallByNameForDup(pnlString &name, CPNLBase *pObj, CContext *pContext) {}
 };
 
 class PNL_API CObjHandlerForPersistence: public CObjHandler
 {
 public:
     CObjHandlerForPersistence(CPersistenceZoo *pZoo): m_pZoo(pZoo) {}
-    virtual void CallByName(std::string &name, CPNLBase *pObj, CContext *pContext);
+    virtual void CallByName(pnlString &name, CPNLBase *pObj, CContext *pContext);
     virtual void Run(CPersistence *pPersist, CPNLBase *pObj, CContext *pContext) = 0;
 
 private:
@@ -51,7 +52,7 @@ class PNL_API CObjSaver: public CObjHandlerForPersistence
 public:
     CObjSaver(CPersistenceZoo *pZoo): CObjHandlerForPersistence(pZoo) {}
     virtual void Run(CPersistence *pPersist, CPNLBase *pObj, CContext *pContext);
-    virtual void CallByNameForDup(std::string &name, CPNLBase *pObj, CContext *pContext);
+    virtual void CallByNameForDup(pnlString &name, CPNLBase *pObj, CContext *pContext);
 };
 
 class PNL_API CObjInclusionEnumerator: public CObjHandlerForPersistence

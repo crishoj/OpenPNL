@@ -42,13 +42,13 @@ class CContextSave: public CContext
 public:
     CContextSave(const std::string &filename): m_File(filename.c_str()) {}
 
-    virtual void BeginTraverseObject(const std::string &typeName, TreeEntry& rEntry);
-    virtual void   EndTraverseObject(const std::string &typeName, TreeEntry& rEntry);
+    virtual void BeginTraverseObject(const pnlString &typeName, TreeEntry& rEntry);
+    virtual void   EndTraverseObject(const pnlString &typeName, TreeEntry& rEntry);
     virtual void DoEndTraverseObject() = 0;
     void AddAttribute(const char *attr, const char *value)
     {
-        m_aAttrName.push_back(std::string(attr));
-        m_aValue.push_back(std::string(value));
+        m_aAttrName.push_back(pnlString(attr));
+        m_aValue.push_back(pnlString(value));
     }
     void AddAttribute(const char *attr, const int value)
     {
@@ -81,10 +81,10 @@ protected:
     bool IsPlanned() const { return m_bPlanned; }
 
 protected:
-    pnlVector<std::string> m_aTag;
-    std::string m_Text;
-    pnlVector<std::string> m_aAttrName;
-    pnlVector<std::string> m_aValue;
+    pnlVector<pnlString> m_aTag;
+    pnlString m_Text;
+    pnlVector<pnlString> m_aAttrName;
+    pnlVector<pnlString> m_aValue;
     std::ofstream m_File;
     bool m_bPlanned;
 
@@ -101,7 +101,7 @@ public:
     CContextSaveXML(const std::string &filename);
     virtual ~CContextSaveXML();
 
-    virtual void BeginTraverseObject(const std::string &typeName, TreeEntry& rEntry);
+    virtual void BeginTraverseObject(const pnlString &typeName, TreeEntry& rEntry);
     virtual void DoEndTraverseObject();
     virtual void BeforeInterior();
 
@@ -113,12 +113,12 @@ private:
 class CContextLoad: public CContext
 {
 public:
-    CContextLoad(const std::string &filename): m_File(filename.c_str()) {}
-    virtual void BeginTraverseObject(const std::string &typeName, TreeEntry& rEntry);
-    virtual void   EndTraverseObject(const std::string &typeName, TreeEntry& rEntry);
+    CContextLoad(const std::string &filename): m_File(filename.c_str(), ios::in|ios::binary) {}
+    virtual void BeginTraverseObject(const pnlString &typeName, TreeEntry& rEntry);
+    virtual void   EndTraverseObject(const pnlString &typeName, TreeEntry& rEntry);
     struct TreeTextEntry
     {
-        TreeTextEntry(const std::string &name): m_Name(name), m_iChildren(-1) {}
+        TreeTextEntry(const pnlString &name): m_Name(name), m_iChildren(-1) {}
         TreeTextEntry(): m_iChildren(-1) {}
         const TreeTextEntry &operator=(const TreeTextEntry &a)
         {
@@ -132,6 +132,12 @@ public:
             }
             return *this;
         }
+	const TreeTextEntry &operator+=(const pnlString &text)
+	{
+	    m_Text << text;
+
+	    return *this;
+	}
 #ifdef PNL_VC7
 	bool operator<(const TreeTextEntry &nt) const
 	{
@@ -143,10 +149,10 @@ public:
 	}
 #endif
 
-        std::string m_Text;
-        std::string m_Name;
-        pnlVector<std::string> m_aAttrName;
-        pnlVector<std::string> m_aAttrValue;
+        pnlString m_Text;
+        pnlString m_Name;
+        pnlVector<pnlString> m_aAttrName;
+        pnlVector<pnlString> m_aAttrValue;
         int m_iChildren;
     };
 
@@ -159,41 +165,41 @@ public:
 
     void RecursiveCopying(int iaaEntryTxt);
 
-    void GetText(std::string &text)
+    void GetText(pnlString &text)
     {
         text = ((TreeTextEntry*)Current().m_pUser)->m_Text;
     }
 
-    void GetAttribute(std::string &attrValue, const std::string &attrName)
+    void GetAttribute(pnlString &attrValue, const pnlString &attrName)
     {
         TreeTextEntry *pEnt = (TreeTextEntry*)Current().m_pUser;
 
         FindAttribute(*pEnt, attrValue, attrName);
     }
-    void GetAttribute(bool *attrValue, const std::string &attrName)
+    void GetAttribute(bool *attrValue, const pnlString &attrName)
     {
-	std::string attrValueStr;
+	pnlString attrValueStr;
 
 	GetAttribute(attrValueStr, attrName);
-	attrValue[0] = (attrValueStr[0] == '1');
+	*attrValue = ((attrValueStr.size() > 0) && (attrValueStr[0] == '1'));
     }
-    void GetAttribute(int *attrValue, const std::string &attrName)
+    void GetAttribute(int *attrValue, const pnlString &attrName)
     {
-	std::string attrValueStr;
+	pnlString attrValueStr;
 
 	GetAttribute(attrValueStr, attrName);
 	attrValue[0] = atoi(attrValueStr.c_str());
     }
-    void GetAttribute(float *attrValue, const std::string &attrName)
+    void GetAttribute(float *attrValue, const pnlString &attrName)
     {
-	std::string attrValueStr;
+	pnlString attrValueStr;
 
 	GetAttribute(attrValueStr, attrName);
 	attrValue[0] = (float)atof(attrValueStr.c_str());
     }
 
 protected:
-    void FindAttribute(TreeTextEntry &rEnt, std::string &attrValue, const std::string &attrName)
+    void FindAttribute(TreeTextEntry &rEnt, pnlString &attrValue, const pnlString &attrName)
     {
         for(int i = 0; i < rEnt.m_aAttrName.size(); ++i)
         {
@@ -208,11 +214,11 @@ protected:
     }
 
     virtual void GetObjWithObjTypeName(CPNLBase **ppObj,
-        std::string *pObjTypeName, const TreeEntry &rEntry)
+        pnlString *pObjTypeName, const TreeEntry &rEntry)
     {
         *ppObj = 0;
         FindAttribute(*((TreeTextEntry*)rEntry.m_pUser), *pObjTypeName,
-            std::string("TypeName"));
+            pnlString("TypeName"));
     }
 
     CContextLoad() {}
@@ -272,7 +278,7 @@ public:
         int m_Minor;
     };
 
-    virtual void BeginTraverseObject(const std::string &typeName, TreeEntry& rEntry);
+    virtual void BeginTraverseObject(const pnlString &typeName, TreeEntry& rEntry);
     bool SwallowXML();
 
 private:

@@ -35,7 +35,11 @@ CPersistNodeType::Save(CPNLBase *pObj, CContextSave *pContext)
 
     pContext->AddAttribute("NodeSize", pNodeType->GetNodeSize());
     pContext->AddAttribute("IsDiscrete", pNodeType->IsDiscrete());
-    pContext->AddAttribute("NodeState", (int)pNodeType->GetNodeState());
+    if(pNodeType->GetNodeState())
+    {
+        // if nodeState is 0, it loaded as 0
+        pContext->AddAttribute("NodeState", (int)pNodeType->GetNodeState());
+    }
 }
 
 CPNLBase *
@@ -47,6 +51,7 @@ CPersistNodeType::Load(CContextLoad *pContext)
     
     pContext->GetAttribute(&nodeSize, "NodeSize");
     pContext->GetAttribute(&bDiscrete, "IsDiscrete");
+    // if nodeState is 0, it will loaded as 0 - hint
     pContext->GetAttribute(&nodeState, "NodeState");
 
     return new CNodeType(bDiscrete, nodeSize, (EIDNodeState)nodeState);
@@ -70,11 +75,11 @@ CPersistNodeValues::Load(CContextLoad *pContext)
 
     pContext->GetAttribute(&nNode, "NumberOfNodes");
     pContext->GetAttribute(&nValue, "NumberOfValues");
-	
+        
     pNodeTypeVector *paNodeType = static_cast<CCoverDel<pNodeTypeVector>*>(
-	pContext->Get("pNodeTypes"))->GetPointer();
+        pContext->Get("pNodeTypes"))->GetPointer();
     valueVector *paValue = static_cast<CCoverDel<valueVector>*>(
-	pContext->Get("Values"))->GetPointer();
+        pContext->Get("Values"))->GetPointer();
 
     return CNodeValues::Create(*(const pConstNodeTypeVector*)paNodeType, *paValue);
 }
@@ -87,21 +92,18 @@ CPersistNodeValues::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
     pNodeTypeVector *papNodeType = new pNodeTypeVector;
     
     {
-	papNodeType->reserve(pValues->GetNumberObsNodes());
-	CNodeType** aaNodeType = (CNodeType**)pValues->GetNodeTypes();
-	papNodeType->assign(aaNodeType, aaNodeType + pValues->GetNumberObsNodes());
+        papNodeType->reserve(pValues->GetNumberObsNodes());
+        CNodeType** aaNodeType = (CNodeType**)pValues->GetNodeTypes();
+        papNodeType->assign(aaNodeType, aaNodeType + pValues->GetNumberObsNodes());
     }
 
     pValues->GetRawData(paValue);
 
     CCoverDel<valueVector> *pCovValues = new CCoverDel<valueVector>(paValue);
-    pContext->AutoDelete(pCovValues);
-
     CCoverDel<pNodeTypeVector> *pCov = new CCoverDel<pNodeTypeVector>(papNodeType);
-    pContext->AutoDelete(pCov);
 
-    pContext->Put(pCovValues, "Values");
-    pContext->Put(pCov, "pNodeTypes");
+    pContext->Put(pCovValues, "Values", true);
+    pContext->Put(pCov, "pNodeTypes", true);
 }
 
 // Evidence
@@ -115,7 +117,7 @@ CPersistEvidence::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
     
     pV->resize(pEvidence->GetNumberObsNodes());
     memcpy((void*)&pV->front(), pEvidence->GetAllObsNodes(),
-	pEvidence->GetNumberObsNodes()*sizeof(pV->front()));
+        pEvidence->GetNumberObsNodes()*sizeof(pV->front()));
 
     pContext->Put(const_cast<CModelDomain*>(pEvidence->GetModelDomain()), "ModelDomain");
     pContext->Put(new CCoverDel<intVector>(pV), "ObservedNodes", true);
@@ -128,8 +130,22 @@ void CPersistEvidence::Save(CPNLBase *pObj, CContextSave *pContext)
 
 CPNLBase *CPersistEvidence::Load(CContextLoad *pContext)
 {
+#if 1
+    valueVector *paValue;
+    if(static_cast<CCoverDel<valueVector>*>(pContext->Get("Values")) == 0)
+    {
+        paValue = new valueVector;
+        paValue->resize(static_cast<CModelDomain*>(pContext->Get("ModelDomain"))->GetNumberVariables()/2);
+    }
+    else
+    {
+        paValue = static_cast<CCoverDel<valueVector>*>(
+            pContext->Get("Values"))->GetPointer();
+    }
+#else
     valueVector *paValue = static_cast<CCoverDel<valueVector>*>(
-	pContext->Get("Values"))->GetPointer();
+        pContext->Get("Values"))->GetPointer();
+#endif
     CModelDomain *pMD = static_cast<CModelDomain*>(pContext->Get("ModelDomain"));
     intVector *pV = static_cast<CCover<intVector>*>(pContext->Get("ObservedNodes"))->GetPointer();
 
@@ -146,23 +162,13 @@ static struct
     EMatrixClass m_Class;
     const char *m_Name;
 } sMapMatrixType[] =
-{   mcSparse,	    "Sparse"
-,   mcDense,	    "Dense"
+{   mcSparse,       "Sparse"
+,   mcDense,        "Dense"
 ,   mcNumericDense, "NumericDense"
 ,   mcNumericSparse,"NumericSparse"
 ,   mc2DNumericDense,  "2DNumericDense"
 ,   mc2DNumericSparse, "2DNumericSparse"
 };
-
-template<typename Type>
-void SaveArray(std::stringstream &buf, const Type *pArray, int nElement, char delim = ' ')
-{
-	buf << '[';
-	for(int i = 0; i < nElement; ++i)
-	{
-	    buf << pArray[i] << ((i == nElement - 1) ? ']':delim);
-	}
-}
 
 template<typename Type>
 void MatrixCommonSave(CMatrix<Type>* pMat, CContextSave *pContext)
@@ -173,49 +179,20 @@ void MatrixCommonSave(CMatrix<Type>* pMat, CContextSave *pContext)
     pMat->GetRanges(&nDim, &ranges);
     pContext->AddAttribute("NumberOfDimensions", nDim);
     {
-	std::stringstream buf;
+        pnlString buf;
 
         SaveArray<int>(buf, ranges, nDim);
-	pContext->AddAttribute("Ranges", buf.str().c_str());
+        pContext->AddAttribute("Ranges", buf.c_str());
     }
     for(i = 0; i < sizeof(sMapMatrixType)/sizeof(sMapMatrixType[0]); ++i)
     {
-	if(sMapMatrixType[i].m_Class == pMat->GetMatrixClass())
-	{
-	    pContext->AddAttribute("MatrixClass", sMapMatrixType[i].m_Name);
-	    break;
-	}
+        if(sMapMatrixType[i].m_Class == pMat->GetMatrixClass())
+        {
+            pContext->AddAttribute("MatrixClass", sMapMatrixType[i].m_Name);
+            break;
+        }
     }
     pContext->AddAttribute("IsClamped", pMat->GetClampValue());
-}
-
-template<typename Type>
-void LoadArray(std::istringstream &buf, pnlVector<Type> &array, char delim = ' ')
-{
-    char ch;
-    int ich;
-    Type val;
-
-    buf >> ch;
-    ASSERT(ch == '[');
-    array.reserve(16);
-    array.resize(0);
-    for(;buf.good();)
-    {
-	ich = buf.peek();
-	if(ich == ']')
-	{
-	    buf >> ch;
-	    break;
-	}
-	if(ich == delim)
-	{
-	    buf.get(ch);
-	}
-
-	buf >> val;
-	array.push_back(val);
-    }
 }
 
 struct CommonMatrixAttrs
@@ -229,22 +206,22 @@ struct CommonMatrixAttrs
 void MatrixCommonLoad(CommonMatrixAttrs *attrs, CContextLoad *pContext)
 {
     int i;
-    std::string attr;
+    pnlString attr;
 
     pContext->GetAttribute(&attrs->m_nDim, "NumberOfDimensions");
     pContext->GetAttribute(attr, "MatrixClass");
     for(i = 0; i < sizeof(sMapMatrixType)/sizeof(sMapMatrixType[0]); ++i)
     {
-	if(sMapMatrixType[i].m_Name == attr)
-	{
-	    attrs->m_Class = sMapMatrixType[i].m_Class;
-	    break;
-	}
+        if(attr == sMapMatrixType[i].m_Name)
+        {
+            attrs->m_Class = sMapMatrixType[i].m_Class;
+            break;
+        }
     }
     pContext->GetAttribute(attr, "Ranges");
     {
-	std::istringstream buf(attr);
-	LoadArray<int>(buf, attrs->m_Ranges);
+        std::istringstream buf(attr.c_str());
+        LoadArray<int>(buf, attrs->m_Ranges);
     }
     pContext->GetAttribute(&attrs->m_bClamp, "IsClamped");
 }
@@ -254,95 +231,99 @@ void CPersistMatrixFlt::Save(CPNLBase *pObj, CContextSave *pContext)
     CMatrix<float> *pMat = static_cast<CMatrix<float>*>(pObj);
 
     MatrixCommonSave<float>(pMat, pContext);
-    std::stringstream buf;
+    pnlString buf;
     if(dynamic_cast<CDenseMatrix<float>*>(pMat))
     {
         CDenseMatrix<float> *pDenseMat = static_cast<CDenseMatrix<float>*>(pMat);
-	int len;
-	const float *pData;
+        int len;
+        const float *pData;
 
-	pDenseMat->GetRawData(&len, &pData);
-	SaveArray<float>(buf, pData, len);
+        pDenseMat->GetRawData(&len, &pData);
+        SaveArray<float>(buf, pData, len);
     }
     else
     {// Sparse
         CSparseMatrix<float> *pSparseMat = static_cast<CSparseMatrix<float>*>(pMat);
-	CMatrixIterator<float> *it = pSparseMat->InitIterator();
-	intVector index;
+        CMatrixIterator<float> *it = pSparseMat->InitIterator();
+        intVector index;
 
-	for(; pSparseMat->IsValueHere(it); pSparseMat->Next(it))
-	{
-	    pSparseMat->Index(it, &index);
-	    SaveArray<int>(buf, &index.front(), index.size());
-	    buf << ":" << *pSparseMat->Value(it) << '\n';
-	}
+        for(; pSparseMat->IsValueHere(it); pSparseMat->Next(it))
+        {
+            pSparseMat->Index(it, &index);
+            SaveArray<int>(buf, &index.front(), index.size());
+            buf << ":" << *pSparseMat->Value(it) << '\n';
+        }
 
-	delete it;
+        delete it;
     }
 
-    pContext->AddText(buf.str().c_str());
+    pContext->AddText(buf.c_str());
 }
 
 CPNLBase *CPersistMatrixFlt::Load(CContextLoad *pContext)
 {
     CommonMatrixAttrs attrs;
-    std::string text;
+    pnlString text;
 
     pContext->GetText(text);
     MatrixCommonLoad(&attrs, pContext);
     if(attrs.m_Class == mcDense || attrs.m_Class == mcNumericDense
-	|| attrs.m_Class == mc2DNumericDense)
+        || attrs.m_Class == mc2DNumericDense)
     {
         floatVector data;
-	std::istringstream buf(text);
+        std::istringstream buf(text.c_str());
 
-	LoadArray<float>(buf, data);
-	switch(attrs.m_Class)
-	{
-	case mcDense:
-	    return CDenseMatrix<float>::Create(attrs.m_nDim, &attrs.m_Ranges.front(),
-		&data.front(), attrs.m_bClamp);
-	case mcNumericDense:
-	    return CNumericDenseMatrix<float>::Create(attrs.m_nDim,
-		&attrs.m_Ranges.front(), &data.front(), attrs.m_bClamp);
-	case mc2DNumericDense:
-	    return C2DNumericDenseMatrix<float>::Create(&attrs.m_Ranges.front(),
-		&data.front(), attrs.m_bClamp);
-	}
-	PNL_THROW(CInvalidOperation, "Unknown matrix type");
+        LoadArray<float>(buf, data);
+        switch(attrs.m_Class)
+        {
+        case mcDense:
+            return CDenseMatrix<float>::Create(attrs.m_nDim, &attrs.m_Ranges.front(),
+                &data.front(), attrs.m_bClamp);
+        case mcNumericDense:
+            return CNumericDenseMatrix<float>::Create(attrs.m_nDim,
+                &attrs.m_Ranges.front(), &data.front(), attrs.m_bClamp);
+        case mc2DNumericDense:
+            return C2DNumericDenseMatrix<float>::Create(&attrs.m_Ranges.front(),
+                &data.front(), attrs.m_bClamp);
+        }
+        PNL_THROW(CInvalidOperation, "Unknown matrix type");
     }
 
     CSparseMatrix<float> *pSparse;
     switch(attrs.m_Class)
     {
     case mcSparse:
-	pSparse = CSparseMatrix<float>::Create(attrs.m_nDim, &attrs.m_Ranges.front(), 0);
-	break;
+        pSparse = CSparseMatrix<float>::Create(attrs.m_nDim, &attrs.m_Ranges.front(), 0);
+        break;
     case mcNumericSparse:
-	pSparse = CNumericSparseMatrix<float>::Create(attrs.m_nDim,
-	    &attrs.m_Ranges.front(), attrs.m_bClamp);
-	break;
+        pSparse = CNumericSparseMatrix<float>::Create(attrs.m_nDim,
+            &attrs.m_Ranges.front(), attrs.m_bClamp);
+        break;
     case mc2DNumericSparse:
     default:
-	PNL_THROW(CInvalidOperation, "Unknown matrix type");
-	break;
+        PNL_THROW(CInvalidOperation, "Unknown matrix type");
+        break;
     }
 
-    std::istringstream bufSparse(text);
+    std::istringstream bufSparse(text.c_str());
     intVector index;
     char ch;
     float val;
     for(;bufSparse.good();)
     {
-	LoadArray(bufSparse, index);
-	if(bufSparse.peek() == ']')
-	{
-	    bufSparse >> ch;
-	}
-	bufSparse >> ch;
-	ASSERT(ch == ':');
-	bufSparse >> val;
-	pSparse->SetElementByIndexes(val, &index.front());
+        LoadArray(bufSparse, index);
+        if(!bufSparse.good())
+        {
+            break;
+        }
+        if(bufSparse.peek() == ']')
+        {
+            bufSparse >> ch;
+        }
+        bufSparse >> ch;
+        ASSERT(ch == ':');
+        bufSparse >> val;
+        pSparse->SetElementByIndexes(val, &index.front());
     }
 
     return pSparse;
@@ -359,15 +340,15 @@ void CPersistMatrixDistribFun::TraverseSubobject(CPNLBase *pObj, CContext *pCont
     
     for(; pMat->IsValueHere(it); pMat->Next(it))
     {
-	std::stringstream buf;
+        std::stringstream buf;
 
-	pMat->Index(it, &index);
-	buf << "DistributionFunction" << index[0];
-	for(int i = 1; i < index.size(); ++i)
-	{
-	    buf << "_" << index[i];
-	}
-	pContext->Put(const_cast<CDistribFun*>(*pMat->Value(it)), buf.str().c_str());
+        pMat->Index(it, &index);
+        buf << "DistributionFunction" << index[0];
+        for(int i = 1; i < index.size(); ++i)
+        {
+            buf << "_" << index[i];
+        }
+        pContext->Put(const_cast<CDistribFun*>(*pMat->Value(it)), buf.str().c_str());
     }
     
     delete it;
@@ -381,116 +362,147 @@ void CPersistMatrixDistribFun::Save(CPNLBase *pObj, CContextSave *pContext)
 
     CMatrixIterator<CDistribFun*> *it = pMat->InitIterator();
     intVector index;
-    std::stringstream buf;
+    pnlString buf;
     
     for(; pMat->IsValueHere(it); pMat->Next(it))
     {
-	pMat->Index(it, &index);
-	SaveArray<int>(buf, &index.front(), index.size());
-	buf << '\n';
+        pMat->Index(it, &index);
+        SaveArray<int>(buf, &index.front(), index.size());
+        buf << '\n';
     }
     
     delete it;
 
-    pContext->AddText(buf.str().c_str());
+    pContext->AddText(buf.c_str());
 }
 
 CPNLBase *CPersistMatrixDistribFun::Load(CContextLoad *pContext)
 {
     CommonMatrixAttrs attrs;
-    std::string text;
+    pnlString text;
 
     pContext->GetText(text);
     MatrixCommonLoad(&attrs, pContext);
 
-    std::istringstream buf(text);
+    std::istringstream buf(text.c_str());
     intVecVector aIndex;
     pnlVector<CDistribFun*> aFun;
-    char ch;
     int i;
     intVector index;
 
     index.resize(attrs.m_nDim);
     for(;buf.good();)
     {
-	std::stringstream name;
+        pnlString name;
 
-	buf >> ch;
-	if(ch != '[')
-	{
-	    break;
-	}
-	name << "DistributionFunction";
-	for(i = 0; i < attrs.m_nDim && buf.good() && !buf.eof(); ++i)
-	{
-	    buf >> ch;
-	    if(!isdigit(ch))
-	    {
-		break;
-	    }
-	    buf.unget();
-	    buf >> index[i];
-	    if(i)
-	    {
-		name << '_';
-	    }
-	    name << index[i];
-	}
-	if(i != attrs.m_nDim)
-	{
-	    break;
-	}
-	aIndex.push_back(index);
-	aFun.push_back(static_cast<CDistribFun*>(pContext->Get(name.str().c_str())));
-	if(buf.peek() == ']')
-	{
-	    buf >> ch;
-	}
+        LoadArray(buf, index);
+        if(!index.size())
+        {
+            break;
+        }
+        PNL_CHECK_FOR_NON_ZERO(index.size() - attrs.m_nDim);
+        name << "DistributionFunction" << index[0];
+        for(i = 1; i < index.size(); ++i)
+        {
+            name << '_';
+            name << index[i];
+        }
+        aIndex.push_back(index);
+        aFun.push_back(static_cast<CDistribFun*>(pContext->Get(name.c_str())));
     }
 
     if(attrs.m_Class == mcSparse)
     {
-	CSparseMatrix<CDistribFun*> *pSparseMat = CSparseMatrix<CDistribFun*>::Create(
-	    attrs.m_nDim, &attrs.m_Ranges.front(), 0, attrs.m_bClamp);
+        CSparseMatrix<CDistribFun*> *pSparseMat = CSparseMatrix<CDistribFun*>::Create(
+            attrs.m_nDim, &attrs.m_Ranges.front(), 0, attrs.m_bClamp);
 
-	for(i = 0; i < aIndex.size(); ++i)
-	{
-	    pSparseMat->SetElementByIndexes(aFun[i], &aIndex[i].front());
-	}
+        for(i = 0; i < aIndex.size(); ++i)
+        {
+            pSparseMat->SetElementByIndexes(aFun[i], &aIndex[i].front());
+        }
 
-	pContext->AutoDelete(pSparseMat);
+        pContext->AutoDelete(pSparseMat);
 
-	return pSparseMat;
+        return pSparseMat;
     }
     else if(attrs.m_Class == mcDense)
     {
-	CDenseMatrix<CDistribFun*> *pDenseMat = CDenseMatrix<CDistribFun*>::Create(
-	    attrs.m_nDim, &attrs.m_Ranges.front(), &aFun.front(), attrs.m_bClamp);
+        CDenseMatrix<CDistribFun*> *pDenseMat = CDenseMatrix<CDistribFun*>::Create(
+            attrs.m_nDim, &attrs.m_Ranges.front(), &aFun.front(), attrs.m_bClamp);
 
-	pContext->AutoDelete(pDenseMat);
+        pContext->AutoDelete(pDenseMat);
 
-	return pDenseMat;
+        return pDenseMat;
     }
     else
     {
-	PNL_THROW(CInvalidOperation, "Unknown matrix type: sparse or dense is expected");
+        PNL_THROW(CInvalidOperation, "Unknown matrix type: sparse or dense is expected");
     }
 
     return 0;
 }
 
-#if 0
-
-void CPersistMatrixXXX::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
+static
+pnlString &operator<<(pnlString &str, const Value &v)
 {
+    (v.IsDiscrete()) ? (str << v.GetInt()) : (str << v.GetFlt() << 'f');
+
+    return str;
 }
 
-void CPersistMatrixXXX::Save(CPNLBase *pObj, CContextSave *pContext)
+static
+pnlString &operator<<(pnlString &str, Value &v)
 {
+    (v.IsDiscrete()) ? (str << v.GetInt()) : (str << v.GetFlt() << 'f');
+
+    return str;
 }
 
-CPNLBase *CPersistMatrixXXX::Load(CContextLoad *pContext)
+static
+std::istream &operator>>(std::istream &str, Value &v)
 {
+    double val;
+
+    str >> val;
+    if(str.peek() == 'f')
+    {
+        char ch;
+
+        str >> ch;
+        v.SetFlt(float(val));
+    }
+    else
+    {
+        v.SetInt(int(val));
+    }
+
+    return str;
 }
 
-#endif
+void CPersistValueVector::Save(CPNLBase *pObj, CContextSave *pContext)
+{
+    valueVector *pV = dynamic_cast<CCover<valueVector>*>(pObj)->GetPointer();
+
+    if(!pV)
+    {
+        PNL_THROW(CInconsistentType, "valueVector must be covered");
+    }
+
+    SaveArray(*pContext, &pV->front(), pV->size());
+}
+
+CPNLBase *CPersistValueVector::Load(CContextLoad *pContext)
+{
+    pnlString str;
+    
+    pContext->GetText(str);
+    std::istringstream buf(str.c_str());
+    valueVector *pV = new valueVector;
+
+    LoadArray(buf, *pV);
+    CCover<valueVector> *pCov =
+        new CCoverDel<valueVector >(pV);
+    pContext->AutoDelete(pCov);
+
+    return pCov;
+}

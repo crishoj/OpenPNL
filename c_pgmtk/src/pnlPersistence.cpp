@@ -34,10 +34,10 @@ public:
 
     ~PersistenceUsing()
     {
-	if(m_pZoo)
-	{
-	    delete m_pZoo;
-	}
+        if(m_pZoo)
+        {
+            delete m_pZoo;
+        }
     }
 
     CPersistenceZoo *m_pZoo;
@@ -50,13 +50,14 @@ CPersistenceZoo *GetZoo()
     if(!persistenceZooHolder.m_pZoo)
     {
         CPersistenceZoo *pZoo = persistenceZooHolder.m_pZoo
-          = new CPersistenceZoo;
+            = new CPersistenceZoo;
         pZoo->Register(new CGraphPersistence());
         pZoo->Register(new CPersistNodeType());
         pZoo->Register(new CPersistNodeValues());
         pZoo->Register(new CPersistNumericVector<int>("int"));
         pZoo->Register(new CPersistNumericVector<float>("float"));
         pZoo->Register(new CPersistNumericVecVector<int>("int"));
+        pZoo->Register(new CPersistValueVector());
         pZoo->Register(new CPersistGaussianDistribFun());
         pZoo->Register(new CPersistTabularDistribFun());
         pZoo->Register(new CPersistCondGaussianDistribFun());
@@ -79,7 +80,7 @@ CPersistenceZoo *GetZoo()
 
 void CPersistenceZoo::Register(CPersistence *pPersist)
 {
-    m_aFuncMap[Map::key_type(std::string(pPersist->Signature()))] = pPersist;
+    m_aFuncMap[Map::key_type(pnlString(pPersist->Signature()))] = pPersist;
 }
 
 void CPersistenceZoo::Unregister(CPersistence *pPersist)
