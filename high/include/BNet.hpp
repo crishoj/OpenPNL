@@ -84,7 +84,7 @@ public:
     void LearnParameters(TokArr aValue[] = NULL, int nValue = 0);
     
     //learns structure of the network using input evidences or evidence history
-    void LearnStructure(TokArr aValue[], int nValue); //maybe return some quality measure?
+    void LearnStructure(TokArr aValue[] = NULL, int nValue = 0); //maybe return some quality measure?
 
     // returns MPE for nodes using current evidence
     TokArr GetMPE(TokArr nodes);
