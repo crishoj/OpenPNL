@@ -22,8 +22,8 @@
 
 static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, int size);
 
-// Tok identifies for categoric and continuous node types
-TokArr categoric("nodes^categoric");
+// Tok identifies for discrete and continuous node types
+TokArr discrete("nodes^discrete");
 TokArr continuous("nodes^continuous");
 
 ProbabilisticNet::ProbabilisticNet(): m_Model(0), m_pCallback(0)
@@ -60,7 +60,7 @@ void ProbabilisticNet::DelNode(TokArr nodes)
     }
 }
 
-// returns one of "categoric" or "continuous"
+// returns one of "discrete" or "continuous"
 TokArr ProbabilisticNet::NodeType(TokArr nodes)
 {
     TokArr res;
@@ -69,7 +69,7 @@ TokArr ProbabilisticNet::NodeType(TokArr nodes)
     {
 	TokIdNode *pTok = nodes[i].Node(Token()->Root());
 	res.push_back(pTok->v_prev->Name());
-	// Should we search for Categoric or Numeric?
+	// Should we search for Discrete or Numeric?
     }
 
     return res;
@@ -376,7 +376,7 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
 		aValue << "State" << iValue;
 	    }
 
-	    net->AddNode((nt.IsDiscrete() ? categoric:continuous) ^ nodeName, aValue);
+	    net->AddNode((nt.IsDiscrete() ? discrete:continuous) ^ nodeName, aValue);
 	}
     }
     else

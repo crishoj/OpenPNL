@@ -20,9 +20,9 @@ TokenCover::TokenCover(const char *rootName, WGraph *graph, bool bAutoNum): m_pG
 
     (m_aNode = m_pRoot->Add("nodes"))->tag = eTagService;
     (m_pProperties = m_pRoot->Add("properties"))->tag = eTagService;
-    (m_pCategoric  = m_aNode->Add("categoric")) ->tag = eTagNodeType;
+    (m_pDiscrete  = m_aNode->Add("discrete")) ->tag = eTagNodeType;
     (m_pContinuous = m_aNode->Add("continuous"))->tag = eTagNodeType;
-    m_pDefault = m_pCategoric;
+    m_pDefault = m_pDiscrete;
     SpyTo(m_pGraph);
 }
 
@@ -30,8 +30,8 @@ TokenCover::TokenCover(TokIdNode *root, WGraph *graph):
     m_pRoot(root), m_pGraph(graph)
 {
     m_aNode = Tok("nodes").Node(root);
-    m_pCategoric  = Tok("categoric").Node(m_aNode);
-    //if(!m_pCategoric || m_pCategoric->tag != eTagNodeType) throw();
+    m_pDiscrete  = Tok("discrete").Node(m_aNode);
+    //if(!m_pDiscrete || m_pDiscrete->tag != eTagNodeType) throw();
     m_pContinuous = Tok("continuous").Node(m_aNode);
     //if(!m_pContinuous || m_pContinuous->tag != eTagNodeType) throw();
     m_pProperties = Tok("properties").Node(m_pRoot);
@@ -147,7 +147,7 @@ int TokenCover::AddNode(Tok &node, TokArr &aValue)
         ThrowUsingError(str.c_str(), "AddNode");
     }
 
-    //If token is unresolved, set default type (categoric)
+    //If token is unresolved, set default type (discrete)
     if(node.node.empty())
     {
 	parentNode = m_pDefault;
@@ -410,9 +410,9 @@ int TokenCover::NodesClassification(TokArr &aValue) const
 	    result |= eNodeClassUnknown;
 	    continue;
 	}
-	if(node == m_pCategoric)
+	if(node == m_pDiscrete)
 	{
-	    result |= eNodeClassCategoric;
+	    result |= eNodeClassDiscrete;
 	}
 	else if(node == m_pContinuous)
 	{

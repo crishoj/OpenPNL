@@ -53,9 +53,9 @@ typedef pnl::pnlString String;
 PNLHIGH_API void ThrowInternalError(const char *message, const char *func);
 // print error and throw exception (differs from previous by message)
 PNLHIGH_API void ThrowUsingError(const char *message, const char *func);
-// Tok identifies for categoric and continuous node types
+// Tok identifies for discrete and continuous node types
 
-extern PNLHIGH_API TokArr categoric;
+extern PNLHIGH_API TokArr discrete;
 extern PNLHIGH_API TokArr continuous;
 
 #endif //__PNLHIGHCONFIG_HPP__

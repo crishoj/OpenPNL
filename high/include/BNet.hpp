@@ -31,8 +31,8 @@ public:
     ~BayesNet();
 
     // add node
-    // examples: AddNode( "categoric^wheather", "sunny rainy" );
-    //           AddNode( categoric
+    // examples: AddNode( "discrete^wheather", "sunny rainy" );
+    //           AddNode( discrete
     //               ^ "PreviousCompTurn CurrentHumanTurn PreviousHumanTurn"),
     //               "Rock Paper Scissors");
     void AddNode(TokArr nodes, TokArr subnodes);
@@ -40,7 +40,7 @@ public:
     // remove node
     void DelNode(TokArr nodes);
     
-    // returns one of "categoric" or "continuous"
+    // returns one of "discrete" or "continuous"
     TokArr NodeType(TokArr nodes);
     
     // manipulating arcs

@@ -119,7 +119,7 @@ private:
 private:// DATA members
     // Tree for bnet:
     //
-    //		   / categoric
+    //		   / discrete
     // bnet - nodes
     //		   \ continuous
     pnl::CGraphicalModel *m_Model;	    // model, if it exists

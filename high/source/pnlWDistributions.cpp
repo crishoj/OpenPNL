@@ -28,10 +28,10 @@ void WDistributions::Setup(int iNode)
     if(iNode >= m_aDistribution.size())
     {
 	m_aDistribution.resize(iNode + 1, 0);
-	m_abDiscrete.resize(iNode + 1, nodeClass == eNodeClassCategoric );
+	m_abDiscrete.resize(iNode + 1, nodeClass == eNodeClassDiscrete );
     }
     delete m_aDistribution[iNode];
-    if (nodeClass == eNodeClassCategoric )
+    if (nodeClass == eNodeClassDiscrete )
         m_aDistribution[iNode] = new WTabularDistribFun();
     else
         if (nodeClass == eNodeClassContinuous)
@@ -92,7 +92,7 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
     DropDistribution(iNode);
     
     int nodeClass = m_pToken->NodesClassification(TokArr(Tok(m_pToken->Node(iNode))));
-    if (nodeClass == eNodeClassCategoric )
+    if (nodeClass == eNodeClassDiscrete )
     {
         static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->GetRawData(&nElement, &pData);
         Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
@@ -138,7 +138,7 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
 	Token().Resolve(parentValue);
     }
 
-    if (nodeClass == eNodeClassCategoric)
+    if (nodeClass == eNodeClassDiscrete)
     {
         Distribution(index)->FillData(pnl::matTable, value, probability, parentValue);
     }

@@ -6,8 +6,8 @@
 #include "pnlTok.hpp"
 #include "WCover.hpp"
 
-// Tok identifies for categoric and continuous node types
-extern PNLHIGH_API TokArr categoric;
+// Tok identifies for discrete and continuous node types
+extern PNLHIGH_API TokArr discrete;
 extern PNLHIGH_API TokArr continuous;
 
 // FORWARDS

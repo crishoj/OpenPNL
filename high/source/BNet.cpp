@@ -57,7 +57,7 @@ void BayesNet::DelNode(TokArr nodes)
     Net().DelNode(nodes);
 }
 
-// returns one of "categoric" or "continuous"
+// returns one of "discrete" or "continuous"
 TokArr BayesNet::NodeType(TokArr nodes)
 {
     return Net().NodeType(nodes);

@@ -41,7 +41,7 @@ pnl::CPNLBase *PersistWBNet::Load(pnl::CContextLoad *pContext)
 	name << i;
 
 	pNodeInfo = static_cast<WNodeInfo*>(pContext->Get(name.c_str()));
-	net->AddNode((pNodeInfo->m_NodeType.IsDiscrete() ? categoric:continuous)
+	net->AddNode((pNodeInfo->m_NodeType.IsDiscrete() ? discrete:continuous)
 	    ^ pNodeInfo->m_Name, pNodeInfo->m_aValue);
     }
 

@@ -158,7 +158,7 @@ int scenario()
 
     // build Graph
     // add nodes to net
-    net.AddNode(categoric ^ "Predictor Response Response2", aChoice);
+    net.AddNode(discrete ^ "Predictor Response Response2", aChoice);
 
     net.AddArc("Predictor", "Response Response2");
 
@@ -192,9 +192,9 @@ int scenario()
 
     BayesNet net2;
 
-    net2.AddNode(categoric ^ "Response", aChoice);
-    net2.AddNode(categoric ^ "Response2", aChoice);
-    net2.AddNode(categoric ^ "Predictor", aChoice);
+    net2.AddNode(discrete ^ "Response", aChoice);
+    net2.AddNode(discrete ^ "Response2", aChoice);
+    net2.AddNode(discrete ^ "Predictor", aChoice);
 
     net.AddEvidToBuf(ev);
 
@@ -221,10 +221,10 @@ int rpsMain2()
 
     // build Graph
     // add nodes to net
-//    net.AddNode(categoric ^ "PreviousCompTurn PreviousHumanTurn CurrentHumanTurn", aChoice);
-    net.AddNode(categoric ^ "PreviousCompTurn", aChoice);
-    net.AddNode(categoric ^ "PreviousHumanTurn", aChoice);
-    net.AddNode(categoric ^ "CurrentHumanTurn", aChoice);
+//    net.AddNode(discrete ^ "PreviousCompTurn PreviousHumanTurn CurrentHumanTurn", aChoice);
+    net.AddNode(discrete ^ "PreviousCompTurn", aChoice);
+    net.AddNode(discrete ^ "PreviousHumanTurn", aChoice);
+    net.AddNode(discrete ^ "CurrentHumanTurn", aChoice);
 
     // add arcs to create following Bayes net:
     //
@@ -344,10 +344,10 @@ int rpsMain()
 
     // build Graph
     // add nodes to net
-//    net.AddNode(categoric ^ "PreviousCompTurn PreviousHumanTurn CurrentHumanTurn", aChoice);
-    net.AddNode(categoric ^ "PreviousCompTurn", aChoice);
-    net.AddNode(categoric ^ "PreviousHumanTurn", aChoice);
-    net.AddNode(categoric ^ "CurrentHumanTurn", aChoice);
+//    net.AddNode(discrete ^ "PreviousCompTurn PreviousHumanTurn CurrentHumanTurn", aChoice);
+    net.AddNode(discrete ^ "PreviousCompTurn", aChoice);
+    net.AddNode(discrete ^ "PreviousHumanTurn", aChoice);
+    net.AddNode(discrete ^ "CurrentHumanTurn", aChoice);
 
     // add arcs to create following Bayes net:
     //
@@ -404,6 +404,7 @@ int rpsMain()
 
 	net.EditEvidence(evidence);
 	TokArr prediction = net.MPE("CurrentHumanTurn");
+	    cout << "prediction = " << prediction << "\n";
 
 	if(sMode & cShowPrediction)
 	{

@@ -77,12 +77,12 @@ private:// FUNCTIONS
 private:// DATA
     // Tree for any net:
     //
-    //		   / categoric
+    //		   / discrete
     //  net - nodes
     //		   \ continuous
     TokIdNode *m_pRoot;		// pointer to root node of bnet
     TokIdNode *m_aNode;		// pointer to node of all bnet nodes
-    TokIdNode *m_pCategoric;	// pointer to parent node for all categoric nodes
+    TokIdNode *m_pDiscrete;	// pointer to parent node for all discrete nodes
     TokIdNode *m_pContinuous;	// pointer to parent node for all continuous nodes
     TokIdNode *m_pDefault;	// pointer to default node
     TokIdNode *m_pProperties;	// pointer to properties namespace

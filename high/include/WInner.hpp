@@ -61,7 +61,7 @@ typedef enum
 
 typedef enum
 {   eNodeClassUnknown   = 1
-,   eNodeClassCategoric = 2
+,   eNodeClassDiscrete = 2
 ,   eNodeClassContinuous= 4
 } ENodeClassification;
 
