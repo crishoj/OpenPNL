@@ -1,7 +1,7 @@
 # The top-level input Makefile for PNL
 
 ## Any directories that you want built and installed should go here.
-SUBDIRS = cxcore trs c_pgmtk doc 
+SUBDIRS = cxcore trs c_pgmtk doc high
 
 am__configure_deps=@am__configure_deps@
 ## Any directories you want a part of the distribution should be listed

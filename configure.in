@@ -92,5 +92,10 @@ c_pgmtk/tests/src/Makefile
 c_pgmtk/tests/include/Makefile
 c_pgmtk/tests/testdata/Makefile
 doc/Makefile
+high/Makefile
+high/source/Makefile
+high/include/Makefile
+high/examples/Makefile
+high/doc/Makefile
 ])
 AC_OUTPUT

@@ -182,7 +182,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-SUBDIRS = cxcore trs c_pgmtk doc 
+SUBDIRS = cxcore trs c_pgmtk doc high
 #DIST_SUBDIRS = $(SUBDIRS)
 
 # pnl runtime configuration script
