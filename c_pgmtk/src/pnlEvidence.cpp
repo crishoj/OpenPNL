@@ -877,7 +877,7 @@ bool CEvidence::IsAllDiscreteNodesObs(const CStaticGraphicalModel *pGrModel) con
              counter++;
          }
 
-     if ( counter == discrObsNdsNums.size())
+     if ( (counter == discrObsNdsNums.size()) &&(counter != 0))
         return true;
      else 
         return false;
@@ -905,7 +905,7 @@ bool CEvidence::IsAllCountinuesNodesObs( const CStaticGraphicalModel *pGrModel) 
             counter++;
         }
     
-    if ( counter == contObsNdsNums.size())
+    if ( (counter == contObsNdsNums.size())&&(counter != 0))
         return true;
     else 
         return false;
