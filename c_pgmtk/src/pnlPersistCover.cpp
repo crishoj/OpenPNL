@@ -88,7 +88,10 @@ CPersistNodeTypeVector::Load(CContextLoad *pContext)
         paNodeType->push_back(ntype);
     }
 
-    return new CCover<nodeTypeVector>(paNodeType);
+    CCover<nodeTypeVector> *result = new CCover<nodeTypeVector>(paNodeType);
+    pContext->AutoDelete(result);
+
+    return result;
 }
 
 void
@@ -126,5 +129,8 @@ CPersistPNodeTypeVector::Load(CContextLoad *pContext)
         paPNodeType->push_back(new CNodeType(ntype));
     }
 
-    return new CCover<pNodeTypeVector>(paPNodeType);
+    CCover<pNodeTypeVector> *result = new CCover<pNodeTypeVector>(paPNodeType);
+    pContext->AutoDelete(result);
+
+    return result;
 }
