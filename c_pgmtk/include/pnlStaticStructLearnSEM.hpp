@@ -46,7 +46,8 @@ public:
 	void SetIterOfEM(int iter);
 	void SetMinProgress(float minPorgress);
 	void SetMaxLoop(int maxLoop);
-	
+    inline CBNet * GetCurrBNet() const;
+
 #ifdef PNL_RTTI
   virtual const CPNLType &GetTypeInfo() const
   {
@@ -89,6 +90,11 @@ private:
 	CCPD* CreateRandomCPD(int nfamily, const int* family, CBNet* pBNet);
 
 };
+
+inline CBNet* CStaticStructLearnSEM::GetCurrBNet() const
+{
+    return m_pCurrBNet;
+}
 
 PNL_END
 
