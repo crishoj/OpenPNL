@@ -1114,12 +1114,12 @@ void CGaussianDistribFun::UpdateCanonicalCoefficient()
     {
         if( m_pMatrixK && m_pMatrixH )
         {
-			float det = m_pMatrixK->Determinant();
-			if(det < 1e-6f)
-			{
-				PNL_THROW( CInconsistentType,
-					"K matrix must be positive semidifinite" );
-			}
+			//float det = m_pMatrixK->Determinant();
+			//if(det < 1e-6f)
+			//{
+				//PNL_THROW( CInconsistentType,
+				//	"K matrix must be positive semidifinite" );
+			//}
 			int oldMoment = m_bMoment;
 			UpdateMomentForm();
 			C2DNumericDenseMatrix<float>* matTr = m_pMatrixMean->Transpose();
