@@ -205,13 +205,19 @@ void AddNode(TokArr nodes, TokArr subnodes);
 Example of usage
 </H5>
 <p class="description">
-Add one node "NodeA" with states "true" and "false" to bayes net:
+Add one discrete node "NodeA" with states "true" and "false" to bayes net:
 </p>
 <p class="example">
 net.AddNode(discrete^"NodeA", "true false");
 </p>
 <p class="description">
-Add nodes "NodeA" and "NodeB" with states "true" and "false" to bayes net:
+Add one-dimensional continuous node "NodeA" to bayes net:
+</p>
+<p class="example">
+net.AddNode(continuous^"NodeA", "dim1");
+</p>
+<p class="description">
+Add discrete nodes "NodeA" and "NodeB" with states "true" and "false" to bayes net:
 </p>
 <p class="example">
 net.AddNode(discrete^"NodeA NodeB", "true false");
@@ -553,7 +559,17 @@ void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr()
 <H5>
 Example of usage
 </H5>
+<p class="description">
+Let's set gaussian distribution for the node without parents.
+</p>
 <p class="example">
+net.SetPGaussian("x0", "1.0", "4.0");
+</p>
+<p class="description">
+Let's set gaussian distribution for the node with two parents.
+</p>
+<p class="example">
+net.SetPGaussian("x2", "0.0", "2.0", "1.0 2.0");
 </P>
 <HR>
 
@@ -951,7 +967,9 @@ TokArr GetGaussianMean(TokArr nodes);
 Example of usage
 </H5>
 <p class="example">
-</P>
+TokArr MeanX2 = net.GetGaussianMean("x2");
+</p>
+
 <HR>
 
 <H3><A 
@@ -973,6 +991,7 @@ TokArr GetGaussianCovar(TokArr nodes);
 Example of usage
 </H5>
 <p class="example">
+TokArr CovarX2 = net.GetGaussianCovar("x2");
 </P>
 <HR>
 
