@@ -80,7 +80,9 @@ public:
 #endif
     inline int GetVariableAssociation(int variable)const;
 
-    void ChangeNodeType(int NodeNumber, bool ToCont);
+    void ChangeNodeType(int NodeNumber, bool ToCont, intVector *pVector = NULL);
+    void ChangeNodeTypeOnThread(int NodeNumber, bool ToCont);
+	void ClearNodeTypeCopies();
 
     virtual ~CModelDomain();
 
@@ -135,6 +137,8 @@ private:
     //This is a temporary object
     //We use it for correct working of the Release function
     int *m_pStubObject;
+
+	intVector * m_pVariableAssociationOnThread [c_MaxThreadNumber];
 };
 
 #ifndef SWIG
@@ -160,12 +164,25 @@ inline size_t CModelDomain::GetNumberVariables() const
 }
 inline const int* CModelDomain::GetVariableAssociations()const
 {
+	int ThreadId = omp_get_thread_num();
+
+	if (m_pVariableAssociationOnThread[ThreadId])
+	{
+		return &(m_pVariableAssociationOnThread[ThreadId]->front());
+	};
     return &m_variableAssociation.front();
 }
 
 inline int CModelDomain::GetVariableAssociation( int variable) const
 {
     PNL_CHECK_RANGES( variable, 0, m_variableAssociation.size() );
+
+	int ThreadId = omp_get_thread_num();
+
+	if (m_pVariableAssociationOnThread[ThreadId])
+	{
+		return (*(m_pVariableAssociationOnThread[ThreadId]))[variable];
+	};
 
     return m_variableAssociation[variable];
 }

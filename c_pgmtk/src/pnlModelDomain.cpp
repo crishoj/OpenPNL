@@ -200,20 +200,38 @@ const CNodeType* CModelDomain::GetVariableType(int nodeNumber) const
     int numNodesInModelDom = m_variableAssociation.size();
     PNL_CHECK_RANGES( nodeNumber, 0, numNodesInModelDom - 1 );
 
+	int ThreadId = omp_get_thread_num();
+
+	if (m_pVariableAssociationOnThread[ThreadId])
+	{
+		return &(m_variableTypes[(*(m_pVariableAssociationOnThread[ThreadId]))[nodeNumber]]);
+	};
+
     return &(m_variableTypes[m_variableAssociation[nodeNumber]]);
 }
 
 void CModelDomain::GetVariableTypes(intVector& vars,
-	                            pConstNodeTypeVector* varTypes ) const
+									pConstNodeTypeVector* varTypes ) const
 {
     int numNodesInModelDom = m_variableAssociation.size();
     int numVarTypes = vars.size();
     varTypes->resize( numVarTypes );
+
+	int ThreadId = omp_get_thread_num();
+
     for( int i = 0; i < numVarTypes; i++ )
     {
-	int nodeNumber = vars[i];
-	PNL_CHECK_RANGES( nodeNumber, 0, numNodesInModelDom - 1 );
-	(*varTypes)[i] = &m_variableTypes[m_variableAssociation[nodeNumber]];
+		int nodeNumber = vars[i];
+		PNL_CHECK_RANGES( nodeNumber, 0, numNodesInModelDom - 1 );
+		
+		if (m_pVariableAssociationOnThread[ThreadId])
+		{
+			(*varTypes)[i] = &m_variableTypes[(*(m_pVariableAssociationOnThread[ThreadId]))[nodeNumber]];
+		}
+		else
+		{
+			(*varTypes)[i] = &m_variableTypes[m_variableAssociation[nodeNumber]];
+		};
     }
 }
 
@@ -230,9 +248,19 @@ void CModelDomain::GetVariableTypes( pConstNodeTypeVector* varTypes ) const
 
     int numVars = m_variableTypes.size();
     varTypes->resize( numVars );
+
+	int ThreadId = omp_get_thread_num();
+
     for( int i = 0; i < numVars; i++ )
     {
-	(*varTypes)[i] = &m_variableTypes[m_variableAssociation[i]];
+		if (m_pVariableAssociationOnThread[ThreadId])
+		{
+			(*varTypes)[i] = &m_variableTypes[(*(m_pVariableAssociationOnThread[ThreadId]))[i]];
+		}
+		else
+		{
+			(*varTypes)[i] = &m_variableTypes[m_variableAssociation[i]];
+		};
     }
 }
 
@@ -240,8 +268,16 @@ void CModelDomain::GetVariableAssociations(intVector* nodeAssociation) const
 {
     PNL_CHECK_IS_NULL_POINTER( nodeAssociation );
 
-    nodeAssociation->assign(m_variableAssociation.begin(),
-	m_variableAssociation.end());
+	int ThreadId = omp_get_thread_num();
+
+	if (m_pVariableAssociationOnThread[ThreadId])
+	{
+		nodeAssociation->assign(m_pVariableAssociationOnThread[ThreadId]->begin(), m_pVariableAssociationOnThread[ThreadId]->end());
+	}
+	else
+	{
+		nodeAssociation->assign(m_variableAssociation.begin(), m_variableAssociation.end());
+	};
 }
 
 
@@ -249,11 +285,11 @@ CModelDomain::~CModelDomain()
 {
     // destroy all the data
     int numOfRefModels = CReferenceCounter::GetNumOfReferences();
-
+	
     if( numOfRefModels > 1 )
     {
         PNL_THROW( CInvalidOperation, " can't release model domain,"
-        " there are models exist attached to it " );
+			" there are models exist attached to it " );
     }
     else
     {
@@ -263,14 +299,14 @@ CModelDomain::~CModelDomain()
             for (int fi = 0; fi < c_MaxThreadNumber; fi++)
             {
                 int heapSize = m_factorsHeap[fi].size();
-
+				
                 int i = 0;
-
+				
                 for( ; i < heapSize; ++i )
                 {
                     delete m_factorsHeap[fi][i];
                 }
-
+				
                 m_factorsHeap[fi].clear();
             }
         }
@@ -281,14 +317,23 @@ CModelDomain::~CModelDomain()
                 " there are models exist attached to it " );
         }
     }
-
+	
     for (int lock = 0; lock < c_MaxThreadNumber; lock++) {
         omp_destroy_lock(&(m_heap_lock[lock]));
         m_heap_lock[lock] = NULL;
     }
-
+	
     if (m_pStubObject != NULL)
-      delete m_pStubObject;
+		delete m_pStubObject;
+	
+	for (int i = 0; i <c_MaxThreadNumber; i++) 
+	{
+		if (m_pVariableAssociationOnThread[i] != NULL)
+		{
+			delete m_pVariableAssociationOnThread[i];
+			m_pVariableAssociationOnThread[i] = NULL;
+		};
+	};
 }
 
 static int IsNodeTypeNotInitialized(CNodeType nt)
@@ -320,6 +365,11 @@ CModelDomain::CModelDomain( int numVariables,
   {
     AddRef(pCreaterOfMD);
   }
+
+  for (int i = 0; i <c_MaxThreadNumber; i++) 
+  {
+	  m_pVariableAssociationOnThread[i] = NULL;
+  };
 }
 
 CModelDomain::CModelDomain( const nodeTypeVector& variableTypes,
@@ -374,6 +424,11 @@ CModelDomain::CModelDomain( const nodeTypeVector& variableTypes,
   {
     AddRef(pCreaterOfMD);
   }
+
+  for (int i = 0; i <c_MaxThreadNumber; i++) 
+  {
+	  m_pVariableAssociationOnThread[i] = NULL;
+  };
 }
 
 void CModelDomain::AddRef(void* pObjectIn)
@@ -441,16 +496,22 @@ int  CModelDomain::GetNumOfReferences()
     return num;
 }; 
 
-void CModelDomain::ChangeNodeType(int NodeNumber, bool ToCont)
+void CModelDomain::ChangeNodeType(int NodeNumber, bool ToCont, intVector *pVector)
 {
     int i;
+
+	if (! pVector)
+	{
+		pVector = &m_variableAssociation;
+	};
+
     for (i = 0; i < m_variableTypes.size(); i++)
     {
         if (ToCont)
         {
             if ((!m_variableTypes[i].IsDiscrete())&&(m_variableTypes[i].GetNodeSize() == 1))
             {
-                m_variableAssociation[NodeNumber] = i;
+                (*pVector)[NodeNumber] = i;
                 break;
             }
         }
@@ -458,11 +519,35 @@ void CModelDomain::ChangeNodeType(int NodeNumber, bool ToCont)
         {
             if ((m_variableTypes[i].IsDiscrete())&&(m_variableTypes[i].GetNodeSize() == 2))
             {
-                m_variableAssociation[NodeNumber] = i;
+                (*pVector)[NodeNumber] = i;
                 break;
             }
         }
     }
+}
+
+void CModelDomain::ClearNodeTypeCopies()
+{
+	for (int i = 0; i <c_MaxThreadNumber; i++) 
+	{
+		if (! m_pVariableAssociationOnThread[i])
+		{
+			delete m_pVariableAssociationOnThread[i];
+			m_pVariableAssociationOnThread[i] = NULL;
+		};
+	};
+}
+
+void CModelDomain::ChangeNodeTypeOnThread(int NodeNumber, bool ToCont)
+{
+	int ThreadId = omp_get_thread_num();
+
+	if (! m_pVariableAssociationOnThread[ThreadId])
+	{
+		m_pVariableAssociationOnThread[ThreadId] = new intVector(m_variableAssociation);
+	};
+
+	ChangeNodeType(NodeNumber, ToCont, m_pVariableAssociationOnThread[ThreadId]);
 }
 
 #ifdef PNL_RTTI
