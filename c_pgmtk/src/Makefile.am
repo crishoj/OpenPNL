@@ -32,7 +32,9 @@ libpnl_la_SOURCES=      \
      pnlCondSoftMaxDistribFun.cpp     \
      pnlConfig.cpp     \
      pnlContext.cpp     \
+     pnlContextLoad.cpp     \
      pnlContextPersistence.cpp     \
+     pnlContextSave.cpp     \
      pnlCoverage.cpp     \
      pnlCPD.cpp     \
      pnlDAG.cpp     \
@@ -60,6 +62,7 @@ libpnl_la_SOURCES=      \
      pnlGibbsWithAnnealingInferenceEngine.cpp     \
      pnlGraph.cpp     \
      pnlGraphicalModel.cpp     \
+     pnlGroup.cpp     \
      pnli2DNumericDenseMatrix.cpp     \
      pnlIDNet.cpp     \
      pnlIDPotential.cpp     \
@@ -127,7 +130,8 @@ libpnl_la_SOURCES=      \
      pnlTimer.cpp     \
      pnlTreeCPD.cpp     \
      pnlTreeDistribFun.cpp     \
-     pnlXMLRead.cpp
+     pnlXMLRead.cpp     \
+     pnlXMLWrite.cpp
 
 libpnl_la_LDFLAGS = -no-undefined -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -release $(LT_RELEASE) @LD_FLAGS@
 

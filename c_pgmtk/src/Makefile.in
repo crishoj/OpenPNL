@@ -56,8 +56,9 @@ am_libpnl_la_OBJECTS = cvcart.lo cvsvd.lo dbginfo.lo memtrack.lo \
 	pnlBayesLearningEngine.lo pnlBicLearningEngine.lo \
 	pnlBKInferenceEngine.lo pnlBNet.lo \
 	pnlCondGaussianDistribFun.lo pnlCondSoftMaxDistribFun.lo \
-	pnlConfig.lo pnlContext.lo pnlContextPersistence.lo \
-	pnlCoverage.lo pnlCPD.lo pnlDAG.lo pnlDBN.lo pnlDenseMatrix.lo \
+	pnlConfig.lo pnlContext.lo pnlContextLoad.lo \
+	pnlContextPersistence.lo pnlContextSave.lo pnlCoverage.lo \
+	pnlCPD.lo pnlDAG.lo pnlDBN.lo pnlDenseMatrix.lo \
 	pnlDistribFun.lo pnlDynamicGraphicalModel.lo \
 	pnlDynamicInferenceEngine.lo pnlDynamicLearningEngine.lo \
 	pnlEmLearningEngine.lo pnlEmLearningEngineDBN.lo \
@@ -67,8 +68,8 @@ am_libpnl_la_OBJECTS = cvcart.lo cvsvd.lo dbginfo.lo memtrack.lo \
 	pnlGaussianCPD.lo pnlGaussianDistribFun.lo \
 	pnlGaussianPotential.lo pnlGibbsSamplingInferenceEngine.lo \
 	pnlGibbsWithAnnealingInferenceEngine.lo pnlGraph.lo \
-	pnlGraphicalModel.lo pnli2DNumericDenseMatrix.lo pnlIDNet.lo \
-	pnlIDPotential.lo pnlIDTabularPotential.lo \
+	pnlGraphicalModel.lo pnlGroup.lo pnli2DNumericDenseMatrix.lo \
+	pnlIDNet.lo pnlIDPotential.lo pnlIDTabularPotential.lo \
 	pnlInferenceEngine.lo pnliNumericDenseMatrix.lo \
 	pnliNumericSparseMatrix.lo pnlJtreeInferenceEngine.lo \
 	pnlJunctionTree.lo pnlLearningEngine.lo pnlLIMIDInfEngine.lo \
@@ -93,7 +94,8 @@ am_libpnl_la_OBJECTS = cvcart.lo cvsvd.lo dbginfo.lo memtrack.lo \
 	pnlStaticGraphicalModel.lo pnlStaticLearningEngine.lo \
 	pnlStaticStructLearnSEM.lo pnlString.lo pnlTabularCPD.lo \
 	pnlTabularDistribFun.lo pnlTabularPotential.lo pnlTimer.lo \
-	pnlTreeCPD.lo pnlTreeDistribFun.lo pnlXMLRead.lo
+	pnlTreeCPD.lo pnlTreeDistribFun.lo pnlXMLRead.lo \
+	pnlXMLWrite.lo
 libpnl_la_OBJECTS = $(am_libpnl_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir)
 depcomp =
@@ -269,7 +271,9 @@ libpnl_la_SOURCES = \
      pnlCondSoftMaxDistribFun.cpp     \
      pnlConfig.cpp     \
      pnlContext.cpp     \
+     pnlContextLoad.cpp     \
      pnlContextPersistence.cpp     \
+     pnlContextSave.cpp     \
      pnlCoverage.cpp     \
      pnlCPD.cpp     \
      pnlDAG.cpp     \
@@ -297,6 +301,7 @@ libpnl_la_SOURCES = \
      pnlGibbsWithAnnealingInferenceEngine.cpp     \
      pnlGraph.cpp     \
      pnlGraphicalModel.cpp     \
+     pnlGroup.cpp     \
      pnli2DNumericDenseMatrix.cpp     \
      pnlIDNet.cpp     \
      pnlIDPotential.cpp     \
@@ -364,7 +369,8 @@ libpnl_la_SOURCES = \
      pnlTimer.cpp     \
      pnlTreeCPD.cpp     \
      pnlTreeDistribFun.cpp     \
-     pnlXMLRead.cpp
+     pnlXMLRead.cpp     \
+     pnlXMLWrite.cpp
 
 libpnl_la_LDFLAGS = -no-undefined -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -release $(LT_RELEASE) @LD_FLAGS@
 all: all-recursive
