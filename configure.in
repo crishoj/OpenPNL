@@ -96,6 +96,7 @@ high/Makefile
 high/source/Makefile
 high/include/Makefile
 high/examples/Makefile
+high/tests/Makefile
 high/doc/Makefile
 ])
 AC_OUTPUT
