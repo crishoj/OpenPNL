@@ -35,6 +35,7 @@ libpnl_la_SOURCES=      \
      pnlCPD.cpp     \
      pnlDAG.cpp     \
      pnlDBN.cpp     \
+     pnlDenseMatrix.cpp     \
      pnlDistribFun.cpp     \
      pnlDynamicGraphicalModel.cpp     \
      pnlDynamicInferenceEngine.cpp     \
@@ -44,6 +45,7 @@ libpnl_la_SOURCES=      \
      pnlEvidence.cpp     \
      pnlExampleModels.cpp     \
      pnlException.cpp     \
+     pnlExInferenceEngine.cpp     \
      pnlFactor.cpp     \
      pnlFactorGraph.cpp     \
      pnlFactors.cpp     \
@@ -72,6 +74,8 @@ libpnl_la_SOURCES=      \
      pnlLogMultiplexor.cpp     \
      pnlLogUsing.cpp     \
      pnlLWSamplingInferenceEngine.cpp     \
+     pnlMatrix.cpp     \
+     pnlMatrixIterator.cpp     \
      pnlMixtureGaussianCPD.cpp     \
      pnlMlDynamicStructLearn.cpp     \
      pnlMlStaticStructLearn.cpp     \
@@ -82,6 +86,8 @@ libpnl_la_SOURCES=      \
      pnlNaiveInferenceEngine.cpp     \
      pnlNodeType.cpp     \
      pnlNodeValues.cpp     \
+     pnlNumericDenseMatrix.cpp     \
+     pnlObject.cpp     \
      pnlObjHandler.cpp     \
      pnlParConfig.cpp     \
      pnlParEmLearningEngine.cpp     \
@@ -98,6 +104,7 @@ libpnl_la_SOURCES=      \
      pnlPersistModel.cpp     \
      pnlPersistModelDomain.cpp     \
      pnlPersistTypes.cpp     \
+     pnlpnlType.cpp     \
      pnlPotential.cpp     \
      pnlReferenceCounter.cpp     \
      pnlRng.cpp     \
@@ -110,6 +117,7 @@ libpnl_la_SOURCES=      \
      pnlSpecPearlInferenceEngine.cpp     \
      pnlStaticGraphicalModel.cpp     \
      pnlStaticLearningEngine.cpp     \
+     pnlStaticStructLearnSEM.cpp     \
      pnlString.cpp     \
      pnlTabularCPD.cpp     \
      pnlTabularDistribFun.cpp     \

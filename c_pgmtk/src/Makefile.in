@@ -57,14 +57,15 @@ am_libpnl_la_OBJECTS = cvcart.lo cvsvd.lo dbginfo.lo memtrack.lo \
 	pnlBKInferenceEngine.lo pnlBNet.lo \
 	pnlCondGaussianDistribFun.lo pnlCondSoftMaxDistribFun.lo \
 	pnlConfig.lo pnlContext.lo pnlContextPersistence.lo \
-	pnlCoverage.lo pnlCPD.lo pnlDAG.lo pnlDBN.lo pnlDistribFun.lo \
-	pnlDynamicGraphicalModel.lo pnlDynamicInferenceEngine.lo \
-	pnlDynamicLearningEngine.lo pnlEmLearningEngine.lo \
-	pnlEmLearningEngineDBN.lo pnlEvidence.lo pnlExampleModels.lo \
-	pnlException.lo pnlFactor.lo pnlFactorGraph.lo pnlFactors.lo \
-	pnlFakePtr.lo pnlFGSumMaxInferenceEngine.lo pnlGaussianCPD.lo \
-	pnlGaussianDistribFun.lo pnlGaussianPotential.lo \
-	pnlGibbsSamplingInferenceEngine.lo \
+	pnlCoverage.lo pnlCPD.lo pnlDAG.lo pnlDBN.lo pnlDenseMatrix.lo \
+	pnlDistribFun.lo pnlDynamicGraphicalModel.lo \
+	pnlDynamicInferenceEngine.lo pnlDynamicLearningEngine.lo \
+	pnlEmLearningEngine.lo pnlEmLearningEngineDBN.lo \
+	pnlEvidence.lo pnlExampleModels.lo pnlException.lo \
+	pnlExInferenceEngine.lo pnlFactor.lo pnlFactorGraph.lo \
+	pnlFactors.lo pnlFakePtr.lo pnlFGSumMaxInferenceEngine.lo \
+	pnlGaussianCPD.lo pnlGaussianDistribFun.lo \
+	pnlGaussianPotential.lo pnlGibbsSamplingInferenceEngine.lo \
 	pnlGibbsWithAnnealingInferenceEngine.lo pnlGraph.lo \
 	pnlGraphicalModel.lo pnli2DNumericDenseMatrix.lo pnlIDNet.lo \
 	pnlIDPotential.lo pnlIDTabularPotential.lo \
@@ -72,23 +73,25 @@ am_libpnl_la_OBJECTS = cvcart.lo cvsvd.lo dbginfo.lo memtrack.lo \
 	pnliNumericSparseMatrix.lo pnlJtreeInferenceEngine.lo \
 	pnlJunctionTree.lo pnlLearningEngine.lo pnlLIMIDInfEngine.lo \
 	pnlLog.lo pnlLogDriver.lo pnlLogMultiplexor.lo pnlLogUsing.lo \
-	pnlLWSamplingInferenceEngine.lo pnlMixtureGaussianCPD.lo \
+	pnlLWSamplingInferenceEngine.lo pnlMatrix.lo \
+	pnlMatrixIterator.lo pnlMixtureGaussianCPD.lo \
 	pnlMlDynamicStructLearn.lo pnlMlStaticStructLearn.lo \
 	pnlMlStaticStructLearnHC.lo pnlMNet.lo pnlModelDomain.lo \
 	pnlMRF2.lo pnlNaiveInferenceEngine.lo pnlNodeType.lo \
-	pnlNodeValues.lo pnlObjHandler.lo pnlParConfig.lo \
-	pnlParEmLearningEngine.lo \
+	pnlNodeValues.lo pnlNumericDenseMatrix.lo pnlObject.lo \
+	pnlObjHandler.lo pnlParConfig.lo pnlParEmLearningEngine.lo \
 	pnlParGibbsSamplingInferenceEngine.lo \
 	pnlParJtreeInferenceEngine.lo pnlParNewDelete.lo \
 	pnlParPearlInferenceEngine.lo pnlPearlInferenceEngine.lo \
 	pnlPersistCover.lo pnlPersistCPD.lo pnlPersistDistribFun.lo \
 	pnlPersistence.lo pnlPersistGraph.lo pnlPersistModel.lo \
-	pnlPersistModelDomain.lo pnlPersistTypes.lo pnlPotential.lo \
-	pnlReferenceCounter.lo pnlRng.lo pnlSamplingInferenceEngine.lo \
-	pnlScalarDistribFun.lo pnlScalarPotential.lo pnlSoftMaxCPD.lo \
-	pnlSoftMaxDistribFun.lo pnlSparseMatrix.lo \
-	pnlSpecPearlInferenceEngine.lo pnlStaticGraphicalModel.lo \
-	pnlStaticLearningEngine.lo pnlString.lo pnlTabularCPD.lo \
+	pnlPersistModelDomain.lo pnlPersistTypes.lo pnlpnlType.lo \
+	pnlPotential.lo pnlReferenceCounter.lo pnlRng.lo \
+	pnlSamplingInferenceEngine.lo pnlScalarDistribFun.lo \
+	pnlScalarPotential.lo pnlSoftMaxCPD.lo pnlSoftMaxDistribFun.lo \
+	pnlSparseMatrix.lo pnlSpecPearlInferenceEngine.lo \
+	pnlStaticGraphicalModel.lo pnlStaticLearningEngine.lo \
+	pnlStaticStructLearnSEM.lo pnlString.lo pnlTabularCPD.lo \
 	pnlTabularDistribFun.lo pnlTabularPotential.lo pnlTimer.lo \
 	pnlTreeCPD.lo pnlTreeDistribFun.lo pnlXMLRead.lo
 libpnl_la_OBJECTS = $(am_libpnl_la_OBJECTS)
@@ -262,6 +265,7 @@ libpnl_la_SOURCES = \
      pnlCPD.cpp     \
      pnlDAG.cpp     \
      pnlDBN.cpp     \
+     pnlDenseMatrix.cpp     \
      pnlDistribFun.cpp     \
      pnlDynamicGraphicalModel.cpp     \
      pnlDynamicInferenceEngine.cpp     \
@@ -271,6 +275,7 @@ libpnl_la_SOURCES = \
      pnlEvidence.cpp     \
      pnlExampleModels.cpp     \
      pnlException.cpp     \
+     pnlExInferenceEngine.cpp     \
      pnlFactor.cpp     \
      pnlFactorGraph.cpp     \
      pnlFactors.cpp     \
@@ -299,6 +304,8 @@ libpnl_la_SOURCES = \
      pnlLogMultiplexor.cpp     \
      pnlLogUsing.cpp     \
      pnlLWSamplingInferenceEngine.cpp     \
+     pnlMatrix.cpp     \
+     pnlMatrixIterator.cpp     \
      pnlMixtureGaussianCPD.cpp     \
      pnlMlDynamicStructLearn.cpp     \
      pnlMlStaticStructLearn.cpp     \
@@ -309,6 +316,8 @@ libpnl_la_SOURCES = \
      pnlNaiveInferenceEngine.cpp     \
      pnlNodeType.cpp     \
      pnlNodeValues.cpp     \
+     pnlNumericDenseMatrix.cpp     \
+     pnlObject.cpp     \
      pnlObjHandler.cpp     \
      pnlParConfig.cpp     \
      pnlParEmLearningEngine.cpp     \
@@ -325,6 +334,7 @@ libpnl_la_SOURCES = \
      pnlPersistModel.cpp     \
      pnlPersistModelDomain.cpp     \
      pnlPersistTypes.cpp     \
+     pnlpnlType.cpp     \
      pnlPotential.cpp     \
      pnlReferenceCounter.cpp     \
      pnlRng.cpp     \
@@ -337,6 +347,7 @@ libpnl_la_SOURCES = \
      pnlSpecPearlInferenceEngine.cpp     \
      pnlStaticGraphicalModel.cpp     \
      pnlStaticLearningEngine.cpp     \
+     pnlStaticStructLearnSEM.cpp     \
      pnlString.cpp     \
      pnlTabularCPD.cpp     \
      pnlTabularDistribFun.cpp     \
