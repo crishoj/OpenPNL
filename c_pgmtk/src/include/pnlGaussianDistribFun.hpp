@@ -137,6 +137,12 @@ public:
 								const int *domain, float weightingCoeff = 1.0f );
     virtual void ClearStatisticalData();
     float ProcessingStatisticalData( float numEvidences );
+
+    void BayesUpdateFactor( const CEvidence* const* pEvidences,
+        int EvidenceNumber, const int *domain );
+    void PriorToCPD( floatVecVector &parentPriors ); //convert pseudocounts to probability
+	void SetFreedomDegrees(int , int ); 
+
     
     virtual int IsEqual( const CDistribFun *dataToCompare, float epsilon,
         int withCoeff = 1, float* maxDifferenceOut = NULL ) const;
@@ -169,7 +175,7 @@ public:
 
 	virtual int GetNumberOfFreeParameters() const;
 
-#ifdef PAR_PNL
+#ifdef PAR_OMP
     void UpdateStatisticsML(CDistribFun *pDF);
 #endif
 
@@ -255,6 +261,12 @@ private:
     intVector m_posOfDeltaMultiply;
     floatVector m_meanValuesOfMult;
     intVector m_offsetToNextMean;
+
+    //Wishart priors params - only for moment form
+    int m_freedomDegreeMean;
+    int m_freedomDegreeCov;
+    C2DNumericDenseMatrix<float> *m_pPseudoCountsMean;
+    C2DNumericDenseMatrix<float> *m_pPseudoCountsCov;
     
 };
 

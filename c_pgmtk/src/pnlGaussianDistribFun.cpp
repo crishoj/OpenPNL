@@ -394,6 +394,10 @@ m_bMoment(0), m_bCanonical(0), m_bDeltaFunction(0)
     int NumberOfDimensions = 0;
     m_pLearnMatrixMean = NULL;
     m_pLearnMatrixCov = NULL;
+    m_freedomDegreeCov = -1;
+    m_freedomDegreeMean = -1;
+    m_pPseudoCountsMean = NULL;
+    m_pPseudoCountsCov = NULL;
     m_pMatrixMean = NULL;
     m_pMatrixCov = NULL;
     m_pMatricesWeight = NULL;
@@ -543,6 +547,10 @@ m_bMoment(0), m_bCanonical(0),m_bDeltaFunction(0)
     m_pMatricesWeight = NULL;
     m_pLearnMatrixMean = NULL;
     m_pLearnMatrixCov = NULL;
+    m_freedomDegreeCov = -1;
+    m_freedomDegreeMean = -1;
+    m_pPseudoCountsMean = NULL;
+    m_pPseudoCountsCov = NULL;
     m_pMatrixH = NULL;
     m_pMatrixK = NULL;
     m_bPotential = 1;
@@ -612,6 +620,10 @@ m_bMoment(0), m_bCanonical(0)
     }
     m_pLearnMatrixMean = NULL;
     m_pLearnMatrixCov = NULL;
+    m_freedomDegreeCov = -1;
+    m_freedomDegreeMean = -1;
+    m_pPseudoCountsMean = NULL;
+    m_pPseudoCountsCov = NULL;
     int i;
     void *pObj = this;
     m_bPotential = isPotential;
@@ -665,6 +677,10 @@ m_bMoment(0), m_bCanonical(0)
     }
     m_pLearnMatrixMean = NULL;
     m_pLearnMatrixCov = NULL;
+    m_freedomDegreeCov = -1;
+    m_freedomDegreeMean = -1;
+    m_pPseudoCountsMean = NULL;
+    m_pPseudoCountsCov = NULL;
     int NumberOfDimensions = 0;
     if( isPotential )
     {
@@ -725,6 +741,10 @@ CGaussianDistribFun::CGaussianDistribFun( const CGaussianDistribFun & inpDistr )
     m_pMatricesWeight = NULL;
     m_pLearnMatrixMean = NULL;
     m_pLearnMatrixCov = NULL;
+    m_freedomDegreeCov = -1;
+    m_freedomDegreeMean = -1;
+    m_pPseudoCountsMean = NULL;
+    m_pPseudoCountsCov = NULL;
     if( m_bUnitFunctionDistribution )
     {
         return;
@@ -783,6 +803,16 @@ void CGaussianDistribFun::ReleaseAllMatrices()
     {
         static_cast<CMatrix<float>*>(m_pMatrixCov)->Release(pObj);
         m_pMatrixCov = NULL;
+    }
+    if( m_pPseudoCountsMean )
+    {
+        static_cast<CMatrix<float>*>(m_pPseudoCountsMean)->Release(pObj);
+        m_pPseudoCountsMean = NULL;
+    }
+    if( m_pPseudoCountsCov )
+    {
+        static_cast<CMatrix<float>*>(m_pPseudoCountsCov)->Release(pObj);
+        m_pPseudoCountsCov = NULL;
     }
     if( m_bPotential )
     {
@@ -1320,6 +1350,18 @@ void CGaussianDistribFun::AllocMatrix( const float *data, EMatrixType mType,
                 delete []dims;
                 break;
             }
+            if( mType == matWishartMean )
+            {
+                if (m_pPseudoCountsMean)
+                {
+                    static_cast<CMatrix<float>*>(
+                        m_pPseudoCountsMean)->Release(pObj);
+                    m_pPseudoCountsMean = NULL;
+                }
+                m_pPseudoCountsMean = C2DNumericDenseMatrix<float>::Create(  dims, data );
+                static_cast<CMatrix<float>*>(m_pPseudoCountsMean)->AddRef(pObj);
+                break;
+            }                                  
             if( mType == matCovariance )
             {
                 if( m_pMatrixCov )
@@ -1336,6 +1378,32 @@ void CGaussianDistribFun::AllocMatrix( const float *data, EMatrixType mType,
                 }
                 static_cast<CMatrix<float>*>(m_pMatrixCov)->AddRef(pObj);
                 delete []dims;
+                break;
+            }
+            if (mType == matWishartCov)
+            {
+                if (m_pPseudoCountsCov)
+                {
+                    static_cast<CMatrix<float>*>(
+                        m_pPseudoCountsCov)->Release(pObj);
+                    m_pPseudoCountsCov = NULL;
+                }
+                dims[1] = dim;
+                m_pPseudoCountsCov = C2DNumericDenseMatrix<float>::Create( dims, data );
+                float det = m_pPseudoCountsCov->Determinant();
+                if( det < 0 )
+                {
+                    delete m_pPseudoCountsCov;
+                    PNL_THROW( CInconsistentType,
+                        "parametric matrix must be positive semidifinite" );
+                }
+                int isIllMatrix = m_pPseudoCountsCov->IsIllConditioned();
+                if( isIllMatrix )
+                {
+                    PNL_THROW( CInvalidOperation,
+                        "delta function is a special case - we create it by special function" );
+                }
+                static_cast<CMatrix<float>*>(m_pPseudoCountsCov)->AddRef(pObj);
                 break;
             }
             if( mType == matWeights )
@@ -1619,6 +1687,19 @@ void CGaussianDistribFun::AttachMatrix( CMatrix<float>* pMatrix,
 			}
 			break;
 		    }
+            case matWishartMean:
+                {
+                    if(m_pPseudoCountsMean)
+                    {
+                        static_cast<CMatrix<float>*>(
+                            m_pPseudoCountsMean)->Release(pObj); 
+                        m_pPseudoCountsMean = NULL;
+                    }
+                    m_pPseudoCountsMean = p2Matrix;
+                    static_cast<CMatrix<float>*>(
+                        m_pPseudoCountsMean)->AddRef(pObj);
+                    break;
+                }
                 case matCovariance:
 		    {
 			if(( numDims !=2 )||( ranges[0] != nodeSize )||
@@ -1658,6 +1739,37 @@ void CGaussianDistribFun::AttachMatrix( CMatrix<float>* pMatrix,
 			}
 			break;
 		    }
+        case matWishartCov:
+            {
+                if(m_pPseudoCountsCov)
+                {
+                    static_cast<CMatrix<float>*>(
+                        m_pPseudoCountsCov)->Release(pObj); 
+                    m_pPseudoCountsCov = NULL;
+                }
+                if(( numDims != 2 )||( ranges[0] != nodeSize )||
+                  ( ranges[1] != nodeSize ))
+                {
+                    PNL_THROW( CInconsistentSize, "matrix sizes" );
+                }
+                m_pPseudoCountsCov = p2Matrix;
+                float det = m_pPseudoCountsCov->Determinant();
+                if( det < 0 )
+                {
+                    PNL_THROW( CInconsistentType,
+                    "parametric matrix must be positive semidifinite" );
+                }
+                int isIllMatrix = m_pPseudoCountsCov->IsIllConditioned();
+                if( isIllMatrix )
+                {
+                    PNL_THROW( CInconsistentType,
+                        "parametric matrix is is ill-ocnditioned");
+                }
+    
+                static_cast<CMatrix<float>*>(
+                    m_pPseudoCountsCov)->AddRef(pObj);
+                break;
+            }
 		case matWeights:
 		    {
 			if(( numberOfWeightMatrix <0 )
@@ -3763,11 +3875,35 @@ CMatrix<float>* CGaussianDistribFun::GetMatrix( EMatrixType mType,
                     "we haven't now valid mean matrix" );
             }
         }
+    case matWishartMean:
+        {
+            if(( m_pPseudoCountsMean )&&( m_bMoment || m_bDeltaFunction ))
+            {
+                return m_pPseudoCountsMean;
+            }
+            else 
+            {
+                PNL_THROW( CInvalidOperation, 
+                    "we haven't now valid mean matrix" );
+            }
+        }
     case matCovariance:
         {
             if (( m_bMoment )&&( m_pMatrixCov ))
             {
                 return m_pMatrixCov;
+            }
+            else 
+            {
+                PNL_THROW( CInvalidOperation,
+                    "we haven't now valid Covariance matrix" );
+            }
+        }
+    case matWishartCov:
+        {
+            if (( m_bMoment )&&( m_pPseudoCountsCov ))
+            {
+                return m_pPseudoCountsCov;
             }
             else 
             {
@@ -6868,6 +7004,139 @@ float CGaussianDistribFun::ProcessingStatisticalData( float nEv )
     }
 
 }
+
+void CGaussianDistribFun::SetFreedomDegrees( int forMean, int forCov )
+{
+    if( forMean <= 0 )
+    {
+        PNL_THROW( CBadConst,
+        "The degree of freedom for mean dustribution must be positive" );
+    }
+    if ( forCov <= m_numberOfDims+1 )
+    {
+        PNL_THROW( CBadConst,
+        "The degree of freedom for Wishart dustribution are incorrect" );
+    }
+    m_freedomDegreeMean = forMean;
+    m_freedomDegreeCov = forCov;
+}
+
+void CGaussianDistribFun::BayesUpdateFactor(const CEvidence* const* pEvidences,
+        int EvidenceNumber, const int *domain)
+{
+    if( !pEvidences )
+    {
+        PNL_THROW( CNULLPointer, "evidences" )//no Evidences - NULL pointer
+    }
+    if( (!m_pPseudoCountsMean) || (!m_pPseudoCountsCov) ||
+        (m_freedomDegreeCov < 0) || (m_freedomDegreeMean < 0))
+    {
+        PNL_THROW( CNULLPointer, "Prior distribution was not specified" )
+    }
+    floatVector tempMean;
+    tempMean.assign( m_NodeTypes[m_NumberOfNodes-1]->GetNodeSize(), 0 );
+    int j;
+    // calculating sample sum
+    int k;
+    for ( k = 0; k < m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize(); ++k)
+    {
+        float sum = 0;
+        for( j = 0; j < EvidenceNumber; ++j)
+        {
+            if( !pEvidences[j] )
+            {
+                PNL_THROW( CNULLPointer, "evidence" );//no Evidence - NULL pointer
+            }
+            sum += ((pEvidences[j]->GetValue(m_NumberOfNodes - 1))[k]).GetFlt();
+        };
+        tempMean[k] = sum;
+    }
+    // update precesion matrix
+    int index[2];
+    index[0] = 0; // first index
+    index[1] = 0; // second index
+    for ( j = 0; j < m_NodeTypes[m_NumberOfNodes-1]->GetNodeSize(); ++j)
+    {
+        for( k = 0; k < m_NodeTypes[m_NumberOfNodes-1]->GetNodeSize(); ++k)
+        {
+            index[0] = k;
+            index[1] = j;
+            float elem = m_pPseudoCountsCov->GetElementByIndexes(index);
+            int p;
+            for ( p = 0; p < EvidenceNumber; ++p)
+            {
+                elem += (((pEvidences[p]->GetValue(m_NumberOfNodes-1))[k]).GetFlt()-
+                    tempMean[j]/EvidenceNumber)*(((pEvidences[p]->
+                    GetValue(m_NumberOfNodes-1))[j]).GetFlt()-tempMean[k]/EvidenceNumber);
+            }
+            int ind1[2] = { index[0], 0 };
+            int ind2[2] = { index[1], 0 };
+            elem += m_freedomDegreeMean*EvidenceNumber*
+                (m_pPseudoCountsMean->GetElementByIndexes(ind1)-tempMean[index[0]]/EvidenceNumber)*
+                (m_pPseudoCountsMean->GetElementByIndexes(ind2)-tempMean[index[1]]/EvidenceNumber)/
+                (m_freedomDegreeMean + EvidenceNumber);
+            m_pPseudoCountsCov->SetElementByIndexes(elem, index);
+        }
+    }
+    // update mean vector
+    int indexes[2];
+    indexes[0]=0;
+    indexes[1]=0;
+        for ( k = 0; k < m_NodeTypes[m_NumberOfNodes-1]->GetNodeSize(); ++k)
+        {
+            indexes[0]=k;
+            float elem = m_pPseudoCountsMean->GetElementByIndexes( indexes );
+            elem = (elem*m_freedomDegreeMean+tempMean[k])/(m_freedomDegreeMean + EvidenceNumber);
+            m_pPseudoCountsMean->SetElementByIndexes( elem, indexes );
+        }
+}
+
+
+void CGaussianDistribFun::PriorToCPD( floatVecVector &parentPrior )
+{
+    if( (!m_pPseudoCountsMean) || (!m_pPseudoCountsCov) ||
+        (m_freedomDegreeCov < 0) || (m_freedomDegreeMean < 0))
+    {
+        PNL_THROW( CNULLPointer, "Prior distribution was not specified" )
+    }
+    int i;
+    int index[2];
+    index[0] = 0;
+    index[1] = 0;
+    // update mean matrix
+    for( i = 0; i < m_NodeTypes[m_NumberOfNodes-1]->GetNodeSize(); i++, index[0]++)
+    {
+        // float elem = m_pMatrixMean->GetElementByIndexes(index); ???
+        float elem = m_pPseudoCountsMean->GetElementByIndexes(index);
+        int j;
+        for( j = 0; j < m_NumberOfNodes - 1; ++j)
+        {
+            C2DNumericDenseMatrix<float> *matW = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(matWeights, j));
+            int length = 0;
+            const float *output; 
+            matW->GetRawData(&length, &output);
+            if( length != m_NodeTypes[m_NumberOfNodes-1]->GetNodeSize()*parentPrior[j].size())
+            {
+                PNL_THROW(COutOfRange, "incorrect sizes");
+            }
+            int k;
+            float weigth = 0;
+            for( k = 0; k < parentPrior[j].size(); ++k)
+            {
+                weigth += output[i*parentPrior[j].size()+k]*parentPrior[j][k];
+            }
+            elem -= weigth;
+        }
+        m_pMatrixMean->SetElementByIndexes(elem, index);
+    }
+    // update covariance matrix
+//    m_pMatrixCov->SetDataFromOtherMatrix((CMatrix<float>*)(m_pPseudoCountsCov));
+    int indexes[2] = { 0, 0 };
+    float elem = m_pPseudoCountsCov->GetElementByIndexes(indexes);
+    elem = 1/(2*(m_freedomDegreeCov - 2)*elem);
+    m_pMatrixCov->SetElementByIndexes(elem, indexes);
+}
+
 
 #endif
 C2DNumericDenseMatrix<float> * CGaussianDistribFun::GetBlock( intVector &ind1, intVector &ind2,

@@ -17,6 +17,7 @@
 
 #include "pnlConfig.hpp"    
 #include "pnlTabularDistribFun.hpp"
+#include "pnlGaussianDistribFun.hpp"
 /*#include "pnlTabularCPD.hpp"
 #include "pnlTabularPotential.hpp"
 #include "pnlCPD.hpp"
@@ -36,6 +37,7 @@ CBayesLearningEngine::CBayesLearningEngine(CStaticGraphicalModel *pGrModel):
                          CStaticLearningEngine( pGrModel, itParamLearnBayes )
 {
     m_numberOfLearnedEvidences = 0;
+    m_updateCPD = 0;
 }
 
 CBayesLearningEngine::~CBayesLearningEngine()
@@ -98,7 +100,7 @@ void CBayesLearningEngine::Learn()
 {
     if(!m_pGrModel)
     {
-	PNL_THROW( CNULLPointer, "no graphical model")
+        PNL_THROW( CNULLPointer, "no graphical model")
     }
     CStaticGraphicalModel *grmodel = this->GetStaticModel();
     CFactor *factor = NULL;
@@ -107,54 +109,122 @@ void CBayesLearningEngine::Learn()
     
     if(m_numberOfLearnedEvidences == m_numberOfAllEvidences)
     {
-	PNL_THROW(COutOfRange, "number of unlearned evidences must be positive")
+        PNL_THROW(COutOfRange, "number of unlearned evidences must be positive")
     }
     int currentEvidNumber;
     const CEvidence* pCurrentEvid;
     
-    //below code is intended to work on tabular CPD
+    //below code is intended to work on tabular CPD and gaussian CPD
     //later we will generalize it for other distribution types
-    for( int ev = m_numberOfLearnedEvidences; ev < m_numberOfAllEvidences; ev++)
+    if ((grmodel->GetFactor(0))->GetDistributionType() == dtTabular)
     {
-        currentEvidNumber = ev;
-        pCurrentEvid = m_Vector_pEvidences[currentEvidNumber];
+        for( int ev = m_numberOfLearnedEvidences; ev < m_numberOfAllEvidences; ev++)
+        {
+            currentEvidNumber = ev;
+            pCurrentEvid = m_Vector_pEvidences[currentEvidNumber];
         
-        if( !pCurrentEvid)
-        {
-            PNL_THROW(CNULLPointer, "evidence")
-        }
+            if( !pCurrentEvid)
+            {
+                PNL_THROW(CNULLPointer, "evidence")
+            }
         
-        for( domainNodes = 0; domainNodes < numberOfFactors; domainNodes++ )
-        {
-            factor = grmodel->GetFactor( domainNodes );
-            int DomainSize;
-	    const int *domain;
-	    factor->GetDomain( &DomainSize, &domain );
-            const CEvidence *pEvidences[] = { pCurrentEvid };
-            CTabularDistribFun* pDistribFun = (CTabularDistribFun*)(factor->GetDistribFun());
-            pDistribFun->BayesUpdateFactor(pEvidences, 1, domain);
-        }
-    }       		
-    switch (grmodel->GetModelType())
-    {
-    case mtBNet:
-        {
             for( domainNodes = 0; domainNodes < numberOfFactors; domainNodes++ )
             {
-                factor = grmodel -> GetFactor( domainNodes );
+                factor = grmodel->GetFactor( domainNodes );
+                int DomainSize;
+                const int *domain;
+                factor->GetDomain( &DomainSize, &domain );
+                const CEvidence *pEvidences[] = { pCurrentEvid };
                 CTabularDistribFun* pDistribFun = (CTabularDistribFun*)(factor->GetDistribFun());
-                pDistribFun->PriorToCPD();
+                pDistribFun->BayesUpdateFactor(pEvidences, 1, domain);
             }
-            break;
         }
-    default:
+    }
+    else 
+    {
+        for( domainNodes = 0; domainNodes < numberOfFactors; domainNodes++ )
         {
-            PNL_THROW(CBadConst, "model type" )
-                break;
+            if( !m_Vector_pEvidences[m_numberOfLearnedEvidences])
+            {
+                PNL_THROW(CNULLPointer, "evidence")
+            }
+            factor = grmodel->GetFactor( domainNodes );
+            int DomainSize;
+            const int *domain;
+            factor->GetDomain( &DomainSize, &domain );
+            const pConstNodeTypeVector *ntCorr = factor->GetDistribFun()->GetNodeTypesVector();
+            if ((*ntCorr)[DomainSize - 1]->GetNodeSize() != 1)
+            {
+                m_updateCPD = 1;
+            }
+            const CEvidence ** pEv = new const CEvidence* [m_numberOfAllEvidences - m_numberOfLearnedEvidences];
+            int c;
+            for( c = 0; c < m_numberOfAllEvidences - m_numberOfLearnedEvidences; ++c)
+            {
+                pEv[c] = m_Vector_pEvidences[m_numberOfLearnedEvidences + c];
+            }
+            const CEvidence * const* pEvidences = pEv;
+            CGaussianDistribFun* pDistribFun = (CGaussianDistribFun*)(factor->GetDistribFun());
+            pDistribFun->BayesUpdateFactor(pEvidences, m_numberOfAllEvidences - m_numberOfLearnedEvidences, domain);
         }
-    }                                                  
+    }
+    if (!m_updateCPD)
+    {
+        switch (grmodel->GetModelType())
+        {
+        case mtBNet:
+            {
+                for( domainNodes = 0; domainNodes < numberOfFactors; domainNodes++ )
+                {
+                    factor = grmodel -> GetFactor( domainNodes );
+                    if ((grmodel->GetFactor(domainNodes))->GetDistributionType() == dtTabular)
+                    {
+                        CTabularDistribFun* pDistribFun = (CTabularDistribFun*)(factor->GetDistribFun());
+                        pDistribFun->PriorToCPD();
+                    }
+                    else 
+                    {
+                        int DomainSize;
+                        const int *domain;
+                        factor->GetDomain( &DomainSize, &domain );
+                        int numDom;
+                        floatVecVector parPriors;
+                        parPriors.resize(DomainSize - 1);
+                        for( numDom = 0; numDom < DomainSize - 1; ++numDom)
+                        {
+                            int length = 0;
+                            const float *output;
+                            CFactor *tfactor = NULL;
+                            tfactor = grmodel->GetFactor(domain[numDom]);
+                            CNumericDenseMatrix<float> *pMatrix;
+                            pMatrix = static_cast<CNumericDenseMatrix<float>*>(tfactor->GetDistribFun()->GetMatrix(matWishartMean));
+                            pMatrix->GetRawData(&length, &output);
+                            int j;
+                            for( j = 0; j < length; ++j)
+                            {
+                                parPriors[numDom].push_back(output[j]);
+                            }
+                        }
+                        CGaussianDistribFun* pDistribFun = (CGaussianDistribFun*)(factor->GetDistribFun());
+                        pDistribFun->PriorToCPD(parPriors);
+                    }
+                }
+                break;
+            }
+        default:
+            {
+                PNL_THROW(CBadConst, "model type" )
+                    break;
+            }
+        }
+    }
     //update number of learned evidences
-    m_numberOfLearnedEvidences = m_numberOfAllEvidences;                    
+    m_numberOfLearnedEvidences = m_numberOfAllEvidences;
+}
+
+int CBayesLearningEngine::GetCPDUpdatedStatus()
+{
+    return m_updateCPD;
 }
 
 #ifdef PNL_RTTI

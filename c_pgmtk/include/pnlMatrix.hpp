@@ -35,7 +35,10 @@ typedef PNL_API enum
     matWeights,
     matH,
     matK,
-    matDirichlet
+    matDirichlet,
+    matWishartMean,
+    matWishartCov
+
 } EMatrixType;
 
 typedef PNL_API enum 

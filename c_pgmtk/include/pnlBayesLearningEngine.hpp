@@ -45,6 +45,7 @@ public:
 
     //run learning engine
 	void Learn();
+    int GetCPDUpdatedStatus();
 	
 #ifdef PNL_RTTI
   virtual const CPNLType &GetTypeInfo() const
@@ -58,6 +59,7 @@ public:
 #endif
 protected:
 	int m_numberOfLearnedEvidences;
+    int m_updateCPD;
 
     //hidden constructor
     CBayesLearningEngine( CStaticGraphicalModel *pGrModel );
