@@ -26,10 +26,14 @@ static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, 
 TokArr discrete("nodes^discrete");
 TokArr continuous("nodes^continuous");
 
-ProbabilisticNet::ProbabilisticNet(): m_Model(0), m_pCallback(0)
+TokArr chance("nodes^chance");
+TokArr decision("nodes^decision");
+TokArr value("nodes^value");
+
+ProbabilisticNet::ProbabilisticNet(const char *netType): m_Model(0), m_pCallback(0)
 {
     m_pGraph = new WGraph();
-    m_pTokenCov = new TokenCover("bnet", m_pGraph, true);
+    m_pTokenCov = new TokenCover(netType, m_pGraph, true);
     m_paDistribution = new WDistributions(m_pTokenCov);
     // create node bnet and all descedants
 }
@@ -42,7 +46,6 @@ ProbabilisticNet::~ProbabilisticNet()
     delete m_pCallback;
 }
 
-// for Bayes Net nodes only
 void ProbabilisticNet::AddNode(TokArr nodes, TokArr subnodes)
 {
     for(unsigned int i = 0; i < nodes.size(); ++i)
@@ -997,7 +1000,7 @@ void ProbabilisticNet::ExtractTokArr(TokArr &aNode, Vector<int> *paiNode, Vector
 		{
 		    paiValue->assign(nNode, -1);
 		}
-		(*paiValue)[i] = GetInt(pValue);
+                (*paiValue)[i] = GetInt(pValue);
 	    }
 	}
     }
@@ -1044,8 +1047,9 @@ pnl::CNodeType ProbabilisticNet::pnlNodeType(int i)
     int size;
     bool bDiscrete;
 
-    m_paDistribution->GetNodeTypeInfo(&bDiscrete, &size, i);
-    return pnl::CNodeType(bDiscrete, size);
+    pnl::EIDNodeState nodeState = pnl::nsChance;
+    m_paDistribution->GetNodeTypeInfo(&bDiscrete, &size, &nodeState, i);
+    return pnl::CNodeType(bDiscrete, size, nodeState );
 }
 
 void ProbabilisticNet::Accumulate(TokArr *pResult, Vector<int> &aIndex,
@@ -1206,6 +1210,7 @@ pnl::CGraphicalModel *ProbabilisticNet::Model()
 
     return m_Model;
 }
+
 
 void ProbabilisticNet::SetModel(pnl::CGraphicalModel* pModel)
 {
