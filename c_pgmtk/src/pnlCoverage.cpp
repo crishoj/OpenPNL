@@ -17,7 +17,7 @@
 #include "pnlConfig.hpp"
 #include "pnlCoverage.hpp"
 
-#if 1
+#if defined(WIN32)
 #include <windows.h>
 #else
 #include <unistd.h>
