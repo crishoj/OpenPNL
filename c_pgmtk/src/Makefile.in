@@ -59,7 +59,7 @@ am_libpnl_la_OBJECTS = cvcart.lo cvsvd.lo dbginfo.lo memtrack.lo \
 	pnlConfig.lo pnlContext.lo pnlContextLoad.lo \
 	pnlContextPersistence.lo pnlContextSave.lo pnlCoverage.lo \
 	pnlCPD.lo pnlDAG.lo pnlDBN.lo pnlDenseMatrix.lo \
-	pnlDistribFun.lo pnlDynamicGraphicalModel.lo \
+	pnlDiagnostics.lo pnlDistribFun.lo pnlDynamicGraphicalModel.lo \
 	pnlDynamicInferenceEngine.lo pnlDynamicLearningEngine.lo \
 	pnlEmLearningEngine.lo pnlEmLearningEngineDBN.lo \
 	pnlEvidence.lo pnlExampleModels.lo pnlException.lo \
@@ -279,6 +279,7 @@ libpnl_la_SOURCES = \
      pnlDAG.cpp     \
      pnlDBN.cpp     \
      pnlDenseMatrix.cpp     \
+     pnlDiagnostics.cpp     \
      pnlDistribFun.cpp     \
      pnlDynamicGraphicalModel.cpp     \
      pnlDynamicInferenceEngine.cpp     \

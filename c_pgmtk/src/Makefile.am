@@ -40,6 +40,7 @@ libpnl_la_SOURCES=      \
      pnlDAG.cpp     \
      pnlDBN.cpp     \
      pnlDenseMatrix.cpp     \
+     pnlDiagnostics.cpp     \
      pnlDistribFun.cpp     \
      pnlDynamicGraphicalModel.cpp     \
      pnlDynamicInferenceEngine.cpp     \

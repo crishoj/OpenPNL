@@ -25,6 +25,7 @@ include_HEADERS =      \
      pnlDAG.hpp     \
      pnlDBN.hpp     \
      pnlDenseMatrix.hpp     \
+     pnlDiagnostics.hpp     \
      pnlDynamicGraphicalModel.hpp     \
      pnlDynamicInferenceEngine.hpp     \
      pnlDynamicLearningEngine.hpp     \
