@@ -69,7 +69,7 @@ public:
     {
 	return m_pMatrix;
     }
-
+    void SetDefaultUtilityFunction();
 private:
     pnl::CDenseMatrix<float> *m_pMatrix;
 };

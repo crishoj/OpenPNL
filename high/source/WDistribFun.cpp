@@ -295,6 +295,34 @@ void WTabularDistribFun::SetDefaultDistribution()
     }
 }
 
+void WTabularDistribFun::SetDefaultUtilityFunction()
+{
+    if(desc() == 0)
+    {
+	ThrowInternalError("desc is null", "SetDefaultDistribution");
+    }
+
+    if(m_pMatrix == 0)
+    {
+	CreateMatrix();
+    }
+
+    int nNode = desc()->nNode();
+    Vector<int> aIndex(nNode, 0);
+    float value = 0.0f;
+    int i, nValue;
+
+    for(nValue = 1, i = 0; i < nNode; ++i)
+    {
+	nValue *= desc()->nodeSize(i);
+    }
+
+    for(i = 0; i < nValue; ++i)
+    {
+	m_pMatrix->SetElementByOffset(value, i);
+    }
+}
+
 void WTabularDistribFun::CreateMatrix()
 {
     const Vector<int> &aSize = desc()->nodeSizes();
@@ -306,6 +334,7 @@ void WTabularDistribFun::CreateMatrix()
     m_pMatrix = pnl::CNumericDenseMatrix<float>::Create(aSize.size(),
 	&aSize.front(), &aValue.front());
 }
+
 
 // matrix must be created
 void WTabularDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float probability)

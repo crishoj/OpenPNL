@@ -73,7 +73,23 @@ void WDistributions::Setup(int iNode)
     m_pToken->Graph()->GetParents(&aParent, iNode);
     Vector<TokIdNode*> parTokId = m_pToken->Nodes(aParent);
     m_aDistribution[iNode]->Setup(m_pToken->Node(iNode), parTokId);
-    m_aDistribution[iNode]->SetDefaultDistribution();
+    TokIdNode *tok = m_pToken->Node(iNode);
+    if (nodeClass == eNodeClassDiscrete )
+    {
+        if (static_cast<pnl::CNodeType*>(tok->v_prev->data)->GetNodeState() != pnl::nsValue)
+        {
+            m_aDistribution[iNode]->SetDefaultDistribution();
+        }
+        else
+        {
+            static_cast<WTabularDistribFun*>(m_aDistribution[iNode])->SetDefaultUtilityFunction();
+        }
+    }
+    else
+    {
+        m_aDistribution[iNode]->SetDefaultDistribution();
+    }
+
 }
 
 void WDistributions::DropDistribution(int iNode)
