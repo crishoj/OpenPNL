@@ -1,0 +1,23 @@
+<html>
+<title>Decision Tree inference</title>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<body>
+<table width = "100%">
+	<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">Implementation</font></h2></td></tr>
+	<tr><td>Instead of string <br> <font class="code">if( (!IsAllNdsTab())</font> <br>we have to add the following code to ConvertingFamilyToPot function (class CGibbsSamplingInfEngine):<pre><font class="code">
+  <font class="comment">//Searching for decision Tree nodes in family</font>
+  bool isTreeNode = false;
+  for( i = 0; i < m_environment[node].size(); i++ )
+	{            
+		int num = m_environment[node][i];
+		if ( (*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtTree)
+		{
+		isTreeNode = true;
+		};
+	};
+  <font class="comment">//Add checking whether containing decision Tree  node in family</font>		
+  if( (!IsAllNdsTab()) || (isTreeNode == true) )
+	</font></pre></td></tr>
+</table>
+</body>
+</html>

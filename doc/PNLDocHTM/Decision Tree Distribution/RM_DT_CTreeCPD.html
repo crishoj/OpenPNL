@@ -1,0 +1,78 @@
+<html>
+
+<head>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<title>Reference manual</title>
+</head>
+
+<body>
+<font class="classes"><p>Class CTtreeCPD</p></font>
+<p>Class CTreeCPD containes implementations of Class CCPD virtual functions.</p>
+<table width="100%">
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">UpdateTree</font></p>
+			<p><font class="description">Updates decision Tree for current node distribution function.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">  void UpdateTree(const CGraph *pGraphTree, TreeNodeFields *fields);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pGraphTree</font></td>
+					<td>Pointer to the class CGraph that will be used for creation a new decision Tree.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">fields</font></td>
+					<td>Pointer to the array of the new decision Tree nodes properties.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">ConvertWithEvidenceToPotential</font></p>
+			<p><font class="description">Creates new Tabular or Gaussian potential using current evidence on decision Tree parents.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface"> CPotential* ConvertWithEvidenceToPotential(const CEvidence* pEvidence,
+        int flagSumOnMixtureNode = 1) const; </font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pEvidence</font></td>
+					<td>Pointer to the current decision Tree parents evidence.</td>
+				</tr>
+				<tr>
+					<td><font class="argname">flagSumOnMixtureNode</font></td>
+					<td>Flag of mixture node summation.</td>
+				</tr>								
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	
+</table>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<html>
+<title>decision Tree inference</title>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<body>
+<table>
+<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">About decision Tree</font></h2></td></tr>
+<tr><td>
+	<p><font class="method">Overview</font></p>
+	<p>The decision Tree node in Bayesian networks  has dicrete or contionuous spesific distribution<br>
+	<pre>			<a href="DT_overview.html">details...</a></pre></p>
+
+	<p><font class="method">Inference algorithm ideas</font></p>
+	<p>We use questions on not terminal nodes for calculation  decision Tree node probabilities for current parents configuration.</p>
+	<pre>			<a href="DT_Inference_method.html">details...</a></pre></p>
+
+	<p><font class="method">Design</font></p>
+	<p>To realize described algorithm, we had to add the following methods to the PNL library</p>
+	<pre>			<a href="DT_design.html">details...</a></pre></p>
+
+	<p><font class="method">Implementation</font></p>
+	<p>Here is the code of function, which proceeds inference algorithm in bayesian networks, which include decision Tree nodes</p>
+	<pre>			<a href="DT_implementation.html">details...</a></pre></p>
+</td></tr>
+
+<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">Reference Manual</font></h2></td></tr>
+<tr><td>
+	<p><font class="method">Class CTreeCPD</font></p>
+	<p>Class CTreeCPD containes implementations of Class CCPD virtual functions</p>
+	<pre>			<a href="RM_DT_CTreeCPD.html">Methods that provedes inference...</a></pre></p>
+
+	<p><font class="method">Class CTreeDistribFun</font></p>
+	<p>Class CTreeDistribFun implements basic operations with distribution on decision Tree node. In this case distribution can de defined by graph and correspound nodes parametrs vector</p>
+	<pre>			<a href="RM_DT_CTreeDistribFun.html">Methods that provedes inference....</a></pre></p>
+
+	<p><font class="method">Class CGraph</font></p>
+	<p>Class CGraph  represents a graph structure of the model and carries out some basic graph algorithms</p>
+	<pre>			<a href="RM_DT_CGraph.html">Added method...</a></pre></p>
+
+</tr></td>
+
+<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">Example of usage</font></h2></td></tr>
+
+<tr><td>
+	<p>Document contains necessary information to start a simple test in inference algorithm for Bayesian networks with decision Tree nodes that are realized in PNL. At first simple network is presented. Further an example for this algorithm is described.</p>
+	<pre>			<a href="example_of_usage.html">details...</a></pre></p>
+</td></tr>
+
+
+</table>
+</body>
+</html>

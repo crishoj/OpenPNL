@@ -1,0 +1,26 @@
+<html>
+<title>decision tree inference</title>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<body>
+<table width = "100%">
+	<tr><td colspan=2 width="100%" bgcolor="#0000ff"><h2><font color="ffffff">decision tree distribution</font></h2></td></tr>
+	<tr><td colspan=2 >Decision tree is a binary tree in which each node (except leaves – terminal nodes) contains a question with two possible answer: yes or no. For example, question may be: X is equal 5, or Y is greater than 2.5. Terminal node contains some “decision” that is taken when a descent on decision tree is finished in this node from the root through some questions. Decision tree may be effectively used in Bayesian networks to represent conditional discrete or continuous nodes, which really depend on a part of their parents or some parents configurations. This way lets to reduce amount of memory usage for such nodes and to compute nodes that have more than 400 parents. Of course, a list of possible questions, that may be used in decision tree node, must be specified and a necessary methods to form a tree in such node must be realized. 
+	</td></tr>
+	<tr><td width =500> <h3>Simple examble</h3>
+		 <img src="bnet.gif" align="left"> <br>Consider a net that contains two discrete nodes d1, d2 and one tree node t1. Node sizes are 2, 3 and 2. <br>Nodes d1 and d2 are discrete parents of discrete tree node t1. </td>
+	 </tr>
+	<tr><td>  Discrete node t1 has tree:</td></tr>	
+	 <tr><td>  <img src="dt.gif" > </td><td><br>Nodes n1, n2, and n5 are non-terminal nodes, n3, n4, n6 and n7 are terminal nodes.
+		<br>Node n1 question is d1 = 0.
+		<br>Node n2 question is d2 >= 1.
+		<br>Node n5 question is d2 = 0.
+		<br>Node n3 distribution is 0.5, 0.5.
+		<br>Node n4 distribution is 0.7, 0.3.
+		<br>Node n6 distribution is 0.4, 0.6.
+		<br>Node n7 distribution is 0.3, 0.7.
+  	</td>	
+	</tr>
+	
+</table>
+</body>
+</html>
