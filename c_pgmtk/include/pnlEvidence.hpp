@@ -53,7 +53,7 @@ public:
     static bool Save(const char *fname,  pConstEvidenceVector& evVec);
     static bool Load(const char *fname,  pEvidencesVector* evVecOut, const CModelDomain *pMD);
     static bool Save(const char *fname,  const pEvidencesVecVector& evVec);
-    static bool Load(const char *fname,  pEvidencesVecVector* evVec, const CModelDomain *pMD);
+    static bool Load(const char *fname,  pEvidencesVecVector* evVecOut, const CModelDomain *pMD);
 #ifdef PNL_OBSOLETE
     static CEvidence* Create( const CModelDomain *pMD,
 	int NObsNodes,
