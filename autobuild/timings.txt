@@ -2471,3 +2471,27 @@ Data_begin
  average time for entering evidence ,
  CPU frequency ,
 ==
+08/20/04 20:20:02	w2k_icc	failed	70.7	testComputeLikelihood
+Header_begin
+  Processor,Pentium
+  OS,WindowsNT v5.0 build 2195
+  Start_Date,
+  Start_Time,Sat Aug 21 00:44:55 2004
+Header_end
+Data_begin
+  Flavour,Function,Value,Units,Comments,Param1,Param2,Param3,Param4
+  d,testPerformanceJTreeInf,1.240381e-004,5.195912e-004,3.579545e+004,
+ time of inference procedure creation,
+ everage time of inference doing,
+ CPU Freq,
+  d,timeBKInfEngine,2.701740e-003,4.502807e-003,3.579545e+004,
+ JTree inference creation ,
+ average time for entering evidence ,
+ CPU frequency ,
+Data_end
+Footer_begin
+  End_Date,
+  End_Time,Sat Aug 21 00:49:22 2004
+  Elapsed_Time,267.0
+Footer_end
+==
