@@ -37,7 +37,10 @@ ProbabilisticNet::ProbabilisticNet(const char *netType): m_Model(0), m_pCallback
     m_pGraph = new WGraph();
     m_pTokenCov = new TokenCover(netType, m_pGraph, true);
     m_paDistribution = new WDistributions(m_pTokenCov);
-    // create node bnet and all descedants
+    if(!strcmp(netType, "mrf"))
+    {
+        Distributions()->SetMRF(true);
+    }
 }
 
 ProbabilisticNet::~ProbabilisticNet()
@@ -531,11 +534,6 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
 	}
 	net = new ProbabilisticNet(modelName);
 
-	if(model->GetModelType() == pnl::mtMNet || model->GetModelType() == pnl::mtMRF2)
-	{
-	    net->Distributions()->SetMRF(true);
-	}
-
 	for(iNode = 0; iNode < model->GetNumberOfNodes(); ++iNode)
 	{
             nodeName = "Node";
@@ -585,10 +583,6 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
 	    coverProperties = static_cast<pnl::CCover<SSMap>*>(loader->Get("Properties"));
 	}
 	net = pCovNet->GetPointer();
-	if(model->GetModelType() == pnl::mtMNet || model->GetModelType() == pnl::mtMRF2)
-	{
-	    net->Distributions()->SetMRF(true);
-	}
 
 	if(coverProperties)
 	{
