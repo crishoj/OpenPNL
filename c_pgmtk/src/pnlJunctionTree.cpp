@@ -1122,14 +1122,14 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                         ConvertWithEvidenceToGaussianPotential( pEvidence, MeanContParents, 
                         CovContParents);
                     
-                    pTmpPot->Dump();
+//                    pTmpPot->Dump();
                 }
                 else 
                     if (allCountObs)
                     {
                         pTmpPot = ((CSoftMaxCPD*)(*assFactsIt))->
                             ConvertWithEvidenceToTabularPotential( pEvidence);
-                        pTmpPot->Dump();
+//                        pTmpPot->Dump();
                     }
                 
             } 
@@ -1170,7 +1170,7 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                             ConvertWithEvidenceToGaussianPotential( pEvidence, 
                             MeanContParents, CovContParents, parentComb );
 
-                        pTmpPot->Dump();
+//                        pTmpPot->Dump();
                         
                         delete [] parentComb;
                     }
@@ -1179,7 +1179,7 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                         {
                             pTmpPot = ((CSoftMaxCPD*)(*assFactsIt))->
                                 ConvertWithEvidenceToTabularPotential( pEvidence);
-                            pTmpPot->Dump();
+//                            pTmpPot->Dump();
                         }
                 }
                 else
@@ -1198,7 +1198,7 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                     pTmpPot = (*assFactsIt)->ConvertWithEvidenceToPotential( pEvidence,
                             sumOnMixtureNode );
 
-                    pTmpPot->Dump();
+ //                   pTmpPot->Dump();
                         
                 }  
                 
