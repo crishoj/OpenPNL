@@ -136,6 +136,21 @@ private:
     pnlVector<pnlString> m_aAttrValue;
 };
 
+// grouping class
+class PNL_API GroupObj: public CPNLBase
+{
+public:
+    GroupObj()  { m_aName.reserve(4); m_aObject.reserve(4); m_abDelete.reserve(4); }
+    ~GroupObj() { for(int i = m_abDelete.size(); --i >= 0;) if(m_abDelete[i]) delete m_aObject[i]; }
+    void Put(CPNLBase *pObj, const char *name, bool bAutoDelete = true);
+    CPNLBase *Get(const char *name, bool bAutoDelete = true);
+
+private:
+    pnlVector<pnlString> m_aName;
+    pnlVector<CPNLBase*>  m_aObject;
+    pnlVector<char>	 m_abDelete;
+};
+
 PNL_END
 
 #endif // include guard

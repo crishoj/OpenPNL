@@ -281,3 +281,24 @@ void CXMLWriterStd::WriteBody(const char *bodyText)
 {
     Stream() << bodyText;
 }
+
+void GroupObj::Put(CPNLBase *pObj, const char *name, bool bAutoDelete)
+{
+    m_aName.push_back(name);
+    m_aObject.push_back(pObj);
+    m_abDelete.push_back(bAutoDelete);
+}
+
+CPNLBase *GroupObj::Get(const char *name, bool bAutoDelete)
+{
+    pnlString sName(name);
+    for(int i = m_aName.size(); --i >= 0 && m_aName[i] != sName;);
+    {
+	if(sName == m_aName[i])
+	{
+	    m_abDelete[i] = bAutoDelete;
+	    return m_aObject[i];
+	}
+    }
+    return 0;
+}
