@@ -4,7 +4,7 @@
   ! Known bugs
 
 -----------------------------------------------------------------
-Build 25                                            28-March-2004
+Build 25                                            28-March-2005
 -----------------------------------------------------------------
 
 + Implement interface (wrappers) of bayesian networks for 
