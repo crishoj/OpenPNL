@@ -43,10 +43,10 @@ CFG=pnl - Win32 Debug Static
 # PROP Output_Dir "..\..\temp\pnl\DebugStatic"
 # PROP Intermediate_Dir "..\..\temp\pnl\DebugStatic"
 # PROP Target_Dir ""
-MTL=midl.exe
-LINK32=link.exe
 F90=df.exe
-CPP=cl.exe
+LINK32=link.exe
+MTL=midl.exe
+CPP=xicl6.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\src\include" /I "..\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD CPP /nologo /W4 /Gm /GR /GX /Zi /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "PNL_STATIC" /D "WIN32" /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
@@ -56,7 +56,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\Lib\pnld.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\pnlds.lib" /nodefaultlib
 
@@ -72,10 +72,10 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\..\temp\pnl\ReleaseStatic"
 # PROP Intermediate_Dir "..\..\temp\pnl\ReleaseStatic"
 # PROP Target_Dir ""
-MTL=midl.exe
-LINK32=link.exe
 F90=df.exe
-CPP=cl.exe
+LINK32=link.exe
+MTL=midl.exe
+CPP=xicl6.exe
 # ADD BASE CPP /nologo /W3 /GX /Od /I "..\src\include" /I "..\include" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /W4 /GR /GX /Zi /O2 /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "PNL_STATIC" /D "WIN32" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
@@ -85,7 +85,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\Lib\pnl.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\pnls.lib" /nodefaultlib
 
@@ -103,7 +103,7 @@ LIB32=link.exe -lib
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 LIB32=link.exe -lib
-CPP=cl.exe
+CPP=xicl6.exe
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W4 /GR /GX /Zi /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /I "..\include\cart" /I "..\..\..\cxcore\cxcore\include\\" /D "_DEBUG" /D "_WINDOWS" /D "PNL_EXPORTS" /D "CV_DLL" /D "WIN32" /FR /FD /GZ /c
 MTL=midl.exe
@@ -115,7 +115,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=link.exe
+LINK32=xilink6.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /nodefaultlib:"libcmt.lib" /nodefaultlib:"msvcrt.lib" /out:"..\..\bin\pnld.dll" /implib:"..\..\lib\pnld.lib" /pdbtype:sept /libpath:"..\..\lib" /libpath:"..\..\cxcore\lib"
 # SUBTRACT LINK32 /pdb:none /nodefaultlib
@@ -134,7 +134,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 LIB32=link.exe -lib
-CPP=cl.exe
+CPP=xicl6.exe
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD CPP /nologo /MD /W4 /GR /GX /Zi /O2 /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "NDEBUG" /D "_WINDOWS" /D "PNL_EXPORTS" /D "CV_DLL" /D "WIN32" /FD /c
 # SUBTRACT CPP /Fr /YX /Yc /Yu
@@ -147,7 +147,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=link.exe
+LINK32=xilink6.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\bin\pnl.dll" /implib:"..\..\lib\pnl.lib" /libpath:"..\..\lib" /libpath:"..\..\cxcore\lib"
 # SUBTRACT LINK32 /pdb:none
@@ -167,7 +167,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 LIB32=link.exe -lib
-CPP=cl.exe
+CPP=xicl6.exe
 # ADD BASE CPP /nologo /MDd /W4 /GR /GX /Zi /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /I "..\include\cart" /I "..\..\..\cxcore\cxcore\include\\" /D "_DEBUG" /D "_WINDOWS" /D "PNL_EXPORTS" /D "CV_DLL" /D "WIN32" /FR /FD /GZ /c
 # ADD CPP /nologo /MDd /w /W0 /GR /GX /Zi /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /I "..\include\cart" /I "..\..\..\cxcore\cxcore\include\\" /D "_DEBUG" /D "_WINDOWS" /D "PNL_EXPORTS" /D "CV_DLL" /D "WIN32" /D "BUILD_MPI" /D "BUILD_OMP" /FR /FD /GZ /Qopenmp /c
 MTL=midl.exe
@@ -179,7 +179,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=link.exe
+LINK32=xilink6.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /nodefaultlib:"libcmt.lib" /nodefaultlib:"msvcrt.lib" /out:"..\..\bin\pnld.dll" /implib:"..\..\lib\pnld.lib" /pdbtype:sept /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
 # SUBTRACT BASE LINK32 /pdb:none /nodefaultlib
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /nodefaultlib:"libcmt.lib" /nodefaultlib:"msvcrt.lib" /out:"..\..\bin\pnld.dll" /implib:"..\..\lib\pnld.lib" /pdbtype:sept /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
@@ -200,7 +200,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 LIB32=link.exe -lib
-CPP=cl.exe
+CPP=xicl6.exe
 # ADD BASE CPP /nologo /MD /W4 /GR /GX /Zi /O2 /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "NDEBUG" /D "_WINDOWS" /D "PNL_EXPORTS" /D "CV_DLL" /D "WIN32" /FD /c
 # SUBTRACT BASE CPP /Fr /YX /Yc /Yu
 # ADD CPP /nologo /MD /w /W0 /GR /GX /Zi /O2 /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "NDEBUG" /D "_WINDOWS" /D "PNL_EXPORTS" /D "CV_DLL" /D "WIN32" /D "BUILD_MPI" /D "BUILD_OMP" /FD /Qopenmp /c
@@ -213,7 +213,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=link.exe
+LINK32=xilink6.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\bin\pnl.dll" /implib:"..\..\lib\pnl.lib" /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
 # SUBTRACT BASE LINK32 /pdb:none
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\bin\pnl.dll" /implib:"..\..\lib\pnl.lib" /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
@@ -311,6 +311,10 @@ SOURCE=..\src\pnl2DNumericDenseMatrix.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\pnlDenseMatrix.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\pnli2DNumericDenseMatrix.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
 # End Source File
@@ -323,6 +327,22 @@ SOURCE=..\src\pnliNumericDenseMatrix.cpp
 
 SOURCE=..\src\pnliNumericSparseMatrix.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlMatrix.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlMatrixIterator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlNumericDenseMatrix.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlSparseMatrix.cpp
 # End Source File
 # End Group
 # Begin Group "parallel"
@@ -456,10 +476,6 @@ SOURCE=..\src\pnlDAG.cpp
 
 SOURCE=..\src\pnlDBN.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\pnlDenseMatrix.cpp
 # End Source File
 # Begin Source File
 
@@ -632,14 +648,6 @@ SOURCE=..\src\pnlLWSamplingInferenceEngine.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\pnlMatrix.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\pnlMatrixIterator.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\pnlMixtureGaussianCPD.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
 # End Source File
@@ -686,10 +694,6 @@ SOURCE=..\src\pnlNodeType.cpp
 
 SOURCE=..\src\pnlNodeValues.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\pnlNumericDenseMatrix.cpp
 # End Source File
 # Begin Source File
 
@@ -741,10 +745,6 @@ SOURCE=..\src\pnlSoftMaxCPD.cpp
 # Begin Source File
 
 SOURCE=..\src\pnlSoftMaxDistribFun.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\pnlSparseMatrix.cpp
 # End Source File
 # Begin Source File
 
