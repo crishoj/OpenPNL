@@ -294,6 +294,8 @@ int ProbabilisticNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mo
 	ThrowUsingError("Nothing to load", funName);
     }
 
+    ClearEvidBuf();
+
     TokArr evid;
     for(nEvid = 0; lex.IsEof() == false;)
     {
