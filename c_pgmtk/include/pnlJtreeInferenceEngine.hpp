@@ -195,6 +195,10 @@ protected:
 
     inline void SetNormalizeCoefficient(float val);
 
+    void ShrinkJTreeCliques(int domSize, int* Domain);     
+	CPotential* MergeCliques(int domSize, int* Domain);
+
+
 private:
     
     CPotential *m_pPotMPE;
@@ -215,6 +219,9 @@ private:
     void MyNormalize(CPotential *pot, bool isCollect);
 
     float m_norm;
+
+	boolVector	m_NodesAfterShrink;
+
 };
 
 #ifndef SWIG
