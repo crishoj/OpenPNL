@@ -43,9 +43,9 @@ CFG=pnl - Win32 Debug Static
 # PROP Output_Dir "..\..\temp\pnl\DebugStatic"
 # PROP Intermediate_Dir "..\..\temp\pnl\DebugStatic"
 # PROP Target_Dir ""
-MTL=midl.exe
-LINK32=link.exe
 F90=df.exe
+LINK32=link.exe
+MTL=midl.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\src\include" /I "..\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD CPP /nologo /W4 /Gm /GR /GX /Zi /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "PNL_STATIC" /D "WIN32" /FD /GZ /c
@@ -72,9 +72,9 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\..\temp\pnl\ReleaseStatic"
 # PROP Intermediate_Dir "..\..\temp\pnl\ReleaseStatic"
 # PROP Target_Dir ""
-MTL=midl.exe
-LINK32=link.exe
 F90=df.exe
+LINK32=link.exe
+MTL=midl.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /GX /Od /I "..\src\include" /I "..\include" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /W4 /GR /GX /Zi /O2 /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "PNL_STATIC" /D "WIN32" /FD /c
@@ -492,6 +492,10 @@ SOURCE=..\src\pnlDAG.cpp
 
 SOURCE=..\src\pnlDBN.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
+# End Source File
+# Begin Source File
+
+SOURCE="..\..\..\..\bader\Work Materials\PNL\Diagnistics\pnlDiagnostics.cpp"
 # End Source File
 # Begin Source File
 
@@ -1074,6 +1078,10 @@ SOURCE=..\include\pnlDAG.hpp
 # Begin Source File
 
 SOURCE=..\include\pnlDBN.hpp
+# End Source File
+# Begin Source File
+
+SOURCE="..\..\..\..\bader\Work Materials\PNL\Diagnistics\pnlDiagnostics.hpp"
 # End Source File
 # Begin Source File
 
