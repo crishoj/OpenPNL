@@ -194,6 +194,17 @@ void CJtreeInfEngine::EnterEvidence( const CEvidence *pEvidence,
 
     DistributeEvidence();
 
+	for (i = 0; i < m_pJTree->GetNumberOfNodes(); i++)
+	{
+		EDistributionType dt = m_pJTree->GetNodePotential(i)->GetDistribFun()->
+			GetDistributionType();
+		if(dt == dtGaussian)
+		{
+			static_cast<CGaussianDistribFun*>(m_pJTree->GetNodePotential(i)->
+				GetDistribFun())->UpdateCanonicalCoefficient();
+		}
+	}
+
     if (GetModel()->GetModelType() == mtBNet)
     {
 	bool allDiscrObs = pEvidence->IsAllDiscreteNodesObs(GetModel());
