@@ -1068,11 +1068,10 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
         if((nT.IsDiscrete()) && (nT.GetNodeSize() == 0))
         {
             pPot = CScalarPotential::Create( &ndContIt->front(),
-                ndContIt->size(), m_pMD, obsPositionsInDom );
+                        ndContIt->size(), m_pMD, obsPositionsInDom );
         }
         else
         {
-
             if( nT.IsDiscrete() )
             {
                 pPot = CTabularPotential::CreateUnitFunctionDistribution(
@@ -1086,6 +1085,9 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                     obsPositionsInDom);
             }
         }
+        
+        pPot->Dump();
+        
         //CPotential* pShrPot = pPot->ShrinkObservedNodes( pEvidence );
         //delete pPot ;
         //pPot = pShrPot;
@@ -1094,6 +1096,8 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
         pConstCPDVector::const_iterator
                                        assFactsIt   = assignedFactors.begin(),
                                        assFacts_end = assignedFactors.end();
+
+        bool AllNodesInClsObs = IsAllNodesInClsObs(i, pEvidence );
 
         for( ; assFactsIt != assFacts_end; ++assFactsIt )
         {
@@ -1109,20 +1113,33 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
             {
                 if (allDiscrObs)
                 {
-                    floatVector MeanContParents;
-                    C2DNumericDenseMatrix<float>* CovContParents;
-            
-                    pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 1);
+                    if (AllNodesInClsObs)
+                    {
+                        pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 0);
 
-                    static_cast<const CSoftMaxCPD*>(*assFactsIt)->
-                        CreateMeanAndCovMatrixForNode(FactorNode, pEvidence, pBNet, 
-                        MeanContParents, &CovContParents);
+                        pTmpPot = ((CSoftMaxCPD*)(*assFactsIt))->
+                                ConvertWithEvidenceToTabularPotential( pEvidence);
+
+//                        pTmpPot->Dump();
+
+                    }
+                    else
+                    {
+                        floatVector MeanContParents;
+                        C2DNumericDenseMatrix<float>* CovContParents;
+            
+                        pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 1);
+
+                        static_cast<const CSoftMaxCPD*>(*assFactsIt)->
+                            CreateMeanAndCovMatrixForNode(FactorNode, pEvidence, pBNet, 
+                            MeanContParents, &CovContParents);
                     
-                    pTmpPot = static_cast<const CSoftMaxCPD*>(*assFactsIt)->
-                        ConvertWithEvidenceToGaussianPotential( pEvidence, MeanContParents, 
-                        CovContParents);
+                        pTmpPot = static_cast<const CSoftMaxCPD*>(*assFactsIt)->
+                            ConvertWithEvidenceToGaussianPotential( pEvidence, 
+                            MeanContParents, CovContParents);
                     
-//                    pTmpPot->Dump();
+//                        pTmpPot->Dump();
+                    }
                 }
                 else 
                     if (allCountObs)
@@ -1138,48 +1155,62 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                 {
                     if (allDiscrObs)
                     {
-                        floatVector MeanContParents;
-                        C2DNumericDenseMatrix<float>* CovContParents;
-            
-                        pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 1);
-    
-                        static_cast<const CSoftMaxCPD*>(*assFactsIt)->
-                            CreateMeanAndCovMatrixForNode(FactorNode, pEvidence, pBNet, 
-                            MeanContParents, &CovContParents);
-
-                        intVector discParents;
-                        pBNet->GetDiscreteParents(FactorNode, &discParents);
-                        
-                        int *parentComb = new int [discParents.size()];
-                        
-                        intVector pObsNodes;
-                        pConstValueVector pObsValues;
-                        pConstNodeTypeVector pNodeTypes;
-                        pEvidence->GetObsNodesWithValues(&pObsNodes, &pObsValues, &pNodeTypes);
-                        
-                        int location;
-                        for ( k = 0; k < discParents.size(); k++)
+                        if (AllNodesInClsObs)
                         {
-                            location = 
-                                std::find(pObsNodes.begin(), pObsNodes.end(), discParents[k]) 
-                                - pObsNodes.begin();
-                            parentComb[k] = pObsValues[location]->GetInt();
-                        }
-                        
-                        pTmpPot = static_cast<const CSoftMaxCPD*>(*assFactsIt)->
-                            ConvertWithEvidenceToGaussianPotential( pEvidence, 
-                            MeanContParents, CovContParents, parentComb );
+                            pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 0);
 
-//                        pTmpPot->Dump();
+                            pTmpPot = ((CSoftMaxCPD*)(*assFactsIt))->
+                                ConvertWithEvidenceToTabularPotential( pEvidence);
+
+//                            pTmpPot->Dump();
+
+                        }
+                        else
+                        {
+                            floatVector MeanContParents;
+                            C2DNumericDenseMatrix<float>* CovContParents;
+            
+                            pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 1);
+    
+                            static_cast<const CSoftMaxCPD*>(*assFactsIt)->
+                                CreateMeanAndCovMatrixForNode(FactorNode, pEvidence, 
+                                pBNet, MeanContParents, &CovContParents);
+
+                            intVector discParents;
+                            pBNet->GetDiscreteParents(FactorNode, &discParents);
                         
-                        delete [] parentComb;
+                            int *parentComb = new int [discParents.size()];
+                        
+                            intVector pObsNodes;
+                            pConstValueVector pObsValues;
+                            pConstNodeTypeVector pNodeTypes;
+                            pEvidence->GetObsNodesWithValues(&pObsNodes, &pObsValues,
+                                &pNodeTypes);
+                        
+                            int location;
+                            for ( k = 0; k < discParents.size(); k++)
+                            {
+                                location = 
+                                    std::find(pObsNodes.begin(), pObsNodes.end(), 
+                                    discParents[k]) - pObsNodes.begin();
+                                parentComb[k] = pObsValues[location]->GetInt();
+                            }
+                        
+                            pTmpPot = static_cast<const CSoftMaxCPD*>(*assFactsIt)->
+                                ConvertWithEvidenceToGaussianPotential( pEvidence, 
+                                MeanContParents, CovContParents, parentComb );
+
+//                            pTmpPot->Dump();
+                        
+                            delete [] parentComb;
+                        }
                     }
                     else 
                         if (allCountObs)
                         {
                             pTmpPot = ((CSoftMaxCPD*)(*assFactsIt))->
                                 ConvertWithEvidenceToTabularPotential( pEvidence);
-//                            pTmpPot->Dump();
+ //                           pTmpPot->Dump();
                         }
                 }
                 else
@@ -1187,14 +1218,16 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                     intVector Parents;
                     pBNet->GetGraph()->GetParents(FactorNode, &Parents);
 
-                    for ( k = 0; k < Parents.size(); k++)
+                    if (allDiscrObs)
                     {
-                        if (pBNet->GetFactor(Parents[k])->GetDistributionType() == dtSoftMax)
+                        for ( k = 0; k < Parents.size(); k++)
                         {
-                            pBNet->GetModelDomain()->ChangeNodeType(Parents[k], 0);
+                            if (pBNet->GetFactor(Parents[k])->GetDistributionType() == dtSoftMax)
+                            {
+                                pBNet->GetModelDomain()->ChangeNodeType(Parents[k], 0);
+                            }
                         }
-                    }
-                        
+                    }    
                     pTmpPot = (*assFactsIt)->ConvertWithEvidenceToPotential( pEvidence,
                             sumOnMixtureNode );
 
@@ -1204,7 +1237,7 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                 
                 *pPot *= *pTmpPot;
 
-                pPot->Dump();              
+//                pPot->Dump();              
 
                 delete pTmpPot;
         }
@@ -1640,5 +1673,26 @@ CJunctionTree& CJunctionTree::operator=(const CJunctionTree &pJTree)
     }
 
     return *this;
+}
+
+bool CJunctionTree::IsAllNodesInClsObs(int NumCls, const CEvidence *pEvidence )
+{
+    intVector         obsNdsNums;
+    pConstValueVector obsNdsVals;
+
+    pEvidence->GetObsNodesWithValues( &obsNdsNums, &obsNdsVals );
+
+    int i;
+    intVector::iterator location;
+    for (i = 0; i < m_nodeContents[NumCls].size(); i++)
+    {
+        location = std::find(obsNdsNums.begin(), obsNdsNums.end(), m_nodeContents[NumCls][i]);
+        if (location == obsNdsNums.end())
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 //////////////////////////////////////////////////////////////////////////
