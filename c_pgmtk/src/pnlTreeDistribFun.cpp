@@ -426,7 +426,7 @@ void  CTreeDistribFun::GenerateSample( CEvidence* evidence, int maximize) const
         if (evidence->GetValue(node->split->feature_idx)->IsDiscrete())
         {
             var.i = evidence->GetValue(node->split->feature_idx)->GetInt();
-            var.fl = var.i;
+            var.fl = (float)var.i;
         }
         else 
         {
@@ -848,8 +848,6 @@ void CTreeDistribFun::UpdateTree(const CGraph* pGraphTree, TreeNodeFields *field
         ConvertGraphToTree(m_pCART,m_pCART->root,pGraphTree,rootNode);
         //end of growing tree
         
-        
-        
         //filling tree
         FillTree(m_pCART,m_pCART->root,pGraphTree, fields,rootNode);
         // end of filling tree
@@ -910,8 +908,8 @@ void CTreeDistribFun::FillTree(CxCART *pCart,CxCARTNode *node,
             node->fallen_stats = new int [fallen_size];
             for (i = 0; i < fallen_size-1; i++)
             {
-                node->fallen_stats[i] = 10000000*fields[nodeNum].probVect[i];
-                tmp_sum +=  node->fallen_stats[i];
+                node->fallen_stats[i] = (int)(10000000*fields[nodeNum].probVect[i]);
+                tmp_sum += (int) (node->fallen_stats[i]);
             }
             node->fallen_stats[fallen_size-1] = 10000000 - tmp_sum;
             node->num_fallens = 10000000;
@@ -1012,7 +1010,7 @@ floatVector CTreeDistribFun::GetProbability( const CEvidence* pEv ) const
                 if (copyEv.GetValue(node->split->feature_idx)->IsDiscrete())
                 {
                     var.i = copyEv.GetValue(node->split->feature_idx)->GetInt();
-                    var.fl = var.i;
+                    var.fl = (float)var.i;
                 }
                 else 
                 {
@@ -1058,7 +1056,7 @@ int CTreeDistribFun::GetAdjectives( const CEvidence* pEv, float &expect,
                 if (copyEv.GetValue(node->split->feature_idx)->IsDiscrete())
                 {
                     var.i = copyEv.GetValue(node->split->feature_idx)->GetInt();
-                    var.fl = var.i;
+                    var.fl = (float)var.i;
                 }
                 else 
                 {

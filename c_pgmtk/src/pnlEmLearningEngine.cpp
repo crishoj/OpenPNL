@@ -416,7 +416,6 @@ void CEMLearningEngine::LearnExtraCPDs(int nMaxFamily, pCPDVector* additionalCPD
     
     bool bInfIsNeed;
     CInfEngine *pInfEng = m_pInfEngine;
-    EDistributionType dt;
     
     if (IsAllObserved())
     {
