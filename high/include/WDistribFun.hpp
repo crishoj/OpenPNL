@@ -84,9 +84,11 @@ public:
     pnl::CDenseMatrix<float> *Matrix(int maxtixType) const;
     void CreateDistribution();
     void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
+    void CreateDefaultDistribution();
 
 private:
     pnl::CGaussianDistribFun *m_pDistrib;
+
 };
 
 #endif //__WDISTRIBFUN_HPP__
