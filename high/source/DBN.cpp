@@ -36,8 +36,6 @@ DBN::DBN(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
     m_pNet->SetCallback(new DBNCallback());
     m_pNet->Token()->AddProperty("Inference", aInference,
 	sizeof(aInference)/sizeof(aInference[0]));
-    // m_pNet->Token()->AddProperty("Learning", aLearning,
-    //	sizeof(aLearning)/sizeof(aLearning[0]));
 }
 
 DBN::~DBN()
@@ -117,13 +115,13 @@ void DBN::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)
 
 TokArr DBN::GetGaussianMean(TokArr vars)
 {
-    static const char fname[] = "GaussianMean";
-    
+    static const char fname[] = "GetGaussianMean";
+
     if( !vars.size() )
     {
 	ThrowUsingError("Must be at least one combination for a child node", fname);
     }
-    
+
     int nnodes = vars.size();
     Vector<int> queryNds, queryVls;
     Net().ExtractTokArr(vars, &queryNds, &queryVls);
@@ -131,22 +129,38 @@ TokArr DBN::GetGaussianMean(TokArr vars)
     {
 	queryVls.assign(nnodes, -1);
     }
-    
+
     const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
-    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matMean);
-    
-    return Net().ConvertMatrixToToken(mat);
+
+    if (cpd->IsDistributionSpecific() == 1)         
+    {
+        TokArr res;
+        res << "uniform";
+        return res;
+    }
+    else
+        if (cpd->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
+        {
+            TokArr res;
+            res << "scalar";
+            return res;  
+        }
+        else
+        {
+            const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matMean);
+            return Net().ConvertMatrixToToken(mat);
+        }
 }
 
 TokArr DBN::GetGaussianCovar(TokArr var, TokArr vars)
 {
-    static const char fname[] = "GaussianCovar";
-    
+ static const char fname[] = "GetGaussianCovar";
+
     if( !var.size() )
     {
 	ThrowUsingError("Must be at least one combination for a child node", fname);
     }
-    
+
     int nnodes = var.size();
     Vector<int> queryNds, queryVls;
     Net().ExtractTokArr(var, &queryNds, &queryVls);
@@ -154,11 +168,34 @@ TokArr DBN::GetGaussianCovar(TokArr var, TokArr vars)
     {
 	queryVls.assign(nnodes, -1);
     }
-    
+
     const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
-    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matCovariance);
-    
-    return Net().ConvertMatrixToToken(mat);
+
+    if (cpd->GetDistribFun()->IsDistributionSpecific() == 2) // delta
+    {
+        TokArr res;
+        res << "0";
+        return res;
+    }
+    else
+        if (cpd->GetDistribFun()->IsDistributionSpecific() == 1)
+        {
+            TokArr res;
+            res << "uniform";
+            return res;
+        }
+        else
+            if (cpd->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
+            {
+                TokArr res;
+                res << "scalar";
+                return res;
+            }
+            else
+            {
+                const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matCovariance);
+                return Net().ConvertMatrixToToken(mat);
+            }
 }
 
 TokArr DBN::GetPTabular(TokArr child, TokArr parents)
@@ -241,17 +278,17 @@ TokArr DBN::GetJPD( TokArr nodes)
     }
     */
     pnl::CEvidence **pEvid;
-    pEvid = new pnl::CEvidence*[m_nSlices];
+    pEvid = new pnl::CEvidence*[GetNumSlices()];
     int i;
-    for(i = 0; i < m_nSlices; i++)
+    for(i = 0; i < GetNumSlices(); i++)
     {
 	pEvid[i] = (m_AllEvidences[i])[m_AllEvidences[i].size() - 1]; 
     }
     switch(PropertyAbbrev("Inference"))
     {
     case 's': 
-	Inference().DefineProcedure(pnl::ptSmoothing, m_nSlices);
-	Inference().EnterEvidence(pEvid,m_nSlices);
+	Inference().DefineProcedure(pnl::ptSmoothing, GetNumSlices());
+	Inference().EnterEvidence(pEvid,GetNumSlices());
 	Inference().Smoothing();
 	break;
     case 'x':
@@ -338,6 +375,10 @@ TokArr DBN::GetJPD( TokArr nodes)
             res << "distribution";
         }
     }
+    if (nSlice <= 1)  
+    {
+	Net().Token()->Resolve(res);
+    }
     res = ConvertBNetQueToDBNQue(res,nSlice); 
     return res;	
 }
@@ -408,30 +449,29 @@ void DBN::ClearEvidBuf()
 }
 
 
-void DBN::LearnParameters(TokArr aSample[], int nSample)
-{   
-/*if(m_nLearnedEvidence > Net().EvidenceBuf()->size())
-{
-ThrowInternalError("inconsistent learning process", "Learn");
-}
-
-  if(m_nLearnedEvidence == Net().EvidenceBuf()->size())
-  {
-  return;// is it error?
-  }
-  
-    if(nSample)
+void DBN::LearnParameters()
+{  
+    int i;
+    /*if(m_nLearnedEvidence > Net().EvidenceBuf()->size())
     {
-    for(int i = 0; i < nSample; ++i)
-    {
-    Net().EvidenceBuf()->push_back(Net().CreateEvidence(aSample[i]));
+    ThrowInternalError("inconsistent learning process", "Learn");
     }
     
-      
+      if(m_nLearnedEvidence == Net().EvidenceBuf()->size())
+      {
+      return;// is it error?
+      }     
 }*/
     
     Learning().SetData(static_cast<const pnl::pEvidencesVecVector>(m_AllEvidences));
     Learning().Learn();
+    for (i = 0; i < Net().Graph()->iNodeMax(); i++)
+    {
+	if(Net().Graph()->IsValidINode(i))
+	{
+	    Net().Distributions()->ResetDistribution(i, *Net().Model()->GetFactor(Net().Graph()->IGraph(i)));
+	}
+    }
 }
 
 TokArr DBN::GetMPE(TokArr nodes)
@@ -447,9 +487,9 @@ TokArr DBN::GetMPE(TokArr nodes)
     }
     //  Net().MustBeNode(nodes);	
     pnl::CEvidence **pEvid;
-    pEvid = new pnl::CEvidence*[m_nSlices];
+    pEvid = new pnl::CEvidence*[GetNumSlices()];
     int i,j;
-    for(i = 0; i < m_nSlices; i++)
+    for(i = 0; i < GetNumSlices(); i++)
     {
 	pEvid[i] = (m_AllEvidences[i])[m_AllEvidences[i].size() - 1]; 
     }
@@ -532,7 +572,10 @@ TokArr DBN::GetMPE(TokArr nodes)
         else
 	    result.push_back(v.GetFlt());
     }
-    
+    if (nSlice <= 1)  
+    {
+	Net().Token()->Resolve(result);
+    }
     result = ConvertBNetQueToDBNQue(result,nSlice);
     return result;
 }
@@ -556,7 +599,122 @@ void DBN::SaveNet(const char *filename)
 
 int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 {
-    return Net().SaveEvidBuf(filename, mode);
+    WLex lex(filename, false/* write */, (mode == NetConst::eCSV) ? ',':'\t');
+    int iEvid, iCol, i,j;
+    Vector<int> nUsingCol(Net().nNetNode(), 0);
+//    Vector<int> nSlices;
+    int evNum = 0;
+    const int *aEvidNode;
+    int nEvidNode;
+    
+    // mark nodes for saving
+    for(i = 0; i < GetNumSlices(); i++)
+    for(iEvid = 0; iEvid < m_AllEvidences[i].size(); ++iEvid)
+    {
+	evNum++;
+	aEvidNode = m_AllEvidences[i][iEvid]->GetAllObsNodes();
+	nEvidNode = m_AllEvidences[i][iEvid]->GetNumberObsNodes();
+	for(iCol = 0; iCol < nEvidNode; ++iCol)
+	{
+	    nUsingCol[aEvidNode[iCol]]++;
+	}
+    }
+
+    Vector<int> aiCSVCol;
+    String sliceHeader = "Slice";
+    lex.PutValue(sliceHeader); 
+    // write header and fill node indices vector
+    for(iCol = 0; iCol < nUsingCol.size(); ++iCol)
+    {
+	if(!nUsingCol[iCol])
+	{
+	    continue;
+	}
+	String colName(Net().NodeName(Net().Graph()->IOuter(iCol)));
+	const pnl::CNodeType &nt = *Model()->GetNodeType(iCol);
+
+	aiCSVCol.push_back(iCol);
+	if(nt.IsDiscrete())
+	{
+	    lex.PutValue(GetShortName(colName));
+	}
+	else
+	{
+	    String subColName;
+	    for(i = 0; i < nt.GetNodeSize(); ++i)
+	    {
+		subColName = colName;
+		subColName << "^" <<Net().Token()->Value(Net().Graph()->IOuter(iCol), i);
+		lex.PutValue(GetShortName(subColName));
+	    }
+	}
+    }
+
+    lex.Eol();
+
+    pnl::pnlString str, tmpstr;
+    pnl::valueVector v;
+    
+    // write evidences one by one
+    for(j = 0; j < GetNumSlices(); j++)
+    for(iEvid = 0; iEvid < m_AllEvidences[i].size(); ++iEvid)
+    {
+	aEvidNode = m_AllEvidences[j][iEvid]->GetAllObsNodes();
+	nEvidNode = m_AllEvidences[j][iEvid]->GetNumberObsNodes();
+	// sort indices of nodes in evidence
+	for(iCol = 1; iCol < nEvidNode; ++iCol)
+	{
+	    if(aEvidNode[iCol - 1] > aEvidNode[iCol])
+	    {
+		nUsingCol.assign(aEvidNode, aEvidNode + nEvidNode);
+		std::sort(nUsingCol.begin(), nUsingCol.end());
+		aEvidNode = &nUsingCol.front();
+		break;
+	    }
+	}
+	char c[2];
+	itoa(j,c,10);
+	tmpstr = String(c);
+	lex.PutValue(tmpstr);
+	// iCol here - index in aiCSVCol
+	for(iCol = 0, i = 0; iCol < aiCSVCol.size(); ++iCol)
+	{
+	    if(aiCSVCol[iCol] == aEvidNode[i])
+	    {
+		m_AllEvidences[j][iEvid]->GetValues(aEvidNode[i], &v);
+		for(int j = 0; j < v.size(); ++j)
+		{
+		    str.resize(0);
+		    if(v[j].IsDiscrete())
+		    {
+			if(v.size() != 1)
+			{
+			    ThrowInternalError("We don't support discrete node "
+				"with multidimensions", "SaveLearnBuf");
+			}
+			str << Net().DiscreteValue(aEvidNode[i], v[j].GetInt());
+		    }
+		    else
+		    {
+			str << v[j].GetFlt();
+		    }
+		    
+		    tmpstr = String(str.c_str());
+		    lex.PutValue(tmpstr);
+		}
+		++i;
+	    }
+	    else
+	    {
+                tmpstr = String();
+		lex.PutValue(tmpstr);
+	    }
+	}
+
+	lex.Eol();
+    }
+
+    return evNum;
 }
 
 void DBN::LoadNet(const char *filename)
@@ -584,7 +742,103 @@ void DBN::LoadNet(const char *filename)
 
 int DBN::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr columns)
 {
-    return Net().LoadEvidBuf(filename, mode, columns);
+    static const char funName[] = "LoadLearnBuf";
+
+    WLex lex(filename, true/* read */, (mode == NetConst::eCSV) ? ',':'\t');
+    TokArr header;
+    int iCol, nCol, nColInUse;
+    int nEvid;
+    int nslice;
+    String colName, sliceHeader,numSlice;
+    
+    lex.GetValue(&sliceHeader);
+
+    for(nColInUse = nCol = 0; nCol == 0 || !lex.IsEol(); ++nCol)
+    {
+	if(!lex.GetValue(&colName))
+	{
+	    ThrowUsingError("Loaded file has wrong structure", funName);
+	}
+
+	if(columns.size())
+	{
+	    continue;
+	}
+	colName<<"-0";
+	TokIdNode *node = Tok(colName).Node();
+
+	if(node->tag == eTagNetNode || node->tag == eTagValue)
+	{
+	    header.push_back(colName);
+	    nColInUse++;
+	}
+	else
+	{
+	    header.push_back("");
+	}
+    }
+
+    TokArr tmpTokArr;
+    if(columns.size())
+    {
+	for(iCol = 0; iCol < columns.size(); iCol++)
+	{
+	    if(columns[iCol] != "")
+	    {
+                tmpTokArr = TokArr(columns[iCol]);
+                Net().MustBeNode(tmpTokArr);
+                nColInUse++;
+	    }
+	}
+	header = columns;
+    }
+
+    if(nColInUse == 0)
+    {
+	ThrowUsingError("Nothing to load", funName);
+    }
+
+    ClearEvidBuf();
+
+    TokArr evid;
+    for(nEvid = 0; lex.IsEof() == false;)
+    {
+	lex.GetValue(&numSlice);
+	const char * ns = numSlice.c_str();
+	nslice = atoi(ns);
+	evid.resize(0);
+	for(iCol = 0; (iCol == 0 || lex.IsEol() != true) && !lex.IsEof(); ++iCol)
+	{
+	    // colName - used as buffer for value
+	    if(lex.GetValue(&colName) && header[iCol] != "")
+	    {
+		evid.push_back(header[iCol] ^ colName);
+	    }
+	}
+
+	if(lex.IsEof())
+	{
+	    break;
+	}
+
+	if( iCol > nCol )
+	{
+	    ThrowUsingError("Loaded file has wrong structure", funName);
+	}
+
+	if(evid.size() > 0)
+	{
+	    //AddEvidToBuf(evid);
+	    Net().ClearEvid();
+	    EditEvidence(evid);
+	    pnl::CEvidence *evid = NULL; 
+            evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
+           (m_AllEvidences[nslice]).push_back(evid);
+	    nEvid++;
+	}
+    }
+
+    return nEvid;
 }
 
 // whatNodes is array of tokens which specify the list of variables and optionally 
@@ -595,14 +849,6 @@ void DBN::GenerateEvidences(pnl::intVector nSlices)
 {
     Model()->GenerateSamples(&m_AllEvidences,nSlices);
 }
-
-void DBN::MaskEvidBuf(TokArr whatNodes)
-{   
-    Net().MaskEvidBuf(whatNodes);
-}
-
-//= private functions  =================================================
-
 
 pnl::CMatrix<float> *DBN::Matrix(int iNode) const
 {
@@ -646,9 +892,22 @@ String DBN::GetProperty(const char *name) const
 
 void DBN::SetNumSlices(int nSlices)
 {
-    m_nSlices = nSlices;
-    m_AllEvidences.resize(m_nSlices);
+    char c[2];
+    itoa(nSlices,c,10);
+    m_pNet->SetProperty("NumSlices",c);
+    m_AllEvidences.resize(nSlices);
 }
+
+int DBN::GetNumSlices()
+{
+    String nslicesStr = GetProperty("NumSlices");
+    if(nslicesStr.length() == 0)
+    {
+	return 2;
+    };
+    return atoi(nslicesStr.c_str());
+}
+    
 
 const char DBN::PropertyAbbrev(const char *name) const
 {   
@@ -688,26 +947,10 @@ const char DBN::PropertyAbbrev(const char *name) const
 	    return 's';
 	}
     }
-    if(!strcmp(name,"NumSlices"))
-    {
-	String NumSlices = GetProperty("NumSlices");
-	pnl::pnlVector<char> learnNameVec(NumSlices.length());
-	for(int i = 0; i < NumSlices.length(); ++i)
-	{
-	    learnNameVec[i] = tolower(NumSlices[i]);
-	}
-
-	char *pLearnName = &learnNameVec.front();
-	
-	if(strstr(pLearnName, "em"))
-	{
-	    return 'e';
-	}
-	else 
-	{
-	    return 0;
-	}   	
-    }
+   else
+   {
+       return 0;
+   }
 }
 
 int DBN::GetSliceNum(String nodeName)
@@ -866,9 +1109,9 @@ TokArr DBN::GetParents(TokArr nodes)
 	tmpStr = nodes[i].Name();
 	if(nSlice != 0)
 	{	    
-		tmpStr = GetShortName(tmpStr);
-		tmpStr<<"-1";
-		NewQue.push_back(tmpStr);
+	    tmpStr = GetShortName(tmpStr);
+	    tmpStr<<"-1";
+	    NewQue.push_back(tmpStr);
 	}
 	else
 	{
@@ -888,7 +1131,7 @@ TokArr DBN::GetParents(TokArr nodes)
 		tmpStr = GetShortName(tmpStr);
 		tmpStr<<"-";
 		char c[2];  
-	        itoa(nSlice,c,10);
+		itoa(nSlice,c,10);
 		tmpStr.append(c,strlen(c));
 		nodesParents.push_back(tmpStr);
 	    }
@@ -897,7 +1140,7 @@ TokArr DBN::GetParents(TokArr nodes)
 		tmpStr = GetShortName(tmpStr);
                 tmpStr<<"-";
 		char c[2];  
-	        itoa(nSlice - 1,c,10);
+		itoa(nSlice - 1,c,10);
 		tmpStr.append(c,strlen(c));
 		nodesParents.push_back(tmpStr);
 	    };
@@ -907,7 +1150,7 @@ TokArr DBN::GetParents(TokArr nodes)
 	    nodesParents.push_back(nodes[i]);
 	}
     };
-
+    
     return nodesParents;
 }
 
@@ -926,16 +1169,16 @@ TokArr DBN::GetChildren(TokArr nodes)
 	tmpStr = nodes[i].Name();
 	if(nSlice != 0)
 	{	    
-		tmpStr = GetShortName(tmpStr);
-		tmpStr<<"-0";
-		const char *s = tmpStr.c_str();
-
-		NewQue1.push_back(tmpStr);
-
-		tmpStr.resize(tmpStr.length() - 2);
-		tmpStr<<"-0";
-		NewQue2.push_back(tmpStr);
-		
+	    tmpStr = GetShortName(tmpStr);
+	    tmpStr<<"-0";
+	    const char *s = tmpStr.c_str();
+	    
+	    NewQue1.push_back(tmpStr);
+	    
+	    tmpStr.resize(tmpStr.length() - 2);
+	    tmpStr<<"-0";
+	    NewQue2.push_back(tmpStr);
+	    
 	}
 	else
 	{
@@ -944,7 +1187,7 @@ TokArr DBN::GetChildren(TokArr nodes)
     };
     tmpChildren1 = Net().GetChildren(NewQue1);
     tmpChildren2 = Net().GetChildren(NewQue2);
-
+    
     
     for(i = 0; i < tmpChildren1.size(); i++)
     {
@@ -964,19 +1207,19 @@ TokArr DBN::GetChildren(TokArr nodes)
 	tmpStr = tmpChildren2[i].Name();
 	if(nSlice != 0)
 	{
-	if(GetSliceNum(tmpStr) == 1)
-	{
-	    tmpStr = GetShortName(tmpStr);
-	    tmpStr<<"-";
-	    char c[2];  
-	    itoa(nSlice + 1,c,10);
-	    tmpStr.append(c,strlen(c));
-	    nodesChildren.push_back(tmpStr);
-	}
+	    if(GetSliceNum(tmpStr) == 1)
+	    {
+		tmpStr = GetShortName(tmpStr);
+		tmpStr<<"-";
+		char c[2];  
+		itoa(nSlice + 1,c,10);
+		tmpStr.append(c,strlen(c));
+		nodesChildren.push_back(tmpStr);
+	    }
 	}
 	else
 	{
-	nodesChildren.push_back(tmpChildren2[i]);
+	    nodesChildren.push_back(tmpChildren2[i]);
 	}
     }
     return nodesChildren;

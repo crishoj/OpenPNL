@@ -4,6 +4,7 @@
 #include <string>
 #include "pnlHighConf.hpp"
 #include "pnlTok.hpp"
+#include "Wcsv.hpp"
 
 // FORWARDS
 class WGraph;
@@ -94,9 +95,12 @@ public:
 
     void SetNumSlices(int nSlices);
     // sets number of slices
+
+    int GetNumSlices();
+    // returnes number of slices
     
-    // learns using current evidence and evidence history
-    void LearnParameters(TokArr aValue[] = NULL, int nValue = 0);
+    // learn using evidences buffer
+    void LearnParameters();
 
     // returns MPE for nodes using current evidence
     TokArr GetMPE(TokArr nodes = TokArr());
@@ -121,12 +125,6 @@ public:
     //                 if 'true',then no fixed values while generating evidences
     void GenerateEvidences(pnl::intVector nSlices);
     
-    //This function hides nodes of current learning buffer with given probability
-    //The function applies for all existing values (hidden and observed), 
-    //i.e. observed may become hidden and hidden may become observed
-    //By default this function unhides all hidden values 
-    //If a node did not have sample then it can not be unhidden
-    void MaskEvidBuf( TokArr whatNodes = "");
     ProbabilisticNet &Net() const { return *m_pNet; }
 
     void SetProperty(const char *name, const char *value);
@@ -155,9 +153,8 @@ private:// DATA members
     pnl::CDynamicInfEngine *m_Inference;// inference, if it exists
     pnl::CDynamicLearningEngine *m_Learning;   // learning, if it exists
     int m_nLearnedEvidence;
-    int m_nSlices;
     int m_curSlice;
-//	int m_Lag;
+
     pnl::pEvidencesVecVector m_AllEvidences; //all evidences matrix 
 
     ProbabilisticNet *m_pNet;
