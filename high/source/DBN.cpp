@@ -56,7 +56,25 @@ void DBN::AddNode(TokArr nodes, TokArr subnodes)
 
 void DBN::DelNode(TokArr nodes)
 {
-    Net().DelNode(nodes);
+    TokArr priorNodes,fsliceNodes;
+	String tmpStr,prStr,slStr;
+	int i;
+	for(i = 0; i < nodes.size();i++ )
+	{
+		tmpStr = nodes[i].Name();
+		tmpStr = GetShortName(tmpStr);
+		prStr = tmpStr;
+		slStr = tmpStr;
+		const char *s = prStr.c_str();
+		prStr.append("-0",2);
+		slStr.append("-1",2);
+        priorNodes.push_back(prStr);
+		fsliceNodes.push_back(slStr);
+	}
+	 const char *s = prStr.c_str();
+	 Net().DelNode(fsliceNodes);
+     Net().DelNode(priorNodes);
+	 
 }
 
 
@@ -97,7 +115,7 @@ void DBN::SetGaussian(TokArr var, TokArr mean, TokArr variance, TokArr weight)
         Net().Distributions()->FillData(var, weight, TokArr(), pnl::matWeights);
 }
 
-TokArr DBN::GaussianMean(TokArr vars)
+TokArr DBN::GetGaussianMean(TokArr vars)
 {
     static const char fname[] = "GaussianMean";
     
@@ -120,7 +138,7 @@ TokArr DBN::GaussianMean(TokArr vars)
     return Net().ConvertMatrixToToken(mat);
 }
 
-TokArr DBN::GaussianCovar(TokArr var, TokArr vars)
+TokArr DBN::GetGaussianCovar(TokArr var, TokArr vars)
 {
     static const char fname[] = "GaussianCovar";
 	
@@ -239,10 +257,7 @@ TokArr DBN::GetJPD( TokArr nodes)
 	case 'x':
 		Inference().DefineProcedure(pnl::ptFixLagSmoothing,0 );
 		int slice;
-		// for (slice = 0; slice < nSlice + 1; slice++)
-		//	{
 		Inference().EnterEvidence( &(pEvid[nSlice]), 1 );
-		//	};
 		Inference().FixLagSmoothing( nSlice );
 		break;
 	case 'f':
@@ -279,7 +294,6 @@ TokArr DBN::GetJPD( TokArr nodes)
 			NewQue.push_back(nodes[i]);
 		}
 	};
-	//
 	int nnodes = nodes.size();
 	Vector<int> queryNds, queryVls;
 	
@@ -381,12 +395,8 @@ void DBN::ClearEvidBuf()
     m_nLearnedEvidence = 0;
 }
 
-void DBN::Learn()
-{
-    Learn(0, 0);
-}
 
-void DBN::Learn(TokArr aSample[], int nSample)
+void DBN::LearnParameters(TokArr aSample[], int nSample)
 {   
 /*if(m_nLearnedEvidence > Net().EvidenceBuf()->size())
 {
@@ -419,192 +429,6 @@ ThrowInternalError("inconsistent learning process", "Learn");
 	Learning().SetData(static_cast<const pnl::pEvidencesVecVector>(m_AllEvidences));
 	Learning().Learn();
 }
-
-
-
-#if 0        
-DBN* DBN::LearnStructure(TokArr aSample[], int nSample)
-{
-    intVector vAnc, vDesc;//bogus vectors
-    CMlStaticStructLearnHC* pLearning = pnl::CMlStaticStructLearnHC::Create(m_Model,
-        itStructLearnML, StructLearnHC, BIC, m_Model->GetNumberOfNodes(), vAnc, vDesc, 1/*one restart*/ );
-	
-    if(nSample)
-    {
-		for(int i = 0; i < nSample; ++i)
-		{
-			Net().EvidenceBuf()->push_back(Net().CreateEvidence(aSample[i]));
-		}
-    }
-	
-    pLearning->SetData(Net().EvidenceBuf()->size(), &Net().EvidenceBuf()->front() );
-    pLearning->Learn();
-    const int* pRenaming = pLearning->GetResultRenaming();
-    pLearning->CreateResultBNet(const_cast<CDAG*>(pLearning->GetResultDAG()));
-    
-    CBNet* newNet = CBNet::Copy(pLearning->GetResultBNet());
-	
-    //now we will create new object of class DBN and construct it from scratch using newNet
-    //and required information (node names) on current (this) network
-    DBN* newDBN = new DBN;
-	
-    //add nodes 
-    int nnodes = newNet->GetNumberOfNodes();
-    int* revren = new int[nnodes];
-    for( int i = 0 ; i < nnodes; i++ )
-    {
-        revren[pRenaming[i]] = i;
-    }   
-    TokArr NodeOrdering;
-    for( i = 0 ; i < nnodes; i++ )
-    { 
-        int idx = revren[i];
-        
-        //get info about node being added
-        
-        //get node name
-        Tok nodeName = NodeName(idx); 
-        //cout << nodeName << endl;
-        
-        //get node type 
-        Tok nodeType = NodeType( nodeName );
-        //cout << nodeType << endl;
-        
-        //get node values 
-        Resolve(nodeName);
-        TokArr values = nodeName.GetDescendants(eTagValue);
-        //convert to single word representation
-        for( int i = 0; i < values.size(); i++ )
-        {
-            values[i] = values[i].Name();
-        }
-        //cout << values << endl;
-        
-        newDBN->AddNode( nodeType^nodeName, values );
-        //concatenate
-        NodeOrdering << nodeName;
-    }
-	
-    cout << NodeOrdering;
-	
-    CGraph* graph = newNet->GetGraph();
-    intVector children;
-    for( i = 0 ; i < nnodes; i++ )
-    { 
-        graph->GetChildren( i, &children );
-        
-    }    
-    
-	
-    //get edges of new graph and add them to new network
-    CGraph* newGraph = newNet->GetGraph();
-    //for( i = 0 ; i < newGraph->
-	
-    //newDBN->AddArc(
-	
-    return newDBN;
-}
-#else
-void DBN::LearnStructure(TokArr aSample[], int nSample)
-{
-	//    pnl::intVector vAnc, vDesc;//bogus vectors
-	//    pnl::CMlDynamicStructLearn* pLearning = pnl::CMlDynamicStructLearn::Create(Model(),
-	//    pnl::itStructLearnML, pnl::StructLearnHC, pnl::BIC, Model()->GetNumberOfNodes(), vAnc, vDesc, 1/*one restart*/ );	
-	/*    if(nSample)
-    {
-	for(int i = 0; i < nSample; ++i)
-	{
-	Net().EvidenceBuf()->push_back(Net().CreateEvidence(aSample[i]));
-	}
-    }
-	
-	  pLearning->SetData(Net().EvidenceBuf()->size(), &Net().EvidenceBuf()->front() );
-	  pLearning->Learn();
-	  
-		const int* pRenaming = pLearning->GetResultRenaming();
-		Vector<int> vRename(pRenaming, pRenaming + Model()->GetNumberOfNodes());
-		
-		  pRenaming = &vRename.front();
-		  pLearning->CreateResultBNet(const_cast<pnl::CDAG*>(pLearning->GetResultDAG()));
-		  
-			pnl::CBNet* newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
-			
-			  int i;
-			  
-				Net().SetTopologicalOrder(pRenaming, newNet->GetGraph());
-				
-				  for(i = 0; i < Net().Graph()->nNode(); ++i)
-				  {
-				  Net().Distributions()->ResetDistribution(i, *newNet->GetFactor(i));
-				  }
-				  
-					//change ordering in current stuff
-					// Note! it may happen that old ordering of nodes is consistent (i.e. is topological)
-					// with new graph structure so theoretically no reordering required
-					//this would be good to have such function in PNL that checks this situation and reorder
-					//new network to old ordering. So we would not have to do all below
-					
-					  //add nodes 
-					  int nnodes = newNet->GetNumberOfNodes();
-					  //    Net().Token()->RenameGraph(pRenaming);
-					  
-						//reassign model
-						Net().SetModel(0);
-						
-						  //clear learning engine
-						  delete m_Learning;
-						  m_Learning = 0;
-						  
-							//clear inference engine
-							delete m_Inference;
-							m_Inference = 0;
-							
-							  //change domain in evidences
-							  
-								//change evidence on board
-								//IT is in Token form, so do not need to change
-								
-								  //change evidences in evidence buffer
-								  for( Vector<pnl::CEvidence*>::iterator it1 = Net().EvidenceBuf()->begin(); it1 != Net().EvidenceBuf()->end(); it1++ )
-								  {
-								  pnl::CEvidence* oldEv = *it1;
-								  pnl::CNodeValues* nv = oldEv;
-								  
-									
-									  /* { //below block of code borrowed from CMLStaticStructLearn class of PNL
-									  intVector obsnodes(nnodes);
-									  for(i=0; i<nnodes; i++) obsnodes[i] = i;
-									  valueVector new_data;
-									  const Value* val;
-									  for(i = 0 ; i < nEv; i++)
-									  {
-									  for(j=0; j<nnodes; j++)
-									  {
-									  val = m_Vector_pEvidences[i]->GetValue(m_vResultRenaming[j]);
-									  nt = m_pResultBNet->GetNodeType(j);
-									  if(nt->IsDiscrete())
-									  {
-									  new_data.push_back(*val);
-									  }
-									  else
-									  {
-									  ns = nt->GetNodeSize();
-									  for(k=0; k<ns; k++)
-									  new_data.push_back(*(val+k));
-									  }
-									  }
-									  } //end block of borrowed code
-									  
-										pEv[i] = CEvidence::Create(m_pResultBNet, nnodes, &obsnodes.front(), new_data);
-										
-										  
-											CEvidence* newEv = CEvidence::Create(
-											
-											  old->
-	*/
-	/*   }*/
-}
-#endif
 
 TokArr DBN::GetMPE(TokArr nodes)
 {

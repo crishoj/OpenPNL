@@ -87,22 +87,14 @@ public:
 	// sets number of slices
     
     // learns using current evidence and evidence history
-    void Learn();
-    void Learn(TokArr aValue[], int nValue);
-    
-    //learn structure of the network using input evidences or evidence history
-#if 0 
-    DBN* LearnStructure(TokArr aValue[], int nValue); //maybe return some quality measure?
-#else
-    void LearnStructure(TokArr aValue[], int nValue); //maybe return some quality measure?
-#endif
+    void LearnParameters(TokArr aValue[] = NULL, int nValue = 0);
 
     // returns MPE for nodes using current evidence
     TokArr GetMPE(TokArr nodes = TokArr());
     
     // get parameters of gaussian distribution
-    TokArr GaussianMean(TokArr vars);
-    TokArr GaussianCovar(TokArr var, TokArr vars);
+    TokArr GetGaussianMean(TokArr vars);
+    TokArr GetGaussianCovar(TokArr var, TokArr vars);
     
     void SaveNet(const char *filename);
     int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
