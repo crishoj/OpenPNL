@@ -53,3 +53,4 @@ void TestGaussianModelCreate();
 void TestGaussianInference();
 void TestGaussianParamLearning();
 void TestForGetPTabular();
+void TestForSetInferenceProperties();

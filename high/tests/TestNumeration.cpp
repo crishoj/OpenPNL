@@ -31,6 +31,35 @@ BayesNet *GetSimpleTabularModelWithEntanglementNumeration()
     return net;
 }
 
+BayesNet *GetSimpleTabularModelWithDeletedElement()
+{
+    // One  Two (deleted) Three
+    //   |         |     |
+    //   |         \/    |
+    //   o------>Zero<---o
+    BayesNet *net;
+    net = new BayesNet();
+
+    net->AddNode(discrete^"One Three Zero", "State1 State2");
+    //net->DelNode("Two");
+    net->AddArc("One Three", "Zero");
+    
+    net->SetPTabular("One^State1", "0.5");
+    net->SetPTabular("One^State2", "0.5");
+    net->SetPTabular("Three^State1", "0.4");
+    net->SetPTabular("Three^State2", "0.6");
+    net->SetPTabular("Zero^State1","0.1" ,"One^State1 Three^State1");
+    net->SetPTabular("Zero^State2","0.9" ,"One^State1 Three^State1");
+    net->SetPTabular("Zero^State1","0.2" ,"One^State1 Three^State2");
+    net->SetPTabular("Zero^State2","0.8" ,"One^State1 Three^State2");
+    net->SetPTabular("Zero^State1","0.3" ,"One^State2 Three^State1");
+    net->SetPTabular("Zero^State2","0.7" ,"One^State2 Three^State1");
+    net->SetPTabular("Zero^State1","0.8" ,"One^State2 Three^State2");
+    net->SetPTabular("Zero^State2","0.2" ,"One^State2 Three^State2");
+
+    return net;
+}
+
 void TestForGetPTabular()
 {
     BayesNet *net = GetSimpleTabularModelWithEntanglementNumeration();
@@ -61,4 +90,16 @@ void TestForGetPTabular()
     {
 	PNL_THROW(pnl::CAlgorithmicException, "There is error in the function TestForGetPTabular 3");
     };
+}
+
+void TestForSetInferenceProperties()
+{
+    BayesNet *net = GetSimpleTabularModelWithEntanglementNumeration();
+
+    net->SetProperty("Inference","gibbs");
+    //net->SetProperty("GibbsNumberOfIterations","1000");
+    //net->SetProperty("GibbsNumberOfStreams","2");
+    //net->SetProperty("GibbsThresholdIteration","100");
+
+    net->GetJPD("One");
 }
