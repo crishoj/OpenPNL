@@ -6552,7 +6552,11 @@ int CGaussianDistribFun::GetNumberOfFreeParameters() const
     int dimOfGaussian, nparents;
     const int* Dims;
     
-    pMatrix = this->GetMatrix(matCovariance);
+    if(m_bDeltaFunction)
+		nCov = 0;
+	else
+	{
+	pMatrix = this->GetMatrix(matCovariance);
     pMatrix->GetRanges(&nDims, &Dims);
     dimOfGaussian = Dims[0];
     if( pMatrix->GetClampValue() )
@@ -6561,6 +6565,7 @@ int CGaussianDistribFun::GetNumberOfFreeParameters() const
     {
 	nCov = dimOfGaussian * (dimOfGaussian-1) / 2;   //symmetric (and positive definite)
     }
+	}
     pMatrix = this->GetMatrix(matMean);
     if( pMatrix->GetClampValue() )
 	nMean = 0;
