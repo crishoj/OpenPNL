@@ -203,3 +203,4 @@ Note: it is normal for w2k_vc6 autobuilds to have "bad_build" code coverage summ
 09/17/04 20:20:01	w2k_icc	failed	70.0	testComputeLikelihood
 09/18/04 20:20:01	w2k_icc	failed	70.0	testComputeLikelihood
 09/19/04 20:20:06	w2k_icc	failed	69.9	testComputeLikelihood testGenerateEvidences
+09/20/04 20:20:06	w2k_icc	failed	70.0	testComputeLikelihood
