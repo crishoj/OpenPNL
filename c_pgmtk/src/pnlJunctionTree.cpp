@@ -1046,6 +1046,12 @@ void CJunctionTree::SetNodeTypes( const CStaticGraphicalModel
                 nodeSize = 0;
                 break;
             }
+        case dtSoftMax: case dtCondSoftMax:
+            {
+                bDiscrete = true;
+                nodeSize = 1;
+                break;
+            }
         default:
             {
                 PNL_THROW( CInvalidOperation,
