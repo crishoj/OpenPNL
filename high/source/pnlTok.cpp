@@ -75,6 +75,37 @@ void TokIdNode::Alias( TokId const &id )
     }
 }
 
+void TokIdNode::Unalias( TokId const &id )
+{
+    TokIdNode *nd;
+    Map::iterator it;
+    int i;
+
+    for ( i = this->id.size(); i--; )
+    {
+        if ( this->id[i].Match( id ) )
+        {
+            this->id.erase( this->id.begin() + i );
+            for ( nd = v_prev; nd; nd = nd->v_prev )
+            {
+                it = nd->desc.find( id );
+                for ( ; it != nd->desc.end() && it->first.Match( id ); )
+                {
+                    if ( it->second == this )
+                    {
+                        nd->desc.erase( it );
+                        goto going_on;
+                    }
+                }
+                PNL_THROW( CInternalError, "invariant failed: id must be in descendants multimap, but it is not" );
+going_on:
+                ;
+            }
+            break;
+        }
+    }
+}
+
 void TokIdNode::Remove( bool no_cemetery )
 {
     int i, j;

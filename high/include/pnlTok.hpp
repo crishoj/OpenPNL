@@ -26,7 +26,9 @@
 
 struct PNLHIGH_API TokId
 {
+    // internal logic relies on TokId::Match being transitive
     inline bool Match( TokId const & ) const;
+
     inline bool operator<( TokId const & ) const;
     inline operator String() const;
 
@@ -319,6 +321,7 @@ struct PNLHIGH_API TokIdNode
 
     TokIdNode *Add( TokId const & );
     void Alias( TokId const & );
+    void Unalias( TokId const & );
     void Remove( bool no_cemetery = false );
     inline void Kill();
     static void PurgeCemetery();
