@@ -54,6 +54,7 @@ pnl::CGraph *WGraph::Graph(bool bForget)
 	
 	m_IndicesGraphToOuter.resize(nodes);
 	m_IndicesOuterToGraph.resize(m_aNode.size());
+#if !defined(GET_TOPOLOGICAL_ORDERED_GRAPH)
 	for(i = j = 0; i < m_aNode.size(); ++i)
 	{
 	    if(m_abValid[i] == 0)
@@ -63,6 +64,63 @@ pnl::CGraph *WGraph::Graph(bool bForget)
 	    m_IndicesGraphToOuter[j] = i;
 	    m_IndicesOuterToGraph[i] = j++;
 	}
+#else
+	{
+	    std::vector<int> aNode;
+	    int candidate;
+	    bool bChange;
+
+	    aNode.resize(iNodeMax(), 0);
+	    for(i = 0; i < m_abValid.size(); ++i)
+	    {
+		if(!m_abValid[i])
+		{
+		    aNode[i] = -1;
+		}
+	    }
+	    for(i = 0; i < m_aNode.size();)
+	    {
+		candidate = -1;
+		bChange = false;
+		// walk thru all nodes and add nodes without non-marked parent
+		// to topological order vector
+		for(j = 0; j < aNode.size(); ++j)
+		{
+		    if(aNode[j] < 0)
+		    {
+			continue;
+		    }
+
+		    register int k;
+
+		    candidate = j;
+		    for(k = m_aParent[j].size(); --k >= 0 && aNode[m_aParent[j][k]] == -1;);
+		    if(k < 0)
+		    {
+			m_IndicesGraphToOuter[i] = j;
+			m_IndicesOuterToGraph[j] = i++;
+			aNode[j] = -1;
+			bChange = true;
+		    }
+		}
+
+		if(!bChange)
+		{
+		    if(candidate >= 0)
+		    {
+			m_IndicesGraphToOuter[i] = candidate;
+			m_IndicesOuterToGraph[candidate] = i++;
+			aNode[j] = -1;
+		    }
+		    else
+		    {
+			ThrowInternalError("incorrect algo of topological sort",
+			    "WGraph::Graph");
+		    }
+		}
+	    }
+	}
+#endif
 
 	PNL_CHECK_FOR_NON_ZERO(j - nodes);
 
