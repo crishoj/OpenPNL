@@ -1066,7 +1066,7 @@ int CJtreeInfEngine::GetDataForMargAndMult(const int source, const int sink,
         else 
         {
             PNL_THROW( CInconsistentSize, "small domain isn't subset of domain")
-            return NULL;
+            return 0;
         }
         //check that pSmallDom is m_Domain's subset
     }
