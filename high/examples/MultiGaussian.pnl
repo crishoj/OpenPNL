@@ -139,17 +139,31 @@ editevidence("x^dim2^0.4")
 //print("after evid")
 SetProperty("Inference", "naive");
 
-print("MPE")
+print("***MPE***")
+print("Evidences: x^dim1 = -15  x^dim2 = 5 z = 15.67")
 
 loadnet("..\tests\TestMultivariate\5Nodes.xml")
 
-GetMPE("x0");
-GetMPE("x");
-GetMPE("x2");
-GetMPE("y");
-GetMPE("z");
-GetGaussianMean("y")
-GetGaussianCovar("y")
+editevidence("x^dim1^-15.0");
+editevidence("x^dim2^5.0 z^dim1^15.67")
+
+print("x0")
+GetMPE("x0")
+
+print("x")
+GetMPE("x")
+
+print("x2")
+GetMPE("x2")
+
+print("y")
+GetMPE("y")
+
+print("z")
+GetMPE("z")
+
+//GetGaussianMean("y")
+//GetGaussianCovar("y")
 // run console
 console()
 print("bye")
