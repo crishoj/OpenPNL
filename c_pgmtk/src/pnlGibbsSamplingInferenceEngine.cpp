@@ -561,7 +561,8 @@ ConvertingFamilyToPot( int node, const CEvidence* pEv )
   CPotential* potToSample = GetPotToSampling(node);
   Normalization(potToSample);
   int i;
-  
+  bool isTreeNode = false;
+
   //Has node got discrete child with more than 2 values
   bool bHasNodeGotDChldWMrThn2Vl = false;
   
@@ -598,7 +599,16 @@ ConvertingFamilyToPot( int node, const CEvidence* pEv )
     const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &node);
   }
   
-  if( !IsAllNdsTab() )
+  for( i = 0; i < m_environment[node].size(); i++ )
+  {            
+    int num = m_environment[node][i];
+    if ( (*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtTree)
+    {
+      isTreeNode = true;
+    };
+  };
+
+  if( (!IsAllNdsTab()) || (isTreeNode == true))
   {
     if( GetModel()->GetModelType() == mtBNet )
     {
