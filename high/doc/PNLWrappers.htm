@@ -112,6 +112,107 @@ rel=STYLESHEET>
 <P>
 <UL>
   <LI><A 
+  href="#decl_Class_DBN">Class DBN</A> 
+  <UL>
+    <LI><A 
+    href="#decl_AddArc_DBN">AddArc</A> 
+
+    <LI><A 
+    href="#decl_AddEvidToBuf_DBN">AddEvidToBuf</A> 
+
+    <LI><A 
+    href="#decl_AddNode_DBN">AddNode</A> 
+
+    <LI><A 
+    href="#decl_DBN">DBN</A> 
+
+    <LI><A 
+    href="#decl_ClearEvid_DBN">ClearEvid</A> 
+
+    <LI><A 
+    href="#decl_ClearEvidBuf_DBN">ClearEvidBuf</A> 
+
+    <LI><A 
+    href="#decl_CurEvidToBuf_DBN">CurEvidToBuf</A> 
+
+    <LI><A 
+    href="#decl_DelArc_DBN">DelArc</A> 
+
+    <LI><A 
+    href="#decl_DelNode_DBN">DelNode</A> 
+
+    <LI><A 
+    href="#decl_EditEvidence_DBN">EditEvidence</A> 
+
+    <LI><A 
+    href="#decl_GenerateEvidences_DBN">GenerateEvidences</A> 
+
+    <LI><A 
+    href="#decl_GetChildren_DBN">GetChildren</A> 
+
+    <LI><A 
+    href="#decl_GetGaussianMean_DBN">GetGaussianMean</A> 
+
+    <LI><A 
+    href="#decl_GetGaussianCovar_DBN">GetGaussianCovar</A> 
+
+    <LI><A 
+    href="#decl_GetJPD_DBN">GetJPD</A> 
+
+    <LI><A 
+    href="#decl_GetMPE_DBN">GetMPE</A> 
+
+    <LI><A 
+    href="#decl_GetNeighbours_DBN">GetNeighbours</A> 
+
+    <LI><A 
+    href="#decl_GetNodeType_DBN">GetNodeType</A> 
+
+    <LI><A 
+    href="#decl_GetParents_DBN">GetParents</A> 
+
+    <LI><A 
+    href="#decl_GetProperty_DBN">GetProperty</A> 
+
+    <LI><A 
+    href="#decl_GetNumSlices_DBN">GetNumSlices</A> 
+
+    <LI><A 
+    href="#decl_GetPTabular_DBN">GetPTabular</A> 
+
+    <LI><A 
+    href="#decl_LearnParameters_DBN">LearnParameters</A> 
+
+    <LI><A 
+    href="#decl_LoadEvidBuf_DBN">LoadEvidBuf</A> 
+
+    <LI><A 
+    href="#decl_LoadNet_DBN">LoadNet</A> 
+
+    <LI><A 
+    href="#decl_SaveEvidBuf_DBN">SaveEvidBuf</A> 
+
+    <LI><A 
+    href="#decl_SaveNet_DBN">SaveNet</A> 
+
+    <LI><A 
+    href="#decl_SetPGaussian_DBN">SetPGaussian</A> 
+
+    <LI><A 
+    href="#decl_SetProperty_DBN">SetProperty</A> 
+
+    <LI><A 
+    href="#decl_SetPTabular_DBN">SetPTabular</A> 
+
+    <LI><A 
+    href="#decl_SetNumSlices_DBN">SetNumSlices</A> 	
+
+    </LI></UL>
+  </UL>
+
+<P>
+<UL>
+  <LI><A 
   href="#decl_Class_LIMID">Class LIMID</A> 
   <UL>
     <LI><A 
@@ -1326,6 +1427,1048 @@ Generate 100 samples for all nodes using current evidence. All nodes should cont
     TokArr whatNodesToSample = 0.9;<br>
     GenerateEvidences( 100, false, whatNodesToSample);
 </P>
+
+<HR>
+
+<H2><A name=decl_Class_DBN>Class DBN</A></H2>
+<HR>
+
+<P>Class DBN implements all functionality required for work with dynamic bayesian networks. 
+The following functional groups can be distinguished:
+<UL>
+    <LI>Network creation (addition/deletion of nodes and arcs)<BR>
+    <A href="#decl_AddNode_DBN">AddNode</A>,
+    <A href="#decl_DelNode_DBN">DelNode</A>,
+    <A href="#decl_AddArc_DBN">AddArc</A>,
+    <A href="#decl_DelArc_DBN">DelArc</A>.
+    </LI>
+    <LI>Setting/getting parameters<BR>
+    <A href="#decl_SetPTabular_DBN">SetPTabular</A>,
+    <A href="#decl_GetPTabular_DBN">GetPTabular</A>,
+    <A href="#decl_SetPGaussian_DBN">SetPGaussian</A>,
+    <A href="#decl_GetGaussianMean_DBN">GetGaussianMean</A> ,
+    <A href="#decl_GetGaussianCovar_DBN">GetGaussianCovar</A>,
+    <A href="#decl_EditEvidence_DBN">EditEvidence</A>,
+    <A href="#decl_ClearEvid_DBN">ClearEvid</A>,
+    <A href="#decl_CurEvidToBuf_DBN">CurEvidToBuf</A>,
+    <A href="#decl_AddEvidToBuf_DBN">AddEvidToBuf</A>,
+    <A href="#decl_ClearEvidBuf_DBN">ClearEvidBuf</A>,
+    <A href="#decl_GetChildren_DBN">GetChildren</A>,
+    <A href="#decl_GetParents_DBN">GetParents</A>,
+    <A href="#decl_GetNeighbours_DBN">GetNeighbours</A>,
+    <A href="#decl_SetProperty_DBN">SetProperty</A>,
+    <A href="#decl_GetProperty_DBN">GetProperty</A>
+    <A href="#decl_SetNumSlices_DBN">SetNumSlices</A>
+    <A href="#decl_GetNumSlices_DBN">GetNumSlices</A>  		
+    
+    <LI>Learning parameters<BR>
+    <A href="#decl_LearnParameters_DBN">LearnParameters</A>
+    </LI>
+    <LI>Inference in network<BR>
+    <A href="#decl_GetJPD_DBN">GetJPD</A>,
+    <A href="#decl_GetMPE_DBN">GetMPE</A>
+    </LI>
+    <LI>Data sampling<BR>
+    <A href="#decl_GenerateEvidences_DBN">GenerateEvidences</A>
+    </LI>
+    <LI>File I/O<BR>
+    <A href="#decl_LoadNet_DBN">LoadNet</A>,
+    <A href="#decl_SaveNet_DBN">SaveNet</A>,
+    <A href="#decl_LoadEvidBuf_DBN">LoadEvidBuf</A>,
+    <A href="#decl_SaveEvidBuf_DBN">SaveEvidBuf</A>
+    </LI>
+    <LI>more...</LI>
+</UL>
+</P>
+<HR>
+
+
+<H3><A name=decl_DBN>DBN</A></H3>
+<P class=Blurb>Constructor</P>
+<font class="interface">
+DBN();
+</font>
+<DL>
+</DL>
+<H5>Discussion</H5>
+<p class="description">DBN class has only default constructor.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Create empty dynamic bayessian net:
+</p>
+<p class="example">
+DBN dbn;
+</p>
+<HR>
+
+<H3><A name=decl_AddNode_DBN>AddNode</A></H3>
+<P class=Blurb>Adds nodes</P>
+<font class="interface">
+void AddNode(TokArr nodes, TokArr subnodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>List of nodes with nodes type (discrete or continuous) specifying. 
+  <DT>subnodes
+  <DD>Array of values that nodes can take (or names of dimensions for continuous nodes). 
+</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function adds one or several nodes with the same probable states into the network. We adds only 
+0 and 1 slices nodes. Node names must consists of "name-slice number". 0 slice nodes adds before 1 slice nodes.</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Add one discrete node "Street-0"  with states "true" and "false" to dynamic bayessian net:
+</p>
+<p class="example">
+dbn.AddNode(discrete^"Street-0", "true false");
+</p>
+<p class="description">
+Add one-dimensional continuous node "Street-0" to dynamic bayessian net:
+</p>
+<p class="example">
+dbn.AddNode(continuous^"Street-0", "dim1");
+</p>
+<p class="description">
+Add discrete nodes "Street-0" and "House-0" with states "true" and "false" to dynamic bayessian net:
+</p>
+<p class="example">
+dbn.AddNode(discrete^"Street-0 House-0", "true false");
+</p>
+<HR>
+
+<H3><A name=decl_DelNode_DBN>DelNode</A></H3>
+<P class=Blurb>Deletes nodes</P>
+<font class="interface">
+void DelNode(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of names of nodes to delete. 
+  </DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function deletes one or several nodes from network together with all adjacent edges. 
+You may delete node with name "NodeA" from any slice and it corresponds deleting nodes "NodeA" from all slices.    
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Delete nodes "NodeA-4" and "NodeB-3":
+</p>
+<p class="example">
+dbn.DelNode("NodeA-4 NodeB-3");
+</P>
+<HR>
+
+<H3><A name=decl_GetNodeType_DBN>GetNodeType</A></H3>
+<P class=Blurb>Returns types of the given nodes</P>
+<font class="interface">
+TokArr GetNodeType(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of nodes whose type is interesting. 
+</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns array of types (discrete or continuous) of given nodes.
+Nodes from 0 and 1 slice must be used only because node type in any i-th slice (i > 1) are the same.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get array of types of nodes "NodeA-0" and "NodeB-1":
+</p>
+<p class="example">
+   TokArr nodeTypes = dbn.GetNodeType("NodeA-0 NodeB-1");
+</P>
+<HR>
+
+<H3><A name=decl_AddArc_DBN>AddArc</A></H3>
+<P class=Blurb>Adds arc</P>
+<font class="interface">
+void AddArc(TokArr from, TokArr to);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>from
+  <DD>Array of starting nodes of the arcs. 
+  <DT>to
+  <DD>Array of ending nodes of the arcs</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function adds one or several arcs to the network. Each starting node is connected with each ending node.
+Starting  and endind nodes arrays consists only of nodes 0 and 1 slices, because for any i-th slice (i > 0) arcs adds automaticly.   
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Add edge from node "NodeA-0"  to node "NodeB-1":
+</p>
+<p class="example">
+dbn.AddArc("NodeA-0", "NodeB-1");
+</P>
+<p class="description">
+Add two edges: from "NodeA-0" to "NodeB-1" and from "NodeA-0" to "NodeC-0":
+</p>
+<p class="example">
+dbn.AddArc("NodeA-0", "NodeB-1 NodeC-0");
+</P>
+<p class="description">
+Add four edges: from "NodeA-0" to "NodeC-0", from "NodeA-0"  to "NodeD-1", from "NodeB-0" to "NodeC-0" and from "NodeB-0" to "NodeD-1":
+</p>
+<p class="example">
+dbn.AddArc("NodeA-0 NodeB-0", "NodeC-0 NodeD-1");
+</P>
+<HR>
+
+<H3><A name=decl_DelArc_DBN>DelArc</A></H3>
+<P class=Blurb>Deletes arcs</P>
+<font class="interface">
+void DelArc(TokArr from, TokArr to);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>from
+  <DD>Array of starting nodes of the arcs to delete. 
+  <DT>to
+  <DD>Array of ending nodes of the arcs to delete. 
+  </DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function deletes one or several arcs from the network. 
+Starting  and endind nodes arrays consists only of nodes 0 and 1 slices, because for any i-th slice (i > 0) deletes adds automaticly.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Delete edge from node "NodeA-1" to node "NodeB-1" :
+</p>
+<p class="example">
+dbn.DelArc("NodeA-1", "NodeB-1");
+</P>
+<p class="description">
+Delete following two edges if they exist: from "NodeA-0" to "NodeB-1" and from "NodeA-0") to "NodeC-0":
+</p>
+<p class="example">
+dbn.DelArc("NodeA-0", "NodeB-1 NodeC-0");
+</P>
+<p class="description">
+Delete all edges with starting node "NodeA-0" or "NodeB-0" and ending node "NodeC-0" or "NodeD-1":
+</p>
+<p class="example">
+dbn.DelArc("NodeA-0 NodeB-0", "NodeC-0 NodeD-1");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetNeighbours_DBN>GetNeighbours</A></H3>
+<P class=Blurb>Returns list of neighbours for given node 
+</P>
+<font class="interface">
+TokArr GetNeighbours(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>One or several nodes whose neighbours are need.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns list of neighbours for given node or some nodes. If neighbours of several nodes are demanded then neighbors of every node are in the result, each neighbor is once to be found in list.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get neighbors of node "NodeA-3":
+</p>
+<p class="example">
+TokArr NodeANeighbors = dbn.GetNeighbours("NodeA-3");
+</P>
+<p class="description">
+Get neighbors of node "NodeA-0" and neighbors of node "NodeB-1". If node "NodeC-1" is neighbor both "NodeA-0" and "NodeB-1" then it is once to be found in result list of neighbors:
+</p>
+<p class="example">
+TokArr NodeAandBNeighbors = dbn.GetNeighbours("NodeA-0 NodeB-1");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetParents_DBN>GetParents</A></H3>
+<P class=Blurb>Returns list of parents for given node 
+</P>
+<font class="interface">
+TokArr GetParents(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>One or several nodes whose parents are need.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns list of parents for given node or some nodes. If parents of several nodes are demanded then parents of every node are in the result, each parent is once to be found in result list.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get parents of node "NodeA-2":
+</p>
+<p class="example">
+TokArr NodeAParents = dbn.GetParents("NodeA-2");
+</P>
+<p class="description">
+Get parents of node "NodeA-1" and parents of node "NodeB-2". If node "NodeC-1" is parent both "NodeA-1" and "NodeB-2" then it is once to be found in result list of parents:
+</p>
+<p class="example">
+TokArr NodeAandBParents = dbn.GetParents("NodeA-1 NodeB-2");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetChildren_DBN>GetChildren</A></H3>
+<P class=Blurb>Returns list of children for given node 
+</P>
+<font class="interface">
+TokArr GetChildren(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>One or several nodes whose children are need.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns list of children for given node or some nodes.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get children of node "NodeA"(slice 0) :
+</p>
+<p class="example">
+TokArr NodeAChildren = dbn.GetChildren("NodeA-0");
+</P>
+<p class="description">
+Get children of node "NodeA-0" and children of node "NodeB-0". If node "NodeC-0" is child both "NodeA-0" and "NodeB-0" then it is once to be found in result list of children:
+</p>
+<p class="example">
+TokArr NodeAandBChildren = dbn.GetChildren("NodeA-0 NodeB-0");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetNumSlices_DBN>GetNumSlices</A></H3>
+<P class=Blurb>Returnes number of slices in the network
+</P>
+<font class="interface">
+int GetNumSlives();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function returnes number of network slices. 
+</p>
+</font>
+<HR>
+
+<H3><A 
+name=decl_SetNumSlices_DBN>SetNumSlices</A></H3>
+<P class=Blurb>Sets number of slices in the network
+</P>
+<font class="interface">
+void SetNumSlices(int nSlives);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nSlices
+  <DD>Number of network slices.</DD> 
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function sets number of network slices. 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Setting 5 slices :
+</p>
+<p class="example">
+dbn.SetNumSlices(5);
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetPTabular_DBN>SetPTabular</A></H3>
+<P class=Blurb>Assigns probability to one or several values of one discrete node 
+</P>
+<font class="interface">
+void SetPTabular(TokArr value, TokArr prob, TokArr parentValue = TokArr());
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>value
+  <DD>Array of node values for wich probabilities are set. 
+  <DT>prob
+  <DD>Array of values of probabilities.
+  <DT>parentValue
+  <DD>Array of values of discrete parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets [conditional] probability for one or several values of the discrete node 
+[for given values of parents]. Sizes of values array and probabilities array must be the same. While distribution 
+of probabilities is not specified it is considered uniform. We can set distribution only on 0 and 1 slices nodes, 
+because on any i-th slices (i > 0) nodes distributions are the same. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let`s node "NodeA-0" has not parents and can take on two values: "true" and "false". Its distribution of probabilities is unconditional. 
+</p>
+<p class="example">
+dbn.SetPTabular("NodeA-0^true NodeA-0^false", "0.7 0.3");
+</P>
+<p class="description">
+Let`s node "NodeB-1" can take on values "true" and "false" too and has only one parent "NodeA-0". Distribution of 
+probabilities of "NodeB-1" is conditional. It is necessary to call SetPTabular method for each configuration of 
+parents values:  
+</p>
+<p class="example">
+dbn.SetPTabular("NodeB-1^true NodeB-1^false", "0.99 0.01", "NodeA-0^true");<br>
+dbn.SetPTabular("NodeB-1^true NodeB-1^false", "0.4 0.6", "NodeA-0^false");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetPTabular_DBN>GetPTabular</A></H3>
+<P class=Blurb>Returns probability of discrete node 
+</P>
+<font class="interface">
+TokArr GetPTabular(TokArr node, TokArr parents = TokArr());
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>node
+  <DD>Name of node or array of node values whose probabiliteis are needed. 
+  <DT>parents
+  <DD>Values of parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns probability of discrete node. If values of parents are given then probabilites only 
+for these parents configurations will be returned. If concrete values of node are given in array node then
+only probabilities of these values will be returned. We can get distribution only on 0 and 1 slices nodes. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let`s consider getting probabilities for node "NodeB-1" from example for SetPTabular method. Some variants to get "NodeB-1"
+probabilites are available:
+</p>
+<p class="example">
+TokArr PNodeB = dbn.GetPTabular("NodeB-1");<br>
+TokArr PNodeBTrue = dbn.GetPTabular("NodeB-1^true");<br>
+TokArr PNodeBNodeATrue = dbn.GetPTabular("NodeB-1", "NodeA-0^true");<br>
+TokArr PNodeBTrueNodeAFalse = dbn.GetPTabular("NodeB-1^true", "NodeA-0^false");
+</P>
+<p class="description">
+Results of these calls:
+</p>
+<p class="example">
+<table>
+<tr>
+  <td>PNodeB</td>
+  <td>"NodeB-1^true^NodeA-0^true^0.99 NodeB-1^false^NodeA-0^true^0.01 NodeB-1^true^NodeA-0^false^0.4 NodeB-0^false^NodeA-1^false^0.6"</td>
+</tr>
+<tr>
+  <td>PNodeBTrue</td>
+  <td>"NodeB-1^true^NodeA-0^true^0.99 NodeB-1^true^NodeA-0^false^0.4"</td>
+</tr>
+<tr>
+  <td>PNodeBNodeATrue</td>
+  <td>"NodeB-1^true^NodeA-0^true^0.99 NodeB-1^false^NodeA-0^true^0.01"</td>
+</tr>
+<tr>
+  <td>PNodeBTrueNodeAFalse</td>
+  <td>"NodeB-1^true^NodeA-0^false^0.4"</td>
+</tr>
+</table>
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetPGaussian_DBN>SetPGaussian</A></H3>
+<P class=Blurb>Sets parameters for one-dimensional gaussian variate 
+We can set distribution only on 0 and 1 slices nodes, 
+because on any i-th slices (i > 0) nodes distributions are the same.
+</P>
+<font class="interface">
+void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>var
+  <DD>Name of node whose probability is set. 
+  <DT>mean
+  <DD>Vector of means. 
+  <DT>variance
+  <DD>Matrix of variance - one number for one-dimensional variate.
+  <DT>weight
+  <DD>Matrix of weights - vector for one-dimensional variate.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function set parameters for one-dimensional gaussian variate. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's set gaussian distribution for the node without parents.
+</p>
+<p class="example">
+dbn.SetPGaussian("NodeA-0", "1.0", "4.0");
+</p>
+<p class="description">
+Let's set gaussian distribution for the node with two parents.
+</p>
+<p class="example">
+dbn.SetPGaussian("NodeA-0", "0.0", "2.0", "1.0 2.0");
+</P>
+<HR>
+
+<H3><A 
+name=decl_EditEvidence_DBN>EditEvidence</A></H3>
+<P class=Blurb>Edits current evidence 
+</P>
+<font class="interface">
+void EditEvidence(TokArr values);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>values
+  <DD>Array of observed nodes with values.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets or edits current evidence. New observed nodes are added to current evidence
+with EditEvidence method or old vales of observed nodes are changed. Every evidence may contains nodes from neighbour 
+slices. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+</p>
+<p class="example">
+dbn.EditEvidence("NodeA-2^true NodeB-2^false");<br>
+dbn.EditEvidence("NodeA-2^false NodeC-2^true");
+</P>
+<p class="description">
+In current evidence there are three observed nodes now: "NodeA-2", "NodeB-2" (both are false) and "NodeC-2"(true).
+</p>
+<HR>
+
+<H3><A 
+name=decl_ClearEvid_DBN>ClearEvid</A></H3>
+<P class=Blurb>Clears current evidence 
+</P>
+<font class="interface">
+void ClearEvid();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function clears current evidence. 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+dbn.EditEvidence("NodeA-2^true NodeB-3^false");<br>
+dbn.ClearEvid();
+</P>
+<p class="description">
+Current evidence is empty now.
+</p>
+<HR>
+
+<H3><A 
+name=decl_CurEvidToBuf_DBN>CurEvidToBuf</A></H3>
+<P class=Blurb>Stores current evidence to the evidence buffer 
+</P>
+<font class="interface">
+void CurEvidToBuf();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function stores current evidence to the buffer of evedences. Current evidence is not cleared.
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+dbn.EditEvidence("NodeA-2^true NodeB-3^false");<br>
+dbn.EditEvidence("NodeA-2^false NodeC-2^true");<br>
+dbn.CurEvidToBuf();<br>
+dbn.EditEvidence("NodeB-3^true");<br>
+dbn.CurEvidToBuf();
+</P>
+<p class="description">
+In current evidence there are three observed nodes now: "NodeA-2" takes on value "false", "NodeB-3" and "NodeC-2" take on values "true".
+</p>
+<p class="description">
+In evidence buffer there are two evidences now. In first evidence "NodeA"(slice 2) and "NodeB"(slice 3) take on values "false", and "NodeC-2"  
+takes on value "true". In second one "NodeA-2" takes on value "false", "NodeB-3" and "NodeC-2" take on values "true".
+</p>
+<HR>
+
+<H3><A 
+name=decl_AddEvidToBuf_DBN>AddEvidToBuf</A></H3>
+<P class=Blurb>Adds evidence to the evidence buffer 
+</P>
+<font class="interface">
+void AddEvidToBuf(TokArr values);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>values
+  <DD>Array of observed nodes with values.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function adds evidence to the buffer. Current evidence is not changed.
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+dbn.AddEvidToBuf("NodeA-2^true NodeB-2^false");<br>
+dbn.AddEvidToBuf("NodeA-1^false NodeC-2^true");
+</P>
+<p class="description">
+In evidence buffer there are two evidences now. In first evidence "NodeA-2" takes on value "true" and "NodeB-2" takes on value "false".
+In second one "NodeA-1" takes on value "false" and "NodeC-2" takes on value "true".
+</p>
+<HR>
+
+<H3><A 
+name=decl_ClearEvidBuf_DBN>ClearEvidBuf</A></H3>
+<P class=Blurb>Clears evidence buffer 
+</P>
+<font class="interface">
+void ClearEvidBuf();
+</font>
+<H5>Arguments</H5>
+<DL>
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function clears evidence buffer. 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+dbn.AddEvidToBuf("NodeA-2^true NodeB-3^false");<br>
+dbn.AddEvidToBuf("NodeA-1^false NodeC-1^true");<br>
+dbn.ClearEvidBuf();
+</P>
+<p class="description">
+Evidence buffer is empty now.
+</p>
+<HR>
+
+<H3><A 
+name=decl_MaskEvidBuf_DBN>MaskEvidBuf</A></H3>
+<P class=Blurb>Hides nodes of current learning buffer with given probability 
+</P>
+<font class="interface">
+void MaskEvidBuf(TokArr whatNodes = "");
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>whatNodes
+  <DD>Array of nodes.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function hides nodes of current learning buffer with given probability. The function applies for all existing 
+values (hidden and observed), i.e. observed may become hidden and hidden may become observed. By default this function 
+unhides all hidden values. If a node did not have sample then it can not be unhidden.
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+</P>
+<HR>
+
+<H3><A 
+name=decl_LearnParameters_DBN>LearnParameters</A></H3>
+<P class=Blurb>Learns network parameters 
+</P>
+<font class="interface">
+void LearnParameters();
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>aValue
+</DL>
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Function learns network with help of evidences buffer. See <A href="#decl_AddEvidToBuf_DBN">AddEvidToBuf</A>,
+</p>
+<p class="example">
+dbn.LearnParameters();
+</P>
+
+<HR>
+
+<H3><A 
+name=decl_GetMPE_DBN>GetMPE</A></H3>
+<P class=Blurb>Returns MPE 
+</P>
+<font class="interface">
+TokArr GetMPE(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of nodes from one family.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns most probable explanation (MPE) for specified nodes using current evidence. 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get MPE for node "NodeA-0":
+</p>
+<p class="example">
+TokArr jtreeMPENodeA = dbn.GetMPE("NodeA-0");
+</P>
+<p class="description">
+Get MPE for nodes "NodeA-0" and "NodeB-0":
+</p>
+<p class="example">
+TokArr pearlMPENodeA = dbn.GetMPE("NodeA-0 NodeB-0");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetJPD_DBN>GetJPD</A></H3>
+<P class=Blurb>Returns JPD 
+</P>
+<font class="interface">
+TokArr GetJPD(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of nodes from one family.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns joint probability distribution (JPD) for specified nodes using current evidence. The inference algorithm
+is set to property "Inference" with method <A href="#decl_SetProperty_DBN">SetProperty()</A>. By default Smoothing is used. Besides Filtering and 
+FixLagSmoothing are availabile. Corresponding property "Inference" values are "smooth", "filt",
+"fix".
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get JPD for node "NodeA-3" with smoothing:
+</p>
+<p class="example">
+dbn.SetProperty("Inference", "smooth");<br>
+TokArr jtreeJPDNodeA = dbn.GetJPD("NodeA-3");
+</P>
+<p class="description">
+Get JPD for nodes "NodeA-3" and "NodeB-3":
+</p>
+<p class="example">
+dbn.SetProperty("Inference", "fix");<br>
+TokArr pearlJPDNodeA = dbn.GetJPD("NodeA-0 NodeB-0");
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetProperty_DBN>SetProperty</A></H3>
+<P class=Blurb>Sets value to the property
+</P>
+<font class="interface">
+void SetProperty(const char *name, const char *value);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>name
+  <DD>Name of property. 
+  <DT>value
+  <DD>Array of nodes from one family.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets value to the property with given name. 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Set FixLagSmoothing inference for getting JPD:
+</p>
+<p class="example">
+dbn.SetProperty("Inference", "fix");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetProperty_DBN>GetProperty</A></H3>
+<P class=Blurb>Returns value of the property with given name
+</P>
+<font class="interface">
+String GetProperty(const char *name) const;
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>name
+  <DD>Name of property.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns value of the property with given name. If property was not set with 
+<A href="#decl_SetProperty_DBN">SetProperty</A> method then empty string is returned.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+dbn.SetProperty("Inference", "smooth");<br>
+String inferenceType = dbn.GetProperty("Inference");<br>
+</P>
+<p class="description">
+As result string inferenceType is "smooth".
+</p>
+<HR>
+
+<H3><A 
+name=decl_GetGaussianMean_DBN>GetGaussianMean</A></H3>
+<P class=Blurb>Returns mean of gaussian distribution 
+</P>
+<font class="interface">
+TokArr GetGaussianMean(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Name of node whose mean are needed</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns mean of gaussian distribution. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+TokArr MeanNodeA0 = dbn.GetGaussianMean("NodeA-0");
+</p>
+
+<HR>
+
+<H3><A 
+name=decl_GetGaussianCovar_DBN>GetGaussianCovar</A></H3>
+<P class=Blurb>Returns variance of gaussian distribution 
+</P>
+<font class="interface">
+TokArr GetGaussianCovar(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Name of node whose variance are needed. 
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function returns variance of gaussian distribution. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+TokArr CovarNodeA0 = dbn.GetGaussianCovar("NodeA-0");
+</P>
+<HR>
+
+<H3><A 
+name=decl_SaveNet_DBN>SaveNet</A></H3>
+<P class=Blurb>Saves network to file 
+</P>
+<font class="interface">
+void SaveNet(const char *filename);
+</font>
+<P>
+<H5>Arguments</H5>
+<DL>
+  <DT>The name of the file where net should be saved.
+  <DD>File name.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">
+The function saves network to file of "xml" format with given name. Net structure and nodes distributions 
+of probabilities are stored to file.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+dbn.SaveNet("dbn.xml");
+</P>
+<HR>
+
+<H3><A 
+name=decl_SaveEvidBuf_DBN>SaveEvidBuf</A></H3>
+<P class=Blurb>Saves evidence buffer content to file
+</P>
+<font class="interface">
+int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name. 
+  <DT>mode
+  <DD>Separating character depends on this parameter. Two separating characters are available: ',' (if mode is set to eCSV)
+and tab (if mode is set to eTSV).</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function saves evidence buffer content to file of "cvs" format. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Save two evidences to file with ',' separator:
+</p>
+<p class="example">
+dbn.ClearEvidBuf();<br>
+dbn.AddEvidToBuf("NodeA-0^true NodeB-0^false");<br>
+dbn.AddEvidToBuf("NodeA-1^false NodeC-1^true");<br>
+dbn.SaveEvidBuf("evidence1.csv");
+</P>
+<p class="description">
+Save the same two evidences to file with tab separator:
+</p>
+<p class="example">
+dbn.ClearEvidBuf();<br>
+dbn.AddEvidToBuf("NodeA-0^true NodeB-0^false");<br>
+dbn.AddEvidToBuf("NodeA-1^false NodeC-1^true");<br>
+dbn.SaveEvidBuf("evidence2.csv", NetConst::eTSV);
+</P>
+<HR>
+
+<H3><A 
+name=decl_LoadNet_DBN>LoadNet</A></H3>
+<P class=Blurb>Loads network from file 
+</P>
+<font class="interface">
+void LoadNet(const char *filename);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function loads network from file with given name. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Load net structure and distributions from file "dbn.xml":
+</p>
+<p class="example">
+dbn.LoadNet("dbn.xml");
+</P>
+<HR>
+
+<H3><A 
+name=decl_LoadEvidBuf_DBN>LoadEvidBuf</A></H3>
+<P class=Blurb>Loads evidence buffer content from file 
+</P>
+<pre>
+<font class="interface">
+int LoadEvidBuf(const char *filename, 
+                NetConst::ESavingType mode = NetConst::eCSV, 
+                TokArr columns = TokArr());
+</font>
+</pre>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name. 
+  <DT>mode
+  <DD>Separating character used in file is explained by this parameter. Two separating characters are available: 
+',' (if mode is set to eCSV) and tab (if mode is set to eTSV). 
+  <DT>columns
+  <DD>Names of nodes.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function loads evidence buffer content from file. Buffer is cleared before loading. We can load evidences created in
+another net with another node names but with the same values of nodes. For this we must set new node names in evidences 
+using array "columns". The function returns number of evidences loaded from file.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Load evidences from file "evidence1.csv" with ',' separators and perform learning with them:
+</p>
+<p class="example">
+dbn.LoadEvidBuf("evidence1.csv");<br>
+dbn.LearnParameters();
+</P>
+<HR>
+<!--
+<H3><A 
+name=decl_MakeUniformDistribution_DBN>MakeUniformDistribution</A></H3>
+<P class=Blurb>Sets uniform distribution on all nodes 
+</P>
+<font class="interface">
+void MakeUniformDistribution();
+</font>
+<H5>Arguments</H5>
+<DL>
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function .... 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+</P>
+<HR>
+-->
+<H3><A 
+name=decl_GenerateEvidences_DBN>GenerateEvidences</A></H3>
+<P class=Blurb>Generate samples for the network 
+</P>
+<font class="interface">
+void GenerateEvidences(TokArr nEvSlices);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nEvSlices
+  <DD>Number of samples on every slice to generate. 
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function generates the specified number of samples from joint probability distribution of the network.
+The function allows generating samples with specified portion of missing variables. Parameter nEvSlices means number of generated 
+samples on every slice. 
+The newly generated samples will be saved to internal buffer (learning buffer). To clear learning buffer use <A href="#decl_ClearEvidBuf_DBN">ClearEvidBuf</A>. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Generate 100 samples on 0 slice and 55 on 1 slice: 
+</p>
+<p class="example">
+GenerateEvidences("100 50");
+</P>
+<p class="description">
+Generate 10 samples on 0 slice, 11 on 1 slice and 15 on 2 slice:
+</p>
+<p class="example">
+GenerateEvidences("10 11 15");
+</P>
+
+
+
+
 <hr>
 <H2><A name=decl_Class_LIMID>Class LIMID</A></H2>
 <HR>

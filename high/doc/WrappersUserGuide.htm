@@ -61,6 +61,32 @@ PNL Wrappers: User Guide
       </UL>
   </UL>
   <LI><A href="#Limitations">Limitations</A> 
+<LI><A href="#DiscreteDBN">Dynamic Bayesian Networks with discrete nodes</A> 
+  <UL>  
+      <LI><A href="#CreateDBNDiscr">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesDiscrDBN">Adding nodes</A> 
+          <LI><A href="#AddEdgesDiscrDBN">Adding edges</A> 
+          <LI><A href="#SetNumSlicesD">Setting number of network slices</A> 
+      </UL>
+      <LI><A href="#SpecProbDiscrDBN">Specifying the probabilities</A> 
+      <LI><A href="#AddObservDiscrDBN">Adding observations</A> 
+      <LI><A href="#ParamLearnDiscrDBN">Parameters learning</A> 
+      <LI><A href="#MPEandJPDDiscrDBN">Getting MPE and JPD</A> 
+  </UL>
+  <LI><A href="#GaussianDBN">Dynamic Bayesian Networks with continuous nodes</A> 
+  <UL>  
+      <LI><A href="#CreateDBNGau">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesGauDBN">Adding nodes</A> 
+          <LI><A href="#AddEdgesGauDBN">Adding edges</A>
+          <LI><A href="#SetnumSlicesG">Setting number of network slices</A>  
+      </UL>
+      <LI><A href="#SpecProbGauDBN">Specifying the probabilities</A> 
+      <LI><A href="#AddObservGauDBN">Adding observations</A> 
+      <LI><A href="#LearnGauDBN">Learning the network</A> 
+      <LI><A href="#MPEandJPDGauDBN">Getting MPE and JPD</A> 
+</UL>
   <LI><A href="#LIMID">LImited Memory Influence Diagrams</A> 
   <UL>  
       <LI><A href="#CreateLIMID">Creating the net</A> 
@@ -105,6 +131,27 @@ to solve his task.
 <p>
 
 
+It is DBN class, that is used for working with Dynamic Bayesian Networks(DBN) in wrappers. It is main class, all the operations are made by it. This class allows user
+<UL>
+  <LI>to create new Dynamic Bayesian Network,</LI>
+  <LI>to specify probability distributions on the net nodes of 0 and 1 slices,</LI>
+  <LI>to assign observations (evidences) on any slice,</LI>
+  <LI>to carry out learning process,</LI>
+  <LI>to get joint probability distribution (JPD) and maximum probability explanation (MPE) for network nodes,</LI>
+  <LI>to save Bayesian network and observations (evidences) as files and to load them from files, 
+<br>etc</LI>.
+</UL>
+<p>Remind, that Dynamic Bayesian Network (DBN) represents a directed graphical model of stochastic processes that generalize Hidden Markov models (HMMs) 
+and Kalman Filter models (KFMs) by representing the hidden and the observed state in terms of state variables, which can have complex interdependencies. 
+DBN is defined by the following characteristics: 
+<UL>
+  <LI>prior, or initial, network,</LI> 
+  <LI>transition network frequently named two-slice temporal Bayesian Network (2TBN).</LI>
+</UL>
+Network has several properties, that takes default values. The topology of the prior slice may differ from the topology of other slices 
+that is why for DBN creation user have to create 0 and 1 slice topology and connect them.
+<p>
+
 It is LIMID class that is used for working with LImited Memory Influence Diagram (LIMID) in wrappers. This class allows user 
 <UL>
 	<LI>to create new LIMID,</LI>
@@ -117,6 +164,9 @@ It is LIMID class that is used for working with LImited Memory Influence Diagram
 <p> With the help of LIMID class methods user specifies parameters of LIMID and demands desired results. Required algorithms are called automatically (we don't have to call them explicitly).  
 LIMID inference algorithm allows user to get only pure politics. At the moment inference algorithm for LIMIDs with discrete probability distributions on the nodes is realized. 
 <p>
+
+
+
 
 <hr>
 
@@ -847,6 +897,486 @@ Here we are going to discuss some limitations of work with Bayesian nets.
     </ul>
 </UL>
 <p>
+<hr>
+
+<h1><a name="DiscreteDBN">Dynamic Bayesian Networks with discrete nodes</a></h1>
+We are going to analyze Dynamic Bayesian Network functioning by following example. 
+<br>The graph structure of the model  is shown in Figure 1:
+</P>
+<hr>
+<h4><a name="Street-House-Flat">Figure1. Street - House - Flat model</a></h4>
+<img align=center src="DBN.gif">
+<p>
+All nodes are discrete and can take on two values: true or false.
+</p>
+<hr>
+
+
+<h2><a name="CreateDBNDiscr">Creating the net</a></h2>
+<p>
+The first step of operating the DBN network is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create DBN class object: 
+<p>
+<pre>DBN dbn;</pre>
+</p>
+Now network is empty. We have to add nodes and edges.
+</p>
+<hr>
+
+<h3><a name="AddNodesDiscrDBN">Adding nodes</a></h3>
+<p>
+Users has to create 0 and 1 slice topology and connect slices for DBN creation. (see Figure 2.)
+<hr>
+<h4><a name="Street-House-Flat">Figure2. 0 and 1 slices of Street - House - Flat model</a></h4>
+<img align=center src="2slicesOfDBN.gif">
+<p>Method AddNode is used to add new node to the network:
+<p>
+<pre>
+dbn.AddNode("discrete^Street-0", "true false");
+dbn.AddNode("discrete^House-0", "true false");
+dbn.AddNode("discrete^Flat-0", "true false");
+
+dbn.AddNode("discrete^Street-1", "true false");
+dbn.AddNode("discrete^House-1", "true false");
+dbn.AddNode("discrete^Flat-1", "true false");
+
+</pre>
+</p>
+
+DBN developers decided to consists nodes names as: "node name-slice number". User have to add 0 slice nodes then to add 1 slice nodes with 
+help of AddNode method until topology sorting not supported. Name Street-0 means, that node with name Street from slice 0 and name Flat-1 
+point to node Flat from slice 1. After 6 calls AddNode method we add nodes from 0 and 1 slices. 
+<br>
+In our example all the nodes are discrete and can take on the same values, so all the nodes can be 
+ added by the one or two calls of AddNode method:
+<h5>Variant 1.(adds nodes with 1 call)</h5>
+<p>
+<pre>
+dbn.AddNode(discrete^”Street-0 House-0 Flat-0 Street-1 House-1 Flat-1", "true false");
+</pre>
+</p>
+<h5>Variant 2.(adds nodes with 2 calls)</h5>
+<p>
+<pre>
+dbn.AddNode(discrete^”Street-0 House-0 Flat-0", "true false");
+dbn.AddNode(discrete^”Street-1 House-1 Flat-1", "true false");
+</pre>
+</p>
+We have to add edges for creation 0 and 1 slice topology and slices connection.
+
+<hr>
+
+<h3><a name="AddEdgesDiscrDBN">Adding edges</a></h3>
+<p>
+AddArc method is used to add a new arc to the network:
+<p>
+<pre>
+dbn.AddArc("Street-0", "House-0");
+dbn.AddArc("Street-0", "Flat-0");
+dbn.AddArc("Street-0", "Street-1");
+dbn.AddArc("Street-1", "House-1");
+dbn.AddArc("Street-1", "Flat-1");
+dbn.AddArc("House-1", "Flat-1");
+</pre>
+</p>
+We can indicate several nodes as the beginning and end of the arc. In this case every node from the beginning 
+list will be connected with every node from the end list. In our example three calls of AddArc method are enough:
+<p>
+<pre>
+dbn.AddArc("Street-0", "House-0 Flat-0 Street-1");
+dbn.AddArc("Street-1", "House-1");
+dbn.AddArc("Street-1 House-1", "Flat-1");
+</pre>
+</p>
+<hr>
+
+<h3><a name="SetNumSlicesD">Setting number of network slices </a></h3>
+<p>
+SetNumSlices method is used to set number of networks slices.
+<p>
+<pre>
+dbn.SetNumSlices(4);
+</pre>
+</p>
+After this call user may use any slice(>1) nodes names as parameters of manage evidence methods or GetJPD(MPE) methods.
+<hr>
+
+<h2><a name="SpecProbDiscrDBN">Specifying the probabilities</a></h2>
+<p>
+Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. If we know probability distributions on some of the network nodes, we can specify them with the SetPTabular method for the discrete nodes. 
+<br>
+Distributions on the all i-th slices (i>1) are the same as slice 1 that is why we specify distribution only on 0 and 1 slices.
+<br>
+In our example we are going to specify probability distributions on the "Street-0" and "House-1" nodes. We will leave the distributions on the other nodes uniform. 
+<br>
+Probability distribution on the Street-0 node is unconditional: 
+<p>
+<pre>
+dbn.SetPTabular("Street-0^true", "0.6");
+dbn.SetPTabular("Street-0^false", "0.4"); 
+</pre>
+</p>
+The first argument of this method is the state of the variable; we define the probability for the node to take on this state. The second argument is the value of probability. It is possible to define the list of states and list of values:
+<p>
+<pre>
+dbn.SetPTabular("Street-0^true Street-0^false", "0.6 0.4");
+</pre>
+</p>
+Probability distribution on the House-1 node is conditional: 
+<p>
+<pre>
+dbn.SetPTabular("House-1^true", "0.1", "Street-1^true");
+dbn.SetPTabular("House-1^false", "0.9", " Street-1^true");
+dbn.SetPTabular("House-1^true", "0.5", " Street-1^false");
+dbn.SetPTabular("House-1^false", "0.5", " Street-1^false");
+</pre>
+</p>
+For the conditional distribution one new argument was added. This argument specifies the parents state configuration, the probability value is defined for the indicated state and indicated parent's configuration. The probabilities for the same parents configuration can be defined by the one call of SetPTabular method:
+<p>
+<pre>
+dbn.SetPTabular("House-1^true House-1^false", "0.1 0.9", " Street-1^true");
+dbn.SetPTabular("House-1^true House-1^false", "0.5 0.5", " Street-1^false");
+</pre>
+</p>
+To get the probability distribution of the node we must call of GetPTabular method:
+<p>
+<pre>
+TokArr PSreet0 = dbn.GetPTabular("Street-0");
+</pre>
+</p>
+Now it is possible to represent this distribution as string or as float numbers: 
+<p>
+<pre>
+String PSreet0Str= PSreet0.String();
+float PSreet0TrueF = PSreet0[0].FltValue(0);
+float PStreet0FalseF = PSreet0[1].FltValue().fl;
+</pre>
+</p>
+The following values are now stored in the variables:
+<p>
+<pre>
+PSreet0Str		"Sreet-0^true^0.6 Street-0^false^0.4"
+PSreet0TrueF	0.6
+PStreet0FalseF	0.4
+</pre>
+</p>
+For the conditional distribution it is possible to get probabilities for the indicated parents state configuration (or for the definite states of some parents):
+<p>
+<pre>
+TokArr PHouse1 = dbn.GetPTabular("House-1", "Street-1^true");
+String PHouse1Str = PHouse1.String();
+float PHouse1True = PHouse1[0].FltValue();
+float PHouse1False = PHouse1[1].FltValue();
+</pre>
+</p>
+The values of the variables:
+<p>
+<pre>
+PHouse1Str	"House-1^true^Street-1^true^0.1 House-1^false^Street-1^true^0.9"
+PHouse1True	0.1
+PHouse1False	0.9
+</pre>
+</p>
+With the help of  GetPTabular method user can also get the probability of some state of the variate:
+<p>
+<pre>
+TokArr PStreet0False = dbn.GetPTabular("Street-0^false");
+</pre>
+</p>
+Now it is possible to represent this distribution  as string or as float number:
+<p>
+<pre>
+String PStreet0FalseStr = PStreet0False.String();
+float PStreet0FalseF = PStreet0False[0].FloatValue();
+</pre>
+</p>
+The values of the variables:
+<p>
+<pre>
+PStreet0FalseStr	"Street-0^false^0.4"
+PStreet0FalseF	0.4
+
+</pre>
+</p>
+<p>
+We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+<h2><a name="AddObservDiscrDBN">Adding observations</a></h2>
+<p>
+Here we will describe the way of working with evidences in wrappers. DBN class allows user to work with current evidence and with the buffer of evidences.
+<br>
+Default current evidence is empty. User can edit it with the EditEvidence method, DBN allows to create evidence for any slices:
+<p>
+<pre>
+dbn.EditEvidence(“Flat-3^true”);
+dbn.EditEvidence("Street-3^false House-3^false");
+</pre>
+</p>
+After these calls there is three observed nodes in the current evidence, they are Street-3, House-3 (both are false) and Flat-3, which is true. 
+<br>
+After editing user can copy current evidence to the evidence buffer with the help of  CurEvidToBuf method:
+<p>
+<pre>
+dbn.CurEvidToBuf();
+</pre>
+</p>
+It is possible to clear the current evidence with ClearEvid method:
+<p>
+<pre>
+dbn.ClearEvid();
+</pre>
+</p>
+You can also put evidence-to-evidence buffer without editing. Call AddEvidToBuf method:
+<p>
+<pre>
+dbn.AddEvidToBuf("House-0^true Flat-0^true");
+</pre>
+</p>
+At the moment we have empty current evidence. Evidence buffer contains 2 evidences. In the first evidence, which was copied from the current evidence, there are three observed nodes: Street-3, House-3 (both are false) and Flat-3 (true). In second evidence there are two observed nodes, House-0 and Flat-0, both are true. 
+<br>
+The main operations with evidence buffer are:
+<UL>
+    <LI>total clearance of the buffer with the help of  ClearEvidBuf method,</LI>
+    <LI>saving the buffer to file (SaveEvidBuffer) and loading buffer from file (LoadEvidBuffer). We support the csv file format,</LI>
+    <LI>filling the evidence buffer with random values of observations with the help of GenerateEvidences method.</LI>
+</UL>
+Current evidence is used to get JPD and MPE, evidence buffer is used for learning.
+</p>
+<hr>
+
+<h2><a name="ParamLearnDiscrDBN">Parameters learning </a></h2>
+<p>
+To carry out learning process evidences from evidence buffer are used. 
+<br>
+It is possible to specify probability distributions on the net nodes with the help of learning. This setting of probabilities is named parameters learning. 
+</p>
+<p>
+If we are going to specify probability distributions for network nodes, then we will call LearnParameters method after filling the evidence buffer to learn the network:
+<p>
+<pre>
+dbn.LearnParameters();
+</pre>
+</p>
+As a result, the probability distributions on the nodes have been changed. To get new distributions GetPTabular method is used:
+<p>
+<pre>
+TokArr PStreet0 = dbn.GetPTabular("Street-0");
+TokArr PFlat0 = dbn.GetPTabular("Flat-0");
+TokArr PStreet1 = dbn.GetPTabular("Street-1");
+TokArr PHouse1 = dbn.GetPTabular("House-1");
+</pre>
+</p>
+Now distributions are presented as TokArr type objects. They can be converted into strings or float numbers, as it was shown earlier. They also can be used as arguments for other methods. 
+<br>
+Default learning algorithm is Expectation Maximization algorithm. 
+
+</p>
+<hr>
+
+<h2><a name="MPEandJPDDiscrDBN">Getting MPE and JPD</a></h2>
+<p>
+If Dynamic Bayesian Network and probability distributions have been already defined, we can get Joint Probability Distribution (JPD) and Maximum Probability Explanation (MPE).
+<br>
+For calculating JPD and MPE current evidence is used. You can edit this evidence with the help of  EditEvidence method (look through “Adding observations” section).
+<br>
+You can use GetJPD method to get the marginal probability distribution of the node:  
+<p>
+<pre>
+TokArr Street3Marg = dbn.GetJPD("Street-3");
+</pre>
+</p>
+It is possible to get joint distribution for the nodes from one family (family is the set, which consists of node and node parents):
+<p>
+<pre>
+TokArr Street3AndHouse3Marg = dbn.GetJPD("Street-3 House-3");
+</pre>
+</p>
+You can use GetMPE method to get Maximum Probability Explanation for one node or for some set of nodes from one family:
+<p>
+<pre>
+TokArr Street1MPE = dbn.GetMPE("Street-1");
+TokArr Street1AndFlat1MPE = dbn.GetMPE("Street-1 Flat-1 ");
+
+</pre>
+</p>
+To calculate JPD and MPE inference algorithms are used. There are four DBN inference algorithm properties: Smoothing, Filtering, FixLagSmoothing and Viterbi, see PNL documentation for the full information. 
+<br>
+Default DBN inference algorithm property, which is used to calculate JPD, is Smoothing. For MPE calculation you must sets inference property by Viterbi. You can use other property by JPD calculation by setting “Inference” property with SetProperty method. You must define the desired properties by its string name: “smoth”, “filt”, “fix”, or “viter”. For example: 
+<p>
+<pre>
+dbn.SetProperty("Inference", "filt");
+TokArr House0MPE = dbn.GetJPD("House-0");
+dbn.SetProperty("Inference", "fix");
+TokArr Street0House0MPE = dbn.GetJPD("Street-0 House-0");
+</pre>
+</p>
+<hr>
+
+<P></P>
+<h1><a name="GaussianDBN">Dynamic Bayesian Networks with continuous nodes</a></h1>
+
+<P>
+Consider the Dynamic Bayesian Network.
+</p>
+<hr>
+<h4><a name="DBN1">Figure 1. Simple model with continuous nodes</a></h4>
+<img  src="DBN.gif">
+<p>All nodes are continuous and have only one dimension.
+</p>
+<hr>
+
+<h2><a name="CreateDBNGau">Creating the net</a></h2>
+<p>
+The first step of operating the Dynamic Bayesian Network is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create DBN class object: 
+<p>
+<pre>DBN dbn;</pre>
+</p>
+Now network is empty. We have to add nodes and edges.
+</p>
+<hr>
+
+<h3><a name="AddNodesGauDBN">Adding nodes</a></h3>
+<p>
+Method AddNode is used to add new node to the network:
+<p>
+<pre>
+dbn.AddNode("continuous^Street-0", " dim1");
+dbn.AddNode("continuous^House-0", " dim1");
+dbn.AddNode("continuous^Flat-0", " dim1");
+
+dbn.AddNode("continuous^Street-1", " dim1");
+dbn.AddNode("continuous^House-1", " dim1");
+dbn.AddNode("continuous^Flat-1", " dim1");
+</pre>
+</p>
+The first argument of this method is type and name of the new node.  The second argument is the name of dimension. In our example all nodes have only one dimension, and that is why the second argument is always the same – the name of single dimension. The name of dimension is essential only for user, it can be chosen at will.
+</p>
+<hr>
+
+<h3><a name="AddEdgesGauDBN">Adding edges</a></h3>
+<p>
+AddArc method is used to add a new arc to the network:
+<p>
+<pre>
+dbn.AddArc("Street-0", "House-0");
+dbn.AddArc("Street-0", "Flat-0");
+dbn.AddArc("Street-0", "Street-1");
+dbn.AddArc("Street-1", "House-1");
+dbn.AddArc("Street-1", "Flat-1");
+dbn.AddArc("House-1", "Flat-1");
+</pre>
+</p>
+Adding new edges is similar to the discrete case.
+</p>
+<hr>
+
+<h3><a name="SetNumSlicesG">Setting number of network slices </a></h3>
+<p>
+SetNumSlices method is used to set number of networks slices.
+<p>
+<pre>
+dbn.SetNumSlices(4);
+</pre>
+</p>
+After this call user may use any slice(>1) nodes names as parameters of manage evidence methods or GetJPD(MPE) methods.
+<hr>
+
+<h2><a name="SpecProbGauDBN">Specifying the probabilities</a></h2>
+<p>
+Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. Distributions on the all i-th slices (i>1) are the same as slice 1 that is why we specify distribution only on 0 and 1 slices. If we know probability distributions on some of the network nodes, we can specify them with SetPGaussian method for the continuous nodes. 
+<br>
+Let’s set distributions on the node Sreet-0.
+<p>
+<pre>
+dbn.SetPGaussian("Street-0", "1.0", "4.0")
+</pre>
+</p>
+The first argument of this function is the name of the node. The second is the mean of the corresponding variate, the third – dispersion.
+<br>The rest nodes have parents. To set probability distributions on this node we have to call the following functions:
+<p>
+<pre>
+dbn.SetPGaussian("House-0", "0.0", "2.0", "1.0");
+dbn.SetPGaussian("Flat-0", "0.0", "4.0", "1.1");
+dbn.SetPGaussian("Street-1", "-0.8", "1.2", "2.0");
+dbn.SetPGaussian("House-1", "0.1", "2.1", "3.0");
+dbn.SetPGaussian("Flat-1", "0.0", "2.0", "1.0 2.0");
+</pre>
+</p>
+The last parameter defines weights. We must specify weight for every parent of the current node.
+We can get the parameters of continuous distribution, that we have already specified, with the help of the following methods:
+<p>
+<pre>
+TokArr MeanStreet0 = dbn.GetGaussianMean("Street-0"); 
+</pre>
+</p>
+This method will return the mean of the variate, which corresponds the x0 node.
+<p>
+<pre>
+TokArr CovarStreet0 = dbn.GetGaussianCovar("Street-0");
+</pre>
+</p>
+This method will return the dispersion of the variate, which corresponds the x0 node.
+<p>We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+
+<h2><a name="AddObservGauDBN">Adding observations</a></h2>
+<p>
+Here we will describe the way of working with evidences in wrappers. BayesNet class allows user to work with current evidence and with the buffer of  evidences.
+<br>Default current evidence is empty. User can edit it with the EditEvidence method:
+<p>
+<pre>
+dbn.editEvidence("Flat-3^dim1^0.4");
+</pre>
+</p>
+While defining the observation on the continuous node, it is necessary to specify the name of the node, the name of the dimension and the observed value. 
+<br>You can also put evidence to evidence buffer without editing. Call AddEvidToBuf method:
+<p>
+<pre>
+dbn.AddEvidToBuf("Flat-3^dim1^0.4");
+</pre>
+</p>
+Usage of the other functions, which are calling to work with evidences (CurEvidToBuf, ClearEvid, ClearEvidBuf, SaveEvidBuffer, LoadEvidBuffer, GenerateEvidences), is similar to the discrete case.
+<hr>
+
+
+<h2><a name="LearnGauDBN">Learning the network</a></h2>
+<p>
+Learning of continuous network is similar to learning the discrete one. To carry out learning process use the following calls: 
+<p> 
+<pre>
+dbn.LearnParameters();
+dbn.LearnStructure();
+</pre>
+</p>
+To get the result distributions after learning user have to use GetGaussianMean and GetGaussianCovar methods:
+<p>
+<pre>
+TokArr MeanHouse1 = dbn.GetGaussianMean("House-1");
+TokArr CovarHouse1 = dbn.GetGaussianCovar("House-1");
+</pre>
+</p>
+<hr>
+
+<h2><a name="MPEandJPDGauDBN">Getting MPE and JPD</a></h2>
+<p>
+If Bayesian network and probability distributions have been already defined, we can get Joint Probability Distribution (JPD) and Maximum Probability Explanation (MPE). 
+<br>This possibility is well described for the discrete networks. For the continuous networks it is the same.
+<p>
+<pre>
+dbn.SetProperty(“Inference”,”fix”);
+TokArr Flat3Marg = dbn.GetJPD("Flat-3");
+TokArr House0MPE = dbn.GetMPE("House-0");
+</pre>
+</p>
 <hr>
 
 <h1><a name="LIMID">LImited Memory Influence Diagrams</a></h1>
