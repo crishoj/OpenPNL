@@ -1,0 +1,6 @@
+tar xjf conf.gcc.tbz 2>/dev/null
+rm -f libtool
+sh ./configure
+echo "
+run 'make' to compile sources
+"

@@ -1,0 +1,11 @@
+tar xjf conf.icc.tbz 2>/dev/null
+rm -f libtool
+CC=icc
+CXX=icpc
+export CC CXX
+sh ./configure
+sed 's/predep_objects="\/.*$/predep_objects=""/' libtool >libtool.ed
+mv -f libtool.ed libtool
+echo "
+run 'make' to compile sources
+"
