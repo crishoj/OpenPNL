@@ -109,6 +109,9 @@ C/C++ version from Linux with icc (Intel compiler)
 Notes:
    Step 2 (Run './configure.icc') should be run on initial
 or on compiler changing
+   If you want to compile pnl with parallel functionality (OpenMP parallel 
+mode of pnl) you have to define CXXFLAGS variable as "-openmp" and define 
+BUILD_OMP in pnlParConfig.hpp as macro of preprocessor
 
    If you have some error during compiling or if you want to view compiling
 message later, run 'make 2>&1 | tee compiling.log' instead  of 'make'
