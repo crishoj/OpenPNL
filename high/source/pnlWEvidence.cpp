@@ -27,11 +27,12 @@ void WEvidence::Set(const TokArr &evidence)
     for(int i = 0; i < evidence.size(); i++)
     {
 	node = const_cast<Tok&>(evidence[i]).Node();
-	if(node->tag == eTagValue)
+/*	if(node->tag == eTagValue)
 	{
 	    node = node->v_prev;
 	}
-	if(node->tag != eTagNetNode)
+*/
+	if(/*(node->tag != eTagNetNode)&&(*/node->tag != eTagValue)
 	{
 	    ThrowUsingError("Wrong name for node of Bayes Net", "SetEvidence");
 	}
@@ -40,6 +41,7 @@ void WEvidence::Set(const TokArr &evidence)
 	{
 	    m_VarMap[node] = m_EvidenceBoard.size();
 	    m_EvidenceBoard.push_back(evidence[i]);
+	
 	}
 	else
 	{

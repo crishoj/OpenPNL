@@ -743,7 +743,7 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
     static const char fname[] = "CreateEvidence";
 
     Graph()->Graph();
-    ExtractTokArr(const_cast<TokArr&>(aValue), &aiNode, &aiValue, &Graph()->MapOuterToGraph());
+    ExtractTokArr(const_cast<TokArr &>(aValue), &aiNode, &aiValue, &Graph()->MapOuterToGraph());
     aNodeFlag.assign(nNetNode(), 0);
 
     // mark nodes for evidence (aNodeFlag)
@@ -765,6 +765,11 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
     }
 
     nValue = j;
+
+    if (nValue != nValueIn)
+    {
+	ThrowUsingError("The number of values in the evidence is wrong", fname);
+    };
 
     // check for unambiguity
     vValue.resize(nValue, pnl::Value(0));
@@ -817,15 +822,35 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
 		}
 		aiValue[i] = 0;
 	    }
+
 	    if(aValue[i].fload.size() != 1)// There is must be one value - check
 	    {
-		ThrowUsingError("Incorrect evidence - number of values isn't 1", fname);
+		ThrowUsingError("Incorrect evidence - number of values isn't expected", fname);
 	    }
 	    vValue[aOffset[aiNode[i]] + aiValue[i]] = aValue[i].FltValue(0).fl;
 	}
     }
 
-    return pnl::CEvidence::Create(Model(), aiNode, vValue);
+    //aiNewNode does not contain one node more than once
+    Vector<int> aiNewNode;
+    int size = aiNode.size();
+    aiNewNode.reserve(size);
+
+    if (size!=0)
+    {
+	aiNewNode.push_back(aiNode[0]);
+    };
+
+    for (int node = 1; node < size; ++node) 
+    {
+	if (aiNode[node]!=aiNode[node-1])
+	{
+	    aiNewNode.push_back(aiNode[node]);
+	};
+    };
+
+    //return pnl::CEvidence::Create(Model(), aiNode, vValue);
+    return pnl::CEvidence::Create(Model(), aiNewNode, vValue);
 }
 
 void ProbabilisticNet::GetTokenByEvidence(TokArr *tEvidence, pnl::CEvidence *evidence)
