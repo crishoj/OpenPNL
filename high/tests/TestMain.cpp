@@ -13,7 +13,7 @@ int main(char* argv[], int argc)
     bTestOK = testExtractTok() && bTestOK;
     try 
     {
-        //TestGaussianModelCreate();
+        TestGaussianModelCreate();
         TestGaussianInference();
         TestGaussianParamLearning();
 	TestMultivariateWrapperJPD();
@@ -50,10 +50,22 @@ int main(char* argv[], int argc)
     res = testDBNLearning() & res;
     bTestOK = bTestOK && (res != 0);
 #endif
+#ifndef SKIP_NUMERATION
+    
+    try 
+    {
+        TestForGetPTabular();
+    }
+    catch(pnl::CException e)
+    {
+	std::cout << e.GetMessage();
+	bTestOK = false;
+    }
+#endif
 
     if(bTestOK)
     {
-	std::cout << "All tests are completed successfully" << "\n";
+	std::cout << "All tests were completed successfully" << "\n";
     }
 
     return 0;

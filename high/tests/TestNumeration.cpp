@@ -40,57 +40,25 @@ void TestForGetPTabular()
     TokArr One = net->GetPTabular("One");
     TokArr Two = net->GetPTabular("Two");
 
-    std::cout << Zero;
+    std::cout << Zero << "\n";
+    std::cout << One << "\n";
+    std::cout << Two << "\n";
 
-/*
-    if( net->GetGaussianMean("NodeA")[0].FltValue() != 1.0f ||
-        net->GetGaussianCovar("NodeA")[0].FltValue() != 10.0f ||
-        net->GetGaussianMean("NodeB")[0].FltValue() != 0.5f ||
-        net->GetGaussianCovar("NodeB")[0].FltValue() != 7.0f ||
-        net->GetGaussianWeights("NodeB", "NodeA")[0].FltValue() != 0.1f ||
-        net->GetGaussianMean("NodeC")[0].FltValue() != 0.8f ||
-        net->GetGaussianCovar("NodeC")[0].FltValue() != 3.5f ||
-        net->GetGaussianWeights("NodeC", "NodeB")[0].FltValue() != 0.4f )
+    if ((Zero[0].FltValue() != 0.1f)||(Zero[1].FltValue() != 0.9f)||
+	(Zero[2].FltValue() != 0.2f)||(Zero[3].FltValue() != 0.8f)||
+	(Zero[4].FltValue() != 0.3f)||(Zero[5].FltValue() != 0.7f)||
+	(Zero[6].FltValue() != 0.8f)||(Zero[7].FltValue() != 0.2f))
     {
-        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting gaussian parameters is wrong");
-    }
+	PNL_THROW(pnl::CAlgorithmicException, "There is error in the function TestForGetPTabular 1");
+    };
 
-    net->DelArc("NodeB", "NodeC");
-    net->AddArc("NodeC", "NodeA");
-
-    net->SetPGaussian("NodeA", "0.6", "12.0", "0.35");
-
-    cout << String(net->GetGaussianWeights("NodeA", "NodeC")) << endl;
-    if( net->GetGaussianMean("NodeA")[0].FltValue() != 0.6f ||
-        net->GetGaussianCovar("NodeA")[0].FltValue() != 12.0f ||
-        net->GetGaussianWeights("NodeA", "NodeC")[0].FltValue() != 0.35f )
+    if ((One[0].FltValue() != 0.5f)||(One[1].FltValue() != 0.5f))
     {
-        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting gaussian parameters is wrong");
-    }
+	PNL_THROW(pnl::CAlgorithmicException, "There is error in the function TestForGetPTabular 2");
+    };
 
-    net->AddNode("NodeD", "dim1");
-    net->AddArc("NodeC", "NodeD");
-    net->AddArc("NodeD", "NodeA");
-
-    net->SetPGaussian("NodeB", "0.12", "3.0", "0.21 0.9");
-
-    if( net->GetGaussianMean("NodeB")[0].FltValue() != 0.12f ||
-        net->GetGaussianCovar("NodeB")[0].FltValue() != 3.0f ||
-        net->GetGaussianWeights("NodeB", "NodeA")[0].FltValue() != 0.21f ||
-        net->GetGaussianWeights("NodeB", "NodeD")[0].FltValue() != 0.9f )
+    if ((Two[0].FltValue() != 0.4f)||(Two[1].FltValue() != 0.6f))
     {
-        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting gaussian parameters is wrong");
-    }
-
-    net->DelNode("NodeA");
-
-    if( net->GetGaussianMean("NodeB")[0].FltValue() != 1.0f ||
-        net->GetGaussianCovar("NodeB")[0].FltValue() != 1.0f ||
-        net->GetGaussianWeights("NodeB", "NodeD")[0].FltValue() != 0.0f )
-    {
-        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting gaussian parameters is wrong");
-    }
-
-    cout << "TestGaussianModelCreate is completed successfully" << endl;
-*/
+	PNL_THROW(pnl::CAlgorithmicException, "There is error in the function TestForGetPTabular 3");
+    };
 }
