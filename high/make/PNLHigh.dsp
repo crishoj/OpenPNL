@@ -103,6 +103,10 @@ SOURCE=..\source\BNetCB.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\source\ModelEngine.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\source\PersistWBNet.cpp
 # End Source File
 # Begin Source File
