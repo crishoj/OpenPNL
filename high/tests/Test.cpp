@@ -1,12 +1,10 @@
 #include <time.h>
 #include "test_conf.hpp"
 
-#include "console.hpp"
-
-#include "pnlRng.hpp"
 #include "pnl_dll.hpp"
-#include "pnlGraphicalModel.hpp"
-#include "BNet.hpp"
+//#include "pnlRng.hpp"
+//#include "pnlGraphicalModel.hpp"
+//#include "BNet.hpp"
 #include "pnlWProbabilisticNet.hpp"
 #include "pnlWGraph.hpp"
 
