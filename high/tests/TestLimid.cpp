@@ -495,3 +495,43 @@ void LimidTopology()
     delete net;
     cout << "Test LimidTopology is completed successfully" << endl;
 }
+
+
+void PureLimidModel()
+{
+    LIMID *net;
+
+    net = new LIMID();
+    TokArr aChoice = "False True";// possible values for nodes
+    TokArr aCh = "False True MayBe";// possible values for nodes
+    
+    TokArr aIncome = "Cost";// possible values for nodes   
+
+    net->AddNode(chance ^"h1", aCh);
+    net->AddNode(chance ^ "h2", aCh);
+    net->AddNode(value^"u1", aIncome);
+
+    net->AddArc("h1", "h2");
+    net->AddArc("h2", "u1");
+
+    net->SetPChance("h1^False h1^True h1^MayBe", "0.1 0.3 0.6");
+
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^False");
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.3 0.4 0.3", "h1^True");
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.5 0.4 0.1", "h1^MayBe");
+
+    net->SetValueCost("u1^Cost", "-10000.0", "h2^False");
+    net->SetValueCost("u1^Cost", "0.0", "h2^True");
+    net->SetValueCost("u1^Cost", "500.0", "h2^MayBe");
+
+    TokArr exp;
+    exp = net->GetExpectation();
+    cout << exp<< "\n";
+
+    TokArr politics1;
+    politics1 = net->GetPolitics();
+    cout << politics1<< "\n";
+
+    delete net;
+    cout << "Test PureLimidModel is completed successfully" << endl;
+}

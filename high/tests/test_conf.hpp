@@ -5,7 +5,7 @@
 
 //#define SKIP_DBN
 //#define SKIP_LIMID
-#define SKIP_TOKEN
+//#define SKIP_TOKEN
 
 // FORWARDS
 namespace pnl
@@ -16,6 +16,7 @@ namespace pnl
 PNLW_USING
 
 std::ostream &operator<<(std::ostream &str, TokArr &ta);
+void SimpleModel();
 int testMRF();
 
 int testDBN();
@@ -27,6 +28,7 @@ int testDBNLearning();
 int testDBNSaveLoad();
 
 pnl::CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<pnl::CEvidence*>* pEv);
+void PureLimidModel();
 void LimidTopology();
 void DelNodes();
 void OilTest();

@@ -426,3 +426,51 @@ void TestGaussianParamLearning()
 
     cout << "TestGaussianParamLearning is completed successfully" << endl;
 }
+
+void SimpleModel()
+{
+    BayesNet net;
+    net.AddNode("continuous^x0", "dim1"); 
+    net.AddNode("continuous^x1", "dim1"); 
+    net.AddNode("continuous^x2", "dim1"); 
+    net.AddNode("continuous^x3", "dim1"); 
+    net.AddNode("continuous^x4", "dim1");
+    
+    net.AddArc("x0", "x2");
+    net.AddArc("x1", "x2");
+    net.AddArc("x2", "x3");
+    net.AddArc("x2", "x4");
+    
+    net.SetPGaussian("x0", "1.0", "4.0");
+    net.SetPGaussian("x1", "1.0", "1.0");
+        
+    net.SetPGaussian("x2", "0.0", "2.0", "1.0 2.0");
+    net.SetPGaussian("x3", "0.0", "4.0", "1.1");
+    net.SetPGaussian("x4", "-0.8", "1.2", "2.0");
+    
+    net.AddEvidToBuf("x0^dim1^0.4");
+
+    net.LearnParameters();
+    TokArr MeanX2 = net.GetGaussianMean("x2");
+    float mean = MeanX2[0].FltValue();
+
+    TokArr CovarX2 = net.GetGaussianCovar("x2");
+    float cov = CovarX2[0].FltValue();
+
+    net.SetProperty("Inference", "jtree");
+    TokArr X3Marg = net.GetJPD("x3");
+    Tok x3Mean = X3Marg[0];
+    Tok x3Cov = X3Marg[1];
+
+    cout<< X3Marg <<"\n";
+    float x3M = x3Mean.FltValue(0).fl;
+    float x3C = x3Cov.FltValue(0).fl;
+
+    TokArr X3MPE = net.GetMPE("x3");
+
+    cout<< X3MPE <<"\n";
+    float x3MPE = X3MPE[0].FltValue(0).fl;
+
+
+
+}

@@ -19,6 +19,7 @@ int main(char* argv[], int argc)
     bTestOK = testExtractTok() && bTestOK;
     try 
     {
+        SimpleModel();
         TestGaussianModelCreate();
         TestGaussianInference();
         TestGaussianParamLearning();
@@ -37,6 +38,7 @@ int main(char* argv[], int argc)
     try 
     {
 //        LimidTopology();
+        PureLimidModel();
         DelNodes();
         TestPigs();
 	OilTest();
