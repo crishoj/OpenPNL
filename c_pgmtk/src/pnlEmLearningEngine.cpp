@@ -133,14 +133,14 @@ void CEMLearningEngine::BuildFullEvidenceMatrix(float ***full_evid)
             printf ("%f   ", (*full_evid)[i][j]);
         }
         printf("\n");
-    }*/
-            
+    }
+*/            
 }
 // ----------------------------------------------------------------------------
 
 void CEMLearningEngine::BuildCurrentEvidenceMatrix(int Node, float ***full_evid, float ***evid)
 {
-  int i;
+  int i, j;
 
   CStaticGraphicalModel *grmodel = GetStaticModel();
   intVector parents;
@@ -155,16 +155,13 @@ void CEMLearningEngine::BuildCurrentEvidenceMatrix(int Node, float ***full_evid,
     (*evid)[i] = new float [m_Vector_pEvidences.size()];
   }
 
- /* printf("Current Evid Matrix: \n");
   for (i = 0; i < m_Vector_pEvidences.size(); i++)
   {
     for (j = 0; j < parents.size(); j++)
     {
       (*evid)[j][i] = (*full_evid)[parents[j]][i];
-      printf("%f,  ", (*evid)[j][i]);
     }
-    printf("\n");
-  }*/
+  }
 }
 // ----------------------------------------------------------------------------
 
