@@ -710,12 +710,16 @@ brk:
         {
             if ( going_discrete )
             {
-                query_JPD = CTabularPotential::CreateUnitFunctionDistribution( saved_query, graphical_model->GetModelDomain() );
+                pot2 = CTabularPotential::CreateUnitFunctionDistribution( saved_query, graphical_model->GetModelDomain() );
             }
             else
             {
-                query_JPD = CGaussianPotential::CreateUnitFunctionDistribution( saved_query, graphical_model->GetModelDomain() );
+                pot2 = CGaussianPotential::CreateUnitFunctionDistribution( saved_query, graphical_model->GetModelDomain() );
             }
+
+            // XXX: inefficient in case evidence disjoint with query, performs redundant copy
+            query_JPD = pot2->ShrinkObservedNodes( evidence );
+            delete( pot2 );
 
             for ( i = active_components.size(); i--; )
             {
