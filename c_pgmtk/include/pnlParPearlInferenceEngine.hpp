@@ -106,6 +106,7 @@ protected:
 
 #ifdef PAR_OMP
     void ParallelProtocolOMP();
+    void ParallelProtocolContOMP();
 #endif
 
     void CPD_to_pi(int nodeNumber, CDistribFun *const* allPiMessages,

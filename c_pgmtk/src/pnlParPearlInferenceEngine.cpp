@@ -478,14 +478,28 @@ void CParPearlInfEngine::EnterEvidenceOMP(const CEvidence *evidence,
 {
   PNL_CHECK_IS_NULL_POINTER(evidence);
   m_bMaximize = maximize ? 1 : 0;
-  // clear all the previous data
-  ClearMessagesStorage();
-  // init new data
-  InitEngine(evidence);
-  // initialize messages
-  InitMessages(evidence);
-  // start inference
-  ParallelProtocolOMP();
+  if (AllCountinuesNodes(GetModel()) == true)
+  {
+    // clear all the previous data
+    ClearMessagesStorage();
+    // init new data
+    InitEngine(evidence);
+    // initialize messages
+    InitMessages(evidence);
+    // start inference
+    ParallelProtocolOMP();
+  }
+  else
+  {
+    // clear all the previous data
+    CPearlInfEngine::ClearMessagesStorage();
+    // init new data
+    CPearlInfEngine::InitEngine(evidence);
+    // initialize messages
+    CPearlInfEngine::InitMessages(evidence);
+    // start inference
+    ParallelProtocolContOMP();
+  }
 }
 #endif // PAR_OMP
 // ----------------------------------------------------------------------------
@@ -3118,6 +3132,84 @@ void CParPearlInfEngine::ParallelProtocolOMP()
 #endif // PAR_OMP
 // ----------------------------------------------------------------------------
 
+#ifdef PAR_OMP
+void CParPearlInfEngine::ParallelProtocolOMP_Cond()
+{
+  if (GetMaxNumberOfIterations() == 0)
+  {
+      SetMaxNumberOfIterations(GetNumberOfNodesInModel());        
+  }
+
+  int i, j;
+  int converged = 0;
+  int changed = 0;
+  int iter = 0;
+  const CGraph *pGraph = m_pGraphicalModel->GetGraph();
+  intVector& connNodes = GetConnectedNodes();
+  intVector& areReallyObserved = GetSignsOfReallyObserved();
+  int nAllMes = GetMessagesFromNeighbors().size();
+  omp_lock_t change_lock;
+  omp_init_lock(&change_lock);
+  int Count = GetNumberOfNodesInModel();
+
+  messageVecVector newMessages(GetMessagesFromNeighbors());
+
+  while ((!converged) && (iter<GetMaxNumberOfIterations()))
+  {   
+    int                    numOfNeighb;
+    const int              *neighbors;
+    const ENeighborType *orientation;
+    #pragma omp parallel for schedule(dynamic) private(i, j, numOfNeighb, neighbors, orientation)
+    for( i = 0; i < Count; i++ )
+    {
+      pGraph->GetNeighbors( connNodes[i], &numOfNeighb, 
+        &neighbors, &orientation );
+      for( j = 0; j < numOfNeighb; j++)
+      {                
+        newMessages[connNodes[i]][j] = CPearlInfEngine::ComputeMessage( connNodes[i],
+          neighbors[j], orientation[j] );                
+      }
+    }
+     
+    #pragma omp parallel for schedule(dynamic) private(i, j)
+    for( i = 0; i < nAllMes	; i++)
+    {
+      for( j = 0; j <GetMessagesFromNeighbors()[i].size(); j++)
+      {                
+        delete GetMessagesFromNeighbors()[i][j];
+        GetMessagesFromNeighbors()[i][j] =  newMessages[i][j];
+      }
+    }        
+    changed = 0;
+    #pragma omp parallel for schedule(dynamic) private(i)// reduction(+:changed)
+    for (i = 0; i < Count; i++)
+    {  
+      if (!areReallyObserved[connNodes[i]])
+      {
+        message tempBel = CPearlInfEngine::GetCurBeliefs()[i];
+        CPearlInfEngine::ComputeBelief(connNodes[i]);
+            
+        if(!changed)
+        {
+          omp_set_lock(&change_lock);
+          changed += !tempBel->IsEqual(CPearlInfEngine::
+          GetCurBeliefs()[connNodes[i]], CPearlInfEngine::GetTolerance());
+          delete tempBel;
+          omp_unset_lock(&change_lock);
+        }
+      }
+    }
+    converged = !changed;
+    iter++;
+    }//while ((!converged)&&(iter<m_numberOfIterations))
+    //compute beliefs after last passing messages
+    
+    omp_destroy_lock(&change_lock);
+    m_IterationCounter = iter;
+}
+#endif // PAR_OMP
+// ----------------------------------------------------------------------------
+
 #ifdef PAR_MPI
 void CParPearlInfEngine::SetFarNeighbors(intVector* sinks, intVector* sources,
   int &size)
@@ -3168,7 +3260,7 @@ void CParPearlInfEngine::SetFarNeighbors(intVector* sinks, intVector* sources,
   const int *neighbors,*neighborsOfneighbors;
   const ENeighborType *orientation,*orNeighbOfneighb;
 
-  if (Disc_Con == 0)
+  if (Discrete_Continuous == 0)
   {
     for (int i = 0; i < m_NodesOfProcess.size(); i++)
     {
