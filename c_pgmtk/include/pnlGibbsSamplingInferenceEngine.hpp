@@ -67,6 +67,8 @@ protected:
     inline intVecVector& GetQueryes();
 
     inline bool GetSignOfUsingDSeparation() const;
+
+    bool ConvertingFamilyToPot( int node, const CEvidence* pEv );
     
 private:
     
@@ -75,7 +77,9 @@ private:
     intVecVector            m_queryes;
     pFactorVector           m_queryFactors;
     bool                    m_bUsingDSep;
-    
+
+    pFactorVector m_SoftMaxGaussianFactors;
+    intVecVector m_environment;       
 };
 
 inline void CGibbsSamplingInfEngine::GetQueryFactors( pFactorVector *pFactors )
