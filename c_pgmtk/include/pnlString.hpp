@@ -48,6 +48,9 @@ public: // USER INTERFACE
     inline pnlString &operator<<(int);
     inline pnlString &operator<<(float);
     inline pnlString &operator<<(double);
+    bool operator!=(const char *str) const { return !operator==(str); }
+    bool operator!=(const std::string &str) const { return !operator==(str); }
+    bool operator!=(const pnlString &str) const { return !operator==(str); }
     bool operator==(const char *str) const
     {
 	return (size() == 0 && str[0] == 0) || !memcmp(str, data(), size() + 1);
