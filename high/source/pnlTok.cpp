@@ -156,6 +156,10 @@ void TokIdNode::Remove( bool no_cemetery )
         }
         v_prev->v_next = h_next;
     }
+    if (h_next)
+    {
+	h_next->h_prev = h_prev;
+    }
     for ( i = j; i < cemetery.size(); ++i )
     {
         delete( cemetery[i] );
