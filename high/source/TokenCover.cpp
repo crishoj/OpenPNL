@@ -221,7 +221,7 @@ int TokenCover::AddNode(Tok &node, TokArr &aValue)
 
 bool TokenCover::DelNode(int iNode)
 {
-    Notify(eDelNode, iNode);
+    //Notify(eDelNode, iNode);
     if(!m_pGraph)
     {
 	ThrowInternalError("Call to TokenCover::DelNode without graph", "DelNode");
