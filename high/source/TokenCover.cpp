@@ -161,16 +161,17 @@ int TokenCover::AddNode(Tok &node, TokArr &aValue)
     TokIdNode *parentNode = m_pRoot;
     String nodeName = node.Name();
 
+#ifdef DEBUG_ADDNODE
     std::deque<TokId> &aUnr = node.Unresolved(parentNode);
     pnl::pnlString str;
     
-    str << node.Node()->Name() << "#" << node.Node()->tag << ":";
+    str << nodeName << "#" << node.Node(parentNode)->tag << ":";
     for(int i = 0; i < aUnr.size(); ++i)
     {
         str << aUnr[i] << " ";
     }
-///    PrintTokTree("toktree.txt", TokIdNode::root);
-
+    PrintTokTree("toktree.txt", TokIdNode::root);
+#endif
 
     if(node.Unresolved(parentNode).size() != 1)
     {
