@@ -1,0 +1,820 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html><head>
+<link rel="STYLESHEET" href="openpnlref.css" charset="ISO-8859-1" type="text/css">
+</head><body>
+
+
+<p>
+<ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlGraph" TARGET="text">Graph</a>-->
+<li><a href="pnl_refText.htm#decl_pnlClassCGraph" TARGET="text">Class CGraph</a>
+<ul>
+<li><a href="pnl_refText.htm#declCGraph_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCGraph_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#decl_pnlGetTopologicalOrder" TARGET="text">GetTopologicalOrder</a>
+<li><a href="pnl_refText.htm#declCGraph_MoralizeGraph" TARGET="text">MoralizeGraph</a>
+<li><a href="pnl_refText.htm#declCGraph_AddEdge" TARGET="text">AddEdge</a>
+<li><a href="pnl_refText.htm#declCGraph_ChangeEdgeDirection" TARGET="text">ChangeEdgeDirection</a>
+<li><a href="pnl_refText.htm#declCGraph_GetNeighbors" TARGET="text">GetNeighbors</a>
+<li><a href="pnl_refText.htm#declCGraph_GetNumberOfNeighbors" TARGET="text">GetNumberOfNeighbors</a>
+<li><a href="pnl_refText.htm#declCGraph_GetNumberOfNodes" TARGET="text">GetNumberOfNodes</a>
+<li><a href="pnl_refText.htm#declCGraph_GetNumberOfEdges" TARGET="text">GetNumberOfEdges</a>
+<li><a href="pnl_refText.htm#declCGraph_IsCompleteSubgraph" TARGET="text">IsCompleteSubgraph</a>
+<li><a href="pnl_refText.htm#declCGraph_IsChangeAllowed" TARGET="text">IsChangeAllowed</a>
+<li><a href="pnl_refText.htm#declCGraph_IsExistingEdge" TARGET="text">IsExistingEdge</a>
+<li><a href="pnl_refText.htm#declCGraph_RemoveEdge" TARGET="text">RemoveEdge</a>
+<li><a href="pnl_refText.htm#declCGraph_SetNeighbors" TARGET="text">SetNeighbors</a>
+<li><a href="pnl_refText.htm#declCGraph_ProhibitChange" TARGET="text">ProhibitChange</a>
+<li><a href="pnl_refText.htm#declCGraph_FormCliqueFromSubgraph" TARGET="text">FormCliqueFromSubgraph</a>
+<li><a href="pnl_refText.htm#declCGraph_GetNumberOfParents" TARGET="text">GetNumberOfParents</a>
+<li><a href="pnl_refText.htm#declCGraph_GetNumberOfChildren" TARGET="text">GetNumberOfChildren</a>
+<li><a href="pnl_refText.htm#declCGraph_IsDirected" TARGET="text">IsDirected</a>
+<li><a href="pnl_refText.htm#declCGraph_IsUndirected" TARGET="text">IsUndirected</a>
+<li><a href="pnl_refText.htm#declCGraph_GetAdjacencyMatrix" TARGET="text">GetAdjacencyMatrix</a>
+<li><a href="pnl_refText.htm#declCGraph_ClearGraph" TARGET="text">ClearGraph</a>
+<li><a href="pnl_refText.htm#declCGraph_GetParents" TARGET="text">GetParents</a>
+<li><a href="pnl_refText.htm#declCGraph_GetChildren" TARGET="text">GetChildren</a>
+<li><a href="pnl_refText.htm#declCGraph_IsDAG" TARGET="text">IsDAG</a>
+<li><a href="pnl_refText.htm#declCGraph_IsTopologicallySorted" TARGET="text">IsTopologicallySorted</a>
+<li><a href="pnl_refText.htm#declCGraph_NumberOfConnectivityComponents" TARGET="text">NumberOfConnectivityComponents</a>
+<li><a href="pnl_refText.htm#declCGraph_GetConnectivityComponents" TARGET="text">GetConnectivityComponents</a>
+<li><a href="pnl_refText.htm#declCGraph_Dump" TARGET="text">Dump</a>
+<li><a href="pnl_refText.htm#declCGraph_GetAncestry" TARGET="text">GetAncestry</a>
+<li><a href="pnl_refText.htm#declCGraph_GetAncestralClosure" TARGET="text">GetAncestralClosure</a>
+<li><a href="pnl_refText.htm#declCgraph_GetAncestralClosure" TARGET="text">GetAncestralClosure</a>
+<li><a href="pnl_refText.htm#declCGraph_GetSubgraphConnectivityComponents" TARGET="text">GetSubgraphConnectivityComponents</a>
+<li><a href="pnl_refText.htm#declCGraph_GetDConnectionList" TARGET="text">GetDConnectionList</a>
+<li><a href="pnl_refText.htm#declCGraph_GetDConnectionTable" TARGET="text">GetDConnectionTable</a>
+<li><a href="pnl_refText.htm#declCGraph_GetReachableSubgraph" TARGET="text">GetReachableSubgraph</a>
+</ul>
+<li><a href="pnl_refText.htm#declClassCDAG" TARGET="text">Class CDAG</a>
+<ul>
+<li><a href="pnl_refText.htm#declCDAG_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCDAG_Change" TARGET="text">Change</a>
+<li><a href="pnl_refText.htm#declCDAG_ClearContent" TARGET="text">ClearContent</a>
+<li><a href="pnl_refText.htm#declCDAG_Clone" TARGET="text">Clone</a>
+<li><a href="pnl_refText.htm#declCDAG_CreateAncestorMatrix" TARGET="text">CreateAncestorMatrix</a>
+<li><a href="pnl_refText.htm#declCDAG_CreateMinimalSpanningTree" TARGET="text">CreateMinimalSpanningTree</a>
+<li><a href="pnl_refText.htm#declCDAG_DoMove" TARGET="text">DoMove</a>
+<li><a href="pnl_refText.htm#declCDAG_GetAllEdges" TARGET="text">GetAllEdges</a>
+<li><a href="pnl_refText.htm#declCDAG_GetAllNeighbours" TARGET="text">GetAllNeighbours</a>
+<li><a href="pnl_refText.htm#declCDAG_GetAllValidMove" TARGET="text">GetAllValidMove</a>
+<li><a href="pnl_refText.htm#declCDAG_GetEdgeDirect" TARGET="text">GetEdgeDirect</a>
+<li><a href="pnl_refText.htm#decl_pnlGetMaxFanIn" TARGET="text">GetMaxFanIn</a>
+<li><a href="pnl_refText.htm#declCDAG_GetSubDAG" TARGET="text">GetSubDAG</a>
+<li><a href="pnl_refText.htm#declCDAG_IsEquivalent" TARGET="text">IsEquivalent</a>
+<li><a href="pnl_refText.htm#declCDAG_IsValidMove" TARGET="text">IsValidMove</a>
+<li><a href="pnl_refText.htm#declCDAG_MarkovBlanket" TARGET="text">MarkovBlanket</a>
+<li><a href="pnl_refText.htm#declCDAG_RandomCreateADAG" TARGET="text">RandomCreateADAG</a>
+<li><a href="pnl_refText.htm#declCDAG_SetSubDag" TARGET="text">SetSubDag</a>
+<li><a href="pnl_refText.htm#declCDAG_SymmetricDifference" TARGET="text">SymmetricDifference</a>
+<li><a href="pnl_refText.htm#declCDAG_TopologicalCreateDAG" TARGET="text">TopologicalCreateDAG</a>
+<li><a href="pnl_refText.htm#declCDAG_TopologicalSort" TARGET="text">TopologicalSort</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlNode_Types" TARGET="text">Node Types</a>-->
+
+<li><a href="pnl_refText.htm#decl_pnlClassCNode_Types" TARGET="text">Class CNodeType</a>
+<ul>
+<li><a href="pnl_refText.htm#declCNodeType_IsDiscrete" TARGET="text">IsDiscrete</a>
+<li><a href="pnl_refText.htm#declCNodeType_GetNodeSize" TARGET="text">GetNodeSize</a>
+<li><a href="pnl_refText.htm#declCNodeType_SetType" TARGET="text">SetType</a>
+<li><a href="pnl_refText.htm#decl_pnloperator==" TARGET="text">operator==</a>
+<li><a href="pnl_refText.htm#decl_pnloperator!=" TARGET="text">operator!=</a>
+<li><a href="pnl_refText.htm#decl_pnlModel_Domain" TARGET="text">Model Domain</a>
+<li><a href="pnl_refText.htm#decl_pnlClassCModel_Domain" TARGET="text">Class CModelDomain</a>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnlAttachFactor" TARGET="text">AttachFactor</a>
+<li><a href="pnl_refText.htm#declCModelDomain_ReleaseFactor" TARGET="text">ReleaseFactor</a>
+<li><a href="pnl_refText.htm#declCModelDomain_IsAFactorOwner" TARGET="text">IsAFactorOwner</a>
+<li><a href="pnl_refText.htm#declCModelDomain_GetVariableType" TARGET="text">GetVariableType</a>
+<li><a href="pnl_refText.htm#declCModelDomain_GetVariableTypes" TARGET="text">GetVariableTypes</a>
+<li><a href="pnl_refText.htm#declCModelDomain_GetObsGauVarType" TARGET="text">GetObsGauVarType</a>
+<li><a href="pnl_refText.htm#declCModelDomain_GetObsTabVarType" TARGET="text">GetObsTabVarType</a>
+<li><a href="pnl_refText.htm#declCModelDomain_GetNumberOfVariableTypes" TARGET="text">GetNumberOfVariableTypes</a>
+<li><a href="pnl_refText.htm#declCModelDomain_GetVariableTypes" TARGET="text">GetVariableTypes</a>
+<li><a href="pnl_refText.htm#declCModelDomain_GetNumberVariables" TARGET="text">GetNumberVariables</a>
+<li><a href="pnl_refText.htm#declCModelDomain_GetVariableAssociations" TARGET="text">GetVariableAssociations</a>
+<li><a href="pnl_refText.htm#declCModelDomain_GetVariableAssociation" TARGET="text">GetVariableAssociation</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlEvidences" TARGET="text">Evidences</a>-->
+
+<li><a href="pnl_refText.htm#decl_pnlClassCNodeValues" TARGET="text">Class CNodeValues</a>
+<ul>
+<li><a href="pnl_refText.htm#declCNodeValues_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCNodeValues_GetValueBySerialNumber" TARGET="text">GetValueBySerialNumber</a>
+<li><a href="pnl_refText.htm#declCNodeValues_GetNumberObsNodes" TARGET="text">GetNumberObsNodes</a>
+<li><a href="pnl_refText.htm#declCNodeValues_GetObsNodesFlags" TARGET="text">GetObsNodesFlags</a>
+<li><a href="pnl_refText.htm#declCNodeValues_GetRawData" TARGET="text">GetRawData</a>
+<li><a href="pnl_refText.htm#declCNodeValues_GetOffset" TARGET="text">GetOffset</a>
+<li><a href="pnl_refText.htm#declCNodeValues_SetData" TARGET="text">SetData</a>
+<li><a href="pnl_refText.htm#declCNodeValues_GetNodeTypes" TARGET="text">GetNodeTypes</a>
+<li><a href="pnl_refText.htm#declCNodeValues_MakeNodeHiddenBySerialNum" TARGET="text">MakeNodeHiddenBySerialNum</a>
+<li><a href="pnl_refText.htm#declCNodeValues_MakeNodeObservednBySerialNum" TARGET="text">MakeNodeObservednBySerialNum</a>
+<li><a href="pnl_refText.htm#declCNodeValues_ToggleNodeStateBySerialNumber" TARGET="text">ToggleNodeStateBySerialNumber</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCEvidence" TARGET="text">Evidence</a>
+<ul>
+<li><a href="pnl_refText.htm#declCEvidence_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCEvidence_ToggleNodeState" TARGET="text">ToggleNodeState</a>
+<li><a href="pnl_refText.htm#declCEvidence_GetValue" TARGET="text">GetValue</a>
+<li><a href="pnl_refText.htm#declCEvidence_GetAllObsNodes" TARGET="text">GetAllObsNodes</a>
+<li><a href="pnl_refText.htm#decl_pnlIsNodeObserved" TARGET="text">IsNodeObserved</a>
+<li><a href="pnl_refText.htm#decl_pnlMakeNodeObserved" TARGET="text">MakeNodeObserved</a>
+<li><a href="pnl_refText.htm#decl_pnlMakeNodeHidden" TARGET="text">MakeNodeHidden</a>
+<li><a href="pnl_refText.htm#declCEvidence_GetObsNodesWithValues" TARGET="text">GetObsNodesWithValues</a>
+<li><a href="pnl_refText.htm#declCEvidence_GetModelDomain" TARGET="text">GetModelDomain</a>
+<li><a href="pnl_refText.htm#declCEvidence_Dump" TARGET="text">Dump</a>
+<li><a href="pnl_refText.htm#declCEvidence_Save" TARGET="text">Save</a>
+<li><a href="pnl_refText.htm#declCEvidence_Save" TARGET="text">Save</a>
+<li><a href="pnl_refText.htm#declCEvidence_Load" TARGET="text">Load</a>
+<li><a href="pnl_refText.htm#declCEvidence_Load" TARGET="text">Load</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlGraphical_Models" TARGET="text">Graphical Models</a>-->
+<li><a href="pnl_refText.htm#decl_pnlClassCGraphicalModel" TARGET="text">Class CGraphicalModel</a>
+<ul>
+<li><a href="pnl_refText.htm#declCGraphicalModel_AllocFactor" TARGET="text">AllocFactor</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_AllocFactors" TARGET="text">AllocFactors</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_AttachFactor" TARGET="text">AttachFactor</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_AttachFactors" TARGET="text">AttachFactors</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_GetGraph" TARGET="text">GetGraph</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_GetModelType" TARGET="text">GetModelType</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_GetNodeAssociations" TARGET="text">GetNodeAssociations</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_GetNodeType" TARGET="text">GetNodeType</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_GetNodeTypes" TARGET="text">GetNodeTypes</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_GetNumberOfNodes" TARGET="text">GetNumberOfNodes</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_GetNumberOfNodeTypes" TARGET="text">GetNumberOfNodeTypes</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_GetNumberOfFactors" TARGET="text">GetNumberOfFactors</a>
+<li><a href="pnl_refText.htm#decl_pnlGetFactor" TARGET="text">GetFactor</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_GetFactors" TARGET="text">GetFactors</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_GetModelDomain" TARGET="text">GetModelDomain</a>
+<li><a href="pnl_refText.htm#declCGraphicalModel_IsValid" TARGET="text">IsValid</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCStaticGraphical_Model" TARGET="text">Class CStaticGraphicalModel</a>
+<ul>
+<li><a href="pnl_refText.htm#declCStaticGraphicalModel_IsValidAsBaseForDynamicModel" TARGET="text">IsValidAsBaseForDynamicModel</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCBNet" TARGET="text">Class CBNet</a>
+<ul>
+<li><a href="pnl_refText.htm#declCBNet_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCBNet_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCBNet_CreateWithRandomMatrices" TARGET="text">CreateWithRandomMatrices</a>
+<li><a href="pnl_refText.htm#declCBNet_ConvertToSparse" TARGET="text">ConvertToSparse</a>
+<li><a href="pnl_refText.htm#declCBNet_ConvertToDense" TARGET="text">ConvertToDense</a>
+<li><a href="pnl_refText.htm#declCBNet_CreateTabularCPD" TARGET="text">CreateTabularCPD</a>
+<li><a href="pnl_refText.htm#declCBNet_FindMixtureNodes" TARGET="text">FindMixtureNodes</a>
+<li><a href="pnl_refText.htm#declCBNet_GenerateSamples" TARGET="text">GenerateSamples</a>
+<li><a href="pnl_refText.htm#declCBNet_IsValid" TARGET="text">IsValid</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCMNet" TARGET="text">Class CMNet</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCMNet_CreateWithRandomMatrices" TARGET="text">CreateWithRandomMatrices</a>
+<li><a href="pnl_refText.htm#declCMNet_GetClique" TARGET="text">GetClique</a>
+<li><a href="pnl_refText.htm#decl_pnlConvertFromBNet" TARGET="text">ConvertFromBNet</a>
+<li><a href="pnl_refText.htm#decl_pnlConvertFromBNetUsingEvidence" TARGET="text">ConvertFromBNetUsingEvidence</a>
+<li><a href="pnl_refText.htm#decl_pnlCopy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCMNet_CreateTabularPotential" TARGET="text">CreateTabularPotential</a>
+<li><a href="pnl_refText.htm#declCMNet_ComputeLogLik" TARGET="text">ComputeLogLik</a>
+<li><a href="pnl_refText.htm#declCMNet_GetClqsNumsForNode" TARGET="text">GetClqsNumsForNode</a>
+<li><a href="pnl_refText.htm#declCMNet_GetNumberOfCliques" TARGET="text">GetNumberOfCliques</a>
+<li><a href="pnl_refText.htm#declCMNet_GenerateSamples" TARGET="text">GenerateSamples</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCMRF2" TARGET="text">Class CMRF2</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnlCMRF2_CreateWithRandomMatrices" TARGET="text">CreateWithRandomMatrices</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassSFactorGraph" TARGET="text">Class CFactorGraph</a>
+<ul>
+<li><a href="pnl_refText.htm#declCFactorGraph_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCFactorGraph_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCFactorGraph_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCFactorGraph_Shrink" TARGET="text">Shrink</a>
+<li><a href="pnl_refText.htm#declCFactorGraph_GetNumFactorsAllocated" TARGET="text">GetNumFactorsAllocated</a>
+<li><a href="pnl_refText.htm#decl_pnlConvertFromBNet" TARGET="text">ConvertFromBNet</a>
+<li><a href="pnl_refText.htm#declCFactorGraph_ConvertFromMNet" TARGET="text">ConvertFromMNet</a>
+<li><a href="pnl_refText.htm#declCFactorGraph_IsValid" TARGET="text">IsValid</a>
+<li><a href="pnl_refText.htm#declCFactorGraph_GetNbrFactors" TARGET="text">GetNbrFactors</a>
+<li><a href="pnl_refText.htm#declCFactorGraph_GetNbrFactors" TARGET="text">GetNbrFactors</a>
+<li><a href="pnl_refText.htm#declCFactorGraph_GetNumNbrFactors" TARGET="text">GetNumNbrFactors</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCJunctionTree" TARGET="text">Class CJunctionTree</a>
+<ul>
+<li><a href="pnl_refText.htm#declCJunctionTree_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnlCopy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_GetNodeContent" TARGET="text">GetNodeContent</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_GetNodesConnectedByUser" TARGET="text">GetNodesConnectedByUser</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_GetFactorAssignmentToClique" TARGET="text">GetFactorAssignmentToClique</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_GetSeparatorDomain" TARGET="text">GetSeparatorDomain</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_GetNodePotential" TARGET="text">GetNodePotential</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_GetSeparatorPotential" TARGET="text">GetSeparatorPotential</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_GetClqNumsContainingSubset" TARGET="text">GetClqNumsContainingSubset</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_InitCharge" TARGET="text">InitCharge</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_ClearCharge" TARGET="text">ClearCharge</a>
+<li><a href="pnl_refText.htm#decl_pnloperator=" TARGET="text">operator=</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_GetNumberOfNodes" TARGET="text">GetNumberOfNodes</a>
+<li><a href="pnl_refText.htm#declCJunctionTree_DumpNodeContents" TARGET="text">DumpNodeContents</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlCDynamicGraphicalModel" TARGET="text">Class CDynamicGraphicalModel</a>
+<ul>
+<li><a href="pnl_refText.htm#declCDynamicGraphicalModel_CreatePriorSliceGrModel" TARGET="text">CreatePriorSliceGrModel</a>
+<li><a href="pnl_refText.htm#declCDynamicGraphicalModel_UnrollDynamicModel" TARGET="text">UnrollDynamicModel</a>
+<li><a href="pnl_refText.htm#declCDynamicGraphicalModel_GetInterfaceNodes" TARGET="text">GetInterfaceNodes</a>
+<li><a href="pnl_refText.htm#declCDynamicGraphicalModel_GetStaticModel" TARGET="text">GetStaticModel</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlCDBN" TARGET="text">Class CDBN</a>
+<ul>
+<li><a href="pnl_refText.htm#declCDBN_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCDBN_GenerateSamples" TARGET="text">GenerateSamples</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlDistribution_Functions" TARGET="text">Distribution Functions</a>-->
+
+<li><a href="pnl_refText.htm#decl_pnlClassCDistribFun" TARGET="text">Class CDistribFun</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnloperator=" TARGET="text">operator=</a>
+<li><a href="pnl_refText.htm#decl_pnlGetNodeTypesVector" TARGET="text">GetNodeTypesVector</a>
+<li><a href="pnl_refText.htm#declCDistribFun_SetVariableType" TARGET="text">SetVariableType</a>
+<li><a href="pnl_refText.htm#declCDistribFun_IsValid" TARGET="text">IsValid</a>
+<li><a href="pnl_refText.htm#declCDistribFun_AllocMatrix" TARGET="text">AllocMatrix</a>
+<li><a href="pnl_refText.htm#declCDistribFun_AttachMatrix" TARGET="text">AttachMatrix</a>
+<li><a href="pnl_refText.htm#decl_pnlGetMatrix" TARGET="text">GetMatrix</a>
+<li><a href="pnl_refText.htm#declCDistribFun_GetNumberOfNodes" TARGET="text">GetNumberOfNodes</a>
+<li><a href="pnl_refText.htm#declCDistribFun_IsDistributionSpecific" TARGET="text">IsDistributionSpecific</a>
+<li><a href="pnl_refText.htm#decl_pnlGetStatisticalMatrix" TARGET="text">GetStatisticalMatrix</a>
+<li><a href="pnl_refText.htm#declCDistribFun_MarginalizeData" TARGET="text">MarginalizeData</a>
+<li><a href="pnl_refText.htm#declCDistribFun_MultiplyInSelfData" TARGET="text">MultiplyInSelfData</a>
+<li><a href="pnl_refText.htm#declCDistribFun_DivideInSelfData" TARGET="text">DivideInSelfData</a>
+<li><a href="pnl_refText.htm#declCDistribFun_ShrinkObservedNodes" TARGET="text">ShrinkObservedNodes</a>
+<li><a href="pnl_refText.htm#declCDistribFun_ExpandData" TARGET="text">ExpandData</a>
+<li><a href="pnl_refText.htm#declCDistribFun_ClearStatisticalData" TARGET="text">ClearStatisticalData</a>
+<li><a href="pnl_refText.htm#declCDistribFun_StatisticalDataEM" TARGET="text">StatisticalDataEM</a>
+<li><a href="pnl_refText.htm#declCDistribFun_StatisticalDataML" TARGET="text">StatisticalDataML</a>
+<li><a href="pnl_refText.htm#declCDistribFun_SetStatistics" TARGET="text">SetStatistics</a>
+<li><a href="pnl_refText.htm#declCDistribFun_GetNormalized" TARGET="text">GetNormalized</a>
+<li><a href="pnl_refText.htm#declCDistribFun_ProcessingStatisticalData" TARGET="text">ProcessingStatisticalData</a>
+<li><a href="pnl_refText.htm#declCDistribFun_CloneDistribFun" TARGET="text">CloneDistribFun</a>
+<li><a href="pnl_refText.htm#declCDistribFun_CloneWithSharedMatrices" TARGET="text">CloneWithSharedMatrices</a>
+<li><a href="pnl_refText.htm#declCDistribFun_GetMultipliedDelta" TARGET="text">GetMultipliedDelta</a>
+<li><a href="pnl_refText.htm#decl_pnlConvertCPDDistribFunToPot" TARGET="text">ConvertCPDDistribFunToPot</a>
+<li><a href="pnl_refText.htm#decl_pnlCPD_to_pi" TARGET="text">CPD_to_pi</a>
+<li><a href="pnl_refText.htm#decl_pnlCPD_to_lambda" TARGET="text">CPD_to_lambda</a>
+<li><a href="pnl_refText.htm#declCDistribFun_Normalize" TARGET="text">Normalize</a>
+<li><a href="pnl_refText.htm#declCDistribFun_GetDistributionType" TARGET="text">GetDistributionType</a>
+<li><a href="pnl_refText.htm#declCDistribFun_IsEqual" TARGET="text">IsEqual</a>
+<li><a href="pnl_refText.htm#declCDistribFun_GetMPE" TARGET="text">GetMPE</a>
+<li><a href="pnl_refText.htm#declCDistribFun_ConvertToSparse" TARGET="text">ConvertToSparse</a>
+<li><a href="pnl_refText.htm#declCDistribFun_ConvertToDense" TARGET="text">ConvertToDense</a>
+<li><a href="pnl_refText.htm#declCDistribFun_IsSparse" TARGET="text">IsSparse</a>
+<li><a href="pnl_refText.htm#declCDistribFun_IsDense" TARGET="text">IsDense</a>
+<li><a href="pnl_refText.htm#declCDistribFun_ResetNodeTypes" TARGET="text">ResetNodeTypes</a>
+<li><a href="pnl_refText.htm#declCDistribFun_CreateDefaultMatrices" TARGET="text">CreateDefaultMatrices</a>
+<li><a href="pnl_refText.htm#declCDistribFun_GetMatricesValidityFlag" TARGET="text">GetMatricesValidityFlag</a>
+<li><a href="pnl_refText.htm#declCDistribFun_Dump" TARGET="text">Dump</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCTabularDistribFun" TARGET="text">Class CTabularDistribFun</a>
+<ul>
+<li><a href="pnl_refText.htm#declCTabularDistribFun_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnlCreateUnitFunctionDistribution" TARGET="text">CreateUnitFunctionDistribution</a>
+<li><a href="pnl_refText.htm#declCTabularDistribFun_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCTabularDistribFun_BayesUpdateFactor" TARGET="text">BayesUpdateFactor</a>
+<li><a href="pnl_refText.htm#decl_pnlPriorToCPD" TARGET="text">PriorToCPD</a>
+<li><a href="pnl_refText.htm#declCTabularDistribFun_CPDToPi" TARGET="text">CPDToPi</a>
+<li><a href="pnl_refText.htm#declCTabularDistribFun_CPDToLambda" TARGET="text">CPDToLambda</a>
+<li><a href="pnl_refText.htm#declCTabularDistribFun_IsMatrixNormalizedForCPD" TARGET="text">IsMatrixNormalizedForCPD</a>
+<li><a href="pnl_refText.htm#declCTabularDistribFun_MarginalizeData" TARGET="text">MarginalizeData</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCGaussianDistribFun" TARGET="text">Class CGaussianDistribFun</a>
+<ul>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_CreateInMomentForm" TARGET="text">CreateInMomentForm</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_CreateInCanonicalForm" TARGET="text">CreateInCanonicalForm</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_CreateDeltaDistribution" TARGET="text">CreateDeltaDistribution</a>
+<li><a href="pnl_refText.htm#decl_pnlCreateUnitFunctionDistribution" TARGET="text">CreateUnitFunctionDistribution</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_CheckMomentFormValidity" TARGET="text">CheckMomentFormValidity</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_CheckCanonicalFormValidity" TARGET="text">CheckCanonicalFormValidity</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_GetCanonicalFormFlag" TARGET="text">GetCanonicalFormFlag</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_GetMomentFormFlag" TARGET="text">GetMomentFormFlag</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_SetCoefficient" TARGET="text">SetCoefficient</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_GetFactorFlag" TARGET="text">GetFactorFlag</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_UpdateMomentForm" TARGET="text">UpdateMomentForm</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_UpdateCanonicalForm" TARGET="text">UpdateCanonicalForm</a>
+<li><a href="pnl_refText.htm#declCGaussianDistribFun_CoputeProbability" TARGET="text">CoputeProbability</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCConsGaussianDistribFun" TARGET="text">Class CCondGaussianDistribFun</a>
+<ul>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_EnterDiscreteEvidence" TARGET="text">EnterDiscreteEvidence</a>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_EnterFullContinuousEvidence" TARGET="text">EnterFullContinuousEvidence</a>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_GetDiscreteParentsIndices" TARGET="text">GetDiscreteParentsIndices</a>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_GetContinuousParentsIndices" TARGET="text">GetContinuousParentsIndices</a>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_GetMatrixWithDistribution" TARGET="text">GetMatrixWithDistribution</a>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_SetCoefficient" TARGET="text">SetCoefficient</a>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_GetCoefficient" TARGET="text">GetCoefficient</a>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_GetMatrixNumEvidences" TARGET="text">GetMatrixNumEvidences</a>
+<li><a href="pnl_refText.htm#declCCondGaussianDistribFun_Dump" TARGET="text">Dump</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCScalarDistribFun" TARGET="text">Class CScalarDistribFun</a>
+<ul>
+<li><a href="pnl_refText.htm#declCScalarDistribFun_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCScalarDistribFun_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCScalarDistribFun_Dump" TARGET="text">Dump</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCTreeDistribFun" TARGET="text">Class CTreeDistribFun</a>
+<ul>
+<li><a href="pnl_refText.htm#declTreeDistribFun_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declTreeDistribFun_Copy" TARGET="text">Copy</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlFactors" TARGET="text">Factors</a>-->
+<li><a href="pnl_refText.htm#decl_pnlClassCFactor" TARGET="text">Class CFactor</a>
+<ul>
+<li><a href="pnl_refText.htm#declCFactor_AllocMatrix" TARGET="text">AllocMatrix</a>
+<li><a href="pnl_refText.htm#declCFactor_AttachMatrix" TARGET="text">AttachMatrix</a>
+<li><a href="pnl_refText.htm#declCFactor_GetFactorType" TARGET="text">GetFactorType</a>
+<li><a href="pnl_refText.htm#declCFactor_GetDistributionType" TARGET="text">GetDistributionType</a>
+<li><a href="pnl_refText.htm#declCFactor_GetDomain" TARGET="text">GetDomain</a>
+<li><a href="pnl_refText.htm#declCFactor_GetDomainSize" TARGET="text">GetDomainSize</a>
+<li><a href="pnl_refText.htm#declCFactor_GetMatrix" TARGET="text">GetMatrix</a>
+<li><a href="pnl_refText.htm#declCFactor_IsValid" TARGET="text">IsValid</a>
+<li><a href="pnl_refText.htm#declCFactor_IsFactorsDistribFunEqual" TARGET="text">IsFactorsDistribFunEqual</a>
+<li><a href="pnl_refText.htm#declCFactor_TieDistribFun" TARGET="text">TieDistribFun</a>
+<li><a href="pnl_refText.htm#declCFactor_IsDistributionSpecific" TARGET="text">IsDistributionSpecific</a>
+<li><a href="pnl_refText.htm#declCFactor_GenerateSample" TARGET="text">GenerateSample</a>
+<li><a href="pnl_refText.htm#declCFactor_CopyWithNewDomain" TARGET="text">CopyWithNewDomain</a>
+<li><a href="pnl_refText.htm#declCFactor_Clone" TARGET="text">Clone</a>
+<li><a href="pnl_refText.htm#declCFactor_CloneWithSharedMatrices" TARGET="text">CloneWithSharedMatrices</a>
+<li><a href="pnl_refText.htm#declCFactor_CreateAllNecessaryMatrices" TARGET="text">CreateAllNecessaryMatrices</a>
+<li><a href="pnl_refText.htm#declCFactor_GetNumInHeap" TARGET="text">GetNumInHeap</a>
+<li><a href="pnl_refText.htm#declCFactor_ChangeOwnerToGraphicalModel" TARGET="text">ChangeOwnerToGraphicalModel</a>
+<li><a href="pnl_refText.htm#declCFactor_IsOwnedByModelDomain" TARGET="text">IsOwnedByModelDomain</a>
+<li><a href="pnl_refText.htm#declCFactor_GetModelDomain" TARGET="text">GetModelDomain</a>
+<li><a href="pnl_refText.htm#decl_pnlGetArgType" TARGET="text">GetArgType</a>
+<li><a href="pnl_refText.htm#declCFactor_ConvertToSparse" TARGET="text">ConvertToSparse</a>
+<li><a href="pnl_refText.htm#declCFactor_ConvertToDense" TARGET="text">ConvertToDense</a>
+<li><a href="pnl_refText.htm#declCFactor_IsSparse" TARGET="text">IsSparse</a>
+<li><a href="pnl_refText.htm#declCFactor_IsDense" TARGET="text">IsDense</a>
+<li><a href="pnl_refText.htm#declCFactor_GetObsPositions" TARGET="text">GetObsPositions</a>
+<li><a href="pnl_refText.htm#declCFactor_GetDistribFun" TARGET="text">GetDistribFun</a>
+<li><a href="pnl_refText.htm#declCFactor_SetDistribFun" TARGET="text">SetDistribFun</a>
+<li><a href="pnl_refText.htm#declCFactor_MakeUnitFunction" TARGET="text">MakeUnitFunction</a>
+<li><a href="pnl_refText.htm#declCFactor_ConvertStatisticToPot" TARGET="text">ConvertStatisticToPot</a>
+<li><a href="pnl_refText.htm#declCFactor_ProcessingStatisticalDataEM" TARGET="text">ProcessingStatisticalDataEM</a>
+<li><a href="pnl_refText.htm#declCFactor_StatisticalDataML" TARGET="text">StatisticalDataML</a>
+<li><a href="pnl_refText.htm#declCFactor_SetStatistics" TARGET="text">SetStatistics</a>
+<li><a href="pnl_refText.htm#declCFactor_ProcessingStatisticalData" TARGET="text">ProcessingStatisticalData</a>
+<li><a href="pnl_refText.htm#declCFactor_GetLogLik" TARGET="text">GetLogLik</a>
+<li><a href="pnl_refText.htm#declCFactor_AreThereAnyObsPositions" TARGET="text">AreThereAnyObsPositions</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCCPD" TARGET="text">Class CCPD</a>
+<ul>
+<li><a href="pnl_refText.htm#declCCPD_ConvertToPotential" TARGET="text">ConvertToPotential</a>
+<li><a href="pnl_refText.htm#declCCPD_ConvertWithEvidenceToPotential" TARGET="text">ConvertWithEvidenceToPotential</a>
+<li><a href="pnl_refText.htm#declCCPD_NormalizeCPD" TARGET="text">NormalizeCPD</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCTabularCPD" TARGET="text">Class CTabularCPD</a>
+<ul>
+<li><a href="pnl_refText.htm#declCTabularCPD_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCTabularCPD_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCTabularCPD_CreateUnitFunctionCPD" TARGET="text">CreateUnitFunctionCPD</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCGaussianCPD" TARGET="text">Class CGaussianCPD</a>
+<ul>
+<li><a href="pnl_refText.htm#declCGaussianCPD_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCGaussianCPD_CreateUnitFunctionCPD" TARGET="text">CreateUnitFunctionCPD</a>
+<li><a href="pnl_refText.htm#declCGaussianCPD_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCGaussianCPD_AllocDistribution" TARGET="text">AllocDistribution</a>
+<li><a href="pnl_refText.htm#declCGaussianCPD_SetCoefficient" TARGET="text">SetCoefficient</a>
+<li><a href="pnl_refText.htm#declCGaussianCPD_GetCoefficient" TARGET="text">GetCoefficient</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCMixtureGaussianCPD" TARGET="text">Class CMixtureGaussianCPD</a>
+<ul>
+<li><a href="pnl_refText.htm#declCMixtureGaussianCPD_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCMixtureGaussianCPD_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCMixtureGaussianCPD_AllocDistributionVec" TARGET="text">AllocDistributionVec</a>
+<li><a href="pnl_refText.htm#declCMixtureGaussianCPD_SetCoefficient" TARGET="text">SetCoefficient</a>
+<li><a href="pnl_refText.htm#declCMixtureGaussianCPD_GetCoefficient" TARGET="text">GetCoefficient</a>
+<li><a href="pnl_refText.htm#declCMixtureGaussianCPD_SetCoefficientVec" TARGET="text">SetCoefficientVec</a>
+<li><a href="pnl_refText.htm#declCMixtureGaussianCPD_GetCoefficientVec" TARGET="text">GetCoefficientVec</a>
+<li><a href="pnl_refText.htm#declCMixtureGaussianCPD_GetProbabilities" TARGET="text">GetProbabilities</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCTreeCPD" TARGET="text">Class CTreeCPD</a>
+<ul>
+<li><a href="pnl_refText.htm#declCTreeCPD_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCTreeCPD_Copy" TARGET="text">Copy</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCPotential" TARGET="text">Class CPotential</a>
+<ul>
+<li><a href="pnl_refText.htm#declCPotential_Multiply" TARGET="text">Multiply</a>
+<li><a href="pnl_refText.htm#declCPotential_GetNormalized" TARGET="text">GetNormalized</a>
+<li><a href="pnl_refText.htm#declCPotential_Normalize" TARGET="text">Normalize</a>
+<li><a href="pnl_refText.htm#decl_pnlMarginalize" TARGET="text">Marginalize</a>
+<li><a href="pnl_refText.htm#declCPotential_ShrinkObservedNodes" TARGET="text">ShrinkObservedNodes</a>
+<li><a href="pnl_refText.htm#decl_pnlExpandObservedNodes" TARGET="text">ExpandObservedNodes</a>
+<li><a href="pnl_refText.htm#declCPotential_GetMultiplyedDelta" TARGET="text">GetMultiplyedDelta</a>
+<li><a href="pnl_refText.htm#declCPotential_Divide" TARGET="text">Divide</a>
+<li><a href="pnl_refText.htm#declCPotential_Dump" TARGET="text">Dump</a>
+<li><a href="pnl_refText.htm#declCPotential_MarginalizeInPlace" TARGET="text">MarginalizeInPlace</a>
+<li><a href="pnl_refText.htm#declCPotential_GetMPE" TARGET="text">GetMPE</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCTabularPotential" TARGET="text">Class CTabularPotential</a>
+<ul>
+<li><a href="pnl_refText.htm#declCTabularPotential_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCTabularPotential_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCTabularPotential_CreateUnitFunctionCPD" TARGET="text">CreateUnitFunctionCPD</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCGaussianPotential" TARGET="text">Class CGaussianPotential</a>
+<ul>
+<li><a href="pnl_refText.htm#declCGaussianPotential_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnlCopy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#decl_pnlCreateDeltaFunction" TARGET="text">CreateDeltaFunction</a>
+<li><a href="pnl_refText.htm#decl_pnlCreateUnitFunctionDistribution" TARGET="text">CreateUnitFunctionDistribution</a>
+<li><a href="pnl_refText.htm#decl_pnlSetCoefficient" TARGET="text">SetCoefficient</a>
+<li><a href="pnl_refText.htm#declCGaussianPotential_GetCoefficient" TARGET="text">GetCoefficient</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCFactorsl" TARGET="text">Class CFactors</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCFactors_GetNumberOfFactors" TARGET="text">GetNumberOfFactors</a>
+<li><a href="pnl_refText.htm#declCFactors_GetFactor" TARGET="text">GetFactor</a>
+<li><a href="pnl_refText.htm#decl_pnlAddFactor" TARGET="text">AddFactor</a>
+<li><a href="pnl_refText.htm#decl_pnlShrinkObsNdsForAllFactors" TARGET="text">ShrinkObsNdsForAllFactors</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlMatrices" TARGET="text">Matrices</a>-->
+<li><a href="pnl_refText.htm#decl_pnlClassCMatrix" TARGET="text">Class CMatrix</a>
+<ul>
+<li><a href="pnl_refText.htm#declCMatrix_CreateEmptyMatrix" TARGET="text">CreateEmptyMatrix</a>
+<li><a href="pnl_refText.htm#declCMatrix_SetDataFromOtherMatrix" TARGET="text">SetDataFromOtherMatrix</a>
+<li><a href="pnl_refText.htm#declCMatrix_Clone" TARGET="text">Clone</a>
+<li><a href="pnl_refText.htm#declCMatrix_GetNumberDims" TARGET="text">GetNumberDims</a>
+<li><a href="pnl_refText.htm#declCMatrix_GetRanges" TARGET="text">GetRanges</a>
+<li><a href="pnl_refText.htm#declCMatrix_GetMatrixClass" TARGET="text">GetMatrixClass</a>
+<li><a href="pnl_refText.htm#declCMatrix_ConvertToDense" TARGET="text">ConvertToDense</a>
+<li><a href="pnl_refText.htm#declCMatrix_ConvertToSparse" TARGET="text">ConvertToSparse</a>
+<li><a href="pnl_refText.htm#declCMatrix_GetElementByIndices" TARGET="text">GetElementByIndices</a>
+<li><a href="pnl_refText.htm#declCMatrix_SetElementByIndices" TARGET="text">SetElementByIndices</a>
+<li><a href="pnl_refText.htm#declCMatrix_ReduceOp" TARGET="text">ReduceOp</a>
+<li><a href="pnl_refText.htm#decl_pnlExpandDims" TARGET="text">ExpandDims</a>
+<li><a href="pnl_refText.htm#declCMatrix_ClearData" TARGET="text">ClearData</a>
+<li><a href="pnl_refText.htm#declCMatrix_SetUnitData" TARGET="text">SetUnitData</a>
+<li><a href="pnl_refText.htm#declCMatrix_SetClamp" TARGET="text">SetClamp</a>
+<li><a href="pnl_refText.htm#declCMatrix_GetClampValue" TARGET="text">GetClampValue</a>
+<li><a href="pnl_refText.htm#declCMatrix_MultiplyInSelf" TARGET="text">MultiplyInSelf</a>
+<li><a href="pnl_refText.htm#declCMatrix_DivideInSelf" TARGET="text">DivideInSelf</a>
+<li><a href="pnl_refText.htm#declCMatrix_GetIndicesOfMaxValue" TARGET="text">GetIndicesOfMaxValue</a>
+<li><a href="pnl_refText.htm#declCMatrix_NormalizeAll" TARGET="text">NormalizeAll</a>
+<li><a href="pnl_refText.htm#declCMatrix_Normalize" TARGET="text">Normalize</a>
+<li><a href="pnl_refText.htm#declCMatrix_SumAll" TARGET="text">SumAll</a>
+<li><a href="pnl_refText.htm#declCMatrix_InitIterator" TARGET="text">InitIterator</a>
+<li><a href="pnl_refText.htm#declCMatrix_Next" TARGET="text">Next</a>
+<li><a href="pnl_refText.htm#declCMatrix_Value" TARGET="text">Value</a>
+<li><a href="pnl_refText.htm#declCMatrix_IsValueHere" TARGET="text">IsValueHere</a>
+<li><a href="pnl_refText.htm#declCMatrix_Index" TARGET="text">Index</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCDenseMatrix" TARGET="text">Class CDenseMatrix</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnlCopy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#decl_pnlGetRawData" TARGET="text">GetRawData</a>
+<li><a href="pnl_refText.htm#decl_pnlGetRawDataLength" TARGET="text">GetRawDataLength</a>
+<li><a href="pnl_refText.htm#decl_pnlSetData" TARGET="text">SetData</a>
+<li><a href="pnl_refText.htm#decl_pnlGetVector" TARGET="text">GetVector</a>
+<li><a href="pnl_refText.htm#decl_pnlConvertMultiDimIndex" TARGET="text">ConvertMultiDimIndex</a>
+<li><a href="pnl_refText.htm#decl_pnlGetElementByOffset" TARGET="text">GetElementByOffset</a>
+<li><a href="pnl_refText.htm#decl_pnlSetElementByOffset" TARGET="text">SetElementByOffset</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCSparseMatrix" TARGET="text">Class CSparseMatrix</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnlCopy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#decl_pnlGetDefaultValue" TARGET="text">GetDefaultValue</a>
+<li><a href="pnl_refText.htm#decl_pnlIsExistingElement" TARGET="text">IsExistingElement</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCNumericDenceMatrix" TARGET="text">Class CNumericDenseMatrix</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCNumericSparseMatrix" TARGET="text">Class CNumericSparseMatrix</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassC2DNumericDenseMatrix" TARGET="text">Class C2DNumericDenseMatrix</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnlCopy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#decl_pnlCreateIdentityMatrix" TARGET="text">CreateIdentityMatrix</a>
+<li><a href="pnl_refText.htm#decl_pnlIsSymmetric" TARGET="text">IsSymmetric</a>
+<li><a href="pnl_refText.htm#decl_pnlTrace" TARGET="text">Trace</a>
+<li><a href="pnl_refText.htm#decl_pnlIsIllConditioned" TARGET="text">IsIllConditioned</a>
+<li><a href="pnl_refText.htm#decl_pnlDeterminant" TARGET="text">Determinant</a>
+<li><a href="pnl_refText.htm#decl_pnlInverse" TARGET="text">Inverse</a>
+<li><a href="pnl_refText.htm#decl_pnlTranspose" TARGET="text">Transpose</a>
+<li><a href="pnl_refText.htm#decl_pnlGetLinearBlocks" TARGET="text">GetLinearBlocks</a>
+<li><a href="pnl_refText.htm#decl_pnlGetBlocks" TARGET="text">GetBlocks</a>
+<li><a href="pnl_refText.htm#decl_pnlpnlMultiply" TARGET="text">pnlMultiply</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlReference_Counter" TARGET="text">Reference Counter</a>-->
+<li><a href="pnl_refText.htm#decl_pnlClassCReferenceCounter" TARGET="text">Class CReferenceCounter</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlAddRef" TARGET="text">AddRef</a>
+<li><a href="pnl_refText.htm#declCReferenceCounter_Release" TARGET="text">Release</a>
+<li><a href="pnl_refText.htm#declCReferenceCounter_GetNumberOfReferences" TARGET="text">GetNumberOfReferences</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlInference_Engines" TARGET="text">Inference Engines</a>-->
+<li><a href="pnl_refText.htm#decl_pnlClassCInfEngine" TARGET="text">Class CInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCInfEngine_pnlDetermineDistributionType" TARGET="text">pnlDetermineDistributionType</a>
+<li><a href="pnl_refText.htm#declCInfEngine_pnlDetermineDistributionType" TARGET="text">pnlDetermineDistributionType</a>
+<li><a href="pnl_refText.htm#declCInfEngine_EnterEvidence" TARGET="text">EnterEvidence</a>
+<li><a href="pnl_refText.htm#declCInfEngine_MarginalNodes" TARGET="text">MarginalNodes</a>
+<li><a href="pnl_refText.htm#decl_pnlGetQueryJPD" TARGET="text">GetQueryJPD</a>
+<li><a href="pnl_refText.htm#declCInfEngine_GetMPE" TARGET="text">GetMPE</a>
+<li><a href="pnl_refText.htm#declCInfEngine_GetModel" TARGET="text">GetModel</a>
+<li><a href="pnl_refText.htm#declCInfEngine_GetObsGauNodeType" TARGET="text">GetObsGauNodeType</a>
+<li><a href="pnl_refText.htm#declCInfEngine_GetObsTabNodeType" TARGET="text">GetObsTabNodeType</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCNaiveInfEngine" TARGET="text">Class CNaiveInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCNaiveInfEngine_Create" TARGET="text">Create</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCPearlInfEngine" TARGET="text">Class CPearlInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCPearlInfEngine_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCPearlInfEngine_IsInputModelValid" TARGET="text">IsInputModelValid</a>
+<li><a href="pnl_refText.htm#declCPearlInfEngine_SetMaxNumberOfIterations" TARGET="text">SetMaxNumberOfIterations</a>
+<li><a href="pnl_refText.htm#declCPearlInfEngine_GetNumberOfProvideIterations" TARGET="text">GetNumberOfProvideIterations</a>
+<li><a href="pnl_refText.htm#declCPearlInfEngine_SetTolerance" TARGET="text">SetTolerance</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCSpecPearlInfEngine" TARGET="text">Class CSpecPearlInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCSpecPearlInfEngine_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCSpecPearlInfEngine_IsInputModelValid" TARGET="text">IsInputModelValid</a>
+<li><a href="pnl_refText.htm#decl_pnlSetMaxNumberOfIterations" TARGET="text">SetMaxNumberOfIterations</a>
+<li><a href="pnl_refText.htm#declCSpecPearlInfEngine_GetNumberOfProvideIterations" TARGET="text">GetNumberOfProvideIterations</a>
+<li><a href="pnl_refText.htm#declCSpecPearlInfEngine_SetTolerance" TARGET="text">SetTolerance</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCJTreeInfEngine" TARGET="text">Class CJTreeInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnlCopy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_GetEvidence" TARGET="text">GetEvidence</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_GetJTreeRootNode" TARGET="text">GetJTreeRootNode</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_GetClqNumsContainingSubset" TARGET="text">GetClqNumsContainingSubset</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_GetNodesConnectedByUser" TARGET="text">GetNodesConnectedByUser</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_SetJTreeRootNode" TARGET="text">SetJTreeRootNode</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_GetLogLik" TARGET="text">GetLogLik</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_MultJTreeNodePotByDistribFun" TARGET="text">MultJTreeNodePotByDistribFun</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_DivideJTreeNodePotByDistribFun" TARGET="text">DivideJTreeNodePotByDistribFun</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_CollectEvidence" TARGET="text">CollectEvidence</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_DistributeEvidence" TARGET="text">DistributeEvidence</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_ShrinkObserved" TARGET="text">ShrinkObserved</a>
+<li><a href="pnl_refText.htm#declCJtreeInfEngine_QueryMPE" TARGET="text">QueryMPE</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCExInfEngine" TARGET="text">Class CExInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCFGumMaxInfEngine" TARGET="text">Class CFGSumMaxInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCFGSunMaxInfEngine_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCFGSumMaxInfEngine_SetMaxNumberOfIterations" TARGET="text">SetMaxNumberOfIterations</a>
+<li><a href="pnl_refText.htm#declCCFGSumMaxInfEngine_GetNumberOfProvideIterations" TARGET="text">GetNumberOfProvideIterations</a>
+<li><a href="pnl_refText.htm#declCCFGSumMaxInfEngine_SetTolerance" TARGET="text">SetTolerance</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCSamplingInfEngine" TARGET="text">Class CSamplingInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCSamplingInfEngine_SetMaxTime" TARGET="text">SetMaxTime</a>
+<li><a href="pnl_refText.htm#declCSamplingInfEngine_SetBurnIn" TARGET="text">SetBurnIn</a>
+<li><a href="pnl_refText.htm#declCSamplingInfEngine_SetNumStreams" TARGET="text">SetNumStreams</a>
+<li><a href="pnl_refText.htm#declCSamplingInfEngine_GetMaxTime" TARGET="text">GetMaxTime</a>
+<li><a href="pnl_refText.htm#declCSamplingInfEngine_GetBurnIn" TARGET="text">GetBurnIn</a>
+<li><a href="pnl_refText.htm#decl_pnlGetNumStreams" TARGET="text">GetNumStreams</a>
+<li><a href="pnl_refText.htm#declCSamplingInfEngine_Continue" TARGET="text">Continue</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCGibbsSamplingInfEngine" TARGET="text">Class CGibbsSamplingInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCGibbsSamplingInfEngine_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCGibbsSamplingInfEngine_SetQueryes" TARGET="text">SetQueryes</a>
+<li><a href="pnl_refText.htm#declCGibbsSamplingInfEngine_UseDSeparation" TARGET="text">UseDSeparation</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCGibbsWithAnnealingInfEngine" TARGET="text">Class CGibbsWithAnnealingInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCGibbsWithAnnealingInfEngine_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCGibbsWithAnnealingInfEngine_SetAnnealingCoefficientC" TARGET="text">SetAnnealingCoefficientC</a>
+<li><a href="pnl_refText.htm#declCGibbsWithAnnealingInfEngine_SetAnnealingCoefficientS" TARGET="text">SetAnnealingCoefficientS</a>
+<li><a href="pnl_refText.htm#declCGibbsWithAnnealingInfEngine_GetCurrentTemp" TARGET="text">GetCurrentTemp</a>
+<li><a href="pnl_refText.htm#declCGibbsWithAnnealingInfEngine_UseAdaptation" TARGET="text">UseAdaptation</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCLWSamplingInfEngine" TARGET="text">Class CLWSamplingInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnl" TARGET="text">SetParemeter</a>
+<li><a href="pnl_refText.htm#decl_pnlLWSampling" TARGET="text">LWSampling</a>
+<li><a href="pnl_refText.htm#decl_pnlEnterEvidenceProbability" TARGET="text">EnterEvidenceProbability</a>
+<li><a href="pnl_refText.htm#decl_pnlGetCurSamples" TARGET="text">GetCurSamples</a>
+<li><a href="pnl_refText.htm#decl_pnlGetParticleWeights" TARGET="text">GetParticleWeights</a>
+<li><a href="pnl_refText.htm#decl_pnlEstimate" TARGET="text">Estimate</a>
+<li><a href="pnl_refText.htm#decl_pnlGetNeff" TARGET="text">GetNeff</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCDynamicInfEngine" TARGET="text">Class CDynamicInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_DefineProcedure" TARGET="text">DefineProcedure</a>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_EnterEvidence" TARGET="text">EnterEvidence</a>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_MarginalNodes" TARGET="text">MarginalNodes</a>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_GetQueryJPD" TARGET="text">GetQueryJPD</a>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_GetMPE" TARGET="text">GetMPE</a>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_Filtering" TARGET="text">Filtering</a>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_Smoothing" TARGET="text">Smoothing</a>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_FixLagSmoothing" TARGET="text">FixLagSmoothing</a>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_GetMPE" TARGET="text">GetMPE</a>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_GetDynamicModel" TARGET="text">GetDynamicModel</a>
+<li><a href="pnl_refText.htm#declCDynamicInfEngine_GetProcedureType" TARGET="text">GetProcedureType</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassC2TBNInfEngine" TARGET="text">Class C2TBNInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlForwardFirst" TARGET="text">ForwardFirst</a>
+<li><a href="pnl_refText.htm#decl_pnlForward" TARGET="text">Forward</a>
+<li><a href="pnl_refText.htm#decl_pnlBackwardT" TARGET="text">BackwardT</a>
+<li><a href="pnl_refText.htm#decl_pnlBackward" TARGET="text">Backward</a>
+<li><a href="pnl_refText.htm#decl_pnlBackwardFixLag" TARGET="text">BackwardFixLag</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassC1_5SliceInfEngine" TARGET="text">Class C1_5SliceInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlClassC1_5SliceJtreeInfEngine" TARGET="text">Class C1_5SliceJtreeInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCBKInfEngine" TARGET="text">Class CCBKInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCBKInfEngine_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCBKInfEngine_CheckClustersValidity" TARGET="text">CheckClustersValidity</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassC2TPFInfEngine" TARGET="text">Class C2TPFInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#decl_pnlSetParemeter" TARGET="text">SetParemeter</a>
+<li><a href="pnl_refText.htm#decl_pnlInitSlice0Particles" TARGET="text">InitSlice0Particles</a>
+<li><a href="pnl_refText.htm#decl_pnlEnterEvidence" TARGET="text">EnterEvidence</a>
+<li><a href="pnl_refText.htm#decl_pnlLWSampling" TARGET="text">LWSampling</a>
+<li><a href="pnl_refText.htm#decl_pnlEnterEvidenceProbability" TARGET="text">EnterEvidenceProbability</a>
+<li><a href="pnl_refText.htm#decl_pnlGetCurSamples" TARGET="text">GetCurSamples</a>
+<li><a href="pnl_refText.htm#decl_pnlGetParticleWeights" TARGET="text">GetParticleWeights</a>
+<li><a href="pnl_refText.htm#decl_pnlEstimate" TARGET="text">Estimate</a>
+<li><a href="pnl_refText.htm#decl_pnlGetNeff" TARGET="text">GetNeff</a>
+</ul>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlLearning_Engines" TARGET="text">Learning Engines</a>-->
+<li><a href="pnl_refText.htm#decl_pnlClassCLearningEngine" TARGET="text">Class CLearningEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCLearningEngine_Learn" TARGET="text">Learn</a>
+<li><a href="pnl_refText.htm#declCLearningEngine_GetCriterionValue" TARGET="text">GetCriterionValue</a>
+<li><a href="pnl_refText.htm#declCLearningEngine_ClearStatisticData" TARGET="text">ClearStatisticData</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCStaticLearningEngine" TARGET="text">Class CStaticLearningEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCStaticLearningEngine_SetData" TARGET="text">SetData</a>
+<li><a href="pnl_refText.htm#declCStaticLearningEngine_AppendData" TARGET="text">AppendData</a>
+<li><a href="pnl_refText.htm#declCStaticLearningEngine_SetMaxIterIPF" TARGET="text">SetMaxIterIPF</a>
+<li><a href="pnl_refText.htm#declCStaticLearningEngine_SetTerminationToleranceIPF" TARGET="text">SetTerminationToleranceIPF</a>
+<li><a href="pnl_refText.htm#declCstaticLearningEngine_GetStatisModal" TARGET="text">GetStatisModal</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCEMLearningEngine" TARGET="text">Class CEMLearningEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCEMLearningEngine_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCEMLearningEngine_SetMaxIterEM" TARGET="text">SetMaxIterEM</a>
+<li><a href="pnl_refText.htm#declCEMLearningEngine_SetTerminationToleranceEM" TARGET="text">SetTerminationToleranceEM</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCBayesLearningEngine" TARGET="text">Class CBayesLearningEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCBayesLearningEngine_Create" TARGET="text">Create</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCBICLearningEngine" TARGET="text">Class CBICLearningEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCBICLearningEngine_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCBICLearningEngine_GetGraphicalModel" TARGET="text">GetGraphicalModel</a>
+<li><a href="pnl_refText.htm#declCBICLearningEngine_GetOrder" TARGET="text">GetOrder</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCMlStaticStructLearn" TARGET="text">Class CMlStaticStructLearn</a>
+<ul>
+<li><a href="pnl_refText.htm#declCMlStaticStructLearn_CreateResultBNet" TARGET="text">CreateResultBNet</a>
+<li><a href="pnl_refText.htm#declCMlStaticStructLearn_GetResultBNet" TARGET="text">GetResultBNet</a>
+<li><a href="pnl_refText.htm#declCMlStaticStructLearn_GetResultDAG" TARGET="text">GetResultDAG</a>
+<li><a href="pnl_refText.htm#declCMlStaticStructLearn_GetResultRenaming" TARGET="text">GetResultRenaming</a>
+<li><a href="pnl_refText.htm#declCMlStaticStructLearn_ScoreDAG" TARGET="text">ScoreDAG</a>
+<li><a href="pnl_refText.htm#declCMlStaticStructLearn_ScoreFamily" TARGET="text">ScoreFamily</a>
+<li><a href="pnl_refText.htm#declCMlStaticStructLearn_SetInitGraphicalModel" TARGET="text">SetInitGraphicalModel</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCMlStaticStructLearnHC" TARGET="text">Class CMlStaticStructLearnHC</a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCMlStaticStructLearnHC_SetMinProgress" TARGET="text">SetMinProgress</a>
+<li><a href="pnl_refText.htm#declCMlStaticStructLearnHC_SetSingleMove" TARGET="text">SetSingleMove</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCDynamicLearningEngine" TARGET="text">Class CDynamicLearningEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCDynamicLearningEngine_SetData" TARGET="text">SetData</a>
+<li><a href="pnl_refText.htm#declCDynamicLearningEngine_GetDynamicModel" TARGET="text">GetDynamicModel</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCEMLearningEngineDBN" TARGET="text">Class CEMLearningEngineDBN</a>
+<ul>
+<li><a href="pnl_refText.htm#declCEMLearningEngineDBN_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCEMLearningEngineDBN_SetTerminationToleranceEM" TARGET="text">SetTerminationToleranceEM</a>
+<li><a href="pnl_refText.htm#declCEMLearningEngineDBN_SetMaxIterEM" TARGET="text">SetMaxIterEM</a>
+</ul>
+<li><a href="pnl_refText.htm#decl_pnlClassCMlDynamicStructLearn" TARGET="text">Class CMlDynamicStructLearn</a>
+<ul>
+<li><a href="pnl_refText.htm#declCMlDynamicStructLearn_Create" TARGET="text">Create</a>
+<li><a href="pnl_refText.htm#declCMlDynamicStructLearn_SetMinProgress" TARGET="text">SetMinProgress</a>
+<li><a href="pnl_refText.htm#declCMlDynamicStructLearn_GetResultDAG" TARGET="text">GetResultDAG</a>
+<li><a href="pnl_refText.htm#declCMlDynamicStructLearn_SetLearnPriorSlice" TARGET="text">SetLearnPriorSlice</a>
+<li><a href="pnl_refText.htm#decl_pnlSeed" TARGET="text">pnlSeed</a>
+<li><a href="pnl_refText.htm#decl_pnlpnlRand" TARGET="text">pnlRand</a>
+<li><a href="pnl_refText.htm#decl_pnlpnlRandNormal" TARGET="text">pnlRandNormal</a>
+<li><a href="pnl_refText.htm#decl_pnlpnlRandNormal" TARGET="text">pnlRandNormal</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlBasic_Data_Structures" TARGET="text">Basic Data Structures </a>-->
+<li><a href="pnl_refText.htm#declClassValue" TARGET="text">Class Value </a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlSetInt" TARGET="text">SetInt</a>
+<li><a href="pnl_refText.htm#decl_pnlGetInt" TARGET="text">GetInt</a>
+<li><a href="pnl_refText.htm#decl_pnlSetFlt" TARGET="text">SetFlt</a>
+<li><a href="pnl_refText.htm#decl_pnlGetFlt" TARGET="text">GetFlt</a>
+<li><a href="pnl_refText.htm#decl_ClasspnlVector" TARGET="text">Class pnlVector</a>
+</ul>
+<li><a href="pnl_refText.htm#declClassCException" TARGET="text">Class CException </a>
+<ul>
+<li><a href="pnl_refText.htm#declCException_GetCode" TARGET="text">GetCode</a>
+<li><a href="pnl_refText.htm#declCException_GenMessage" TARGET="text">GenMessage</a>
+<li><a href="pnl_refText.htm#declCEcxeption_GetMessage" TARGET="text">GetMessage</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlLog_Subsystem" TARGET="text">Log Subsystem</a>-->
+
+<li><a href="pnl_refText.htm#declClassLog" TARGET="text">Class Log </a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlLog" TARGET="text">Log</a>
+<li><a href="pnl_refText.htm#decl_pnlLog" TARGET="text">Log</a>
+<li><a href="pnl_refText.htm#declLog_Register" TARGET="text">Register</a>
+<li><a href="pnl_refText.htm#declLog_flush" TARGET="text">flush</a>
+<li><a href="pnl_refText.htm#decl_pnloperator&lt;&lt;" TARGET="text">operator&lt;&lt;</a>
+<li><a href="pnl_refText.htm#declLog_printf" TARGET="text">printf</a>
+<li><a href="pnl_refText.htm#declLog_Level" TARGET="text">Level</a>
+<li><a href="pnl_refText.htm#declLog_Service" TARGET="text">Service</a>
+<li><a href="pnl_refText.htm#declLog_SetLevel" TARGET="text">SetLevel</a>
+<li><a href="pnl_refText.htm#declLog_SetService" TARGET="text">SetService</a>
+</ul>
+<li><a href="pnl_refText.htm#declClassLogMultiplexot" TARGET="text">Class LogMultiplexor </a>
+<ul>
+<li><a href="pnl_refText.htm#declLogMultiplexor_Configure" TARGET="text">Configure</a>
+<li><a href="pnl_refText.htm#declLogMultiplexor_WriteConfigure" TARGET="text">WriteConfigure</a>
+<li><a href="pnl_refText.htm#declLogMultiplexor_StdMultiplexor" TARGET="text">StdMultiplexor</a>
+<li><a href="pnl_refText.htm#declLogMultiplexor_SetStdMultiplexor" TARGET="text">SetStdMultiplexor</a>
+<li><a href="pnl_refText.htm#decl_pnlLevel" TARGET="text">Level</a>
+<li><a href="pnl_refText.htm#declLogMultiplexor_AttachDriver" TARGET="text">AttachDriver</a>
+<li><a href="pnl_refText.htm#declLogMultiplexor_AttachLogger" TARGET="text">AttachLogger</a>
+<li><a href="pnl_refText.htm#declLogMultiplexor_DetachDriver" TARGET="text">DetachDriver</a>
+<li><a href="pnl_refText.htm#declLogMultiplexor_DetachLogger" TARGET="text">DetachLogger</a>
+<li><a href="pnl_refText.htm#declLogMultiplexor_iUpdate" TARGET="text">iUpdate</a>
+<li><a href="pnl_refText.htm#decl_pnlLevel" TARGET="text">Level</a>
+<li><a href="pnl_refText.htm#declLogMultiplexor_DriverReconfigured" TARGET="text">DriverReconfigured</a>
+<li><a href="pnl_refText.htm#declLogMultiplexor_WriteString" TARGET="text">WriteString</a>
+</ul>
+<li><a href="pnl_refText.htm#declClassLogDriver" TARGET="text">Class LogDriver </a>
+<ul>
+<li><a href="pnl_refText.htm#declLogDriver_Configure" TARGET="text">Configure</a>
+<li><a href="pnl_refText.htm#declLogDriver_isAllowedWriting" TARGET="text">isAllowedWriting</a>
+<li><a href="pnl_refText.htm#decl_pnlLevel" TARGET="text">Level</a>
+<li><a href="pnl_refText.htm#declLogDriver_WriteConfigure" TARGET="text">WriteConfigure</a>
+<li><a href="pnl_refText.htm#declLogDriver_WriteString" TARGET="text">WriteString</a>
+</ul>
+<li><a href="pnl_refText.htm#declClassLogDrvStream" TARGET="text">Class LogDrvStream </a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlLevel" TARGET="text">Level</a>
+<li><a href="pnl_refText.htm#decl_pnlLevel" TARGET="text">Level</a>
+<li><a href="pnl_refText.htm#declLogDrvStream_Redirect" TARGET="text">Redirect</a>
+<li><a href="pnl_refText.htm#declLogDrvStream_Redirect" TARGET="text">Redirect</a>
+<li><a href="pnl_refText.htm#declLogDrvStream_WriteString" TARGET="text">WriteString</a>
+</ul>
+<li><a href="pnl_refText.htm#declClassLogDrvSystem" TARGET="text">Class LogDrvSystem </a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlLevel" TARGET="text">Level</a>
+<li><a href="pnl_refText.htm#decl_pnlLevel" TARGET="text">Level</a>
+<li><a href="pnl_refText.htm#declLogDrvSystem_ConfigureSystem" TARGET="text">ConfigureSystem</a>
+<li><a href="pnl_refText.htm#declLogDrvSystem_Configure" TARGET="text">Configure</a>
+</ul>
+<!--<li><a href="pnl_refText.htm#decl_pnlSaving_Models_to_File/Loading_Models_from_File" TARGET="text">Saving Models to
+File/Loading Models from File</a>-->
+<li><a href="pnl_refText.htm#declClassCContextPersistence" TARGET="text">Class CContextPersistence </a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCContextPersistence" TARGET="text">CContextPersistence</a>
+<li><a href="pnl_refText.htm#declCContextPersistence_SaveAsXML" TARGET="text">SaveAsXML</a>
+<li><a href="pnl_refText.htm#declCContextPersistence_LoadXML" TARGET="text">LoadXML</a>
+</ul>
+<li><a href="pnl_refText.htm#declClassCContext" TARGET="text">Class CContext </a>
+<ul>
+<li><a href="pnl_refText.htm#decl_pnlCContext" TARGET="text">CContext</a>
+<li><a href="pnl_refText.htm#declCContext_Put" TARGET="text">Put</a>
+<li><a href="pnl_refText.htm#decl_pnlGet" TARGET="text">Get</a>
+</ul>
+</ul>
+</p>
+</body>
+</html>

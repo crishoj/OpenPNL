@@ -1,0 +1,4302 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html><head>
+<link rel="STYLESHEET" href="openpnlref.css" charset="ISO-8859-1" type="text/css">
+</head><body>
+
+<center><table cellspacing=0 cellpadding=2 width="90%" bgcolor="#6a9bed" nosave >
+<tr nosave>
+<td nosave>
+<center><i><font color="#000000"><font size=+4>
+PNLM: Reference Manual
+</font></font></i></center>
+</td>
+</tr>
+</table></center>
+
+<h2><a name="ref_manGraph">Graph</a></h2>
+
+<h3><a name="decl_pnlmClass_CGraphe">Class CGraph</a></h3>
+
+<img align=center src="fig/graph.gif">
+
+<p>
+Class CGraph represents the graph structure of a model and performs basic graph
+algorithms.
+</p>
+
+<hr><h4><a name="decl_pnlmCGraphCreate">CGraphCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+graph = CGraphCreate( nbrsList, nbrsTypesList );
+</pre><p><dl>
+<dt>graph<dd>Class object.
+<dt>nbrsList<dd>Cell array of vectors with numbers of node neighbors.
+<dt>nbrsTypesList<dd>Cell array of cell arrays of neighbor types.
+</dl></p><p>
+The function <a href="#decl_pnlmCGraphCreate">CGraphCreate</a> creates a CGraph object using a list of node neighbors.
+</p>
+
+<hr><h4><a name="decl_pnlmCGraphCreateFromAdjMat">CGraphCreateFromAdjMat</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+graph = CGraphCreateFromAdjMat( adjMat );
+</pre><p><dl>
+<dt>graph<dd>Class object.
+<dt>adjMat<dd>Adjacency matrix.
+</dl></p>
+<p>
+The function <a href="#decl_pnlmCGraphCreateFromAdjMat">CGraphCreateFromAdjMat</a> creates a CGraph object using a adjacency matrix.
+</p>
+
+<hr><h4><a name="decl_pnlmCGraphCopy">CGraphCopy</a></h4>
+<p class="Blurb">Creates replica of class object.</p>
+<pre>
+newGraph = CGraphCopy( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object to be copied.
+<dt>newGraph<dd>New class object.
+</dl></p><p>
+The function <a href="#decl_pnlmCGraphCopy">CGraphCopy</a> creates a replica of a CGraph object.
+</p>
+
+<hr><h4><a name="decl_CGraphMoralizeGraph">CGraphMoralizeGraph</a></h4>
+<p class="Blurb">Creates class object by moralizing.
+<pre>
+newGraph = CGraphMoralizeGraph( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object to be moralized.
+<dt>newGraph<dd>New class object.
+</dl></p><p>
+The function <a href="#decl_pnlmCGraphMoralizeGraph">CGraphMoralizeGraph</a> creates a new CGraph object by moralizing the source graph .
+</p>
+
+<hr><h4><a name="decl_GetTopologicalOrder">GetTopologicalOrder</a></h4>
+<p class="Blurb">Returns numbers of nodes according to their topological order. </p>
+<pre>
+order = GetTopologicalOrder( graph );
+</pre><p><dl>
+<dt>graph<dd>Class object.
+<dt>order<dd>Numbers of nodes.
+</dl></p><p>
+The function returns numbers of nodes according to the order of their
+topological sorting.
+</p>
+
+<hr><h4><a name="decl_AddEdge">AddEdge</a></h4>
+<p class="Blurb">Adds edge to existing graph.</p>
+<pre>
+AddEdge( startNode, endNode, directed );
+</pre><p><dl>
+<dt>startNode<dd>Starting node of the edge.
+<dt>endNode<dd>Ending node of the edge.
+<dt>directed<dd>Edge orientation. The argument shows if the edge is directed. Equals to
+1 if the edge is directed, equals to 0 otherwise.
+</dl></p><p>
+</p>
+
+<hr><h4><a name="decl_ChangeEdgeDirection">ChangeEdgeDirection</a></h4>
+<p class="Blurb">Changes direction of graph.</p>
+<pre>
+ChangeEdgeDirection( startNode, endNode );
+</pre><p><dl>
+<dt>startNode<dd>Starting node of the edge.
+<dt>endNode<dd>Ending node of the edge.
+</dl></p><p>
+The function <a href="#decl_pnlmChangeEdgeDirection">ChangeEdgeDirection</a> changes the direction of a graph by changing the direction of its
+edge nodes.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNeighbors">GetNeighbors</a></h4>
+<p class="Blurb">Gets all neighbors of given node with orientation vector.</p>
+<pre>
+[ nbrsOut, nbrsTypesOut] = GetNeighbors( nodeNum );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+<dt>nodeNum<dd>Number of the node whose neighbors are to be found.
+<dt>nbrsOut<dd>Vector of node neighbors.
+<dt>nbrsTypesOut<dd>Cell array of vectors with types of node neighbors from nbrsOut.
+</dl></p><p>
+</p>
+
+<hr><h4><a name="decl_GetNumberOfNeighbors">GetNumberOfNeighbors</a></h4>
+<p class="Blurb">Returns number of neighbors of given node.</p>
+<pre>
+n = GetNumberOfNeighbors( graph, nodeNum );
+</pre><p><dl>
+<dt>graph<dd>Class object .
+<dt>nodeNum<dd>Number of the node for which the number of neighbors is to be found.
+<dt>n<dd>Number of neighbours.
+</dl></p><p>
+</p>
+
+<hr><h4><a name="decl_GetNumberOfNodes">GetNumberOfNodes</a></h4>
+<p class="Blurb">Returns number of all nodes in graph.</p>
+<pre>
+n = GetNumberOfNodes( graph );
+</pre><p><dl>
+<dt>graph<dd>Class object.
+<dt>n<dd>Total number of nodes.
+</dl></p><p>
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfEdges">GetNumberOfEdges</a></h4>
+<p class="Blurb">Returns number of edges in graph.</p>
+<pre>
+n = GetNumberOfEdges( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+<dt>n<dd>Number of edges in the graph.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNumberOfEdges">GetNumberOfEdges</a> returns the number of edges in a graph.
+</p>
+
+<hr><h4><a name="decl_pnlmIsCompleteSubgraph">IsCompleteSubgraph</a></h4>
+<p class="Blurb">Checks subset of given nodes for completeness.</p>
+<pre>
+x = IsCompleteSubgraph( graph, subGraph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>subGraph<dd>Subset of nodes.
+<dt>x<dd>Flag of completeness.
+</dl></p><p>
+The function <a href="#decl_pnlmIsCompleteSubgraph">IsCompleteSubgraph</a> checks whether a subset of nodes is complete. The function returns
+1 if the subset is complete, returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmIsChangeAllowed">IsChangeAllowed</a></h4>
+<p class="Blurb">Returns status flag for graph.</p>
+<pre>
+x = IsChangeAllowed( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+<dt>x<dd>Flag of status.
+</dl></p><p>
+The function <a href="#decl_pnlmIsChangeAllowed">IsChangeAllowed</a> returns checks if a graph may be changes. The function returns 1
+if the change is allowed, returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmIsExistingEdge">IsExistingEdge</a></h4>
+<p class="Blurb">Returns information on edge existence.</p>
+<pre>
+x = IsExistingEdge( graph, startNode, endNode );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>startNode<dd>Starting node of the edge.
+<dt>endNode<dd>Ending node of the edge.
+<dt>x<dd>Flag of egde presence.
+</dl></p><p>
+The function <a href="#decl_pnlmIsExistingEdge">IsExistingEdge</a> checks if the graph has an edge. The function returns 1 if the
+edge exists in the graph, returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmRemoveEdge">RemoveEdge</a></h4>
+<p class="Blurb">Removes edge from graph.</p>
+<pre>
+RemoveEdge( graph, startNode, endNode );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+<dt>startNode<dd>Starting node of the edge.
+<dt>endNode<dd>Ending node of the edge.
+</dl></p><p>
+</p>
+
+<hr><h4><a name="decl_pnlmSetNeighbors">SetNeighbors</a></h4>
+<p class="Blurb">Sets neighbors for given node.</p>
+<pre>
+SetNeighbors( graph, nodeNum, nbrs, nbrsTypes );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>nodeNum<dd>Number of the node whose neighbors should be set.
+<dt>nbrs<dd>Vector of node neighbors.
+<dt>nbrsTypes<dd>Cell array of node neighbor types.
+</dl></p><p>
+</p>
+
+<hr><h4><a name="decl_pnlmProhibitChange">ProhibitChange</a></h4>
+<p class="Blurb">Prohibits any change of CGraph object.</p>
+<pre>
+ProhibitChange( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+</dl></p><p>
+</p>
+
+<hr><h4><a name="decl_pnlmFormCliqueFromSubgraph">FormCliqueFromSubgraph</a></h4>
+<p class="Blurb">Forms clique by connecting all nodes of subgraph.</p>
+<pre>
+FormCliqueFromSubgraph( graph, subGraph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+<dt>subGraph<dd>Vector of nodes to form a clique.
+</dl></p><p>
+The function <a href="#decl_pnlmFormCliqueFromSubgraph">FormCliqueFromSubgraph</a> connects all nodes of a subgraph with each other so that they form
+a clique.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfParents">GetNumberOfParents</a></h4>
+<p class="Blurb">Returns number of parents of node.</p>
+<pre>
+n = GetNumberOfParents( graph, nodeNum );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>nodeNum<dd>Node number.
+<dt>n<dd>Number of parents.
+</dl></p><p>
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfChildren">GetNumberOfChildren</a></h4>
+<p class="Blurb">Returns number of children of node.</p>
+<pre>
+GetNumberOfChildren( nodeNum );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>nodeNum<dd>Node number.
+</dl></p><p>
+</p>
+
+<hr><h4><a name="decl_pnlmIsDirected">IsDirected</a></h4>
+<p class="Blurb">Checks if graph is directed.</p>
+<pre>
+x = IsDirected( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+<dt>x<dd>
+</dl></p><p>
+The function <a href="#decl_pnlmIsDirected">IsDirected</a> returns 1, if the graph is directed; returns 0, if the graph has
+at least one undirected edge.
+</p>
+
+<hr><h4><a name="decl_pnlmIsUndirected">IsUndirected</a></h4>
+<p class="Blurb">Checks if graph is undirected.</p>
+<pre>
+x = IsUndirected( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+<dt>x<dd>Flag of the graph type.
+</dl></p><p>
+The function <a href="#decl_pnlmIsUndirected">IsUndirected</a> returns 1, if the graph is undirected; returns 0, if the graph has
+at least one directed edge.
+</p>
+
+<hr><h4><a name="decl_pnlmGetAdjacencyMatrix">GetAdjacencyMatrix</a></h4>
+<p class="Blurb">Returns adjacency matrix.</p>
+<pre>
+adjMat = GetAdjacencyMatrix( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>adjMat<dd>Adjacency matrix.
+</dl></p><p>
+The function <a href="#decl_pnlmGetAdjacencyMatrix">GetAdjacencyMatrix</a> returns the adjacency matrix, which corresponds to the graph
+described by the related CGraph object. The adjacency matrix is not stored in
+the graph. It is formed only when you call the function.
+</p>
+
+<hr><h4><a name="decl_pnlmClearGraph">ClearGraph</a></h4>
+<p class="Blurb">Clears graph.</p>
+<pre>
+ClearGraph( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmClearGraph">ClearGraph</a> clears a graph by deleting lists of its node neighbors and sets
+the number of nodes to zero.
+</p>
+
+<hr><h4><a name="decl_pnlmIsIdentical">IsIdentical</a></h4>
+<p class="Blurb">Checks if two graphs are identical.</p>
+<pre>
+x = IsIdentical( graph, graphComp );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Source class object .
+<dt>graphComp<dd>Graph for comparison.
+<dt>x<dd>Flag.
+</dl></p><p>
+The function <a href="#decl_pnlmIsIdentical">IsIdentical</a> checks if two graphs are identical. Returns 1 if they are
+identical, returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmIsNotIdentical">IsNotIdentical</a></h4>
+<p class="Blurb">Checks if two graphs are not identical.</p>
+<pre>
+x = IsNotIdentical( graph, graphComp );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Source class object .
+<dt>graphComp<dd>Graph for comparison.
+<dt>x<dd>Flag.
+</dl></p><p>
+The function <a href="#decl_pnlmIsNotIdentical">IsNotIdentical</a> checks if two graphs are not identical. Returns 1 the graphs are
+not identical, returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmGetParents">GetParents</a></h4>
+<p class="Blurb">Returns vector of parents.</p>
+<pre>
+parents = GetParents( graph, nodeNum );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>nodeNum<dd>Number of the node whose parents are to be found.
+<dt>parents<dd>Vector of numbers of parent nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmGetParents">GetParents</a> returns parents of a node.
+</p>
+
+<hr><h4><a name="decl_pnlmGetChildren">GetChildren</a></h4>
+<p class="Blurb">Returns vector of children.</p>
+<pre>
+children = GetChildren( graph, nodeNum );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>nodeNum<dd>Number of the node whose children numbers are to be found.
+<dt>children<dd>Vector of numbers of children nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmGetChildren">GetChildren</a> returns children of a node.
+</p>
+
+<hr><h4><a name="decl_pnlmIsDAG">IsDAG</a></h4>
+<p class="Blurb">Checks if graph is DAG .</p>
+<pre>
+x = IsDAG( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+<dt>x<dd>Flag of object type.
+</dl></p><p>
+The function <a href="#decl_pnlmIsDAG">IsDAG</a> checks if a graph is a directed acyclic object. The function
+returns 1, if the graph is a DAG, returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmIsTopologicallySorted">IsTopologicallySorted</a></h4>
+<p class="Blurb">Checks if graph is topologically sorted.</p>
+<pre>
+x = IsTopologicallySorted( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+<dt>x<dd>Flag of topological sorting.
+</dl></p><p>
+The function <a href="#decl_pnlmIsTopologicallySorted">IsTopologicallySorted</a> returns 1 if the graph is topologically sorted, returns 0
+otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmNumberOfConnectivityComponents">NumberOfConnectivityComponents</a></h4>
+<p class="Blurb">Returns number of graph connectivity components.</p>
+<pre>
+x = NumberOfConnectivityComponents( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmNumberOfConnectivityComponents">NumberOfConnectivityComponents</a> returns the number of connectivity components of the graph. If the
+graph has more than one connectivity component, the inference engine throws an
+exception. In case of several connectivity components each of them should be
+treated as a separate graphical model.
+</p>
+
+<hr><h4><a name="decl_pnlmGetConnectivityComponents">GetConnectivityComponents</a></h4>
+<p class="Blurb">Returns connectivity components.</p>
+<pre>
+decomposition = GetConnectivityComponents( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>decomposition<dd>Cell array of connectivity components, represented as vectors.
+</dl></p><p>
+</p>
+
+<hr><h4><a name="decl_pnlmSetTo">SetTo</a></h4>
+<p class="Blurb">Assigns new value to CGraph object.</p>
+<pre>
+rGraph = SetTo( graph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>rGraph<dd>Graph to become identical to the source graph.
+</dl></p><p>
+The function <a href="#decl_pnlmDiscussion">Discussion</a> creates a replica of the source graph by assigning to it a new
+value.
+</p>
+
+<hr><h4><a name="decl_pnlmGetAncestry">GetAncestry</a></h4>
+<p class="Blurb">Finds nodes that lie outside given subgraph but have ancestors inside. </p>
+<pre>
+closure = GetAncestry( graph, subGraph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>subGraph<dd>Vector of indices of the input subgraph.
+<dt>closure<dd>Vector of nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmGetAncestry">GetAncestry</a> returns indices of nodes that do not lie but have ancestors in the
+given subgraph.
+</p>
+
+<hr><h4><a name="decl_pnlmGetAncestralClosure">GetAncestralClosure</a></h4>
+<p class="Blurb">Finds nodes that either lie inside or have ancestors in given subgraph.</p>
+<pre>
+closure = GetAncestralClosure( graph, subGraph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>subGraph<dd>Vector of indices of the input subgraph.
+<dt>closure<dd>Vector of nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmGetAncestralClosure">GetAncestralClosure</a> returns indices of nodes that either lie or have ancestors in the
+given subgraph.
+</p>
+
+<hr><h4><a name="decl_pnlmGetAncestralClosureMask">GetAncestralClosureMask</a></h4>
+<p class="Blurb">Finds nodes that either lie inside or have ancestors in given subgraph.</p>
+<pre>
+closureMask = GetAncestralClosure( graph, subGraph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>subGraph<dd>Vector of indices of the input subgraph.
+<dt>closureMask<dd>Vector-mask.
+</dl></p><p>
+The function <a href="#decl_pnlmGetAncestralClosureMask">GetAncestralClosureMask</a> finds nodes that either lie inside or have ancestors in the given
+subgraph and fills the boolean mask accordingly. The i -th element of the
+closureMask is set to true only if the i -th node belongs to the ancestral
+closure.
+</p>
+
+<hr><h4><a name="decl_pnlmGetSubgrConnectComponents">GetSubgrConnectComponents</a></h4>
+<p class="Blurb">Finds plain connectivity components of induced subgraph.</p>
+<pre>
+decomp = GetSubgrConnectComponents( graph, subGraph );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>subGraph<dd>Vector of indices of the input subgraph.
+decomp Cell of vectors with indices of decomposition nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmGetSubgrConnectComponents">GetSubgrConnectComponents</a> finds plain connectivity components of the induced subgraph and
+fills in the decomposition output argument accordingly.
+</p>
+
+<hr><h4><a name="decl_pnlmGetDConnectionList">GetDConnectionList</a></h4>
+<p class="Blurb">Finds nodes d-connected to given node.</p>
+<pre>
+dseparationList = GetDConnectionList( graph, node, separator );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object.
+<dt>node<dd>Given node.
+<dt>separator<dd>Vector of nodes that constitute the separator.
+<dt>dseparationList<dd>Vector of node indices.
+</dl></p><p>
+The function <a href="#decl_pnlmGetDConnectionList">GetDConnectionList</a> finds nodes d-connected to the given node by the given separator.
+The definition of the d-connection runs as in [ CDLS ]:
+node A is d-connected to node B if there is a non-blocked trail between them. A
+trail is blocked if it contains either a node from the separator with the trail
+edges meeting not head-to-head, or a node that has descendants in the separator
+with the trail edges meeting head-to-head.
+</p>
+
+<hr><h4><a name="decl_pnlmGetDConnectionTable">GetDConnectionTable</a></h4>
+<p class="Blurb">Finds d-connection lists for all nodes of graph.</p>
+<pre>
+dseparationTable = GetDConnectionTable( graph, separator );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>separator<dd>Separator for d-separation.
+<dt>dseparationTable<dd>Cell array of vectors of node indices.
+</dl></p><p>
+The function <a href="#decl_pnlmGetDConnectionTable">GetDConnectionTable</a> finds d-connection lists for all nodes of the graph. The definition for the
+d-connection runs as in [CDLS] .
+</p>
+
+<hr><h4><a name="decl_pnlmGetReachableSubgraph">GetReachableSubgraph</a></h4>
+<p class="Blurb">Finds nodes reachable from given subgraph if certain pairs of edges are banned.</p>
+<pre>
+closure = GetReachableSubgraph( graph, subGraph, ban );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>subGraph<dd>Given subgraph.
+<dt>ban<dd>Three-dimensional boolean mask.
+<dt>closure<dd>Vector of node indices.
+</dl></p><p>
+The function <a href="#decl_pnlmGetReachableSubgraph">GetReachableSubgraph</a> fills in the output vector closure with indices of nodes accessible
+from the subgraph with an acceptable trail. For every node i ban[i] should be a conventional two-dimesional boolean array.
+The entry ban[I][J][K] is true if and only if the pair of edges < j,i >, < > is
+banned for acceptable trails.
+</p>
+
+<hr><h4><a name="decl_pnlmGetReachableSubgraphByNode">GetReachableSubgraphByNode</a></h4>
+<p class="Blurb">Finds nodes reachable from given subgraph if certain pairs of edges are banned.</p>
+<pre>
+closure = GetReachableSubgraphByNode( graph, node, ban );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Class object .
+<dt>node<dd>Given node .
+<dt>ban<dd>Three-dimensional boolean mask.
+<dt>closure<dd>Vector of node indices.
+</dl></p><p>
+The function <a href="#decl_pnlmGetReachableSubgraphByNode">GetReachableSubgraphByNode</a> fills in the output vector closure with indices of nodes accessible
+from the subgraph with an acceptable trail.
+For every node i ban[i] should be a conventional two-dimesional boolean array.
+The entry ban[I][J][K] is true if and only if the pair of edges < j,i >, < > is
+banned for acceptable trails.  Using this method is not recommended. This method was designed for
+internal use only in older versions of the d-connection related methods.
+</p>
+
+
+<hr><h2><a name="decl_pnlmNodeTypes">Node Types</a></h2>
+
+
+<hr><h3><a name="decl_pnlmClassCNodeType">Class CNodeType</a></h3>
+
+<img align=center src="fig/nodetypes.gif">
+
+<p>
+Class CNodeType provides node types for the model. By default model nodes are
+binary and discrete.
+</p>
+
+<hr><h4><a name="decl_pnlmCNodeType">CNodeType</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+nt = CNodeType( type, size );
+</pre><p><dl>
+Arguments
+<dt>type<dd>Type of variable. For a discrete variable equals to 1, for continuous
+variables equals to 1.
+<dt>size<dd>For a discrete variable - number of possible values.
+For a continuous variable - dimentionality.
+<dt>nt<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmIsDiscrete">IsDiscrete</a></h4>
+<p class="Blurb">Returns information on node discreteness.</p>
+<pre>
+x = IsDiscrete( nt );
+</pre><p><dl>
+Arguments
+<dt>nt<dd>Class object.
+<dt>x<dd>Flag of discreteness.
+</dl></p><p>
+The function <a href="#decl_pnlmIsDiscrete">IsDiscrete</a> returns 1 if the node is discrete, returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNodeSize">GetNodeSize</a></h4>
+<p class="Blurb">Returns node size.</p>
+<pre>
+x = GetNodeSize( nt );
+</pre><p><dl>
+Arguments
+<dt>nt<dd>Class object.
+<dt>x<dd>Node size.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNodeSize">GetNodeSize</a> returns the number of possible values if the node is discrete. If
+the node is continuous, the function returns its dimentionality.
+</p>
+
+<hr><h4><a name="decl_pnlmSetType">SetType</a></h4>
+<p class="Blurb">Sets node type.|</p>
+<pre>
+SetType( nt, isDiscrete, ndSize, );
+</pre><p><dl>
+Arguments
+<dt>nt<dd>Class object.
+<dt>isDiscrete<dd>Type of node value. Equals to 1 if the node is discrete, equals to 0
+if the node is continuous.
+<dt>ndSize<dd>Size of the new node.
+</dl></p><p>
+The function <a href="#decl_pnlmSetType">SetType</a> determines the type of a given node.
+</p>
+
+<hr><h4><a name="decl_pnlmIsIdentical">IsIdentical</a></h4>
+<p class="Blurb">Compares operands.</p>
+<pre>
+IsIdentical( nt, ntIn );
+</pre><p><dl>
+Arguments
+<dt>nt<dd>Source class object.
+<dt>ntIn<dd>Class object for comparison.
+</dl></p><p>
+The function <a href="#decl_pnlmIsIdentical">IsIdentical</a> compares two operands. Returns 1 if the operands are equal,
+returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmIsNotIdentical">IsNotIdentical</a></h4>
+<p class="Blurb">Compares two operands.</p>
+<pre>
+IsNotIdentical( nt, ntIn );
+</pre><p><dl>
+Arguments
+<dt>nt<dd>Source class object.
+<dt>ntIn<dd>Class object for comparison.
+</dl></p><p>
+The function <a href="#decl_pnlmIsNotIdentical">IsNotIdentical</a> compares two operands. The function returns 1 if the operands are
+not equal, returns 0 otherwise.
+</p>
+
+<hr><h2><a name="decl_pnlmModelDomain">Model Domain</a></h2>
+<p>
+Model domain is a set of nodes that define a graphical model. A number of
+graphical models can have one model domain. This object stores information on
+the types of variables or nodes. For example, you can create a new graphical
+model using the description of model variables from the model domain.
+</p>
+<hr><h3><a name="decl_pnlmClassCModelDomain">Class CModelDomain</a></h3>
+
+<img align=center src="fig/modeldomain.gif">
+
+<p>
+This class stores information on the types of variables that are used to create
+a graphical model and on the types of nodes that become observed during
+inference after evidence is entered. This class also stores temporary CFactor
+objects that are not attached to graphical models.
+</p>
+
+<hr><h4><a name="decl_pnlmCModelDomainCreate">CModelDomainCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+md = CModelDomainCreate( variableTypes, variableAssociation );
+md = CModelDomainCreate( variableTypes, variableAssociation, creatorOfMD );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>variableTypes<dd>Cell array of node types.
+<dt>variableAssociation<dd>Vector of association of a variable with its type.
+<dt>creatorOfMD<dd>Graphical model that creates a model domain.
+</dl></p><p>
+The function <a href="#decl_pnlmCModelDomainCreate">CModelDomainCreate</a> creates a model domain with different variable types, where the
+association vector of every variable points at the variable type.
+</p>
+
+<hr><h4><a name="decl_pnlmCModelDomainCreateIfAllTheSame">CModelDomainCreateIfAllTheSame</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+md = CModelDomainCreateIfAllTheSame( nVariables );
+md = CModelDomainCreateIfAllTheSame( numVariables, commonVariableType );
+md = CModelDomainCreateIfAllTheSame( numVariables, commonVariableType, createrOfMD );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>creatorOfMD<dd>Graphical model that creates a model domain.
+<dt>numVariables<dd>Number of variables in the model domain.
+<dt>CommonVariableType<dd>Variable type.
+</dl></p><p>
+Three function <a href="#decl_pnlmCModelDomainCreateIfAllTheSame">CModelDomainCreateIfAllTheSame</a> versions are available.The first version creates a model domain
+using binary and discrete variables.The second version creates a model domain
+using any variables of the same type.The third version reates a model domain
+using a graphical model.
+</p>
+
+<hr><h4><a name="decl_pnlmAttachFactor">AttachFactor</a></h4>
+<p class="Blurb">Attaches factor to model domain.</p>
+<pre>
+n = AttachFactor( md, factor );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>factor<dd>Factor to be attached.
+</dl></p><p>
+The function <a href="#decl_pnlmAttachFactor">AttachFactor</a> returns the number that a factor has in the model domain.
+</p>
+
+<hr><h4><a name="decl_pnlmReleaseFactor">ReleaseFactor</a></h4>
+<p class="Blurb">Releases factor from model domain.</p>
+<pre>
+ReleaseFactor( md, factor );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>factor<dd>Factor to be released.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmIsAFactorOwner">IsAFactorOwner</a></h4>
+<p class="Blurb">Checks if model domain keeps query factor.</p>
+<pre>
+isOwner = IsAFactorOwner( md, factor );
+</pre><p><dl>
+Argument
+<dt>md<dd>Model domain.
+<dt>factor<dd>Factor for checking.
+</dl></p><p>
+The function <a href="#decl_pnlmIsAFactorOwner">IsAFactorOwner</a> returns 1 if the model domain is the owner of the query factor,
+returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmGetVariableType">GetVariableType</a></h4>
+<p class="Blurb">Returns variable type to query variable. </p>
+<pre>
+vt = GetVariableType( md, varNumber );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>varNumber<dd>Number of a variable.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetVariabeTypes">GetVariabeTypes</a></h4>
+<p class="Blurb">Returns variable types for query variables.</p>
+<pre>
+varTypes = GetVariableTypes( md, vars );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>vars<dd>Vector of variable numbers.
+<dt>varTypes<dd>Cell array of variable types.
+</dl></p><p>
+The function <a href="#decl_pnlmGetVariabeTypes">GetVariabeTypes</a> returns a cell array of variable types.
+</p>
+
+<hr><h4><a name="decl_pnlmGetObsGauVarType">GetObsGauVarType</a></h4>
+<p class="Blurb">Returns variable types for observed Gaussian variables.</p>
+<pre>
+vt = GetObsGauVarType( md );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetObsTabVarType">GetObsTabVarType</a></h4>
+<p class="Blurb">Returns variable types for observed Tabular variables.</p>
+<pre>
+vt = GetObsTabVarType( md );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+</dl></p><p>
+The function <a href="#decl_pnlmGetObsTabVarType">GetObsTabVarType</a> returns variable types for observed Tabular variables.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfVariableTypes">GetNumberOfVariableTypes</a></h4>
+<p class="Blurb">Returns number of variable types.</p>
+<pre>
+nvt = GetNumberOfVariableTypes( md );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>nvt<dd>Number of variable types.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNumberOfVariableTypes">GetNumberOfVariableTypes</a> returns the number of variable types.
+</p>
+
+<hr><h4><a name="decl_pnlmGetVariableTypes">GetVariableTypes</a></h4>
+<p class="Blurb">Returns all variable types. </p>
+<pre>
+varTypes = void CModelDomain::GetVariableTypes( md );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>varTypes<dd>Vector of variable types.
+</dl></p><p>
+The function <a href="#decl_pnlmGetVariableTypes">GetVariableTypes</a> returns the cell array of variable types.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumberVariables">GetNumberVariables</a></h4>
+<p class="Blurb">Returns number of variables of model domain.</p>
+<pre>
+nv = GetNumberVariables( md );
+</pre><p><dl>
+Agruments
+<dt>md<dd>Model domain.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNumberVariables">GetNumberVariables</a> returns the number of variables that belong to the model domain.
+</p>
+
+<hr><h4><a name="decl_pnlmGetVariableAssociations">GetVariableAssociations</a></h4>
+<p class="Blurb">Returns association to variable types.</p>
+<pre>
+varAs = GetVariableAssociations( md );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>varAs<dd>Vector of associations of variables with their variable types.
+</dl></p><p>
+The function <a href="#decl_pnlmGetVariableAssociations">GetVariableAssociations</a> returns to variables their variable types.
+</p>
+
+<hr><h4><a name="decl_pnlmGetVariableAssociation">GetVariableAssociation</a></h4>
+<p class="Blurb">Returns variable association.</p>
+<pre>
+varAs = GetVariableAssociation( md, variable );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>variable<dd>Number of a variable in the model domain.
+</dl></p>
+
+<h2><a name="ref_manEvidences">Evidences</a></h2>
+
+<h3><a name="decl_pnlmClass_CNodeValuese">Class CNodeValues</a></h3>
+
+<img align=center src="fig/nodevalues.gif">
+
+<p>
+Class <tt>CNodeValues</tt> is intended for storing values of variables. Values of
+discrete nodes are represented by integers. Values of continuous nodes are
+represented by <i>n</i> floats, where <i>n</i> is <i>NodeSize</i> of a corresponding node type.
+A node can be observed either <i>potentially</i> or <i>actually.</i> When a node is observed
+potentially, its value is stored at a <tt>CNodeValues</tt> object and it can be made
+observed actually. To make a node actually observed, change its observability
+flag to <tt>true.</tt>
+</p>
+<p>
+To facilitate the inference proceudre, you can create evidence for all nodes in
+advance and set observability flags of some nodes to <tt>false.</tt> If you need new
+observed nodes, toggle observability states of hidden nodes, make them observed,
+and perform inference with them.
+</p>
+
+<p>
+Class <tt>CNodeValues</tt> is a superclass for  <a href="#decl_pnlmClass_CEvidence">CEvidence</a>. It stores information
+on observed values of certain variables with no indication of varaible numbers
+in the graphical model.
+</p>
+
+<hr><h4><a name="decl_pnlmCNodeValuesCreate">CNodeValuesCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+nv = CNodeValuesCreate( obsNdsTypes, obsValues );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>obsNdsTypes<dd>Node types of observed nodes.
+<dt>obsValues<dd>Values of observed nodes.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetValueBySerialNumber">GetValueBySerialNumber</a></h4>
+<p class="Blurb">Returns values of nodes.</p>
+<pre>
+value = GetValueBySerialNumber( nv, SerialNumber );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>SerialNumber<dd>Serial number of an observed variable.
+</dl></p><p>
+The function <a href="#decl_pnlmGetValueBySerialNumber">GetValueBySerialNumber</a> returns the vector of observed node values.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumberObsNodes">GetNumberObsNodes</a></h4>
+<p class="Blurb">Returns number of observed nodes.</p>
+<pre>
+nNodes = GetNumberObsNodes( nv );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>nNodes<dd>Number of nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNumberObsNodes">GetNumberObsNodes</a> returns the number of both potentially and actually observed
+nodes.
+</p>
+
+<hr><h4><a name="decl_pnlmGetObsNodesFlags">GetObsNodesFlags</a></h4>
+<p class="Blurb">Returns observability flags.</p>
+<pre>
+flags = GetObsNodesFlags( nv );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>flags<dd>Flags that show if a variable is observed.
+</dl></p><p>
+The function <a href="#decl_pnlmGetObsNodesFlags">GetObsNodesFlags</a> returns the vector of flags that show if a variable is observed.
+The function returns 1 if a variable is observed, returns 0 otherwize.
+</p>
+
+<hr><h4><a name="decl_pnlmGetRawData">GetRawData</a></h4>
+<p class="Blurb">Returns vector of values.</p>
+<pre>
+values = GetRawData( nv );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>values<dd>Vector of values.
+</dl></p><p>
+The function <a href="#decl_pnlmGetRawData">GetRawData</a> returns the vector of variable values.
+</p>
+
+<hr><h4><a name="decl_pnlmSetData">SetData</a></h4>
+<p class="Blurb">Replaces old values with new values.</p>
+<pre>
+SetData( nv, data );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>data<dd>Vector of new values.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmMakeNodeHiddenBySerialNum">MakeNodeHiddenBySerialNum</a></h4>
+<p class="Blurb">Changes state of observability flag.</p>
+<pre>
+MakeNodeHiddenBySerialNum( nv, serialNum );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>serialNum<dd>Number of the node, whose state is to be changed.
+</dl></p><p>
+The function <a href="#decl_pnlmMakeNodeHiddenBySerialNum">MakeNodeHiddenBySerialNum</a> changes the state of an observability flag from observed to
+hidden.
+</p>
+
+<hr><h4><a name="decl_pnlmMakeNodeObservedBySerialNum">MakeNodeObservedBySerialNum</a></h4>
+<p class="Blurb">Changes observability flag from hidden to observed.</p>
+<pre>
+MakeNodeObservednBySerialNum( nv, serialNum );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>serialNum<dd>Number of the hidden node, whose state is to be changed.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmToggleNodeStateBySerialNumber">ToggleNodeStateBySerialNumber</a></h4>
+<p class="Blurb">Toggles observability type.</p>
+<pre>
+ToggleNodeStateBySerialNumber( nv, nodeNums );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>nodeNums<dd>Serial numbers of the observed variables whose states are to be
+changed.
+</dl></p><p>
+The function <a href="#decl_pnlmToggleNodeStateBySerialNumber">ToggleNodeStateBySerialNumber</a> changes the state of variables from potentially observed to
+actually observed and vice versa.
+</p>
+
+<hr><h4><a name="decl_pnlmIsObserved">IsObserved</a></h4>
+<p class="Blurb">Checks if variable is observed.</p>
+<pre>
+flag = IsObserved( nv, nodeNum );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>nodeNum<dd>Serial number of the variable to be checked.
+<dt>flag<dd>Observability flag.
+</dl></p><p>
+The function <a href="#decl_pnlmIsObserved">IsObserved</a> checks the state of a variable. The function returns 1 is the
+variable is observed, returns 0 otherwise.
+</p>
+
+<h3><a name="decl_pnlmClass_CEvidence">Class CEvidence</a></h3>
+
+<img align=center src="fig/evidence.gif">
+
+<p>
+Class <tt>CEvidence</tt> stores information on observed variables of a graphical model.
+It is a subclass of <a href="#decl_pnlClacc_CNodeValues">CNodeValues</a>, which stores information on types
+and actual values of variables. Class <tt>CEvidence</tt> stores the array of numbers of
+observed variables that lie in the graphical model and the functions that are
+used to retrieve information on observed nodes of the model. These functions
+establish correspondence between numbers of the model nodes and their serial
+numbers in a <tt>CNodeValues</tt> object and call functions of a corresponding class.
+</p>
+
+<hr><h4><a name="decl_pnlmCEvidenceCreate">CEvidenceCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+CEvidenceCreate( grModel, obsNodes, obsValues );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Graphical model.
+<dt>obsNodes<dd>Vector of observed nodes in the graphical model or of observed
+variables it the model domain.
+<dt>obsValues<dd>Cell array of observed values listed as in obsNodes.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCEvidenceCreateByModelDomain">CEvidenceCreateByModelDomain</a></h4>
+<p class="Blurb">Creates class object using model domain.</p>
+<pre>
+ev = CEvidenceCreateByModelDomain( md, obsNodes, obsValues );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>obsNodes<dd>Vector of observed nodes in the graphical model or of observed
+<dt>variables<dd>it the model domain.
+<dt>obsValues<dd>Array of observed values listed as in obsNodes.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCEvidenceCreateByNodeValues">CEvidenceCreateByNodeValues</a></h4>
+<p class="Blurb">Creates class object using node values.</p>
+<pre>
+CEvidenceCreateByNodeValues( md, obsNodes, obsValues );
+</pre><p><dl>
+Arguments
+<dt>md<dd>Model domain.
+<dt>nObsNds<dd>Number of observed nodes or variables.
+<dt>obsValues<dd>Array of observed values listed as in obsNodes.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmToggleNodeState">ToggleNodeState</a></h4>
+<p class="Blurb">Toggles node state.</p>
+<pre>
+ToggleNodeState( ev, nodeNums );
+</pre><p><dl>
+Arguments
+<dt>ev<dd>Class object.
+<dt>nodeNums<dd>Numbers of the observed nodes whose states are to be changed.
+</dl></p><p>
+The function <a href="#decl_pnlmToggleNodeState">ToggleNodeState</a> makes potentially observed nodes actually observed and vice versa.
+</p>
+
+<hr><h4><a name="decl_pnlmGetValues">GetValues</a></h4>
+<p class="Blurb">Returns values of nodes.</p>
+<pre>
+GetValues( nv, nodeNums );
+</pre><p><dl>
+Arguments
+<dt>nv<dd>Class object.
+<dt>nodeNums<dd>Serial numbers of observed nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmDiscussion">Discussion</a> returns values of observed nodes of the model.
+</p>
+
+<hr><h4><a name="decl_pnlmGetAllObsNodes">GetAllObsNodes</a></h4>
+<p class="Blurb">Returns vector of numbers of observed nodes.</p>
+<pre>
+obsNodes = GetAllObsNodes( ev );
+</pre><p><dl>
+Arguments
+<dt>ev<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmGetAllObsNodes">GetAllObsNodes</a> returns the vector of numbers of observed nodes.
+</p>
+
+<hr><h4><a name="decl_pnlmIsNodeObserved">IsNodeObserved</a></h4>
+<p class="Blurb">Checks status of node.</p>
+<pre>
+flag = IsNodeObserved( ev, nodeNum );
+</pre><p><dl>
+Arguments
+<dt>ev<dd>Class object.
+<dt>nodeNum<dd>
+</dl></p><p>
+Discussion
+The function <a href="#decl_pnlmIsNodeObserved">IsNodeObserved</a> returns 1, if the node is observed, retrurns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmMakeNodeObserved">MakeNodeObserved</a></h4>
+<p class="Blurb">Changes stete of observation flag .</p>
+<pre>
+MakeNodeObserved( ev, nodeNum );
+</pre><p><dl>
+Arguments
+<dt>ev<dd>Class object.
+<dt>nodeNum<dd>Number of the node whose state is to be changed.
+</dl></p><p>
+The function <a href="#decl_pnlmMakeNodeObserved">MakeNodeObserved</a> makes a hidden node observed, and throws an exception, if the
+source node is already observed.
+</p>
+
+<hr><h4><a name="decl_pnlmMakeNodeHidden">MakeNodeHidden</a></h4>
+<p class="Blurb">Changes state of observation flag.</p>
+<pre>
+flag = MakeNodeHidden( ev, nodeNum );
+</pre><p><dl>
+Arguments
+<dt>ev<dd>Class object.
+<dt>nodeNum<dd>Number of the node whose state is to be changed.
+</dl></p><p>
+The function <a href="#decl_pnlmMakeNodeHidden">MakeNodeHidden</a> makes the observed node hidden and throws an exception, if it is
+already hidden.
+</p>
+
+<hr><h4><a name="decl_pnlmGetObsNodesWithValues">GetObsNodesWithValues</a></h4>
+<p class="Blurb">Returns vectors of actually observed nodes and of their values.</p>
+<pre>
+[ pObsNds, ObsValues, nodeTypes ] = GetObsNodesWithValues( ev );
+</pre><p><dl>
+Arguments
+<dt>ev<dd>Class object.
+<dt>ObsNds<dd>Vector of numbers of observed nodes.
+<dt>ObsValues<dd>Cell array of vectors with raw data of actually observed values. The
+values are listed as in ObsNds .
+<dt>nodeTypes<dd>Vector with node types for observed nodes. The values are listed as in
+ObsNds .
+</dl></p><p>
+The function <a href="#decl_pnlmGetObsNodesWithValues">GetObsNodesWithValues</a> returns two vectors: the vector of observed nodes and the vector of
+their values.
+</p>
+
+<hr><h4><a name="decl_pnlmGetModelDomain">GetModelDomain</a></h4>
+<p class="Blurb">Returns model domain.</p>
+<pre>
+md = GetModelDomain( ev );
+</pre><p><dl>
+Arguments
+<dt>ev<dd>Class object.
+<dt>md<dd>Model domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCEvidenceSaveForStaticModel">CEvidenceSaveForStaticModel</a></h4>
+<p class="Blurb">Saves evidences to file for statical model. </p>
+<pre>
+flag = CEvidenceSaveForStaticModel( fName, evVec );
+</pre><p><dl>
+Arguments
+<dt>fName<dd>File name.
+<dt>evVec<dd>Cell array of evidences.
+</dl></p><p>
+The function <a href="#decl_pnlmCEvidenceSaveForStaticModel">CEvidenceSaveForStaticModel</a> saves into a file evidence for a static graphical model. The
+function returns 1 if the evidence is saved, returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmCEvidenceSaveForDBN">CEvidenceSaveForDBN</a></h4>
+<p class="Blurb">Saves evidences to file for DBN. </p>
+<pre>
+flag = CEvidenceSaveForDBN( fName, evVec );
+</pre><p><dl>
+Arguments
+<dt>fName<dd>File name.
+<dt>evVec<dd>Cell array of cell arrays of evidences.
+</dl></p><p>
+The function <a href="#decl_pnlmCEvidenceSaveForDBN">CEvidenceSaveForDBN</a> saves into a file evidence for a dynamic graphical model. The
+function returns 1 if the evidence is saved, returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmCEvidenceLoadForStaticModel">CEvidenceLoadForStaticModel</a></h4>
+<p class="Blurb">Loads evidence from file. </p>
+<pre>
+evVec = CEvidenceLoadForStaticModel( fName, md );
+</pre><p><dl>
+Arguments
+<dt>fName<dd>File name.
+<dt>evVec<dd>Cell array of loaded evidences.
+<dt>md<dd>Model domain.
+</dl></p><p>
+The function <a href="#decl_pnlmCEvidenceLoadForStaticModel">CEvidenceLoadForStaticModel</a> retrieves data from the file and creates evidences for a static
+graphical model.
+</p>
+
+<hr><h4><a name="decl_pnlmCEvidenceLoadForDBN">CEvidenceLoadForDBN</a></h4>
+<p class="Blurb">Loads evidence to file. </p>
+<pre>
+evVec = CEvidenceLoadForDBN( fname, md );
+</pre><p><dl>
+Arguments
+<dt>fname<dd>File name.
+<dt>evVec<dd>Cell array of cell arrays of evidences.
+<dt>md<dd>Model domain.
+</dl></p><p>
+The function <a href="#decl_pnlmCEvidenceLoadForDBN">CEvidenceLoadForDBN</a> retrieves data from the file and creates evidences for a DBN.
+</p>
+
+
+<h2><a name="ref_manGraphicalModels">Graphical Models</a></h2>
+
+<h3><a name="decl_pnlmClass_CGraphicalModel">Class CGraphicalModel</a></h3>
+
+<img align=center src="fig/grmodel.gif">
+
+<p>
+Class <tt>CGraphicalModel</tt> represents a graphical model, which consists of a graph
+and a number of factors assigned to the graph nodes. Class <tt>CGraphicalModel</tt> is a
+superclass for  <a href="#decl_pnlmClassStaticGrModel">CStaticGraphicalModel</a> and  <a href="#decl_pnlmClassDynamicGrModel">CEvidenceLoadForDBN</a>.
+</p>
+
+<blockquote>
+<b>Note.</b> No instances of this class can be created, as the class is abstract.
+</blockquote>
+
+
+
+<hr><h4><a name="decl_pnlmAllocFactor">AllocFactor</a></h4>
+<p class="Blurb">Allocates factor to domain.</p>
+<pre>
+AllocFactor( grm, number );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>number<dd>Vecor of nodes that form the domain.
+</dl></p><p>
+The function <a href="#decl_pnlmAllocFactor">AllocFactor</a> allocates a factor to a domain.
+</p>
+
+<hr><h4><a name="decl_pnlmAllocFactorByDomainNumber">AllocFactorByDomainNumber</a></h4>
+<p class="Blurb">Allocates factor for domain by domain number.</p>
+<pre>
+AllocFactorByDomainNumber( grm, domain );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>domain<dd>Number of the domain.
+</dl></p><p>
+The function <a href="#decl_pnlmAllocFactorByDomainNumber">AllocFactorByDomainNumber</a> allocates a factor on the domain nodes.
+</p>
+
+<hr><h4><a name="decl_pnlmAllocFactors">AllocFactors</a></h4>
+<p class="Blurb">Allocates space to all factors of model.</p>
+<pre>
+AllocFactors( grm );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmAllocFactors">AllocFactors</a> allocates space to all the factors of the model.
+</p>
+
+<hr><h4><a name="decl_pnlmAttachFactor">AttachFactor</a></h4>
+<p class="Blurb">Attaches factor to model.</p>
+<pre>
+AttachFactor( grm, pFactor );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>factor<dd>Factor to be attached to the model.
+</dl></p><p>
+The function <a href="#decl_pnlmAttachFactor">AttachFactor</a> attaches a factor to the model if the factor has an existing
+domain in terms of the graphical model.
+</p>
+
+<hr><h4><a name="decl_pnlmAttachFactors">AttachFactors</a></h4>
+<p class="Blurb">Attaches new factors and returns old factors.</p>
+<pre>
+factorsOld = AttachFactors( grm, factors );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>factors<dd>CFactors object that corresponds to new factors.
+<dt>factorsOld<dd>Factors to be substituted for by new factors.
+</dl></p><p>
+The function <a href="#decl_pnlmAttachFactors">AttachFactors</a> attaches a set of factors stored in a CFactors object and returns
+the set of old factors for destruction.
+</p>
+
+<hr><h4><a name="decl_pnlmGetGraph">GetGraph</a></h4>
+<p class="Blurb">Returns class object.</p>
+<pre>
+graph = GetGraph( grm );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Source class object.
+<dt>graph<dd>Class object attached to the model.
+</dl></p><p>
+The function <a href="#decl_pnlmGetGraph">GetGraph</a> returns a class object attached to the model.
+</p>
+
+<hr><h4><a name="decl_pnlmGetModelType">GetModelType</a></h4>
+<p class="Blurb">Returns type of model.</p>
+<pre>
+mt = GetModelType( grm );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>mt<dd>Model type.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetNodeType">GetNodeType</a></h4>
+<p class="Blurb">Returns node type.</p>
+<pre>
+nt = GetNodeType( grm, nodeNum );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>nodeNum<dd>Number of the node whose node type is to be returned.
+<dt>nt<dd>Node type.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNodeType">GetNodeType</a> returns a CNodeType object for the specified node number.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNodeTypes">GetNodeTypes</a></h4>
+<p class="Blurb">Provides access to all node types of model.</p>
+<pre>
+GetNodeTypes( grm, nodeTypes ) ;
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>nodeTypes<dd>Cell array of all CNodeType objects attached to the model.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfNodes">GetNumberOfNodes</a></h4>
+<p class="Blurb">Returns number of nodes of model.</p>
+<pre>
+GetNumberOfNodes( grm );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNumberOfNodes">GetNumberOfNodes</a> returns the number of nodes per slice for both static and dynamic
+graphical models.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfNodeTypes">GetNumberOfNodeTypes</a></h4>
+<p class="Blurb">Returns number of node types of model.</p>
+<pre>
+nNodeTypes = GetNumberOfNodeTypes( grm );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>nNodeTypes<dd>Number of node types.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfFactors">GetNumberOfFactors</a></h4>
+<p class="Blurb">Returns number of factors attached to model.</p>
+<pre>
+nFactors = GetNumberOfFactors( grm );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>nFactors<dd>Number of factors attached.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetFactor">GetFactor</a></h4>
+<p class="Blurb">Returns class object by domain number.</p>
+<pre>
+factor = GetFactor( grm, domainNumber );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>domainNumber<dd>Number of domain for which a factor is to be found.
+</dl></p><p>
+The function <a href="#decl_pnlmgrm Class object.">grm Class object.</a> returns a class object using a specified domain number.
+</p>
+
+<hr><h4><a name="decl_pnlmGetFactorsIntoVector">GetFactorsIntoVector</a></h4>
+<p class="Blurb">Returns all factors attached to subset of nodes.</p>
+<pre>
+factors = GetFactorsIntoVector( grm, nodes );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Graphical model.
+<dt>nodes<dd>Vector of nodes for which attached factors are to be found.
+<dt>factors<dd>Cell array of factors.
+</dl></p><p>
+The function <a href="#decl_pnlmGetFactorsIntoVector">GetFactorsIntoVector</a> returns all factors attached to nodes. Several factors may be
+attached to one subset of nodes if the latter is common for a number of domains.
+</p>
+
+<hr><h4><a name="decl_pnlmGetModelDomain">GetModelDomain</a></h4>
+<p class="Blurb">Returns model domain.</p>
+<pre>
+md = GetModelDomain( grm );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>md<dd>Model domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmIsValid">IsValid</a></h4>
+<p class="Blurb">Checks validity of graphical model.</p>
+<pre>
+[ flag, descr ]=IsValid( grm );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>flag<dd>Flag of validity.
+<dt>descr<dd>Error message.
+</dl></p><p>
+The function <a href="#decl_pnlmIsValid">IsValid</a> checks the validity of a graphical model. Returns 1 if the model
+is valid, returns 0 otherwise.
+</p>
+
+<h3><a name="decl_pnlmClass_CGraphe">Class CStaticGraphicalModel</a></h3>
+
+<img align=center src="fig/stgrmodel.gif">
+
+<p>
+<tt>CStaticGraphicalModel</tt> is a superclass for two classes: <a href="#decl_pnlmClass_CBNet">CBNet</a> and See
+<a href="#decl_pnlmClass_CMNet">CMNet</a>.
+</p>
+<blockquote>
+    <b>Note.</b> No instances of this class can be created, as the class is abstract.
+</blockquote>
+
+
+
+<hr><h4><a name="decl_pnlmIsValidAsBaseForDynamicModel">IsValidAsBaseForDynamicModel</a></h4>
+<p class="Blurb">Checks validity of model for creation of dynamic model.</p>
+<pre>
+[ flag, descr ] = IsValidAsBaseForDynamicModel( grm );
+</pre><p><dl>
+Arguments
+<dt>grm<dd>Class object.
+<dt>descr<dd>Error message.
+<dt>flag<dd>Flag of validity.
+</dl></p><p>
+The function <a href="#decl_pnlmIsValidAsBaseForDynamicModel">IsValidAsBaseForDynamicModel</a> checks if the model is valid for the creation of a dynamic
+graphical model.
+</p>
+
+<h3><a name="decl_pnlmClass_CBNet">Class CBNet</a></h3>
+
+<img align=center src="fig/bnet.gif">
+
+<hr><h4><a name="decl_pnlmCBNetCreate">CBNetCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+BNet = CBNetCreate( numberOfNodes, nodeTypes, nodesAssociation, graph );
+</pre><p><dl>
+Arguments
+numberOfNodes Number of nodes.
+<dt>nodeTypes<dd>Cell array of node types.
+<dt>nodesAssociation<dd>Vector for nodes association with node types.
+<dt>graph<dd>Graph structure of the model.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCBNetCreateByModelDomain">CBNetCreateByModelDomain</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+CBNetCreateByModelDomain( graph, md );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Graph structure of the model.
+<dt>md<dd>Model domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCBNetCreateWithRandomMatrices">CBNetCreateWithRandomMatrices</a></h4>
+<p class="Blurb">Creates CBNet object with random matrices.</p>
+<pre>
+CBNetCreateWithRandomMatrices( graph, md );
+</pre><p><dl>
+Arguments
+<dt>graph<dd>Graph structure.
+<dt>md<dd>Model domain.
+</dl></p><p>
+The function <a href="#decl_pnlmCBNetCreateWithRandomMatrices">CBNetCreateWithRandomMatrices</a> creates a BNet object with dense random matrices.
+</p>
+
+<hr><h4><a name="decl_pnlmCBNetCopy">CBNetCopy</a></h4>
+<p class="Blurb">Creates new object by copying. </p>
+<pre>
+CBNetCopy( BNet );
+</pre><p><dl>
+Arguments
+<dt>BNet<dd>Class object to be copied.
+</dl></p><p>
+The function <a href="#decl_pnlmCBNetCopy">CBNetCopy</a> creates a new CBNet object by copying the source object.
+</p>
+
+<hr><h4><a name="decl_pnlmConvertToSparse">ConvertToSparse</a></h4>
+<p class="Blurb">Converts object with dense matrices into object with sparse matrices.</p>
+<pre>
+BNetSparce = ConvertToSparse( BNet );
+</pre><p><dl>
+Arguments
+<dt>BNet<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmConvertToSparse">ConvertToSparse</a> converts a CBNet object with dense matrices into a CBNet object
+with sparse matrices.
+</p>
+
+<hr><h4><a name="decl_pnlmConvertToDense">ConvertToDense</a></h4>
+<p class="Blurb">Converts object with sparse matrices into object with dense matrices.</p>
+<pre>
+BNetDense = ConvertToDense( BNet );
+</pre><p><dl>
+Arguments
+<dt>BNet<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmConvertToDense">ConvertToDense</a> converts a BNet object with sparse matrices into a BNet object
+with dense matrices.
+</p>
+
+<hr><h4><a name="decl_pnlmCreateTabularCPD">CreateTabularCPD</a></h4>
+<p class="Blurb">Creates tabular CPD. </p>
+<pre>
+CreateTabularCPD( BNet, childNodeNumber, matrixData );
+</pre><p><dl>
+Arguments
+<dt>BNet<dd>Class object.
+<dt>childNodeNumber<dd>Factor number.
+<dt>matrixData<dd>Matrix with data.
+</dl></p><p>
+The function <a href="#decl_pnlmCreateTabularCPD">CreateTabularCPD</a> creates a tabular CPD using given data.
+</p>
+
+<hr><h4><a name="decl_pnlmFindMixtureNodes">FindMixtureNodes</a></h4>
+<p class="Blurb">Finds numbers of mixture nodes.</p>
+<pre>
+mixNds = FindMixtureNodes( BNet );
+</pre><p><dl>
+Arguments
+<dt>BNet<dd>Class object.
+<dt>mixNds<dd>Vector of mixture nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmFindMixtureNodes">FindMixtureNodes</a> finds numbers of mixture nodes of a mixture Gaussian distribution.
+</p>
+
+<hr><h4><a name="decl_pnlmGenerateSamples">GenerateSamples</a></h4>
+<p class="Blurb">Generates random evidences for BNet given evidence.</p>
+<pre>
+evidences = GenerateSamples( BNet, nSamples, );
+</pre><p><dl>
+evidences = GenerateSamples( BNet, nSamples, ev );
+Arguments
+<dt>BNet<dd>Class object.
+<dt>evidences<dd>Cell array of evidences to be created.
+<dt>nSamples<dd>Number of samples.
+<dt>ev<dd>Given evidence.
+</dl></p><p>
+The function <a href="#decl_pnlmGenerateSamples">GenerateSamples</a> generates samples from a static graphical model.
+</p>
+
+
+<h3><a name="decl_pnlmClass_CMNet">Class CMNet</a></h3>
+
+<img align=center src="fig/mnet.gif">
+
+
+<hr><h4><a name="decl_pnlmCMNetCreate">CMNetCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+MNet = CMNetCreate( numberOfNodes, nodeTypes, nodesAssociation, cliques );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Class object.
+<dt>numberOfNodes<dd>Number of nodes in the model.
+<dt>nodeTypes<dd>Vector of node types.
+<dt>nodesAssociation<dd>Vector of assosiation of nodes with their types.
+<dt>cliques<dd>Cliques.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCMNetCreateByModelDomain">CMNetCreateByModelDomain</a></h4>
+<p class="Blurb">Creates class object by model domain.</p>
+<pre>
+MNet = CMNetCreateByModelDomain( cliques, MD );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Class object.
+<dt>cliques<dd>Cliques.
+<dt>MD<dd>Model domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCMNetCreateWithRandomMatrices">CMNetCreateWithRandomMatrices</a></h4>
+<p class="Blurb">Creates object with random matrices.</p>
+<pre>
+MNet = CMNetCreateWithRandomMatrices( cliques, MD );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Class object.
+<dt>cliques<dd>Cliques .
+<dt>MD<dd>Model domain.
+</dl></p><p>
+The function <a href="#decl_pnlmCMNetCreateWithRandomMatrices">CMNetCreateWithRandomMatrices</a> creates a class object with dense random matrices. Covariance
+matrices of the Gaussian distribution are matrix units.
+</p>
+
+<hr><h4><a name="decl_pnlmGetClique">GetClique</a></h4>
+<p class="Blurb">Returns clique nodes.</p>
+<pre>
+clq = GetClique( MNet, clqNum );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Markov network.
+<dt>clqNum<dd>Number of a clique.
+<dt>clq<dd>Vector of clique nodes.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCMNetConvertFromBNet">CMNetConvertFromBNet</a></h4>
+<p class="Blurb">Creates class object by converting input BNet . </p>
+<pre>
+MNet = CMNetConvertFromBNet( BNet );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Class object.
+<dt>BNet<dd>Bayesian network.
+</dl></p><p>
+The function <a href="#decl_pnlmCMNetConvertFromBNet">CMNetConvertFromBNet</a> converts the input BNet object into a MNet object.
+</p>
+
+<hr><h4><a name="decl_pnlmCMNetConvertFromBNetUsingEv">CMNetConvertFromBNetUsingEv</a></h4>
+<p class="Blurb">Creates object by converting input BNet using given evidence.</p>
+<pre>
+MNet = CMNetConvertFromBNetUsingEv( BNet, ev );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Class object.
+<dt>BNet<dd>Bayesian network.
+<dt>ev<dd>Evidence.
+</dl></p><p>
+The function <a href="#decl_pnlmCMNetConvertFromBNetUsingEv">CMNetConvertFromBNetUsingEv</a> converts the input BNet object into a MNet object using evidence.
+</p>
+
+<hr><h4><a name="decl_pnlmCMNetCopy">CMNetCopy</a></h4>
+<p class="Blurb">Creates object by copying input MNet . </p>
+<pre>
+MNetNew = CMNetCopy( MNet );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Markov network to be copied.
+<dt>MNetNew<dd>New object of the class.
+</dl></p><p>
+The function <a href="#decl_pnlmCMNetCopy">CMNetCopy</a> creates a new object of the class by copying the input MNet .
+</p>
+
+<hr><h4><a name="decl_pnlmCreateTabularPotential">CreateTabularPotential</a></h4>
+<p class="Blurb">Allocates factor and creates matrix.</p>
+<pre>
+CreateTabularPotential( MNet, domain, data );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Class object.
+<dt>domain<dd>Array of nodes.
+<dt>data<dd>Matrix with data.
+</dl></p><p>
+The function <a href="#decl_pnlmCreateTabularPotential">CreateTabularPotential</a> allocates a factor and creates a new matrix with the given data.
+</p>
+
+<hr><h4><a name="decl_pnlmComputeLogLik ">ComputeLogLik </a></h4>
+<p class="Blurb">Computes logarithm of likelihood. </p>
+<pre>
+LogLik = ComputeLogLik( MNet, ev );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Class object.
+<dt>ev<dd>Evidence.
+<dt>LogLik<dd>Logarithm of likelihood.
+</dl></p><p>
+The function <a href="#decl_pnlmComputeLogLik ">ComputeLogLik </a> computes the logarithm of likelihood.
+</p>
+
+<hr><h4><a name="decl_pnlmGetClqsNumsForNode">GetClqsNumsForNode</a></h4>
+<p class="Blurb">Specifies numbers of cliques with node.</p>
+<pre>
+clqs = GetClqsNumsForNode( MNet, node );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Class object.
+<dt>node<dd>Node number.
+<dt>clqs<dd>Vector of cliques that contain node.
+</dl></p><p>
+The function <a href="#decl_pnlmGetClqsNumsForNode">GetClqsNumsForNode</a> specifies numbers of cliques that contain a given node.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfCliques">GetNumberOfCliques</a></h4>
+<p class="Blurb">Returns number of cliques of model.</p>
+<pre>
+nClq = GetNumberOfCliques( MNet );
+</pre><p><dl>
+Arguments
+<dt>nClq<dd>Number of cliques.
+<dt>MNet<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGenerateSamples">GenerateSamples</a></h4>
+<p class="Blurb">Generates random evidence from MNet .</p>
+<pre>
+evidences = GenerateSamples( MNet, nSamples );
+</pre><p><dl>
+evidences = GenerateSamples( MNet, nSamples, ev );
+Arguments
+<dt>MNet<dd>Class object.
+<dt>evidences<dd>Cell array of evidences to be created.
+<dt>nSamples<dd>Number of samples.
+<dt>ev<dd>Given evidence.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CMRF2">Class CMRF2</a></h3>
+
+<img align=center src="fig/mnet.gif">
+
+<p>
+<a href="#decl_pnlmClass_CMNet">Class CMNet</a> is a superclass for class <tt>CMRF2</tt>, which represents a pairwise
+Markov network. Class <tt>CMRF2</tt> implements <tt>CMNet</tt> virtual functions, with objects
+whose cliques contain two nodes.
+</p>
+
+<hr><h4><a name="decl_pnlmCMRF2Create">CMRF2Create</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+MRF2 = CMRF2Create( numberOfNodes, nodeTypes, nodeAssociation, cliques );
+</pre><p><dl>
+Arguments
+<dt>MRF2<dd>Class object.
+<dt>cliques<dd>Cell array of vectors with clique nodes.
+<dt>numberOfNodes<dd>Number of nodes.
+<dt>nodeTypes<dd>Cell array of node types.
+<dt>nodeAssociation<dd>Vector of node association.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCMRF2CreateByModelDomain">CMRF2CreateByModelDomain</a></h4>
+<p class="Blurb">Creates class object using model domain.</p>
+<pre>
+MRF2 = CMRF2CreateByModelDoamin( cliques, MD );
+</pre><p><dl>
+Arguments
+<dt>MRF2<dd>Class object.
+<dt>cliques<dd>Cliques.
+<dt>MD<dd>Model domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCMRF2CreateWithRandomMatrices">CMRF2CreateWithRandomMatrices</a></h4>
+<p class="Blurb">Creates class object using random matrices.</p>
+<pre>
+MRF2 = CMRF2CreateWithRandomMatrices( cliques, MD );
+</pre><p><dl>
+Arguments
+<dt>MRF2<dd>Class object.
+<dt>cliques<dd>Cliques.
+<dt>MD<dd>Model domain.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CFactorGraphe">Class CFactorGraph</a></h3>
+
+<img align=center src="fig/fgraph.gif">
+
+
+<p>
+A <i>factor graph</i> is the graphical representation of a factorized distribution. All
+factors of the distribution are represented by factor-nodes, which are connected
+to variable-nodes of the factor domain. A factor graph is the resulting graph of
+the distribution.
+</p><p>
+Class <tt>CFactorGraph</tt> is a graphical model that consists of a set of factors. The
+set of factors has its probability distribution. All the factors are potentials.
+</p>
+
+<hr><h4><a name="decl_pnlmCFactorGraphCreate">CFactorGraphCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+fGraph = CFactorGraphCreate( MD, numFactors );
+</pre><p><dl>
+Arguments
+<dt>MD<dd>Model domain.
+numFactors Number of factors in the factor graph.
+</dl></p><p>
+The function <a href="#decl_pnlmCFactorGraphCreate">CFactorGraphCreate</a> creates a factor graph with several allocated factors.
+</p>
+
+<hr><h4><a name="decl_pnlmCFactorGraphCreateByFactors">CFactorGraphCreateByFactors</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+fGraph = CFactorGraphCreateByFactors( MD, f actors );
+</pre><p><dl>
+Arguments
+<dt>MD<dd>Model domain.
+<dt>factors<dd>CFactors object whose factors describe a factor graph object.
+</dl></p><p>
+The function <a href="#decl_pnlmCFactorGraphCreateByFactors">CFactorGraphCreateByFactors</a> creates a factor graph from all factors of the model domain.
+</p>
+
+<hr><h4><a name="decl_pnlmCFactorGraphCopy">CFactorGraphCopy</a></h4>
+<p class="Blurb">Creates replica of input object.</p>
+<pre>
+fGraph = CFactorGraphCopy( FG );
+</pre><p><dl>
+Arguments
+<dt>FG<dd>Input class object .
+<dt>fGraph<dd>New class object.
+</dl></p><p>
+The function <a href="#decl_pnlmCFactorGraphCopy">CFactorGraphCopy</a> creates a new CFactorGraph object by copying the input object.
+</p>
+
+<hr><h4><a name="decl_pnlmShrink">Shrink</a></h4>
+<p class="Blurb">Creates factor graph by shrinking all potentials of given factor. </p>
+<pre>
+fGraphNew = Shrink( fGraph, evidence );
+</pre><p><dl>
+Arguments
+<dt>fGraph<dd>Class object.
+<dt>evidence<dd>Given evidence.
+<dt>fGraphNew<dd>New object of the class.
+</dl></p><p>
+The function <a href="#decl_pnlmShrink">Shrink</a> creates a factor graph with given evidence by shrinking all the
+potentials of the given factor.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumFactorsAllocated">GetNumFactorsAllocated</a></h4>
+<p class="Blurb">Returns numbers of allocated factors.</p>
+<pre>
+nbrsFactors = GetNumFactorsAllocated();
+</pre><p><dl>
+Arguments
+<dt>nbrsFactors<dd>Vector of numbers of allocated factors.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCFactorGraphConvertFromBNet">CFactorGraphConvertFromBNet</a></h4>
+<p class="Blurb">Creates class object by converting BNet object.</p>
+<pre>
+fGraph = CFactorGraphConvertFromBNet( BNet );
+</pre><p><dl>
+Arguments
+<dt>BNet<dd>Object to be converted.
+</dl></p><p>
+The function <a href="#decl_pnlmCFactorGraphConvertFromBNet">CFactorGraphConvertFromBNet</a> creates a CFactorGraph object by converting the given BNet object.
+</p>
+
+<hr><h4><a name="decl_pnlmCFactorGraphConvertFromMNet">CFactorGraphConvertFromMNet</a></h4>
+<p class="Blurb">Creates class object by converting MNet object. </p>
+<pre>
+fGraph = CFactorGraphConvertFromMNet( MNet );
+</pre><p><dl>
+Arguments
+<dt>MNet<dd>Object to be copied.
+</dl></p><p>
+The function <a href="#decl_pnlmCFactorGraphConvertFromMNet">CFactorGraphConvertFromMNet</a> creates a CFactorGraph object by converting a MNet object.
+</p>
+
+<hr><h4><a name="decl_pnlmIsValid">IsValid</a></h4>
+<p class="Blurb">Checks validity of function.</p>
+<pre>
+[ flag, description ] = IsValid( MNet );
+</pre><p><dl>
+Arguments
+<dt>description<dd>Error message.
+</dl></p><p>
+The function <a href="#decl_pnlmIsValid">IsValid</a> checks if the object is valid.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNbrFactors">GetNbrFactors</a></h4>
+<p class="Blurb">Returns factors neighboring to given node.</p>
+<pre>
+nbrsFactors = GetNbrFactors( fGgaph, node );
+</pre><p><dl>
+Arguments
+<dt>fGgaph<dd>Factor graph.
+<dt>node<dd>Node .
+<dt>nbrsFactors<dd>Vector of numbers of the factors that neighbor with the node
+factors.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNbrFactors">GetNbrFactors</a> returns factors neighboring to the given node. A factor is called
+neighboring to the node if the latter lies in the factor domain.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumNbrFactors">GetNumNbrFactors</a></h4>
+<p class="Blurb">Returns number of factors neighboring with given node.</p>
+<pre>
+nf = GetNumNbrFactors( fGraph, node );
+</pre><p><dl>
+Arguments
+<dt>fGraph<dd>Factor graph.
+<dt>node<dd>Number of the node.
+<dt>nf<dd>Number of neighboring factors.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNumNbrFactors">GetNumNbrFactors</a> returns the number of factors neighboring with a given node.
+</p>
+
+<h3><a name="decl_pnlmClass_CJunctionTree">Class CJunctionTree</a></h3>
+
+<img align=center src="fig/jtree.gif">
+
+<p>
+This class represents the structure of a <i>Junction tree.</i> It is used in the
+Junction Tree Inference Engine for internal local computations. A class object
+is created on the creation of <tt>CTreeInfEngine.</tt>
+</p>
+
+<hr><h4><a name="decl_pnlmCJunctionTreeCreate">CJunctionTreeCreate</a></h4>
+<p class="Blurb">Creates Junction tree.</p>
+<pre>
+JTree = CJunctionTreeCreate( grModel );
+</pre><p><dl>
+JTree = CJunctionTreeCreate( grModel, subGrToConnect );
+Arguments
+<dt>grModel<dd>Graphical model from which the tree is to be constructed.
+<dt>subGrToConnect<dd>Subgraphs you want to appear in the tree.
+<dt>JTree<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCJunctionTreeCopy">CJunctionTreeCopy</a></h4>
+<p class="Blurb">Creates replica of input Junction tree.</p>
+<pre>
+JTreeNew = CJunctionTreeCopy( JTree );
+</pre><p><dl>
+Arguments
+<dt>JTree<dd>Class object to be copied.
+</dl></p><p>
+The function <a href="#decl_pnlmCJunctionTreeCopy">CJunctionTreeCopy</a> creates a class object through copying the input Junction tree.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNodePotential">GetNodePotential</a></h4>
+<p class="Blurb">Returns potential defined of Junction tree clique.</p>
+<pre>
+pot = GetNodePotential( JTree, nodeNum );
+</pre><p><dl>
+Arguments
+<dt>JTree<dd>Class object.
+<dt>nodeNum<dd>Number of the clique in the Junction tree.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNodePotential">GetNodePotential</a> returns the potential of a junction tree clique.
+</p>
+
+<hr><h4><a name="decl_pnlmGetSeparatorPotential">GetSeparatorPotential</a></h4>
+<p class="Blurb">Returns potential defined for separator between two cliques.</p>
+<pre>
+pot = GetSeparatorPotential( JTree, firstClqNum, secondClqNum );
+</pre><p><dl>
+Arguments
+<dt>JTree<dd>Class object.
+<dt>firstClqNum<dd>Number of the first clique.
+<dt>secondClqNum<dd>Number of the second clique.
+</dl></p><p>
+The function <a href="#decl_pnlmGetSeparatorPotential">GetSeparatorPotential</a> returns the potential of the separator between two cliques.
+</p>
+
+<hr><h4><a name="decl_pnlmInitCharge">InitCharge</a></h4>
+<p class="Blurb">Initializes charge for Junction tree. </p>
+<pre>
+InitCharge( JTree, g rModel, e vidence );
+</pre><p><dl>
+InitCharge( JTree, g rModel, e vidence, sumOnMixtureNode );
+Arguments
+<dt>JTree<dd>Class object.
+<dt>grModel<dd>Graphical model.
+<dt>evidence<dd>Evidence.
+<dt>sumOnMixtureNode<dd>Flag showing if the distribution for the mixture node is to be
+computed during inference.
+</dl></p><p>
+The function <a href="#decl_pnlmInitCharge">InitCharge</a> initializes charge for a Junction tree. The Junction tree charge
+comprises both potentials for cliques and potentials for separators.
+</p>
+
+<hr><h4><a name="decl_pnlmClearCharge">ClearCharge</a></h4>
+<p class="Blurb">Clears charge.</p>
+<pre>
+ClearCharge( JTree );
+</pre><p><dl>
+Arguments:
+<dt>JTree<dd>Class object.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CDynamicGraphicalModel">ClassCDynamicGraphicalModel</a></h3>
+
+<img align=center src="fig/dgrmodel.gif">
+
+<p>
+<tt>CDynamicGraphicalModel</tt> is a superclass for all classes that work with dynamic
+graphical models.
+</p>
+
+<hr><h4><a name="decl_pnlmCreatePriorSliceGrModel">CreatePriorSliceGrModel</a></h4>
+<p class="Blurb">Creates static graphical model.</p>
+<pre>
+grModel = CreatePriorSliceGrModel( dModel );
+</pre><p><dl>
+Arguments
+<dt>dModel<dd>Class object.
+<dt>grModel<dd>Static graphical model.
+</dl></p><p>
+The function <a href="#decl_pnlmCreatePriorSliceGrModel">CreatePriorSliceGrModel</a> creates a static graphical model corresponding to the prior slice
+of the dynamic graphical model.
+</p>
+
+<hr><h4><a name="decl_pnlmUnrollDynamicModel">UnrollDynamicModel</a></h4>
+<p class="Blurb">Creates static graphical model by unrolling dynamic graphical model.</p>
+<pre>
+grModel = UnrollDynamicModel( dModel, numOfSlices );
+</pre><p><dl>
+Arguments
+<dt>dModel<dd>Class object .
+<dt>numOfSlices<dd>Number of slices.
+<dt>grModel<dd>Static graphical model.
+</dl></p><p>
+The function <a href="#decl_pnlmUnrollDynamicModel">UnrollDynamicModel</a> unrolls a dynamic graphical model as a number of slices and thus
+constructs a static graphical model.
+</p>
+
+<hr><h4><a name="decl_pnlmGetInterfaceNodes">GetInterfaceNodes</a></h4>
+<p class="Blurb">Returns numbers of interface nodes.</p>
+<pre>
+interfaceNds = GetInterfaceNodes( dModel );
+</pre><p><dl>
+Arguments
+<dt>dModel<dd>Class object .
+<dt>interfaceNds<dd>Array of interface nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmGetInterfaceNodes">GetInterfaceNodes</a> returns numbers of interface nodes.
+</p>
+
+<hr><h4><a name="decl_pnlmGetStaticModel">GetStaticModel</a></h4>
+<p class="Blurb">Returns static graphical model.</p>
+<pre>
+grModel = GetStaticModel( dModel );
+</pre><p><dl>
+Arguments
+<dt>dModel<dd>Class object .
+<dt>grModel<dd>Static graphical model.
+</dl></p><p>
+This member function <a href="#decl_pnlmGetStaticModel">GetStaticModel</a> returns the static graphical model which was used for the
+creation of a dynamic graphical model.
+</p>
+
+<h3><a name="decl_pnlmClass_CDBN">Class CDBN</a></h3>
+
+<img align=center src="fig/dbn.gif">
+
+<p>
+Class <tt>CDBN</tt> is a subclass <a href="#decl_pnlmClass_CDynamicGraphicalModel">CDynamicGraphicalModel</a>. It is intended for
+the implementation of virtual functions of the parent class.
+</p>
+<hr><h4><a name="decl_pnlmCDBNCreate">CDBNCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+DBN = CDBNCreate( grModel );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>BNet that represents a DBN unrolled for first two time-slices.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGenerateSamples">GenerateSamples</a></h4>
+<p class="Blurb">Generates samples from DBN.</p>
+<pre>
+evidences = GenerateSamples( DBN, nSlices ) ;
+</pre><p><dl>
+Arguments
+<dt>DBN<dd>Class object.
+<dt>nSlices<dd>Vector of the number of slices for which evidence is generated.
+<dt>evidences<dd>Cell array of cell arrays of generated evidence.
+</dl></p><p>
+The function <a href="#decl_pnlmGenerateSamples">GenerateSamples</a> generates samples from a dynamic graphical model.
+</p>
+
+<h2><a name="ref_manFactors">Factors</a></h2>
+
+<img align=center src="fig/allfactors.gif">
+
+
+<h3><a name="decl_pnlmClass_CFactor">Class CFactor</a></h3>
+<img align=center src="fig/factor.gif">
+
+<p>
+This class stores joint probability distribution for a <a href="#decl_pnlmClass_CPotential">CPotential</a> object and
+conditional distribution for a <a href="#decl_pnlmClass_CCPDl">CCPD</a> object.
+</p>
+
+
+
+
+
+<hr><h4><a name="decl_pnlmAttachMatrix">AttachMatrix</a></h4>
+<p class="Blurb">Attaches matrix to factor.</p>
+<pre>
+AttachMatrix( factor, matrix, mType );
+AttachMatrix( factor, matrix, mType, matrixNum );
+AttachMatrix( factor, matrix, mType, matrixNum, discrParentValuesIndices );
+</pre><p><dl>
+Arguments
+<dt>matrix<dd>CMultiDMatrix object.
+<dt>mType<dd>Matrix type.
+<dt>MatrixNum<dd>Number of the matrix, if several matrices of a given type are
+associated with the factor. The argument is omitted, if only one matrix is
+involved.
+<dt>discrParentValuesIndices<dd>Vector of values of discrete parents.
+</dl></p><p>
+The function <a href="#decl_pnlmAttachMatrix">AttachMatrix</a> enters data into a matrix and associates the matrix with the
+factor.
+</p>
+
+
+
+
+<hr><h4><a name="decl_pnlmGetFactorType">GetFactorType</a></h4>
+<p class="Blurb">Returns factor type.</p>
+<pre>
+factorType = GetFactorType( factor )
+</pre><p><dl>
+<dt>factor<dd>Class object.
+<dt>factorType<dd>Type of factor.
+</dl></p><p>
+The function <a href="#decl_pnlmGetFactorType">GetFactorType</a> returns the type of an input factor. It may be either ptFactor or
+ptCPD.
+</p>
+
+<hr><h4><a name="decl_pnlmGetDistributionType">GetDistributionType</a></h4>
+<p class="Blurb">Returns distribution type.</p>
+<pre>
+distrType = GetDistributionType( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>distrType<dd>Type of distribution.
+</dl></p><p>
+The function <a href="#decl_pnlmGetDistributionType">GetDistributionType</a> returns the type of distribution. It may be dtTabular, dtGaussian
+or dtCondGaussian .
+</p>
+
+<hr><h4><a name="decl_pnlmGetDomain">GetDomain</a></h4>
+<p class="Blurb">Returns factor domain.</p>
+<pre>
+domain = GetDomain( factor, domainSize, domain );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>domainSize<dd>Vector of the domain size.
+<dt>domain<dd>Vector of numbers that specify serial numbers of the graphical model
+<dt>nodes<dd>associated with the factor domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetDomainSize">GetDomainSize</a></h4>
+<p class="Blurb">Returns size of factor domain.</p>
+<pre>
+domainSize = GetDomainSize( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>domainSize<dd>Vector of the domain size.
+</dl></p><p>
+The function <a href="#decl_pnlmGetDomainSize">GetDomainSize</a> returns the number of nodes associated with the factor.
+</p>
+
+<hr><h4><a name="decl_pnlmGetMatrix">GetMatrix</a></h4>
+<p class="Blurb">Returns matrix attached to factor.</p>
+<pre>
+matrix = GetMatrix( factor, mType );
+matrix = GetMatrix( factor, mType, matrixNum );
+matrix = GetMatrix( factor, mType, matrixNum, iscrParentValuesIndices );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>mType<dd>Type of matrix.
+<dt>matrixNum<dd>Number of matrix. The agrument is used when there are several matrices
+of a given type. If there is only one matrix of a given type, the argument is
+omitted.
+<dt>discrParentValuesIndices<dd>Vector of values of discrete parents.
+</dl></p><p>
+The function <a href="#decl_pnlmGetMatrix">GetMatrix</a> returns the matrix by matrix type if the matrix of this type has
+been attached to the factor. Matrix may be of the following types: matTable,
+matMean, matCov, matWeights, math, and matK .
+</p>
+
+<hr><h4><a name="decl_pnlmIsValid">IsValid</a></h4>
+<p class="Blurb">Checks factor validity.</p>
+<pre>
+[ flag, discription ] =IsValid( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>discription<dd>Error message.
+</dl></p><p>
+The function <a href="#decl_pnlmIsValid">IsValid</a> checks martix validity.The function returns 1 if the matrices are
+allocated, returns 0 otherwise.
+</p>
+
+<hr><h4><a name="decl_pnlmIsFactorsDistribFunEqual">IsFactorsDistribFunEqual</a></h4>
+<p class="Blurb">Compares distributions.</p>
+<pre>
+flag = IsFactorsDistribFunEqual( factor, factorToComp, eps ) const;
+flag = IsFactorsDistribFunEqual( factor, factorToComp, eps, withCoeff );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>factorToComp<dd>Factor for comparison.
+<dt>eps<dd>Accuracy of comparison.
+<dt>withCoeff<dd>Flag of the comparison type. To compare normalizing constants for
+Gaussian and Conditional Gaussian distribution, set the flag to 0.
+</dl></p><p>
+The function <a href="#decl_pnlmIsFactorsDistribFunEqual">IsFactorsDistribFunEqual</a> compares distributions. The function returns 1, if the factor
+distributions are of the same size, type and have the same floating point
+matrices to represent them.
+</p>
+
+<hr><h4><a name="decl_pnlmTieDistribFun">TieDistribFun</a></h4>
+<p class="Blurb">Assignes input factor distribution to object.</p>
+<pre>
+TieDistribFun( factor, factorToTie );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>factorToTie<dd>Factor distribution to be assigned.
+</dl></p><p>
+The function <a href="#decl_pnlmTieDistribFun">TieDistribFun</a> assignes a distribution to an object only if both factors are of
+the same type. If the factors are of different types, the function throws an
+exception.
+</p>
+
+<hr><h4><a name="decl_pnlmIsDistributionSpecific">IsDistributionSpecific</a></h4>
+<p class="Blurb">Checks whether distribution is specific.</p>
+<pre>
+flag = IsDistributionSpecific( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmIsDistributionSpecific">IsDistributionSpecific</a> checks whether a distribution is specific or not and returns:
+0 - the distribution is full (Tabular, Gaussian or Conditional Gaussian,
+non-delta, non-uniform, non-mixed, invalid. If the distribution is invalid, call
+See IsValid function to check the status).
+1 - the distribution is uniform ( has no attached matrices ). A special flag
+shows that the distribution is uniform.
+2 - the distribution is a delta function ( has only a mean matrix) To check if
+the distribution is valid, call See IsValid function.
+3 - the distribution is mixed ( product of the multiplication of a distribution
+by a delta function in some dimensions ).
+</p>
+
+<hr><h4><a name="decl_pnlmGenerateSample">GenerateSample</a></h4>
+<p class="Blurb">Generates sample from factor.</p>
+<pre>
+evidence = GenerateSample( factor, maximize );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>evidences<dd>Generated evidence.
+<dt>maximize<dd>Flag of maximization.
+</dl></p><p>
+The function <a href="#decl_pnlmGenerateSample">GenerateSample</a> generates a sample from the factor using the current evidence
+data.
+</p>
+
+<hr><h4><a name="decl_pnlmCFactorCopyWithNewDomain">CFactorCopyWithNewDomain</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+factorNew = CFactorCopyWithNewDomain( factor, domain, modelDomain );
+factorNew = CFactorCopyWithNewDomain( factor, domain, modelDomain, obsIndices );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>domain<dd>Node numbers in the domain.
+<dt>modelDomain<dd>New model domain.
+<dt>obsIndices<dd>Vector of indices of the observed nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmCFactorCopyWithNewDomain">CFactorCopyWithNewDomain</a> creates a class object through copying the source class object and
+changing its domain.
+</p>
+
+<hr><h4><a name="decl_pnlmClone">Clone</a></h4>
+<p class="Blurb">Creates replica of object.</p>
+<pre>
+factorNew = Clone( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Source class object.
+<dt>factorNew<dd>New class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCloneWithSharedMartices">CloneWithSharedMartices</a></h4>
+<p class="Blurb">Creates replica of factor.</p>
+<pre>
+factorNew = CloneWithSharedMatrices( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Source class object.
+<dt>factorNew<dd>New class object.
+</dl></p><p>
+The function <a href="#decl_pnlmCloneWithSharedMartices">CloneWithSharedMartices</a> creates a class object so that the new factor shares its matrices
+with the source factor.
+</p>
+
+<hr><h4><a name="decl_pnlmCreateAllNecessaryMatrices">CreateAllNecessaryMatrices</a></h4>
+<p class="Blurb">Creates matrices necessary to make factor valid.</p>
+<pre>
+CreateAllNecessaryMatrices( factor, typeOfMatrices );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>typeOfMatrices<dd>Flag of the generation type. For random matrices the flag equals
+to 1.
+</dl></p><p>
+The function <a href="#decl_pnlmCreateAllNecessaryMatrices">CreateAllNecessaryMatrices</a> creates matrices that are needed to make a factor valid.
+Covariance matrix for the Gaussian distribution is unitary.
+</p>
+
+<hr><h4><a name="decl_pnlmChangeOwnerToGraphicalModel">ChangeOwnerToGraphicalModel</a></h4>
+<p class="Blurb">Releases model domain from factor.</p>
+<pre>
+ChangeOwnerToGraphicalModel();
+</pre><p><dl>
+</dl></p>
+
+<hr><h4><a name="decl_pnlmIsOwnedByModelDomain">IsOwnedByModelDomain</a></h4>
+<p class="Blurb">Checks if factor is owner of model domain.</p>
+<pre>
+flag = IsOwnedByModelDomain();
+</pre><p><dl>
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetModelDomain">GetModelDomain</a></h4>
+<p class="Blurb">Returns model domain.</p>
+<pre>
+md = GetModelDomain( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>md<dd>Model domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmConvertToSparse">ConvertToSparse</a></h4>
+<p class="Blurb">Converts factor distribution with dense matrices into distribution function with </p>
+sparce matrices.
+<pre>
+ConvertToSparse( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmConvertToSparse">ConvertToSparse</a> converts a factor distribution function with dense matrices into a
+factor distribution function with sparse matrices.
+</p>
+
+<hr><h4><a name="decl_pnlmConvertToDense">ConvertToDense</a></h4>
+<p class="Blurb">Converts factor distribution with sparce matrices into distribution with dense </p>
+<pre>matrices.
+
+ConvertToDense( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmConvertToDense">ConvertToDense</a> converts a factor distribution function with sparse matrices into
+a factor distribution function with dense matrices.
+</p>
+
+<hr><h4><a name="decl_pnlmIsSparse">IsSparse</a></h4>
+<p class="Blurb">Checks if distribution matrices are sparse.</p>
+<pre>
+flag = IsSparse( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>flag<dd>Flag of status.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmIsDense">IsDense</a></h4>
+<p class="Blurb">Checks if distribution matrices are dense.</p>
+<pre>
+flag = IsDense( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>flag<dd>Flag of status.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetObsPositions ">GetObsPositions </a></h4>
+<p class="Blurb">Returns observed positions of domain. </p>
+<pre>
+obsPos = GetObsPositions( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>obsPos<dd>Vector of observed positions in the domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmMakeUnitFunction">MakeUnitFunction</a></h4>
+<p class="Blurb">Transforms distribution function into unit function distribution.</p>
+<pre>
+MakeUnitFunction( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmConvertStatisticToPot">ConvertStatisticToPot</a></h4>
+<p class="Blurb">Creates potential using statistical data of distribution function.</p>
+<pre>
+potential = ConvertStatisticToPot( factor, numOfSamples );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>numOfSamples<dd>Number of samples.
+<dt>potential<dd>Potential.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmUpdateStatisticsEM">UpdateStatisticsEM</a></h4>
+<p class="Blurb">Collects statistical data.</p>
+<pre>
+UpdateStatisticsEM( factor, infData );
+UpdateStatisticsEM( factor, infData, evidence );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>infData<dd>Inference result.
+<dt>evidence<dd>CEvidence object.
+</dl></p><p>
+The function <a href="#decl_pnlmUpdateStatisticsEM">UpdateStatisticsEM</a> updates statistical data.
+</p>
+
+<hr><h4><a name="decl_pnlmUpdateStatisticsML">UpdateStatisticsML</a></h4>
+<p class="Blurb">Collects statistical data.</p>
+<pre>
+StatisticalDataML( factor, evidences );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>evidences<dd>Cell array of evidences.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmSetStatistics">SetStatistics</a></h4>
+<p class="Blurb">Sets statistical data.</p>
+<pre>
+SetStatistics( factor, mat, matrixType );
+SetStatistics( factor, mat, matrixType, parentsComb );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>mat<dd>Matrix with statistical data.
+<dt>matrixType<dd>Type of matrix.
+<dt>parentsComb<dd>Combination of discrete parents .
+</dl></p><p>
+The function <a href="#decl_pnlmSetStatistics">SetStatistics</a> sets statistical data for learning procedures.
+</p>
+
+<hr><h4><a name="decl_pnlmProcessingStatisticalData">ProcessingStatisticalData</a></h4>
+<p class="Blurb">Updates factor distribution function after collecting statistical data. </p>
+<pre>
+ProcessingStatisticalData( factor, numEvidences );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>numEvidences<dd>Number of evidences.
+</dl></p><p>
+The function <a href="#decl_pnlmProcessingStatisticalData">ProcessingStatisticalData</a> performs factor estimation and updates a factor distribution
+function with newly acquired statistical data.
+</p>
+
+<hr><h4><a name="decl_pnlmGetLogLik">GetLogLik</a></h4>
+<p class="Blurb">Calculates likelihood of input evidence.</p>
+<pre>
+logLik = GetLogLik( factor, e v );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>ev<dd>Evidence.
+<dt>logLik<dd>Logarithm of likelihood.
+</dl></p><p>
+The function <a href="#decl_pnlmGetLogLik">GetLogLik</a> returns the logarithm of likelihood of the input data.
+</p>
+
+<hr><h4><a name="decl_pnlmAreThereAnyObsPositions">AreThereAnyObsPositions</a></h4>
+<p class="Blurb">Checks if factor has observed nodes.</p>
+<pre>
+flag = AreThereAnyObsPositions( factor );
+</pre><p><dl>
+Arguments
+<dt>factor<dd>Class object.
+<dt>flag<dd>Flag of observed positions.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CCPD">Class CCPD</a></h3>
+
+<img align=center src="fig/cpd.gif">
+
+
+<hr><h4><a name="decl_pnlmConvertToPotential">ConvertToPotential</a></h4>
+<p class="Blurb">Creates CPotential object by converting class object.</p>
+<pre>
+potential = ConvertToPotential( CPD );
+</pre><p><dl>
+Arguments
+<dt>CPD<dd>Class object.
+<dt>potential<dd>Potential.
+</dl></p><p>
+The function <a href="#decl_pnlmConvertToPotential">ConvertToPotential</a> converts a <tt>CCPD</tt> object into a <tt>CPotential</tt> object and returns
+<tt>CPotential</tt> object.
+</p>
+
+<hr><h4><a name="decl_pnlmConvertWithEvidenceToPotential">ConvertWithEvidenceToPotential</a></h4>
+<p class="Blurb">Converts CPD to CPotential using evidence.</p>
+<pre>
+pot = ConvertWithEvidenceToPotential( CPD, e v );
+pot = ConvertWithEvidenceToPotential( CPD, e v, flagSumOnMixtureNode );
+</pre><p><dl>
+Arguments
+<dt>CPD<dd>Class object.
+<dt>ev<dd>Given evidence.
+<dt>flagSumOnMixtureNode<dd>Flag of mixture node addition.
+</dl></p><p>
+The function <a href="#decl_pnlmConvertWithEvidenceToPotential">ConvertWithEvidenceToPotential</a> converts a CCPD object to a CPotential object using evidence. The function can change the distribution type of a CPD, unlike the combination of
+See ConvertToPotential and See ShrinkObserved .
+</p>
+
+<hr><h4><a name="decl_pnlmNormalizeCPD">NormalizeCPD</a></h4>
+<p class="Blurb">Normalizes CPD . </p>
+<pre>
+NormalizeCPD( CPD );
+</pre><p><dl>
+</dl></p>
+
+
+<h3><a name="decl_pnlmClass_CTabularCPD">Class CTabularCPD</a></h3>
+
+<img align=center src="fig/tcpd.gif">
+
+
+<hr><h4><a name="decl_pnlmCTabularCPDCreate">CTabularCPDCreate</a></h4>
+<p class="Blurb">Returns class object.</p>
+<pre>
+tCPD = CTabularCPDCreate( MD, domain );
+tCPD = CTabularCPDCreate( MD, domain, matrix );
+</pre><p><dl>
+Arguments
+<dt>domain<dd>Array of numbers of domain nodes.
+<dt>matrix<dd>Matrix with data.
+<dt>MD<dd>Model domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCTabularCPDCopy">CTabularCPDCopy</a></h4>
+<p class="Blurb">Creates a replica of input object.</p>
+<pre>
+tCPDNew = CTabularCPDCopy( tCPD );
+</pre><p><dl>
+Arguments
+<dt>tCPD<dd>Source class object.
+<dt>tCPDNew<dd>New class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCreateUnitF">CreateUnitF</a></h4>
+<p class="Blurb">Creates CPD as unit function.</p>
+<pre>
+tCPD = CTabularCPDCreateUnitF( domain, MD );
+</pre><p><dl>
+Arguments
+<dt>domain<dd>Vector of numbers of domain nodes.
+<dt>MD<dd>Model domain.
+<dt>tCPD<dd>Tabular CPD .
+</dl></p><p>
+The function <a href="#decl_pnlmCreateUnitF">CreateUnitF</a> creates a CPD that becomes a unit potential when converted to a
+CPotential object.
+</p>
+
+
+<h3><a name="decl_pnlmClass_CGaussianCPD">Class CGaussianCPD</a></h3>
+
+<img align=center src="fig/gcpd.gif">
+
+<hr><h4><a name="decl_pnlmCGaussianCPDCreate">CGaussianCPDCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+gCPD = CGaussianCPDCreate( domain, MD );
+</pre><p><dl>
+Arguments
+<dt>domain<dd>Vector of numbers of domain nodes.
+<dt>MD<dd>Model domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCGaussianCPDCreateUnitF">CGaussianCPDCreateUnitF</a></h4>
+<p class="Blurb">Creates CPD as unit function.</p>
+<pre>
+gCPD = CGaussianCPDCreateUnitF( domain, MD );
+</pre><p><dl>
+Arguments
+<dt>domain<dd>Vector of domain nodes.
+<dt>MD<dd>Model domain.
+</dl></p><p>
+The function <a href="#decl_pnlmCGaussianCPDCreateUnitF">CGaussianCPDCreateUnitF</a> creates a CPD that becomes a unit potential when converted to a
+CPotential object.
+</p>
+
+<hr><h4><a name="decl_pnlmCGaussianCPDCopy">CGaussianCPDCopy</a></h4>
+<p class="Blurb">Creates replica of input object.</p>
+<pre>
+gCPDNew = CGaussianCPDCopy( gCPD );
+</pre><p><dl>
+Arguments
+<dt>gCPD<dd>Source class object.
+<dt>gCPDNew<dd>New class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmAllocDistribution">AllocDistribution</a></h4>
+<p class="Blurb">Allocates Gaussian distribution on Gaussian child node.</p>
+<pre>
+AllocDistribution( gCPD, mean, cov, normCoeff, weights, parentCombination );
+</pre><p><dl>
+Arguments
+<dt>gCPD<dd>Class object.
+<dt>mean<dd>Mean matrix.
+<dt>cov<dd>Covariance matrix. This argument is entered rowwise.
+<dt>normCoeff<dd>Value of normalization constant.
+<dt>weights<dd>Cell array of weight matrices.
+<dt>parentCombination<dd>Vector of values of discrete parents.
+</dl></p><p>
+The function <a href="#decl_pnlmAllocDistribution">AllocDistribution</a> allocates a Gaussian distribution to a class object for a given
+combination of discrete parents.
+</p>
+
+<hr><h4><a name="decl_pnlmSetCoefficient">SetCoefficient</a></h4>
+<p class="Blurb">Sets normalization constant to Gaussian CPD object.</p>
+<pre>
+SetCoefficient( gCPD, coeff );
+SetCoefficient( gCPD, coeff, parentCombination );
+</pre><p><dl>
+Arguments
+<dt>gCPD<dd>Class object.
+<dt>coeff<dd>Float value of normalization constant.
+<dt>parentCombination<dd>Vector of values of discrete parents.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetCoefficient">GetCoefficient</a></h4>
+<p class="Blurb">Obtains value of normalization constant.</p>
+<pre>
+coeff = GetCoefficient( gCPD );
+coeff = GetCoefficient( gCPD, parentCombination );
+</pre><p><dl>
+Arguments
+<dt>gCPD<dd>Class object.
+<dt>coeff<dd>Float value of normalization constant.
+<dt>parentCombination<dd>Vector of values of discrete parents.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CMixtureGaussianCPDD">Class CMixtureGaussianCPD</a></h3>
+
+<img align=center src="fig/mgcpd.gif">
+
+
+<hr><h4><a name="decl_pnlmCMixtureGaussianCPDCreate">CMixtureGaussianCPDCreate</a></h4>
+<p class="Blurb">Returns class object.</p>
+<pre>
+mgCPD = CMixtureGaussianCPDCreate( domain, MD, sumCoeff );
+</pre><p><dl>
+Arguments
+<dt>domain<dd>Vector of numbers of domain nodes.
+<dt>MD<dd>Model domain.
+<dt>sumCoeff<dd>Mixture coefficient.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCMixtureGaussianCPDCopy">CMixtureGaussianCPDCopy</a></h4>
+<p class="Blurb">Creates replica of class object.</p>
+<pre>
+mgCPDNew = CMixtureGaussianCPDCopy( mgCPD );
+</pre><p><dl>
+Arguments
+<dt>mgCPD<dd>Source class object.
+<dt>mgCPDNew<dd>New class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmAllocDistributionVec">AllocDistributionVec</a></h4>
+<p class="Blurb">Allocates mixture Gaussian distribution.</p>
+<pre>
+AllocDistributionVec( mgCPD, mean, cov, normCoeff, weights, parentCombination
+);
+</pre><p><dl>
+Arguments
+<dt>mgCPD<dd>Class object.
+<dt>mean<dd>Mean matrix.
+<dt>cov<dd>Covariance matrix. The argument is entered rowwise.
+<dt>normCoeff<dd>Value of normalization constant.
+<dt>weights<dd>Cell array of weight matrices.
+<dt>parentCombination<dd>Vector of values of discrete parents.
+</dl></p><p>
+The function <a href="#decl_pnlmAllocDistributionVec">AllocDistributionVec</a> allocates a mixture Gaussian distribution to the given discrete
+parent combination.
+</p>
+
+<hr><h4><a name="decl_pnlmSetCoefficientVec">SetCoefficientVec</a></h4>
+<p class="Blurb">Sets normalization constant to mixture Gaussian CPD .</p>
+<pre>
+SetCoefficientVec( mgCPD, coeff, parentCombination );
+</pre><p><dl>
+Arguments
+<dt>mgCPD<dd>Class object.
+<dt>coeff<dd>Value of the normalization constant.
+<dt>parentCombination<dd>Vector of values of discrete parents.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetCoefficientVec">GetCoefficientVec</a></h4>
+<p class="Blurb">Obtains value of normalization constant.</p>
+<pre>
+coeff = GetCoefficientVec( mgCPD, parentCombination );
+</pre><p><dl>
+Arguments
+<dt>mgCPD<dd>Class object.
+<dt>parentCombination<dd>Vector of values of discrete parents.
+<dt>coeff<dd>Value of the normalization constant.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetProbabilities">GetProbabilities</a></h4>
+<p class="Blurb">Returns vector of probabilities of mixture node.</p>
+<pre>
+probabilities = GetProbabilities( mgCPD );
+</pre><p><dl>
+Arguments
+<dt>mgCPD<dd>Class object.
+<dt>probabilities<dd>Vector of probabilities.
+</dl></p><p>
+The function <a href="#decl_pnlmGetProbabilities">GetProbabilities</a> returns the vector of probabilities of a mixture node.
+</p>
+
+<h3><a name="decl_pnlmClass_CPotential">Class CPotential</a></h3>
+
+<img align=center src="fig/pot.gif">
+
+<p>
+Class <tt>CPotential</tt> implements basic operations with factors. To perform an
+operation with a <a href="#decl_pnlmClass_CCPD">CCPD</a> object, first use See ConvertToPotential
+function to generate a potential and then call the functions you need.
+You can perform the following operations with a <tt>CPotential</tt> object:
+<dl>
+<dd>multiplication;
+<dd>division;
+<dd>normalization;
+<dd>marginalization;
+<dd>shrinking if factor nodes are observed;
+<dd>expansion to the initial size.
+</dl>
+
+<hr><h4><a name="decl_pnlmMultiply">Multiply</a></h4>
+<p class="Blurb">Multiplies two potentials and returns resulting potential.</p>
+<pre>
+resPot = Multiply( pot, pot1 );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Multiplied class object.
+<dt>pot1<dd>Multiplier.
+<dt>resPot<dd>Resulting potential.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmMultiplyInSelf">MultiplyInSelf</a></h4>
+<p class="Blurb">Multiplies two potentials and saves the result in source object.</p>
+<pre>
+MultiplyInSelf( pot, smallPotential );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Muliplied class object.
+<dt>pot1<dd>Multiplier.
+<dt>smallPotential<dd>Right-side multiplier.
+</dl></p><p>
+The function <a href="#decl_pnlmMultiplyInSelf">MultiplyInSelf</a> multipies the source potential by a multiplier and saves the
+resulting potential in the source object.
+</p>
+
+<hr><h4><a name="decl_pnlmDivideInSelf">DivideInSelf</a></h4>
+<p class="Blurb">Divides class object and saves result in it.</p>
+<pre>
+resPot = DivideInSelf( pot, smallPotential );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Class object.
+<dt>smallPotential<dd>Divisor.
+<dt>resPot<dd>Resulting potential.
+</dl></p><p>
+The function <a href="#decl_pnlmDivideInSelf">DivideInSelf</a> performs division of the input object by another object of the
+class and saves the result in the input object without creating a new class
+object.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNormalized">GetNormalized</a></h4>
+<p class="Blurb">Creates new normalized potential.</p>
+<pre>
+resPot = GetNormalized( pot );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Class object.
+<dt>resPot<dd>Resulting potential.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNormalized">GetNormalized</a> creates a normalized class object with the domain of the source
+object.
+</p>
+
+<hr><h4><a name="decl_pnlmNormalize">Normalize</a></h4>
+<p class="Blurb">Normalizes class object.</p>
+<pre>
+Normalize( pot );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmMarginalize">Marginalize</a></h4>
+<p class="Blurb">Marginalizes object.</p>
+<pre>
+resPot = Marginalize( pot, smallDom );
+resPot = Marginalize( pot, smallDom, maximize );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Class object.
+<dt>smallDom<dd>Vector of numbers of nodes that form the domain of the marginalized
+object.
+<dt>maximize<dd>Flag of the marginalization type.
+For discrete variables:
+0 stands for simple addition (default);
+1 stands for finding maximum value.
+For continuous variables:
+both are integration operations.
+</dl></p><p>
+The function <a href="#decl_pnlmMarginalize">Marginalize</a> creates a new object either through addition or through
+integration of the source object with nodes that do not belong to the domain of
+the new object. The domain of the new object should be a subset of the source
+object domain.
+</p>
+
+<hr><h4><a name="decl_pnlmShrinkObservedNodes">ShrinkObservedNodes</a></h4>
+<p class="Blurb">Creates class object with different observed nodes.</p>
+<pre>
+resPot = ShrinkObservedNodes( pot, Ev );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Class object.
+<dt>Ev<dd>Given evidence.
+</dl></p><p>
+The function <a href="#decl_pnlmShrinkObservedNodes">ShrinkObservedNodes</a> creates a new class object whose domain is a replica of the source
+object domain while the observed node values are different from their
+counterparts in the source object. The joint probability distribution of the new
+factor changes in accordance with the values of its observed nodes.
+</p>
+
+<hr><h4><a name="decl_pnlmExpandObservedNodes">ExpandObservedNodes</a></h4>
+<p class="Blurb">Expands dimensions corresponding to observed nodes.</p>
+<pre>
+resPot = ExpandObservedNodes( pot, ev, updateInCanonical ) ;
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Class object.
+<dt>ev<dd>Given evidence.
+<dt>updateInCanonical<dd>Flag of distribution, set to 1 by default.
+</dl></p><p>
+The function <a href="#decl_pnlmExpandObservedNodes">ExpandObservedNodes</a> returns delta functions that served as multipliers for the input
+Gaussian distribution.
+</p>
+
+<hr><h4><a name="decl_pnlmDivide">Divide</a></h4>
+<p class="Blurb">Divides factor.</p>
+<pre>
+resPot = Divide( pot, otherPot );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Class object.
+<dt>otherPot<dd>Divisor potential.
+</dl></p><p>
+The function <a href="#decl_pnlmDivide">Divide</a> creates a new object by division of the input factor.
+</p>
+
+<hr><h4><a name="decl_pnlmMarginalizeInPlace">MarginalizeInPlace</a></h4>
+<p class="Blurb">Marginalizes input object.</p>
+<pre>
+resPot = MarginalizeInPlace( pot, o ldPot );
+resPot = MarginalizeInPlace( pot, o ldPot, corrPositions, maximize );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Class object.
+<dt>oldPot<dd>Initial potential.
+<dt>corrPositions<dd>Vector of positions for marginalisation.
+<dt>maximize<dd>Flag of marginalisation with maximization.
+</dl></p><p>
+The function <a href="#decl_pnlmMarginalizeInPlace">MarginalizeInPlace</a> marginalizes the input object and stores the result in it.
+</p>
+
+<hr><h4><a name="decl_pnlmGetMPE">GetMPE</a></h4>
+<p class="Blurb">Returns maximum probability explanation.</p>
+<pre>
+ev = GetMPE( pot );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Class object.
+<dt>ev<dd>Evidence.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CTabularPotential">Class CTabularPotential</a></h3>
+
+<img align=center src="fig/tpot.gif">
+
+<hr><h4><a name="decl_pnlmCTabularPotentialCreate">CTabularPotentialCreate</a></h4>
+<p class="Blurb">Returns class object.</p>
+<pre>
+pot = CTabularPotentialCreate( MD, domain, data, obsIndices );
+</pre><p><dl>
+Arguments
+<dt>pot<dd>Class object.
+<dt>domain<dd>Array of numbers of domain nodes.
+<dt>data<dd>Matrix with data.
+<dt>MD<dd>Model domain.
+<dt>obsIndices<dd>Vector of ndices of observed nodes of the domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCTabularPotentialCopy">CTabularPotentialCopy</a></h4>
+<p class="Blurb">Creates new tabular potential as copy of input object.</p>
+<pre>
+tPotNew = CTabularPotentialCopy( tPot );
+</pre><p><dl>
+Arguments
+<dt>tPot<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCTabularPotentialCreateUnitF">CTabularPotentialCreateUnitF</a></h4>
+<p class="Blurb">Creates potential in form of unit function.</p>
+<pre>
+tPot = CTabularPotentialCreateUnitF( domain, MD );
+tPot = CTabularPotentialCreateUnitF( domain, MD, asDense );
+tPot = CTabularPotentialCreateUnitF( domain, MD, asDense, obsIndices );
+</pre><p><dl>
+Arguments
+<dt>domain<dd>Array of numbers of domain nodes.
+<dt>MD<dd>Model domain.
+<dt>asDense<dd>Flag of matrix type.
+<dt>obsIndices<dd>Numbers of observed positions.
+<dt>nNodes<dd>Number of nodes in the domain.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CGaussianPotential">Class CGaussianPotential</a></h3>
+
+<img align=center src="fig/gpot.gif">
+
+<hr><h4><a name="decl_pnlmCGaussianPotentialCreate">CGaussianPotentialCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+gPot = CGaussianPotentialCreate( MD, domain, inMoment, matMean, matCov,
+normCoeff, obsIndices );
+</pre><p><dl>
+Arguments
+<dt>domain<dd>Numbers of domain nodes.
+<dt>inMoment<dd>Flag of the desired form of a Gaussian potential:
+1 - moment form;
+0 - canonical form.
+This flag defines the interpretation of the next three arguments.
+if inMoment = 1,
+<dt>matMean<dd>Matrix mean .
+<dt>matCov<dd>Matrix covariance.
+<dt>normCoeff<dd>Value of the normalization constant in the moment form.
+if inMoment = 0,
+<dt>matMean<dd@
+<dt>matCov<dd>Matrix K.
+<dt>normCoeff<dd>Value of the normalization constant in the canonical form.
+<dt>obsIndices<dd>Vector of indices of observed nodes of the domain.
+<dt>MD<dd>Model domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCGaussianPotentialCopy">CGaussianPotentialCopy</a></h4>
+<p class="Blurb">Creates replica of input object.</p>
+<pre>
+gPotNew = C Gaussian PotentialCopy( gPot );
+</pre><p><dl>
+Arguments
+<dt>gPot<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCGaussianPotentialCreateDeltaF">CGaussianPotentialCreateDeltaF</a></h4>
+<p class="Blurb">Creates Delta function as CGaussianPotential .</p>
+<pre>
+gPot = CGaussianPotentialCreateDeltaF( domain, MD, matMean );
+gPot = CGaussianPotentialCreateDeltaF( domain, MD, matMean, isInMoment );
+gPot = CGaussianPotentialCreateDeltaF( domain, MD, matMean, isInMoment, obsIndices );
+</pre><p><dl>
+Arguments
+<dt>domain<dd>Numbers of domain nodes.
+<dt>matMean<dd>Float values of the mean matrix.
+<dt>isInMoment<dd>Flag of the form of the resulting potential:
+1 - moment form (mean, covariance matrices, normalization constant)
+0 - canonical form (canonical matrices g, H, K ).
+<dt>MD<dd>Model domain.
+<dt>obsIndices<dd>Vector of indices of observed nodes in the domain.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCGaussianPotentialCreateUnitF">CGaussianPotentialCreateUnitF</a></h4>
+<p class="Blurb">Creates class object in form of unit function distribution.</p>
+<pre>
+gPot = CGaussianPotentialCreateUnitF( domain, MD );
+gPot = CGaussianPotentialCreateUnitF( domain, MD, isInCanonical );
+gPot = CGaussianPotentialCreateUnitF( domain, MD, isInCanonical, obsIndices );
+</pre><p><dl>
+Arguments
+<dt>domain<dd>Numbers of domain nodes.
+<dt>isInCanonical<dd>Flag of the form of the unit function:
+1 - canonical form;
+0 - moment form.
+<dt>obsIndices<dd>Indices of observed domain nodes.
+<dt>MD<dd>Model domain.
+</dl></p><p>
+The function <a href="#decl_pnlmCGaussianPotentialCreateUnitF">CGaussianPotentialCreateUnitF</a> creates a class object in the form of a unit function
+distribution.
+</p>
+
+<hr><h4><a name="decl_pnlmSetCoefficient">SetCoefficient</a></h4>
+<p class="Blurb">Sets normalization constant to class object.</p>
+<pre>
+SetCoefficient( gPot, coeff, isForCanonical );
+</pre><p><dl>
+Arguments
+<dt>coeff<dd>Float value of the normalization constant.
+<dt>isForCanonical<dd>Flag of the distribution type to set the coefficient:
+1 - canonical form
+0 - moment form.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetCoefficient">GetCoefficient</a></h4>
+<p class="Blurb">Gets value of normalization constant.</p>
+<pre>
+coeff = GetCoefficient( gpot, isforCanonical );
+</pre><p><dl>
+Arguments
+<dt>isforCanonical<dd>Flag of distribution type to get the coefficient:
+1 - canonical form;
+0 - moment form.
+</dl></p>
+
+Class CFactors
+Class CFactors stores See Inference Engines objects and provides them for a
+graphical model. It allows to create class objects independently of the model
+and easily attach them to the model when needed.
+
+<hr><h4><a name="decl_pnlmCFactorsCreate">CFactorsCreate</a></h4>
+<p class="Blurb">Creates CFactors class object.</p>
+<pre>
+factors = CFactorsCreate( NumOfFactors );
+</pre><p><dl>
+Arguments
+<dt>numOfFactors<dd>Maximal number of factors in the factor array. The argument equals
+to the total number of nodes and cliques for BNet and for MNet objects
+respectivelly.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfFactors">GetNumberOfFactors</a></h4>
+<p class="Blurb">Returns current number of factors in factor array.</p>
+<pre>
+nf = GetNumberOfFactors( factors );
+</pre><p><dl>
+Arguments
+<dt>factors<dd>Class object.
+<dt>nf<dd>Number of factors.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetFactor">GetFactor</a></h4>
+<p class="Blurb">Returns factor.</p>
+<pre>
+factor = GetFactor( factors, factorNum );
+</pre><p><dl>
+Arguments
+<dt>factors<dd>Class object.
+<dt>factorNum<dd>Factor index in the array of factors.
+</dl></p><p>
+The function <a href="#decl_pnlmGetFactor">GetFactor</a> returns a factor with the index equal to factorNum .
+</p>
+
+<hr><h4><a name="decl_pnlmAddFactor">AddFactor</a></h4>
+<p class="Blurb">Adds new factor to graphical model.</p>
+<pre>
+num = AddFactor( factors, factor );
+</pre><p><dl>
+Arguments
+<dt>factors<dd>Class object.
+<dt>factor<dd>Factor to be set in the factor array.
+</dl></p><p>
+The function <a href="#decl_pnlmAddFactor">AddFactor</a> adds a factor to the graphical model and returns the index of the
+factor in the factors array.
+</p>
+
+<hr><h4><a name="decl_pnlmShrinkObsNdsForAllFactors">ShrinkObsNdsForAllFactors</a></h4>
+<p class="Blurb">Shrinks all factors stored in CFactors class using input evidence.</p>
+<pre>
+ShrinkObsNdsForAllFactors( factors, e vidence );
+</pre><p><dl>
+Arguments
+<dt>factors<dd>Class object.
+<dt>evidence<dd>Evidence.
+</dl></p><p>
+The function <a href="#decl_pnlmShrinkObsNdsForAllFactors">ShrinkObsNdsForAllFactors</a> shrinks all the factors stored in CFactors class using the input
+evidence.
+</p>
+
+<h2><a name="ref_manInferenceEngines">Inference Engines</a></h2>
+
+
+
+<img align=center src="fig/infeng.gif">
+<img align=center src="fig/infeng1.gif">
+
+<h3><a name="decl_pnlmClass_CCInfEngine">Class CInfEngine</a></h3>
+
+<p>
+<tt>CInfEngine</tt> is the superclass of other classes that implement inference in
+graphical models. The class stores all functions of its subclasses.
+</p>
+
+<hr><h4><a name="decl_pnlmpnlDetermineDistributionType">pnlDetermineDistributionType</a></h4>
+<p class="Blurb">Returns type of distribution.</p>
+<pre>
+distrtype = pnlDetermineDistributionType( numOfAllNds, numOfObsNds, obsNdsIndices, allNdsTypes );
+</pre><p><dl>
+Arguments
+<dt>numOfAllNds<dd>Total number of nodes.
+<dt>numOfObsNds<dd>Number of observed nodes.
+<dt>obsNdsIndices<dd>Vector of indices of observed nodes.
+<dt>allNdsTypes<dd>Cell array of node types.
+</dl></p><p>
+The function <a href="#decl_pnlmpnlDetermineDistributionType">pnlDetermineDistributionType</a> can return the following types of distribution:
+dtTabular, if all hidden nodes are discrete;
+dtGaussian, if all hidden nodes are continuous;
+dtCondGaussian, if some of the nodes are discrete and some are continuous.
+dtScalar, if all nodes are observed.
+</p>
+
+<hr><h4><a name="decl_pnlmpnlDetermineDistribTypeByMD">pnlDetermineDistribTypeByMD</a></h4>
+<p class="Blurb">Returns type of distribution.</p>
+<pre>
+distrtype = pnlDetermineDistribTypeByMD( MD, nQueryNodes, query, ev );
+</pre><p><dl>
+Arguments
+<dt>MD<dd>Model domain.
+<dt>nQueryNodes<dd>Number of query nodes.
+<dt>query<dd>Query nodes.
+<dt>ev<dd>Evidence.
+</dl></p><p>
+The function <a href="#decl_pnlmpnlDetermineDistribTypeByMD">pnlDetermineDistribTypeByMD</a> can return the following types of distribution:
+dtTabular, if all hidden, nodes are discrete;
+dtGaussian, if all hidden nodes are continuous;
+dtCondGaussian, if some of the nodes are discrete and some are continuous.
+dtScalar, if all nodes are observed.
+</p>
+
+<hr><h4><a name="decl_pnlmEnterEvidence">EnterEvidence</a></h4>
+<p class="Blurb">Starts inference in graphical model.</p>
+<pre>
+EnterEvidence( infEng, evidence );
+EnterEvidence( infEng, evidence, maximize );
+EnterEvidence( infEng, evidence, maximize, sumOnMixtureNode );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>evidence<dd>CEvidence object with observed nodes and their values.
+<dt>maximize<dd>Flag of inference with MPE.
+<dt>sumOnMixtureNode<dd>Flag of addition on a mixture node.
+</dl></p><p>
+The function <a href="#decl_pnlmEnterEvidence">EnterEvidence</a> starts inference in a graphical model. The inference procedure may
+start either with The function or with the function See MarginalNodes,
+depending on the type of inference.
+</p>
+
+<hr><h4><a name="decl_pnlmMarginalNodes">MarginalNodes</a></h4>
+<p class="Blurb">Calculates joint probability distribution for given nodes.</p>
+<pre>
+MarginalNodes( infEng, query );
+MarginalNodes( infEng, query, nodeExpandJPD );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>query<dd>Vector of nodes whose joint probability distribution is to be calculated.
+<dt>nodeExpandJPD<dd>Flag of JPD expansion.
+</dl></p><p>
+The function <a href="#decl_pnlmMarginalNodes">MarginalNodes</a> calculates joint probability distribution for a number of given
+nodes. The function creates Maximum Probability Explanation (MPE) for the
+distribution as a See Model Domain object. You may obtain the MPE and the factor
+using coordinate functions.
+</p>
+
+<hr><h4><a name="decl_pnlmGetQueryJPD">GetQueryJPD</a></h4>
+<p class="Blurb">Returns CPotential object.</p>
+<pre>
+pot = GetQueryJPD( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmGetQueryJPD">GetQueryJPD</a> returns the joint probability distribution which is calculated by
+the function See MarginalNodes .
+</p>
+
+<hr><h4><a name="decl_pnlmGetMPE">GetMPE</a></h4>
+<p class="Blurb">Returns MPE.</p>
+<pre>
+evidence = GetMPE( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmGetMPE">GetMPE</a> returns the Maximum Probability Explanation which is calculated by
+the function See MarginalNodes .
+</p>
+
+<hr><h4><a name="decl_pnlmGetModel">GetModel</a></h4>
+<p class="Blurb">Returns graphical model processed by inference engine.</p>
+<pre>
+grModel = GetModel( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>grModel<dd>Graphical model.
+</dl></p><p>
+The function <a href="#decl_pnlmGetModel">GetModel</a> returns the graphical model which is processed by the infrence
+engine. The function is used in learning algorithms.
+</p>
+
+<h3><a name="decl_pnlmClass_CNaiveInfEngine">Class CNaiveInfEngine</a></h3>
+
+<img align=center src="fig/naiveinf.gif">
+
+<hr><h4><a name="decl_pnlmCNaiveInfEngineCreate">CNaiveInfEngineCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+infEng = CNaiveInfEngineCreate( grModel );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Static graphical model. It can either be an MRF ( MRF2 ) or a BNet
+object.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CPearlInfEngine">Class CPearlInfEngine</a></h3>
+
+<img align=center src="fig/pearlinf.gif">
+
+
+<hr><h4><a name="decl_pnlmCPearlInfEngineCreate">CPearlInfEngineCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+infEng = CPearlInfEngineCreate( grModel );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Static graphical model. It can be either an MRF2 or a BNet oblect. BNet
+cannot have directed cycles.
+</dl></p><p>
+The function <a href="#decl_pnlmCPearlInfEngineCreate">CPearlInfEngineCreate</a> creates a class object from the input graphical model. If the
+graph of the input model ( See Class CBNet or See Class CMRF2 ) has undirected
+loops, the inference result is approximate. If all nodes of the graph are
+undirected, the inference result is exact.
+</p>
+
+<hr><h4><a name="decl_pnlmCPearlInfEngineIsModelValid">CPearlInfEngineIsModelValid</a></h4>
+<p class="Blurb">Checks if model is valid for Pearl inference.</p>
+<pre>
+flag = CPearlInfEngineIsModelValid( grModel );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Graphical model.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmSetMaxNumberOfIterations">SetMaxNumberOfIterations</a></h4>
+<p class="Blurb">Sets maximum number of iterations for parallel protocol.</p>
+<pre>
+SetMaxNumberOfIterations( infEng, maxNumOfIters );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>maxNumOfIters<dd>Maximum number of iterations.
+</dl></p><p>
+The function <a href="#decl_pnlmSetMaxNumberOfIterations">SetMaxNumberOfIterations</a> sets the maximum number of iterations for the parallel protocol.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfProvideIterations">GetNumberOfProvideIterations</a></h4>
+<p class="Blurb">Returns number of inference iterations.</p>
+<pre>
+nIter = GetNumberOfProvideIterations( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>nIter<dd>Number of iterations.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNumberOfProvideIterations">GetNumberOfProvideIterations</a> returns the number of iterations that were performed during
+inference.
+</p>
+
+<hr><h4><a name="decl_pnlmSetTolerance">SetTolerance</a></h4>
+<p class="Blurb">Sets tolerance for convergency check.</p>
+<pre>
+SetTolerance( infEng, tolerance );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>tolerance<dd>Precision value.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CJtreeInfEngine">Class CJtreeInfEngine</a></h3>
+
+<img align=center src="fig/jtreeinf.gif">
+
+<hr><h4><a name="decl_pnlmCJTreeInfEngineCreate">CJTreeInfEngineCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+infEng = CJtreeInfEngineCreate( grModel );
+infEng = CJtreeInfEngineCreate( grModel, SubGrToConnect );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>grModel<dd>Static graphical model. It can be either an MRF2 or a BNet object. A
+<dt>BNet<dd>object cannot have directed cycles.
+<dt>SubGrToConnect<dd>Cell array of cell arrays of nodes to be connected.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCJtreeInfEngineCreateFromJTree">CJtreeInfEngineCreateFromJTree</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+infEng = CJtreeInfEngineCreateFromJTree( grModel, jTree );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Static graphical model. It can be either an MRF2 or a BNet object. A
+<dt>BNet<dd>object cannot have directed cycles.
+<dt>jTree<dd>Junction tree.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCJTreeInfEngineCopy">CJTreeInfEngineCopy</a></h4>
+<p class="Blurb">Creates replica of CJTreeInfEngine object.</p>
+<pre>
+infEngNew = CJtreeInfEngineCopy( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Source class object.
+<dt>infEngNew<dd>New class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetEvidence">GetEvidence</a></h4>
+<p class="Blurb">Returns given evidence.</p>
+<pre>
+ev = GetEvidence( infEng );
+</pre><p><dl>
+
+<hr><h4><a name="decl_pnlmGetJTreeRootNode">GetJTreeRootNode</a></h4>
+<p class="Blurb">Returns number of root node.</p>
+<pre>
+nodeNum = GetJTreeRootNode( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>nodeNum<dd>Number of the root node.
+</dl></p><p>
+The function <a href="#decl_pnlmGetJTreeRootNode">GetJTreeRootNode</a> returns the number of the root node of the Junctin tree.
+</p>
+
+<hr><h4><a name="decl_pnlmGetClqNumsContainingSubset">GetClqNumsContainingSubset</a></h4>
+<p class="Blurb">Returns numbers of Junction tree cliques with common subset of nodes.</p>
+<pre>
+clqsContSubset = GetClqNumsContainingSubset( infEng, subset );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>subset<dd>Subset of nodes.
+<dt>clqsContSubset<dd>Vector of numbers of cliques with a common subset.
+</dl></p><p>
+The function <a href="#decl_pnlmGetClqNumsContainingSubset">GetClqNumsContainingSubset</a> returns numbers of the Junction tree cliques that have a common
+subset of nodes.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNodesConnectedByUser">GetNodesConnectedByUser</a></h4>
+<p class="Blurb">Returns set of connected nodes.</p>
+<pre>
+nds = GetNodesConnectedByUser( infEng, nodeSetNum );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>nodeSetNum<dd>Number of the set of nodes.
+<dt>nnds<dd>Vector of connected nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmGetNodesConnectedByUser">GetNodesConnectedByUser</a> returns the set of nodes that were connected when the Junction
+tree was created.
+</p>
+
+<hr><h4><a name="decl_pnlmSetJTreeRootNode">SetJTreeRootNode</a></h4>
+<p class="Blurb">Sets root of Junction tree.</p>
+<pre>
+SetJTreeRootNode( infEng, nodeNum );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>nodeNum<dd>Number of a node to become the root node.
+</dl></p><p>
+The function <a href="#decl_pnlmSetJTreeRootNode">SetJTreeRootNode</a> turns a given node of the Junction tree into its root node.
+</p>
+
+<hr><h4><a name="decl_pnlmGetLogLik">GetLogLik</a></h4>
+<p class="Blurb">Returns logarithm of likelihood.</p>
+<pre>
+logLik = GetLogLik( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmGetLogLik">GetLogLik</a> divides the potential of a Junction tree node by the distribution
+function.
+</p>
+
+<hr><h4><a name="decl_pnlmCollectEvidence">CollectEvidence</a></h4>
+<p class="Blurb">Collects evidence.</p>
+<pre>
+CollectEvidence();
+</pre><p><dl>
+</dl></p>
+
+<hr><h4><a name="decl_pnlmDistributeEvidence">DistributeEvidence</a></h4>
+<p class="Blurb">Distributes evidence.</p>
+<pre>
+DistributeEvidence( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmShrinkObserved">ShrinkObserved</a></h4>
+<p class="Blurb">Initializes Junction tree using given evidence.</p>
+<pre>
+ShrinkObserved( e vidence, maximize, sumOnMixtureNode, bRebuildJTree e );
+</pre><p><dl>
+Arguments
+<dt>evidence<dd>Evidence.
+<dt>maximize<dd>Flag of maximization.
+<dt>sumOnMixtureNode<dd>Flag of summation on the mixture node.
+<dt>bRebuildJTree<dd>Flag of the Junction tree rebuilding.
+</dl></p><p>
+The function <a href="#decl_pnlmShrinkObserved">ShrinkObserved</a> initializes a Junction tree using given evidence.
+</p>
+
+<hr><h4><a name="decl_pnlmGetQueryMPE">GetQueryMPE</a></h4>
+<p class="Blurb">Returns most probable distribution.</p>
+<pre>
+pot = QueryMPE( infEng );
+</pre><p><dl>
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CFGSumMaxInfEngine">Class CFGSumMaxInfEngine</a></h3>
+
+<img align=center src="fig/fginf.gif">
+
+<p>
+The class implements belief propagation on a factor graph model.
+</p>
+
+<hr><h4><a name="decl_pnlmCFGSumMaxInfEngineCreate">CFGSumMaxInfEngineCreate</a></h4>
+<p class="Blurb">Creates object of class.</p>
+<pre>
+infEng = CFGSUMMaxInfEngineCreate( grModel );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Factor graph.
+</dl></p><p>
+The function <a href="#decl_pnlmCFGSumMaxInfEngineCreate">CFGSumMaxInfEngineCreate</a> creates a class object. Inference is implemented for FactorGraph
+models only.
+</p>
+
+<hr><h4><a name="decl_pnlmSetMaxNumberOfIterations">SetMaxNumberOfIterations</a></h4>
+<p class="Blurb">Sets maximum number of iterations for inference.</p>
+<pre>
+SetMaxNumberOfIterations( infEng, number );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>number<dd>Maximum number of iterations.
+</dl></p><p>
+The function <a href="#decl_pnlmSetMaxNumberOfIterations">SetMaxNumberOfIterations</a> sets the maximum number of iterations for the inference procedure.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumberOfProvideIterations">GetNumberOfProvideIterations</a></h4>
+<p class="Blurb">Returns number of iterations provided during inference.</p>
+<pre>
+nIter = GetNumberOfProvideIterations( infEng );
+</pre><p><dl>
+</dl></p>
+
+<hr><h4><a name="decl_pnlmSetTolerance">SetTolerance</a></h4>
+<p class="Blurb">Sets value of tolerance used in convergence check. </p>
+<pre>
+SetTolerance( infEng, tolerance );
+</pre><p><dl>
+Arguments
+<dt>tolerance<dd>Tolerance value.
+</dl></p><p>
+The function <a href="#decl_pnlmSetTolerance">SetTolerance</a> sets the value of tolerance which to be used in convergence
+checking.
+</p>
+
+<h3><a name="decl_pnlmClass_CSamplingInfEngine">Class CSamplingInfEngine</a></h3>
+
+<img align=center src="fig/samplinginf.gif">
+<p>
+Class <tt>CSamplingInfEngine</tt> is a superclass for classes
+<a href="#decl_pnlmClass_CGibbsSamplingInfEngine">CGibbsSamplingInfEngine</a> and
+<a href="#decl_pnlmClass_CGibbsWithAnnealingInfEngine">CGibbsWithAnnealingInfEngine</a>
+that implement inference in static graphical models
+using stochastic simulates technique known as Markov chain Monte Carlo. This
+technique generates samples from the required posterior distribution.
+</p>
+
+<hr><h4><a name="decl_pnlmSetMaxTime">SetMaxTime</a></h4>
+<p class="Blurb">Sets maximum number of sampling iterations.</p>
+<pre>
+SetMaxTime( infEng, time );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object .
+<dt>time<dd>Maximum number of iterations.
+</dl></p><p>
+The function <a href="#decl_pnlmSetMaxTime">SetMaxTime</a> sets the maximum number of sampling iterations.
+</p>
+
+<hr><h4><a name="decl_pnlmSetBurnIn">SetBurnIn</a></h4>
+<p class="Blurb">Sets number of iterations before statistics collection.</p>
+<pre>
+SetBurnIn( infEng, time );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>time<dd>Number of iterations.
+</dl></p><p>
+The function <a href="#decl_pnlmSetBurnIn">SetBurnIn</a> sets the number of iterations to be performed before the
+statistical data is collected.
+</p>
+
+<hr><h4><a name="decl_pnlmSetNumStreams">SetNumStreams</a></h4>
+<p class="Blurb">Sets number of streams for sampling.</p>
+<pre>
+SetNumStreams( infEng, nStreams );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>nStreams<dd>Number of streams.
+</dl></p><p>
+The function <a href="#decl_pnlmSetNumStreams">SetNumStreams</a> sets the number of independent streams for sampling.
+</p>
+
+<hr><h4><a name="decl_pnlmGetMaxTime">GetMaxTime</a></h4>
+<p class="Blurb">Returns maximum number of sampling iterations.</p>
+<pre>
+tMax =GetMaxTime( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>tMax<dd>Maximum number of sampling iterations.
+</dl></p><p>
+The function <a href="#decl_pnlmGetMaxTime">GetMaxTime</a> returns the maximum number of sampling iterations.
+</p>
+
+<hr><h4><a name="decl_pnlmGetBurnIn">GetBurnIn</a></h4>
+<p class="Blurb">Returns number of iterations before statistics collection.</p>
+<pre>
+n = GetBurnIn( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>n<dd>Number of iterations.
+</dl></p><p>
+The function <a href="#decl_pnlmGetBurnIn">GetBurnIn</a> returns the number of iterations before the statistical data is
+collected.
+</p>
+
+<hr><h4><a name="decl_pnlmGetNumStreams">GetNumStreams</a></h4>
+<p class="Blurb">Returns number of sampling streams.</p>
+<pre>
+n = GetNumStreams( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>n<dd>Number of streams.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmContinue">Continue</a></h4>
+<p class="Blurb">Continues sampling and updates statistics. </p>
+<pre>
+Continue( infEng, dT );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>dT<dd>Number of additional samples.
+</dl></p><p>
+The function <a href="#decl_pnlmContinue">Continue</a> continues sampling procedure and the update of statistical data.
+</p>
+
+<h3><a name="decl_pnlmClass_CGibbsSamplingInfEngine">Class CGibbsSamplingInfEngine</a></h3>
+
+<img align=center src="fig/gsamplinginf.gif">
+
+<hr><h4><a name="decl_pnlmCGibbsSamplingInfEngineCreate">CGibbsSamplingInfEngineCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+infEng = CGibbsSamplingInfEngineCreate( grModel );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Graphical model.
+</dl></p><p>
+The function <a href="#decl_pnlmCGibbsSamplingInfEngineCreate">CGibbsSamplingInfEngineCreate</a> creates either a MRF ( MRF2 ) object or a BNet object.
+</p>
+
+<hr><h4><a name="decl_pnlmSetQueries">SetQueries</a></h4>
+<p class="Blurb">Sets possible queries.</p>
+<pre>
+SetQueryes( infEng, queries );
+</pre><p><dl>
+Arguments
+<dt>queries<dd>Cell array of vectors with query nodes.
+</dl></p><p>
+The function <a href="#decl_pnlmSetQueries">SetQueries</a> sets possible queries. The function is compulsory before calling
+EnterEvidence .
+</p>
+
+<hr><h4><a name="decl_pnlmUseDSeparation">UseDSeparation</a></h4>
+<p class="Blurb">Conditions d-separation use in sampling for BNet . </p>
+<pre>
+UseDSeparation( infEng, isUsing );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>isUsing<dd>Flag of d -separation.
+</dl></p><p>
+The function <a href="#decl_pnlmUseDSeparation">UseDSeparation</a> conditions the use of d -separatrion in sampling for BNet .
+</p>
+
+
+<h3><a name="decl_pnlmClass_CGibbsWithAnnealingInfEngine">Class CGibbsWithAnnealingInfEngine</a></h3>
+
+<img align=center src="fig/gasamplinginf.gif">
+<p>
+<tt>CGibbsWithAnnealingInfEngine</tt> implements Gibbs Sampler with annealing schedule
+</p>
+<i>T(s) = C/log (1 + S)</i> (1),
+<p>
+where <i>S</i> is the temperature which depends on the sampling iteration and <i>C</i> is a
+parameter.
+</p>
+<p>
+This inference obtains maximum probability explanation for nodes.
+For more detailed information see [Stuart Geman and Donald Geman. Stochastic
+Relaxation, Gibbs Distribution, and the Bayesian Restoration of Images].
+</p>
+
+<hr><h4><a name="decl_pnlmCGibbsWithAnnealingInfEngCreate">CGibbsWithAnnealingInfEngCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+CGibbsWithAnnealingInfEngCreate( grModel );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Graphical model.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmSetAnnealingCoefficientC">SetAnnealingCoefficientC</a></h4>
+<p class="Blurb">Changes default coefficient C of annealing schedule. </p>
+<pre>
+SetAnnealingCoefficientC( infEng, val );
+</pre><p><dl>
+Arguments
+<dt>val<dd>Value of the coefficient C.
+</dl></p><p>
+The function <a href="#decl_pnlmSetAnnealingCoefficientC">SetAnnealingCoefficientC</a> sets a new value for the coefficient C of the annealing schedule.
+</p>
+
+<hr><h4><a name="decl_pnlmSetAnnealingCoefficientS">SetAnnealingCoefficientS</a></h4>
+<p class="Blurb">Changes default coefficient S of annealing schedule. </p>
+<pre>
+SetAnnealingCoefficientS( infEng, val );
+</pre><p><dl>
+Arguments
+<dt>val<dd>Value of the coefficient S.
+</dl></p><p>
+The function <a href="#decl_pnlmSetAnnealingCoefficientS">SetAnnealingCoefficientS</a> sets a new value for the coefficient S of the annealing schedule.
+</p>
+
+<hr><h4><a name="decl_pnlmGetCurrentTemp">GetCurrentTemp</a></h4>
+<p class="Blurb">Returns value of current temperature.</p>
+<pre>
+t = GetCurrentTemp( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>t<dd>Temperature value.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmUseAdaptation">UseAdaptation</a></h4>
+<p class="Blurb">Initiates adaptation during inference.</p>
+<pre>
+UseAdaptation( infEng, isUsed );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>isUsed<dd>Flag of adaptation.
+</dl></p>
+
+
+<h3><a name="decl_pnlmClass_CDynamicInfEngine">Class CDynamicInfEngine</a></h3>
+
+<img align=center src="fig/dyninf.gif">
+<p>
+Class <tt>CDynamicInfEngine</tt> is a superclass for all classes that implement inference
+in dynamic graphical models.
+</p>
+
+
+<hr><h4><a name="decl_pnlmDefineProcedure">DefineProcedure</a></h4>
+<p class="Blurb">Defines type of inference procedure.</p>
+<pre>
+DefineProcedure( infEng, procedure, lag );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>procedure<dd>Type of inference: itFiltering, itSmoothing, itFixLagSmoothing or
+itViterbi .
+<dt>lag<dd>Integer value. Corresponds to the value of lag in the fixed-lag smoothing
+inference and to the number of time slices in the smoothing inference. In the
+filtering inference the argument equals to 0.
+</dl></p><p>
+The function <a href="#decl_pnlmDefineProcedure">DefineProcedure</a> defines one of the following types of inference procedure:
+filtering, smoothing, fixed-lag smoothing and Viterby decoding.
+</p>
+
+<hr><h4><a name="decl_pnlmEnterEvidence">EnterEvidence</a></h4>
+<p class="Blurb">Enters evidence to engine.</p>
+<pre>
+EnterEvidence( infEng, evidences );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>evidences<dd>Cell array of evidences.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmMarginalNodes">MarginalNodes</a></h4>
+<p class="Blurb">Marginalizes joint probability distribution to query nodes.</p>
+<pre>
+MarginalNodes( query, timeSlice );
+MarginalNodes( query, timeSlice, notExpandJPD );
+</pre><p><dl>
+Arguments
+<dt>query<dd>Vector of nodes for the query.
+<dt>timeSlice<dd>Query slice number. Equals to 0 in the filtering and the fixed-lag
+smoothing inference procedures because they are on-line procedures.
+<dt>notExpandJPD<dd>Flag of expansion.
+</dl></p><p>
+The function <a href="#decl_pnlmMarginalNodes">MarginalNodes</a> marginalizes the joint probability distribution to the set of
+nodes in a slice given as the query input argument, at the time timeSlice . In
+the filtering inference the argument timeSlice should equal to the current time
+and in the fixed-lag smoothing it should equal to time-lag.
+Let the model have N nodes per slice. Then nodes in the query with numbers from
+0 to N - 1 belong to the slice timeSlice - 1 and nodes with numbers from N to 2N
+- 1 belong to the slice timeSlice . For prior time-slices, such as, for example,
+timeSlice = 0, nodes in the query have numbers from 0 to N - 1 .
+</p>
+
+<hr><h4><a name="decl_pnlmGetQueryJPD">GetQueryJPD</a></h4>
+<p class="Blurb">Returns joint probability distribution of query nodes.</p>
+<pre>
+pot = GetQueryJPD( InfEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>pot<dd>Joint probability distribution of query nodes.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetMPE">GetMPE</a></h4>
+<p class="Blurb">Returns maximum probablility explanation of query nodes.</p>
+<pre>
+ev = GetMPE( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>ev<dd>Maximum probability explanation of query nodes.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmFiltering">Filtering</a></h4>
+<p class="Blurb">Performs filtering procedure.</p>
+<pre>
+Filtering( infEng, timeSlice );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>timeSlice<dd>Number of the current time slice.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmSmoothing">Smoothing</a></h4>
+<p class="Blurb">Performs smoothing procedure.</p>
+<pre>
+Smoothing( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmFixLagSmoothing">FixLagSmoothing</a></h4>
+<p class="Blurb">Performs fixed-lag smoothing procedure.</p>
+<pre>
+FixLagSmoothing( infEng, timeSlice );
+</pre><p><dl>
+<dt>Arguments
+<dt>infEng<dd>Class object.
+<dt>timeSlice<dd>Number of the current time slice.
+</dl></p><p>
+The function <a href="#decl_pnlmFixLagSmoothing">FixLagSmoothing</a> performs fixed-lag smoothing with a lag defined in See
+</p>
+
+<hr><h4><a name="decl_pnlmFindMPE">FindMPE</a></h4>
+<p class="Blurb">Finds maximum probability explanation.</p>
+<pre>
+FindMPE( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmFindMPE">FindMPE</a> performs the procedure of Viterbi decoding.
+</p>
+
+<hr><h4><a name="decl_pnlmGetDynamicModel">GetDynamicModel</a></h4>
+<p class="Blurb">Returns source dynamic model.</p>
+<pre>
+grModel = GetDynamicModel( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>grModel<dd>Graphical model.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetProcedureType">GetProcedureType</a></h4>
+<p class="Blurb">Returns type of inference procedure.</p>
+<pre>
+prType = GetProcedureType( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>prType<dd>Type of inference.
+</dl></p><p>
+The function <a href="#decl_pnlmGetProcedureType">GetProcedureType</a> returns the type of implemented inference: ptFiltering,
+ptSmoothing, ptFixLagSmoothing, ptViterbi .
+</p>
+
+<h3><a name="decl_pnlmClass_C2TBNInfEngine">Class C2TBNInfEngine</a></h3>
+
+<img align=center src="fig/2tbninf.gif">
+<p>
+C2TBNInfEngine is a superclass for all dynamic inference engine classes, that
+use forward-backward operations between slices. With such structure of classes
+an inference procedure (filtering, smoothing, and the others) can be implemented
+with the combination of functions:
+<a href="#decl_pnlmForwardFirst">ForwardFirst</a>,
+<a href="#decl_pnlmForward">Forward</a>,
+<a href="#decl_pnlmBackwardT">BackwardT</a>,
+<a href="#decl_pnlmBackward">Backward</a>,
+<a href="#decl_pnlmBackwardFixLag">BackwardFixLag</a>
+</p>
+
+<hr><h4><a name="decl_pnlmForwardFirst">ForwardFirst</a></h4>
+<p class="Blurb">Performs forward operation for prior slice.</p>
+<pre>
+ForwardFirst( infEng, evidence );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>evidence<dd>Evidence for the prior slice.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmForward">Forward</a></h4>
+<p class="Blurb">Performs forward operation.</p>
+<pre>
+Forward( infEng, evidence );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+<dt>evidence<dd>Evidence for any but the prior slice.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmBackwardT">BackwardT</a></h4>
+<p class="Blurb">Performs first backward operation after last forward operation.</p>
+<pre>
+BackwardT( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmBackward">Backward</a></h4>
+<p class="Blurb">Performs backward operation.</p>
+<pre>
+Backward( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmBackwardFixLag">BackwardFixLag</a></h4>
+<p class="Blurb">Performs sequence of backward operations.</p>
+<pre>
+BackwardFixLag( infEng );
+</pre><p><dl>
+Arguments
+<dt>infEng<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmBackwardFixLag">BackwardFixLag</a> performs a number of backward operations in the fixed-lag
+smoothing procedure, restoring data for intermediate steps. The number of
+operations equals to the value of lag.
+</p>
+
+<h3><a name="decl_pnlmClass_C1_5SliceInfEngine">Class C1_5SliceInfEngine</a></h3>
+
+<img align=center src="fig/1_5sliceinf.gif">
+<p>
+C1_5SliceInfEngine is a superclass for all inference procedures that perform
+forward-backward operations between 1.5 slices.
+</p>
+
+<h3><a name="decl_pnlmClassC1_5SliceJTreeInfEngine">Class C1_5SliceJTreeInfEngine</a></h3>
+
+<img align=center src="fig/1_5slicejtreeinf.gif">
+
+<hr><h4><a name="decl_pnlmC1_5SliceJTreeEngineCreate">C1_5SliceJTreeEngineCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+infEng = C1_5SliceJtreeInfEngineCreate( grModel );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Dynamic graphical model.
+</dl></p>
+
+<h3><a name="decl_pnlmClassCBKInfEngine">Class CBKInfEngine</a></h3>
+
+<img align=center src="fig/bkinf.gif">
+
+
+<hr><h4><a name="decl_pnlmCBKInfEngineCreate">CBKInfEngineCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+infEng = CBKInfEngineCreate( grModel, isFF );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Dynamic graphical mode.
+<dt>isFF<dd>Flag of factorization. Equals to 1 for the fully factorixed inference whose
+every interface node belongs to a separate cluster. Equals to 0 for the exact
+inference whose interface nodes lie in one clique.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCBKInfEngineCreate">CBKInfEngineCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+infEng = CBKInfEngineCreate( grModel, clusters );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Dynamic graphical model.
+<dt>clusters<dd>Cell array of vectors with nodes of a cluster .
+</dl></p>
+
+<hr><h4><a name="decl_pnlmCBKInfEngCheckClusters">CBKInfEngCheckClusters</a></h4>
+<p class="Blurb">Checks validity of clusters. </p>
+<pre>
+CheckClustersValidity( clusters, interfNds );
+</pre><p><dl>
+Arguments
+<dt>clusters<dd>Cell array of vectors with inference nodes. Each node belongs only to
+one cluster.
+<dt>interfNds<dd>Vector of inference nodes .
+</dl></p><p>
+The function <a href="#decl_pnlmCBKInfEngCheckClusters">CBKInfEngCheckClusters</a> checks if a cluster is valid. A vector of the BK inference can be
+composed of vectors which contain numbers of interface model nodes. If the nodes
+belong to one class they are sure to lie in one clique of the Junction tree. If
+the nodes belong to different clusters the inference is fully factorized. If the
+nodes belong to the same cluster the inference is exact.
+</p>
+
+<h2><a name="ref_manLearningEngines">Learning Engines</a></h2>
+ Structure of learning engines
+
+<img align=center src="fig/learncommon.gif">
+
+<h3><a name="decl_pnlmClass_CLearningEngine">Class CLearningEngine</a></h3>
+
+
+
+<hr><h4><a name="decl_pnlmLearn">Learn</a></h4>
+<p class="Blurb">Performs learning.</p>
+<pre>
+Learn( learnEng );
+</pre><p><dl>
+Arguments:
+<dt>learnEng<dd>Class object.
+</dl></p><p>
+The function <a href="#decl_pnlmLearn">Learn</a> trains a graphical model using given data. In parameter learning
+the function upgrades factors using given evidence. In structure learning the
+function creates a new graphical model.
+</p>
+
+<hr><h4><a name="decl_pnlmGetCriterionValue">GetCriterionValue</a></h4>
+<p class="Blurb">Returns array of criterion values used in learning.</p>
+<pre>
+value = GetScore( learnEng );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>value<dd>Vector of values.
+</dl></p><p>
+The function <a href="#decl_pnlmGetCriterionValue">GetCriterionValue</a> returns numeric values of the criterion that is to be maximized
+during model learning.
+</p>
+
+<hr><h4><a name="decl_pnlmClearStatisticData">ClearStatisticData</a></h4>
+<p class="Blurb">Clears statistical data.</p>
+<pre>
+ClearStatisticData( learnEng );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CStaticLearningEngine">Class CStaticLearningEngine</a></h3>
+
+
+<hr><h4><a name="decl_pnlmSetData">SetData</a></h4>
+<p class="Blurb">Sets statistical data for learning.</p>
+<pre>
+SetData( learnEng, evidences );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>evidences<dd>Cell array of CEvidence objects.
+</dl></p><p>
+The function <a href="#decl_pnlmSetData">SetData</a> sets statistical data for learning. When you call The function,
+the prior statistical data is deleted.
+</p>
+
+<hr><h4><a name="decl_pnlmAppendData">AppendData</a></h4>
+<p class="Blurb">Acquires evidence information.</p>
+<pre>
+AppendData( learnEng, evidences );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>evidences<dd>Cell array of CEvidence objects.
+</dl></p><p>
+The function <a href="#decl_pnlmAppendData">AppendData</a> adds a set of evidences to previously collected data.
+</p>
+
+<hr><h4><a name="decl_pnlmGetStaticModel">GetStaticModel</a></h4>
+<p class="Blurb">Returns graphical model.</p>
+<pre>
+grModel = GetStaticModel( learnEng );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CEMLearningEnginee">Class CEMLearningEngine</a></h3>
+
+
+<p>
+Class CEMLearningEngine is used in the learning of Bayesian networks with
+discrete or multivariate Gaussian nodes as well as in the learning of Markov
+networks with discrete nodes. The learning is based on Expectation Maximization
+(EM) algorithm.
+</p>
+
+<hr><h4><a name="decl_pnlmCEMLeaningEngineCreate">CEMLeaningEngineCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+learnEng = CEMLearningEngineCreate( grModel );
+</pre><p><dl>
+learnEng = CEMLearningEngineCreate( grModel, infEng );
+Arguments
+<dt>grModel<dd>Graphical model.
+<dt>infEng<dd>Inference engine used in the lerning procedure. By default the Junction
+tree inference engine is used.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmSetMaxIterEM">SetMaxIterEM</a></h4>
+<p class="Blurb">Sets maximum iteration depth for Expectation Maximization.</p>
+<pre>
+SetMaxIterEM( learnEng, numOfIter );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>numOfIter<dd>Maximum iteration depth.
+</dl></p><p>
+The function <a href="#decl_pnlmSetMaxIterEM">SetMaxIterEM</a> sets the maximum number of iterations to be performed in the
+course of learning.
+</p>
+
+<hr><h4><a name="decl_pnlmSetTerminationToleranceEM">SetTerminationToleranceEM</a></h4>
+<p class="Blurb">Sets termination tolerance.</p>
+<pre>
+SetTerminationToleranceEM( learnEng, precision );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>precision<dd>Precision.
+</dl></p><p>
+The function <a href="#decl_pnlmSetTerminationToleranceEM">SetTerminationToleranceEM</a> sets the termination condition for EM. EM is over, if the
+difference between the logarithm of likelihood at a current step and at the
+previous step does not exceed a certain set value.
+</p>
+
+<h3><a name="decl_pnlmClass_CBayesLearningEngine">Class CBayesLearningEngine</a></h3>
+
+
+
+<p>
+Class CBayesLearningEngine is used for training BNet objects, where parameters
+of a CPD are not fixed and have their own probability distributions (see User
+Guide). The current version of Matlab PNL supports parameters distributions only
+for a CTabular CPD . Both prior and posterior parameters distributions of a
+tabular CPD are Dirichlet. Dirichlet table distribution is stored in Tabular_CPD
+in the form of a matrix of the same size as CPT . Initial values are specified
+either by AllocMatrix or by AttachMatrix functions of the corresponding factor.
+Dirichlet priors have the form of pseudo counts which stand for an imaginary
+observed number of cases and assume any non-negative values.
+In the course of learning parameters are updated. Updated prior parameters may
+be used as priors in future learning. In the current version of PNL Bayesian
+parameter learning is supported only if the input data is complete, that is, if
+all the BNet nodes of training samples are observed.
+</p>
+
+<hr><h4><a name="decl_pnlmCBayesLearningEngineCreate">CBayesLearningEngineCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+learnEng = CBayesLearningEngineCreate( grModel );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Graphical model.
+</dl></p><p>
+The function <a href="#decl_pnlmCBayesLearningEngineCreate">CBayesLearningEngineCreate</a> creates a class object. It applies only to BNet graphical models
+only.
+</p>
+
+<h3><a name="decl_pnlmClass_CBICLearningEngine">Class CBICLearningEngine</a></h3>
+
+
+<p>
+Class CBICLearningEngine is used for learning a Bayesian network with discrete
+nodes when model structure is unknown and all variables are observed. The
+learning is based on Bayesian Information Criterion (BIC). The result of
+learning is a new Bayesian network.
+</p>
+
+<hr><h4><a name="decl_pnlmCBICLearningEngineCreate">CBICLearningEngineCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+learnEng = CBICLearningEngineCreate( grModel );
+</pre><p><dl>
+Arguments
+<dt>grModel<dd>Graphical model.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmGetGraphicalModel">GetGraphicalModel</a></h4>
+<p class="Blurb">Returns created graphical model.</p>
+<pre>
+grModel = GetGraphicalModel( learnEng );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>grModel<dd>Graphical model.
+</dl></p><p>
+The function <a href="#decl_pnlmGetGraphicalModel">GetGraphicalModel</a> returns a topologically sorted graphical model which was created
+as a result of structure learning.
+</p>
+
+<hr><h4><a name="decl_pnlmGetOrder">GetOrder</a></h4>
+<p class="Blurb">Returns array of values corresponding to node numbers.</p>
+<pre>
+reordering = GetOrder( learnEng );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>reordering<dd>Vector of values that correspond to node numbers.
+</dl></p><p>
+The function <a href="#decl_pnlmGetOrder">GetOrder</a> returns the array of values that correspond to node numbers of the
+source graphical model.
+</p>
+
+<h3><a name="decl_pnlmClass_CDynamicLearningEngine">Class CDynamicLearningEngine</a></h3>
+
+
+<p>
+CDynamicLearningEngine is a superclass for all classes that implement learning
+for dynamic graphical models. The class contains functions that belong to its
+child classes.
+</p>
+
+<hr><h4><a name="decl_pnlmSetData">SetData</a></h4>
+<p class="Blurb">Sets statistical data for learning.</p>
+<pre>
+SetData( learnEng, evidences );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>evidences<dd>Cell array of cell arrays of evidences.
+</dl></p><p>
+The function <a href="#decl_pnlmSetData">SetData</a> sets statistical data for learning. The data has the form of an
+array where the number of rows equals to the number of series and the number of
+elements in a row - to the number of time slices for each series.
+</p>
+
+<hr><h4><a name="decl_pnlmGetDynamicModel">GetDynamicModel</a></h4>
+<p class="Blurb">Returns model of learning engine.</p>
+<pre>
+grModel = GetDynamicModel( learnEng );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>grModel<dd>Graphical model.
+</dl></p>
+
+<h3><a name="decl_pnlmClass_CEMLearningEngineDBN">Class CEMLearningEngineDBN</a></h3>
+
+
+<p>
+Class CEMLearningEngineDBN is used in the learning of Dynamic Bayesian Networks.
+The learning is based on Expectation Maximization (EM) algorithm.
+</p>
+
+<hr><h4><a name="decl_pnlmCEMLearningEngineDBNCreate">CEMLearningEngineDBNCreate</a></h4>
+<p class="Blurb">Creates class object.</p>
+<pre>
+CEMLearningEngineDBNCreate( DBN );
+CEMLearningEngineDBNCreate( DBN, infEng );
+</pre><p><dl>
+Arguments
+<dt>DBN<dd>Graphical model to be trained.
+<dt>infEng<dd>Inference engine. By default C1_5SliceJtreeInfEngine is used.
+</dl></p>
+
+<hr><h4><a name="decl_pnlmSetTerminationToleranceEM">SetTerminationToleranceEM</a></h4>
+<p class="Blurb">Sets termination tolerance.</p>
+<pre>
+SetTerminationToleranceEM( learnEng, precision );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>precision<dd>Float value of precision. To determine the breakpoint of the learning
+procedure, you compare the value of precision with the difference between
+logarithms of likelihoods of two neighboring steps.
+</dl></p><p>
+The function <a href="#decl_pnlmSetTerminationToleranceEM">SetTerminationToleranceEM</a> sets the termination condition for EM. EM procedure stops when the
+difference between the logarithm of likelihood value at a current step and at
+its prior step does not exceed the value of precision.
+</p>
+
+<hr><h4><a name="decl_pnlmSetMaxIterEM">SetMaxIterEM</a></h4>
+<p class="Blurb">Sets maximum iteration depth for EM.</p>
+<pre>
+SetMaxIterEM( learnEng, nIter );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>nIter<dd>Maximum iteration depth.
+</dl></p><p>
+The function <a href="#decl_pnlmSetMaxIterEM">SetMaxIterEM</a> sets the maximal number of iterations to be performed in the
+learning process.
+</p>
+
+<hr><h4><a name="decl_pnlmSetTerminationToleranceEM">SetTerminationToleranceEM</a></h4>
+<p class="Blurb">Sets termination tolerance.</p>
+<pre>
+SetTerminationToleranceEM( learnEng, precision );
+</pre><p><dl>
+Arguments
+<dt>learnEng<dd>Class object.
+<dt>precision<dd>Precision.
+</dl></p><p>
+The function <a href="#decl_pnlmSetTerminationToleranceEM">SetTerminationToleranceEM</a> sets the termination condition for EM. EM stops when the
+difference between the logarithm of likelihood at a current step and at its
+preceding step does not exceed the value of precision.
+</p>
+
+<h3><a name="decl_pnlmRandom Number Generation">Random Number Generation</a></h3>
+
+<hr><h4><a name="decl_pnlmpnlSeed">pnlSeed </a></h4>
+<p class="Blurb">Reinitializes random number generator.</p>
+<pre>
+pnlSeed( s );
+</pre><p><dl>
+Arguments
+<dt>s<dd>Integer that reinitializes the initial random number generator.
+</dl></p><p>
+The function <a href="#decl_pnlmpnlSeed">pnlSeed </a> reinitializes the initial random number generator. As RNG is
+initialised automatically on loading the library, you call The function only if
+there is some need for it. For example, you may call it to perform
+non-repeatable experiments in different calls of application.
+</p>
+
+<hr><h4><a name="decl_pnlmpnlRand">pnlRand </a></h4>
+<p class="Blurb">Generates random numbers uniformly distributed over specified numerical </p>
+<pre>interval.
+
+pnlRand( left, right );
+</pre><p><dl>
+Arguments
+<dt>left<dd>Left boundary of the interval.
+<dt>right<dd>Right boundary of the interval.
+</dl></p><p>
+The function <a href="#decl_pnlmpnlRand">pnlRand </a> generates random numbers uniformly over a specified numerical
+interval.
+</p>
+
+<hr><h4><a name="decl_pnlmpnlRandNormal">pnlRandNormal </a></h4>
+<p class="Blurb">Generates normally distributed random numbers.</p>
+<pre>
+pnlSeed( mean, cov );
+</pre><p><dl>
+Arguments
+<dt>mean<dd>Mean of the normal distribution.
+<dt>cov<dd>Covariance matrix of the normal distribution.
+</dl></p><p>
+The function <a href="#decl_pnlmpnlRandNormal">pnlRandNormal </a> generates a vector from a multivariate normal distribution.
+</p>
+
+
+</body>
+</html>

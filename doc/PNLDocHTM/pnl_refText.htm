@@ -1,0 +1,1870 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html><head>
+<link rel="STYLESHEET" href="openpnlref.css" charset="ISO-8859-1" type="text/css">
+</head><body>
+
+<center><table cellspacing=0 cellpadding=2 width="90%" bgcolor="#6a9bed" nosave >
+<tr nosave>
+<td nosave>
+<center><i><font color="#000000"><font size=+4>
+PNL: Reference Manual
+</font></font></i></center>
+</td>
+</tr>
+</table></center>
+
+
+<h2><a name="decl_pnlGraph">Graph</a></h2>
+
+
+<hr><h3><a name="decl_pnlClassCGraph">Class CGraph</a></h3>
+
+<IMG SRC="fig/PNLMarch.book-88.gif">
+
+<p>
+Class <EM CLASS="CodeReg">CGraph</EM> represents the graph structure of the model and carries out some basic
+graph algorithms.
+</p>
+
+<hr><h4><a name="declCGraph_Create">Create</a></h4>
+<p class="Blurb">Creates object of class.</p><pre>
+
+static CGraph* CGraph::Create( int <EM CLASS="CodeItalic">numOfNds</EM>,  const int *<EM CLASS="CodeItalic">numOfNbrs</EM>, const int *const *<EM CLASS="CodeItalic">nbrsList</EM>, const EneighborType *const *<EM CLASS="CodeItalic">nbrsTypes </EM>);
+static CGraph* CGraph::Create( int <EM CLASS="CodeItalic">numOfNds</EM>, const int *const *<EM CLASS="CodeItalic">adjMat </EM>);
+static CGraph* CGraph::Create( const intVecVector&amp; <EM CLASS="CodeItalic">nbrsList</EM>,const neighborTypeVecVector&amp; <EM CLASS="CodeItalic">nbrsTypesList</EM> );
+static CGraph* CGraph::Create(const CMatrix&lt;int&gt;* <EM CLASS="CodeItalic">pAdjMat</EM>);
+</pre><p><dl>
+ Arguments
+<dt>numOfNds  <dd>Number of nodes of the graph.
+<dt>numOfNbrs<dd>  Array of integer, each ith integer is the number of neighbors of the ith nodes.
+<dt>nbrsList<dd>  List of neighbors for a node.
+<dt>nbrsTypes<dd>  2D list of neighbor types. Each element shows the type of the corresponding neighbor from <EM CLASS="CodeItalic">
+nbrsList</EM>.
+<dt>nbrsTypesList <dd>2D list of neighbor types.
+<dt>adjMat<dd>  2D array of integers, represents an adjacent matrix.
+<dt>pAdjMat<dd>  2D integer matrix, represents an adjacent matrix.
+</dl></p><p>
+Call of this function creates an instance of class <EM CLASS="CodeReg">CGraph.</EM>
+ Call of the class destructor deletes the instance. A node may have a neighbor of the following type: <EM CLASS="CodeItalic">
+ntParent</EM>, <EM CLASS="CodeItalic">ntChild</EM>, <EM CLASS="CodeItalic">ntNeighbor</EM>.
+</p>
+
+
+<hr><h4><a name="declCGraph_Copy">Copy</a></h4>
+<p class="Blurb">Creates class object by copying.</p><pre>
+
+static CGraph* CGraph::Copy( const CGraph *<EM CLASS="CodeItalic">pGraph </EM>);
+</pre><p><dl>
+ Arguments
+<dt>pGraph<dd>  Pointer to a <EM CLASS="CodeReg">
+CGraph</EM>
+ object to be copied.
+</dl></p><p>
+Call of this function creates a new object of class <EM CLASS="CodeReg">
+CGraph </EM>
+by copying the input object and returns a pointer to it<EM CLASS="CodeReg">.</EM> Call of the class destructor deletes the instance.
+</p>
+
+
+<hr><h4><a name="decl_pnlGetTopologicalOrder">GetTopologicalOrder</a></h4>
+<p class="Blurb">Returns numbers of nodes according to their topological order. </p><pre>
+
+void CGraph:: GetTopologicalOrder( intVector *<EM CLASS="CodeItalic">order</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>order <dd>Returned parameter. Numbers of nodes according to their topological order.
+</dl></p><p>
+This function returns numbers of nodes according to the order of their topological sorting.The function assumes that the graph is a DAG object.
+</p>
+
+
+<hr><h4><a name="declCGraph_MoralizeGraph">MoralizeGraph</a></h4>
+<p class="Blurb">Creates class object by moralizing.</p><pre>
+
+static CGraph* CGraph::MoralizeGraph( const CGraph *<EM CLASS="CodeItalic">pGraph </EM>);
+</pre><p><dl>
+ Arguments
+<dt>pGraph<dd>  Pointer to a <EM CLASS="CodeReg">
+CGraph</EM>
+ object to be moralized.
+</dl></p><p>
+Call of this function creates a new object of class <EM CLASS="CodeReg">
+CGraph </EM>
+by moralizing the input object and returns a pointer to it<EM CLASS="CodeReg">.</EM>
+ Call of the class destructor deletes the instance.
+</p>
+
+
+<hr><h4><a name="declCGraph_AddEdge">AddEdge</a></h4>
+<p class="Blurb">Adds edge to existing graph.</p><pre>
+
+void CGraph::AddEdge( int <EM CLASS="CodeItalic">startNode</EM>, int <EM CLASS="CodeItalic">endNode</EM>, int <EM CLASS="CodeItalic">directed</EM> );
+</pre><p><dl>
+ Arguments
+<dt>startNode<dd>  Starting node of the edge.
+<dt>endNode<dd>  Ending node of the edge.
+<dt>bDirected<dd>  Edge orientation. The argument shows if the edge is directed. Equals to 1 (true), if the edge is directed, and equals to 0 (false) otherwise.
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_ChangeEdgeDirection">ChangeEdgeDirection</a></h4>
+<p class="Blurb">Changes direction of existing graph.</p><pre>
+
+void CGraph::ChangeEdgeDirection( int <EM CLASS="CodeItalic">startNode</EM>, int <EM CLASS="CodeItalic">endNode</EM> );
+</pre><p><dl>
+ Arguments
+<dt>startNode<dd>  Starting node of the edge for which direction should be changed.
+<dt>endNode<dd>  Ending node of the edge for which direction should be changed.
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_GetNeighbors">GetNeighbors</a></h4>
+<p class="Blurb">Gets all neighbors for given node with orientation vector.</p><pre>
+
+int CGraph::GetNeighbors( int <EM CLASS="CodeItalic">nodeNum</EM>, int *<EM CLASS="CodeItalic">numOfNbrs</EM>, const int **<EM CLASS="CodeItalic">nbrs</EM>, const ENeighborType **nbrsTypes ) const;
+void CGraph::GetNeighbors( int nodeNum, intVector* <EM CLASS="CodeItalic">nbrsOut</EM>, neighborTypeVector *<EM CLASS="CodeItalic">nbrsTypesOut</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>nodeNum<dd>  Number of the node for which neighbors should be found.
+<dt>numOfNbrs<dd>  Returned value, pointer to the variable that takes the value equal to the number of neighbors for the node.
+<dt>nbrs<dd>  Returned value, pointer to the array of the neighbors of the node.
+<dt>nbrsOut <dd>Returned value. Array of the neighbors of the node.
+<dt>nbrs<dd><dt>nbrsTypesOut  <dd>Returned value, each element of which shows the type of the corresponding nieghbor from <EM CLASS="CodeItalic">nbrsOut.</EM>
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_GetNumberOfNeighbors">GetNumberOfNeighbors</a></h4>
+<p class="Blurb">Returns number of neighbors for given node.</p><pre>
+
+inline int CGraph::GetNumberOfNeighbors( int <EM CLASS="CodeItalic">nodeNum</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>nodeNum<dd>  Number of the node for which the number of the neighbors should be found.
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_GetNumberOfNodes">GetNumberOfNodes</a></h4>
+<p class="Blurb">Returns number of all nodes in graph.</p><pre>
+
+inline int CGraph::GetNumberOfNodes() const;
+</pre>
+
+
+<hr><h4><a name="declCGraph_GetNumberOfEdges">GetNumberOfEdges</a></h4>
+<p class="Blurb">Returns number of all edges in graph.</p><pre>
+
+inline int CGraph::GetNumberOfEdges() const;
+</pre>
+
+
+<hr><h4><a name="declCGraph_IsCompleteSubgraph">IsCompleteSubgraph</a></h4>
+<p class="Blurb">Checks subset of given nodes for completeness.</p><pre>
+
+int CGraph::IsCompleteSubgraph( int <EM CLASS="CodeItalic">numOfNdsInSubgraph</EM>, const int *<EM CLASS="CodeItalic">subgraph</EM> ) const;
+int CGraph::IsCompleteSubgraph( const intVector&amp; <EM CLASS="CodeItalic">subGraphIn</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>numOfNdsInSubgraph<dd>  Number of nodes in the subset.
+<dt>subgraph<dd>  Subset of nodes.
+</dl></p><p>
+This function checks whether a subset of given nodes is complete. Returns 1 if the subset of nodes is complete, returns 0 otherwise.
+</p>
+
+
+<hr><h4><a name="declCGraph_IsChangeAllowed">IsChangeAllowed</a></h4>
+<p class="Blurb">Returns status flag for graph.</p><pre>
+
+inline int CGraph::IsChangeAllowed() const;
+</pre><p>
+This function returns 1 if the change of the graph is allowed and 0 otherwise.
+</p>
+
+
+<hr><h4><a name="declCGraph_IsExistingEdge">IsExistingEdge</a></h4>
+<p class="Blurb">Returns information on edge existence.</p><pre>
+
+int CGraph::IsExistingEdge( int <EM CLASS="CodeItalic">startNode</EM>, int <EM CLASS="CodeItalic">endNode</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>startNode<dd>  Starting node of the edge.
+<dt>endNode<dd>  Ending node of the edge.
+</dl></p><p>
+This function returns 1 for the edge if it exists in the graph and 0 otherwise.
+</p>
+
+
+<hr><h4><a name="declCGraph_RemoveEdge">RemoveEdge</a></h4>
+<p class="Blurb">Removes edge from graph.</p><pre>
+
+int CGraph::RemoveEdge( int <EM CLASS="CodeItalic">startNode</EM>, int <EM CLASS="CodeItalic">endNode</EM> );
+</pre><p><dl>
+ Arguments
+<dt>startNode<dd>  Starting node of the edge.
+<dt>endNode<dd>  Ending node of the edge.
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_SetNeighbors">SetNeighbors</a></h4>
+<p class="Blurb">Sets neighbors for given node.</p><pre>
+
+void CGraph::SetNeighbors( int <EM CLASS="CodeItalic">nodeNum</EM>, int <EM CLASS="CodeItalic">numOfNbrs</EM>,  const int *<EM CLASS="CodeItalic">nbrs</EM>, const ENeighborType *<EM CLASS="CodeItalic">nbrsTypes</EM> );
+void CGraph::SetNeighbors( int <EM CLASS="CodeItalic">nodeNum</EM>, const intVector&amp; <EM CLASS="CodeItalic">nbrs</EM>,const neighborTypeVector&amp; <EM CLASS="CodeItalic">nbrsTypes</EM> );
+</pre><p><dl>
+ Arguments
+<dt>nodeNum<dd>  Number of the node for which neighbors should be set.
+<dt>numOfNbrs<dd>  Number of the neighbors for the node.
+<dt>nbrs<dd>  Array of the neighbors for the node.
+<dt>nbrsTypes<dd>  1D array of types of the neighbors of the node numbered <EM CLASS="CodeItalic">nodeNum</EM>.
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_ProhibitChange">ProhibitChange</a></h4>
+<p class="Blurb">Prohibits any change of <EM CLASS="CodeReg">CGraph</EM> object.</p><pre>
+
+inline void CGraph::ProhibitChange() const;
+</pre>
+
+
+<hr><h4><a name="declCGraph_FormCliqueFromSubgraph">FormCliqueFromSubgraph</a></h4>
+<p class="Blurb">Forms a clique by connecting all the nodes of the subgraph between each other.</p><pre>
+
+void CGraph::FormCliqueFromSubgraph( int <EM CLASS="CodeItalic">numOfNds</EM>, const int *<EM CLASS="CodeItalic">subGraph</EM> );
+void CGraph::FormCliqueFromSubgraph( const intVector&amp; <EM CLASS="CodeItalic">subGraph </EM>);
+</pre><p><dl>
+ Arguments
+<dt>numOfNds<dd>  Number of nodes in subgraph of nodes.
+<dt>subGraph<dd>  Subgraph, all the nodes of which should be connected to each other to form a clique.
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_GetNumberOfParents">GetNumberOfParents</a></h4>
+<p class="Blurb">Returns number of parents of the node.</p><pre>
+
+inline int CGraph::GetNumberOfParents( int <EM CLASS="CodeItalic">nodeNum </EM>) const;
+</pre><p><dl>
+ Arguments
+<dt>nodeNum<dd>  Number of the node, for which number of parents is queried.
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_GetNumberOfChildren">GetNumberOfChildren</a></h4>
+<p class="Blurb">Returns number of children of the node.</p><pre>
+
+inline int CGraph::GetNumberOfChildren( int <EM CLASS="CodeItalic">nodeNum </EM>) const;
+</pre><p><dl>
+ Arguments
+<dt>nodeNum<dd>  Number of the node, for which number of children is queried.
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_IsDirected">IsDirected</a></h4>
+<p class="Blurb">Checks if the graph is directed.</p><pre>
+
+inline int CGraph::IsDirected() const;
+</pre><p>
+This function returns 1, if the graph is directed, and 0, if the graph has at least one undirected edge.
+</p>
+
+
+<hr><h4><a name="declCGraph_IsUndirected">IsUndirected</a></h4>
+<p class="Blurb">Checks if the graph is undirected.</p><pre>
+
+inline int CGraph::IsUndirected() const;
+</pre><p>
+This function returns 1, if the graph is undirected, and 0, if the graph has at least one directed edge.
+</p>
+
+
+<hr><h4><a name="declCGraph_GetAdjacencyMatrix">GetAdjacencyMatrix</a></h4>
+<p class="Blurb">Returns adjacency matrix.</p><pre>
+
+inline void CGraph::GetAdjacencyMatrix( CMatrix&lt;int&gt;** <EM CLASS="CodeItalic">pAdjMatOut</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>pAdjMatOut<dd>  Returned parameter. Pointer to the adjacency martix for the graph.
+</dl></p><p>
+This function returns an adjacency matrix, which corresponds to the graph described by the related <EM CLASS="CodeReg">
+CGraph</EM>
+ object. Note, that the adjacency matrix is not stored inside the graph and should be formed only when the user calls this member function.
+</p>
+
+
+<hr><h4><a name="declCGraph_ClearGraph">ClearGraph</a></h4>
+<p class="Blurb">Clears graph.</p><pre>
+
+inline void CGraph::ClearGraph();
+</pre><p>
+This function clears the graph by deleting lists of neighbors for all nodes and then setting the number of nodes equal to zero.
+</p>
+
+
+<hr><h4><a name="decl_pnloperator ==">operator ==</a></h4>
+<p class="Blurb">Checks if two graphs are identical.</p><pre>
+
+inline bool CGraph::operator ==( const CGraph&amp; <EM CLASS="CodeItalic">rGraph </EM>) const;
+</pre><p><dl>
+ Arguments
+<dt>rGraph<dd>  Reference to the graph, which is the right-hand-side operand of the comparison operation.
+</dl></p><p>
+This function checks if two graphs are identical, and returns `true', if they are, and `false' otherwise.
+</p>
+
+
+<hr><h4><a name="decl_pnloperator !=">operator !=</a></h4>
+<p class="Blurb">Checks if two graphs are not identical.</p><pre>
+
+inline bool CGraph::operator !=(const CGraph&amp; <EM CLASS="CodeItalic">rGraph</EM>) const;
+</pre><p><dl>
+ Arguments
+<dt>rGraph<dd>  Reference to the graph, which is the right-hand-side operand of the comparison operation.
+</dl></p><p>
+This function checks if two graphs are not identical, and returns `true', if they are not, and `false' otherwise.
+</p>
+
+
+<hr><h4><a name="declCGraph_GetParents">GetParents</a></h4>
+<p class="Blurb">Returns vector of parents for node.</p><pre>
+
+inline void CGraph::GetParents( int </EM><EM CLASS="CodeItalic">nodeNum</EM><EM CLASS="CodeReg">, intVector *</EM><EM CLASS="CodeItalic">parents</EM><EM CLASS="CodeReg"> ) const;</EM></P></pre><p><dl>
+ Arguments
+<dt>nodeNum<dd>  Number of the node, for which parents are inquired.
+<dt>parents<dd>  Actually returned parameter. A pointer to a 1D vector of integers that are numbers of nodes, which appear to be parents of the node numbered <EM CLASS="CodeItalic">nodeNum</EM>.
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_GetChildren">GetChildren</a></h4>
+<p class="Blurb">Returns vector of children for node.</p><pre>
+
+inline void CGraph::GetChildren( int <EM CLASS="CodeItalic">nodeNum</EM>, intVector *<EM CLASS="CodeItalic">children</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>nodeNum<dd>  Number of the node, for which children are inquired.
+<dt>children<dd>  Actually returned parameter. A pointer to a 1D vector of integers that are numbers of nodes, which appear to be children of the node numbered <EM CLASS="CodeItalic">nodeNum</EM>.
+</dl></p>
+
+
+<hr><h4><a name="declCGraph_IsDAG">IsDAG</a></h4>
+<p class="Blurb">Checks if graph is directed acyclic graph.</p><pre>
+
+int CGraph::IsDAG() const;
+</pre><p>
+This member function returns 1, if the graph is a directed acyclic graph (DAG), and 0 otherwise.
+</p>
+
+
+<hr><h4><a name="declCGraph_IsTopologicallySorted">IsTopologicallySorted</a></h4>
+<p class="Blurb">Checks if graph is topologically sorted.</p><pre>
+
+int CGraph::IsTopologicallySorted() const;
+</pre><p>
+This member function returns 1, if the graph is topologically sorted. Number of a parent is always less than numbers of its children.
+</p>
+
+
+<hr><h4><a name="declCGraph_NumberOfConnectivityComponents">NumberOfConnectivityComponents</a></h4>
+<p class="Blurb">Returns number of graph connectivity components.</p><pre>
+
+int CGraph::NumberOfConnectivityComponents() const;
+</pre><p>
+This function returns a number of connectivity components of the graph it has been called for. Note that if graph has more than one connectivity components, the inference engine throws an exception. This means that in the case of several connectivity components all of them should be treated as separate graphical models.
+</p>
+
+
+<hr><h4><a name="declCGraph_GetConnectivityComponents">GetConnectivityComponents</a></h4>
+<p class="Blurb">Returns connectivity components.</p><pre>
+
+void CGraph::GetConnectivityComponents( intVecVector *<EM CLASS="CodeItalic">decompositionOut</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>decompositionOut  <dd>Returned parameter. Array of connectivity components.
+</dl></p><p>
+This function returns connectivity components.
+</p>
+
+
+<hr><h4><a name="decl_pnloperator =">operator =</a></h4>
+<p class="Blurb">Assigns new value to graph object.</p><pre>
+
+CGraph&amp; CGraph::operator =( const CGraph&amp; <EM CLASS="CodeItalic">rGraph </EM>);
+</pre><p><dl>
+ Arguments
+<dt>rGraph<dd>  Reference to a graph, which is the right-hand-side operand of the assignment operation.
+</dl></p><p>
+This function assigns one existing graph to the other, so that the result is an identical copy of the input graph.
+</p>
+
+
+<hr><h4><a name="declCGraph_Dump">Dump</a></h4>
+<p class="Blurb">Dumps graph.</p><pre>
+
+void CGraph::Dump() const;
+</pre><p>
+This function dumps the graph, that is, all the neighbors and neighbors types for all nodes, to the standard output.
+</p>
+
+
+<hr><h4><a name="declCGraph_GetAncestry">GetAncestry</a></h4>
+<p class="Blurb">Finds nodes that lie outside given subgraph but have ancestors inside.</p><pre>
+
+void CGraph::GetAncestry( intVector const <EM CLASS="CodeItalic">&amp;subGraph</EM>, intVector <EM CLASS="CodeItalic">*closure</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>subGraph  <dd>Vector of indices of the input subgraph.
+<dt>closure<dd>  Output vector.
+</dl></p><p>
+This function returns indices of nodes that do not lie but have ancestors in the given subgraph.
+</p>
+
+
+<hr><h4><a name="declCGraph_GetAncestralClosure">GetAncestralClosure</a></h4>
+<p class="Blurb">Finds nodes that either lie inside or have ancestors in given subgraph.</p><pre>
+
+void CGraph::GetAncestralClosure( intVector const &amp;<EM CLASS="CodeItalic">subGraph</EM>,
+ intVector *<EM CLASS="CodeItalic">closure</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>subGraph<dd>  Vector of indices of the input subgraph.
+<dt>closure<dd>  Output vector.
+</dl></p><p>
+This function returns indices of nodes that either lie or have ancestors in the given subgraph.
+</p>
+
+
+<hr><h4><a name="declCgraph_GetAncestralClosure">GetAncestralClosure</a></h4>
+<p class="Blurb">Finds nodes that either lie inside or have ancestors in given subgraph.</p><pre>
+
+void Cgraph::GetAncestralClosure( intVector const &amp;<EM CLASS="CodeItalic">subGraph</EM>,
+boolVector *<EM CLASS="CodeItalic">closure</EM>Mask ) const;
+</pre><p><dl>
+ Arguments
+<dt>subGraph<dd>  Vector of indices of the input subgraph.
+<dt>closureMask<dd>  Output boolean vector-mask.
+</dl></p><p>
+This function finds nodes that either lie inside or have ancestors in the given subgraph and fills the boolean mask accordingly. The <EM CLASS="CodeItalic">
+i</EM>
+-th element of the <EM CLASS="CodeItalic">
+closureMask</EM>
+ is set to true only if the <EM CLASS="CodeItalic">
+i</EM>
+-th node belongs to the ancestral closure.
+</p>
+
+
+<hr><h4><a name="declCGraph_GetSubgraphConnectivityComponents">GetSubgraphConnectivityComponents</a></h4>
+<p class="Blurb">Finds plain connectivity components of induced subgraph.</p><pre>
+
+void CGraph::GetSubgraphConnectivityComponents( intVector const &amp;<EM CLASS="CodeItalic">subGraph</EM>, intVecVector *<EM CLASS="CodeItalic">decomposition</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>subGraph<dd>  Vector of indices of the input subgraph.
+<dt>decomposition<dd>  Output vector of vectors with indices of the decomposition nodes.
+</dl></p><p>
+This function finds plain connectivity components of the induced subgraph and fills in the decomposition output argument accordingly.
+</p>
+
+
+<hr><h4><a name="declCGraph_GetDConnectionList">GetDConnectionList</a></h4>
+<p class="Blurb">Finds nodes d-connected to given node.</p><pre>
+
+void CGraph::GetDConnectionList( int <EM CLASS="CodeItalic">node</EM>, intVector const &amp;<EM CLASS="CodeItalic">separator</EM>, intVector <EM CLASS="CodeItalic">*dseparationList</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>node  <dd>Given node.
+<dt>separator<dd>  Separator for <EM CLASS="CodeItalic">
+d</EM>
+-separation.
+<dt>dseparationList<dd>  Output vector of indices of nodes.
+</dl></p><p>
+This function finds nodes d-connected to the given node by the given separator. The definition of the d-connection runs as in [CDLS]
+</p>
+
+
+<hr><h4><a name="declCGraph_GetDConnectionTable">GetDConnectionTable</a></h4>
+<p class="Blurb">Finds d-connection lists for all nodes of graph.</p><pre>
+
+void CGraph::GetDConnectionTable( intVector const &amp;<EM CLASS="CodeItalic">separator</EM>, intVecVector <EM CLASS="CodeItalic">*dseparationTable</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>separator<dd>  Separator for d-separation.
+<dt>dseparationTable<dd>  Output vector of vectors of indices of nodes.
+</dl></p><p>
+Finds d-connection lists for all nodes of the graph. The definition for the d-connection runs as in [CDLS].
+</p>
+
+
+<hr><h4><a name="declCGraph_GetReachableSubgraph">GetReachableSubgraph</a></h4>
+<p class="Blurb">Finds nodes reachable from given subgraph if certain pairs of edges are banned.</p><pre>
+
+void CGraph::GetReachableSubgraph( intVector const &amp;<EM CLASS="CodeItalic">subgraph</EM>, bool <EM CLASS="CodeItalic">*ban[]</EM>, intVector <EM CLASS="CodeItalic">*closure</EM> ) const;
+void CGraph::GetReachableSubgraph( int <EM CLASS="CodeItalic">node</EM>, bool *<EM CLASS="CodeItalic">ban</EM>[], intVector *<EM CLASS="CodeItalic">closure</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>subgraph<dd>  Given subgraph.
+<dt>ban<dd>  Three-dimensional boolean mask.
+<dt>closure<dd>  Output vector of indices of nodes.
+</dl></p>
+
+
+
+<hr><h3><a name="declClassCDAG">Class CDAG</a></h3>
+
+<IMG SRC="fig/PNLMarch.book-95.gif">
+
+<p>
+Class <EM CLASS="CodeReg">CDAG</EM> represents the structure of a DAG, with its ancestor matrix being a variable of
+the class.
+</p>
+
+
+
+
+<hr><h4><a name="declCDAG_Create">Create</a></h4>
+<p class="Blurb">Creates class object.</p><pre>
+
+static CDAG* CDAG::Create( int <EM CLASS="CodeItalic">numOfNds</EM>, const int *<EM CLASS="CodeItalic">numOfNbrsIn</EM>,const int *const *<EM CLASS="CodeItalic">nbrsListIn</EM>, const ENeighborType *const *<EM CLASS="CodeItalic">nbrsTypesIn </EM>);
+static CDAG* CDAG::Create( int <EM CLASS="CodeItalic">numOfNds</EM>, const int *const *<EM CLASS="CodeItalic">adjMatIn</EM> );
+static CDAG* CDAG::Create(const CMatrix&lt;int&gt;* <EM CLASS="CodeItalic">pAdjMat</EM>);
+static CDAG* CDAG::Create(const CGraph&amp; <EM CLASS="CodeItalic">pGraph</EM>);
+</pre><p><dl>
+ Arguments
+<dt>numOfNds  <dd>Number of nodes of the DAG.
+<dt>numOfNbrsIn<dd>  Array of integer, each ith integer is the number of neighbors of the ith nodes.
+<dt>nbrsListIn<dd>  List of neighbors for a node.
+<dt>nbrsTypesIn<dd>  2D list of neighbor types. Each element shows the type of the corresponding neighbor from <EM CLASS="CodeItalic">nbrsListIn</EM>.
+<dt>adjMatIn<dd>  2D array of integers, represents an adjacent matrix.
+<dt>pAdjMat<dd>  2D integer matrix, represents an adjacent matrix.
+<dt>pGraph<dd>  Reference to a <EM CLASS="CodeReg">CGraph</EM> instance.
+</dl></p><p>
+This function creates a <EM CLASS="CodeReg">CDAG</EM> object.
+</p>
+
+
+<hr><h4><a name="declCDAG_Change">Change</a></h4>
+<p class="Blurb">Changes <EM CLASS="CodeReg">DAG</EM>  object.</p><pre>
+
+CDAG* CDAG::Change(int <EM CLASS="CodeItalic">iStartNode</EM>, int <EM CLASS="CodeItalic">iEndNode</EM>, EDAGChangeType <EM CLASS="CodeItalic">iChangeType</EM>);
+</pre><p><dl>
+ Arguments
+<dt>iStartNode<dd>  ID of the node from which the directed edge comes.
+<dt>iEndNode<dd>  ID of the node at which the directed edge points.
+<dt>iChangeType<dd>  One of three operations: addition, deletion or reversing of the direction of the edge.
+</dl></p><p>
+This function allows to add, to delete or to reverse an edge of a <EM CLASS="CodeReg">
+DAG</EM> object. The function returns <EM CLASS="CodeItalic">NULL </EM>if the change did not occur, otherwise returns the new <EM CLASS="CodeReg">
+CDAG</EM> object.
+</p>
+
+
+<hr><h4><a name="declCDAG_ClearContent">ClearContent</a></h4>
+<p class="Blurb">Deletes ancestor matrix of <EM CLASS="CodeReg">DAG.</EM></p><pre>
+
+void CDAG::ClearContent();
+</pre><p>
+This function deletes the ancestor matrix of the <EM CLASS="CodeReg">DAG</EM> object.
+</p>
+
+
+<hr><h4><a name="declCDAG_Clone">Clone</a></h4>
+<p class="Blurb">Creates replica of <EM CLASS="CodeReg">DAG.</EM></p><pre>
+
+CDAG* CDAG::Clone();
+</pre><p>
+This function copies the <EM CLASS="CodeReg">DAG</EM> object and thus creates its replica.
+</p>
+
+
+<hr><h4><a name="declCDAG_CreateAncestorMatrix">CreateAncestorMatrix</a></h4>
+<p class="Blurb">Creates ancestor matrix for <EM CLASS="CodeReg">DAG</EM></p><pre>
+
+void CDAG::CreateAncestorMatrix();
+</pre><p>
+This function creates the ancestor matrix for a <EM CLASS="CodeReg">DAG</EM> object.
+</p>
+
+
+<hr><h4><a name="declCDAG_CreateMinimalSpanningTree">CreateMinimalSpanningTree</a></h4>
+<p class="Blurb">Creates minimal spanning tree for given weight matrices.</p><pre>
+
+CDAG* CDAG::CreateMinimalSpanningTree(const CMatrix&lt;float&gt;* <EM CLASS="CodeItalic">pWeightMatrix</EM>, const CMatrix&lt;float&gt;* <EM CLASS="CodeItalic">pWeightMatrix2</EM>);
+</pre><p><dl>
+ Arguments
+<dt>pWeightMatrix<dd>  N*N 2D weight matrix, the primary weight. Element <EM CLASS="CodeItalic">
+[i,j]</EM> connects node <EM CLASS="CodeItalic">i </EM>to node <EM CLASS="CodeItalic">j</EM>.
+<dt>pWeightMatrix2<dd>  N*N 2D weight matrix, the secondary weight.
+</dl></p><p>
+This function creates a <EM CLASS="CodeReg">CDAG</EM> instance for the minimal spanning tree.
+</p>
+
+
+<hr><h4><a name="declCDAG_DoMove">DoMove</a></h4>
+<p class="Blurb">Changes <EM CLASS="CodeReg">DAG  object.</EM></p><pre>
+
+bool CDAG::DoMove( int <EM CLASS="CodeItalic">iStartNode</EM>, int <EM CLASS="CodeItalic">iEndNode</EM>, EDAGChangeType <EM CLASS="CodeItalic">iChangeType </EM>);
+</pre><p><dl>
+ Arguments
+<dt>iStartNode<dd>  ID of the node from which the directed edge comes.
+<dt>iEndNode<dd>  ID of the node at which the directed edge points.
+<dt>iChangeType<dd>  One of three operations: addition, deletion or reversing of the direction of the edge.
+</dl></p><p>
+This function changes the DAG object by addition, deletion or reversing of an object edge. This function returns `true' when the change of the <EM CLASS="CodeReg">DAG </EM>object was permitted and the object was changed, returns `false' otherwise.
+</p>
+
+
+<hr><h4><a name="declCDAG_GetAllEdges">GetAllEdges</a></h4>
+<p class="Blurb">Gets all edges of <EM CLASS="CodeReg">DAG </EM>object.</p><pre>
+
+void CDAG::GetAllEdges( EDGEVECTOR* <EM CLASS="CodeItalic">pvOutput </EM>);
+</pre><p><dl>
+ Arguments
+<dt>pvOutput<dd>   <EM CLASS="CodeItalic">EDGE</EM> vector which is used to store all the edges of the <EM CLASS="CodeReg">DAG</EM>.
+</dl></p><p>
+This function gets all the edges of the <EM CLASS="CodeReg">DAG</EM>.<EM CLASS="CodeItalic"> EDGE</EM> is a data structure which contains two integers: node ID from which the edge comes and node ID at which the edge points.
+</p>
+
+
+<hr><h4><a name="declCDAG_GetAllNeighbours">GetAllNeighbours</a></h4>
+<p class="Blurb">Generates all valid neighbours for <EM CLASS="CodeReg">DAG</EM>object.</p><pre>
+
+void CDAG::GetAllNeighbours( POINTVECTOR &amp;<EM CLASS="CodeItalic">vNeighbours</EM>, EDGEOPVECTOR &amp;<EM CLASS="CodeItalic">vOPs</EM>,
+ bool (*IsValid)(CDAG* <EM CLASS="CodeReg">pDAG</EM>) );
+</pre><p><dl>
+ Arguments
+<dt>vNeighbors<dd>  Vector of void* which stores all valid neighbors of the <EM CLASS="CodeReg">DAG </EM>object.
+<dt>vOPs<dd>  <EM CLASS="CodeItalic">EDGEOP</EM> vector which stores all valid changes to the <EM CLASS="CodeReg">DAG </EM>object.
+<dt>pDAG <dd><EM CLASS="CodeReg"></EM><EM CLASS="CodeItalic">)</EM>  External function called to check if a <EM CLASS="CodeReg">DAG</EM> is valid.
+</dl></p><p>
+This function generates all neighbor <EM CLASS="CodeReg">DAG</EM>s of the given class object that satisfy the conditions of the <EM CLASS="CodeReg">IsValid</EM> function.
+</p>
+
+
+<hr><h4><a name="declCDAG_GetAllValidMove">GetAllValidMove</a></h4>
+<p class="Blurb">Generates all valid moves for DAG.</p><pre>
+
+void CDAG::GetAllValidMove(EDGEOPVECTOR *<EM CLASS="CodeItalic">pvOutput</EM>, intVector*<EM CLASS="CodeItalic">pvAncesstorVector</EM>, intVector* <EM CLASS="CodeItalic">pvDescendantsVector</EM>, intVector* <EM CLASS="CodeItalic">pvNotParents</EM>, intVector* <EM CLASS="CodeItalic">pvNotChild</EM>) );
+</pre><p><dl>
+ Arguments
+<dt>pvOutput<dd>  EDGEOP vector. Stores all valid changes to the DAG.
+<dt>pvAncesstorVector <dd>Integer vector.
+<dt>pvDescendantsVector <dd>Integer vector.
+<dt>pvNotParent <dd>Integer vector.
+<dt>pvNotChild  <dd>Integer vector.
+</dl></p><p>
+This function generates all valid moves for the <EM CLASS="CodeReg">
+DAG</EM>. This function is carried out under the condition that the <EM CLASS="CodeItalic">
+pvDescendantsVector</EM> nodes of a generated <EM CLASS="CodeReg">DAG</EM> are not ancestors of <EM CLASS="CodeItalic">pvAncesstorVector </EM>nodes and that <EM CLASS="CodeItalic">pvNotParent </EM>nodes are not ancestors of <EM CLASS="CodeItalic">pvNotChild </EM>nodes.
+</p>
+
+
+<hr><h4><a name="declCDAG_GetEdgeDirect">GetEdgeDirect</a></h4>
+<p class="Blurb">Gets direction of edge.</p><pre>
+
+int CDAG::GetEdgeDirect(int <EM CLASS="CodeItalic">startNode</EM>, int <EM CLASS="CodeItalic">endNode</EM>);
+</pre><p><dl>
+ Arguments
+<dt>startNode<dd>  Node ID from which the edge comes.
+<dt>EndNode<dd>  Node ID at which the edge points.
+</dl></p><p>
+This function learns the direction of the edge. The function returns<BR>1 if the edge is directed from <EM CLASS="CodeItalic">startNode</EM> to <EM CLASS="CodeItalic">
+EndNode<BR></EM>
+-1  if the edge is directed from <EM CLASS="CodeItalic">EndNode </EM>to <EM CLASS="CodeItalic">startNode<BR></EM>
+0   if there is no edge between the two nodes.
+</p>
+
+
+<hr><h4><a name="decl_pnlGetMaxFanIn">GetMaxFanIn</a></h4>
+<p class="Blurb">Computes MaxFanIn for <EM CLASS="CodeReg">DAG</EM> and returns it to object.</p><pre>
+int CDAG::GetMaxFanIn();
+</pre>
+
+
+<hr><h4><a name="declCDAG_GetSubDAG">GetSubDAG</a></h4>
+<p class="Blurb">Gets part of <EM CLASS="CodeReg">DAG</EM></p><pre>
+
+CDAG* CDAG::GetSubDAG( intVector &amp;<EM CLASS="CodeItalic">vSubNodesSet </EM>);
+</pre><p><dl>
+ Arguments
+<dt>vSubNodesSet<dd>  Integer vector which stores the node IDs that are to be extracted from the <EM CLASS="CodeReg">DAG</EM>.
+</dl></p>
+
+
+<hr><h4><a name="declCDAG_IsEquivalent">IsEquivalent</a></h4>
+<p class="Blurb">Compares two <EM CLASS="CodeReg">DAGs.</EM></p><pre>
+
+bool CDAG::IsEquivalent( CDAG *<EM CLASS="CodeItalic">pDAG </EM>);
+</pre><p><dl>
+ Arguments
+<dt>pDAG<dd> instance compared to the given <EM CLASS="CodeReg">
+DAG</EM>.
+</dl></p><p>
+This function compares two objects of the class. The function returns `true' if the <EM CLASS="CodeReg">
+DAGs</EM> are identical, returns `false' otherwise.
+</p>
+
+
+<hr><h4><a name="declCDAG_IsValidMove">IsValidMove</a></h4>
+<p class="Blurb">Checks if move generates non-<EM CLASS="CodeReg">DAG </EM>object.</p><pre>
+
+bool CDAG::IsValidMove(int <EM CLASS="CodeItalic">iStartNode</EM>, int <EM CLASS="CodeItalic">iEndNode</EM>, EDAGChangeType <EM CLASS="CodeItalic">iChangeType</EM>);
+</pre><p><dl>
+ Arguments
+<dt>iStartNode<dd>  Start node ID of the move.
+<dt>iEndNode<dd>  End node ID of the move.
+<dt>iChangType<dd>  One of the following operations: <EM CLASS="CodeItalic">add</EM>, <EM CLASS="CodeItalic">delete</EM>, <EM CLASS="CodeItalic">reverse.</EM>
+</dl></p><p>
+This function checks if the move can generate a non-<EM CLASS="CodeReg">DAG</EM> object. The function returns `true' if the move generates a <EM CLASS="CodeReg">
+DAG</EM>, returns `false' if the move generates a non-<EM CLASS="CodeReg">DAG</EM>.
+</p>
+
+
+<hr><h4><a name="declCDAG_MarkovBlanket">MarkovBlanket</a></h4>
+<p class="Blurb">Computes Markov Blanket for node.</p><pre>
+
+void CDAG::MarkovBlanket(int <EM CLASS="CodeItalic">nNodeNumber</EM>, intVector *<EM CLASS="CodeItalic">pvOutPut</EM>);
+</pre><p><dl>
+ Arguments
+<dt>nNodeNumber<dd>  Node ID for which Markov Blanket is to be computed.
+<dt>pvOutPut<dd>  Pointer to the integer vector which stores the computed Markov Blanket.
+</dl></p><p>
+This function computes the Markov Blanket for a node.
+</p>
+
+
+<hr><h4><a name="declCDAG_RandomCreateADAG">RandomCreateADAG</a></h4>
+<p class="Blurb">Creates random <EM CLASS="CodeReg">DAG.</EM></p><pre>
+
+CDAG* CDAG::RandomCreateADAG(int <EM CLASS="CodeItalic">iNodeNumber</EM>, const intVector &amp;<EM CLASS="CodeItalic">vAncesstor</EM>, const intVector &amp;<EM CLASS="CodeItalic">vDescendants</EM>, intVector* <EM CLASS="CodeItalic">pvNotParent</EM>, intVector* <EM CLASS="CodeItalic">pvNotChild</EM>);
+</pre><p><dl>
+ Arguments
+<dt>iNodeNumber<dd>  Number of nodes in generated DAG.
+<dt>vAncesstor<dd>, <EM CLASS="CodeItalic">
+<dt>vDescendants<dd>  </EM>
+Integer vectors.Make sure that among <EM CLASS="CodeItalic">
+vDescendants</EM> nodes of the generated <EM CLASS="CodeReg">DAG</EM> there are no ancestors of <EM CLASS="CodeItalic">vAncestor</EM> nodes.
+<dt>pvNotParent<dd>, <EM CLASS="CodeItalic">pvNotChild  </EM>Integer vectors. Make sure that among <EM CLASS="CodeItalic">pvNotParent</EM> nodes of the generated <EM CLASS="CodeReg">DAG</EM> there are no ancestors of <EM CLASS="CodeItalic">pvNotChild</EM> nodes.
+</dl></p>
+
+
+<hr><h4><a name="declCDAG_SetSubDag">SetSubDag</a></h4>
+<p class="Blurb">Replaces part of <EM CLASS="CodeReg">DAG</EM> by input sub-<EM CLASS="CodeReg">DAG</EM></p><pre>
+
+bool CDAG::SetSubDag(intVector &amp;<EM CLASS="CodeItalic">vSubNodeSet</EM>, CDAG *<EM CLASS="CodeItalic">pSubDAG</EM>);
+</pre><p><dl>
+ Arguments
+<dt>vSubNodeSet<dd>  Integer vector. Stores node IDs that are to be modified.
+<dt>pSubDAG<dd>  <EM CLASS="CodeReg">DAG</EM> that is to replace a part of the given <EM CLASS="CodeReg">DAG</EM>.
+</dl></p><p>
+This function replaces a part of the given <EM CLASS="CodeReg">
+DAG</EM> by a sub-<EM CLASS="CodeReg">DAG.</EM>The function returns `true' if the replacement has been successful, otherwise returns `false'.
+</p>
+
+
+<hr><h4><a name="declCDAG_SymmetricDifference">SymmetricDifference</a></h4>
+<p class="Blurb">Compares structures of two <EM CLASS="CodeReg">DAGs.</EM></p><pre>
+
+ int CDAG::SymmetricDifference(const CDAG* pDAG) const;
+</pre><p><dl>
+ Arguments
+<dt>pDAG  <dd>Pointer to a <EM CLASS="CodeReg">
+DAG</EM>
+ to be compared with the given <EM CLASS="CodeReg">
+DAG</EM>.
+</dl></p><p>
+This function compares structures of two class objects.
+</p>
+
+
+<hr><h4><a name="declCDAG_TopologicalCreateDAG">TopologicalCreateDAG</a></h4>
+<p class="Blurb">Creates replica <EM CLASS="CodeReg">DAG</EM>.</p><pre>
+
+CDAG* CDAG::TopologicalCreateDAG( intVector&amp; <EM CLASS="CodeItalic">vNodesMap </EM>);
+</pre><p><dl>
+ Arguments
+<dt>vNodesMap<dd>  Integer vector. Preserves the map of the node ID of the given <EM CLASS="CodeReg">DAG</EM>
+ for new node IDs. As a result, the node of the newly created <EM CLASS="CodeReg">DAG</EM> corresponds to the node <EM CLASS="CodeItalic">vNodesMap</EM>[i] of the given <EM CLASS="CodeReg">DAG</EM>.
+</dl></p><p>
+This function creates a replica of the given <EM CLASS="CodeReg">DAG</EM>. Node ID of the new <EM CLASS="CodeReg">DAG</EM> is provided by the input integer vector.
+</p>
+
+
+<hr><h4><a name="declCDAG_TopologicalSort">TopologicalSort</a></h4>
+<p class="Blurb">Sorts nodes of <EM CLASS="CodeReg">DAG</EM> topologically.</p><pre>
+
+bool CDAG::TopologicalSort( intVector* <EM CLASS="CodeItalic">pvOutput </EM>);
+</pre><p><dl>
+ Arguments
+<dt>pvOutput<dd>  Integer vector. Preserves the map of the node ID of the given <EM CLASS="CodeReg">
+DAG</EM> for new node IDs. As a result the<EM CLASS="CodeItalic"></EM>node of the newly created <EM CLASS="CodeReg">DAG</EM> corresponds to the node <EM CLASS="CodeItalic">pvOutput[i] </EM>of the given <EM CLASS="CodeReg">DAG</EM>.
+</dl></p><p>
+This function classifies a <EM CLASS="CodeReg">DAG</EM> object according to its topological order.
+</p>
+
+
+<hr><h2><a name="decl_pnlNode_Types">Node Types</a></h2>
+
+<hr><h3><a name="decl_pnlClassCNode_Types">Class CNodeType</a></h3>
+
+<IMG SRC="fig/PNLMarch.book-98.gif">
+
+<p>
+Class <EM CLASS="CodeReg">CNodeType</EM> represents node types for the model. By default model nodes are
+binary and discrete.
+</p>
+
+
+<hr><h4><a name="declCNodeType_IsDiscrete">IsDiscrete</a></h4>
+<p class="Blurb">Returns information on node discreteness.</p><pre>
+
+inline int CNodeType::IsDiscrete() const;
+</pre><p>
+This function returns 1 if the node is discrete, returns 0 otherwise.
+</p>
+
+
+<hr><h4><a name="declCNodeType_GetNodeSize">GetNodeSize</a></h4>
+<p class="Blurb">Returns node size.</p><pre>
+
+inline int CNodeType::GetNodeSize() const;
+</pre>
+
+
+<hr><h4><a name="declCNodeType_SetType">SetType</a></h4>
+<p class="Blurb">Sets node type.</p><pre>
+
+inline void CNodeType::SetType( bool <EM CLASS="CodeItalic">isDiscrete</EM>, int <EM CLASS="CodeItalic">ndSize</EM> );
+</pre><p><dl>
+ Arguments
+<dt>isDiscrete<dd>  Type of node value. Equals to <EM CLASS="CodeItalic">
+true</EM>
+ if the node is discrete, equals to <EM CLASS="CodeItalic">
+false</EM>
+ if the node is continuous.
+<dt>ndSize<dd>  New node size.
+</dl></p><p>
+This function sets the type of the given node.
+</p>
+
+
+<hr><h4><a name="decl_pnloperator==">operator==</a></h4>
+<p class="Blurb">Compares operands.</p><pre>
+
+inline bool operator==( const CNodeType &amp;<EM CLASS="CodeItalic">ntIn </EM>) const;
+</pre><p><dl>
+ Arguments
+<dt>ntIn  <dd>CNodeType object.
+</dl></p><p>
+This function compares two operands. Returns `true' if the operands are equal, returns `false' otherwise.
+</p>
+
+
+<hr><h4><a name="decl_pnloperator!=">operator!=</a></h4>
+<p class="Blurb">Compares two operands.</p><pre>
+
+inline bool operator!=( const CNodeType &amp;<EM CLASS="CodeItalic">ntIn </EM>) const;
+</pre><p><dl>
+ Arguments
+<dt>ntIn  <dd>CNodeType object.
+</dl></p><p>
+This function compares two operands. The function returns `true' if the operands are  not equal; returns `false' otherwise.
+</p>
+
+
+<hr><h4><a name="decl_pnlModel_Domain">Model Domain</a></h4>
+
+
+<p>
+Model domain is a set of nodes that define a graphical model. Multiple graphical
+models can have one model domain. This object keeps all information about the types
+of variables, or nodes. For example, you can create a new graphical model using the
+description of model variables from the model domain.
+</p>
+
+
+
+<hr><h4><a name="decl_pnlClassCModel_Domain">Class CModelDomain</a></h4>
+
+<IMG SRC="fig/PNLMarch.book-99.gif">
+
+
+<p>
+<A NAME="pgfId-52970"></A>This class contains information on the variable types of all nodes to be used for creating a graphical model, as well as on the node types for nodes to become observed on entering evidence during inference. A graphical model keeps the pointer to the <EM CLASS="CodeReg">CModelDomain</EM> on which it was created and learns from it the  information on node types. </p>
+<p>
+This class also stores temporary <EM CLASS="CodeReg">CFactor</EM> objects that are not attached to any graphical model. Such objects appear during inference and learning  procedures. When the <EM CLASS="CodeReg">CModelDomain</EM> is destroyed they are deleated form it automatically.</p>
+<p>
+This class is derived from the <EM CLASS="CodeReg">CReferenceCounter</EM> class. It keeps pointers to <EM CLASS="CodeReg">CGraphicalModels</EM> that are based on the <EM CLASS="CodeReg">CModelDomain</EM>. The class cannot be deleted until any Graphical Model referres to it.</p>
+
+
+
+<hr><h4><a name="decl_pnlCreate">Create</a></h4>
+<p class="Blurb">Creates class object.</p><pre>
+
+static CModelDomain* CModelDomain::Create( const nodeTypeVector&amp; <EM CLASS="CodeItalic">variableTypes</EM>, const intVector&amp; <EM CLASS="CodeItalic">variableAssociation</EM>, CGraphicalModel* <EM CLASS="CodeItalic">pCreaterOfMD</EM> = NULL );
+static CModelDomain* CModelDomain::Create(int <EM CLASS="CodeItalic">numVariables</EM>, const CNodeType&amp; <EM CLASS="CodeItalic">commonVariableType</EM> = CNodeType(1,2), CGraphicalModel* <EM CLASS="CodeItalic">pCreaterOfMD</EM> = NULL);
+</pre><p><dl>
+ Arguments
+<dt>variableTypes <dd>Vector of different node types.
+<dt>variableAssociation <dd>Vector of variable association with the variable types.
+<dt>pCreatorOfMD  <dd>Pointer to the graphical model which creates a model domain.
+<dt>numVariables  <dd>Number of variables in the model domain.
+<dt>CommonVariableType  <dd>Variable type.
+</dl></p><p>
+Two function versions are available.The first creates a model domain with different variable types, the association for every node pointing at a node type.The second creates a model domain with all variables of the same type.
+</p>
+
+
+<hr><h4><a name="decl_pnlAttachFactor">AttachFactor</a></h4>
+<p class="Blurb">Attaches factor to model domain.</p><pre>
+
+int CModelDomain::AttachFactor( const CFactor *<EM CLASS="CodeItalic">pFactor </EM>);
+</pre><p><dl>
+ Arguments
+<dt>pFactor<dd>  Pointer to the factor to be attached.
+</dl></p><p>
+Returns the number of this factor in array of pointers to the factors on the model domain.
+</p>
+
+
+<hr><h4><a name="declCModelDomain_ReleaseFactor">ReleaseFactor</a></h4>
+<p class="Blurb">Releases attached factors from model domain.</p><pre>
+
+void CModelDomain::ReleaseFactor( const CFactor *<EM CLASS="CodeItalic">pFactor </EM>);
+</pre><p><dl>
+ Arguments
+<dt>pFactor <dd>Pointer to the factor which is to be released from the model domain.
+</dl></p>
+
+
+<hr><h4><a name="declCModelDomain_IsAFactorOwner">IsAFactorOwner</a></h4>
+<p class="Blurb">Checks if model domain keeps pointer to query factor.</p><pre>
+
+bool CModelDomain::IsAFactorOwner( const CFactor *pFactor );
+</pre><dl><p>
+ Arguments
+<dt>pFactor <dd>Pointer to the factor which is to be released from the model domain.
+</dl></p><p>
+The function returns the value of 1 if the model domain keeps a pointer to the query factor, that is, if the model domain is the owner of the query factor. Otherwise, returns 0.
+</p>
+
+
+<hr><h4><a name="declCModelDomain_GetVariableType">GetVariableType</a></h4>
+<p class="Blurb">Returns pointer to node type of query variable. </p><pre>
+
+const CNodeType* CModelDomain::GetVariableType( int <EM CLASS="CodeItalic">varNumber </EM>) const;
+</pre><p><dl>
+ Arguments
+<dt>Frumpier  <dd>Number of variables.
+</dl></p>
+
+
+<hr><h4><a name="declCModelDomain_GetVariableTypes">GetVariableTypes</a></h4>
+<p class="Blurb">Returns variable types for query variables.</p><pre>
+
+void CModelDomain::GetVariableTypes( intVector&amp; <EM CLASS="CodeItalic">vars</EM>, pConstNodeTypeVector* <EM CLASS="CodeItalic">varTypes</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>vars  <dd>Vector of number of variables.
+<EM CLASS="CodeItalic">varTypes  </EM>varTypes  </EM>Returned parameter. Types of variables.
+Returned parameter. Types of variables.
+</dl></p><p>
+This function fills in the input vector <EM CLASS="CodeItalic">varTypes</EM> by const pointers to variable types.
+</p>
+
+
+<hr><h4><a name="declCModelDomain_GetObsGauVarType">GetObsGauVarType</a></h4>
+<p class="Blurb">Returns pointer to observed Gaussian variable type.</p><pre>
+
+inline const CNodeType* CModelDomain::GetObsGauVarType() const;
+</pre><p>
+This function returns a pointer to the observed Gaussian variable type.
+</p>
+
+
+<hr><h4><a name="declCModelDomain_GetObsTabVarType">GetObsTabVarType</a></h4>
+<p class="Blurb">Returns pointer to observed Tabular variable type.</p><pre>
+
+inline const CNodeType* CModelDomain::GetObsTabVarType() const;
+</pre><p>
+This function returns the pointer to the observed Tabular variable type.
+</p>
+
+
+<hr><h4><a name="declCModelDomain_GetNumberOfVariableTypes">GetNumberOfVariableTypes</a></h4>
+<p class="Blurb">Returns number of different variable types.</p><pre>
+
+inline int CModelDomain::GetNumberOfVariableTypes() const;
+</pre><p>
+This function returns a number of different variable types.
+</p>
+
+
+<hr><h4><a name="declCModelDomain_GetVariableTypes">GetVariableTypes</a></h4>
+<p class="Blurb">Returns all variable types. </p><pre>
+
+void CModelDomain::GetVariableTypes( pConstNodeTypeVector* <EM CLASS="CodeItalic">varTypes</EM> )const;
+void CModelDomain::GetVariableTypes( nodeTypeVector* <EM CLASS="CodeItalic">varTypes</EM> )const;
+</pre><p><dl>
+ Arguments
+<dt>varTypes<dd>  Returned parameter. Vector of node types.
+</dl></p><p>
+The function is available in two versions.
+</p>
+
+
+<hr><h4><a name="declCModelDomain_GetNumberVariables">GetNumberVariables</a></h4>
+<p class="Blurb">Returns number of variables of model domain.</p><pre>
+
+inline int CModelDomain::GetNumberVariables() const;
+</pre><p>
+This function returns number of variables of the model domain.
+</p>
+
+
+<hr><h4><a name="declCModelDomain_GetVariableAssociations">GetVariableAssociations</a></h4>
+<p class="Blurb">Returns association to variable types.</p><pre>
+
+void CModelDomain::GetVariableAssociations( intVector* <EM CLASS="CodeItalic">variableAssociation </EM>) const;
+inline const int* CModelDomain::GetVariableAssociations()const;
+</pre><p><dl>
+ Arguments
+<dt>variableAssociation<dd>  Returned parameter. Vector of associations of variables to variable types.
+</dl></p><p>
+The function is available in two versions.The first adopts and fills the vector, the second returns the pointer to the association.
+</p>
+
+
+<hr><h4><a name="declCModelDomain_GetVariableAssociation">GetVariableAssociation</a></h4>
+<p class="Blurb">Returns variable association.</p><pre>
+
+inline int CModelDomain::GetVariableAssociation(int <EM CLASS="CodeItalic">variable</EM>)const;
+</pre><p><dl>
+ Arguments
+<dt>variable  <dd>Number of a variable in the model domain.
+</dl></p>
+
+
+<hr><h2><a name="decl_pnlEvidences">Evidences</a></h2>
+
+
+
+<hr><h3><a name="decl_pnlClassCNodeValues">Class CNodeValues</a></h3>
+
+
+<IMG SRC="fig/PNLMarch.book-100.gif">
+
+<p>
+Class <EM CLASS="CodeReg">CNodeValues</EM> is intended for storing values of variables. Values of discrete nodes are represented by integers, while values of continuous nodes - by n floats, where n is <EM CLASS="CodeItalic">NodeSize</EM> of a corresponding node type.
+</p>
+<p>
+A node can be observed either potentially or actually.
+</p>
+<p>
+When a node is potentially observed, it can be observed and its observed value is at <EM CLASS="CodeReg">CNodeValues</EM> object, but the node is not actually observed. To make it actually observed, the corresponding observability flag needs to be changed to <EM CLASS="CodeItalic">true</EM> value.
+</p>
+<p>
+Creation of evidences for the model is simplified in this way. The user can create evidence for all nodes, set observability flag for some of them to <EM CLASS="CodeItalic">false</EM>, and start inference with such evidence. To start inference with other observed nodes, the user can just toggle node observability states for some of them.
+</p>
+<p>
+CNodeValues</EM> is basic for<EM CLASS="CodeReg"><a href="#decl_pnlModel_Domain">Model Domain</A></EM> and contains information about observed values of certain variables without indicating the numbers of these variables in the graphical model.<EM CLASS="CodeReg"><a href="#decl_pnlModel_Domain">Model Domain</A></EM> contains information on correspondence between the variables and the graphical model nodes.
+</p>
+<p>
+Public destructor <EM CLASS="CodeReg">&#126;CNodeValues()</EM> deletes an object of the class.
+</p>
+
+
+
+<hr><h4><a name="declCNodeValues_Create">Create</a></h4>
+<p class="Blurb">Creates class object.</p><pre>
+
+static CNodeValues* CNodeValues::Create( int <EM CLASS="CodeItalic">nObsNds</EM>, const CNodeType* const* <EM CLASS="CodeItalic">obsNdsTypes</EM>, const valueVector&amp; <EM CLASS="CodeItalic">obsValues</EM> );
+static CNodeValues* CNodeValues::Create( const pConstNodeTypeVector&amp; <EM CLASS="CodeItalic">obsNdsTypes</EM>, const valueVector&amp; <EM CLASS="CodeItalic">obsValues</EM> );
+</pre><p><dl>
+ Arguments
+<dt>nObsNds <dd>Number of the observed nodes.
+<dt>obsNdsTypes<dd>  Node types of observed nodes.
+<dt>obsValues<dd>  Values of the observed nodes.
+</dl></p><p>
+This function returns objects of class <EM CLASS="CodeReg">CNodeValues</EM>. All nodes of any created object are actually observed.
+</p>
+
+
+<hr><h4><a name="declCNodeValues_GetValueBySerialNumber">GetValueBySerialNumber</a></h4>
+<p class="Blurb">Returns pointer to value.</p><pre>
+
+inline Value const* CNodeValues::GetValueBySerialNumber( int <EM CLASS="CodeItalic">SerialNumber</EM> ) const;
+inline Value* CNodeValues::GetValueBySerialNumber( int <EM CLASS="CodeItalic">SerialNumber</EM> );
+</pre><p><dl>
+ Arguments
+<dt>SerialNumber  <dd>Serial number of the observed variable.
+</dl></p><p>
+Both the functions return pointer to the value of the observed node. The <EM CLASS="CodeReg">const</EM> function solely provides observation of the observed node value. The <EM CLASS="CodeReg">non-const</EM> function enables user to change the value of the observed node in accordance with the returned pointer.
+</p>
+
+
+<hr><h4><a name="declCNodeValues_GetNumberObsNodes">GetNumberObsNodes</a></h4>
+<p class="Blurb">Returns total number of observed nodes.</p><pre>
+
+int CNodeValues::GetNumberObsNodes() const;
+</pre><p>
+This function returns the total number of both potentially and actually observed nodes.
+</p>
+
+
+<hr><h4><a name="declCNodeValues_GetObsNodesFlags">GetObsNodesFlags</a></h4>
+<p class="Blurb">Returns pointer to array of observability flags.</p><pre>
+
+const int * CNodeValues::GetObsNodesFlags() const;
+</pre><p>
+This function returns constant pointer to the array of observability flags for nodes of <EM CLASS="CodeReg">
+CNodeValues</EM>
+ class objects.
+</p>
+
+
+<hr><h4><a name="declCNodeValues_GetRawData">GetRawData</a></h4>
+<p class="Blurb">Returns array of values.</p><pre>
+
+void CNodeValues::GetRawData( valueVector* <EM CLASS="CodeItalic">values </EM>) const;
+</pre><p><dl>
+ Arguments
+<dt>values  <dd>Array of values.
+</dl></p><p>
+This function returns array of values.
+</p>
+
+
+<hr><h4><a name="declCNodeValues_GetOffset">GetOffset</a></h4>
+<p class="Blurb">Returns offsets in array of observed nodes.</p><pre>
+
+const int * CNodeValues::GetOffset() const;
+</pre><p>
+This function returns the pointer to the array of offsets in the array of the values of observed variables. When the value of<EM CLASS="CodeItalic"> i</EM><EM CLASS="Superscript">th</EM> node needs to be found, the array of raw data should be addressed with the offset corresponding to the <EM CLASS="CodeItalic">i</EM>
+<EM CLASS="Superscript">th</EM> value in the array of the offsets.
+</p>
+
+
+<hr><h4><a name="declCNodeValues_SetData">SetData</a></h4>
+<p class="Blurb">Replaces old values with new values.</p><pre>
+
+void CNodeValues::SetData( const valueVector&amp; <EM CLASS="CodeItalic">data</EM> );
+</pre><p><dl>
+ Arguments
+<dt>data  <dd>Array of new values.
+</dl></p>
+
+
+<hr><h4><a name="declCNodeValues_GetNodeTypes">GetNodeTypes</a></h4>
+<p class="Blurb">Returns array of pointers to node types.</p><pre>
+
+const CNodeType *const* CNodeValues::GetNodeTypes() const;
+</pre><p>
+This function returns pointer to the array of pointers to<EM CLASS="CodeReg"> CNodeType</EM> class objects corresponding to the node types of observed variables.
+</p>
+
+
+<hr><h4><a name="declCNodeValues_MakeNodeHiddenBySerialNum">MakeNodeHiddenBySerialNum</a></h4>
+<p class="Blurb">Changes observation flag from actually observed to hidden.</p><pre>
+
+inline void CNodeValues::MakeNodeHiddenBySerialNum( int <EM CLASS="CodeItalic">serialNum</EM> );
+</pre><p><dl>
+ Arguments
+<dt>serialNum <dd>Number of an observed node, the state of which is to be changed.
+</dl></p>
+
+
+<hr><h4><a name="declCNodeValues_MakeNodeObservednBySerialNum">MakeNodeObservednBySerialNum</a></h4>
+<p class="Blurb">Changes observation flag from hidden to actually observed.</p><pre>
+
+inline void CNodeValues::MakeNodeObservednBySerialNum( int <EM CLASS="CodeItalic">serialNum</EM> );
+</pre><p><dl>
+ Arguments
+<dt>serialNum <dd>Number of a hidden node, the state of which is to be changed.
+</dl></p>
+
+
+<hr><h4><a name="declCNodeValues_ToggleNodeStateBySerialNumber">ToggleNodeStateBySerialNumber</a></h4>
+<p class="Blurb">Toggles observability type.</p><pre>
+
+void CNodeValues::ToggleNodeStateBySerialNumber( int <EM CLASS="CodeItalic">numOfNds</EM>, int *<EM CLASS="CodeItalic">nodeNums</EM> );
+void CNodeValues::ToggleNodeStateBySerialNumber( const intVector&amp; <EM CLASS="CodeItalic">nodeNums</EM> );
+</pre><p><dl>
+ Arguments
+<dt>numOfNds  <dd>Number of the nodes that require change of the state.
+<dt>nodeNums  <dd>Serial numbers of the observed variables that require change of state.
+</dl></p><p>
+This function changes the state of the variables from potentially observable to actually observable and vice versa.
+</p>
+
+<hr><h3><a name="decl_pnlClassCEvidence">Evidence</a></h3>
+
+
+<IMG SRC="fig/PNLMarch.book-101.gif">
+
+<p>
+Class <EM CLASS="CodeReg">CEvidence</EM> contains information on observed variables of graphical model: what nodes are observed and what values are taken. Class <EM CLASS="CodeReg">CEvidence</EM> is based on <EM CLASS="CodeReg"><a href="#decl_pnlClassCNodeValues">Class CNodeValues</A></EM>, which contains information on types and actual values of certain variables. Class <EM CLASS="CodeReg">CEvidence</EM> proper stores the array of numbers of observed variables in a graphical model, along with methods of getting information about an observed node or a set of observed nodes in a model. All the methods consist in establishing correspondence between numbers of the model nodes and their serial numbers within a <EM CLASS="CodeReg">CNodeValues</EM>
+ object, as well as in calling the corresponding member functions of that class.</p>
+
+
+
+
+<hr><h4><a name="declCEvidence_Create">Create</a></h4>
+<p class="Blurb">Returns class object.</p><pre>
+
+static CEvidence* CEvidence::Create( const CModelDomain* <EM CLASS="CodeItalic">pMD</EM>,const intVector&amp; <EM CLASS="CodeItalic">obsNodes</EM>, const valueVector&amp; <EM CLASS="CodeItalic">obsValues</EM> );
+static CEvidence* CEvidence::Create( const CNodeValues* <EM CLASS="CodeItalic">values</EM>,const intVector&amp; <EM CLASS="CodeItalic">obsNodes</EM>, const CModelDomain* <EM CLASS="CodeItalic">pMD</EM>,int <EM CLASS="CodeItalic">takeIntoObservationFlags</EM> = 0 );
+static CEvidence* CEvidence::Create( const CGraphicalModel* <EM CLASS="CodeItalic">pGrModel</EM>,const intVector&amp; <EM CLASS="CodeItalic">obsNodes</EM>, const valueVector&amp; <EM CLASS="CodeItalic">obsValues</EM>);
+static CEvidence* CEvidence::Create( const CModelDomain *<EM CLASS="CodeItalic">pMD</EM>, int <EM CLASS="CodeItalic">nObsNodes</EM>, const int *<EM CLASS="CodeItalic">obsNodes</EM>, const valueVector&amp; <EM CLASS="CodeItalic">obsValues</EM> );
+static CEvidence* CEvidence::Create( const CGraphicalModel *<EM CLASS="CodeItalic">pGrModel</EM>, int <EM CLASS="CodeItalic">nObsNodes</EM>, const int *<EM CLASS="CodeItalic">obsNodes</EM>, const valueVector&amp; <EM CLASS="CodeItalic">obsValues</EM> );
+static CEvidence* CEvidence::Create( const CNodeValues *<EM CLASS="CodeItalic">values</EM>,int <EM CLASS="CodeItalic">nObsNodes</EM>, const int *<EM CLASS="CodeItalic">obsNodes</EM>, const CModelDomain* <EM CLASS="CodeItalic">pMD</EM>, int <EM CLASS="CodeItalic">takeIntoObservationFlags</EM> = 0 );
+</pre><p><dl>
+ Arguments
+<dt>pMD <dd>Pointer to the model domain.
+<dt>pGrModel<dd>  Pointer to a graphical model.
+<dt>nObsNds <dd>Number of the observed nodes or variables.
+<dt>obsNodes<dd>  Array of observed nodes in the graphical model or observed variables it the model domain.
+<dt>obsValues<dd>  Array of the observed values listed in the same order as in the array <EM CLASS="CodeItalic">
+obsNodes</EM>.
+<dt>takeIntoObservationFlags<dd>  Flag makes all nodes or variables actually observed if <EM CLASS="CodeItalic">
+takeIntoObservationFlag</EM> = 0 or puts the same flags as in <EM CLASS="CodeItalic">pNodeValues</EM> object if <EM CLASS="CodeItalic">takeIntoObservationFlag</EM> = 1.
+</dl></p><p>
+This function creates a <EM CLASS="CodeReg">CEvidence</EM> object.
+</p>
+
+
+<hr><h4><a name="declCEvidence_ToggleNodeState">ToggleNodeState</a></h4>
+<p class="Blurb">Toggles observability type.</p><pre>
+
+void CEvidence::ToggleNodeState( int <EM CLASS="CodeItalic">numOfNds</EM>, int *<EM CLASS="CodeItalic">nodeNums</EM> );
+void CEvidence::ToggleNodeState( const intVector&amp; <EM CLASS="CodeItalic">nodeNums</EM> );
+</pre><p><dl>
+ Arguments
+<dt>numOfNds  <dd>Number of the nodes that require change of the state.
+<dt>nodeNums  <dd>Numbers of the observed nodes that require change of the state.
+</dl></p><p>
+This function changes the state of the nodes from potentially observable to actually observable and vice versa.
+</p>
+
+
+<hr><h4><a name="declCEvidence_GetValue">GetValue</a></h4>
+<p class="Blurb">Returns pointer to value of observed node.</p><pre>
+
+const Value* CEvidence::GetValue( int <EM CLASS="CodeItalic">nodeNum</EM> ) const;
+Value* CEvidence::GetValue( int <EM CLASS="CodeItalic">nodeNum</EM> );
+</pre><p><dl>
+ Arguments
+<dt>nodeNum <dd>Serial number of the observed node in the model.
+</dl></p><p>
+Both the functions return pointer to the value of the observed node by its serial number in the graphical model. The <EM CLASS="CodeReg">const</EM>
+ function solely provides observation of the observed node value. The <EM CLASS="CodeReg">non-const</EM> function enables you to change the value of the observed node in accordance with the returned pointer.
+</p>
+
+
+<hr><h4><a name="declCEvidence_GetAllObsNodes">GetAllObsNodes</a></h4>
+<p class="Blurb">Returns pointer to array of numbers of observed nodes.</p><pre>
+
+const int * CEvidence::GetAllObsNodes() const;
+</pre><p>
+This function returns pointer to the array of numbers of observed nodes. To get the number of observed nodes, use the function <EM CLASS="CodeReg">GetNumberObsNodes</EM> of basic CEvidence class.
+</p>
+
+
+<hr><h4><a name="decl_pnlIsNodeObserved">IsNodeObserved</a></h4>
+<p class="Blurb">Returns current observability status of the node.</p><pre>
+
+</pre><p><dl>
+ Arguments
+<dt>nodeNum <dd>Number of the node in the graphical model.
+</dl></p><p>
+This function returns 1, if node is actually observed, and 0 otherwise.
+</p>
+
+
+<hr><h4><a name="decl_pnlMakeNodeObserved">MakeNodeObserved</a></h4>
+<p class="Blurb">Changes observation flag for node to actually observed.</p><pre>
+
+</pre><p><dl>
+ Arguments
+<dt>nodeNum <dd>Number of the node in the graphical model.
+</dl></p><p>
+This function makes the node actually observed, if it was hidden, and throws an exception, if it is already actually observed.
+</p>
+
+
+<hr><h4><a name="decl_pnlMakeNodeHidden">MakeNodeHidden</a></h4>
+<p class="Blurb">Changes observation flag for node to hidden.</p><pre>
+
+</pre><p><dl>
+ Arguments
+<dt>nodeNum <dd>Number of the node in the graphical model.
+</dl></p><p>
+This function makes the node hidden, if it was actually observed, and throws an exception, if it is already hidden.
+</p>
+
+
+<hr><h4><a name="declCEvidence_GetObsNodesWithValues">GetObsNodesWithValues</a></h4>
+<p class="Blurb">Returns pointer to vector of actually observed nodes and their values.</p><pre>
+
+void CEvidence::GetObsNodesWithValues( intVector* <EM CLASS="CodeItalic">pObsNds</EM>, pConstValueVector* <EM CLASS="CodeItalic">pObsValues</EM>,pConstNodeTypeVector* <EM CLASS="CodeItalic">pNodeTypes</EM> = NULL ) const;
+</pre><p><dl>
+ Arguments
+<dt>pObsNds <dd>Pointer to the vector that contains numbers of actually observed nodes from the graphical model.
+<dt>pObsValues  <dd>Pointer to the vector of pointers to raw data of actually observed values. The order of these values corresponds to the order at <EM CLASS="CodeItalic">pObsNds</EM>.
+<dt>pNodeTypes  <dd>Pointer to the vector that contains pointers to the node types of observed nodes. The order of these values corresponds to the order at <EM CLASS="CodeItalic">pObsNds</EM>.
+</dl></p><p>
+The function takes pointers to vectors and fills these vectors with requested information.
+</p>
+
+
+<hr><h4><a name="declCEvidence_GetModelDomain">GetModelDomain</a></h4>
+<p class="Blurb">Returns model domain.</p><pre>
+
+inline const CModelDomain* CEvidence::GetModelDomain() const;
+</pre>
+
+
+<hr><h4><a name="declCEvidence_Dump">Dump</a></h4>
+<p class="Blurb">Dumps evidence content.</p><pre>
+
+void CEvidence::Dump() const;
+</pre>
+
+
+<hr><h4><a name="declCEvidence_Save">Save</a></h4>
+<p class="Blurb">Saves evidences to file. </p><pre>
+
+static bool CEvidence::Save(const char *<EM CLASS="CodeItalic">fname</EM>,  pConstEvidenceVector&amp; <EM CLASS="CodeItalic">evVec</EM>);
+</pre><p><dl>
+ Arguments
+<dt>fname <dd>File name.
+<dt>evVec <dd>Array of evidences.
+</dl></p><p>
+This function saves evidences created for the static graphical model into a file. This function returns `true' if the evidence is saved, returns `false' otherwise.
+</p>
+
+
+<hr><h4><a name="declCEvidence_Save">Save</a></h4>
+<p class="Blurb">Saves evidences to file. </p><pre>
+
+static bool CEvidence::Save(const char *<EM CLASS="CodeItalic">fname</EM>,  pConstEvidenceVecVector&amp; <EM CLASS="CodeItalic">evVec</EM>);
+</pre><p><dl>
+ Arguments
+<dt>fname <dd>File name.
+<dt>evVec <dd>Array of evidences.
+</dl></p><p>
+This function saves evidences created for the dynamic graphical model into a file. This function returns `true' if the evidence is saved, returns `false' otherwise.
+</p>
+
+
+<hr><h4><a name="declCEvidence_Load">Load</a></h4>
+<p class="Blurb">Loads evidences from file. </p><pre>
+
+static bool CEvidence::Load( const char *<EM CLASS="CodeItalic">fname</EM>,  pEvidencesVector* <EM CLASS="CodeItalic">evVec</EM>, const CModelDomain *<EM CLASS="CodeItalic">pMD</EM> );
+</pre><p><dl>
+ Arguments
+<dt>fname <dd>File name.
+<dt>evVec <dd>Empty vector which is to store evidences.
+<dt>pMD <dd>Pointer to the model domain.
+</dl></p><p>
+This function reads data from the file and creates evidences for the static graphical model.
+</p>
+
+
+<hr><h4><a name="declCEvidence_Load">Load</a></h4>
+<p class="Blurb">Loads evidences to file. </p><pre>
+
+static bool CEvidence::Load(const char *<EM CLASS="CodeItalic">fname</EM>, pEvidencesVecVector* <EM CLASS="CodeItalic">evVec</EM>, const CModelDomain *<EM CLASS="CodeItalic">pMD</EM>);
+</pre><p><dl>
+ Arguments
+<dt>fname <dd>File name.
+<dt>evVec <dd>Array of evidences.
+<dt>pMD <dd>Pointer to the model domain.
+</dl></p><p>
+This function reads data from the file and creates evidences for DBN.
+
+
+<hr><h2><a name="decl_pnlGraphical_Models">Graphical Models</a></h2>
+
+
+
+<hr><h3><a name="decl_pnlClassCGraphicalModel">Class CGraphicalModel</a></h3>
+
+
+<IMG SRC="fig/PNLMarch.book-102.gif">
+
+<p>
+Class<EM CLASS="CodeReg"> CGraphicalModel</EM> represents a graphical model, which consists of the graph and of factors that are set for the graph nodes. Class <EM CLASS="CodeReg">CGraphicalModel</EM> is a parent to two classes: <EM CLASS="CodeReg"><a href="#decl_pnlClassCStaticGraphicalModel">Class CStaticGraphicalModel</A></EM> and <EM CLASS="CodeReg"><a href="#decl_pnlCDynamicGraphicalModel">Class CDynamicGraphicalModel</A></EM>.
+</p>
+
+
+
+<hr><h4><a name="declCGraphicalModel_AllocFactor">AllocFactor</a></h4>
+<p class="Blurb">Allocates factor for domain.</p><pre>
+
+int CGraphicalModel::AllocFactor( int <EM CLASS="CodeItalic">number</EM> );
+int CGraphicalModel::AllocFactor( int <EM CLASS="CodeItalic">numOfNdsInDomain</EM>, int *<EM CLASS="CodeItalic">domain</EM> );
+int CGraphicalModel::AllocFactor( const intVector&amp; <EM CLASS="CodeItalic">domain</EM> );
+</pre><p><dl>
+ Arguments
+<dt>number<dd>  Index of the domain for which the factor should be allocated.
+<dt>numOfNdsInDomain<dd>  Number of nodes in the domain for which the factor should be allocated.
+<dt>domain<dd>  Domain for which the factor is allocated.
+</dl></p><p>
+This function allocates a factor for a domain. The domain is specified either by its index or by the nodes from this domain.
+</p>
+
+
+<hr><h4><a name="declCGraphicalModel_AllocFactors">AllocFactors</a></h4>
+<p class="Blurb">Allocates space for all factors of model.</p><pre>
+
+int CGraphicalModel::AllocFactors();
+</pre><p>
+This function allocates space for all the factors of the model.
+</p>
+
+
+<hr><h4><a name="declCGraphicalModel_AttachFactor">AttachFactor</a></h4>
+<p class="Blurb">Attaches factor to model.</p><pre>
+
+int CGraphicalModel::AttachFactor( CFactor *<EM CLASS="CodeItalic">pFactor </EM>);
+</pre><p><dl>
+ Arguments
+<dt>pFactor<dd>  Pointer to the factor to be attached to the model.
+</dl></p><p>
+This function attaches a factor to the model if the factor has an existing domain in terms of the graphical model.
+</p>
+
+
+<hr><h4><a name="declCGraphicalModel_AttachFactors">AttachFactors</a></h4>
+<p class="Blurb">Attaches set of new factors and returns set of old factors for destruction.</p><pre>
+
+CFactors* CGraphicalModel::AttachFactors( CFactors *<EM CLASS="CodeItalic">pFactors</EM>);
+</pre><p><dl>
+ Arguments
+<dt>pFactors<dd>  New factors to be attached to the model instead of the old factors.
+</dl></p><p>
+This function attaches a set of factors object and returns the set of old factors for the user to destroy them.
+</p>
+
+
+<hr><h4><a name="declCGraphicalModel_GetGraph">GetGraph</a></h4>
+<p class="Blurb">Returns non-constant pointer to class object.<DIV>
+
+inline CGraph* CGraphicalModel::GetGraph() const;
+</dl></p><p>
+This function returns a non-constant pointer to the <EM CLASS="CodeReg">CGraph</EM> class object, which is attached to the model.
+</p>
+
+
+<hr><h4><a name="declCGraphicalModel_GetModelType">GetModelType</a></h4>
+<p class="Blurb">Returns type of model.</p><pre>
+
+inline CModelTypes CGraphicalModel::GetModelType() const;
+</pre>
+
+
+<hr><h4><a name="declCGraphicalModel_GetNodeAssociations">GetNodeAssociations</a></h4>
+<p class="Blurb">Returns constant pointer to array of node associations for all nodes of model.</p><pre>
+
+inline const int* CGraphicalModel::GetNodeAssociations() const;
+</pre>
+
+
+<hr><h4><a name="declCGraphicalModel_GetNodeType">GetNodeType</a></h4>
+<p class="Blurb">Returns constant pointer to class object for specified node number.</p><pre>
+
+inline const CNodeType* CGraphicalModel::GetNodeType(int <EM CLASS="CodeItalic">nodeNum</EM>) const;
+</pre><p><dl>
+ Arguments
+<dt>nodeNum<dd>  Number of the node for which the node type is inquired.
+</dl></p><p>
+This function returns a constant pointer to the <EM CLASS="CodeReg">CNodeType</EM> object for the specified node number.
+</p>
+
+
+<hr><h4><a name="declCGraphicalModel_GetNodeTypes">GetNodeTypes</a></h4>
+<p class="Blurb">Provides access to all node types of model.</p><pre>
+
+inline void CGraphicalModel::GetNodeTypes( nodeTypeVector* <EM CLASS="CodeItalic">nodeTypes</EM> ) const;
+inline void CGraphicalModel::GetNodeTypes( pConstNodeTypeVector* <EM CLASS="CodeItalic">nodeTypes</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>nodeTypes<dd>  Returned parameter. Array of all <EM CLASS="CodeReg">CNodeType</EM> objects attached to the model.
+</dl></p>
+
+
+<hr><h4><a name="declCGraphicalModel_GetNumberOfNodes">GetNumberOfNodes</a></h4>
+<p class="Blurb">Returns number of nodes for model.</p><pre>
+
+inline int CGraphicalModel::GetNumberOfNodes() const;
+</pre><p>
+This function returns the whole number of nodes for the static graphical model and returns the number of the nodes per slice for the dynamic graphical model.
+</p>
+
+
+<hr><h4><a name="declCGraphicalModel_GetNumberOfNodeTypes">GetNumberOfNodeTypes</a></h4>
+<p class="Blurb">Returns number of node types for model.</p><pre>
+
+inline int CGraphicalModel::GetNumberOfNodeTypes() const;
+</pre>
+
+
+<hr><h4><a name="declCGraphicalModel_GetNumberOfFactors">GetNumberOfFactors</a></h4>
+<p class="Blurb">Returns number of factors attached to model.</p><pre>
+
+inline int CGraphicalModel::GetNumberOfFactors() const;
+</pre>
+
+
+<hr><h4><a name="decl_pnlGetFactor">GetFactor</a></h4>
+<p class="Blurb">Returns non-constant pointer to class object for specified domain number.<DIV>
+CFactor* CGraphicalModel::GetFactor( int <EM CLASS="CodeItalic">domainNumber </EM>);
+</pre><p><dl>
+ Arguments
+<dt>domainNumber<dd>  Number of domain for which the factor needs to be found.
+</dl></p><p>
+This function returns a non-constant pointer to the <EM CLASS="CodeReg">
+<a href="#decl_pnlClassCFactor">Class CFactor</A></EM>
+ object for the specified domain number.
+</p>
+
+
+<hr><h4><a name="declCGraphicalModel_GetFactors">GetFactors</a></h4>
+<p class="Blurb">Returns all factors attached to specified subset of nodes.</p><pre>
+
+int CGraphicalModel::GetFactors( int <EM CLASS="CodeItalic">nNodes</EM>, const int* <EM CLASS="CodeItalic">nodes</EM>,  int *<EM CLASS="CodeItalic">nFactors</EM>, CFactor ***<EM CLASS="CodeItalic">factors</EM> );
+virtual void CGraphicalModel::GetFactors( int <EM CLASS="CodeItalic">nNodes</EM>, const int* <EM CLASS="CodeItalic">nodes</EM>,int *<EM CLASS="CodeItalic">nFactors</EM>, CFactor ***<EM CLASS="CodeItalic">factors</EM> ) const = 0;
+virtual int CGraphicalModel::GetFactors( int <EM CLASS="CodeItalic">nNodes</EM>, const int* <EM CLASS="CodeItalic">nodes</EM>, pFactorVector *<EM CLASS="CodeItalic">factors</EM>) const = 0;
+virtual int CGraphicalModel::GetFactors( const intVector&amp; <EM CLASS="CodeItalic">nodes</EM>, pFactorVector *<EM CLASS="CodeItalic">factors</EM> ) const;
+</pre><p>
+This function enables the user to receive all the factors attached to the specified subset of nodes. Several factors may be attached to the same subset if the subset is a common part of several domains.
+</p>
+
+
+<hr><h4><a name="declCGraphicalModel_GetModelDomain">GetModelDomain</a></h4>
+<p class="Blurb">Returns model domain.</p><pre>
+
+inline CModelDomain* CGraphicalModel::GetModelDomain() const;
+</pre>
+
+
+<hr><h4><a name="declCGraphicalModel_IsValid">IsValid</a></h4>
+<p class="Blurb">Checks validity of graphical model.</p><pre>
+
+virtual bool CGraphicalModel::IsValid( std::string* <EM CLASS="CodeItalic">descriptionOut</EM> = NULL ) const = 0;
+</pre><p><dl>
+ Arguments
+<dt>descriptionOut  <dd>Error message.
+</dl></p><p>
+This function checks the validity of the function. The function returns `true' if the model is valid, returns `false' otherwise.
+</p>
+
+
+<hr><h3><a name="decl_pnlClassCStaticGraphicalModel">Class CStaticGraphicalModel</a></h3>
+
+<IMG SRC="fig/PNLMarch.book-103.gif">
+
+<P>
+</A>Class <EM CLASS="CodeReg">CStaticGraphicalModel</EM> is a parent to two subclasses: <EM CLASS="CodeReg"><a href="#decl_pnlClassCBNet">Class CBNet</A></EM> and <EM CLASS="CodeReg"><a href="#decl_pnlClassCMNet">Class CMNet</A></EM>.
+</P>
+
+
+
+<hr><h4><a name="declCStaticGraphicalModel_IsValidAsBaseForDynamicModel">IsValidAsBaseForDynamicModel</a></h4>
+<p class="Blurb">Checks validity of model for creation of dynamic model.</p><pre>
+
+bool CStaticGraphicalModel::IsValidAsBaseForDynamicModel(std::string* <EM CLASS="CodeItalic">descriptionOut</EM> = NULL) const;
+</pre><p><dl>
+ Arguments
+<dt>descriptionOut  <dd>Error message.
+</dl></p><p>
+This function checks if the model is valid for the creation of the dynamic graphical model.
+</p>
+
+
+<hr><h3><a name="decl_pnlClassCBNet">Class CBNet</a></h3>
+
+<IMG SRC="fig/PNLMarch.book-104.gif">
+
+
+<hr><h4><a name="declCBNet_Create">Create</a></h4>
+<p class="Blurb">Creates class object.</p><pre>
+
+static CBNet* CBNet::Create( int <EM CLASS="CodeItalic">numberOfNodes</EM>, int <EM CLASS="CodeItalic">numberOfNodeTypes</EM>,const CNodeType *<EM CLASS="CodeItalic">nodeTypes</EM>,const int *<EM CLASS="CodeItalic">nodesAssociation</EM>, CGraph *<EM CLASS="CodeItalic">pGraph</EM> );
+static CBNet* CBNet::Create( int <EM CLASS="CodeItalic">numberOfNodes</EM>,const nodeTypeVector&amp; <EM CLASS="CodeItalic">nodeTypes</EM>, const intVector&amp; <EM CLASS="CodeItalic">nodesAssociation</EM>, CGraph *<EM CLASS="CodeItalic">pGraph</EM> );
+static CBNet* CBNet::Create( CGraph *<EM CLASS="CodeItalic">pGraph</EM>, CModelDomain* <EM CLASS="CodeItalic">pMD</EM> );
+</pre><p><dl>
+ Arguments
+<dt>numberOfNodeTypes <dd>Number of all node types.
+<dt>nodeTypes <dd>Array of node types.
+<dt>nodesAssociation  <dd>Array for nodes association with node types.
+<dt>pGraph  <dd>Graph structure of the model.
+<dt>numberOfNodes <dd>Number of nodes.
+<dt>pMD <dd>Model domain.
+</dl></p><p>
+This function creates a class object.
+</p>
+
+
+<hr><h4><a name="declCBNet_Copy">Copy</a></h4>
+<p class="Blurb">Creates new object by copying. </p><pre>
+
+static CBNet* CBNet::Copy(const CBNet* <EM CLASS="CodeItalic">pBNet</EM>);
+</pre><p><dl>
+ Arguments
+<dt>pBNet<dd>  Pointer to a <EM CLASS="CodeReg">CBNet</EM> object to be copied.
+</dl></p><p>
+This function creates a new <EM CLASS="CodeReg">
+CBNet </EM>
+object by copying the input object and returns a pointer to it<EM CLASS="CodeReg">.</EM> Call of the class destructor deletes the instance.
+</p>
+
+
+<hr><h4><a name="declCBNet_CreateWithRandomMatrices">CreateWithRandomMatrices</a></h4>
+<p class="Blurb">Creates <EM CLASS="CodeReg">BNet</EM> object with random matrices.
+</p><pre>
+static CBNet* CBNet::CreateWithRandomMatrices( CGraph* <EM CLASS="CodeItalic">pGraph</EM>, CModelDomain* <EM CLASS="CodeItalic">pMD </EM>);
+</pre><p><dl>
+ Arguments
+<dt>pGraph  <dd>Graph structure.
+<dt>pMD <dd>Model domain.
+</dl></p><p>
+This function creates a <EM CLASS="CodeItalic">BNet</EM> object with dense random matrices. Coverings matrices of a Gaussian distribution are matrix units.
+</p>
+
+
+<hr><h4><a name="declCBNet_ConvertToSparse">ConvertToSparse</a></h4>
+<p class="Blurb">Converts object with dense matrices into object with sparse matrices.</p><pre>
+
+CBNet* CBNet::ConvertToSparse() const;
+</pre><p>
+This function converts a <EM CLASS="CodeReg">BNet</EM> object with dense matrices into a <EM CLASS="CodeReg">BNet</EM> object with sparse matrices.
+</p>
+
+
+<hr><h4><a name="declCBNet_ConvertToDense">ConvertToDense</a></h4>
+<p class="Blurb">Converts object with sparse matrices into object with dense matrices.</p><pre>
+
+CBNet* CBNet::ConvertToDense() const;
+</pre><p>
+This function converts a <EM CLASS="CodeReg">BNet</EM> object with sparse matrices into a <EM CLASS="CodeReg">BNet</EM> object with dense matrices.
+</p>
+
+
+<hr><h4><a name="declCBNet_CreateTabularCPD">CreateTabularCPD</a></h4>
+<p class="Blurb">Creates valid tabular CPD.</p><pre>
+
+void CBNet::CreateTabularCPD( int <EM CLASS="CodeItalic">childNodeNumber</EM>, const floatVector&amp; <EM CLASS="CodeItalic">matrixData</EM> );
+</pre><p><dl>
+ Arguments
+<dt>childNodeNumber <dd>Factor number.
+<dt>matrixData  <dd>Array of matrix data.
+</dl></p><p>
+This function creates a tabular CPD using the given data.
+</p>
+
+
+<hr><h4><a name="declCBNet_FindMixtureNodes">FindMixtureNodes</a></h4>
+<p class="Blurb">Finds numbers of mixture nodes.</p><pre>
+
+void CBNet::FindMixtureNodes( intVector* <EM CLASS="CodeItalic">mixureNds </EM>);
+</pre><p><dl>
+ Arguments
+<dt>mixureNds <dd>Input parameter. Empty vector of mixture nodes.
+</dl></p><p>
+This function finds numbers of mixture nodes of the mixture Gaussian distribution.
+</p>
+
+
+<hr><h4><a name="declCBNet_GenerateSamples">GenerateSamples</a></h4>
+<p class="Blurb">Generates random evidences for <EM CLASS="CodeItalic">BNet</EM> given evidence.</p><pre>
+
+virtual void CBNet::GenerateSamples( pEvidencesVector* <EM CLASS="CodeItalic">evidences</EM>, int <EM CLASS="CodeItalic">nSamples</EM>,const CEvidence* <EM CLASS="CodeItalic">pEv</EM> = NULL ) const;
+</pre><p><dl>
+ Arguments
+<dt>evidences <dd>Input-output parameter. An empty vector of evidences to be created.
+<dt>nSamples  <dd>Input parameter. Number of samples.
+<dt>pEv <dd>Given evidence.
+</dl></p><p>
+This function generates samples from  the static graphical model.
+</p>
+
+
+<hr><h4><a name="declCBNet_IsValid">IsValid</a></h4>
+<p class="Blurb">Checks model validity.</p><pre>
+
+bool CBNet::IsValid(std::string* <EM CLASS="CodeItalic">descriptionOut</EM> = NULL) const;
+</pre><p><dl>
+ Arguments
+<dt>descriptionOut  <dd>Output argument with an error message.
+</dl></p><p>
+This function checks the validity of the model. Returns `true' if the model is valid, returns `false' otherwise.
+</p>
+
+<hr><h3><a name="decl_pnlClassCMNet">Class CMNet</a></h3>
+
+<IMG SRC="fig/PNLMarch.book-105.gif">
+
+
+
+<hr><h4><a name="decl_pnlCreate">Create</a></h4>
+<p class="Blurb">Creates object of subclass.</p><pre>
+
+static CMNet* CMNet::Create( int <EM CLASS="CodeItalic">numberOfCliques</EM>, const int *<EM CLASS="CodeItalic">cliqueSizes</EM>, const int **<EM CLASS="CodeItalic">cliques</EM>, CModelDomain* <EM CLASS="CodeItalic">pMD</EM> );
+static CMNet* CMNet::Create( const intVecVector&amp; <EM CLASS="CodeItalic">cliques</EM>, CModelDomain* <EM CLASS="CodeItalic">pMD</EM></P>static CMNet*  CMNet::Create( int <EM CLASS="CodeItalic">numberOfNodes</EM>, int <EM CLASS="CodeItalic">numberOfNodeTypes</EM>, const CNodeType *<EM CLASS="CodeItalic">nodeTypes</EM>, const int *<EM CLASS="CodeItalic">nodesAssociation</EM>, int <EM CLASS="CodeItalic">numberOfCliques</EM>, const int *<EM CLASS="CodeItalic">cliqueSizes</EM>, const int **<EM CLASS="CodeItalic">cliques</EM> );
+static CMNet* CMNet::Create(int <EM CLASS="CodeItalic">numberOfNodes</EM>,const nodeTypeVector&amp;<EM CLASS="CodeItalic"> nodeTypes</EM>, const intVector&amp; <EM CLASS="CodeItalic">nodesAssociation</EM>, const intVecVector&amp; <EM CLASS="CodeItalic">cliques </EM>);
+</pre><p><dl>
+ Arguments
+<dt>numberOfCliques<dd>  Number of cliques in the model.
+<dt>cliqueSizes<dd>  Array of clique sizes.
+<dt>cliques<dd>  Cliques.
+<dt>pMD<dd>  Model domain.
+<dt>numberOfNodes<dd>  Number of nodes in the model.
+<dt>numberOfNodeTypes<dd>  Number of node types in the model.
+<dt>nodeTypes<dd>  Array of node types.
+<dt>nodesAssociation<dd>  Array of nodes association with node types.
+</dl></p>
+
+
+<hr><h4><a name="declCMNet_CreateWithRandomMatrices">CreateWithRandomMatrices</a></h4>
+<p class="Blurb">Creates object with random matrices.</p><pre>
+
+static CMNet* CMNet::CreateWithRandomMatrices( int <EM CLASS="CodeItalic">numberOfCliques</EM>,const int *<EM CLASS="CodeItalic">cliqueSizes</EM>,const int **<EM CLASS="CodeItalic">cliques,</EM> CModelDomain* <EM CLASS="CodeItalic">pMD</EM>);
+static CMNet* CMNet::CreateWithRandomMatrices(  const intVecVector&amp; <EM CLASS="CodeItalic">cliques</EM>, CModelDomain* <EM CLASS="CodeItalic">pMD</EM>);
+</pre><p><dl>
+ Arguments
+<dt>numberOfCliques <dd>Number of cliques<EM CLASS="CodeItalic">.</EM>
+<dt>cliqueSizes <dd>Array of clique sizes.
+<dt>cliques <dd>Cliques.
+<dt>pMD <dd>Model domain.
+</dl></p><p>
+This function creates a class object with dense random matrices. Covariance matrices of the Gaussian distribution are matrix units.
+</p>
+
+
+<hr><h4><a name="declCMNet_GetClique">GetClique</a></h4>
+<p class="Blurb">Returns clique nodes.</p><pre>
+
+inline void CMNet::GetClique( int <EM CLASS="CodeItalic">clqNum</EM>, int *<EM CLASS="CodeItalic">clqSize</EM>, const int **<EM CLASS="CodeItalic">clq</EM> )const;
+inline void CMNet::GetClique( int <EM CLASS="CodeItalic">clqNum</EM>, intVector *<EM CLASS="CodeItalic">clq</EM>) const;
+</pre><p><dl>
+ Arguments
+<dt>clqNum<dd>  Number of the clique.
+<dt>clqSize<dd>  Returned parameter. Number of clique nodes.
+<dt>clq<dd>  Returned parameter. Array of clique nodes.
+</dl></p><p>
+This function returns clique nodes.
+</p>
+
+
+<hr><h4><a name="decl_pnlConvertFromBNet">ConvertFromBNet</a></h4>
+<p class="Blurb">Creates class object by converting input <EM CLASS="CodeItalic">BNet</EM>
+</p><pre>
+
+static CMNet* CMNet::ConvertFromBNet(const CBNet *<EM CLASS="CodeItalic">pBNet</EM>);
+</pre><p><dl>
+ Arguments
+<dt>pBNet <dd>Bayesian network.
+</dl></p><p>
+This function creates a class object by converting the input <EM CLASS="CodeReg">BNet</EM>.
+</p>
+
+
+<hr><h4><a name="decl_pnlConvertFromBNetUsingEvidence">ConvertFromBNetUsingEvidence</a></h4>
+<p class="Blurb">Creates object by converting input <EM CLASS="CodeReg">BNet</EM> using given evidence.
+</p><pre>
+
+static CMNet* CMNet::ConvertFromBNetUsingEvidence( const CBNet *<EM CLASS="CodeItalic">pBNet</EM>, const CEvidence *<EM CLASS="CodeItalic">pEvidence</EM> );
+</pre><p><dl>
+ Arguments
+<dt>pBNet <dd>Bayesian network.
+<dt>pEvidence <dd>Evidence.
+</dl></p><p>
+This function creates a class object by converting the input <EM CLASS="CodeReg">BNet</EM>.
+</p>
+
+
+<hr><h4><a name="decl_pnlCopy">Copy</a></h4>
+<p class="Blurb">Creates object by copying input <EM CLASS="CodeReg">MNet</EM>
+</p><pre>
+
+static CMNet* CMNet::Copy(const CMNet *<EM CLASS="CodeItalic">pMNet</EM>);
+</pre><p><dl>
+ Arguments
+<dt>pMNet <dd>Markov network.
+</dl></p><p>
+This function creates a new class object by copying the input <EM CLASS="CodeReg">
+MNet</EM>.
+</p>
+
+
+<hr><h4><a name="declCMNet_CreateTabularPotential">CreateTabularPotential</a></h4>
+<p class="Blurb">Allocates factor and creates matrix.</p><pre>
+
+void CMNet::CreateTabularPotential( const intVector&amp; <EM CLASS="CodeItalic">domain</EM>, const floatVector&amp; <EM CLASS="CodeItalic">data</EM> );
+</pre><p><dl>
+ Arguments
+<dt>domain  <dd>Array of nodes.
+<dt>data  <dd>Given data.
+</dl></p><p>
+This function allocates a factor and creates a new matrix with the given data.
+</p>
+
+
+<hr><h4><a name="declCMNet_ComputeLogLik">ComputeLogLik</a></h4>
+<p class="Blurb">Computes logarithm of likelihood. </p><pre>
+
+virtual float CMNet::ComputeLogLik( const CEvidence *<EM CLASS="CodeItalic">pEv</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>pEv <dd>Evidence.
+</dl></p><p>
+This function computes the logarithm of likelihood.
+</p>
+
+
+<hr><h4><a name="declCMNet_GetClqsNumsForNode">GetClqsNumsForNode</a></h4>
+<p class="Blurb">Gets cliques containing node.</p><pre>
+
+inline void CMNet::GetClqsNumsForNode( int <EM CLASS="CodeItalic">node</EM>, intVector *<EM CLASS="CodeItalic">clqs</EM> ) const;
+</pre><p><dl>
+ Arguments
+<dt>node  <dd>Node number.
+<dt>clqs  <dd>Cliques containing the<EM CLASS="CodeItalic">
+ node.</EM>
+</P>
+</dl></p><p>
+This function gets numbers of cliques that contain the given node.
+</p>
+
+
+<hr><h4><a name="declCMNet_GetNumberOfCliques">GetNumberOfCliques</a></h4>
+<p class="Blurb">Returns number of cliques of model.</p><pre>
+
+inline int CMNet::GetNumberOfCliques() const;
+</pre>
+
+
+<hr><h4><a name="declCMNet_GenerateSamples">GenerateSamples</a></h4>
+<p class="Blurb">Generates random evidence.</p><pre>
+
+virtual void CMNet::GenerateSamples( pEvidencesVector* <EM CLASS="CodeItalic">evidences</EM>, int <EM CLASS="CodeItalic">nSamples</EM>, const CEvidence *<EM CLASS="CodeItalic">pEvIn</EM> = NULL ) const;
+</pre><p><dl>
+ Arguments
+<dt>evidences <dd>Input-output parameter. An empty vector of evidences that will be created by this method.
+<dt>nSamples  <dd>Input parameter. Number of samples.
+<dt>pEvIn <dd>Input parameter. Pointer to evidence.
+</dl></p><p>
+This function generates random evidences from <EM CLASS="CodeReg">MNet</EM>.
+</p>
+
+
+<hr><h3><a name="decl_pnlClassCMRF2">Class CMRF2</a></h3>
+
+
+<IMG SRC="fig/PNLMarch.book-106.gif">
+
+<p>
+<EM CLASS="CodeReg"><a href="#decl_pnlClassCMNet">Class CMNet</A></EM> is a superclass for subclass <EM CLASS="CodeReg">CMRF2</EM>
+ that represents a pairwise Markov network. This subclass implements <EM CLASS="CodeReg">CMNet</EM> virtual functions, so that the implementation takes into account that all the cliques consist of only two nodes.
+</p>
+
+</body>
+</html>
