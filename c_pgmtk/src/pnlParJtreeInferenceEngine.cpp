@@ -831,7 +831,7 @@ int CParJtreeInfEngine::GetDataForMargAndMultOMP(const int source,
                 sinkDistrFun->SetUnitValue(0);
                 floatVector *Vector = (floatVector *)((CDenseMatrix<float>*)sinkDistrFun->
                     GetMatrix(matTable))->GetVector();
-                float *V = Vector->begin();
+                float *V = &Vector->front();
                 int vectorSize = Vector->size();
 
 #pragma omp parallel for private(i)
