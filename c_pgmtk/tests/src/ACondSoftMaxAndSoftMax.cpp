@@ -446,8 +446,8 @@ int testConditionalSoftMaxInfAndLearn()
     pInfEng->GetQueryJPD()->Dump();
     delete pEvidence;
 
-    std::cout<<"Next test. Press any key "<<endl;
-    getch();
+    //std::cout<<"Next test. Press any key "<<endl;
+    //getch();
     std::cout<<"Test on inference on seven nodes net with all continuous nodes observed "<<std::endl;  
 
     numOfObsNds  = 4;
@@ -483,8 +483,8 @@ int testConditionalSoftMaxInfAndLearn()
     delete pEvidence;
     delete pInfEng;
 
-    std::cout<<"Next test. Press any key "<<endl;
-    getch();
+    //std::cout<<"Next test. Press any key "<<endl;
+    //getch();
     std::cout<<"Test on learning on seven nodes net with all nodes observed "<<std::endl;  
   
     CEMLearningEngine *pLearnEng = NULL;  
@@ -521,8 +521,8 @@ int testConditionalSoftMaxInfAndLearn()
     
     delete pLearnEng;
 
-    std::cout<<"Next test. Press any key "<<endl;
-    getch();
+    //std::cout<<"Next test. Press any key "<<endl;
+    //getch();
     std::cout<<"Test on learning on seven nodes net with all continuous nodes observed "<<std::endl;   
 
     pLearnEng = CEMLearningEngine::Create(pBNet);
