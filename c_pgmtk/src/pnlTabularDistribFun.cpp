@@ -2224,8 +2224,8 @@ float CTabularDistribFun::CalculateBayesianScore()
 
     double score = 1.0f;
 
-    double bmin = exp(50);
-    double bmax = exp(200);
+    double bmin = exp(50.0f);
+    double bmax = exp(200.0f);
         
     const float * output;
     int length = 0;

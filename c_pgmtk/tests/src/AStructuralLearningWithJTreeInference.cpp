@@ -330,7 +330,7 @@ int testStructLearnEngWithJTreeInf()
         std::cout<<"Learn object creation OK"<<std::endl; 
     }
     
-    pLearn -> SetData(nEv, evidences.begin());
+    pLearn -> SetData(nEv, &evidences.front());
 
     try
     {
