@@ -346,7 +346,6 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
 
     if(!m_pDistrib)
     {
-//	CreateDistribution();
         CreateDefaultDistribution();
     }
 
@@ -366,6 +365,33 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
     }
 
    m_pDistrib->AllocMatrix( &probability, matType, 0);
+}
+
+void WGaussianDistribFun::SetData(int matrixId, const float *probability)
+{
+    static const char fname[] = "SetData";
+
+    if(!m_pDistrib)
+    {
+        CreateDefaultDistribution();
+    }
+
+    EMatrixType matType;
+    switch (matrixId)
+    {
+    case matMean:
+    case matCovariance:
+    case matWeights:
+    case matH:
+    case matK:
+	matType = static_cast<EMatrixType>(matrixId);
+	break;
+    default:
+	ThrowUsingError("Unsupported type of matrix in gaussian distribution", fname);
+	break;
+    }
+
+   m_pDistrib->AllocMatrix( probability, matType, 0);
 }
 
 void WGaussianDistribFun::CreateDefaultDistribution()
