@@ -210,7 +210,7 @@ pnl::CIDNet *LIMID::Model()
 
 pnl::CLIMIDInfEngine & LIMID::Inference()
 {
-    if(m_Inf)
+/*    if(m_Inf)
     {
         return *m_Inf;
     }
@@ -219,6 +219,13 @@ pnl::CLIMIDInfEngine & LIMID::Inference()
         m_Inf = pnl::CLIMIDInfEngine::Create(Model());
         return *m_Inf;
     }
+*/
+    if(m_Inf)
+    {
+        pnl::CLIMIDInfEngine::Release(&m_Inf);
+    }
+    m_Inf = pnl::CLIMIDInfEngine::Create(Model());
+    return *m_Inf;
 }
 
 TokArr LIMID::GetP(TokArr child, TokArr parents)
