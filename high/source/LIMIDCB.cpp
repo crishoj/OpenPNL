@@ -27,7 +27,7 @@ pnl::CGraphicalModel *LIMIDCallback::CreateModel(ProbabilisticNet &net)
     for(i = 0; i < aNodeName.size(); i++)
     {
 	// it is index for wrapper node, pnl node index is 'i'
-	iWNode = net.Graph().IOuter(net.Graph().INode(aNodeName[i]));
+	iWNode = net.Graph().INode(aNodeName[i]);
 	iPNL = net.Graph().IOuter(iWNode);
 
 	WDistribFun *pWDF = net.Distributions().Distribution(iWNode);

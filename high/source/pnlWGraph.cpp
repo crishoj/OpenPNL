@@ -15,7 +15,7 @@
 PNLW_BEGIN
 
 bool
-TopologicalSort::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aParent,
+TopologicalSort::GetOrderReverse(IIMap *pResult, const Vector<Vector<int> > &aParent,
 				const Vector<char> &abValid)
 {
     std::vector<int> aNode;
@@ -88,29 +88,29 @@ TopologicalSort::GetOrder(IIMap *pDirect, IIMap *pReverse,
 			  const Vector<Vector<int> > &aParent,
 			  const Vector<char> &abValid)
 {
-    bool result = GetOrderDirect(pDirect, aParent, abValid);
+    bool result = GetOrderReverse(pReverse, aParent, abValid);
     int i, j;
 
     if(!result)
     {
 	return false;
     }
-    pReverse->assign((i = pDirect->size()), -1);
+    pDirect->assign((i = pReverse->size()), -1);
     for(; --i >= 0;)
     {
-	j = (*pDirect)[i];
+	j = (*pReverse)[i];
 	if(j < 0)
 	{
 	    continue;
 	}
-	(*pReverse)[j] = i;
+	(*pDirect)[j] = i;
     }
     
     return true;
 }
 
 bool
-TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aParent,
+TopologicalSortDBN::GetOrderReverse(IIMap *pResult, const Vector<Vector<int> > &aParent,
 				   const Vector<char> &abValid)
 {
     std::vector<int> aNode, aNodeSecSlice;
@@ -249,7 +249,7 @@ pnl::CGraph *WGraph::Graph(bool bForget)
 	    m_pSort = new TopologicalSort;
 	}
 	
-	m_pSort->GetOrder(&m_IndicesGraphToOuter, &m_IndicesOuterToGraph, m_aParent, m_abValid);
+	m_pSort->GetOrder(&m_IndicesOuterToGraph, &m_IndicesGraphToOuter, m_aParent, m_abValid);
 
 	for(i = nodes; --i >= 0;)
 	{

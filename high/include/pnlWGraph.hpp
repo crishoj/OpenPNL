@@ -25,7 +25,7 @@ class PNLHIGH_API TopologicalSort
 public:
     TopologicalSort() {}
     virtual ~TopologicalSort() {}
-    virtual bool GetOrderDirect(IIMap *pResult,
+    virtual bool GetOrderReverse(IIMap *pResult,
 	const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
     bool GetOrder(IIMap *pDirect, IIMap *pReverse,
 	const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
@@ -35,7 +35,7 @@ class PNLHIGH_API TopologicalSortDBN: public TopologicalSort
 {
 public:
     TopologicalSortDBN() {}
-    virtual bool GetOrderDirect(IIMap *pResult,
+    virtual bool GetOrderReverse(IIMap *pResult,
 	const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
     void SetMapping(const Vector<int> &mapping) { m_Map = mapping; }
 

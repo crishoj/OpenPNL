@@ -23,7 +23,7 @@ NetCallback::GetNodeInfo(Vector<pnl::CNodeType> *paNodeType,
     for(i = 0; i < aNodeName.size(); i++)
     {
 	iW = net.Graph().INode(aNodeName[i]);
-	iPNL = net.Graph().IOuter(iW);
+	iPNL = net.Graph().IGraph(iW);
 	const pnl::CNodeType &nt = net.pnlNodeType(iW);
 
 	(*paNodeAssociation)[iPNL] = NodeAssociation(paNodeType,
@@ -44,8 +44,8 @@ NetCallback::CommonAttachFactors(pnl::CGraphicalModel &pnlModel,
     for(i = 0; i < aNodeName.size(); i++)
     {
 	// it is index for wrapper node, pnl node index is 'iPNL'
-	iWNode = net.Graph().IOuter(net.Graph().INode(aNodeName[i]));
-	iPNL = net.Graph().IOuter(iWNode);
+	iWNode = net.Graph().INode(aNodeName[i]);
+	iPNL = net.Graph().IGraph(iWNode);
 
 	WDistribFun *pWDF = net.Distributions().Distribution(iWNode);
         PNL_CHECK_IS_NULL_POINTER(pWDF);
