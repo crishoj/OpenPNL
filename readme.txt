@@ -89,15 +89,21 @@ C/C++ version from Linux with gcc
 --------------------------------------------------------
    1. Go to the root directory (it contain this file and changes.txt)
    2. Run './configure.gcc'
-   3. Run 'make'
+   3. Run 'make' to compile sources
+   4. Run 'make check' to compile and launch test suite (optionally)
+   5. Run 'make install' to install library
 
 Notes:
-   Step 2 (Run './configure.gcc') should be run on initial
-or on compiler changing
-
-   If you have some error during compiling or if you want to view compiling
-message later, run 'make 2>&1 | tee compiling.log' instead of 'make'
-
+   - Step 2 (Run './configure.gcc') should be run on initial or on compiler 
+     changing
+   - If you want to install library to some directory instead of '/usr/local' 
+     (as default), you can use '--prefix' option of 'configure' script 
+     in 'configure.gcc' file (run './configure -h' to read more)
+   - You can use object directory to build library. In this case step 2
+     looks like 'SRCROOT/configure.gcc', where 'SRCROOT' is relative path 
+     to source root directory
+   - If you have some error during compiling or if you want to view compiling 
+     message later, run 'make 2>&1 | tee compiling.log' instead of 'make'
 
 --------------------------------------------------------
 Building the library, examples and tests for
@@ -105,14 +111,21 @@ C/C++ version from Linux with icc (Intel compiler)
 --------------------------------------------------------
    1. Go to the root directory (it contain this file and changes.txt)
    2. Run './configure.icc'
-   3. Run 'make'
+   3. Run 'make' to compile sources
+   4. Run 'make check' to compile and launch test suite (optionally)
+   5. Run 'make install' to install library
 
 Notes:
-   Step 2 (Run './configure.icc') should be run on initial
-or on compiler changing
-   If you want to compile pnl with parallel functionality (OpenMP parallel 
-mode of pnl) you have to define CXXFLAGS variable as "-openmp" and define 
-BUILD_OMP in pnlParConfig.hpp as macro of preprocessor
-
-   If you have some error during compiling or if you want to view compiling
-message later, run 'make 2>&1 | tee compiling.log' instead  of 'make'
+   - Step 2 (Run './configure.icc') should be run on initial or on compiler 
+     changing
+   - If you want to install library to some directory instead of '/usr/local'
+     (as default), you can use '--prefix' option of 'configure' script 
+     in 'configure.icc' file (run './configure -h' to read more)
+   - You can use object directory to build library. In this case step 2
+     looks like 'SRCROOT/configure.icc', where 'SRCROOT' is relative path
+     to source root directory
+   - If you want to compile pnl with parallel functionality (OpenMP parallel 
+     mode of pnl) you have to define CXXFLAGS variable as '-openmp' and define 
+     BUILD_OMP in pnlParConfig.hpp as macro of preprocessor
+   - If you have some error during compiling or if you want to view compiling
+     message later, run 'make 2>&1 | tee compiling.log' instead  of 'make'
