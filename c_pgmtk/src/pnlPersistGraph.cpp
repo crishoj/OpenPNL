@@ -74,13 +74,13 @@ CGraphPersistence::Load(CContextLoad *pContext)
     neighborTypeVecVector aNbrsTypes;
     pContext->GetText(nNodeStr);
     std::istringstream buf(nNodeStr.c_str());
-    int j, k;
+    int i, j, k;
     char ch;
 
     aNbrs.resize(nNode);
     aNbrsTypes.resize(nNode);
 
-    for(int i = 0; i < nNode && buf.good() && !buf.eof(); ++i)
+    for( i = 0; i < nNode && buf.good() && !buf.eof(); ++i )
     {
         buf >> j;
         ASSERT(j == i);
@@ -121,7 +121,7 @@ CGraphPersistence::Load(CContextLoad *pContext)
         ASSERT(ch == '\n' || ch == '\r');
     }
 
-    ASSERT(i == nNode);
+    ASSERT( i == nNode );
 
     return CGraph::Create(aNbrs, aNbrsTypes);
 }
