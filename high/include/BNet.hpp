@@ -71,6 +71,12 @@ public:
     
     // clears current evidence
     void ClearEvid();
+
+    // returns logarithm of likelihood for current evidence
+    float GetCurEvidenceLogLik();
+    
+    // returns array of logarithms of likelihood for evidences from buffer
+    TokArr GetEvidBufLogLik();
     
     // stores current evidence to the buffer
     void CurEvidToBuf();
@@ -86,6 +92,9 @@ public:
     
     //learns structure of the network using input evidences or evidence history
     void LearnStructure(TokArr aValue[] = NULL, int nValue = 0); //maybe return some quality measure?
+
+    // returns criterion value for last learning performance
+    float GetEMLearningCriterionValue();
 
     // returns MPE for nodes using current evidence
     TokArr GetMPE(TokArr nodes);

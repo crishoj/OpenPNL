@@ -1083,4 +1083,59 @@ const char BayesNet::PropertyAbbrev(const char *name) const
     return 0;
 }
 
+// returns logarithm of likelihood for current evidence
+float BayesNet::GetCurEvidenceLogLik()
+{
+    pnl::CEvidence *evid = NULL;
+    if( Net().EvidenceBoard()->IsEmpty() )
+    {
+	evid = pnl::CEvidence::Create(Model()->GetModelDomain(), 0, NULL, pnl::valueVector(0));
+    }
+    else
+    {
+	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
+    }
+    float logLik = Model()->ComputeLogLik(evid);
+
+    delete evid;
+
+    //TokArr result = TokArr(logLik);
+    //Net().Token().SetContext(result);
+
+    //return result;
+    return logLik;
+}
+
+// returns array of logarithms of likelihood for evidences from buffer
+TokArr BayesNet::GetEvidBufLogLik()
+{
+    TokArr result;
+
+    Vector<pnl::CEvidence *> evBuf = *Net().EvidenceBuf();
+    for(int i = 0; i < evBuf.size(); i++)
+    {
+	result.push_back(Model()->ComputeLogLik(evBuf[i]));
+    }
+
+    Net().Token().SetContext(result);
+    return result;
+}
+
+// returns criterion value for last learning performance
+float BayesNet::GetEMLearningCriterionValue()
+{
+    pnl::CStaticLearningEngine *learnEng = &Learning();
+    if(dynamic_cast<pnl::CEMLearningEngine *>(learnEng) == NULL)
+    {
+	ThrowInternalError("Criterion value can be got only after EM learning", "GetEMLearningCriterionValue");
+    }
+
+    int nsteps;
+    const float * score;
+    learnEng->GetCriterionValue(&nsteps, &score);
+
+    return score[0];
+}
+
+
 PNLW_END
