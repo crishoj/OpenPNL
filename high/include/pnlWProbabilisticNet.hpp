@@ -36,7 +36,7 @@ public:
     void SetCallback(NetCallback *pCallback) { m_pCallback = pCallback; }
     void AddNode(TokArr nodes, TokArr subnodes);
     void DelNode(TokArr nodes);
-    TokArr NodeType(TokArr nodes);
+    TokArr GetNodeType(TokArr nodes);
     void AddArc(TokArr from, TokArr to);
     void DelArc(TokArr from, TokArr to);
     void EditEvidence(TokArr values);
@@ -66,10 +66,10 @@ public:
     //i.e. observed may become hidden and hidden may become observed
     //By default this function unhides all hidden values 
     //If a node did not have sample then it can not be unhidden
-    void MaskEvidences( TokArr whatNodes = "");
+    void MaskEvidBuf( TokArr whatNodes = "");
 
     void SetProperty(const char *name, const char *value);
-    String Property(const char *name) const;
+    String GetProperty(const char *name) const;
 
     // now assume that model has same number of node as 'this'
     void Reset(const pnl::CGraphicalModel &model);

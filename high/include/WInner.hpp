@@ -14,9 +14,9 @@ typedef enum
 ,   eNodeType
 ,   eSaveNet
 ,   eAddArc
-,   eSetP
-,   eSetGaussian
-,   eP
+,   eSetPTabular
+,   eSetPGaussian
+,   eGetPTabular
 ,   eMakeUniformDistribution
 ,   eEditEvidence
 ,   eClearEvid

@@ -61,7 +61,7 @@ void ProbabilisticNet::DelNode(TokArr nodes)
 }
 
 // returns one of "discrete" or "continuous"
-TokArr ProbabilisticNet::NodeType(TokArr nodes)
+TokArr ProbabilisticNet::GetNodeType(TokArr nodes)
 {
     TokArr res;
     MustBeNode(nodes);// check for existence of such vertices
@@ -515,9 +515,9 @@ void ProbabilisticNet::GenerateEvidences( int nSample, bool ignoreCurrEvid, TokA
     m_aEvidence.insert(m_aEvidence.end(), newSamples.begin(), newSamples.end() );    
 }
 
-void ProbabilisticNet::MaskEvidences(TokArr whatNodes)
+void ProbabilisticNet::MaskEvidBuf(TokArr whatNodes)
 {   
-    static const char fname[] = "MaskEvidences";
+    static const char fname[] = "MaskEvidBuf";
 
     //and if it contain something - filter out absent nodes from the evidence array
     int nValueIn = whatNodes.size();
@@ -593,7 +593,7 @@ void ProbabilisticNet::SetProperty(const char *name, const char *value)
     m_aPropertyValue[String(name)] = String(value);
 }
 
-String ProbabilisticNet::Property(const char *name) const
+String ProbabilisticNet::GetProperty(const char *name) const
 {
     SSMap::const_iterator it = m_aPropertyValue.find(String(name));
 

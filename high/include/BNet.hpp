@@ -41,31 +41,24 @@ public:
     void DelNode(TokArr nodes);
     
     // returns one of "discrete" or "continuous"
-    TokArr NodeType(TokArr nodes);
+    TokArr GetNodeType(TokArr nodes);
     
     // manipulating arcs
     void AddArc(TokArr from, TokArr to);
     void DelArc(TokArr from, TokArr to);
     
-#ifndef SEPARATE_FUNS_FOR_NEIG
-    // possible values for 'id' are:
-    //   "parents", "children", "ancestors", "descendants" and so on
-    TokArr Neighbours(const char *id = "parents", TokArr nodes = TokArr());
-#else
-    TokArr Parents(TokArr nodes);
-    TokArr Children(TokArr nodes);
-    TokArr Ancestors(TokArr nodes);
-    TokArr Descendants(TokArr nodes);
-#endif
+    TokArr GetNeighbours(TokArr nodes);
+    TokArr GetParents(TokArr nodes);
+    TokArr GetChildren(TokArr nodes);
     
     // set tabular probability
-    void SetP(TokArr value, TokArr prob, TokArr parentValue = TokArr());
+    void SetPTabular(TokArr value, TokArr prob, TokArr parentValue = TokArr());
 
     // get tabular probability
-    TokArr P(TokArr value, TokArr parents = TokArr());
+    TokArr GetPTabular(TokArr value, TokArr parents = TokArr());
     
     // set parameters for gaussian distribution
-    void SetGaussian(TokArr node, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
+    void SetPGaussian(TokArr node, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
     
     // setting evidence on the board
     void EditEvidence(TokArr values);
@@ -82,21 +75,21 @@ public:
     // clears evidence history
     void ClearEvidBuf();
     
-    // learns using evidence buffer and new evidences 
-    void Learn(TokArr aValue[] = NULL, int nValue = 0);
+    // learns distributions of the network using evidence buffer and new evidences 
+    void LearnParameters(TokArr aValue[] = NULL, int nValue = 0);
     
-    //learn structure of the network using input evidences or evidence history
+    //learns structure of the network using input evidences or evidence history
     void LearnStructure(TokArr aValue[], int nValue); //maybe return some quality measure?
 
     // returns MPE for nodes using current evidence
-    TokArr MPE(TokArr nodes);
+    TokArr GetMPE(TokArr nodes);
     
     // returns JPD for nodes using current evidence
-    TokArr JPD(TokArr nodes);
+    TokArr GetJPD(TokArr nodes);
 
     // get parameters of gaussian distribution
-    TokArr GaussianMean(TokArr nodes);
-    TokArr GaussianCovar(TokArr var, TokArr vars);
+    TokArr GetGaussianMean(TokArr nodes);
+    TokArr GetGaussianCovar(TokArr var, TokArr vars);
     
     void SaveNet(const char *filename);
     int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
@@ -119,11 +112,12 @@ public:
     //i.e. observed may become hidden and hidden may become observed
     //By default this function unhides all hidden values 
     //If a node did not have sample then it can not be unhidden
-    void MaskEvidences( TokArr whatNodes = "");
-    ProbabilisticNet &Net() const { return *m_pNet; }
+    void MaskEvidBuf(TokArr whatNodes = "");
 
     void SetProperty(const char *name, const char *value);
-    String Property(const char *name) const;
+    String GetProperty(const char *name) const;
+
+    ProbabilisticNet &Net() const { return *m_pNet; }
 
 private:
     pnl::CMatrix<float> *Matrix(int iNode) const;

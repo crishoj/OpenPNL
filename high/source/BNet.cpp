@@ -58,9 +58,9 @@ void BayesNet::DelNode(TokArr nodes)
 }
 
 // returns one of "discrete" or "continuous"
-TokArr BayesNet::NodeType(TokArr nodes)
+TokArr BayesNet::GetNodeType(TokArr nodes)
 {
-    return Net().NodeType(nodes);
+    return Net().GetNodeType(nodes);
 }
 
 // manipulating arcs
@@ -80,12 +80,12 @@ static int cmpTokIdNode(TokIdNode *node1, TokIdNode *node2)
 }
 
 // It is inner DistribFun
-void BayesNet::SetP(TokArr value, TokArr prob, TokArr parentValue)
+void BayesNet::SetPTabular(TokArr value, TokArr prob, TokArr parentValue)
 {
     Net().Distributions()->FillData(value, prob, parentValue);
 }
 
-void BayesNet::SetGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)
+void BayesNet::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)
 {
     Net().Distributions()->FillData(node, mean, TokArr(), pnl::matMean);
     Net().Distributions()->FillData(node, variance, TokArr(), pnl::matCovariance);
@@ -93,9 +93,9 @@ void BayesNet::SetGaussian(TokArr node, TokArr mean, TokArr variance, TokArr wei
         Net().Distributions()->FillData(node, weight, TokArr(), pnl::matWeights);
 }
 
-TokArr BayesNet::GaussianMean(TokArr vars)
+TokArr BayesNet::GetGaussianMean(TokArr vars)
 {
-    static const char fname[] = "GaussianMean";
+    static const char fname[] = "GetGaussianMean";
     
     if( !vars.size() )
     {
@@ -116,9 +116,9 @@ TokArr BayesNet::GaussianMean(TokArr vars)
     return Net().ConvertMatrixToToken(mat);
 }
 
-TokArr BayesNet::GaussianCovar(TokArr var, TokArr vars)
+TokArr BayesNet::GetGaussianCovar(TokArr var, TokArr vars)
 {
-    static const char fname[] = "GaussianCovar";
+    static const char fname[] = "GetGaussianCovar";
 
     if( !var.size() )
     {
@@ -139,9 +139,9 @@ TokArr BayesNet::GaussianCovar(TokArr var, TokArr vars)
     return Net().ConvertMatrixToToken(mat);
 }
 
-TokArr BayesNet::P(TokArr child, TokArr parents)
+TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
 {
-    static const char fname[] = "P";
+    static const char fname[] = "GetPTabular";
     
     int nchldComb = child.size();
     if( !nchldComb )
@@ -193,9 +193,9 @@ TokArr BayesNet::P(TokArr child, TokArr parents)
     return result;
 }
 
-TokArr BayesNet::JPD( TokArr nodes )
+TokArr BayesNet::GetJPD( TokArr nodes )
 {
-    static const char fname[] = "JPD";
+    static const char fname[] = "GetJPD";
 
     if( !nodes.size())
     {
@@ -283,7 +283,7 @@ void BayesNet::ClearEvidBuf()
     m_nLearnedEvidence = 0;
 }
 
-void BayesNet::Learn(TokArr aSample[], int nSample)
+void BayesNet::LearnParameters(TokArr aSample[], int nSample)
 {   
     if(m_nLearnedEvidence > Net().EvidenceBuf()->size())
     {
@@ -496,7 +496,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 }
 #endif
 
-TokArr BayesNet::MPE(TokArr nodes)
+TokArr BayesNet::GetMPE(TokArr nodes)
 {
     if( !nodes.size())
     {
@@ -633,9 +633,9 @@ void BayesNet::GenerateEvidences( int nSample, bool ignoreCurrEvid, TokArr whatN
     Net().GenerateEvidences(nSample, ignoreCurrEvid, whatNodes);
 }
 
-void BayesNet::MaskEvidences(TokArr whatNodes)
+void BayesNet::MaskEvidBuf(TokArr whatNodes)
 {   
-    Net().MaskEvidences(whatNodes);
+    Net().MaskEvidBuf(whatNodes);
 }
 
 //= private functions  =================================================
@@ -807,16 +807,16 @@ void BayesNet::SetProperty(const char *name, const char *value)
     m_pNet->SetProperty(name, value);
 }
 
-String BayesNet::Property(const char *name) const
+String BayesNet::GetProperty(const char *name) const
 {
-    return m_pNet->Property(name);
+    return m_pNet->GetProperty(name);
 }
 
 const char BayesNet::PropertyAbbrev(const char *name) const
 {   
     if(!strcmp(name,"Infrernce"))
     {
-	String infName = Property("Inference");
+	String infName = GetProperty("Inference");
 	pnl::pnlVector<char> infNameVec(infName.length());
 	for(int i = 0; i < infName.length(); ++i)
 	{
@@ -847,7 +847,7 @@ const char BayesNet::PropertyAbbrev(const char *name) const
     }
     if(!strcmp(name,"Learning"))
     {
-	String learnName = Property("Learning");
+	String learnName = GetProperty("Learning");
 	pnl::pnlVector<char> learnNameVec(learnName.length());
 	for(int i = 0; i < learnName.length(); ++i)
 	{
