@@ -24,6 +24,10 @@
 #include "pnlFactor.hpp"
 #include "pnlLog.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API CIDPotential : protected CFactor
@@ -101,6 +105,16 @@ public:
   virtual void UpdateStatisticsML(CFactor *pPot);
 #endif
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CIDPotential::m_TypeInfo;
+  }
+#endif
 protected:
   CIDPotential(EDistributionType dt, EFactorType pt, const int *domain,
     int nNodes, CModelDomain* pMD);
@@ -130,6 +144,9 @@ protected:
 
   CDistribFun *m_UtilityDistribFun; // utility distribution;
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
 };
 

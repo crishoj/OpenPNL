@@ -20,6 +20,9 @@
 #include "pnlException.hpp"
 #include "pnlMatrix.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 // to represent the relationships between neighboring nodes in the graph */
@@ -259,6 +262,16 @@ public:
 
     virtual ~CGraph();
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CGraph::m_TypeInfo;
+    }
+#endif
 protected:
 
     CGraph( int numOfNds, const int* numOfNbrs, const int *const *nbrsList,
@@ -274,6 +287,9 @@ protected:
     
     inline void CreateEmptyNbrsListForAllNodes();
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
 
     mutable bool m_bChangeAllowed;

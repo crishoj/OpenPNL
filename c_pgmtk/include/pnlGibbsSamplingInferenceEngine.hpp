@@ -20,6 +20,9 @@
 
 #include "pnlSamplingInferenceEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CGibbsSamplingInfEngine : public CSamplingInfEngine
@@ -55,6 +58,17 @@ public:
     inline void SetMaxNSamplesForSoftMax(int mNSamples);
     inline int GetMaxNSamplesForSoftMax() {return m_MaxNSamplesForSoftMax;};
     
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CGibbsSamplingInfEngine::m_TypeInfo;
+    }
+#endif
+
 protected:
     
     CGibbsSamplingInfEngine( const CStaticGraphicalModel *pGraphicalModel );
@@ -74,7 +88,10 @@ protected:
     inline bool GetSignOfUsingDSeparation() const;
 
     bool ConvertingFamilyToPot( int node, const CEvidence* pEv );
-    
+   
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     
     CPotential              *m_pPotMPE;

@@ -20,6 +20,10 @@
 
 #include "pnlSamplingInferenceEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API CGibbsWithAnnealingInfEngine : public CSamplingInfEngine
@@ -47,7 +51,16 @@ public:
    
     float GetCurrentTemp() const;
 
-    
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CGibbsWithAnnealingInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
     
     CGibbsWithAnnealingInfEngine( const CStaticGraphicalModel *pGraphicalModel );
@@ -79,7 +92,9 @@ protected:
     bool IsAdapt() const;
     float GetLikelihood(const CEvidence* pEv);
     
-    
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     
     CEvidence *m_pBestEvidence;

@@ -26,7 +26,9 @@
 #include "pnlFactors.hpp"
 #include "pnlGraph.hpp"
 
-
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 #define AllocParameter AllocFactor
@@ -122,6 +124,16 @@ public:
 
     virtual bool IsValid( std::string* descriptionOut = NULL ) const = 0;
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CGraphicalModel::m_TypeInfo;
+    }
+#endif
 protected:
 	
     CGraphicalModel(CModelDomain* pMD);
@@ -135,6 +147,9 @@ protected:
     //keep the pointer to Model Domain with NodeTypes etc.
     CModelDomain *m_pMD;
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     
 

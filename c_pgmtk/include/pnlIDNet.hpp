@@ -21,6 +21,9 @@
 
 #include "pnlBNet.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 // a class to represent Influence Diagram Network structure and operations
@@ -51,6 +54,16 @@ public:
 
   bool IsLIMID(void) const;
   
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CIDNet::m_TypeInfo;
+  }
+#endif
 protected:
 
   CIDNet(CGraph *pGraph, CModelDomain* pMD);
@@ -60,6 +73,9 @@ protected:
   
   CIDNet(const CIDNet& rIDNet);
   
+#ifdef PNL_RTTI
+  static const CPNLType m_TypeInfo;
+#endif
 private:
   
 };
