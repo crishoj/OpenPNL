@@ -277,7 +277,7 @@ pnl::CGraph *WGraph::Graph(bool bForget)
     }
 
     pnl::CGraph *pGraph = m_pGraph;
-    pGraph->Dump();
+    //pGraph->Dump();
 
     if(bForget)
     {
