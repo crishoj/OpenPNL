@@ -37,7 +37,7 @@ CPersistNodeType::Save(CPNLBase *pObj, CContextSave *pContext)
     pContext->AddAttribute("IsDiscrete", pNodeType->IsDiscrete());
     if(pNodeType->GetNodeState())
     {
-        // if nodeState is 0, it loaded as 0
+        // if nodeState is absent, it loaded as 0
         pContext->AddAttribute("NodeState", (int)pNodeType->GetNodeState());
     }
 }
@@ -47,11 +47,11 @@ CPersistNodeType::Load(CContextLoad *pContext)
 {
     int nodeSize;
     bool bDiscrete;
-    int nodeState;
+    int nodeState = 0;
     
     pContext->GetAttribute(&nodeSize, "NodeSize");
     pContext->GetAttribute(&bDiscrete, "IsDiscrete");
-    // if nodeState is 0, it will loaded as 0 - hint
+    // if nodeState is absent, it will loaded as 0 - hint
     pContext->GetAttribute(&nodeState, "NodeState");
 
     return new CNodeType(bDiscrete, nodeSize, (EIDNodeState)nodeState);
@@ -140,7 +140,6 @@ void CPersistEvidence::Save(CPNLBase *pObj, CContextSave *pContext)
 
 CPNLBase *CPersistEvidence::Load(CContextLoad *pContext)
 {
-#if 1
     valueVector *paValue;
     if(static_cast<CCoverDel<valueVector>*>(pContext->Get("Values")) == 0)
     {
@@ -152,10 +151,6 @@ CPNLBase *CPersistEvidence::Load(CContextLoad *pContext)
         paValue = static_cast<CCoverDel<valueVector>*>(
             pContext->Get("Values"))->GetPointer();
     }
-#else
-    valueVector *paValue = static_cast<CCoverDel<valueVector>*>(
-        pContext->Get("Values"))->GetPointer();
-#endif
     CModelDomain *pMD = static_cast<CModelDomain*>(pContext->Get("ModelDomain"));
     intVector *pV = static_cast<CCover<intVector>*>(pContext->Get("ObservedNodes"))->GetPointer();
 
