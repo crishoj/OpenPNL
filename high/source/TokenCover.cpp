@@ -427,6 +427,22 @@ int TokenCover::NodesClassification(TokArr &aValue) const
     return result;
 }
 
+int TokenCover::iNode(Tok &tok) const
+{
+    Resolve(tok);
+    TokIdNode *node = tok.Node();
+    if(node->tag == eTagValue)
+    {
+	node = node->v_prev;
+    }
+    if(node->tag != eTagNetNode)
+    {
+	ThrowInternalError("Node doesn't contain BayesNode", "iNode");
+    }
+
+    return Index(node);
+}
+
 void TokenCover::AddProperty(const char *name, const char **aValue, int nValue)
 {
     TokIdNode *node = m_pProperties->Add(name);
@@ -478,6 +494,13 @@ int TokenCover::Index(TokIdNode *node)
     ThrowInternalError("must have integer id (may be wrong Tok?)", "GetInt");
     return -1;
 }
+
+Tok TokenCover::TokByNodeValue(int iNode, int iValue)
+{
+    return Tok(Graph()->NodeName(iNode)) ^ Value(iNode, iValue);
+}
+
+// non-public functions
 
 void TokenCover::DoNotify(int message, int iNode, ModelEngine *pObj)
 {

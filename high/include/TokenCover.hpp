@@ -24,7 +24,7 @@ public:
     TokenCover(TokIdNode *root, WGraph *graph);
     TokenCover(const char *rootName, WGraph *graph, bool bAutoNum = false);
     TokenCover(const char *rootName, const TokenCover &tokCovFrom, bool bAutoNum = false);
-    ~TokenCover();
+    virtual ~TokenCover();
     TokIdNode *Root() const { return m_pRoot; }
     void Resolve(Tok &tok) const;
     void Resolve(TokArr &aTok) const;
@@ -48,6 +48,7 @@ public:
 
     Vector<TokIdNode*> ExtractNodes(TokArr &aValue) const;
     int NodesClassification(TokArr &aValue) const;
+    int iNode(Tok &tok) const;
 
     // Properties support
     void AddProperty(const char *name, const char **aValue, int nValue);
@@ -58,6 +59,8 @@ public:
     int Index(Tok &tok);
     static int SIndex(Tok &tok);
     static int Index(TokIdNode *node);
+
+    Tok TokByNodeValue(int iNode, int iValue);
 
 protected:
     virtual void DoNotify(int message, int iNode, ModelEngine *pObj);
