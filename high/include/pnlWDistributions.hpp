@@ -3,10 +3,12 @@
 
 #include "pnlHighConf.hpp"
 #include "ModelEngine.hpp"
+#include "pnlNodeType.hpp"
 
 // FORWARDS
 class WDistribFun;
 class TokenCover;
+
 
 class PNLHIGH_API WDistributions: public ModelEngine
 {
@@ -26,7 +28,7 @@ public:
     }
     void DropDistribution(int iNode);
     bool IsValid(int iNode);
-    void GetNodeTypeInfo(bool *pbDiscrete, int *pSize, int iNode);
+    void GetNodeTypeInfo(bool *pbDiscrete, int *pSize, pnl::EIDNodeState *, int iNode);
     void ResetDistribution(int iNode, pnl::CFactor &ft);
     void FillData(TokArr &value, TokArr &probability, const TokArr &parentValue, 
         pnl::EMatrixType matType = pnl::matTable);
