@@ -766,7 +766,10 @@ Tok::operator String() const
     String rv;
     Tok t = *this;
 
-    t.Unresolve((TokIdNode *)0);
+    if(node.size())
+    {
+	t.Unresolve(m_Context);
+    }
     for(i = 0; i < t.unres.size(); ++i)
     {
         if(i)
