@@ -112,12 +112,12 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
                 ->SetData(pnl::matCovariance, pData);
 
             int NumOfNodes = ft.GetDomainSize();
-            if (NumOfNodes > 1)
+	    for (int parent = 0; parent < (NumOfNodes-1); parent++)
             {
-                static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matWeights, 0))
+                static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matWeights, parent))
                     ->GetRawData(&nElement, &pData);
                 static_cast<WGaussianDistribFun*>(Distribution(iNode))->
-                    SetData(pnl::matWeights, pData);
+                    SetData(pnl::matWeights, pData, parent);
             }
         }
 }
@@ -149,6 +149,7 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
             if (static_cast<WGaussianDistribFun*>(Distribution(index))->
                 IsDistributionSpecific() == 1)
             {
+
                   static_cast<WGaussianDistribFun*>(Distribution(index))->CreateDefaultDistribution();
             }
 
