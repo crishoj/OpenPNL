@@ -52,6 +52,53 @@ bool DistribFunDesc::getIndexAndValue(int *index, int *value, Tok &tok)
     return false;
 }
 
+Vector<int> DistribFunDesc::GetValuesAsIndex(Tok &tok)
+{
+    static const char fname[] = "GetValuesAsIndex";
+    int i;
+    Vector<TokIdNode *> aIdValue = tok.Nodes();
+    if(aIdValue.size() != nNode())
+    {
+        ThrowUsingError("Values must be set for each node of domain once", fname);
+    }
+    Vector<int> result(aIdValue.size(), -1);
+    int index, mValue;
+    for(i = 0; i < aIdValue.size(); i++)
+    {
+        if(aIdValue[i]->tag != eTagValue)
+        {
+            ThrowUsingError("There is must be value", fname);
+        }
+        mValue = TokenCover::Index(aIdValue[i]);
+        aIdValue[i] = aIdValue[i]->v_prev;
+
+        if(aIdValue[i]->tag != eTagNetNode)
+        {
+            ThrowUsingError("There is must be node", fname);
+        }
+
+        for(index = nNode(); index >= 0; --index)
+        {
+            if(aIdValue[i] == m_aNode[index])
+            {
+                if(result[index] != -1)
+                {
+                    ThrowInternalError("Value for each node must be set once", fname);
+                }
+                result[index] = mValue;
+                break;
+            }
+        }
+
+        if(index == -1)
+        {
+            ThrowInternalError("Node is not from domain of this distribution", fname);
+        }
+    }
+
+    return result;
+}
+
 WTabularDistribFun::WTabularDistribFun(): m_pMatrix(0) {}
 
 WDistribFun::WDistribFun(): m_pDesc(0) {}
@@ -264,6 +311,17 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 		aIndex[2] = -1;
 	    }
 	}
+    }
+}
+
+void WDistribFun::FillDataNew(int matrixType, TokArr &matrix)
+{
+    int i;
+    Vector<int> aIndex;
+    for(i = 0; i < matrix.size(); i++)
+    {
+        aIndex = desc()->GetValuesAsIndex(matrix[i]);
+        SetAValue(matrixType, aIndex, matrix[i].FltValue());
     }
 }
 

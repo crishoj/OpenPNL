@@ -25,6 +25,7 @@ public:
     int nodeSize(int iNode) const { return m_aNodeSize.at(iNode); }
     int nNode() const { return m_aNode.size(); }
     bool getIndexAndValue(int *index, int *value, Tok &tok);
+    Vector<int> GetValuesAsIndex(Tok &tok);
     const Vector<int> &nodeSizes() const { return m_aNodeSize; }
     bool operator==(const DistribFunDesc &aDF) const
     {
@@ -45,6 +46,7 @@ public:
     virtual Vector<int> Dimensions(int matrixType) = 0;
     void FillData(int matrixType, TokArr value, TokArr probability, TokArr parentValue = TokArr());
     void FillData(int matrixType, int index, double probability, int *parents = 0, int nParents = 0);
+    void FillDataNew(int matrixType, TokArr &matrix);
     void Setup(TokIdNode *node, Vector<TokIdNode*> &aParent);
     virtual void DoSetup() = 0;
     virtual pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1) const = 0;
