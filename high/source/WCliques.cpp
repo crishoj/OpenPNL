@@ -1,5 +1,6 @@
 #include "WCliques.hpp"
 #include "pnlWGraph.hpp"
+#include "pnlTok.hpp"
 
 PNLW_BEGIN
 
@@ -145,6 +146,20 @@ int WCliques::iClique(const Vector<int> &aIndex) const
 	}
     }
     return -1;
+}
+
+int WCliques::iClique(const Vector<TokIdNode *> &aNode) const
+{
+    int i;
+    int nNode = aNode.size();
+    Vector<int> clique;
+    
+    clique.resize(nNode);
+    for(i = 0; i < nNode; i++)
+    {
+        clique[i] = Graph()->INode(aNode[i]->Name());
+    }
+    return iClique(clique);
 }
 
 int WCliques::hash(const Vector<int> &aIndex) const
