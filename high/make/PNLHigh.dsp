@@ -167,6 +167,10 @@ SOURCE=..\source\TokenCover.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\source\Tokens.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\source\WCliques.cpp
 # End Source File
 # Begin Source File
@@ -272,6 +276,10 @@ SOURCE=..\include\pnlWProbabilisticNet.hpp
 # Begin Source File
 
 SOURCE=..\include\TokenCover.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\Tokens.hpp
 # End Source File
 # Begin Source File
 
