@@ -2088,6 +2088,11 @@ void CTabularDistribFun::Normalize()
 
 bool CTabularDistribFun::IsMatrixNormalizedForCPD(float eps) const
 {
+    int nnodes = m_NodeTypes.size();
+    if( m_NodeTypes[nnodes - 1]->GetNodeState() == nsValue )
+    {
+        return 1;
+    }
     if( !m_pMatrix )
     {
         return 0;
