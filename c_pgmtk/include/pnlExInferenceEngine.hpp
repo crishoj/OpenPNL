@@ -58,10 +58,11 @@ public:
     void EnterEvidence( CEvidence const *evidence,
                         int maximize = 0,
                         int sumOnMixtureNode = 1 );
-
+	
 #ifdef PNL_OBSOLETE
     void MarginalNodes( int const *query, int querySize,
                         int notExpandJPD = 0 );
+
 #endif
 
     void MarginalNodes( intVector const &queryNdsIn,
@@ -260,8 +261,7 @@ CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >::CEx
     }
 }
 
-// current implementation works inefficiently when evidence resides
-// only on small fraction of connectivity components of the model
+
 template< class INF_ENGINE, class MODEL, EExInfEngineFlavour FLAV, class FALLBACK_ENGINE1, class FALLBACK_ENGINE2 >
 void CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >::EnterEvidence( CEvidence const *evidence,
                                                                                                  int maximize, int sumOnMixtureNode )
@@ -277,10 +277,6 @@ void CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >
     this->evidence = evidence;
     this->maximize = maximize;
 
-#if 0
-    evidence->Dump();
-#endif
-    
     evidence->GetObsNodesWithValues( &nodes, &values, &node_types );
     dispenser.resize( decomposition.size() );
     dispenser_values.resize( decomposition.size() );
@@ -297,14 +293,8 @@ void CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >
     for ( i = decomposition.size(); i--; )
     {
         evs[i] = 0;
-        if ( dispenser[i].size() )
-        {
-            evs[i] = CEvidence::Create( models[i], dispenser[i], dispenser_values[i] );
-#if 0
-            engines[i]->GetModel()->GetGraph()->\();
-#endif
-            engines[i]->EnterEvidence( evs[i], maximize );
-        }
+        evs[i] = CEvidence::Create( models[i], dispenser[i], dispenser_values[i] );
+        engines[i]->EnterEvidence( evs[i], maximize, sumOnMixtureNode );
     }
 }
 
@@ -329,12 +319,13 @@ CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >::~CE
 
 // current implementation works not very inefficiently when evidence resides
 // only on small fraction of connectivity components of the model
+
 template< class INF_ENGINE, class MODEL, EExInfEngineFlavour FLAV, class FALLBACK_ENGINE1, class FALLBACK_ENGINE2 >
 void CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >::MarginalNodes( int const *query, int querySize, int notExpandJPD )
 {
     int i, j;
 
-    if( querySize == 0 )
+    if( querySize== 0 )
     {
         PNL_THROW( CInconsistentSize, "query nodes vector should not be empty" );
     }
@@ -365,23 +356,76 @@ void CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >
         }
     }
 
-    for ( i = active_components.size(); i--; )
+	EDistributionType dt=dtTabular;
+	bool determined = false;
+	
+	for ( i = active_components.size(); i--; )
     {
         j = active_components[i];
-        if ( query_dispenser[j].size() )
+		engines[j] -> MarginalNodes( &query_dispenser[j].front(), query_dispenser[j].size(), 1 );
+		if(!determined)
+		{
+			dt = engines[j]->GetQueryJPD()->GetDistributionType();
+			if(dt != dtScalar)
+				determined = true;
+		}
+    }
+	if(!(dt == dtTabular || dt == dtGaussian || dt == dtScalar))
+		PNL_THROW(CNotImplemented, "we can not support this type of potentials");
+
+    CPotential *pot1;
+    CPotential const *pot2=NULL;
+    intVector dom;
+	intVector obsIndices;
+	for(i=0; i<querySize; i++)
+	{
+		if(evidence->IsNodeObserved(query[i]))
+		{
+			obsIndices.push_back(i);
+		}
+	}
+
+	if(query_JPD)
+		delete query_JPD;
+	if ( active_components.size() > 1 )
+    {
+        if((dt == dtTabular) || (dt == dtScalar))
+		{
+			query_JPD = CTabularPotential::CreateUnitFunctionDistribution( saved_query, graphical_model->GetModelDomain(), 1, obsIndices );
+		}
+		else if(dt == dtGaussian)
         {
-            if ( evs[j] == 0 )
+			query_JPD = CGaussianPotential::CreateUnitFunctionDistribution( saved_query, graphical_model->GetModelDomain(), 1, obsIndices );
+		}
+
+//        query_JPD = pot2->ShrinkObservedNodes( evidence );
+//        delete( pot2 );
+
+        for ( i = active_components.size(); i--; )
+        {
+            pot2 = engines[active_components[i]]->GetQueryJPD();
+            pot2->GetDomain( &dom );
+            for ( j = dom.size(); j--; )
             {
-                evs[j] = CEvidence::Create( models[j], intVector(), valueVector() );
-                engines[j]->EnterEvidence( evs[j], maximize );
+                dom[j] = decomposition[active_components[i]][dom[j]];
             }
-            if ( !PNL_IS_EXINFENGINEFLAVOUR_JTREEKLUDGE( FLAV ) || engines[j]->m_InfType != itJtree )
-            {
-                engines[j]->MarginalNodes( &query_dispenser[j].front(), query_dispenser[j].size(), notExpandJPD );
-            }
+            pot1 = (CPotential *)CPotential::CopyWithNewDomain( pot2, dom, graphical_model->GetModelDomain() );
+            *query_JPD *= *pot1;
+            delete( pot1 );
         }
     }
-    query_JPD = 0;
+    else
+    {
+        pot2 = engines[active_components[0]]->GetQueryJPD();
+        pot2->GetDomain( &dom );
+
+        for ( j = dom.size(); j--; )
+        {
+           dom[j] = decomposition[active_components[0]][dom[j]];
+        }
+        query_JPD = (CPotential *)CPotential::CopyWithNewDomain( pot2, dom, graphical_model->GetModelDomain() );
+    }
+	query_JPD->Normalize();
 }
 
 // current implementation works inefficiently when evidence resides
@@ -389,7 +433,7 @@ void CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >
 template< class INF_ENGINE, class MODEL, EExInfEngineFlavour FLAV, class FALLBACK_ENGINE1, class FALLBACK_ENGINE2 >
 void CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >::MarginalNodes( intVector const &queryNds, int notExpandJPD )
 {
-    MarginalNodes( &queryNds.front(), queryNds.size(), notExpandJPD );
+    MarginalNodes(&queryNds.front(), queryNds.size(), notExpandJPD );
 }
 
 // current implementation works inefficiently when evidence resides
@@ -546,226 +590,6 @@ brk:
 template< class INF_ENGINE, class MODEL, EExInfEngineFlavour FLAV, class FALLBACK_ENGINE1, class FALLBACK_ENGINE2 >
 CPotential const *CExInfEngine< INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2 >::GetQueryJPD() const
 {
-    int i, j, k, s;
-    CPotential *pot1;
-    CPotential const *pot2;
-    intVector dom;
-    pnlVector< CPotential * > jpds;
-    bool going_discrete = graphical_model->GetNodeType( saved_query[0] )->IsDiscrete();
-
-    if ( query_JPD == 0 )
-    {
-        jpds.assign( active_components.size(), (CPotential *)0 );
-        if ( PNL_IS_EXINFENGINEFLAVOUR_JTREEKLUDGE( FLAV ) )
-        {
-            intVecVector clqs;
-            intVector dummy;
-            intVector mask;
-            intVector tmpdom;
-            int clqs_lim, coun;
-            int best_clq, best_val;
-            intVecVector partition;
-            intVector partition_clq;
-            intVector artificial_dom;
-
-            dummy.resize( 1 );
-            artificial_dom.resize( 0 );
-
-            for ( i = active_components.size(); i--; )
-            {
-                intVector tmpclq;
-                intVector tmpmask;
-
-                k = active_components[i];
-                if ( engines[k]->m_InfType != itJtree )
-                {
-                    continue;
-                }
-                clqs.resize( 0 );
-                clqs.resize( query_dispenser[k].size() );
-
-                tmpmask.resize( 0 );
-                tmpmask.assign( decomposition[k].size(), 0 );
-
-                for ( j = query_dispenser[k].size(), clqs_lim = 0; j--; )
-                {
-                    tmpmask[query_dispenser[k][j]] = j + 1;
-                    dummy[0] = query_dispenser[k][j];
-                    ((CJtreeInfEngine *)engines[k])->GetClqNumsContainingSubset( dummy, &clqs[j] );
-
-                    for ( s = clqs[j].size(); s--; )
-                    {
-                        if ( clqs[j][s] > clqs_lim )
-                        {
-                            clqs_lim = clqs[j][s];
-                        }
-                    }
-                }
-
-                mask.resize( 0 );
-                mask.assign( ++clqs_lim, 0 );
-
-                for ( j = query_dispenser[k].size(); j--; )
-                {
-                    for ( s = clqs[j].size(); s--; )
-                    {
-                        ++mask[clqs[j][s]];
-                    }
-                }
-
-                partition.resize( 0 );
-                partition_clq.resize( 0 );
-
-                for ( coun = query_dispenser[k].size(); coun; )
-                {
-                    best_clq = clqs_lim;
-                    best_val = 0;
-                    for ( j = clqs_lim; j--; )
-                    {
-                        if ( mask[j] > best_val )
-                        {
-                            best_val = mask[best_clq = j];
-                        }
-                    }
-
-                    if ( best_val == query_dispenser[k].size() )
-                    {
-                        // query fits into single clique.  No workaround needed for this component.
-                        engines[k]->MarginalNodes( &query_dispenser[k].front(), query_dispenser[k].size() );
-                        goto brk;
-                    }
-
-                    coun -= best_val;
-
-                    partition_clq.push_back( best_clq );
-                    partition.push_back( intVector() );
-                    tmpclq.resize( 0 );
-                    ((CJtreeInfEngine *)engines[k])->GetJTreeNodeContent( best_clq, &tmpclq );
-
-                    for ( j = tmpclq.size(); j--; )
-                    {
-                        if ( tmpmask[tmpclq[j]] > 0 )
-                        {
-                            partition.back().push_back( tmpclq[j] );
-                            for ( s = clqs[tmpmask[tmpclq[j]] - 1].size(); s--; )
-                            {
-                                --mask[clqs[tmpmask[tmpclq[j]] - 1][s]];
-                            }
-                            tmpmask[tmpclq[j]] = - tmpmask[tmpclq[j]];
-                        }
-                    }
-                }
-
-                for ( j = artificial_dom.size(); j < decomposition[k].size(); ++j )
-                {
-                    artificial_dom.push_back( j );
-                }
-                if ( going_discrete )
-                {
-                    pot1 = CTabularPotential::CreateUnitFunctionDistribution( &artificial_dom.front(), decomposition[k].size(), models[k]->GetModelDomain() );
-                }
-                else
-                {
-                    pot1 = CGaussianPotential::CreateUnitFunctionDistribution( &artificial_dom.front(), decomposition[k].size(), models[k]->GetModelDomain() );
-                }
-                if ( jpds[i] )
-                {
-                    *jpds[i] *= *pot1;
-                    delete( pot1 );
-                }
-                else
-                {
-                    jpds[i] = pot1;
-                }
-                for ( j = partition.size(); j--; )
-                {
-                    engines[k]->MarginalNodes( &partition[j].front(), partition[j].size() );
-                    *jpds[i] *= *engines[k]->GetQueryJPD();
-                }
-                for ( j = models[k]->GetNumberOfFactors(); j--; )
-                {
-                    CFactor *fac = models[k]->GetFactor( j );
-                    fac->GetDomain( &dom );
-                    tmpdom.resize( 0 );
-                    for ( s = dom.size(); s--; )
-                    {
-                        if ( tmpmask[dom[s]] == 0 )
-                        {
-                            tmpdom.push_back( dom[s] );
-                        }
-                    }
-                    if ( tmpdom.size() )
-                    {
-                        pot1 = ((CCPD *)fac)->ConvertToPotential();
-                        pot2 = pot1->Marginalize( tmpdom );
-                        delete( pot1 );
-                        *jpds[i] *= *pot2;
-                        delete( pot2 );
-                    }
-                }
-                pot1 = jpds[i];
-                jpds[i] = pot1->Marginalize( query_dispenser[k] );
-                delete( pot1 );
-brk:
-                continue;
-            }
-        }
-
-        if ( active_components.size() > 1 )
-        {
-            if ( going_discrete )
-            {
-                pot2 = CTabularPotential::CreateUnitFunctionDistribution( saved_query, graphical_model->GetModelDomain() );
-            }
-            else
-            {
-                pot2 = CGaussianPotential::CreateUnitFunctionDistribution( saved_query, graphical_model->GetModelDomain() );
-            }
-
-            // XXX: inefficient in case evidence disjoint with query, performs redundant copy
-            query_JPD = pot2->ShrinkObservedNodes( evidence );
-            delete( pot2 );
-
-            for ( i = active_components.size(); i--; )
-            {
-                if ( jpds[i] == 0 )
-                {
-                    pot2 = engines[active_components[i]]->GetQueryJPD();
-                }
-                else
-                {
-                    pot2 = jpds[i];
-                }
-                pot2->GetDomain( &dom );
-                for ( j = dom.size(); j--; )
-                {
-                    dom[j] = decomposition[active_components[i]][dom[j]];
-                }
-                pot1 = (CPotential *)CPotential::CopyWithNewDomain( pot2, dom, graphical_model->GetModelDomain() );
-                *query_JPD *= *pot1;
-                delete( pot1 );
-            }
-        }
-        else
-        {
-            if ( jpds[0] == 0 )
-            {
-                pot2 = engines[active_components[0]]->GetQueryJPD();
-            }
-            else
-            {
-                pot2 = jpds[0];
-            }
-            pot2->GetDomain( &dom );
-
-            for ( j = dom.size(); j--; )
-            {
-                dom[j] = decomposition[active_components[0]][dom[j]];
-            }
-            query_JPD = (CPotential *)CPotential::CopyWithNewDomain( pot2, dom, graphical_model->GetModelDomain() );
-        }
-    }
-
     return query_JPD;
 }
 
