@@ -142,12 +142,12 @@ The following functional groups can be distinguished:
 <P>
 <DL>
   <DT>nodes
-  <DD>???. 
+  <DD>List of nodes to be added
   <DT>subnodes
-  <DD>???.
+  <DD>List of values for node. Same values is used for every added node.
 </DD></DL>
 <P></P>
-<P>The function adds one or several nodes into the network.</P>
+<P>The function adds one or several nodes into the network. 'subnodes' points possible values for discrete nodes. For continuous nodes it is the names of dimensions.</P>
 <HR>
 
 <H3><A name=decl_DelNode>DelNode</A></H3>
@@ -156,7 +156,7 @@ The following functional groups can be distinguished:
 <P>
 <DL>
   <DT>nodes
-  <DD>???. 
+  <DD>List of nodes to be deleted
   </DD></DL>
 <P></P>
 <P>The function deletes one or several nodes from network together with all adjacent edges. </P>
@@ -171,7 +171,7 @@ The following functional groups can be distinguished:
   <DD>???. 
 </DD></DL>
 <P></P>
-<P>The function returns type (categoric or ??) of given node.</P>
+<P>The function returns type (categoric or continuous) of given node.</P>
 <HR>
 
 <H3><A name=decl_AddArc>AddArc</A></H3>
@@ -180,11 +180,11 @@ The following functional groups can be distinguished:
 <P>
 <DL>
   <DT>from
-  <DD>??. 
+  <DD>Starting node of the edge
   <DT>to
-  <DD>??</DD></DL>
+  <DD>Ending node of the edge</DD></DL>
 <P></P>
-<P>The function adds one or several arcs to the network.</P>
+<P>The function adds one or several arcs to the network. Every node from 'from' linked with every node from 'to'. </P>
 <HR>
 
 <H3><A name=decl_DelArc>DelArc</A></H3>
