@@ -19,27 +19,44 @@ PNL Wrappers: User Guide
   <h4>
 <UL>
   <LI><A href="#Intro">Intro</A> 
-  <LI><A href="#CreateNet">Creating the net</A> 
-  <UL>
-    <LI><A href="#AddNodes">Adding nodes</A> 
-    <LI><A href="#AddEdges">Adding edges</A> 
+  <LI><A href="#DiscreteNet">Bayesian networks with discrete nodes</A> 
+  <UL>  
+      <LI><A href="#CreateNetDiscr">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesDiscr">Adding nodes</A> 
+          <LI><A href="#AddEdgesDiscr">Adding edges</A> 
+      </UL>
+      <LI><A href="#SpecProbDiscr">Specifying the probabilities</A> 
+      <LI><A href="#AddObservDiscr">Adding observations</A> 
+      <LI><A href="#LearnDiscr">Learning the network</A> 
+      <LI><A href="#MPEandJPDDiscr">Getting MPE and JPD</A> 
+      <LI><A href="#HintsDiscr">Hints</A> 
+      <UL>
+          <LI><A href="#Operation1Discr">“^” operation</A> 
+          <LI><A href="#Operation2Discr">[ ] operation</A> 
+          <LI><A href="#StrAndFltMethodsDiscr">String and FltValue methods</A> 
+      </UL>
   </UL>
-  <LI><A href="#SpecProb">Specifying the probabilities</A> 
-  <LI><A href="#AddObserv">Adding observations</A> 
-  <LI><A href="#Learn">Learning the network</A> 
-  <LI><A href="#MPEandJPD">Getting MPE and JPD</A> 
-  <LI><A href="#Hints">Hints</A> 
-  <UL>
-    <LI><A href="#Operation1">“^” operation</A> 
-    <LI><A href="#Operation2">[ ] operation</A> 
-    <LI><A href="#StrAndFltMethods">String and FltValue methods</A> 
+  <LI><A href="#Gaussian">Bayesian networks with continuous nodes</A> 
+  <UL>  
+      <LI><A href="#CreateNetGau">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesGau">Adding nodes</A> 
+          <LI><A href="#AddEdgesGau">Adding edges</A> 
+      </UL>
+      <LI><A href="#SpecProbGau">Specifying the probabilities</A> 
+      <LI><A href="#AddObservGau">Adding observations</A> 
+      <LI><A href="#LearnGau">Learning the network</A> 
+      <LI><A href="#MPEandJPDGau">Getting MPE and JPD</A> 
+      <LI><A href="#HintsGau">Hints</A> 
   </UL>
-
   </UL>
   </h4>
 
 <P></P>
-<hr><h2><a name="Intro">Intro</a></h2>
+<hr>
+<h1><a name="Intro">Intro</a></h1>
+
 <hr>
 <P>
 This manual describes usage of PNL with the help of wrappers.
@@ -59,8 +76,12 @@ characteristics and demands desired results. Required algorithms are called auto
 and inference processes can be carried out with the help of different PNL algorithms. If it is not 
 convenient for user to use default algorithm, he can specify definite algorithm that he want to use 
 to solve his task.
+<p>
+<hr>
+
+<h1><a name="DiscreteNet">Bayesian networks with discrete nodes</a></h1>
 We are going to analyze Bayesian network functioning by the well-known example of “water-sprinkler”. 
-The graph structure of the model and the parameters are all shown in Figure 1:
+<br>The graph structure of the model and the parameters are all shown in Figure 1:
 </P>
 <hr>
 <h4><a name="figWaterSprinkler">Figure1. Water-sprinkler model</a></h4>
@@ -70,7 +91,7 @@ All nodes are discrete and can take on two values: true or false.
 </p>
 <hr>
 
-<h2><a name="CreateNet">Creating the net</a></h2>
+<h2><a name="CreateNetDiscr">Creating the net</a></h2>
 <p>
 The first step of operating the Bayesian network is its creation. No other actions can be carried out, 
 while there is no network.
@@ -81,7 +102,7 @@ Now network is empty. We have to add nodes and edges.
 </p>
 <hr>
 
-<h3><a name="AddNodes">Adding nodes</a></h3>
+<h3><a name="AddNodesDiscr">Adding nodes</a></h3>
 <p>
 Method AddNode is used to add new node to the network:
 <pre>
@@ -101,7 +122,7 @@ net.AddNode(discrete^"Cloudy Sprinkler Rain WetGrass", "true false");
 </p>
 <hr>
 
-<h3><a name="AddEdges">Adding edges</a></h3>
+<h3><a name="AddEdgesDiscr">Adding edges</a></h3>
 <p>
 AddArc method is used to add a new arc to the network:
 <pre>
@@ -119,7 +140,7 @@ net.AddArc("Sprinkler Rain", "WetGrass");
 </p>
 <hr>
 
-<h2><a name="SpecProb">Specifying the probabilities</a></h2>
+<h2><a name="SpecProbDiscr">Specifying the probabilities</a></h2>
 <p>
 Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. If we know probability distributions on some of the network nodes, we can specify them with the SetPTabular method for the discrete nodes.
 <br>
@@ -195,7 +216,7 @@ We can carry out Learning, i.e. to find out distributions on the network nodes w
 </p>
 <hr>
 
-<h2><a name="AddObserv">Adding observations</a></h2>
+<h2><a name="AddObservDiscr">Adding observations</a></h2>
 <p>
 Here we will describe the way of working with evidences in wrappers. BayesNet class allows user to work with current evidence and with the buffer of evidences.
 <br>
@@ -230,7 +251,7 @@ Current evidence is used to get JPD and MPE, evidence buffer is used for learnin
 </p>
 <hr>
 
-<h2><a name="Learn">Learning the network</a></h2>
+<h2><a name="LearnDiscr">Learning the network</a></h2>
 <p>
 To carry out learning process evidences from evidence buffer are used. 
 <br>
@@ -284,7 +305,7 @@ In this case two new evidences will be added to evidence buffer and then learnin
 </p>
 <hr>
 
-<h2><a name="MPEandJPD">Getting MPE and JPD</a></h2>
+<h2><a name="MPEandJPDDiscr">Getting MPE and JPD</a></h2>
 <p>
 If Bayesian network and probability distributions have been already defined, we can get Joint Probability Distribution (JPD) and Maximum Probability Explanation (MPE).
 <br>
@@ -315,13 +336,13 @@ TokArr WetGrassMPE = net.GetMPE("WetGrass Sprinkler");
 </p>
 <hr>
 
-<h2><a name="Hints">Hints</a></h2>
+<h2><a name="HintsDiscr">Hints</a></h2>
 <p>
 Now we are going to discuss some additional possibilities of parameters definition with the help of TokArr class.
 </p>
 <hr>
 
-<h3><a name="Operation1">“^” operation</a></h3>
+<h3><a name="Operation1Discr">“^” operation</a></h3>
 <p>
 If we use operation “^”, we can make parameters definition shorter. 
 <br>
@@ -365,7 +386,7 @@ extern TokArr continuous;
 </p>
 <hr>
 
-<h3><a name="Operation2">[ ] operation</a></h3>
+<h3><a name="Operation2Discr">[ ] operation</a></h3>
 <p>
 If  TokArr class object specifies some set of network nodes, then we can get every node with the help of  [] operation. Result of this operation is a Tok class object, which specifies only one node (TokArr = array of Tok):
 <pre>
@@ -379,7 +400,7 @@ Tok class object can be converted into string. For example, the result of conver
 </p>
 <hr>
 
-<h3><a name="StrAndFltMethods">String and FltValue methods</a></h3>
+<h3><a name="StrAndFltMethodsDiscr">String and FltValue methods</a></h3>
 <p>
 To convert TokArr and Tok class objects into strings String method is used:
 <pre>
@@ -397,5 +418,132 @@ float probabFalseF = probabilityFalse.FltValue();
 </pre>
 probabTrueF and probabFalseF variables will contain 0.6 and 0.4 values correspondingly.
 </p>
+<hr>
+
+
+
+<P></P>
+<h1><a name="Gaussian">Bayesian networks with continuous nodes</a></h1>
+
+<P>
+We will show the operations with Bayesian network, which consists of continuous nodes, by the example of Satnam Alag’s PhD thesis, USB ME dept 1996 p. 48.
+<br>The graph structure of the model and the parameters are all shown in Figure 2:
+</p>
+<hr>
+<h4><a name="figModel">Figure 2. Simple model with continuous nodes</a></h4>
+<img align=center src="Model1.gif">
+<p>All nodes are continuous and have only one dimension.
+</p>
+<hr>
+
+<h2><a name="CreateNetGau">Creating the net</a></h2>
+<p>
+The first step of operating the Bayesian network is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create BayesNet class object: 
+<pre>BayesNet net;</pre>
+Now network is empty. We have to add nodes and edges.
+</p>
+<hr>
+
+<h3><a name="AddNodesGau">Adding nodes</a></h3>
+<p>
+Method AddNode is used to add new node to the network:
+<pre>
+net.AddNode("continuous^x0", "dim1"); 
+net.AddNode("continuous^x1", "dim1"); 
+net.AddNode("continuous^x2", "dim1"); 
+net.AddNode("continuous^x3", "dim1"); 
+net.AddNode("continuous^x4", "dim1");
+</pre>
+The first argument of this method is type and name of the new node.  The second argument is the name of dimension. In our example all nodes have only one dimension, and that is why the second argument is always the same – the name of single dimension. The name of dimension is essential only for user, it can be chosen at will.
+</p>
+<hr>
+
+<h3><a name="AddEdgesGau">Adding edges</a></h3>
+<p>
+AddArc method is used to add a new arc to the network:
+<pre>
+net.AddArc("x0", "x2");
+net.AddArc("x1", "x2");
+net.AddArc("x2", "x3");
+net.AddArc("x2", "x4");
+</pre>
+Adding new edges is similar to the discrete case.
+</p>
+<hr>
+
+<h2><a name="SpecProbGau">Specifying the probabilities</a></h2>
+<p>
+Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. If we know probability distributions on some of the network nodes, we can specify them with SetPGaussian method for the continuous nodes.
+<br>
+Let’s set distributions on the nodes x0 and x1.
+<pre>
+net.SetPGaussian("x0", "1.0", "4.0")
+net.SetPGaussian("x1", "1.0", "1.0")
+</pre>
+The first argument of this function is the name of the node. The second is the mean of the corresponding variate, the third – dispersion.
+<br>The rest nodes have parents. To set probability distributions on this node we have to call the following functions:
+<pre>
+net.SetPGaussian("x2", "0.0", "2.0", "1.0 2.0");
+net.SetPGaussian("x3", "0.0", "4.0", "1.1");
+net.SetPGaussian("x4", "-0.8", "1.2", "2.0");
+</pre>
+The last parameter defines weights. We must specify weight for every parent of the current node.
+We can get the parameters of continuous distribution, that we have already specified, with the help of the following methods:
+<pre>
+TokArr MeanX0 = net.GetGaussianMean("x0"); 
+</pre>
+This method will return the mean of the variate, which corresponds the x0 node.
+
+<pre>
+TokArr CovarX0 = net.GetGaussianCovar("x0");
+</pre>
+
+This method will return the dispersion of the variate, which corresponds the x0 node.
+<p>We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+
+<h2><a name="AddObservGau">Adding observations</a></h2>
+<p>
+Here we will describe the way of working with evidences in wrappers. BayesNet class allows user to work with current evidence and with the buffer of  evidences.
+<br>Default current evidence is empty. User can edit it with the EditEvidence method:
+<pre>
+net.editEvidence("x0^dim1^0.4");
+</pre>
+While defining the observation on the continuous node, it is necessary to specify the name of the node, the name of the dimension and the observed value. 
+<br>You can also put evidence to evidence buffer without editing. Call AddEvidToBuf method:
+<pre>
+net.AddEvidToBuf("x0^dim1^0.4");
+</pre>
+Usage of the other functions, which are calling to work with evidences (CurEvidToBuf, ClearEvid, ClearEvidBuf, SaveEvidBuffer, LoadEvidBuffer, GenerateEvidences), is similar to the discrete case.
+<hr>
+
+
+<h2><a name="LearnGau">Learning the network</a></h2>
+<p>
+Learning of continuous network is similar to learning the discrete one. To carry out learning process use the following calls:  
+<pre>
+net.LearnParameters();
+net.LearnStructure();
+</pre>
+To get the result distributions after learning user have to use GetGaussianMean and GetGaussianCovar methods:
+<pre>
+TokArr MeanX2 = net.GetGaussianMean("x2");
+TokArr CovarX2 = net.GetGaussianCovar("x2");
+</pre>
+<hr>
+
+<h2><a name="MPEandJPDGau">Getting MPE and JPD</a></h2>
+<p>
+If Bayesian network and probability distributions have been already defined, we can get Joint Probability Distribution (JPD) and Maximum Probability Explanation (MPE). 
+<br>This possibility is well described for the discrete networks. For the continuous networks it is the same.
+<pre>
+TokArr X3Marg = net.GetJPD("x3");
+TokArr X3MPE = net.GetMPE("x3");
+</pre>
 <hr>
 
