@@ -54,9 +54,9 @@ LINK32=link.exe
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:console /debug /machine:I386 /out:"..\..\..\bin\tests_pnl_c.exe" /libpath:"..\..\lib" /libpath:"..\..\..\cxcore\lib" /fixed:no"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\work\pnl.sf\PNL\bin\tests_pnl_c.exe
+TargetPath=\OpenPNL\PNL\bin\tests_pnl_c.exe
 TargetName=tests_pnl_c
-InputPath=\work\pnl.sf\PNL\bin\tests_pnl_c.exe
+InputPath=\OpenPNL\PNL\bin\tests_pnl_c.exe
 SOURCE="$(InputPath)"
 
 "..\..\..\bin\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -89,9 +89,9 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:console /incremental:no /debug /machine:I386 /out:"..\..\..\bin\tests_pnl_cd.exe" /pdbtype:sept /libpath:"..\..\lib" /libpath:"..\..\..\cxcore\lib"
 # Begin Custom Build
-TargetPath=\work\pnl.sf\PNL\bin\tests_pnl_cd.exe
+TargetPath=\OpenPNL\PNL\bin\tests_pnl_cd.exe
 TargetName=tests_pnl_cd
-InputPath=\work\pnl.sf\PNL\bin\tests_pnl_cd.exe
+InputPath=\OpenPNL\PNL\bin\tests_pnl_cd.exe
 SOURCE="$(InputPath)"
 
 "..\..\..\bin\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -143,6 +143,10 @@ SOURCE=..\src\ACondGaussian.cpp
 # Begin Source File
 
 SOURCE=..\src\AConditionalGaussianLearning.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\ACondSoftMaxAndSoftMax.cpp
 # End Source File
 # Begin Source File
 
