@@ -20,6 +20,8 @@
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
+PNLW_BEGIN
+
 DBN::DBN(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
 {
     static const char *aInference[] = 
@@ -339,9 +341,7 @@ TokArr DBN::GetJPD( TokArr nodes)
 	queryVls.assign(nnodes, -1);
     }
     
-    
     Inference().MarginalNodes(&queryNds.front(), queryNds.size(),nSlice);
-    
     
     const pnl::CPotential *pot = Inference().GetQueryJPD();
     
@@ -951,6 +951,8 @@ const char DBN::PropertyAbbrev(const char *name) const
    {
        return 0;
    }
+
+   return -1;
 }
 
 int DBN::GetSliceNum(String nodeName)
@@ -1224,3 +1226,5 @@ TokArr DBN::GetChildren(TokArr nodes)
     }
     return nodesChildren;
 }
+
+PNLW_END
