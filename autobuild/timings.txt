@@ -2391,3 +2391,17 @@ Footer_begin
   Elapsed_Time,264.0
 Footer_end
 ==
+08/13/04 20:20:02	w2k_icc	crashed	crashed_55.3	test1_5JTreeInfDBNCondGauss testComputeLikelihood testGenerateEvidences testJTreeInfMixtureDBN
+Header_begin
+  Processor,Pentium
+  OS,WindowsNT v5.0 build 2195
+  Start_Date,
+  Start_Time,Sat Aug 14 00:47:24 2004
+Header_end
+Data_begin
+  Flavour,Function,Value,Units,Comments,Param1,Param2,Param3,Param4
+  d,testPerformanceJTreeInf,1.374476e-004,5.232229e-004,3.579545e+004,
+ time of inference procedure creation,
+ everage time of inference doing,
+ CPU Freq,
+==
