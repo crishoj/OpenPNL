@@ -107,6 +107,7 @@ loadnet("..\tests\TestMultivariate\5Nodes.xml")
 
 //GenerateEvidences(20)
 print("Loaded evidences...")
+ClearEvidBuf()
 LoadEvidBuf("MultiGaussianEvid.csv")
 //print("saved evidences...")
 LearnParameters()
