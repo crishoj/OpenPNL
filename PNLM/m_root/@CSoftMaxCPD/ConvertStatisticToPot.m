@@ -8,13 +8,14 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = ConvertStatisticToPot(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: pnl::CPotential *ConvertStatisticToPot(pnl::CSoftMaxCPD const *self,int numOfSamples)
 %%
 
-function [] = SetType(varargin)
+function [result] = ConvertStatisticToPot(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CSoftMaxCPD_ConvertStatisticToPot_wrap', varargin{:});
+result = CPotential('%%@#DefaultCtor', result);
 
 return

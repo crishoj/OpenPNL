@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = GetDomainSize(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: int GetDomainSize(pnl::CIDPotential const *self)
 %%
 
-function [] = SetType(varargin)
+function [result] = GetDomainSize(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CIDPotential_GetDomainSize_wrap', varargin{:});
 
 return

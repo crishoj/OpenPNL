@@ -8,13 +8,14 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = Create(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: pnl::CIDTabularPotential *pnl::CIDTabularPotential::Create(pnl::intVector const &domain,pnl::CModelDomain *pMD,float const *probData,float const *utilityData)
 %%
 
-function [] = SetType(varargin)
+function [result] = Create(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CIDTabularPotential_Create_wrap', varargin{:});
+result = CIDTabularPotential('%%@#DefaultCtor', result);
 
 return

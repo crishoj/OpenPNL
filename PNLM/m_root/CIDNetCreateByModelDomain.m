@@ -8,13 +8,14 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = CreateByModelDomain(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: pnl::CIDNet *pnl::CIDNet::Create(pnl::CGraph *pGraphIn,pnl::CModelDomain *pMD)
 %%
 
-function [] = SetType(varargin)
+function [result] = CreateByModelDomain(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CIDNet_CreateByModelDomain_wrap', varargin{:});
+result = CIDNet('%%@#DefaultCtor', result);
 
 return

@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = GetMaximizingMethod(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: pnl::EMaximizingMethod GetMaximizingMethod(pnl::CEMLearningEngine *self)
 %%
 
-function [] = SetType(varargin)
+function [result] = GetMaximizingMethod(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CEMLearningEngine_GetMaximizingMethod_wrap', varargin{:});
 
 return

@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [] = SetMaximizingMethod(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: void SetMaximizingMethod(pnl::CSoftMaxCPD *self,pnl::EMaximizingMethod met)
 %%
 
-function [] = SetType(varargin)
+function [] = SetMaximizingMethod(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+feval('pnl_full', 'CSoftMaxCPD_SetMaximizingMethod_wrap', varargin{:});
 
 return

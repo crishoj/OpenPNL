@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = ProcessingStatisticalData(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: float ProcessingStatisticalData(pnl::CSoftMaxCPD *self,int numberOfEvidences)
 %%
 
-function [] = SetType(varargin)
+function [result] = ProcessingStatisticalData(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CSoftMaxCPD_ProcessingStatisticalData_wrap', varargin{:});
 
 return

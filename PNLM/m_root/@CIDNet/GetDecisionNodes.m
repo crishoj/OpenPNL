@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [] = GetDecisionNodes(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: void GetDecisionNodes(pnl::CIDNet const *self,pnl::intVector &OUTPUT)
 %%
 
-function [] = SetType(varargin)
+function [] = GetDecisionNodes(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+feval('pnl_full', 'CIDNet_GetDecisionNodes_wrap', varargin{:});
 
 return

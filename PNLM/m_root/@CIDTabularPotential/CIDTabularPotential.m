@@ -8,26 +8,35 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [result] = CNodeType(varargin)
+%% [result] = CIDTabularPotential(varargin)
 %%
-%% CNodeType: Help not provided
+%% CIDTabularPotential: Help not provided
 %%
 
 
-function [result] = CNodeType(varargin)
+function [result] = CIDTabularPotential(varargin)
 
 if nargin == 2 & ischar(varargin{1}) & strcmp(varargin{1}, '%%@#DefaultCtor')
     if ~ischar(varargin{2})
         error ('internal error during call to default ctor: arg2 ~ischar');
     end
     result.ptrString = varargin{2};
-    result = class(result, 'CNodeType');
+    base = CIDPotential('%%@#DefaultCtor', result.ptrString);
+    result = class(result, 'CIDTabularPotential', base);
     return
 end
 
-if nargin > -1 & nargin < 4
-    result.ptrString = feval('pnl_full', 'new_CNodeType_wrap', varargin{:});
-    result = class(result, 'CNodeType');
+if nargin > 3 & nargin < 5
+    result.ptrString = feval('pnl_full', 'CIDTabularPotential_Create_wrap', varargin{:});
+    base = CIDPotential('%%@#DefaultCtor', result.ptrString);
+    result = class(result, 'CIDTabularPotential', base);
+    return
+end
+
+if nargin > 0 & nargin < 2
+    result.ptrString = feval('pnl_full', 'CIDTabularPotential_Copy_wrap', varargin{:});
+    base = CIDPotential('%%@#DefaultCtor', result.ptrString);
+    result = class(result, 'CIDTabularPotential', base);
     return
 end
 

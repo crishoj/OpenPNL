@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result, OUTPUTOut2] = IsValid(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: bool IsValid(pnl::CIDNet const *self,std::string *OUTPUT)
 %%
 
-function [] = SetType(varargin)
+function [result, OUTPUTOut2] = IsValid(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result, OUTPUTOut2] = feval('pnl_full', 'CIDNet_IsValid_wrap', varargin{:});
 
 return

@@ -8,13 +8,14 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = GetModelDomain(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: pnl::CModelDomain *GetModelDomain(pnl::CIDPotential const *self)
 %%
 
-function [] = SetType(varargin)
+function [result] = GetModelDomain(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CIDPotential_GetModelDomain_wrap', varargin{:});
+result = CModelDomain('%%@#DefaultCtor', result);
 
 return

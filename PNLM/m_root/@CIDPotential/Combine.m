@@ -8,13 +8,14 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = Combine(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: pnl::CIDPotential *Combine(pnl::CIDPotential const *self,pnl::CIDPotential const *pOtherFactor,pnl::CIDPotential *output)
 %%
 
-function [] = SetType(varargin)
+function [result] = Combine(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CIDPotential_Combine_wrap', varargin{:});
+result = CIDPotential('%%@#DefaultCtor', result);
 
 return

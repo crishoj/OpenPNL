@@ -8,13 +8,14 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = Create(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: pnl::CIDNet *pnl::CIDNet::Create(int numberOfNodes,pnl::nodeTypeVector const &nodeTypesIn,pnl::intVector const &nodeAssociationIn,pnl::CGraph *pGraphIn)
 %%
 
-function [] = SetType(varargin)
+function [result] = Create(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CIDNet_Create_wrap', varargin{:});
+result = CIDNet('%%@#DefaultCtor', result);
 
 return

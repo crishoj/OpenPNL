@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [] = SetUtilityDistribFun(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: void SetUtilityDistribFun(pnl::CIDPotential *self,pnl::CDistribFun const *data)
 %%
 
-function [] = SetType(varargin)
+function [] = SetUtilityDistribFun(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+feval('pnl_full', 'CIDPotential_SetUtilityDistribFun_wrap', varargin{:});
 
 return

@@ -8,13 +8,14 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = CloneWithSharedMatrices(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: pnl::CFactor *CloneWithSharedMatrices(pnl::CIDPotential *self)
 %%
 
-function [] = SetType(varargin)
+function [result] = CloneWithSharedMatrices(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CIDPotential_CloneWithSharedMatrices_wrap', varargin{:});
+result = CFactor('%%@#DefaultCtor', result);
 
 return

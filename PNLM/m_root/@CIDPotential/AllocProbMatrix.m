@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [] = AllocProbMatrix(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: void AllocProbMatrix(pnl::CIDPotential *self,float const *data,pnl::EMatrixType mType,int numberOfMatrix,int const *discrParentValuesIndices)
 %%
 
-function [] = SetType(varargin)
+function [] = AllocProbMatrix(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+feval('pnl_full', 'CIDPotential_AllocProbMatrix_wrap', varargin{:});
 
 return

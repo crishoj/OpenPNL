@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [] = UpdateStatisticsEM(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: void UpdateStatisticsEM(pnl::CSoftMaxCPD *self,pnl::CPotential const *pMargPot,pnl::CEvidence const *pEvidence)
 %%
 
-function [] = SetType(varargin)
+function [] = UpdateStatisticsEM(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+feval('pnl_full', 'CSoftMaxCPD_UpdateStatisticsEM_wrap', varargin{:});
 
 return

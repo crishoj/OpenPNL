@@ -8,13 +8,14 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = Marginalize(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: pnl::CIDPotential *Marginalize(pnl::CIDPotential const *self,pnl::intVector const &smallDomainIn,int maximize,pnl::CIDPotential *output)
 %%
 
-function [] = SetType(varargin)
+function [result] = Marginalize(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+[result] = feval('pnl_full', 'CIDPotential_Marginalize_wrap', varargin{:});
+result = CIDPotential('%%@#DefaultCtor', result);
 
 return

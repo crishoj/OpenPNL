@@ -8,13 +8,27 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = CLIMIDInfEngine(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% CLIMIDInfEngine: Help not provided
 %%
 
-function [] = SetType(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+function [result] = CLIMIDInfEngine(varargin)
 
-return
+if nargin == 2 & ischar(varargin{1}) & strcmp(varargin{1}, '%%@#DefaultCtor')
+    if ~ischar(varargin{2})
+        error ('internal error during call to default ctor: arg2 ~ischar');
+    end
+    result.ptrString = varargin{2};
+    result = class(result, 'CLIMIDInfEngine');
+    return
+end
+
+if nargin > 0 & nargin < 2
+    result.ptrString = feval('pnl_full', 'CLIMIDInfEngine_Create_wrap', varargin{:});
+    result = class(result, 'CLIMIDInfEngine');
+    return
+end
+
+error('Wrong number of input arguments')

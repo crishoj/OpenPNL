@@ -8,13 +8,21 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [result] = CIDPotential(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% CIDPotential: Help not provided
 %%
 
-function [] = SetType(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+function [result] = CIDPotential(varargin)
 
-return
+if nargin == 2 & ischar(varargin{1}) & strcmp(varargin{1}, '%%@#DefaultCtor')
+    if ~ischar(varargin{2})
+        error ('internal error during call to default ctor: arg2 ~ischar');
+    end
+    result.ptrString = varargin{2};
+    result = class(result, 'CIDPotential');
+    return
+end
+
+error('Wrong number of input arguments')

@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [] = InsertPoliticsInSelf(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: void InsertPoliticsInSelf(pnl::CIDPotential const *self,pnl::CCPD const *pOtherFactor)
 %%
 
-function [] = SetType(varargin)
+function [] = InsertPoliticsInSelf(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+feval('pnl_full', 'CIDPotential_InsertPoliticsInSelf_wrap', varargin{:});
 
 return

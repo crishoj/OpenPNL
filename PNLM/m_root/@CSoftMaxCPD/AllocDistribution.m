@@ -8,13 +8,13 @@
 %%       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        %%
 %%                                                                         %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% [] = SetType(varargin)
+%% [] = AllocDistribution(varargin)
 %%
-%% C++ prototype: void SetType(pnl::CNodeType *self,bool IsDiscrete,int nodeSize,pnl::EIDNodeState nodeState)
+%% C++ prototype: void AllocDistribution(pnl::CSoftMaxCPD *self,pnl::floatVector const &weightsIn,pnl::floatVector const &offsetIn,pnl::intVector const &parentCombination)
 %%
 
-function [] = SetType(varargin)
+function [] = AllocDistribution(varargin)
 
-feval('pnl_full', 'CNodeType_SetType_wrap', varargin{:});
+feval('pnl_full', 'CSoftMaxCPD_AllocDistribution_wrap', varargin{:});
 
 return
