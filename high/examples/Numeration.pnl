@@ -1,0 +1,196 @@
+clear()
+
+AddNode("continuous^x0", "dim1")
+DelNode("continuous^x0")
+AddNode("continuous^x0", "dim1")
+AddNode("continuous^temp", "dim1 dim2") 
+AddNode("continuous^temp2", "dim1 dim2")
+AddNode("continuous^x", "dim1 dim2") 
+AddNode("continuous^temp3", "dim1 dim2") 
+AddNode("continuous^x2", "dim1 dim2 dim3") 
+DelNode("continuous^temp3") 
+AddNode("continuous^y", "dim1 dim2 dim3") 
+DelNode("continuous^temp") 
+AddNode("continuous^z", "dim1") 
+DelNode("continuous^temp2") 
+AddArc("x0 x x2", "y")
+AddArc("y", "z")
+SetPGaussian("x0", "0.5", "1.0")
+SetPGaussian("x", "0.5 1.5", "1.0 0.0 0.0 1.0")
+SetPGaussian("x2", "0.5 1.5 2.5", "1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0")
+SetPGaussian("y", "1.5 2.5 3.5", "2.0 1.0 0.0 1.0 3.0 0.0 0.0 0.0 0.5", "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8")
+SetPGaussian("z", "1.0", "1.5", "1.5 2.5 3.5")
+print("Means");
+GetGaussianMean("x0")
+GetGaussianMean("x")
+GetGaussianMean("x2")
+GetGaussianMean("y")
+GetGaussianMean("z")
+print("Covar");
+GetGaussianCovar("x0")
+GetGaussianCovar("x")
+GetGaussianCovar("x2")
+GetGaussianCovar("y")
+GetGaussianCovar("z")
+print("created net...")
+
+print("***JPD***")
+print("No evidences")
+print("x0")
+GetJPD("x0")
+print("x")
+GetJPD("x")
+print("x2")
+GetJPD("x2")
+print("y")
+GetJPD("y")
+print("z")
+GetJPD("z")
+print("x0 x x2")
+GetJPD("x0 x x2")
+print("x y")
+GetJPD("x y")
+print("y z")
+GetJPD("y z")
+
+print("Evidences: x^dim1 = -15  x^dim2 = 5 z = 15.67")
+
+editevidence("x^dim1^-15.0");
+//editevidence("x^dim1^5.05");
+//editevidence("z^dim1^15.67");
+editevidence("x^dim2^5.0 z^dim1^15.67")
+//editevidence("x^dim2^-45.0 z^dim1^0.67")
+
+print("x0")
+GetJPD("x0")
+print("x")
+GetJPD("x")
+print("x2")
+GetJPD("x2")
+print("y")
+GetJPD("y")
+print("z")
+GetJPD("z")
+print("x0 x x2")
+GetJPD("x0 x x2")
+print("x y")
+GetJPD("x y")
+print("y z")
+GetJPD("y z")
+print("***JPD is done***")
+
+print("***Learning***")
+print("Observed nodes: x0, x2, y")
+
+DelNode("continuous^x0")
+DelNode("continuous^x") 
+DelNode("continuous^x2") 
+DelNode("continuous^y") 
+DelNode("continuous^z") 
+
+AddNode("continuous^x0", "dim1")
+AddNode("continuous^temp", "dim1 dim2") 
+AddNode("continuous^temp2", "dim1 dim2")
+AddNode("continuous^x", "dim1 dim2") 
+AddNode("continuous^temp3", "dim1 dim2") 
+AddNode("continuous^x2", "dim1 dim2 dim3") 
+DelNode("continuous^temp3") 
+AddNode("continuous^y", "dim1 dim2 dim3") 
+DelNode("continuous^temp") 
+AddNode("continuous^z", "dim1") 
+DelNode("continuous^temp2") 
+
+//loadnet("..\tests\TestMultivariate\5Nodes.xml")
+
+//GenerateEvidences(20)
+print("Loaded evidences...")
+ClearEvidBuf()
+LoadEvidBuf("MultiGaussianEvid 3 of 5.csv")
+//print("saved evidences...")
+LearnParameters()
+print("x0")
+GetGaussianMean("x0")
+GetGaussianCovar("x0")
+
+print("x")
+GetGaussianMean("x")
+GetGaussianCovar("x")
+
+print("x2")
+GetGaussianMean("x2")
+GetGaussianCovar("x2")
+
+print("y")
+GetGaussianMean("y")
+GetGaussianCovar("y")
+
+print("z")
+GetGaussianMean("z")
+GetGaussianCovar("z")
+
+print("Full observed case")
+
+loadnet("..\tests\TestMultivariate\5Nodes.xml")
+
+//GenerateEvidences(20)
+print("Loaded evidences...")
+ClearEvidBuf()
+LoadEvidBuf("MultiGaussianEvid.csv")
+//print("saved evidences...")
+LearnParameters()
+print("x0")
+GetGaussianMean("x0")
+GetGaussianCovar("x0")
+
+print("x")
+GetGaussianMean("x")
+GetGaussianCovar("x")
+
+print("x2")
+GetGaussianMean("x2")
+GetGaussianCovar("x2")
+
+print("y")
+GetGaussianMean("y")
+GetGaussianCovar("y")
+
+print("z")
+GetGaussianMean("z")
+GetGaussianCovar("z")
+
+print("***Learning is done***")
+
+clearevidbuf()
+editevidence("x^dim2^0.4")
+//Evid("y^dim1^0.7")
+//print("after evid")
+SetProperty("Inference", "naive");
+
+print("***MPE***")
+print("Evidences: x^dim1 = -15  x^dim2 = 5 z = 15.67")
+
+loadnet("..\tests\TestMultivariate\5Nodes.xml")
+
+editevidence("x^dim1^-15.0");
+editevidence("x^dim2^5.0 z^dim1^15.67")
+
+print("x0")
+GetMPE("x0")
+
+print("x")
+GetMPE("x")
+
+print("x2")
+GetMPE("x2")
+
+print("y")
+GetMPE("y")
+
+print("z")
+GetMPE("z")
+
+//GetGaussianMean("y")
+//GetGaussianCovar("y")
+// run console
+console()
+print("bye")
