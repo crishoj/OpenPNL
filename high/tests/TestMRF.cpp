@@ -158,7 +158,7 @@ void TestMRFModelCreate()
     {
         PNL_THROW(pnl::CAlgorithmicException, "Setting or getting of tabular parameters for MRF is wrong");
     }
-/*
+
     P = net->GetPTabular("node1 node3");
     cout << String(P) << endl;
     if( P[0].FltValue() != 0.09f ||
@@ -179,7 +179,7 @@ void TestMRFModelCreate()
         {
         PNL_THROW(pnl::CAlgorithmicException, "Setting or getting of tabular parameters for MRF is wrong");
         }
-    }*/
+    }
 
     MRF *netGrid = GridMRFModel();
     P = netGrid->GetPTabular("node7 node6");
@@ -279,13 +279,13 @@ void TestMRFGetJPD()
             PNL_THROW(pnl::CAlgorithmicException, "Results of Pearl and Naive inferences are diferent");
         }
         
-        //net->SetProperty("Inference", "gibbs");
-        //gJPD = net->GetJPD(nodeName);
+        net->SetProperty("Inference", "gibbs");
+        gJPD = net->GetJPD(nodeName);
         
-        //if(!bTokArrEqual(gJPD, nJPD, eps2))
-        //{
-            //PNL_THROW(pnl::CAlgorithmicException, "Results of Gibbs and Naive inferences are diferent");
-        //}
+        if(!bTokArrEqual(gJPD, nJPD, eps2))
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Results of Gibbs and Naive inferences are diferent");
+        }
     }
     net->SetProperty("Inference", "jtree");
     jJPD = net->GetJPD("node7 node6");
@@ -300,9 +300,9 @@ void TestMRFGetJPD()
     net->SetProperty("Inference", "pearl");
     pJPD = net->GetJPD("node7 node6");
     
-    cout << String(nJPD) << endl;
-    cout << String(pJPD) << endl;
-    if(!bTokArrEqual(pJPD, nJPD, eps2))
+    //cout << String(nJPD) << endl;
+    //cout << String(pJPD) << endl;
+    if(!bTokArrEqual(pJPD, nJPD, eps3))
     {
         PNL_THROW(pnl::CAlgorithmicException, "Results of Pearl and Naive inferences are diferent");
     }
