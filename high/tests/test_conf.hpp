@@ -43,3 +43,4 @@ bool testExtractTok();
 void TestGaussianModelCreate();
 void TestGaussianInference();
 void TestGaussianParamLearning();
+void TestForGetPTabular();
