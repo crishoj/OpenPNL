@@ -89,11 +89,11 @@ public:
 #if 0 
     BayesNet* LearnStructure(TokArr aValue[], int nValue); //maybe return some quality measure?
 #else
-    void LearnStructure(TokArr aValue[], int nValue); //maybe return some quality measure?
+    void LearnStructure(TokArr aValue[] = NULL, int nValue = 0); //maybe return some quality measure?
 #endif
 
     // returns MPE for nodes using current evidence
-    TokArr MPE(TokArr nodes = TokArr());
+    TokArr MPE(TokArr nodes);
     
     // returns JPD for nodes using current evidence
     TokArr JPD(TokArr nodes);
