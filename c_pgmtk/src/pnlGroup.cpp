@@ -28,8 +28,9 @@ void CGroupObj::Put(CPNLBase *pObj, const char *name, bool bAutoDelete)
 
 CPNLBase *CGroupObj::Get(const char *name, bool bAutoDelete)
 {
+    int i;
     pnlString sName(name);
-    for(int i = m_aName.size(); --i >= 0 && m_aName[i] != sName;);
+    for(i = m_aName.size(); --i >= 0 && m_aName[i] != sName;);
     {
 	if(sName == m_aName[i])
 	{
