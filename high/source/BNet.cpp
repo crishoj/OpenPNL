@@ -346,7 +346,7 @@ void BayesNet::SetInferenceProperties(TokArr &nodes)
 	pnl::intVecVector queries(1);
 	queries[0].clear();
 	
-	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
+	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls, &Net().Graph()->MapOuterToGraph());
 	infGibbs->SetQueries( queries );
 	
 	if(GetProperty("GibbsNumberOfIterations").length())
@@ -450,22 +450,24 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     {
 	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
     }
-    
-    pnl::CInfEngine *infEngine = &Inference();
 
     SetInferenceProperties(nodes);
+
+    pnl::CInfEngine *infEngine = &Inference();
     
     infEngine->EnterEvidence( evid );
     
     int nnodes = nodes.size();
     Vector<int> queryNds, queryVls;
+    Vector<int> queryNdsInner;
     Net().ExtractTokArr(nodes, &queryNds, &queryVls);
+    Net().Graph()->IGraph(&queryNds, &queryNdsInner);
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
     }
     
-    infEngine->MarginalNodes(&queryNds.front(), queryNds.size());
+    infEngine->MarginalNodes(&queryNdsInner.front(), queryNdsInner.size());
     
     const pnl::CPotential *pot = infEngine->GetQueryJPD();
     
@@ -686,9 +688,9 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
     }
 
-    pnl::CInfEngine *infEngine = &Inference();
-
     SetInferenceProperties(nodes);
+
+    pnl::CInfEngine *infEngine = &Inference();
 
     infEngine->EnterEvidence(evid, 1);
 
@@ -855,10 +857,19 @@ pnl::CInfEngine &BayesNet::Inference()
     case 'g': // Gibbs Sampling
 	if(m_Inference)
 	{
-            delete m_Inference;
-        }
-	
-        m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model());
+	    pnl::CGibbsSamplingInfEngine *infGibbs;
+	    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(m_Inference);
+
+	    if(!infGibbs)
+	    {
+		delete m_Inference;
+		m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model());
+	    }
+	}
+	else
+	{
+	    m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model());
+	}
 	break;
     case 'n': // Naive inference
 	if(m_Inference)
