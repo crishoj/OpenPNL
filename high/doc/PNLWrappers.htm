@@ -56,6 +56,9 @@ rel=STYLESHEET>
     href="#decl_GetGaussianCovar">GetGaussianCovar</A> 
 
     <LI><A 
+    href="#decl_GetGaussianWeights">GetGaussianWeights</A> 
+
+	<LI><A 
     href="#decl_GetJPD">GetJPD</A> 
 
     <LI><A 
@@ -108,8 +111,6 @@ rel=STYLESHEET>
 
     </LI></UL>
   </UL>
-
-<P>
 <UL>
   <LI><A 
   href="#decl_Class_DBN">Class DBN</A> 
@@ -212,8 +213,6 @@ rel=STYLESHEET>
 
     </LI></UL>
   </UL>
-
-<P>
 <UL>
   <LI><A 
   href="#decl_Class_LIMID">Class LIMID</A> 
@@ -271,8 +270,7 @@ rel=STYLESHEET>
 
     </LI></UL>
   </UL>
-
-<P></P>
+</P>
 <HR>
 
 <H2><A name=decl_Class_BayesNet>Class BayesNet</A></H2>
@@ -293,6 +291,7 @@ The following functional groups can be distinguished:
     <A href="#decl_SetPGaussian">SetPGaussian</A>,
     <A href="#decl_GetGaussianMean">GetGaussianMean</A> ,
     <A href="#decl_GetGaussianCovar">GetGaussianCovar</A>,
+    <A href="#decl_GetGaussianWeights">GetGaussianWeights</A>,
     <A href="#decl_EditEvidence">EditEvidence</A>,
     <A href="#decl_ClearEvid">ClearEvid</A>,
     <A href="#decl_CurEvidToBuf">CurEvidToBuf</A>,
@@ -384,6 +383,12 @@ Add discrete nodes "NodeA" and "NodeB" with states "true" and "false" to bayes n
 </p>
 <p class="example">
 net.AddNode(discrete^"NodeA NodeB", "true false");
+</p>
+<p class="description">
+Add multivariate nodes "NodeA" with 2 dimensions "dim1" and "dim2" to bayes net:
+</p>
+<p class="example">
+net.AddNodee(continuous^"NodeA", "dim1 dim2");
 </p>
 <HR>
 
@@ -701,7 +706,7 @@ Results of these calls:
 
 <H3><A 
 name=decl_SetPGaussian>SetPGaussian</A></H3>
-<P class=Blurb>Sets parameters for one-dimensional gaussian variate 
+<P class=Blurb>Sets parameters for gaussian variate. 
 </P>
 <font class="interface">
 void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
@@ -709,30 +714,68 @@ void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr()
 <H5>Arguments</H5>
 <DL>
   <DT>var
-  <DD>Name of node whose probability is set. 
+  <DD>Name of node which probability is setted. 
   <DT>mean
   <DD>Vector of means. 
   <DT>variance
-  <DD>Matrix of variance - one number for one-dimensional variate.
+  <DD>Matrix of variance (for one-dimensional variate it is only one number).
   <DT>weight
-  <DD>Matrix of weights - vector for one-dimensional variate.</DD></DL>
+  <DD>Matrixes of weights. This parameter is needed only when the node has parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case" </DD></DL>
 <H5>Discussion</H5>
-<p class="description">The function sets parameters for one-dimensional gaussian variate. 
+<p class="description">The function sets parameters for gaussian variate. 
 </p>
 <H5>
 Example of usage
 </H5>
 <p class="description">
-Let's set gaussian distribution for the node without parents.
+Let's set gaussian distribution for one - dimentional node without parents.
 </p>
 <p class="example">
 net.SetPGaussian("x0", "1.0", "4.0");
 </p>
 <p class="description">
-Let's set gaussian distribution for the node with two parents.
+Let's set gaussian distribution for one - dimentional node with two parents.
 </p>
 <p class="example">
 net.SetPGaussian("x2", "0.0", "2.0", "1.0 2.0");
+</P>
+<p class="description">
+Let's set gaussian distribution for two - dimensional node without parents.
+</p>
+<p class="example">
+net.SetPGaussian("x0", "1.0 2.5", "4.0 0.1 0.1 4.0");
+</p>
+<p class="description">
+Let's set gaussian distribution for two - dimentional node with three two - dimensional parents. Three matrixes of weights are:
+</p>
+<p class="description">
+<table>
+<tr>
+  <td>The first matrix</td>
+  <td>1.0</td>
+  <td>2.0</td>
+  <td>The second</td>
+  <td>5.0</td>
+  <td>6.0</td>
+  <td>The third</td>
+  <td>9.0</td>
+  <td>10.0</td>
+</tr>
+<tr>
+  <td></td>
+  <td>3.0</td>
+  <td>4.0</td>
+  <td></td>
+  <td>7.0</td>
+  <td>8.0</td>
+  <td></td>
+  <td>11.0</td>
+  <td>12.0</td>
+</tr>
+</table>
+</p>
+<p class="example">
+net.SetPGaussian("x2", "1.0 2.5", "4.0 0.1 0.1 4.0", "1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0 12.0");
 </P>
 <HR>
 
@@ -761,7 +804,14 @@ net.EditEvidence("NodeA^true NodeB^false");<br>
 net.EditEvidence("NodeA^false NodeC^true");
 </P>
 <p class="description">
-In current evidence there are three observed nodes now: "NodeA", "NodeB" (both are false) and "NodeC"(true).
+In current evidence there are three observed tabular nodes: "NodeA", "NodeB" (both are false) and "NodeC"(true).
+</p>
+<p class="example">
+net.EditEvidence("ContNodeA^dim1^-15.0 ContNodeA^dim2^6.4");<br>
+net.EditEvidence("ContNodeB^dim1^5.0");
+</P>
+<p class="description">
+In current evidence there are two observed continuous nodes: "NodeA" (with 2 dimensions), "NodeB" (with one dimension).
 </p>
 <HR>
 
@@ -840,6 +890,13 @@ net.AddEvidToBuf("NodeA^false NodeC^true");
 <p class="description">
 In evidence buffer there are two evidences now. In first evidence "NodeA" takes on value "true" and "NodeB" takes on value "false".
 In second one "NodeA" takes on value "false" and "NodeC" takes on value "true".
+</p>
+<p class="example">
+net.AddEvidToBuf("ContNodeA^dim1^-15.0 ContNodeA^dim2^6.4");<br>
+net.AddEvidToBuf("ContNodeB^dim1^5.0");
+</P>
+<p class="description">
+There are two evidences for continuous nodes: "NodeA" (with 2 dimensions) and "NodeB" (with one dimension) in the last example which we add to the buffer.
 </p>
 <HR>
 
@@ -1217,6 +1274,31 @@ Example of usage
 </H5>
 <p class="example">
 TokArr CovarX2 = net.GetGaussianCovar("x2");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetGaussianWeights>GetGaussianWeights</A></H3>
+<P class=Blurb>Returns weights of gaussian distribution. 
+</P>
+<font class="interface">
+TokArr GetGaussianWeights(TokArr nodes, TokArr parent);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Name of node whose weights are needed. 
+  <DT>parent
+  <DD>A parent of node which weights we are interested in. 
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function returns weights of parent of specified node . 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+TokArr WeightsYX2 = net.GetGaussianWeights("y", "x2");
 </P>
 <HR>
 
