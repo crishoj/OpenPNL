@@ -3,10 +3,6 @@
 #include "pnlHigh.hpp"
 #include "pnlTok.hpp"
 
-//#define SKIP_DBN
-//#define SKIP_LIMID
-//#define SKIP_TOKEN
-
 // FORWARDS
 namespace pnl
 {
@@ -17,7 +13,6 @@ PNLW_USING
 
 std::ostream &operator<<(std::ostream &str, TokArr &ta);
 void SimpleModel();
-int testMRF();
 
 int testDBN();
 int testDBNTopologicalSort1();

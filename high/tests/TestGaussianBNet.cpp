@@ -469,7 +469,4 @@ void SimpleModel()
 
     cout<< X3MPE <<"\n";
     float x3MPE = X3MPE[0].FltValue(0).fl;
-
-
-
 }

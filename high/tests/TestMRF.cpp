@@ -222,7 +222,7 @@ void TestMRFGetJPD()
     int i;
     TokArr jJPD, nJPD, pJPD, gJPD;
 
-    char nodeName[5];
+    char nodeName[6];
     strcpy(nodeName, "node");
     for(i = 0; i < nNode; i++)
     {

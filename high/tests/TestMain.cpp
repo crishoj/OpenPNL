@@ -2,38 +2,36 @@
 
 //#define SKIP_TOKEN
 //#define SKIP_LIMID
-//#define SKIP_DBN
+#define SKIP_DBN
 //#define SKIP_MRF
 //#define SKIP_NUMERATION
 
-int main(char* argv[], int argc)
+int main(int argc, char* argv[])
 {
     bool bTestOK = true;
 
 #ifndef SKIP_TOKEN
-#if 0
     bTestOK = TestResolve1() && bTestOK;
     bTestOK = TestResolve2() && bTestOK;
     bTestOK = TestResolve3() && bTestOK;
     bTestOK = TestResolve4() && bTestOK;
     bTestOK = TestResolve4_5() && bTestOK;
     bTestOK = testExtractTok() && bTestOK;
-#endif
     try 
     {
         //TestGaussianModelCreate();
         //TestGaussianInference();
         //TestGaussianParamLearning();
         //TestMRFModelCreate();
-        TestMRFGetJPD();
+        //TestMRFGetJPD();
 	//TestMultivariateWrapperJPD();
 	//TestMultivariateWrapperLearn();
 	//TestMultivariateWrapperLearnPartOfObservation();
 	//TestMultivariateWrapperMPE();
         SimpleModel();
-        TestGaussianModelCreate();
+//        TestGaussianModelCreate();// del arc
         TestGaussianInference();
-        TestGaussianParamLearning();
+        TestGaussianParamLearning();// too long
 	TestMultivariateWrapperJPD();
 	TestMultivariateWrapperLearn();
 	TestMultivariateWrapperLearnPartOfObservation();
@@ -48,14 +46,16 @@ int main(char* argv[], int argc)
 #ifndef SKIP_LIMID
     try 
     {
-//        LimidTopology();
-        PureLimidModel();
+        LimidTopology();
+#if 0
+//        PureLimidModel();
         DelNodes();
         TestPigs();
 	OilTest();
 	testRandom1();
         testRandom2();
 	testRandom3();
+#endif
     }
     catch(pnl::CException e)
     {
@@ -69,7 +69,7 @@ int main(char* argv[], int argc)
     
     res = testDBN();
 //	res = testDBNTopologicalSort1();
-	res = testDBNTopologicalSort2();
+    res = testDBNTopologicalSort2();
     res = testDBNSmothing() & res;
     res = testDBNFixLagSmothing() & res;
     res = testDBNFiltering() & res;
@@ -80,12 +80,6 @@ int main(char* argv[], int argc)
     bTestOK = bTestOK && (res != 0);
 #endif
 
-#ifndef SKIP_MRF
-    res = 0;    
-    //res = testMRF();
-
-    bTestOK = bTestOK && (res != 0);
-#endif
 #ifndef SKIP_NUMERATION
     
     try 
