@@ -66,7 +66,7 @@ void PersistWBNet::TraverseSubobject(pnl::CPNLBase *pObj, pnl::CContext *pContex
     BayesNet *bnet = static_cast<BayesNet*>(pObj);
     int nNode = bnet->Net().nNetNode();
 
-    pContext->Put(bnet->Model(), "Model");
+	pContext->Put(bnet->Net().Model(), "Model");
 
     for(int i = 0; i < nNode; ++i)
     {
