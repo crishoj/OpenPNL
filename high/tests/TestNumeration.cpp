@@ -40,8 +40,8 @@ BayesNet *GetSimpleTabularModelWithDeletedElement()
     BayesNet *net;
     net = new BayesNet();
 
-    net->AddNode(discrete^"One Three Zero", "State1 State2");
-    //net->DelNode("Two");
+    net->AddNode(discrete^"One Two Three Zero", "State1 State2");
+    net->DelNode("Two");
     net->AddArc("One Three", "Zero");
     
     net->SetPTabular("One^State1", "0.5");
@@ -56,6 +56,35 @@ BayesNet *GetSimpleTabularModelWithDeletedElement()
     net->SetPTabular("Zero^State2","0.7" ,"One^State2 Three^State1");
     net->SetPTabular("Zero^State1","0.8" ,"One^State2 Three^State2");
     net->SetPTabular("Zero^State2","0.2" ,"One^State2 Three^State2");
+
+    return net;
+}
+
+BayesNet *GetSimpleModel()
+{
+    // Zero       One
+    //   |         |
+    //   |         |
+    //   o->Three<-o
+    BayesNet *net;
+    net = new BayesNet();
+
+    net->AddNode(discrete^"Zero One Three", "State1 State2");
+    //net->DelNode("Two");
+    net->AddArc("Zero One", "Three");
+    
+    net->SetPTabular("Zero^State1", "0.4");
+    net->SetPTabular("Zero^State2", "0.6");
+    net->SetPTabular("One^State1", "0.4");
+    net->SetPTabular("One^State2", "0.6");
+    net->SetPTabular("Three^State1","0.1" ,"Zero^State1 One^State1");
+    net->SetPTabular("Three^State2","0.9" ,"Zero^State1 One^State1");
+    net->SetPTabular("Three^State1","0.2" ,"Zero^State1 One^State2");
+    net->SetPTabular("Three^State2","0.8" ,"Zero^State1 One^State2");
+    net->SetPTabular("Three^State1","0.3" ,"Zero^State2 One^State1");
+    net->SetPTabular("Three^State2","0.7" ,"Zero^State2 One^State1");
+    net->SetPTabular("Three^State1","0.8" ,"Zero^State2 One^State2");
+    net->SetPTabular("Three^State2","0.2" ,"Zero^State2 One^State2");
 
     return net;
 }
@@ -103,3 +132,20 @@ void TestForSetInferenceProperties()
 
     net->GetJPD("One");
 }
+
+void TestForGetMPE()
+{
+    BayesNet *net = GetSimpleModel();
+
+    net->SetProperty("Inference", "naive");
+
+    std::cout << net->GetJPD("Zero") << "\n";
+    std::cout << net->GetJPD("One") << "\n";
+    std::cout << net->GetJPD("Three") << "\n";
+    std::cout << net->GetJPD("Zero One Three") << "\n";
+
+    std::cout << net->GetMPE("Zero") << "\n";
+    std::cout << net->GetMPE("One") << "\n";
+    std::cout << net->GetMPE("Three") << "\n";
+    std::cout << net->GetMPE("Zero One Three") << "\n";
+};
