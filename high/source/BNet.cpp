@@ -338,9 +338,10 @@ void BayesNet::LearnParameters(TokArr aSample[], int nSample)
 	return;// is it error?
     }
 
+    int i;
     if(nSample)
     {
-	for(int i = 0; i < nSample; ++i)
+	for(i = 0; i < nSample; ++i)
 	{
 	    Net().EvidenceBuf()->push_back(Net().CreateEvidence(aSample[i]));
 	}
@@ -350,6 +351,13 @@ void BayesNet::LearnParameters(TokArr aSample[], int nSample)
 	&(*Net().EvidenceBuf())[m_nLearnedEvidence]);
     m_nLearnedEvidence = Net().EvidenceBuf()->size();
     Learning().Learn();
+    for (i = 0; i < Net().Graph()->iNodeMax(); i++)
+    {
+	if(Net().Graph()->IsValidINode(i))
+	{
+	    Net().Distributions()->ResetDistribution(i, *Net().Model()->GetFactor(Net().Graph()->IGraph(i)));
+	}
+    }
 }
 
 
