@@ -783,24 +783,24 @@ TokArr X3MPE = net.GetMPE("x3");
 
 <h2><a name="MultiGau">Multivariate Gaussian case</a></h2>
 <p>
-Every continuous node in Bayesian network can be multivariate. We have discussed only one-dimensional case above.
+Each continuous node in Bayesian network can be multivariate. We have already discussed only one-dimensional case above.
 </p>
 <p>
-Multivariate Gaussian variable is a set of one-dimensional variables which are connected via covariation matrix. Value of multivariate is a vector of values of one-dimensional variables. The number of variables in the set is the number of dimensions of multivariate.
+Multivariate Gaussian variable is a set of one-dimensional variables that are connected with each other via covariation matrix. Value of multivariate is a vector of values of one-dimensional variables. The number of variables in the set is the number of dimensions of multivariate.
 </p>
 <p>
 If multivariate Gaussian node without parents has n dimensions, then it is characterized by vector of averages of distribution E which has n elements and by squarte matrix (n*n) of covariations C. The element (i,j) of the matrix C is equal to
 </p>
 <img align=center src="Formula1.gif">
 <p>
-where M is a function for calculating average of distribution. If multivariate node has parents (we think that all nodes in the network are continuous) then the third param characterizing the node is a vector (W) of weights matrixes. Number of elements in the vector is equal to number of parents. The size of matrix for the k-th parent (W[k]) is NDimChild * NDimParent[k], where NDimChild is a number of dimensions of the child node, NDimParent[k] is a number of dimensions of the k-th parent. The covariation matrix C does not depent on values of parents by definition. But matrix of averages of distribution depends on them like this:
+where M is a function for calculating average of distribution. If multivariate node has parents (we suppose that all nodes in the network are continuous) then the third parameter characterizing the node is a vector (W) of weights matrixes. Number of elements in the vector is equal to number of parents. The size of matrix for the k-th parent (W[k]) is NDimChild * NDimParent[k], where NDimChild is a number of dimensions of the child node, NDimParent[k] is a number of dimensions of the k-th parent. The covariation matrix C does not depent on values of parents by definition. But matrix of averages of distribution depends on them in the following way:
 </p>
 <img align=center src="Formula2.gif">
 <hr>
 
 <h3><a name="CreateNetMultiGau">Creating the net</a></h3>
 <p>
-The only difference between multivariate and one-dimensional case in creating the network is how we add new nodes to the network. You should list names for each dimension of multivariate. For example, if you want to add a continuous node x which has 3 dimensions you should write the command
+The only difference between multivariate and one-dimensional case in creating the network is how we add new nodes to the network. You should list names for each dimension of multivariate. For example, if you want to add a continuous node x, which has 3 dimensions, you should write the command
 </p>
 <pre>
 net.AddNode("continuous^x", "First Second Third");
@@ -822,7 +822,7 @@ For example the matrix
 3 4,
 </pre>
 <p>
-will be written like this: 1 2 3 4.
+will be written in the following way: 1 2 3 4.
 </p>
 <p>
 If you want to set the vector of matrixes (in the setting of weights) then you should set all matrixes one by one. For example two matrixes:
@@ -833,13 +833,13 @@ If you want to set the vector of matrixes (in the setting of weights) then you s
      11 12 13,
 </pre>
 <p>
-will be written like this: 1 2 3 4 5 6 7 8 9 10 11 12 13.
+will be written in the following way: 1 2 3 4 5 6 7 8 9 10 11 12 13.
 </p>
 <hr>
 
 <h3><a name="AddObservMultiGau">Adding observations</a></h3>
 <p>
-You should set observations for each dimension of multivariate variable. For example, if you want to set observations on the node x, shown below, then you should write the command:
+You should set observations for each dimension of multivariate variable. For example, if you want to set observations on the node x, which has 3 dimentions, then you should write the command:
 </p>
 <pre>
 net.editEvidence("x^First^0.4 x^Second^0.6 y^Third^-17.34");
@@ -853,7 +853,7 @@ In the example we create the network shown below:
 <h4><a name="Formula3">Figure 3.</a></h4>
 <img align=center src="Formula3.gif">
 <p>
-where x0 and z is one-dimensional variable, x has two dimensions, and x2 and y have 3 dimensions.
+where x0 and z are one-dimensional variables, x has two dimensions, and x2 and y have 3 dimensions.
 </p>
 <pre>
 net.AddNode("continuous^x0", "dim1");
