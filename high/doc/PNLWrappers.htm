@@ -50,7 +50,13 @@ rel=STYLESHEET>
     href="#decl_SetP">SetP</A> 
 
     <LI><A 
-    href="#decl_P">P</A> 
+    href="#decl_P">P</A>
+   
+    <LI><A 
+    href="#decl_SetProperty">SetProperty</A> 
+
+    <LI><A 
+    href="#decl_Property">Property</A>  
 
     <LI><A 
     href="#decl_SetGaussian">SetGaussian</A> 
@@ -325,6 +331,49 @@ name=decl_P>P</A></H3>
   <DD>??.</DD></DL>
 <P></P>
 <P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetProperty>SetProperty</A></H3>
+<P class=Blurb>Sets model property 
+</P><PRE>void SetProperty(const char *name, const char *value);
+</PRE>
+<P>
+<DL>
+  <DT>name
+  <DD>Property name. It may takes any values.<br>
+   Reseved values are: "Inference", "Learning", "???"  
+  <DT>value
+  <DD>Property value. It may takes any values.<br>
+   If property name is: "Inference" there are reserved values: "Gibbs", "Jtree", "Pearl", "Naive", "Default".<br>
+   "Gibbs" - mean inference by Gibbs Sampling algorithm.<br>
+   "Jtree" - mean inference by Junction tree algorithm.<br>
+   "Pearl" - mean inference by Pearl algorithm.<br>
+   "Naive" - mean inference by Naive algorithm.<br>
+   "Default" - mean inference by Default algorithm for this model(Sets best algorithm for this model).<br> 
+   If property name is: "Learning" there are reserved values: "Bayes", "EM", "Default".<br>
+   "Bayes" - mean learning by Bayessian learning algorithm.<br>
+   "EM" - mean learning by EM learning algorithm.<br>
+   "Default" - mean learning by Default algorithm for this model(Sets best algorithm for this model).<br>    
+</DD></DL>
+<P></P>
+<P>The function sets model property.
+</P>
+<HR>
+
+<H3><A 
+name=decl_Property>Property</A></H3>
+<P class=Blurb>Returns property value 
+</P><PRE>String Property(const char *name);
+</PRE>
+<P>
+<DL>
+  <DT>name
+  <DD>Name of property. 
+  </DD></DL>
+<P></P>
+<P>The function returnes property value. 
 </P>
 <HR>
 
