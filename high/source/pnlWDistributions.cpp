@@ -96,23 +96,23 @@ void WDistributions::Setup(int iNode)
     {
         m_aDistribution[iNode]->SetDefaultDistribution();
     }
+}
 
+void WDistributions::SetupNew(int iNode)
+{
 }
 
 void WDistributions::DropDistribution(int iNode)
 {
     delete m_aDistribution[iNode];
     m_aDistribution[iNode] = 0;
-    Vector<int> aChild;
-    
-    m_pToken->Graph()->GetChildren(&aChild, iNode);
-    for(int i = aChild.size(); --i >= 0;)
-    {
-	Setup(aChild[i]);
-    }
 }
 
 void WDistributions::Apply(int iNode)
+{
+}
+
+void WDistributions::ApplyNew(int iNode)
 {
 }
 
@@ -234,6 +234,20 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
 	    ThrowUsingError("Unsupported type of node", fname);
         }
     }
+}
+
+void WDistributions::FillDataNew(pnl::EMatrixType matType, TokArr &matrix)
+{
+    int iDistribution = -1;
+    if(IsMRF())
+    {
+	// determine iDistribution by Cliques
+    }
+    else
+    {
+	// determine iDistribution by node
+    }
+    pnl::CMatrix<float> *mat = Distribution(iDistribution)->Matrix(matType);
 }
 
 void WDistributions::DoNotify(int message, int iNode, ModelEngine *pObj)
