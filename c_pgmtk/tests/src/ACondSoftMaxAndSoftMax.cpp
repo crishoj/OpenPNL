@@ -25,6 +25,7 @@
 #include <conio.h>
 #include <algorithm>
 #include <math.h>
+#include <time.h>
 #include "pnlSoftMaxCPD.hpp"
 #include "pnlSoftMaxDistribFun.hpp"
 
@@ -227,7 +228,7 @@ void GenerateEvidence(CStaticGraphicalModel *pBNet, float StartVal,
   for (i = 0; i < nObsNds; i++)
   {
     nodeTypes = pBNet->GetNodeType(obsNds[i]);
-    NumOfNodeVal[obsNds[i]] = nodeTypes->GetNodeSize();
+    NumOfNodeVal[i] = nodeTypes->GetNodeSize();
   }
 
   vls.resize(nObsNds);
@@ -236,9 +237,9 @@ void GenerateEvidence(CStaticGraphicalModel *pBNet, float StartVal,
     dt = pBNet->GetFactor(obsNds[i])->GetDistributionType();
     if ((dt == dtSoftMax) || (dt == dtTabular))
     {
-      int valInt = rand() % NumOfNodeVal[obsNds[i]];
+      int valInt = rand() % NumOfNodeVal[i];
 #ifdef SM_TEST
-  printf("%3d", valInt);
+  printf("%3d\t", valInt);
 #endif
 
       (vls)[i].SetInt(valInt);
@@ -255,7 +256,7 @@ void GenerateEvidence(CStaticGraphicalModel *pBNet, float StartVal,
 #ifdef SM_TEST
   printf("\n");
 #endif
-
+    delete [] NumOfNodeVal;
 }
 //------------------------------------------------------------------------------
 void GenerateSoftMaxEvidence(CStaticGraphicalModel *pBNet, float StartVal,
@@ -504,7 +505,7 @@ int testConditionalSoftMaxInfAndLearn()
     delete pLearnEng;
     delete pBNet;
     
-    std::cout<<"Next test. Pree any key "<<endl;
+    std::cout<<"Next test. Press any key "<<endl;
     getch();
     std::cout<<"Test on learning on seven nodes net with all continuous nodes observed "<<std::endl;   
     std::cout<<"Graph view "<<endl;
