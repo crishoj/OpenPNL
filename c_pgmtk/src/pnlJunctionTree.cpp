@@ -760,6 +760,8 @@ void CJunctionTree::InitCharge( const CStaticGraphicalModel *pGrModel,
     
     SetNodeTypes( pGrModel, pEvidence );
     
+    printf("\n before InitNodePotsFromBNet");
+
     if( pGrModel->GetModelType() == mtBNet )
     {
         InitNodePotsFromBNet( static_cast<const CBNet*>(pGrModel),
@@ -770,6 +772,7 @@ void CJunctionTree::InitCharge( const CStaticGraphicalModel *pGrModel,
         InitNodePotsFromMNet( static_cast<const CMNet*>(pGrModel),
             pEvidence );
     }
+    printf("\n after InitNodePotsFromBNet");
     
     InitSeparatorsPots( pGrModel, pEvidence );
     
@@ -1151,6 +1154,7 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
         }
     }
 
+    
    for( ; i < m_numberOfNodes; ++i, ++ndContIt )
     {
         // finding out if the unit function is to be sparse or not
@@ -1183,6 +1187,7 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
 
             potsAssIt = std::find( ++potsAssIt,	factAssToClq_end, i );
         }
+
 
         intVector::const_iterator clqIt   = ndContIt->begin(),
                                   clq_end = ndContIt->end();
@@ -1234,7 +1239,6 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                     obsPositionsInDom);
             }
         }
-        
         //pPot->Dump();
         
         //CPotential* pShrPot = pPot->ShrinkObservedNodes( pEvidence );
@@ -1257,18 +1261,34 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
             intVector domain;
             (*assFactsIt)->GetDomain(&domain);
             int FactorNode = domain[domain.size()-1];
-            
+
             if (dt == dtSoftMax)
             {
                 if (allDiscrObs)
                 {
                     if (AllNodesInClsObs)
                     {
+
+                        for (k = 0; k < pBNet->GetNumberOfNodes(); k++)
+                        {
+                            if (pBNet->GetFactor(k)->GetDistributionType() == dtSoftMax)
+                            {
+                                pBNet->GetModelDomain()->ChangeNodeType(k, 0);
+                            }
+                        }
+
                         pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 0);
 
                         pTmpPot = ((CSoftMaxCPD*)(*assFactsIt))->
                                 ConvertWithEvidenceToTabularPotential( pEvidence);
 
+                        for (k = 0; k < pBNet->GetNumberOfNodes(); k++)
+                        {
+                            if (pBNet->GetFactor(k)->GetDistributionType() == dtSoftMax)
+                            {
+                                pBNet->GetModelDomain()->ChangeNodeType(k, 1);
+                            }
+                        }
 //                        pTmpPot->Dump();
 
                     }
@@ -1276,7 +1296,15 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                     {
                         floatVector MeanContParents;
                         C2DNumericDenseMatrix<float>* CovContParents;
-            
+
+                        for (k = 0; k < pBNet->GetNumberOfNodes(); k++)
+                        {
+                            if (pBNet->GetFactor(k)->GetDistributionType() == dtSoftMax)
+                            {
+                                pBNet->GetModelDomain()->ChangeNodeType(k, 0);
+                            }
+                        }
+
                         pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 1);
 
                         static_cast<const CSoftMaxCPD*>(*assFactsIt)->
@@ -1286,7 +1314,15 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                         pTmpPot = static_cast<const CSoftMaxCPD*>(*assFactsIt)->
                             ConvertWithEvidenceToGaussianPotential( pEvidence, 
                             MeanContParents, CovContParents);
-                    
+
+                        for (k = 0; k < pBNet->GetNumberOfNodes(); k++)
+                        {
+                            if (pBNet->GetFactor(k)->GetDistributionType() == dtSoftMax)
+                            {
+                                pBNet->GetModelDomain()->ChangeNodeType(k, 1);
+                            }
+                        }
+
 //                        pTmpPot->Dump();
                     }
                 }
@@ -1318,7 +1354,15 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                         {
                             floatVector MeanContParents;
                             C2DNumericDenseMatrix<float>* CovContParents;
-            
+
+                            for (k = 0; k < pBNet->GetNumberOfNodes(); k++)
+                            {
+                                if (pBNet->GetFactor(k)->GetDistributionType() == dtSoftMax)
+                                {
+                                    pBNet->GetModelDomain()->ChangeNodeType(k, 0);
+                                }
+                            }
+
                             pBNet->GetModelDomain()->ChangeNodeType(FactorNode, 1);
     
                             static_cast<const CSoftMaxCPD*>(*assFactsIt)->
@@ -1349,6 +1393,14 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                                 ConvertWithEvidenceToGaussianPotential( pEvidence, 
                                 MeanContParents, CovContParents, parentComb );
 
+                            for (k = 0; k < pBNet->GetNumberOfNodes(); k++)
+                            {
+                                if (pBNet->GetFactor(k)->GetDistributionType() == dtSoftMax)
+                                {
+                                    pBNet->GetModelDomain()->ChangeNodeType(k, 1);
+                                }
+                            }
+
 //                            pTmpPot->Dump();
                         
                             delete [] parentComb;
@@ -1377,6 +1429,7 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
                             }
                         }
                     }    
+
                     pTmpPot = (*assFactsIt)->ConvertWithEvidenceToPotential( pEvidence,
                             sumOnMixtureNode );
 

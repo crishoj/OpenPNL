@@ -225,7 +225,8 @@ private:
         intVector *pUnusedNodesInSubTree);
 
     // return weight of choosen clique
-    double GetWeightOfClq(int NumOfClq);
+    double GetWeightOfTabularClq(int NumOfClq);
+    double GetWeightOfContinuousClq(int NumOfClq);
 
     // return "base" weight of choosen clique (used in BalanceTree)
     double GetBaseWeightOfClq(int NumOfClq);
