@@ -760,8 +760,6 @@ void CJunctionTree::InitCharge( const CStaticGraphicalModel *pGrModel,
     
     SetNodeTypes( pGrModel, pEvidence );
     
-    printf("\n before InitNodePotsFromBNet");
-
     if( pGrModel->GetModelType() == mtBNet )
     {
         InitNodePotsFromBNet( static_cast<const CBNet*>(pGrModel),
@@ -772,7 +770,6 @@ void CJunctionTree::InitCharge( const CStaticGraphicalModel *pGrModel,
         InitNodePotsFromMNet( static_cast<const CMNet*>(pGrModel),
             pEvidence );
     }
-    printf("\n after InitNodePotsFromBNet");
     
     InitSeparatorsPots( pGrModel, pEvidence );
     
