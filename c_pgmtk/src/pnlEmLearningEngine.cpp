@@ -432,7 +432,7 @@ void CEMLearningEngine::LearnExtraCPDs(int nMaxFamily, pCPDVector* additionalCPD
             pEv = m_Vector_pEvidences[ev];
             for( i = 0; i < numberOfAddFactors; i++ )
             {
-                factor = static_cast<CFactor*>(additionalCPDs->at(i));
+                factor = static_cast<CFactor*>((*additionalCPDs)[i]);
                 factor->UpdateStatisticsML( &pEv, 1 );
             }
         }
@@ -451,7 +451,7 @@ void CEMLearningEngine::LearnExtraCPDs(int nMaxFamily, pCPDVector* additionalCPD
                 
                 for( i = 0; i < numberOfAddFactors; i++ )
                 {
-                    factor = static_cast<CFactor*>(additionalCPDs->at( i ));
+                    factor = static_cast<CFactor*>((*additionalCPDs)[i]);
                     ll = factor->ProcessingStatisticalData( GetNumEv());
                     (*additionalLLs)[i] = ll;
                 }
@@ -508,7 +508,7 @@ void CEMLearningEngine::LearnExtraCPDs(int nMaxFamily, pCPDVector* additionalCPD
                 {
                     for( i = 0; i < numberOfAddFactors; i++ )
                     {
-                        factor = static_cast<CFactor*>(additionalCPDs->at(i));
+                        factor = static_cast<CFactor*>((*additionalCPDs)[i]);
                         factor->GetDomain( &nnodes, &domain );
                         if( bInfIsNeed && !IsDomainObserved(nnodes, domain, ev ) )
                         {
@@ -539,7 +539,7 @@ void CEMLearningEngine::LearnExtraCPDs(int nMaxFamily, pCPDVector* additionalCPD
                     {
                         for( i = 0; i < numberOfAddFactors; i++ )
                         {
-                            factor = static_cast<CFactor*>(additionalCPDs->at( i ));
+                            factor = static_cast<CFactor*>((*additionalCPDs)[i]);
                             ll = factor->ProcessingStatisticalData( GetNumEv());
                             (*additionalLLs)[i] = ll;
                         }
