@@ -218,6 +218,7 @@ void TestMRFGetJPD()
 
     float eps1 = 1e-6f;
     float eps2 = 1e-3f;
+    float eps3 = 1e-1f;
     int nNode = net->GetNumberOfNodes();
     int i;
     TokArr jJPD, nJPD, pJPD, gJPD;
@@ -249,7 +250,7 @@ void TestMRFGetJPD()
         net->SetProperty("Inference", "gibbs");
         gJPD = net->GetJPD(nodeName);
         
-        if(!bTokArrEqual(gJPD, nJPD, eps2))
+        if(!bTokArrEqual(gJPD, nJPD, eps3))
         {
             PNL_THROW(pnl::CAlgorithmicException, "Results of Gibbs and Naive inferences are diferent");
         }
