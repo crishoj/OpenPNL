@@ -23,8 +23,11 @@
 #include "legacydsl.h"
 #include "xmlwriter.h"
 #include "pnlContextPersistence.hpp"
+#include "pnlContextLoad.hpp"
+#include "pnlContextSave.hpp"
 #include "pnlPersistence.hpp"
 #include "pnlXMLRead.hpp"
+#include "pnlXMLWrite.hpp"
 
 void NetworkPNL::Delete()
 {

@@ -2,7 +2,7 @@
 #define __XMLCONTAINER_HPP__
 
 #include "pnlConfig.hpp"
-#include "pnlXMLRead.hpp"
+#include "pnlXMLContainer.hpp"
 
 // FORWARDS
 namespace pnl

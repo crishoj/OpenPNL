@@ -8,27 +8,6 @@
 
 PNLW_BEGIN
 
-static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, int size, 
-                           pnl::EIDNodeState nodeState);
-
-static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, int size, 
-                           pnl::EIDNodeState nodeState)
-{
-    pnl::CNodeType nt(isDiscrete ? 1:0, size, nodeState);
-
-    for(int i = paNodeType->size(); --i >= 0;)
-    {
-	if((*paNodeType)[i] == nt)
-	{
-	    return i;
-	}
-    }
-
-    paNodeType->push_back(nt);
-
-    return paNodeType->size() - 1;
-}
-
 pnl::CGraphicalModel *LIMIDCallback::CreateModel(ProbabilisticNet &net)
 {
     int nNode = net.nNetNode();
@@ -43,7 +22,7 @@ pnl::CGraphicalModel *LIMIDCallback::CreateModel(ProbabilisticNet &net)
     {
 	const pnl::CNodeType &nt = net.pnlNodeType(i);
 
-	aNodeAssociation[i] = nodeAssociation(&aNodeType,
+	aNodeAssociation[i] = net.NodeAssociation(&aNodeType,
 	    nt.IsDiscrete(), nt.GetNodeSize(), nt.GetNodeState());
     }
 

@@ -13,6 +13,7 @@
 #include "pnl_dll.hpp"
 #include "pnlMlStaticStructLearnHC.hpp"
 #include "pnlString.hpp"
+#include "pnlGroup.hpp"
 #pragma warning(default: 4251)
 #pragma warning(pop)
 
@@ -40,7 +41,6 @@ BayesNet::BayesNet(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
 	sizeof(aInference)/sizeof(aInference[0]));
     m_pNet->Token()->AddProperty("Learning", aLearning,
 	sizeof(aLearning)/sizeof(aLearning[0]));
-
 }
 
 BayesNet::~BayesNet()
@@ -108,7 +108,9 @@ void BayesNet::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr we
     Net().Distributions()->FillData(node, mean, TokArr(), pnl::matMean);
     Net().Distributions()->FillData(node, variance, TokArr(), pnl::matCovariance);
     if (weight.size() != 0)
+    {
         Net().Distributions()->FillData(node, weight, TokArr(), pnl::matWeights);
+    }
 }
 
 TokArr BayesNet::GetGaussianMean(TokArr vars)
@@ -130,13 +132,14 @@ TokArr BayesNet::GetGaussianMean(TokArr vars)
 
     const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
 
-    if (cpd->IsDistributionSpecific() == 1)         
+    if (cpd->IsDistributionSpecific() == 1)
     {
         TokArr res;
         res << "uniform";
         return res;
     }
     else
+    {
         if (cpd->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
         {
             TokArr res;
@@ -148,6 +151,7 @@ TokArr BayesNet::GetGaussianMean(TokArr vars)
             const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matMean);
             return Net().ConvertMatrixToToken(mat);
         }
+    }
 }
 
 TokArr BayesNet::GetGaussianCovar(TokArr var)
@@ -176,6 +180,7 @@ TokArr BayesNet::GetGaussianCovar(TokArr var)
         return res;
     }
     else
+    {
         if (cpd->GetDistribFun()->IsDistributionSpecific() == 1)
         {
             TokArr res;
@@ -183,6 +188,7 @@ TokArr BayesNet::GetGaussianCovar(TokArr var)
             return res;
         }
         else
+	{
             if (cpd->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
             {
                 TokArr res;
@@ -194,6 +200,8 @@ TokArr BayesNet::GetGaussianCovar(TokArr var)
                 const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matCovariance);
                 return Net().ConvertMatrixToToken(mat);
             }
+	}
+    }
 }
 
 TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
@@ -203,57 +211,57 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
     int nchldComb = child.size();
     if( !nchldComb )
     {
-		ThrowUsingError("Must be at least one combination for a child node", fname);
+	ThrowUsingError("Must be at least one combination for a child node", fname);
     }
-	
+
     Vector<int> childNd, childVl;
     int i;
     Net().ExtractTokArr(child, &childNd, &childVl);
-	
+
     // node for all child must be same (its may differ by combination only)
     for(i = childNd.size(); --i > 0; ++i)
     {
-		if(childNd[i] != childNd[0])
-		{
-			ThrowUsingError("Can't return probabilities for different nodes", fname);
-		}
+	if(childNd[i] != childNd[0])
+	{
+	    ThrowUsingError("Can't return probabilities for different nodes", fname);
+	}
     }
 	
     if( !childVl.size())
     {
-		childVl.assign(nchldComb, -1);
+	childVl.assign(nchldComb, -1);
     }
-	
+
     Vector<int> parentNds, parentVls;
     int nparents = parents.size();
     if( nparents )
     {
-		Net().ExtractTokArr(parents, &parentNds, &parentVls);
-		if( parentVls.size() == 0 ||
-			std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
-		{
-			ThrowInternalError("undefindes values for given parent nodes", "P");
-		}
+	Net().ExtractTokArr(parents, &parentNds, &parentVls);
+	if( parentVls.size() == 0 ||
+	    std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
+	{
+	    ThrowInternalError("undefindes values for given parent nodes", "P");
+	}
     }
     else
     {
-		Net().Graph()->Graph()->GetParents( childNd.front(), &parentNds );
-		nparents = parentNds.size();
-		parentVls.assign(nparents, -1);
+	Net().Graph()->Graph()->GetParents( childNd.front(), &parentNds );
+	nparents = parentNds.size();
+	parentVls.assign(nparents, -1);
     }
-	
+
     parentNds.resize(nparents + 1);
     parentVls.resize(nparents + 1);
-	
+
     const pnl::CFactor * cpd = Model()->GetFactor(childNd.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matTable);
 	
     TokArr result = "";
     for( i = 0; i < nchldComb; i++ )
     {
-		parentNds[nparents] = childNd.front();
-		parentVls[nparents] = childVl[i];
-		result << Net().CutReq( parentNds, parentVls, mat);
+	parentNds[nparents] = childNd.front();
+	parentVls[nparents] = childVl[i];
+	result << Net().CutReq( parentNds, parentVls, mat);
     }
 	
     return result;
@@ -381,7 +389,7 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     
     infEngine->EnterEvidence( evid );
     
-   int nnodes = nodes.size();
+    int nnodes = nodes.size();
     Vector<int> queryNds, queryVls;
     Net().ExtractTokArr(nodes, &queryNds, &queryVls);
     if(!queryVls.size())
@@ -598,7 +606,6 @@ BayesNet* BayesNet::LearnStructure(TokArr aSample[], int nSample)
 
     }
 
-
     //get edges of new graph and add them to new network
     CGraph* newGraph = newNet->GetGraph();
     //for( i = 0 ; i < newGraph->
@@ -795,11 +802,13 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 void BayesNet::SaveNet(const char *filename)
 {
     pnl::CContextPersistence saver;
+    pnl::CGroupObj group;
 
-    if(!Net().SaveNet(&saver))
+    if(!Net().SaveNet(&saver, &group))
     {
 	ThrowInternalError("Can't save file", "SaveNet");
     }
+    saver.Put(&group, "WrapperInfo", false);
 
     if(!saver.SaveAsXML(filename))
     {

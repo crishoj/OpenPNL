@@ -37,7 +37,7 @@ struct FuncDesc
 };
 
 FuncDesc* FunctionInfo(pnl::pnlString &fname);
-void ListCommands();
+void ListCommands(pnl::pnlString &arg);
 int ScriptingSyntax(ScriptingLex &lex, pnl::pnlString &fname,
 		    pnl::pnlVector<pnl::pnlString> &args);
 

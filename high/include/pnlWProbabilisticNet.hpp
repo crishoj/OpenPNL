@@ -27,6 +27,7 @@ namespace pnl
     class pnlString;
     template<typename Type> class CMatrix;
     class CContextPersistence;
+    class CGroupObj;
 }
 
 PNLW_BEGIN
@@ -59,7 +60,7 @@ public:
     // other variants same as after SaveLearnBuf
 
     // save net. return true if successful saving
-    bool SaveNet(pnl::CContextPersistence *saver);
+    bool SaveNet(pnl::CContextPersistence *saver, pnl::CGroupObj *group = 0);
     // load net. return true if successful loading
     static ProbabilisticNet* LoadNet(pnl::CContextPersistence *loader);
 
@@ -114,6 +115,9 @@ public:
     int NodesClassification(TokArr &aValue) const;
     void SetTopologicalOrder(const int *renaming, pnl::CGraph *pnlGraph);
 
+    static int NodeAssociation(Vector<pnl::CNodeType> *paNodeType,
+	bool isDiscrete, int size, int nodeState = 0);
+
 public:// inlines for access to object fields
     WGraph *Graph() const { return m_pGraph; }
     TokenCover *Token() const { return m_pTokenCov; }
@@ -134,7 +138,7 @@ private:// DATA members
     pnl::CGraphicalModel *m_Model;	    // model, if it exists
     WEvidence m_EvidenceBoard;		    // board for evidence (see diagram for evidence buffer)
     Vector<pnl::CEvidence *> m_aEvidence;   // buffer for evidences
-    WDistributions *m_paDistribution;    // It holds all distributions
+    WDistributions *m_paDistribution;	    // It holds all distributions
 					    // It is moreover alters distribution as need
     TokenCover *m_pTokenCov;		    // token stuff
     WGraph *m_pGraph;			    // Stores graph and names of nodes
@@ -142,7 +146,8 @@ private:// DATA members
     typedef std::map<String, String> SSMap; // type for mapping string to string
     SSMap m_aPropertyValue;		    // Properties: value for every property
 
-    NetCallback *m_pCallback;
+    NetCallback *m_pCallback;		    // pointer to object which creates model,
+					    // generates evidences for concrete net type
 };
 
 PNLW_END

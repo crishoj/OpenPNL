@@ -245,7 +245,7 @@ struct PNLHIGH_API TokIdNode
             case bit_all:
                 return (node->tag & imm) == imm;
             case bit_any:
-                return node->tag & imm;
+                return (node->tag & imm) != 0;
             case chain_not:
                 return !chain[0]->Match( node );
             case chain_and:
@@ -786,7 +786,7 @@ PNLHIGH_API bool Tok::operator==( Tok const &rhs ) const
         i = Match( rhs );
         if ( fload.empty() || rhs.fload.empty() )
         {
-            return i;
+            return i != 0;
         }
         if ( !i )
         {
@@ -1238,7 +1238,6 @@ PNLHIGH_API TokIdNode *Tok::Node( int i, TokIdNode const *context ) const
     t.Resolve( context );
     if ( t.node.size() <= i )
     {
-	int cnt = context->desc.count(TokId(Name()));
         PNL_THROW( pnl::CBadArg, "inexistant node requested" );
     }
     return t.node[i];
@@ -1721,4 +1720,3 @@ PNLHIGH_API void TokArr::Resolve( Tok const &hard_context,
 PNLW_END
 
 #endif
-

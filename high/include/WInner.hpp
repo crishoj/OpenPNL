@@ -38,6 +38,7 @@ typedef enum
 ,   eGaussianMean
 ,   eGaussianCovar
 ,   eSetProperty
+,   eGetProperty
 ,   eGetParents
 ,   eGetNeighbors
 ,   eGetChildren

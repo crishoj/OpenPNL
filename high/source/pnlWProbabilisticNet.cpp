@@ -9,6 +9,7 @@
 #pragma warning(disable: 4251)
 // class X needs to have dll-interface to be used by clients of class Y
 #include "pnl_dll.hpp"
+#include "pnlGroup.hpp"
 #include "pnlString.hpp"
 #pragma warning(default: 4251)
 #pragma warning(pop)
@@ -21,8 +22,6 @@
 #endif
 
 PNLW_BEGIN
-
-static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, int size);
 
 // Tok identifies for discrete and continuous node types
 TokArr discrete("nodes^discrete");
@@ -85,7 +84,7 @@ void ProbabilisticNet::AddArc(TokArr from, TokArr to)
 {
     int i, j;
     String nameTo, nameFrom;
-    
+
     MustBeNode(from);
     MustBeNode(to);
     for(i = 0; i < to.size(); ++i)
@@ -270,7 +269,7 @@ int ProbabilisticNet::SaveEvidBuf(const char *filename, NetConst::ESavingType mo
     Vector<int> nUsingCol(nNetNode(), 0);
     const int *aEvidNode;
     int nEvidNode;
-    
+
     // mark nodes for saving
     for(iEvid = 0; iEvid < m_aEvidence.size(); ++iEvid)
     {
@@ -315,7 +314,7 @@ int ProbabilisticNet::SaveEvidBuf(const char *filename, NetConst::ESavingType mo
 
     pnl::pnlString str, tmpstr;
     pnl::valueVector v;
-    
+
     // write evidences one by one
     for(iEvid = 0; iEvid < m_aEvidence.size(); ++iEvid)
     {
@@ -355,7 +354,7 @@ int ProbabilisticNet::SaveEvidBuf(const char *filename, NetConst::ESavingType mo
 		    {
 			str << v[j].GetFlt();
 		    }
-		    
+
 		    tmpstr = String(str.c_str());
 		    lex.PutValue(tmpstr);
 		}
@@ -383,7 +382,7 @@ int ProbabilisticNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mo
     int iCol, nCol, nColInUse;
     int nEvid;
     String colName;
-    
+
     for(nColInUse = nCol = 0; nCol == 0 || !lex.IsEol(); ++nCol)
     {
 	if(!lex.GetValue(&colName))
@@ -463,26 +462,35 @@ int ProbabilisticNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mo
     return nEvid;
 }
 
-class Properties
-{
-public:
-    Properties(std::map<String, String> *pMap);
-
-private:
-
-};
-
-bool ProbabilisticNet::SaveNet(pnl::CContextPersistence *saver)
+bool ProbabilisticNet::SaveNet(pnl::CContextPersistence *saver,
+			       pnl::CGroupObj *group /* = 0 */)
 {
     saver->Put(Model(), "Model");
-    saver->Put(new pnl::CCover<ProbabilisticNet>(this), "NodeInfo", true);
-    saver->Put(new pnl::CCover<std::map<String, String> >(&m_aPropertyValue), "Properties", true);
-
+    if(group)
+    {
+	group->Put(new pnl::CCover<ProbabilisticNet>(this), "Nodes", true);
+	if(m_aPropertyValue.size())
+	{
+	    group->Put(new pnl::CCover<SSMap>(&m_aPropertyValue),
+		"Properties", true);
+	}
+    }
+    else
+    {// this case must be removed later
+	saver->Put(new pnl::CCover<ProbabilisticNet>(this), "NodeInfo", true);
+	if(m_aPropertyValue.size())
+	{
+	    saver->Put(new pnl::CCover<SSMap>(&m_aPropertyValue),
+		"Properties", true);
+	}
+    }
     return true;
 }
 
 ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
 {
+    pnl::CGroupObj *group = static_cast<pnl::CGroupObj*>(
+	loader->Get("WrapperInfo"));
     pnl::CCover<ProbabilisticNet>* pCovNet = static_cast<pnl::CCover<ProbabilisticNet>*>(
 	loader->Get("NodeInfo"));
     ProbabilisticNet *net;
@@ -498,7 +506,7 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
 	loader->AutoDelete(model);
     }
 
-    if(!pCovNet)
+    if(!pCovNet && !group)
     {// Loading of PNL's model
 	int iNode, iValue;
 	String nodeName;
@@ -517,7 +525,7 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
             nodeName = "Node";
             nodeName << iNode;
             aValue.resize(0);
-            
+
             const pnl::CNodeType &nt = *model->GetNodeType(iNode);
             for(iValue = 0; iValue < nt.GetNodeSize(); ++iValue)
             {
@@ -528,9 +536,9 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
                 aValue << "State" << iValue;
             }
             pnl::EIDNodeState ns = nt.GetNodeState();
-            
+
             TokArr *classificator;
-            
+
             if(!nt.IsDiscrete())
             {
                 classificator = &continuous;
@@ -546,13 +554,26 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
                 }
             }
             net->AddNode(*classificator ^ nodeName, aValue);
-            
-//        net->AddNode((nt.IsDiscrete() ? discrete:continuous) ^ nodeName, aValue);
 	}
     }
     else
     {
+	pnl::CCover<SSMap> *coverProperties;
+	if(group)
+	{
+	    pCovNet = static_cast<pnl::CCover<ProbabilisticNet>*>(group->Get("Nodes"));
+	    coverProperties = static_cast<pnl::CCover<SSMap>*>(group->Get("Properties"));
+	}
+	else
+	{// first version of persistence for wrappers
+	    coverProperties = static_cast<pnl::CCover<SSMap>*>(loader->Get("Properties"));
+	}
 	net = pCovNet->GetPointer();
+	if(coverProperties)
+	{
+	    net->m_aPropertyValue = *coverProperties->GetPointer();
+	    delete coverProperties;
+	}
     }
 
     net->Reset(*model);
@@ -560,10 +581,10 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
     return net;
 }
 
-// whatNodes is array of tokens which specify the list of variables and optionally 
+// whatNodes is array of tokens which specify the list of variables and optionally
 // the required portion of observed nodes
 // For example, if whatNodes = TokArr("Node1")
-//    
+//
 void ProbabilisticNet::GenerateEvidences( int nSample, bool ignoreCurrEvid, TokArr whatNodes )
 {
     static const char funName[] = "GenerateEvidences";
@@ -574,12 +595,12 @@ void ProbabilisticNet::GenerateEvidences( int nSample, bool ignoreCurrEvid, TokA
     }
 
     //get current evidence if exists and required
-    pnl::CEvidence *evid = 0;      
+    pnl::CEvidence *evid = 0;
     if( !ignoreCurrEvid && !m_EvidenceBoard.IsEmpty() )
     {
         evid = CreateEvidence(m_EvidenceBoard.GetBoard());
     }
-    
+
     //define empty buffer of PNL evidences
     pnl::pEvidencesVector newSamples;
 
@@ -596,7 +617,7 @@ void ProbabilisticNet::GenerateEvidences( int nSample, bool ignoreCurrEvid, TokA
 
         Vector<float> aNodePercentage;
         aNodePercentage.resize(nNetNode(), 0);
-                       
+
         // check for every variable
         int i;
         for(i = nValueIn; --i >= 0;)
@@ -609,7 +630,7 @@ void ProbabilisticNet::GenerateEvidences( int nSample, bool ignoreCurrEvid, TokA
 	    }
 	    int idx = NodeIndex(node);
 
-            //check if node has probability/frequence 
+            //check if node has probability/frequence
             if( !whatNodes[i].fload.size() )
             {
                 aNodePercentage[idx] = 1.f;
@@ -619,14 +640,14 @@ void ProbabilisticNet::GenerateEvidences( int nSample, bool ignoreCurrEvid, TokA
             {
                 aNodePercentage[idx] = whatNodes[i].FltValue();
                 aNodeFlag[idx] = 0;
-            }            
-        } 
+            }
+        }
         Vector<int> aNeedToHide;
         for( i = 0; i < aNodeFlag.size(); i++ )
         {
             if( !aNodeFlag[i] )
                 aNeedToHide.push_back(i);
-        }                                        
+        }
 
         //loop through generated evidences and clear info about missing variables
         //and delete missing portions of partially observed variables
@@ -658,21 +679,21 @@ void ProbabilisticNet::GenerateEvidences( int nSample, bool ignoreCurrEvid, TokA
             pnl::valueVector vv;
             for( pnl::pConstValueVector::iterator vit = values.begin(); vit != values.end(); vit++ )
             {
-                vv.push_back((*vit)[0]); //this is true only for single-value nodes                                                                      
+                vv.push_back((*vit)[0]); //this is true only for single-value nodes
             }
 
             pnl::CEvidence* newev = pnl::CEvidence::Create( Model()->GetModelDomain(), numbers, vv );
             delete ev;
-            *it = newev; 
+            *it = newev;
         }
-    }                                                                  
+    }
 
     //add generates evidences to wrapper learning buffer
-    m_aEvidence.insert(m_aEvidence.end(), newSamples.begin(), newSamples.end() );    
+    m_aEvidence.insert(m_aEvidence.end(), newSamples.begin(), newSamples.end() );
 }
 
 void ProbabilisticNet::MaskEvidBuf(TokArr whatNodes)
-{   
+{
     static const char fname[] = "MaskEvidBuf";
 
     //and if it contain something - filter out absent nodes from the evidence array
@@ -684,7 +705,7 @@ void ProbabilisticNet::MaskEvidBuf(TokArr whatNodes)
 
         Vector<float> aNodePercentage;
         aNodePercentage.resize(nNetNode(), 0);
-                       
+
         // check for every variable
         int i;
         for(i = nValueIn; --i >= 0;)
@@ -697,7 +718,7 @@ void ProbabilisticNet::MaskEvidBuf(TokArr whatNodes)
 	    }
 	    int idx = NodeIndex(node);
 
-	    //check if node has probability/frequence 
+	    //check if node has probability/frequence
 	    if( !whatNodes[i].fload.size() )
 	    {
 		aNodePercentage[idx] = 1.f;
@@ -709,13 +730,13 @@ void ProbabilisticNet::MaskEvidBuf(TokArr whatNodes)
 	    //mark node for processing
 	    aNodeFlag[idx] = 1;
 
-	} 
+	}
 	Vector<int> aNeedToProcess;
 	for( i = 0; i < aNodeFlag.size(); i++ )
 	{
 	    if( aNodeFlag[i] )
 		aNeedToProcess.push_back(i);
-	}                                        
+	}
 
         //loop through generated evidences and clear info about missing variables
         //and delete missing portions of partially observed variables
@@ -883,7 +904,7 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
 	aiNewNode.push_back(aiNode[0]);
     };
 
-    for (int node = 1; node < size; ++node) 
+    for (int node = 1; node < size; ++node)
     {
 	if (aiNode[node]!=aiNode[node-1])
 	{
@@ -1138,7 +1159,7 @@ void ProbabilisticNet::SplitNodesByObservityFlag(Vector<int> *aiObserved, Vector
     }
 }
 
-TokArr ProbabilisticNet::CutReq( Vector<int>& queryNds, Vector<int>& queryVls, 
+TokArr ProbabilisticNet::CutReq( Vector<int>& queryNds, Vector<int>& queryVls,
 			const pnl::CMatrix<float> * mat ) const
 {
     int nnodes = queryNds.size();
@@ -1147,7 +1168,7 @@ TokArr ProbabilisticNet::CutReq( Vector<int>& queryNds, Vector<int>& queryVls,
 
     obsDims.reserve(nnodes);
     obsVls.reserve(nnodes);
-    
+
     for( i = 0; i < queryNds.size(); i++ )
     {
 	int v = queryVls[i];
@@ -1168,7 +1189,7 @@ TokArr ProbabilisticNet::CutReq( Vector<int>& queryNds, Vector<int>& queryVls,
     {
 	resMat = mat;
     }
-    
+
     pnl::CMatrixIterator<float>* iter = resMat->InitIterator();
     pnl::intVector index;
     TokArr result;
@@ -1183,9 +1204,9 @@ TokArr ProbabilisticNet::CutReq( Vector<int>& queryNds, Vector<int>& queryVls,
 	for( i = 0; i < queryNds.size(); i++ )
 	{
 	    String nodeName = NodeName(queryNds[i]);
-	    String valName  = DiscreteValue(NodeIndex(nodeName.c_str()), 
+	    String valName  = DiscreteValue(NodeIndex(nodeName.c_str()),
 		queryVls[i] != -1 ? queryVls[i] : index[i] );
-	    
+
 	    if(i)
 	    {
 		tmp ^= (Tok(nodeName) ^ valName);
@@ -1240,13 +1261,33 @@ void ProbabilisticNet::SetTopologicalOrder(const int *renaming, pnl::CGraph *pnl
     delete oldGraph;
 }
 
+int ProbabilisticNet::NodeAssociation(Vector<pnl::CNodeType> *paNodeType,
+				      bool isDiscrete,
+				      int size,
+				      int nodeState)
+{
+    pnl::CNodeType nt(isDiscrete ? 1:0, size, pnl::EIDNodeState(nodeState));
+
+    for(int i = paNodeType->size(); --i >= 0;)
+    {
+	if((*paNodeType)[i] == nt)
+	{
+	    return i;
+	}
+    }
+
+    paNodeType->push_back(nt);
+
+    return paNodeType->size() - 1;
+}
+
 pnl::CGraphicalModel *ProbabilisticNet::Model()
 {
     if(!m_Model)
     {
 	m_Model = m_pCallback->CreateModel(*this);
     }
- 
+
     return m_Model;
 }
 

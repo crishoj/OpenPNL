@@ -5,6 +5,7 @@
 #include "pnlContextPersistence.hpp"
 #include "pnlPersistence.hpp"
 #include "pnlXMLRead.hpp"
+#include "pnlXMLWrite.hpp"
 
 bool XmlWriterPNLH::OpenFile(const char * filename)
 {

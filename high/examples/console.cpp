@@ -137,7 +137,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	    break;
 	case -4:/* ListNodes */ Print(BNet().Net().Graph()->Names()); break;
 	case -5:/* Exit */ return -1;
-	case -6:	ListCommands(); break;
+	case -6:	ListCommands(args[0]); break;
 	case -7:/* print */ Print(args); break;
 	case -8:/* new */ Enter(new BayesNet, true); break;
 	case -9:/* console */ Execute(stdin, &BNet()); break;
@@ -173,31 +173,10 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
         case eGaussianMean: Print(BNet().GetGaussianMean(args[0]));break;
         case eGaussianCovar:Print(BNet().GetGaussianCovar(args[0]));break;
 	case eSetProperty:  BNet().SetProperty(args[0].c_str(), args[1].c_str()); break;
+	case eGetProperty:  Print(BNet().GetProperty(args[0].c_str())); break;
         case eSetPGaussian:  
             {
-                TokArr arg1;
-                TokArr arg2;
-                TokArr arg3;
-                TokArr arg4;
-                
-                if(args.size() > 0)
-                {
-                    arg1 = args[0];
-                    if(args.size() > 1)
-                    {
-                        arg2 = args[1];
-                        if(args.size() > 2)
-                        {
-                            arg3 = args[2];
-                            if(args.size() > 3)
-                            {
-                                arg4 = args[3];
-                            }
-                        }
-                    }
-                }
-                
-                BNet().SetPGaussian(arg1, arg2, arg3, arg4);
+                BNet().SetPGaussian(args[0], args[1], args[2], args[3]);
                 break;
             }
 

@@ -42,7 +42,8 @@ FuncDesc aFuncDesc[] =
 ,   "getgaussianmean",	eGaussianMean,	true,  1, 1, 0
 ,   "getgaussiancovar", eGaussianCovar, true,  1, 1, 0 
 ,   "setpgaussian",	eSetPGaussian,	true,  0, 4, 3
-,   "setproperty",	eSetProperty,	false, 0, 2, 0
+,   "setproperty",	eSetProperty,	true,  0, 2, 0
+,   "getproperty",	eGetProperty,	true,  0, 1, 0
 ,   "getjpd",		eJPD,		true,  1, 1, 0 
 ,   "getparents",	eGetParents,	true,  1, 1, 0
 ,   "getneighbors",	eGetNeighbors,	true,  1, 1, 0
@@ -53,7 +54,7 @@ FuncDesc aFuncDesc[] =
 ,   "clearall",	      -3,	    true,  0, 0, 0
 ,   "listnodes",      -4,	    true,  0, 0, 0
 ,   "exit",	      -5,	    true,  0, 0, 0
-,   "listcommands",   -6,	    true,  0, 0, 0
+,   "listcommands",   -6,	    true,  0, 1, 1
 ,   "print",	      -7,	    true,  0, 1, 1
 ,   "new",	      -8,	    true,  0, 0, 0
 ,   "console",	      -9,	    true,  0, 0, 0
@@ -256,24 +257,36 @@ FuncDesc* FunctionInfo(pnl::pnlString &fname)
     return 0;
 }
 
-void ListCommands()
+void ListCommands(pnl::pnlString &arg)
 {
     int i, len, maxName, cols;
+    pnl::pnlVector<pnl::pnlString> aCommand;
+    pnl::pnlString carg;
+
+    for(i = 0; i < arg.length(); ++i)
+    {
+	carg << char(tolower(arg[i]));
+    }
 
     for(maxName = i = 0; aFuncDesc[i].name; ++i)
     {
-	len = strlen(aFuncDesc[i].name);
+	if(carg.length() && memcmp(aFuncDesc[i].name, carg.c_str(), carg.length()))
+	{
+	    continue;
+	}
+	aCommand.push_back(aFuncDesc[i].name);
+	len = aCommand.back().length();
 	maxName = (maxName > len) ? maxName:len;
     }
 
     cols = (80 / (maxName + 1));
 
-    for(i = 0; aFuncDesc[i].name; ++i)
+    for(i = 0; i < aCommand.size(); ++i)
     {
-	len = strlen(aFuncDesc[i].name);
-	std::cout << aFuncDesc[i].name;
+	len = aCommand[i].length();
+	std::cout << aCommand[i];
 
-	if(((i % 3) == 2) || !aFuncDesc[i + 1].name)
+	if(((i % 3) == 2) || (i == aCommand.size() - 1))
 	{
 	    std::cout << '\n';
 	}
@@ -287,4 +300,3 @@ void ListCommands()
 	}
     }
 }
-

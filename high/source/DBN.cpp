@@ -13,6 +13,7 @@
 #include "pnl_dll.hpp"
 #include "pnlMlStaticStructLearnHC.hpp"
 #include "pnlString.hpp"
+#include "pnlGroup.hpp"
 #pragma warning(default: 4251)
 #pragma warning(pop)
 
@@ -180,6 +181,7 @@ TokArr DBN::GetGaussianCovar(TokArr var, TokArr vars)
         return res;
     }
     else
+    {
         if (cpd->GetDistribFun()->IsDistributionSpecific() == 1)
         {
             TokArr res;
@@ -187,6 +189,7 @@ TokArr DBN::GetGaussianCovar(TokArr var, TokArr vars)
             return res;
         }
         else
+	{
             if (cpd->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
             {
                 TokArr res;
@@ -198,6 +201,8 @@ TokArr DBN::GetGaussianCovar(TokArr var, TokArr vars)
                 const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matCovariance);
                 return Net().ConvertMatrixToToken(mat);
             }
+	}
+    }
 }
 
 TokArr DBN::GetPTabular(TokArr child, TokArr parents)
@@ -583,8 +588,10 @@ TokArr DBN::GetMPE(TokArr nodes)
 void DBN::SaveNet(const char *filename)
 {
     pnl::CContextPersistence saver;
-    
-    if(!Net().SaveNet(&saver))
+    pnl::CGroupObj group;
+
+    saver.Put(&group, "WrapperInfo", false);
+    if(!Net().SaveNet(&saver, &group))
     {
 	ThrowInternalError("Can't save file", "SaveNet");
     }
