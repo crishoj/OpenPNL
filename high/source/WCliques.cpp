@@ -76,7 +76,7 @@ bool WCliques::DestroyClique(const Vector<int> &aIndex)
                 {
                     if(it1->second == m_aCliques.size())
                     {
-                        it1->second == iClq;
+                        it1->second = iClq;
                         break;
                     }
                 }
