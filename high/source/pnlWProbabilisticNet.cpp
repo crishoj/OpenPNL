@@ -642,7 +642,12 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
     vValue.resize(nValue, pnl::Value(0));
     for(i = nValueIn; --i >= 0;)
     {
-	j = aiNode[i];
+	j = aOffset[aiNode[i]];
+	pnl::CNodeType nt = pnlNodeType(Graph()->IOuter(i));
+	if(!nt.IsDiscrete())
+	{
+	    j += aiValue[i];
+	}
 	if(vValue[j].GetInt())
 	{
 	    pnl::pnlString str;
