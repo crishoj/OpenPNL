@@ -1,0 +1,1183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<HTML><HEAD><TITLE>PNL Wrappers Reference</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=windows-1251"><LINK 
+href="style.css" type=text/css charset=ISO-8859-1 
+rel=STYLESHEET>
+<META content="Microsoft FrontPage 4.0" name=GENERATOR></HEAD>
+<BODY>
+<H1>R high-level interface for Probabilistic Network Library (PNL)</H1>
+<HR>
+
+<H2><A name=decl_Class_BayesNet>Class BayesNet</A></H2>
+<HR>
+
+<P>Class BayesNet implements all functionality required for work with bayesian networks. 
+The following functional groups can be distinguished:
+<UL>
+    <LI>Network creation (addition/deletion of nodes and arcs)<BR>
+    <A href="#decl_AddNode">AddNode</A>,
+    <A href="#decl_DelNode">DelNode</A>,
+    <A href="#decl_AddArc">AddArc</A>,
+    <A href="#decl_DelArc">DelArc</A>.
+    </LI>
+    <LI>Setting/getting parameters<BR>
+    <A href="#decl_SetPTabular">SetPTabular</A>,
+    <A href="#decl_GetPTabular">GetPTabular</A>,
+    <A href="#decl_SetPGaussian">SetPGaussian</A>,
+    <A href="#decl_GetGaussianMean">GetGaussianMean</A> ,
+    <A href="#decl_GetGaussianCovar">GetGaussianCovar</A>,
+    <A href="#decl_GetGaussianWeights">GetGaussianWeights</A>,
+    <A href="#decl_EditEvidence">EditEvidence</A>,
+    <A href="#decl_ClearEvid">ClearEvid</A>,
+    <A href="#decl_CurEvidToBuf">CurEvidToBuf</A>,
+    <A href="#decl_AddEvidToBuf">AddEvidToBuf</A>,
+    <A href="#decl_ClearEvidBuf">ClearEvidBuf</A>,
+    <A href="#decl_GetChildren">GetChildren</A>,
+    <A href="#decl_GetParents">GetParents</A>,
+    <A href="#decl_GetNeighbours">GetNeighbours</A>,
+    <A href="#decl_SetProperty">SetProperty</A>,
+    <A href="#decl_GetProperty">GetProperty</A>
+    </LI>
+    <LI>Learning parameters<BR>
+    <A href="#decl_LearnParameters">LearnParameters</A>
+    </LI>
+    <LI>Learning network structure<BR>
+    <A href="#decl_LearnStructure">LearnStructure</A>
+    </LI>
+    <LI>Inference in network<BR>
+    <A href="#decl_GetJPD">GetJPD</A>,
+    <A href="#decl_GetMPE">GetMPE</A>
+    </LI>
+    <LI>Data sampling<BR>
+    <A href="#decl_GenerateEvidences">GenerateEvidences</A>
+    </LI>
+    <LI>File I/O<BR>
+    <A href="#decl_LoadNet">LoadNet</A>,
+    <A href="#decl_SaveNet">SaveNet</A>,
+    <A href="#decl_LoadEvidBuf">LoadEvidBuf</A>,
+    <A href="#decl_SaveEvidBuf">SaveEvidBuf</A>
+    </LI>
+    <LI>more...</LI>
+</UL>
+<HR>
+
+
+<H3><A name=decl_BayesNet>pnlCreateBNet</A></H3>
+<P class=Blurb>This function constructs an empy Bayesian network</P>
+<DL>
+</DL>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Create empty Bayessian net:
+</p>
+<p class="example">
+net <- pnlCreateBNet()
+</p>
+<HR>
+The first argument in all of the rest functions is a Bayesian network, which has been already created in the workspace. The action, which is defined by the function name, is carried out on this network.
+<HR>
+
+<H3><A name=decl_AddNode>AddNode</A></H3>
+<P class=Blurb>Adds nodes</P>
+<font class="interface">
+AddNode(BayesNet, nodes, subnodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>String. List of nodes with nodes type (discrete or continuous) specifying. 
+  <DT>subnodes
+  <DD>String. Array of values that nodes can take (or names of dimensions for continuous nodes). 
+</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function adds one or several nodes with the same probable states into the network. If the node you want to add is discrete, it is not necessary to specify its type directly. I.e. if node type is leaved blank, we mean that node is discrete.</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Add one discrete node "NodeA" with states "true" and "false" to bayes net:
+</p>
+<p class="example">
+AddNode(net, "discrete^NodeA", "true false") 
+or
+AddNode(net, "NodeA", "true false") 
+</p>
+<p class="description">
+Add one-dimensional continuous node "NodeA" to Bayessian net:
+</p>
+<p class="example">
+AddNode(net, "continuous^NodeA", "dim1")
+</p>
+<p class="description">
+Add discrete nodes "NodeA" and "NodeB" with states "true" and "false" to bayes net:
+</p>
+<p class="example">
+AddNode(net, "discrete^NodeA discrete^NodeB", "true false")
+</p>
+<p class="description">
+Add multivariate nodes "NodeA" with 2 dimensions "dim1" and "dim2" to bayes net:
+</p>
+<p class="example">
+AddNodee(net, "continuous^NodeA", "dim1 dim2")
+</p>
+<HR>
+
+<H3><A name=decl_DelNode>DelNode</A></H3>
+<P class=Blurb>Deletes nodes</P>
+<font class="interface">
+DelNode(BayesNet, nodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>String. Array of names of nodes to delete. 
+  </DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function deletes one or several nodes from the network together with all adjacent edges. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Delete nodes "NodeA" and "NodeB" from Bayessian net:
+</p>
+<p class="example">
+DelNode(net, "NodeA NodeB")
+</P>
+<HR>
+
+<H3><A name=decl_GetNodeType>GetNodeType</A></H3>
+<P class=Blurb>Returns types of the given nodes as strings</P>
+<font class="interface">
+GetNodeType(BayesNet, nodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>String. Array of nodes whose type is interesting. 
+</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns array of types (discrete or continuous) of given nodes.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get array of types of nodes "NodeA" and "NodeB":
+</p>
+<p class="example">
+   GetNodeType(net, "NodeA NodeB")
+</P>
+<p class="description">
+The output of this function call will be the following:
+</p>
+<p class="example">
+   "discrete discrete"
+</P>
+<HR>
+
+<H3><A name=decl_AddArc>AddArc</A></H3>
+<P class=Blurb>Adds arc</P>
+<font class="interface">
+AddArc(BayesNet, from, to)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>from
+  <DD>String. Array of starting nodes of the arcs. Nodes are separated by the space. 
+  <DT>to
+  <DD>String. Array of ending nodes of the arcs. Nodes are separated by the space.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function adds one or several arcs to the network. Each starting node is connected with each ending node.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Add edge from node "NodeA" to node "NodeB":
+</p>
+<p class="example">
+AddArc(net, "NodeA", "NodeB")
+</P>
+<p class="description">
+Add two edges: from "NodeA" to "NodeB" and from "NodeA" to "NodeC":
+</p>
+<p class="example">
+AddArc(net, "NodeA", "NodeB NodeC")
+</P>
+<p class="description">
+Add four edges: from "NodeA" to "NodeC", from "NodeA" to "NodeD", from "NodeB" to "NodeC" and from "NodeB" to "NodeD":
+</p>
+<p class="example">
+AddArc(net, "NodeA NodeB", "NodeC NodeD")
+</P>
+<HR>
+
+<H3><A name=decl_DelArc>DelArc</A></H3>
+<P class=Blurb>Deletes arcs</P>
+<font class="interface">
+DelArc(BayesNet, from, to)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>from
+  <DD>String. Array of starting nodes of the arcs to delete. 
+  <DT>to
+  <DD>String. Array of ending nodes of the arcs to delete. 
+  </DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function deletes one or several arcs from the network. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Delete edge from node "NodeA" to node "NodeB":
+</p>
+<p class="example">
+DelArc(net, "NodeA", "NodeB")
+</P>
+<p class="description">
+Delete following two edges if they exist: from "NodeA" to "NodeB" and from "NodeA" to "NodeC":
+</p>
+<p class="example">
+DelArc(net, "NodeA", "NodeB NodeC")
+</P>
+<p class="description">
+Delete all edges with starting node "NodeA" or "NodeB" and ending node "NodeC" or "NodeD":
+</p>
+<p class="example">
+DelArc(net, "NodeA NodeB", "NodeC NodeD")
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetNeighbours>GetNeighbours</A></H3>
+<P class=Blurb>Returns list of neighbours for given node as one string. 
+</P>
+<font class="interface">
+GetNeighbours(BayesNet, nodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>One or several nodes whose neighbours are need. Nodes are separated with
+    the space.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns list of neighbours for given node or some nodes. If neighbours of several nodes are demanded then neighbors of every node are in the result.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get neighbors of node "NodeA":
+</p>
+<p class="example">
+NodeANeighbors &lt;- GetNeighbours(net, &quot;NodeA&quot;)
+</P>
+<p class="description">
+Get neighbors of node "NodeA" and neighbors of node "NodeB". If node "NodeC" is neighbor of both "NodeA" and "NodeB" then it is once in result list of neighbors:
+</p>
+<p class="example">NodeAandBNeighbors &lt;- GetNeighbours(net, &quot;NodeA NodeB&quot;)
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetParents>GetParents</A></H3>
+<P class=Blurb>Returns list of parents for given node. 
+</P>
+<font class="interface">
+GetParents(BayesNet, nodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>One or several nodes whose parents are need.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns list of parents for given node or some nodes. If parents of several nodes are demanded then parents of every node are in the result.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get parents of node "NodeA":
+</p>
+<p class="example">
+NodeAParents &lt;- GetParents(net, &quot;NodeA&quot;)
+</P>
+<p class="description">
+Get parents of node "NodeA" and parents of node "NodeB". If node "NodeC" is parent of both "NodeA" and
+&quot;NodeB&quot;, it will occure once in result list of parents:
+</p>
+<p class="example">
+NodeAandBParents &lt;- GetParents(net, &quot;NodeA NodeB&quot;)
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetChildren>GetChildren</A></H3>
+<P class=Blurb>Returns list of children for given node. 
+</P>
+<font class="interface">
+GetChildren(BayesNet, nodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>One or several nodes whose children are need.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns list of children for given node or some nodes.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get children of node "NodeA":
+</p>
+<p class="example">
+NodeAChildren &lt;- GetChildren(net, &quot;NodeA&quot;)
+</P>
+<p class="description">
+Get children of node "NodeA" and children of node "NodeB". If node "NodeC" is child both "NodeA" and "NodeB" then it is once in result list of children:
+</p>
+<p class="example">
+NodeAandBChildren &lt;- GetChildren(net, &quot;NodeA NodeB&quot;)
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetPTabular>SetPTabular</A></H3>
+<P class=Blurb>Assigns probability to one or several values of one discrete node 
+</P>
+<font class="interface">
+SetPTabular(BayesNet, value, prob, parentValue)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>value
+  <DD>Array of node values for wich probabilities are set. 
+  <DT>prob
+  <DD>Array of values of probabilities.
+  <DT>parentValue
+  <DD>Array of values of discrete parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets [conditional] probability for one or several values of the discrete node 
+[for given values of parents]. Sizes of values array and probabilities array must be the same. While distribution 
+of probabilities is not specified it is considered uniform.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's assume that node "NodeA" has no parents and can take on two values: "true" and "false". Its distribution of probabilities is unconditional. 
+</p>
+<p class="example">
+SetPTabular(net, "NodeA^true NodeA^false", "0.7 0.3")
+</P>
+<p class="description">
+Let's node "NodeB" can take on values "true" and "false" too and has only one parent "NodeA". Distribution of 
+probabilities of "NodeB" is conditional. It is necessary to call SetPTabular method for each configuration of 
+parents values:  
+</p>
+<p class="example">
+SetPTabular(net, "NodeB^true NodeB^false", "0.99 0.01", "NodeA^true")<br>
+SetPTabular(net, "NodeB^true NodeB^false", "0.4 0.6", "NodeA^false")
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetPTabular>GetPTabular</A></H3>
+<P class=Blurb>Returns probability of discrete node 
+</P>
+<font class="interface">
+GetPTabular(BayesNet, node, parents)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>node
+  <DD>Name of node or array of node values whose probabilities are needed. 
+  <DT>parents
+  <DD>Values of parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns probability of discrete node. If values of parents are given then probabilities only 
+for these parents configuration will be returned. If concrete values of node are given in array node then
+only probabilities of these values will be returned. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's consider getting of probabilities for node "NodeB" from example for SetPTabular method. Some variants to get "NodeB"
+probabilites are available:
+</p>
+<p class="example">
+PNodeB &lt;- GetPTabular(net, &quot;NodeB&quot;)<br>
+PNodeBTrue &lt;- GetPTabular(net, &quot;NodeB^true&quot;)<br>
+PNodeBNodeATrue &lt;- GetPTabular(net, &quot;NodeB&quot;, &quot;NodeA^true&quot;)<br>
+PNodeBTrueNodeAFalse &lt;- GetPTabular(&quot;NodeB^true&quot;, &quot;NodeA^false&quot;)
+</P>
+<p class="description">
+Results of these calls:
+</p>
+<p class="example">
+<table>
+<tr>
+  <td>PNodeB</td>
+  <td>"NodeB^true^NodeA^true^0.99 NodeB^false^NodeA^true^0.01 NodeB^true^NodeA^false^0.4 NodeB^false^NodeA^false^0.6"</td>
+</tr>
+<tr>
+  <td>PNodeBTrue</td>
+  <td>"NodeB^true^NodeA^true^0.99 NodeB^true^NodeA^false^0.4"</td>
+</tr>
+<tr>
+  <td>PNodeBNodeATrue</td>
+  <td>"NodeB^true^NodeA^true^0.99 NodeB^false^NodeA^true^0.01"</td>
+</tr>
+<tr>
+  <td>PNodeBTrueNodeAFalse</td>
+  <td>"NodeB^true^NodeA^false^0.4"</td>
+</tr>
+</table>
+<HR>
+
+<H3><A 
+name=decl_SetPGaussian>SetPGaussian</A></H3>
+<P class=Blurb>Sets parameters for gaussian variate. 
+</P>
+<font class="interface">
+SetPGaussian(BayesNet, var, mean, variance, weight)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>var
+  <DD>String. Name of node which probability is setted. 
+  <DT>mean
+  <DD>String. Vector of means. 
+  <DT>variance
+  <DD>String. Matrix of variance (for one-dimensional variate it is only one number).
+  <DT>weight
+  <DD>String. Matrixes of weights. This parameter is needed only when the node has parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case" </DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets parameters for gaussian variate. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's set gaussian distribution for one - dimentional node without parents.
+</p>
+<p class="example">
+SetPGaussian(net, "x0", "1.0", "4.0")
+</p>
+<p class="description">
+Let's set gaussian distribution for one - dimentional node with two parents.
+</p>
+<p class="example">
+SetPGaussian(net, "x2", "0.0", "2.0", "1.0 2.0")
+</P>
+<p class="description">
+Let's set gaussian distribution for two - dimensional node without parents.
+</p>
+<p class="example">
+SetPGaussian(net, "x0", "1.0 2.5", "4.0 0.1 0.1 4.0")
+</p>
+<p class="description">
+Let's set gaussian distribution for two - dimentional node with three two - dimensional parents. Three matrixes of weights are:
+</p>
+<p class="description">
+<table>
+<tr>
+  <td>The first matrix</td>
+  <td>1.0</td>
+  <td>2.0</td>
+  <td>The second</td>
+  <td>5.0</td>
+  <td>6.0</td>
+  <td>The third</td>
+  <td>9.0</td>
+  <td>10.0</td>
+</tr>
+<tr>
+  <td></td>
+  <td>3.0</td>
+  <td>4.0</td>
+  <td></td>
+  <td>7.0</td>
+  <td>8.0</td>
+  <td></td>
+  <td>11.0</td>
+  <td>12.0</td>
+</tr>
+</table>
+<p class="example">
+SetPGaussian(net, "x2", "1.0 2.5", "4.0 0.1 0.1 4.0", "1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0 12.0")
+</P>
+<HR>
+
+<H3><A 
+name=decl_EditEvidence>EditEvidence</A></H3>
+<P class=Blurb>Edits current evidence 
+</P>
+<font class="interface">
+EditEvidence(BayesNet, values)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>values
+  <DD>String. Array of observed nodes with values.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets or edits current evidence. New observed nodes are added to current evidence
+with EditEvidence method or old values of observed nodes are changed.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+</p>
+<p class="example">
+EditEvidence(net, "NodeA^true NodeB^false")<br>
+EditEvidence(net, "NodeA^false NodeC^true")
+</P>
+<p class="description">
+In current evidence there are three observed tabular nodes: "NodeA", "NodeB" (both are false) and "NodeC"(true).
+</p>
+<p class="example">
+EditEvidence(net, "ContNodeA^dim1^-15.0 ContNodeA^dim2^6.4")<br>
+EditEvidence(net, "ContNodeB^dim1^5.0")
+</P>
+<p class="description">
+In current evidence there are two observed continuous nodes: "NodeA" (with 2 dimensions), "NodeB" (with one dimension).
+</p>
+<HR>
+
+<H3><A 
+name=decl_ClearEvid>ClearEvid</A></H3>
+<P class=Blurb>Clears current evidence 
+</P>
+<font class="interface">
+ClearEvid(BayesNet)
+</font>
+<H5>Discussion</H5>
+<p class="description">The function clears current evidence. 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+EditEvidence(net, "NodeA^true NodeB^false")<br>
+ClearEvid(net)
+</P>
+<p class="description">
+Current evidence is empty now.
+</p>
+<HR>
+
+<H3><A 
+name=decl_CurEvidToBuf>CurEvidToBuf</A></H3>
+<P class=Blurb>Stores current evidence to the evidence buffer 
+</P>
+<font class="interface">
+CurEvidToBuf(BayesNet)
+</font>
+<H5>Discussion</H5>
+<p class="description">The function stores current evidence to the buffer of evedences. Current evidence is not cleared.
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+EditEvidence(net, "NodeA^true NodeB^false")<br>
+EditEvidence(net, "NodeA^false NodeC^true")<br>
+CurEvidToBuf(net)<br>
+EditEvidence(net, "NodeB^true")<br>
+CurEvidToBuf(net)
+</P>
+<p class="description">
+In current evidence there are three observed nodes now: "NodeA" takes on &quot;false&quot;
+value, "NodeB" and "NodeC" take on &quot;true&quot; values.
+</p>
+<p class="description">
+In evidence buffer there are two evidences now. In first evidence "NodeA" and "NodeB" take on
+&quot;false&quot; values, and "NodeC" 
+takes on &quot;true&quot; value. In second one "NodeA" takes on &quot;false&quot;
+value, "NodeB" and "NodeC" take on &quot;true&quot; values.
+</p>
+<HR>
+
+<H3><A 
+name=decl_AddEvidToBuf>AddEvidToBuf</A></H3>
+<P class=Blurb>Adds evidence to the evidence buffer 
+</P>
+<font class="interface">
+AddEvidToBuf(BayesNet, values)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>values
+  <DD>String. Array of observed nodes with values.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function adds evidence to the buffer. Current evidence is not changed.
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+AddEvidToBuf(net, "NodeA^true NodeB^false")<br>
+AddEvidToBuf(net, "NodeA^false NodeC^true")
+</P>
+<p class="description">
+In evidence buffer there are two evidences now. In first evidence &quot;NodeA&quot; takes on
+&quot;true&quot; value and "NodeB" takes on &quot;false&quot; value .
+In second one "NodeA" takes on &quot;false&quot; value and "NodeC" takes on
+&quot;true&quot; value.
+</p>
+<p class="example">
+AddEvidToBuf(net, "ContNodeA^dim1^-15.0 ContNodeA^dim2^6.4")<br>
+AddEvidToBuf(net, "ContNodeB^dim1^5.0")
+</P>
+<p class="description">
+There are two evidences for continuous nodes: "NodeA" (with 2 dimensions) and "NodeB" (with one dimension) in the last example which we add to the buffer.
+</p>
+<HR>
+
+<H3><A 
+name=decl_ClearEvidBuf>ClearEvidBuf</A></H3>
+<P class=Blurb>Clears evidence buffer 
+</P>
+<font class="interface">
+ClearEvidBuf(BayesNet)
+</font>
+<H5>Arguments</H5>
+<DL>
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function clears evidence buffer. 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+AddEvidToBuf(net, "NodeA^true NodeB^false")<br>
+AddEvidToBuf(net, "NodeA^false NodeC^true")<br>
+ClearEvidBuf(net)
+</P>
+<p class="description">
+Evidence buffer is empty now.
+</p>
+<HR>
+
+<H3><A 
+name=decl_MaskEvidBuf>MaskEvidBuf</A></H3>
+<P class=Blurb>Hides nodes of current learning buffer with given probability 
+</P>
+<font class="interface">
+MaskEvidBuf(BayesNet, whatNodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>whatNodes
+  <DD>Array of nodes.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function hides nodes of current learning buffer with given probability. The function applies for all existing 
+values (hidden and observed), i.e. observed may become hidden and vice versa. By default this function 
+unhides all hidden values. If a node did not have sample, it can not be unhidden.
+<H5>
+Example of usage
+</H5>
+<p class="example">
+MaskEvidToBuf(net, &quot;NodeA^true NodeB^false&quot;)
+</P>
+<HR>
+
+<H3><A 
+name=decl_LearnParameters>LearnParameters</A></H3>
+<P class=Blurb>Learns network parameters 
+</P>
+<font class="interface">
+LearnParameters(BayesNet)
+</font>
+<H5>Discussion</H5>
+<p class="description">
+The function learns network parameters using evidence buffer. Learning algorithm may be set to property "Learning" with 
+method <A href="#decl_SetProperty">SetProperty()</A>. By default EM learning is used. Besides Bayes learning is available.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+AddEvidToBuf(net, "NodeA^true NodeB^false")<br>
+AddEvidToBuf(net, "NodeA^false NodeC^true")<br>
+LearnParameters(net)
+</P>
+<HR>
+
+<H3><A 
+name=decl_LearnStructure>LearnStructure</A></H3>
+<P class=Blurb>Learns structure of the network 
+</P>
+<font class="interface">
+LearnStructure(BayesNet)
+</font>
+<H5>Discussion</H5>
+<p class="description">The function learns structure of the network using evidence
+buffer.&nbsp; 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+AddEvidToBuf(net, "NodeA^true NodeB^false")<br>
+AddEvidToBuf(net, "NodeA^false NodeC^true")<br>
+LearnStructure(net)
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetMPE>GetMPE</A></H3>
+<P class=Blurb>Returns MPE 
+</P>
+<font class="interface">
+GetMPE(BayesNet, nodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>String. Array of nodes from one family.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns most probable explanation (MPE) for specified nodes using current evidence. The inference algorithm
+may be set to property "Inference" with method <A href="#decl_SetProperty">SetProperty()</A>. By default Pearl inference is used. Besides Gibbs sampling,
+Junction Tree inference and Naive inference are available. Corresponding property "Inference" values are "pearl", "gibbs",
+"jtree", "naive".
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get MPE for node "NodeA" with Junction Tree inference:
+</p>
+<p class="example">
+SetProperty(net, "Inference", "jtree")<br>
+TokArr jtreeMPENodeA = GetMPE(net, "NodeA")
+</P>
+<p class="description">
+Get MPE for nodes "NodeA" and "NodeB" with Pearl inference (nodes "NodeA" and "NodeB" must be from the same family):
+</p>
+<p class="example">
+SetProperty(net, "Inference", "pearl")<br>
+TokArr pearlMPENodeA = GetMPE(net, "NodeA NodeB")
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetJPD>GetJPD</A></H3>
+<P class=Blurb>Returns JPD 
+</P>
+<font class="interface">
+GetJPD(BayesNet, nodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of nodes from one family.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns joint probability distribution (JPD) for specified nodes using current evidence. The inference algorithm
+may be set to property "Inference" with method <A href="#decl_SetProperty">SetProperty()</A>. By default Pearl inference is used. Besides Gibbs sampling,
+Junction Tree inference and Naive inference are available. Corresponding property "Inference" values are "pearl", "gibbs",
+"jtree", "naive".
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get JPD for node "NodeA" with Junction Tree inference:
+</p>
+<p class="example">
+SetProperty(net, "Inference", "jtree")<br>
+TokArr jtreeJPDNodeA = GetJPD(net, "NodeA")
+</P>
+<p class="description">
+Get JPD for nodes "NodeA" and "NodeB" with Pearl inference (nodes "NodeA" and "NodeB" must be from the same family):
+</p>
+<p class="example">
+SetProperty(net, "Inference", "pearl")<br>
+TokArr pearlJPDNodeA = GetJPD(net, "NodeA NodeB")
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetProperty>SetProperty</A></H3>
+<P class=Blurb>Sets value to the property
+</P>
+<font class="interface">
+SetProperty(BayesNet, name, value)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>name
+  <DD>Name of property. 
+  <DT>value
+  <DD>Value of property.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets value to the property with given name. The function is used to specify algorithms
+for learning and getting MPE and JPD and to specify parameters of algorithms. User can use this function to define his own
+properties. Used properties names with their possible values and descriptions are presented in table:
+</p>
+<table width="100%">
+<tr><td width="50pt" Rowspan="10"></td>
+<td><table BORDER="1">
+  <tr>
+     <td width="20%"><center><b>Property Name</b></center></td>
+     <td width="25%"><center><b>Possible Values</b></center></td>
+     <td width="55%"><center><b>Description</b></center></td>
+  </tr>
+  <tr>
+     <td>"Learning"</td>
+     <td>"bayes", "em"</td>
+     <td>Algorithm for parameters learning. EM Learning is used by default.</td>
+  </tr>
+  <tr>
+     <td>"EMMaxNumberOfIterations"</td>
+     <td>Any positive integer number</td>
+     <td>Maximum number of iterations of EM Learning algorithm. Default value is 5.</td>
+  </tr>
+  <tr>
+     <td>"EMTolerance"</td>
+     <td>Any positive float number</td>
+     <td>Precision that  EM Learning algorithm runs up to. Default value is 0.001.</td>
+  </tr>
+  <tr>
+     <td>"Inference"</td>
+     <td>"pearl", "jtree", "gibbs", "naive"</td>
+     <td>Inference algorithm that is used for getting MPE and JPD. Pearl Inference is used by default.</td>
+  </tr>
+  <tr>
+     <td>"PearlMaxNumberOfIterations"</td>
+     <td>Any positive integer number</td>
+     <td>Maximum number of iterations of Pearl Inference algorithm. Default value is equal to number of nodes of net.</td>
+  </tr>
+  <tr>
+     <td>"PearlTolerance"</td>
+     <td>Any positive float number</td>
+     <td>Precision that Pearl Inference algorithm runs up to. Default value is 1e-6.</td>
+  </tr>
+  <tr>
+     <td>"GibbsNumberOfIterations"</td>
+     <td>Any positive integer number</td>
+     <td>Number of iterations of Gibbs Sampling Inference algorithm. Default value is 600.</td>
+  </tr>
+  <tr>
+     <td>"GibbsThresholdIteration"</td>
+     <td>Any positive integer number less than GibbsNumberOfIterations value</td>
+     <td>Number of first itearation that use samples processing results of the previous iteration. Default value is 10.</td>
+  </tr>
+  <tr>
+     <td>"GibbsNumberOfStreams"</td>
+     <td>Any positive integer number</td>
+     <td>Number of streams that generate independent samples. Default value is 1.</td>
+  </tr>
+</table><tr></td>
+</table>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Set Pearl inference for getting MPE and JPD:
+</p>
+<p class="example">
+SetProperty(net, "Inference", "pearl")
+</P>
+<p class="description">
+Set maximum of iterations for Pearl inference:
+</p>
+<p class="example">
+SetProperty(net, "PearlMaxNumberOfIterations", "50")
+</P>
+<p class="description">
+Set Bayessian learning as algorithm for parameters learning:
+</p>
+<p class="example">
+SetProperty(net, "Learning", "em")
+</P>
+<p class="description">
+Any other property can be defined by user:
+</p>
+<p class="example">
+SetProperty(net, "IterationsNumber", "100")
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetProperty>GetProperty</A></H3>
+<P class=Blurb>Returns value of the property with given name
+</P>
+<font class="interface">
+GetProperty(BayesNet, name)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>name
+  <DD>String. Name of property.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns value of the property with given name. If property was not set with 
+<A href="#decl_SetProperty">SetProperty</A> method then empty string is returned.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+SetProperty(net, "Inference", "pearl")<br>
+inferenceType &lt;- GetProperty(net, &quot;Inference&quot;)<br>
+learningType &lt;- GetProperty(net, &quot;Learning&quot;)
+</P>
+<p class="description">
+As result string inferenceType is "pearl" and string learningType is empty.
+</p>
+<HR>
+
+<H3><A 
+name=decl_GetGaussianMean>GetGaussianMean</A></H3>
+<P class=Blurb>Returns mean of gaussian distribution 
+</P>
+<font class="interface">
+GetGaussianMean(BayesNet, nodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>String. Name of node whose mean is needed</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns mean of gaussian distribution. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+MeanX2 &lt;- GetGaussianMean(net, "x2")
+</p>
+
+<HR>
+
+<H3><A 
+name=decl_GetGaussianCovar>GetGaussianCovar</A></H3>
+<P class=Blurb>Returns variance of gaussian distribution 
+</P>
+<font class="interface">
+GetGaussianCovar(BayesNet, nodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>String. Name of node whose variance are needed. 
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function returns variance of gaussian distribution. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+CovarX2 &lt;- GetGaussianCovar(net, "x2")
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetGaussianWeights>GetGaussianWeights</A></H3>
+<P class=Blurb>Returns weights of gaussian distribution. 
+</P>
+<font class="interface">
+GetGaussianWeights(BayesNet, nodes, parent)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>String. Name of node whose weights are needed. 
+  <DT>parent
+  <DD>String. A parent of node which weights we are interested in. 
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function returns weights of parent of specified node . 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+ WeightsYX2 &lt;- GetGaussianWeights(net, &quot;y&quot;, "x2")
+</P>
+<HR>
+
+<H3><A 
+name=decl_SaveNet>SaveNet</A></H3>
+<P class=Blurb>Saves network to file 
+</P>
+<font class="interface">
+SaveNet(BayesNet, filename)
+</font>
+<P>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">
+The function saves network to file of "xml" format with given name. Net structure and nodes distributions 
+of probabilities are stored to file.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+SaveNet(net, "net.xml")
+</P>
+<HR>
+
+<H3><A 
+name=decl_SaveEvidBuf>SaveEvidBuf</A></H3>
+<P class=Blurb>Saves evidence buffer content to file 
+</P>
+<font class="interface">
+SaveEvidBuf(BayesNet, filename)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>String. File name.</DL>
+<H5>Discussion</H5>
+<p class="description">The function saves evidence buffer content to file of "cvs"
+format. The separating character is ','. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Save two evidences to file with ',' separator:
+</p>
+<p class="example">
+ClearEvidBuf(net)<br>
+AddEvidToBuf(net, "NodeA^true NodeB^false")<br>
+AddEvidToBuf(net, "NodeA^false NodeC^true")<br>
+SaveEvidBuf(net, "evidence1.csv")
+</P>
+<HR>
+
+<H3><A 
+name=decl_LoadNet>LoadNet</A></H3>
+<P class=Blurb>Loads network from file 
+</P>
+<font class="interface">
+LoadNet(BayesNet, filename)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function loads network from file with given name. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Load net structure and distributions from file "net.xml":
+</p>
+<p class="example">
+LoadNet(net, "net.xml")
+</P>
+<HR>
+
+<H3><A 
+name=decl_LoadEvidBuf>LoadEvidBuf</A></H3>
+<P class=Blurb>Loads evidence buffer content from file 
+</P>
+<pre>
+<font class="interface">
+LoadEvidBuf(BayesNet, filename, columns)
+</font>
+</pre>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name. 
+  <DT>columns
+  <DD>Names of nodes.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function loads evidence buffer content from file. Buffer is cleared before loading. We can load evidences created in
+another net with another node names but with the same values of nodes. For this we must set new node names in evidences 
+using array "columns". The function returns number of evidences loaded from file.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Load evidences from file "evidence1.csv" with ',' separators and perform learning with them:
+</p>
+<p class="example">
+LoadEvidBuf(net, "evidence1.csv")<br>
+LearnParameters(net)
+</P>
+<HR>
+
+<H3><A 
+name=decl_GenerateEvidences>GenerateEvidences</A></H3>
+<P class=Blurb>Generate samples for the network 
+</P>
+<font class="interface">
+GenerateEvidences(BayesNet, nSamples, ignoreCurrEvid, whatNodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nSamples
+  <DD>Integer. Number of samples to generate. 
+  <DT>ignoreCurrEvid 
+  <DD>Logistic. Flag of current evidence ignorance. If true - the current evidence will be ignored. Default value is false.  
+  <DT>whatNodes 
+  <DD>String. Array of names of variables to generate and portion of observed data. Default empty array means that all samples will be generated. </DD>
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function generates the specified number of samples from joint probability distribution of the network.
+Samples may be generated using the current evidence (set by <A href="#decl_EditEvidence">EditEvidence</A> function)
+ or ignoring the current evidence. The function allows generating samples with specified portion of missing variables.
+If current evidence is taken into account (ignoreCurrEvid == true) then sampled values of nodes present in evidence
+will be equal to values of current evidence. 
+The sampled data can be generated so that there will be some portion of missing values - for every node user may specify the portion of 
+non-missing values in the generated array.  
+The newly generated samples will be added to internal buffer (learning buffer). To clear learning buffer use <A href="#decl_ClearEvidBuf">ClearEvidBuf</A>. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Generate 100 samples for all network nodes ignoring current evidence: 
+</p>
+<p class="example">
+GenerateEvidences( 100, true)
+</P>
+<p class="description">
+Generate 100 samples only for nodes "NodeA","NodeB" and "NodeC" using current evidence:
+</p>
+<p class="example">GenerateEvidences(100, false, &quot;NodeA NodeB NodeC&quot;)
+</P>
+<p class="description">
+Generate 100 samples only for nodes "NodeA","NodeB" and "NodeC" using current evidence. "NodeA" should contain 90% of observed values, "NodeB" and "NodeC" should contain 100% of observed data:
+</p>
+<p class="example">
+    GenerateEvidences( 100, false, &quot;NodeA^0.9 NodeB^1.0 NodeC^1.0&quot;)
+</P>
+<p class="description">
+Generate 100 samples for nodes "NodeA","NodeB" and "NodeC" using current evidence. All nodes should contain 90% of observed values:
+</p>
+<p class="example">
+    GenerateEvidences( 100, false, &quot;NodeA^0.9 NodeB^0.9 NodeC^0.9 &quot;)
+</P>
+<p class="description">
+Generate 100 samples for all nodes using current evidence. All nodes should contain 90% of observed values:
+</p>
+<p class="example">
+    GenerateEvidences( 100, false, whatNodesToSample, &quot;0.9&quot;)
+</P>
+
+<HR>
+
+<HR>
+</BODY></HTML>

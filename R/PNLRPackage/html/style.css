@@ -1,0 +1,50 @@
+A.link {
+	COLOR: blue; TEXT-DECORATION: underline
+}
+A.visited {
+	COLOR: purple; TEXT-DECORATION: underline
+}
+A.active {
+	COLOR: red; TEXT-DECORATION: underline
+}
+H1 {
+	COLOR: #000000
+}
+H2 {
+	COLOR: #000000; BACKGROUND-COLOR: #6699ff
+}
+H3 {
+	MARGIN-BOTTOM: 0pt; COLOR: #0000f0; FONT-FAMILY: "Helvetica"
+}
+H4 {
+	MARGIN-BOTTOM: 0pt; COLOR: #0000f0; FONT-FAMILY: "Helvetica"
+}
+H5 {
+	font-family: Arial, sans-serif; font-size:12pt; font-weight:bold; color:#0000f0; MARGIN-LEFT: 25pt; MARGIN-TOP: 10pt; MARGIN-BOTTOM: 5pt;
+}
+P.Blurb {
+	MARGIN-TOP: 0pt; FONT-SIZE: 100%; COLOR: #000000; FONT-STYLE: italic;
+}
+P.description { 
+        MARGIN-LEFT: 50pt; MARGIN-Top: 0pt; MARGIN-Bottom: 0pt;
+}
+DL{
+	MARGIN-Top: 0pt; MARGIN-Bottom: 0pt;
+}
+DL DT {
+	font-family: Arial, sans-serif; font-size:12pt; font-style:italic; color:000000; MARGIN-LEFT: 50pt;
+}
+DL DD {
+	FONT-SIZE: 80%; FONT-FAMILY: Monospace; MARGIN-LEFT: 70pt;
+}
+PRE {
+        MARGIN-Top: 0pt; MARGIN-Bottom: 0pt;
+}
+
+.interface
+{font-family: Courier, sans-serif; font-size: 10pt; font-weight:bold; color:000000; MARGIN-Bottom: 0pt;}
+.description
+{ MARGIN-LEFT: 50pt}
+p.example{
+font-family: Courier, sans-serif; font-size:10pt; color:000000; MARGIN-Bottom: 5pt; MARGIN-top: 5pt; MARGIN-LEFT: 70pt;
+}
