@@ -131,7 +131,34 @@ void CSoftMaxCPD::AllocDistribution(const float* pWeights,
 {
     PNL_CHECK_IS_NULL_POINTER(pWeights);
     PNL_CHECK_IS_NULL_POINTER(pOffsets);
-    
+
+////////////////////////////////////////////////
+    const CNodeType *nt;
+    nt = GetModelDomain()->GetVariableType( m_Domain[m_Domain.size()-1] );
+    int SoftMaxSize = nt->GetNodeSize();
+
+    if (SoftMaxSize == 2)
+    {
+      int matSize = 0;
+      int i;
+      for (i = 0; i < m_Domain.size(); i++)
+      {
+         nt = GetModelDomain()->GetVariableType( m_Domain[i] );
+         if(!(nt->IsDiscrete()))
+         {
+            matSize ++;
+         }
+      }
+      matSize = matSize;
+
+      for (i = 0; i < 2*matSize-1; i+=2)
+      {
+        if (pWeights[i] - pWeights[i+1] == 0)
+          PNL_THROW(CNotImplemented, "sigmoid must have distinct weights");
+      }
+    }
+////////////////////////////////////////////////
+
     if (m_CorrespDistribFun->GetDistributionType() == dtSoftMax)
     {
         AllocMatrix(pWeights, matWeights);
@@ -366,6 +393,7 @@ CPotential *CSoftMaxCPD::ConvertToTabularPotential(const CEvidence* pEvidence) c
         }
     }
 
+    delete pCopyEvidence;
     delete [] parentIndexes;
     delete [] obsNodes;
     return resFactor;
