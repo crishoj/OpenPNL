@@ -153,9 +153,10 @@ TokArr ProbabilisticNet::GetParents(TokArr &nodes)
     MustBeNode(nodes);
 
     Vector<int> aiNode;
+    pnl::CGraph *graph = Graph()->Graph();
+
     ExtractTokArr(nodes, &aiNode, 0, &Graph()->MapOuterToGraph());
 
-    pnl::CGraph *graph = Graph()->Graph();
     Vector<int> aiResult(nNetNode());
     int i, j;
     pnl::intVector aiNeig;
@@ -199,7 +200,7 @@ TokArr ProbabilisticNet::GetChildren(TokArr &nodes)
     // accumulate all nodes
     for(i = 0; i < aiNode.size(); ++i)
     {
-	graph->GetParents(aiNode[i], &aiNeig);
+	graph->GetChildren(aiNode[i], &aiNeig);
 	for(j = 0; j < aiNeig.size(); ++j)
 	{
 	    ++aiResult[aiNeig[j]];
@@ -570,7 +571,7 @@ void ProbabilisticNet::GenerateEvidences( int nSample, bool ignoreCurrEvid, TokA
             }
             else
             {
-                aNodePercentage[idx] = whatNodes[i].FltValue().fl;
+                aNodePercentage[idx] = whatNodes[i].FltValue();
                 aNodeFlag[idx] = 0;
             }            
         } 
@@ -657,7 +658,7 @@ void ProbabilisticNet::MaskEvidBuf(TokArr whatNodes)
 	    }
 	    else
 	    {
-		aNodePercentage[idx] = whatNodes[i].FltValue().fl;
+		aNodePercentage[idx] = whatNodes[i].FltValue();
 	    }
 	    //mark node for processing
 	    aNodeFlag[idx] = 1;

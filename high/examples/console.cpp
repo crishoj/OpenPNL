@@ -230,8 +230,8 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eJPD:	    Print(BNet().GetJPD(args[0])); break;
 	case eNodeType:	    Print(BNet().GetNodeType(args[0])); break;
 	case eGetNeighbors: Print(BNet().GetNeighbors(args[0])); break;
-	case eGetChildren:  Print(BNet().GetParents  (args[0])); break;
-	case eGetParents:   Print(BNet().GetChildren (args[0])); break;
+	case eGetChildren:  Print(BNet().GetChildren (args[0])); break;
+	case eGetParents:   Print(BNet().GetParents  (args[0])); break;
 	default:
 	    fprintf(Stdout(), "Unrealized command: '%s'\n", fname.c_str());
 	    return -2;

@@ -478,7 +478,7 @@ void INetworkPNL::GetValue(int node, bool &valueValid, std::vector<int> &parents
 	    valueValid = false;
 	    return;
 	}
-	values[aiValue[i]] = evid[i].FltValue().fl;
+	values[aiValue[i]] = evid[i].FltValue();
     }
 }
 

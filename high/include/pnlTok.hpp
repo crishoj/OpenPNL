@@ -587,7 +587,8 @@ struct PNLHIGH_API Tok
     inline String Name() const;
     inline std::deque< TokId > Unresolved( TokIdNode const *context = TokIdNode::root );
     inline std::deque< TokId > Unresolved( Tok const &context );
-    inline F FltValue( int = 0 ) const;
+    inline F FltValue(int) const;
+    inline float FltValue() const;
     inline int IntValue() const;
     inline bool IsNil() const;
     TokArr GetDescendants() const;
@@ -1287,6 +1288,15 @@ PNLHIGH_API std::deque< TokId > Tok::Unresolved( Tok const &context )
 PNLHIGH_API Tok::F Tok::FltValue( int i ) const
 {
     return fload.at(i);
+}
+
+PNLHIGH_API float Tok::FltValue() const
+{
+    if(fload.size() != 1 || fload[0].IsUndef())
+    {
+	ThrowUsingError("Getting number from non-scalar entity", "FltValue");
+    }
+    return fload[0].fl;
 }
 
 PNLHIGH_API int Tok::IntValue() const

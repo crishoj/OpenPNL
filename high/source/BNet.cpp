@@ -927,4 +927,6 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 	    return 0;
 	}   	
     }
+
+    return 0;
 }
