@@ -1136,7 +1136,7 @@ void CGaussianDistribFun::UpdateCanonicalCoefficient()
 			{
 				PNL_THROW( CInternalError, "it should be a single value" );
 			}
-			m_g = log(m_normCoeff) - 0.5 * val[0];
+			m_g = (float)log(m_normCoeff) - 0.5f * val[0];
 			delete matTemp2;
 			if( !oldMoment )
 			{
