@@ -10,11 +10,11 @@ PNLW_BEGIN
 
 pnl::CGraphicalModel *LIMIDCallback::CreateModel(ProbabilisticNet &net)
 {
-    int i, iWNode;
+    int i, iWNode, iPNL;
     Vector<pnl::CNodeType> aNodeType;
     Vector<int> aNodeAssociation;
 
-    // create BNet
+    // create net
     GetNodeInfo(&aNodeType, &aNodeAssociation, net);
 
     pnl::CIDNet *pIDNet = pnl::CIDNet::Create(aNodeAssociation.size(),
@@ -28,18 +28,19 @@ pnl::CGraphicalModel *LIMIDCallback::CreateModel(ProbabilisticNet &net)
     {
 	// it is index for wrapper node, pnl node index is 'i'
 	iWNode = net.Graph().IOuter(net.Graph().INode(aNodeName[i]));
+	iPNL = net.Graph().IOuter(iWNode);
 
 	WDistribFun *pWDF = net.Distributions().Distribution(iWNode);
         PNL_CHECK_IS_NULL_POINTER(pWDF);
 
-        pIDNet->AllocFactor(i);
+        pIDNet->AllocFactor(iPNL);
 
-        if (net.pnlNodeType(i).IsDiscrete())
+        if (net.pnlNodeType(iWNode).IsDiscrete())
         {
             pnl::CDenseMatrix<float> *mat = pWDF->Matrix(pnl::matTable);
             PNL_CHECK_IS_NULL_POINTER(mat);
 	
-            pIDNet->GetFactor(i)->AttachMatrix(mat, pnl::matTable);
+            pIDNet->GetFactor(iPNL)->AttachMatrix(mat, pnl::matTable);
         }
         else
         {
