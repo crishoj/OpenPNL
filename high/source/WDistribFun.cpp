@@ -1,9 +1,10 @@
 #include "WDistribFun.hpp"
 #include "pnl_dll.hpp"
 #include "pnlString.hpp"
-//#include "pnlNumericDenseMatrix.hpp"
 #include "pnlTok.hpp"
 #include "BNet.hpp"
+
+using namespace pnl;
 
 static int nSubNodes(TokIdNode *node)
 {
@@ -55,10 +56,11 @@ void WDistribFun::Setup(TokIdNode *node, Vector<TokIdNode*> &aParent)
 {
     if(m_pDesc != 0)
     {
-	ThrowInternalError("desc not null", "Setup");
+	delete m_pDesc;
     }
 
     m_pDesc = new DistribFunDesc(node, aParent);
+    DoSetup();
 }
 
 // assumptions:
@@ -142,11 +144,11 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
     }
 }
 
-void WTabularDistribFun::MakeUniform()
+void WTabularDistribFun::SetDefaultDistribution()
 {
     if(desc() == 0)
     {
-	ThrowInternalError("desc is null", "MakeUniform");
+	ThrowInternalError("desc is null", "SetDefaultDistribution");
     }
 
     if(m_pMatrix == 0)
@@ -207,12 +209,13 @@ Vector<int> WTabularDistribFun::Dimensions(int matrixType)
     return desc()->nodeSizes();
 }
 
-pnl::CDistribFun *WTabularDistribFun::DistribFun() const
-{
-    return 0;
-}
-
 WTabularDistribFun::~WTabularDistribFun()
 {
     delete m_pMatrix;
+    delete desc();
+}
+
+void WTabularDistribFun::DoSetup()
+{
+    CreateMatrix();
 }

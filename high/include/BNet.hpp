@@ -6,12 +6,16 @@
 #include "pnlTok.hpp"
 #include "WCover.hpp"
 
-// Tok identifies for categoric and continuous node types
-extern PNLHIGH_API TokArr categoric;
-extern PNLHIGH_API TokArr continuous;
-
 // FORWARDS
+class WGraph;
+class TokenCover;
+class WDistributions;
+class NetCallback;
+class ProbabilisticNet;
+#if 0
 class WDistribFun;
+#endif
+
 namespace pnl
 {
     class CPNLBase;
@@ -21,51 +25,10 @@ namespace pnl
     class CInfEngine;
     class CBayesLearningEngine;
     class pnlString;
+    template<typename Type> class CMatrix;
 }
 
 #include "pnl_dll.hpp"
-
-#define INDEX(pTok) ((char*)pTok->data - (char*)0)
-
-// information for concrete node during model building
-class TmpNodeInfo
-{
-public:
-    TmpNodeInfo();
-    TmpNodeInfo(bool isDiscrete, int size)
-	: m_pDistribFun(0), m_NodeType(isDiscrete, size) {}
-
-    Vector<TokIdNode *> m_aParent;
-    WDistribFun *m_pDistribFun;
-    pnl::CNodeType m_NodeType;
-};
-
-class PermanentNodeInfo
-{
-public:
-    PermanentNodeInfo(TokIdNode *node): m_SelfNode(node) {}
-
-    TokIdNode *m_SelfNode;
-};
-
-class PNLHIGH_API WModelInfo
-{
-public:
-    Vector<TmpNodeInfo> m_aNode;
-};
-
-class PNLHIGH_API WEvid
-{
-public:
-    void Clear();
-    void Set(const TokArr &evidence);
-    TokArr GetBoard() const { return m_EvidenceBoard; }
-    bool IsEmpty() const { return m_EvidenceBoard.size() == 0; }
-
-private:
-    TokArr m_EvidenceBoard;
-    std::map<TokIdNode *, int> m_VarMap;
-};
 
 class PNLHIGH_API BayesNet: public pnl::CPNLBase
 {
@@ -83,14 +46,14 @@ public:
     void AddNode(TokArr nodes, TokArr subnodes);
     
     // remove node
-    //void DelNode(TokArr nodes);
+    void DelNode(TokArr nodes);
     
     // returns one of "categoric" or "continuous"
     TokArr NodeType(TokArr nodes);
     
     // manipulating arcs
     void AddArc(TokArr from, TokArr to);
-    //void DelArc(TokArr from, TokArr to);
+    void DelArc(TokArr from, TokArr to);
     
 #ifndef SEPARATE_FUNS_FOR_NEIG
     // possible values for 'id' are:
@@ -142,29 +105,23 @@ public:
     TokArr GaussianMean(TokArr vars);
     TokArr GaussianCovar(TokArr var, TokArr vars);
     
-    typedef enum
-    {	eCSV
-    ,	eTSV
-    //  ,	eXML
-    } ESavingType;
-    
     void SaveNet(const char *filename);
-    int SaveLearnBuf(const char *filename, ESavingType mode = eCSV);
+    int SaveLearnBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
     // or SaveEvidences or SaveLearnData or SaveHistory or SaveEvidHistory
     void LoadNet(const char *filename);
-    int LoadLearnBuf(const char *filename, ESavingType mode = eCSV, TokArr colons = TokArr());
+    int LoadLearnBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV, TokArr columns = TokArr());
     // other variants same as after SaveLearnBuf
 
     // sets all distributions to uniform;
     // This function temporary here - I think it should be external function
-    void MakeUniformDistribution();
+    //void MakeUniformDistribution();
 
     //add several evidences to learning buffer
-    //nSamples - number of evidences to generate
+    //nSample - number of evidences to generate
     //whatNodes - which nodes should be included. By default - all
     //ignoreCurrEvid - if 'false', then current evidence specifies some fixed values
     //                 if 'true',then no fixed values while generating evidences
-    void GenerateEvidences( int nSamples, bool ignoreCurrEvid = false, TokArr whatNodes = "");
+    void GenerateEvidences( int nSample, bool ignoreCurrEvid = false, TokArr whatNodes = "");
     
     //This function hides nodes of current learning buffer with given probability
     //The function applies for all existing values (hidden and observed), 
@@ -172,74 +129,25 @@ public:
     //By default this function unhides all hidden values 
     //If a node did not have sample then it can not be unhidden
     void MaskEvidences( TokArr whatNodes = "");
+    ProbabilisticNet &Net() const { return *m_pNet; }
 
-
-    
 private:
     typedef Vector<int> IIMap;
 
-    void CheckState(int funcId, int characteristic, const char *funcName);
-    void AddArc(TokIdNode *from, TokIdNode *to);
-    WDistribFun *CreateDistribFun(TokIdNode *node, WDistribFun *pFun = 0);
-    void CreateGraph();
-    void CreateModel();
-    pnl::CEvidence *CreateEvidence(TokArr &aValue);
-    int nBayesNode() const;
-    void SplitNodesByObservityFlag(Vector<int> *aiObserved, Vector<int> *aiUnobserved);
-    Vector<TokIdNode*> ExtractNodes(TokArr &aValue) const;
-
-    void MustBeNode(TokArr &nodes) const;
-    bool IsNode(Tok &node) const;
-    void Resolve(Tok &from) const;
-    WModelInfo *ModelInfo() const;
-    int NodesClassification(TokArr &aValue) const;
-    CMatrix<float> *Matrix(int iNode) const;
-    void Accumulate(TokArr *pResult, Vector<int> &aIndex,
-	pnl::CMatrix<float> *mat, String &prtName, int prtValue) const;
+    pnl::CMatrix<float> *Matrix(int iNode) const;
     pnl::CInfEngine &Inference();
+    void CreateModel();
+    pnl::CBNet *Model();
 
-private:// Bayes node name <-> index
-    String NodeName(int iNode) const;
-    int NodeIndex(const char *name) const;
-    int NodeIndex(TokIdNode *name) const;
-    TokIdNode *TokNodeByIndex(int i) const;
-    String DiscreteValue(int iNode, int value) const;
-    pnl::CNodeType pnlNodeType(int i);
-    void ExtractTokArr(TokArr &aNode, Vector<int> *paiNode,
-	Vector<int> *paiValue, IIMap *pMap = 0) const;
-    static int GetInt(TokIdNode *node);
-    void RebindFrom(BayesNet *bnet);
-
-private:
-    
-    TokArr CutReq( Vector<int>& queryNds, Vector<int>& queryVls, 
-			const CMatrix<float> * mat ) const;
+//    void RebindFrom(BayesNet *bnet);
 
 private:// DATA members
-    
-    // Tree for bnet:
-    //
-    //		   / categoric
-    // bnet - nodes
-    //		   \ continuous
-    TokIdNode *m_pRoot;		// pointer to root node of bnet
-    TokIdNode *m_aNode;		// pointer to node of all bnet nodes
-    TokIdNode *m_pCategoric;	// pointer to parent node for all categoric nodes
-    TokIdNode *m_pContinuous;	// pointer to parent node for all continuous nodes
-    short m_Objects;		// bitmap mask with flags for present objects (used in CheckState())
-				// See first enum in .cpp
-    short m_State;		// state of bnet (for example eModelBuilding)
-    pnl::CGraph *m_Graph;	// graph, if it exists
-    pnl::CBNet  *m_Model;	// model, if it exists
     pnl::CInfEngine *m_Inference;// inference, if it exists
     pnl::CBayesLearningEngine *m_Learning;   // learning, if it exists
-    WEvid m_EvidenceBoard;      // board for evidence (see diagram for evidence buffer)
-    Vector<pnl::CEvidence *> m_aEvidenceBuf;// buffer for evidences
     int m_nLearnedEvidence;
 
-    mutable WModelInfo *m_pModelInfo;	// pointer to model information. Using is prohibited after model building
-    Vector<PermanentNodeInfo> m_aNodeInfo;// vector of permanent Bayes node information
-    std::map<String, int> m_aiNode;// map for 'node name' -> 'node index' translation
+    ProbabilisticNet *m_pNet;
+    // controls Graph, Token, Distributions, Evidence Board, Evidence Buffer
 };
 
 //

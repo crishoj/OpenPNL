@@ -46,6 +46,7 @@ typedef enum
 
 typedef enum
 {   eTagNet
+,   eTagService
 ,   eTagNodeType
 ,   eTagNetNode
 ,   eTagValue
@@ -60,11 +61,5 @@ typedef enum
 
 TokIdNode* flatSearch(TokIdNode *parent, const char *name);
 TokIdNode *ancestorByTagValue(TokIdNode *node, int tag, int value);
-
-// print error and throw exception
-void ThrowUsingError(const char *message, const char *func);
-
-// print error and throw exception
-void ThrowInternalError(const char *message, const char *func);
 
 #endif // __WINNER_HPP__

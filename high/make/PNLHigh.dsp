@@ -71,7 +71,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "HIGHLEVELAPIFORPNL_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W4 /GR /GX /Zi /Od /I "..\include" /I "..\..\c_pgmtk\include" /I "..\..\c_pgmtk\src\include" /I "..\..\cxcore\cxcore\include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "PNLHIGH_EXPORTS" /FR /FD /GZ /c
+# ADD CPP /nologo /MDd /w /W0 /GR /GX /Zi /Od /I "..\include" /I "..\..\c_pgmtk\include" /I "..\..\c_pgmtk\src\include" /I "..\..\cxcore\cxcore\include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "PNLHIGH_EXPORTS" /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -99,6 +99,10 @@ SOURCE=..\source\BNet.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\source\BNetCB.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\source\PersistWBNet.cpp
 # End Source File
 # Begin Source File
@@ -108,6 +112,26 @@ SOURCE=..\source\PersistWNodeInfo.cpp
 # Begin Source File
 
 SOURCE=..\source\pnlTok.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\pnlWDistributions.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\pnlWEvidence.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\pnlWGraph.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\pnlWProbabilisticNet.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\TokenCover.cpp
 # End Source File
 # Begin Source File
 
@@ -135,6 +159,18 @@ SOURCE=..\include\BNet.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\BNetCB.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\ModelEngine.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\NetCallBack.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\PersistWBNet.hpp
 # End Source File
 # Begin Source File
@@ -152,6 +188,26 @@ SOURCE=..\include\pnlHighConf.hpp
 # Begin Source File
 
 SOURCE=..\include\pnlTok.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlWDistributions.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlWEvidence.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlWGraph.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlWProbabilisticNet.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\TokenCover.hpp
 # End Source File
 # Begin Source File
 

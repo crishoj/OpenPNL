@@ -6,18 +6,23 @@ typedef int UUID;
 #include <vector>
 #include <string>
 #include "network.h"
-#include "pnlConfig.hpp"
-#include "pnlString.hpp"
+#include "constants.h"
 
 typedef std::string StringGP;
 
 // FORWARDS
 class BayesNet;
+class WGraph;
+class TokenCover;
+class WDistributions;
+class WEvidence;
+class ProbabilisticNet;
 
 namespace pnl
 {
     class Log;
     class LogDrvStream;
+    class pnlString;
 };
 
 class INetworkPNL: public INetwork
@@ -247,16 +252,25 @@ public:
     virtual bool LearnStructureAndParams(const char *dataFile, const char *networkFile);
 
 protected:
-    void MarkCallFunction(const char *name, bool bRealized = false, pnl::pnlString args = pnl::pnlString());
+    void MarkCallFunction(const char *name, bool bRealized = false, const char *args = 0);
+    void SetValues(int iNode, const std::vector<std::string> &aId);
+    ProbabilisticNet &Net() const;
+    WGraph *Graph() const;
+    TokenCover *Token() const;
+    WDistributions *Distributions() const;
 
 private:
-    IErrorOutput *m_ErrorOutput;
-    BayesNet *m_pWNet;
-    StringGP m_NetName;
-    PropertyMap m_NetProperty;
-    std::vector<PropertyMap> m_aNodeProperty;
-    pnl::Log *m_pLog;
-    pnl::LogDrvStream *m_pLogStream;
+    IErrorOutput *m_ErrorOutput;		// INetwork requires implycitly this pointer
+    BayesNet *m_pWNet;				// Doesn't used in this time
+    StringGP m_NetName;				// name of net
+    StringGP m_Bad;				// stub (returned when nothing to return)
+    PropertyMap m_NetProperty;			// properties for whole net
+    std::vector<PropertyMap> m_aNodeProperty;	// properties for each node
+    pnl::Log *m_pLog;				// log driver (head) for debugging purposes
+    pnl::LogDrvStream *m_pLogStream;		// stream driver for debugging purposes
+    std::vector<NetConst::NodeValueStatus> m_aNodeValueStatus;// nodevalue status for every node
+    WEvidence *m_aEvidence;
+    std::vector<bool> m_abEvidence;
 };
 
 #endif

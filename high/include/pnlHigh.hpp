@@ -1,3 +1,11 @@
 #include "pnlHighConf.hpp"
 
 #include "BNet.hpp"
+
+// FORWARDS
+class WDistribFun;
+class WGraph;
+class TokenCover;
+class WDistributions;
+class NetCallback;
+

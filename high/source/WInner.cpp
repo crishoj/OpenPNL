@@ -8,6 +8,8 @@
 #pragma warning(default: 4251)
 #pragma warning(pop)
 
+using namespace pnl;
+
 TokIdNode* flatSearch(TokIdNode *parent, const char *name)
 {
     TokIdNode *child = parent->v_next;

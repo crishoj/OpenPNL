@@ -4,6 +4,8 @@
 
 #include "pnlTok.hpp"
 
+using namespace pnl;
+
 TokIdNode *TokIdNode::root = new( TokIdNode )( "" );
 Vector< TokIdNode * > TokIdNode::cemetery;
 Tok Tok::root( TokIdNode::root );
@@ -110,7 +112,7 @@ void TokIdNode::Remove( bool no_cemetery )
 {
     int i, j;
     TokIdNode *nd[2];
-    Map::iterator it;
+    Map::iterator it, itEnd;
 
     j = cemetery.size();
     for ( nd[0] = TokIdNode::GetLeaf( this ); nd[0]; nd[0] = TokIdNode::GetNext( nd[0], this ) )
@@ -125,14 +127,14 @@ void TokIdNode::Remove( bool no_cemetery )
                 oops:
                     PNL_THROW( CInternalError, "invariant failed: id must be in descendants multimap, but it is not" );
                 }
-                for ( ;; )
+		for(itEnd = nd[1]->desc.upper_bound(nd[0]->id[i]);;)
                 {
                     if ( it->second == nd[0] )
                     {
                         nd[1]->desc.erase( it );
                         break;
                     }
-                    if ( ++it == nd[1]->desc.end() || !it->first.Match( nd[0]->id[i] ) )
+                    if((++it == itEnd) || !it->first.Match(nd[0]->id[i]))
                     {
                         goto oops;
                     }
@@ -197,7 +199,7 @@ std::vector< std::pair< TokIdNode *, int > > TokIdNode::AmbigResolve( TokIdNode 
                                                                       TokIdNode const *subroot )
 {
     int i;
-    Map::const_iterator it;
+    Map::const_iterator it, itEnd;
     std::vector< std::pair< TokIdNode *, int > > rv[2];
     TokIdNode const *nd;
 
@@ -229,15 +231,18 @@ std::vector< std::pair< TokIdNode *, int > > TokIdNode::AmbigResolve( TokIdNode 
         }
     }
 
-    for ( nd = node ? node : subroot, it = nd->desc.find( arr[0] );
-          it != nd->desc.end() && it->second->Match( arr[0] );
-          ++it )
+    nd = node ? node : subroot;
+    it = nd->desc.find( arr[0] );
+    if(it != nd->desc.end())
     {
-        rv[1] = AmbigResolve( it->second, arr + 1, len - 1, context, subroot );
-        for ( i = rv[1].size(); i--; )
-        {
-            rv[0].push_back( std::make_pair( rv[1][i].first, rv[1][i].second + 1 ) );
-        }
+	for(itEnd = nd->desc.upper_bound(arr[0]); it != itEnd; ++it)
+	{
+	    rv[1] = AmbigResolve( it->second, arr + 1, len - 1, context, subroot );
+	    for ( i = rv[1].size(); i--; )
+	    {
+		rv[0].push_back( std::make_pair( rv[1][i].first, rv[1][i].second + 1 ) );
+	    }
+	}
     }
 
     if ( rv[0].empty() )

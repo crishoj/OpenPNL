@@ -22,22 +22,40 @@
 #define PNLHIGH_API __declspec(dllimport)
 #endif
 
-#pragma warning(push, 2)
+namespace NetConst
+{
+    typedef enum
+    {	eCSV
+    ,	eTSV
+    } ESavingType;    
+};
+
+#define INDEX(pTok) ((char*)pTok->data - (char*)0)
+
+// FORWARDS
+struct TokArr;
+
+namespace pnl
+{
+    class pnlString;
+};
+
+//#pragma warning(push, 2)
 #define Vector pnl::pnlVector
 #include "pnlConfig.hpp"
 #include "pnlTypeDefs.hpp"
 #include "pnlString.hpp"
 
 typedef pnl::pnlString String;
-#pragma warning(pop)
+//#pragma warning(pop)
 
-void ThrowInternalError(const char *message, const char *func);
-void ThrowUsingError(const char *message, const char *func);
+// print error and throw exception
+PNLHIGH_API void ThrowInternalError(const char *message, const char *func);
+// print error and throw exception (differs from previous by message)
+PNLHIGH_API void ThrowUsingError(const char *message, const char *func);
+// Tok identifies for categoric and continuous node types
 
-namespace pnl
-{
-}
-
-using namespace pnl;
+extern PNLHIGH_API TokArr categoric;
+extern PNLHIGH_API TokArr continuous;
 
 #endif //__PNLHIGHCONFIG_HPP__

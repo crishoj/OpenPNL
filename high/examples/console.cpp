@@ -1,6 +1,8 @@
 #include "pnlHigh.hpp"
 #include "WInner.hpp"
 #include "console.hpp"
+#include "pnlWGraph.hpp"
+#include "pnlWProbabilisticNet.hpp"
 
 #include "pnlConfig.h"
 
@@ -242,13 +244,12 @@ FuncDesc aFuncDesc[] =
 ,   "addarc",	    eAddArc,	true,  0, 2, 0
 ,   "setp",	    eSetP,	true,  0, 3, 1
 ,   "p",	    eP,		true,  1, 2, 1
-,   "makeuniformdistribution", eMakeUniformDistribution, true, 0, 0, 0
 ,   "evid",	    eEvidence,	false, 0, 2, 1
 ,   "clearevid",    eClearEvid,	true,  0, 0, 0
 ,   "clearevidhistory", eClearEvidHistory, true, 0, 0, 0
 ,   "learn",	    eLearn,	true,  0, 0, 0
 ,   "mpe",	    eMPE,	true,  1, 1, 1
-,   "generateevidences", eGenerateEvidences, false, 3, 0, 2
+,   "generateevidences", eGenerateEvidences, false, 0, 3, 2
 ,   "learnstructure", eLearnStructure, true, 0, 0, 0
 // build-in commands
 ,   "execute",	    -1,		false, 0, 1, 0
@@ -321,6 +322,14 @@ int Scripting::Execute(FILE *file, BayesNet *bnet)
     }
 
     return nCommand;
+}
+
+static void Print(Vector<String> &v)
+{
+    for(unsigned int i = 0; i < v.size(); ++i)
+    {
+	cout << v[i] << ((i == v.size() - 1) ? '\n':' ');
+    }
 }
 
 static void Print(TokArr &v)
@@ -425,7 +434,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	    for(;m_apBnet.size();Leave());
 	    Enter(new BayesNet, true);
 	    break;
-	case -4:/* ListNodes */ PrintStripped(Tok(BNet().m_aNode).GetDescendants(eTagNetNode)); break;
+	case -4:/* ListNodes */ Print(BNet().Net().Graph()->Names()); break;
 	case -5:/* Exit */ return -1;
 	case -6:	ListCommands(); break;
 	case -7:/* print */
@@ -447,8 +456,6 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eSaveLearnBuf: BNet().SaveLearnBuf(args[0].c_str());  break;
 	case eSetP:	    BNet().SetP(args[0], args[1], args[2]); break;
 	case eP:	    Print(BNet().P(args[0], args[1]));break;
-	case eMakeUniformDistribution:
-			    BNet().MakeUniformDistribution(); break;
 	case eLearnStructure:BNet().LearnStructure(0, 0); break;
 	case eGenerateEvidences:
 	    {
@@ -458,7 +465,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 
 		if(args.size() > 1)
 		{
-		    bIgnoreCurEvid = atoi(args[1].c_str());
+		    bIgnoreCurEvid = (atoi(args[1].c_str()) != 0);
 		    if(args.size() > 2)
 		    {
 			whatNodes = args[2];
@@ -481,7 +488,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 		    arg1 = args[0];
 		    if(args.size() > 1)
 		    {
-			arg2 = atoi(args[1].c_str());
+			arg2 = (atoi(args[1].c_str()) != 0);
 		    }
 		}
 

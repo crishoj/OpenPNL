@@ -33,10 +33,13 @@ class PNLHIGH_API WDistribFun
 {
 public:
     virtual ~WDistribFun() {}
-    virtual pnl::CDistribFun *DistribFun() const = 0;
+    virtual void SetDefaultDistribution() = 0;
     virtual Vector<int> Dimensions(int matrixType) = 0;
     void FillData(int matrixType, TokArr value, TokArr probability, TokArr parentValue = TokArr());
+    void FillData(int matrixType, int index, double probability, int *parents = 0, int nParents = 0);
     void Setup(TokIdNode *node, Vector<TokIdNode*> &aParent);
+    virtual void DoSetup() = 0;
+    virtual pnl::CDenseMatrix<float> *Matrix(int maxtixType) const = 0;
 
 protected:
     WDistribFun();
@@ -52,14 +55,17 @@ class PNLHIGH_API WTabularDistribFun: public WDistribFun
 {
 public:
     WTabularDistribFun();
-    void MakeUniform();
+    virtual void SetDefaultDistribution();
     void CreateMatrix();
     virtual ~WTabularDistribFun();
+    virtual void DoSetup();
 
     virtual Vector<int> Dimensions(int matrixType);
     virtual void SetAValue(int matrixType, Vector<int> &aIndex, float probability);
-    virtual pnl::CDistribFun *DistribFun() const;
-    pnl::CDenseMatrix<float> *Matrix() const { return m_pMatrix; }
+    virtual pnl::CDenseMatrix<float> *Matrix(int matrixType) const
+    {
+	return m_pMatrix;
+    }
 
 private:
     pnl::CDenseMatrix<float> *m_pMatrix;
@@ -71,4 +77,4 @@ public:
     WGaussianDistribFun() {}
 };
 
-#endif //__BNET_HPP__
+#endif //__WDISTRIBFUN_HPP__

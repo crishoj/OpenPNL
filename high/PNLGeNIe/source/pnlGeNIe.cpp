@@ -1,8 +1,17 @@
+#undef _DEBUG
+#undef DEBUG
 #include "xmlreader.h"
 
 #include "pnlGeNIe.hpp"
 #include "BNet.hpp"
+#include "WDistribFun.hpp"
 #include "pnlLog.hpp"
+#include "constants.h"
+#include "TokenCover.hpp"
+#include "pnlWGraph.hpp"
+#include "pnlWEvidence.hpp"
+#include "pnlWDistributions.hpp"
+#include "pnlWProbabilisticNet.hpp"
 
 void INetworkPNL::Delete()
 {
@@ -10,14 +19,17 @@ void INetworkPNL::Delete()
     delete m_pWNet;
     delete m_pLog;
     delete m_pLogStream;
+    delete m_aEvidence;
 }
 
 INetworkPNL::INetworkPNL(): m_ErrorOutput(0), m_NetName("PNLBNet")
 {
     m_pWNet = new BayesNet;
     m_aNodeProperty.reserve(40);
-    m_pLogStream = new pnl::LogDrvStream("GeNIe_PNLModule.log", eLOG_ALL, eLOGSRV_ALL);
-    m_pLog = new pnl::Log("", eLOG_DEBUG|eLOG_NOTICE|eLOG_INFO, eLOGSRV_TEST1);
+    m_pLogStream = new pnl::LogDrvStream("GeNIe_PNLModule.log", pnl::eLOG_ALL, pnl::eLOGSRV_ALL);
+    m_pLog = new pnl::Log("", pnl::eLOG_DEBUG|pnl::eLOG_NOTICE|pnl::eLOG_INFO, pnl::eLOGSRV_TEST1);
+    (*m_pLog) << "Ok, Started!\n";
+    m_aEvidence = new WEvidence;
 }
 
 bool INetworkPNL::Load(const char *filename, IXmlBinding *externalBinding)
@@ -33,10 +45,12 @@ bool INetworkPNL::Save(const char *filename, IXmlWriterExtension *externalExtens
     return false;
 }
 
+
 bool INetworkPNL::UpdateBeliefs()
 {
-    MarkCallFunction("UpdateBeliefs");
-    return false;
+    MarkCallFunction("UpdateBeliefs", true);
+    for(int i = m_aNodeValueStatus.size(); --i >= 0; m_aNodeValueStatus[i] = NetConst::Updated);
+    return true;
 }
     
 void INetworkPNL::SetBnAlgorithm(int algorithm)
@@ -86,7 +100,7 @@ void INetworkPNL::GetDefaultAlgorithmParams(int algorithm, std::vector<double> &
 bool INetworkPNL::GetUpdateImmediately()
 {
     //    MarkCallFunction("GetUpdateImmediately");
-    return true;
+    return false;
 }
 
 void INetworkPNL::SetUpdateImmediately(bool immediate)
@@ -125,7 +139,7 @@ void INetworkPNL::InvalidateValues()
 void INetworkPNL::ClearAllEvidence()
 {
     MarkCallFunction("ClearAllEvidence", true);
-    m_pWNet->ClearEvidHistory();
+    m_aEvidence->Clear();
 }
 
 void INetworkPNL::ClearAllDecisions()
@@ -197,7 +211,10 @@ void INetworkPNL::GetActionsAndDecisions(std::vector<int> &actions, std::vector<
 
 void INetworkPNL::GetNodes(std::vector<int> &nodes)
 {
-    MarkCallFunction("GetNodes");
+    MarkCallFunction("GetNodes", true);
+    Vector<int> aNode;
+    Graph()->Names(&aNode);
+    nodes.assign(aNode.begin(), aNode.end());
 }
 
 void INetworkPNL::GetTerminalUtilityMinMax(double &minUtility, double &maxUtility)
@@ -208,88 +225,191 @@ void INetworkPNL::GetTerminalUtilityMinMax(double &minUtility, double &maxUtilit
 int INetworkPNL::AddNode(int nodeType, const char *nodeId)
 {
     MarkCallFunction("AddNode", true);
-    //m_pWNet->AddNode(nodeId, TokArr::Span(0, nodeType - 1));
-    m_aNodeProperty.resize(m_aNodeProperty.size() + 1);
-    return 0;
+    if(nodeType != NetConst::Chance)
+    {
+        MarkCallFunction("AddNode with unsupported node type", true);
+	return -1;
+    }
+    int result = Token()->AddNode(String(nodeId));
+
+    if(result >= m_aNodeProperty.size())
+    {
+	m_aNodeProperty.resize(result + 1);
+	m_aNodeValueStatus.resize(result + 1);
+	m_abEvidence.resize(result + 1);
+    }
+    Distributions()->Setup(result);
+    m_aNodeValueStatus[result] = NetConst::NotUpdated;
+    return result;
 }
 
 void INetworkPNL::DeleteNode(int node)
 {
-    MarkCallFunction("DeleteNode");
+    MarkCallFunction("DeleteNode", true);
+    Distributions()->DropDistribution(node);
+    m_aNodeProperty[node].resize(0);
+    Token()->DelNode(node);
 }
 
 bool INetworkPNL::AddArc(int nodeFrom, int nodeTo)
 {
     MarkCallFunction("AddArc", true);
-    m_pWNet->AddArc(Tok(nodeFrom), Tok(nodeTo));
+    Graph()->AddArc(nodeFrom, nodeTo);
+    std::vector<int> parents;
+    GetParents(nodeTo, parents);
+    Distributions()->Setup(nodeTo);
+    m_aNodeValueStatus[nodeTo] = NetConst::NotUpdated;
     return true;
 }
 
 void INetworkPNL::DeleteArc(int nodeFrom, int nodeTo)
 {
-    MarkCallFunction("DeleteArc");
+    MarkCallFunction("DeleteArc", true);
+    Graph()->DelArc(nodeFrom, nodeTo);
+    Distributions()->Setup(nodeTo);
+    m_aNodeValueStatus[nodeTo] = NetConst::NotUpdated;
 }
 
 void INetworkPNL::GetParents(int node, std::vector<int> &parents)
 {
-    MarkCallFunction("GetParents");
+    MarkCallFunction("GetParents", true);
+    pnl::intVector pnlParents;
+    Graph()->GetParents(&pnlParents, node);
+    parents.assign(pnlParents.begin(), pnlParents.end());
 }
 
 int INetworkPNL::GetParentCount(int node)
 {
-    MarkCallFunction("GetParentCount");
-    return 0;
+    MarkCallFunction("GetParentCount", true);
+    return Graph()->nParent(node);
 }
 
 int INetworkPNL::FindParent(int node, int parentNode)
 {
-    MarkCallFunction("FindParent");
-    return 0;
+    MarkCallFunction("FindParent", true);
+    pnl::intVector pnlParents;
+    pnl::CGraph *pnlGraph = Graph()->Graph();
+    pnlGraph->GetParents(Graph()->IGraph(node), &pnlParents);
+    pnlParents[0] = pnlParents[parentNode];
+    pnlParents.resize(1);
+    Graph()->IndicesGraphToOuter(&pnlParents, &pnlParents);
+    return pnlParents[0];
 }
 
 void INetworkPNL::GetChildren(int node, std::vector<int> &children)
 {
-    MarkCallFunction("GetChildren");
+    MarkCallFunction("GetChildren", true);
+    pnl::intVector pnlChildren;
+
+    Graph()->GetChildren(&pnlChildren, node);
+    children.assign(pnlChildren.begin(), pnlChildren.end());
 }
 
 int INetworkPNL::GetChildrenCount(int node)
 {
-    MarkCallFunction("GetChildrenCount");
-    return 0;
+    MarkCallFunction("GetChildrenCount", true);
+    return Graph()->nChild(node);
 }
 
 int INetworkPNL::FindChild(int node, int childNode)
 {
     MarkCallFunction("FindChild");
-    return 0;
+    pnl::intVector pnlChildren;
+    pnl::CGraph *pnlGraph = Graph()->Graph();
+    pnlGraph->GetChildren(Graph()->IGraph(node), &pnlChildren);
+    pnlChildren[0] = pnlChildren[childNode];
+    pnlChildren.resize(1);
+    Graph()->IndicesGraphToOuter(&pnlChildren, &pnlChildren);
+    return pnlChildren[0];
 }
 
 int INetworkPNL::GetOutcomeCount(int node)
 {
-    MarkCallFunction("GetOutcomeCount", true);// fix me!!
-    return 0;
+    MarkCallFunction("GetOutcomeCount", true, (String() << "node #" << node).c_str());
+    
+    Vector<String> aValue;
+    Token()->GetValues(node, aValue);
+    MarkCallFunction("GetOutcomeCount", true, (String() << "size " << int(aValue.size())).c_str());
+    return aValue.size();
 }
 
 const char* INetworkPNL::GetOutcomeId(int node, int outcomeIndex)
 {
-    MarkCallFunction("GetOutcomeId");
-    return "";
+    MarkCallFunction("GetOutcomeId", true);
+    m_Bad.assign(Token()->Value(node, outcomeIndex).c_str());
+    return m_Bad.c_str();// may bring to inconsistent state if pointer will saved!!
 }
 
 const char* INetworkPNL::GetOutcomeLabel(int node, int outcomeIndex)
 {
-    MarkCallFunction("GetOutcomeLabel");
-    return "";
+    MarkCallFunction("GetOutcomeLabel unfin x", true);
+    m_Bad.assign(Token()->Value(node, outcomeIndex).c_str());
+    return m_Bad.c_str();// may bring to inconsistent state if pointer will saved!!
 }
 
 void INetworkPNL::GetDefinition(int node, std::vector<double> &definition)
 {
-    MarkCallFunction("GetDefinition");
+    MarkCallFunction("GetDefinition unfin x", true);
+    WDistribFun *pDF = Distributions()->Distribution(node);
+    pnl::CDenseMatrix<float> *mat = pDF->Matrix(pnl::matTable);
+    const float *pVal;
+    int len;
+    
+    mat->GetRawData(&len, &pVal);
+    definition.resize(len);
+    for(int i = len; --i >= 0; definition[i] = pVal[i]);
+    MarkCallFunction("GetDefinition unfin x", true, (String() << node << "#" << len).c_str());
 }
 
 void INetworkPNL::GetValue(int node, bool &valueValid, std::vector<int> &parents, std::vector<double> &values)
 {
-    MarkCallFunction("GetValue");
+    MarkCallFunction("GetValue unfin x", true);
+    int len = GetOutcomeCount(node);
+    MarkCallFunction("GetValue unfin x", true, (String() << node << "#" << len).c_str());
+
+    TokArr evid(m_aEvidence->GetBoard());
+    parents.resize(0);
+    valueValid = true;
+    values.resize(0);
+    m_pWNet->ClearEvid();
+    if(evid.size())
+    {
+	m_pWNet->Evid(evid);
+    }
+    evid = m_pWNet->JPD(Graph()->NodeName(node));
+    values.resize(len);
+
+    Vector<int> aiNode, aiValue;
+
+    String xx, x;
+    for(int i = 0; i < evid.size(); ++i)
+    {
+	Vector< std::deque< TokId > > unres = evid[i].unres;
+
+	for(int j = 0; j < unres.size(); ++j)
+	{
+	    for(int k = 0; k < unres[j].size(); ++k)
+	    {
+		xx << String(unres[j][k]) << " ";
+	    }
+	    xx << "\n";
+	}
+    }
+
+    x = String(evid);
+
+    //    Token()->Resolve(evid);
+    Net().ExtractTokArr(evid, &aiNode, &aiValue);
+    for(int i = evid.size(); --i >= 0;)
+    {
+	if(aiValue[0] >= len || aiValue[0] < 0)
+	{
+	    ThrowInternalError("outcome index exceed limit", "GetValue");
+	    valueValid = false;
+	    return;
+	}
+	values[aiValue[i]] = evid[i].FltValue().fl;
+    }
 }
 
 int INetworkPNL::GetValueParentCount(int node)
@@ -301,30 +421,57 @@ int INetworkPNL::GetValueParentCount(int node)
 bool INetworkPNL::GetValueParents(int node, std::vector<int> &parents)
 {
     MarkCallFunction("GetValueParents");
-    return true;
+    return false;
 }
 
 int INetworkPNL::GetEvidence(int node)
 {
-    MarkCallFunction("GetEvidence");
-    return 0;
+    MarkCallFunction("GetEvidence", true);
+
+    if(!m_abEvidence[node])
+    {
+	return -1;
+    }
+
+    Vector<int> aiNode, aiValue;
+    Net().ExtractTokArr(m_aEvidence->GetBoard(), &aiNode, &aiValue);
+    for(int i = aiNode.size(); --i >= 0;)
+    {
+	if(aiNode[i] == node)
+	{
+	    return aiValue[i];
+	}
+    }
+
+    ThrowInternalError("Not found evidence", "GetEvidence");// must be here, but ...
+    return -1;
 }
 
 int INetworkPNL::GetControlledValue(int node)
 {
-    MarkCallFunction("GetControlledValue");
-    return 0;
+    MarkCallFunction("GetControlledValue", true, (String() << node).c_str());
+    return -1;
 }
 
 int INetworkPNL::GetNodeType(int node)
 {
-    MarkCallFunction("GetNodeType");
-    return 0;
+    MarkCallFunction("GetNodeType unfin(Chance only) x", true, (String() << node).c_str());
+    return NetConst::Chance;// rough!
 }
 
 bool INetworkPNL::IsIdUnique(const char *nodeId, int nodeToIgnore)
 {
-    MarkCallFunction("IsIdUnique", true);// fix me!!
+    MarkCallFunction("IsIdUnique", true, (String() << nodeId).c_str());
+    Vector<String> aName(Graph()->Names());
+    String name(nodeId);
+
+    for(int i = aName.size(); --i >= 0;)
+    {
+	if((i != nodeToIgnore) && (aName[i] == name))
+	{
+	    return false;
+	}
+    }
     return true;
 }
 
@@ -336,50 +483,50 @@ int INetworkPNL::FindNode(const char * id)
 
 const char* INetworkPNL::GetNodeId(int node)
 {
-    MarkCallFunction("GetNodeId");
-    return "";
+    MarkCallFunction("GetNodeId", true);
+    return Graph()->NodeName(node).c_str();
 }
 
 bool INetworkPNL::IsTarget(int node)
 {
-    MarkCallFunction("IsTarget");
+    MarkCallFunction("IsTarget", true);
     return false;
 }
 
 bool INetworkPNL::IsEvidence(int node)
 {
-    MarkCallFunction("IsEvidence");
-    return false;
+    MarkCallFunction("IsEvidence", true);
+    return IsRealEvidence(node);
 }
 
 bool INetworkPNL::IsRealEvidence(int node)
 {
-    MarkCallFunction("IsRealEvidence");
-    return false;
+    MarkCallFunction("IsRealEvidence", true, (String() << "Node #" << node).c_str());
+    return m_abEvidence[node];
 }
 
 bool INetworkPNL::IsPropagatedEvidence(int node)
 {
-    MarkCallFunction("IsPropagatedEvidence");
+    MarkCallFunction("IsPropagatedEvidence", true);
     return false;
 }
 
 bool INetworkPNL::IsValueValid(int node)
 {
-    MarkCallFunction("IsValueValid");
-    return false;
+    MarkCallFunction("IsValueValid", true);
+    return m_aNodeValueStatus[node] == NetConst::Updated;
 }
 
 bool INetworkPNL::IsControlled(int node)
 {
-    MarkCallFunction("IsControlled");
+    MarkCallFunction("IsControlled", true);
     return false;
 }
 
 int INetworkPNL::GetNodeValueStatus(int node)
 {
-    MarkCallFunction("GetNodeValueStatus");
-    return 0;
+    MarkCallFunction("GetNodeValueStatus", true, (String() << "node #" << node).c_str());
+    return m_aNodeValueStatus[node];
 }
 
 bool INetworkPNL::GetMinMaxUtility(int node, double &minUtility, double &maxUtility)
@@ -402,8 +549,11 @@ void INetworkPNL::SetProperties(int node, const PropertyMap &mp)
 
 bool INetworkPNL::SetNodeId(int node, const char *id)
 {
-    MarkCallFunction("SetNodeId");
-    return false;
+    String newId(id);
+
+    newId << " - new name for node #" << node;
+    MarkCallFunction("SetNodeId", true, newId.c_str());
+    return Graph()->SetNodeName(node, String(id));
 }
 
 void INetworkPNL::SetNodeType(int node, int type)
@@ -423,18 +573,36 @@ void INetworkPNL::DeleteOutcome(int node, int outcomeIndex)
 
 void INetworkPNL::SetDefinition(int node, const std::vector<double> & definition)
 {
-    MarkCallFunction("SetDefinition");
+    MarkCallFunction("SetDefinition unfin x", true);
+    WDistribFun *pD = Distributions()->Distribution(node);
+    pnl::CDenseMatrix<float> *m = static_cast<pnl::CDenseMatrix<float> *>(pD->Matrix(pnl::matTable));
+    Vector<float> def;
+    int i = definition.size();
+
+    if(m->GetRawDataLength() != i)
+    {
+	MarkCallFunction("SetDefinition bad call", true);
+	return;
+    }
+    def.resize(i);
+    for(; --i >= 0; def[i] = definition[i]);
+
+    m->SetData(&def.front());
+    m_aNodeValueStatus[node] = NetConst::NotUpdated;
 }
 
 bool INetworkPNL::SetOutcomeId(int node, int outcomeIndex, const char *id)
 {
-    MarkCallFunction("SetOutcomeId");
-    return false;
+    MarkCallFunction("SetOutcomeId unchecked unfin x", true);
+    Token()->SetValue(node, outcomeIndex, String(id));
+    return true;
 }
 
 void INetworkPNL::SetOutcomeIds(int node, const std::vector<std::string> &ids)
 {
-    MarkCallFunction("SetOutcomeIds");
+    MarkCallFunction("SetOutcomeIds unchecked unfin x", true);
+
+    SetValues(node, ids);
 }
 
 bool INetworkPNL::SetOutcomeLabel(int node, int outcomeIndex, const char *label)
@@ -450,27 +618,39 @@ void INetworkPNL::SetOutcomeLabels(int node, const std::vector<std::string> &lab
 
 void INetworkPNL::SetEvidence(int node, int outcomeIndex)
 {
-    MarkCallFunction("SetEvidence");
+    MarkCallFunction("SetEvidence", true, (String() << "Node #" << node).c_str());
+
+#if 0 // resolving doesn't work for 0^0
+    m_aEvidence->Set(Tok(node) ^ outcomeIndex);
+#else
+    m_aEvidence->Set(Tok(Graph()->NodeName(node)) ^ outcomeIndex);
+#endif
+    m_abEvidence[node] = true;
+    m_aNodeValueStatus[node] = NetConst::Updated;
 }
 
 void INetworkPNL::ClearEvidence(int node)
 {
-    MarkCallFunction("ClearEvidence");
+    MarkCallFunction("ClearEvidence", true, (String() << "Node #" << node).c_str());
+    m_abEvidence[node] = false;
+    m_aNodeValueStatus[node] = NetConst::NotUpdated;
 }
 
 void INetworkPNL::SetControlledValue(int node, int outcomeIndex)
 {
     MarkCallFunction("SetControlledValue");
+    m_aNodeValueStatus[node] = NetConst::Updated;
 }
 
 void INetworkPNL::ClearControlledValue(int node)
 {
     MarkCallFunction("ClearControlledValue");
+    m_aNodeValueStatus[node] = NetConst::NotUpdated;
 }
 
 bool INetworkPNL::IsControllable(int node)
 {
-    MarkCallFunction("IsControllable");
+    MarkCallFunction("IsControllable", true);
     return false;
 }
 
@@ -623,15 +803,76 @@ void INetworkPNL::ReorderParents(int node, const std::vector<int> & newOrder)
 }
 
 
-// syncing outcomes with definition grid
+// syncing outcomes with definition grid;
+// permutation contain old indices and -1 instead of new indices
 void INetworkPNL::AddRemoveReorderOutcomes(
 					   int node, 
 					   const std::vector<std::string> &outcomeIds,
 					   const std::vector<int> &permutation)
 {
-    MarkCallFunction("AddRemoveReorderOutcomes");
+    MarkCallFunction("AddRemoveReorderOutcomes permutation not used x", true, (String() << node).c_str());
+
+    int nValue, i;
+
+    nValue = outcomeIds.size();
+    for(i = 0; i < nValue; ++i)
+    {
+#if 0
+	MarkCallFunction("AddRemoveReorderOutcomes: index", true,
+	    (String() << permutation[i] << " from " << int(permutation.size())).c_str());
+#endif
+    }
+    SetValues(node, outcomeIds);
+    m_aNodeValueStatus[node] = NetConst::Updated;
 }
 
+
+void INetworkPNL::SetValues(int iNode, const std::vector<std::string> &aId)
+{
+    Vector<String> aIdNew, aIdOld;
+    int nValue, i;
+
+    nValue = aId.size();
+    aIdNew.resize(nValue);
+    for(i = 0; i < nValue; ++i)
+    {
+        aIdNew[i] = aId[i];
+    }
+    Token()->GetValues(iNode, aIdOld);
+    Token()->SetValues(iNode, aIdNew);
+    m_aNodeValueStatus[iNode] = NetConst::NotUpdated;
+    if(aIdOld.size() != aIdNew.size())
+    {
+	Distributions()->Setup(iNode);
+	std::vector<int> aChild;
+	GetChildren(iNode, aChild);
+
+	for(i = aChild.size(); --i >= 0;)
+	{
+	    Distributions()->Setup(aChild[i]);
+	}
+    }
+}
+
+ProbabilisticNet &INetworkPNL::Net() const
+{
+    return m_pWNet->Net();
+}
+
+WGraph *INetworkPNL::Graph() const
+{
+    return Net().Graph();
+}
+
+TokenCover *INetworkPNL::Token() const
+{
+    return Net().Token();
+}
+
+WDistributions *INetworkPNL::Distributions() const
+{
+    return Net().Distributions();
+}
 
 // qualitative stuff
 double INetworkPNL::QualGetWeight(int node, int parentIndex, bool positive)
@@ -759,7 +1000,7 @@ void INetworkPNL::SetRanked(int node, bool ranked)
 
 bool INetworkPNL::IsRanked(int node)
 {
-    MarkCallFunction("IsRanked");
+    MarkCallFunction("IsRanked NS x", true);
     return false;
 }
 
@@ -770,7 +1011,7 @@ void INetworkPNL::SetMandatory(int node, bool mandatory)
 
 bool INetworkPNL::IsMandatory(int node)
 {
-    MarkCallFunction("IsMandatory");
+    MarkCallFunction("IsMandatory NS x", true);
     return false;
 }
 
@@ -803,17 +1044,22 @@ bool INetworkPNL::LearnStructureAndParams(const char *dataFile, const char *netw
     return false;
 }
 
-void INetworkPNL::MarkCallFunction(const char *name, bool bRealized, pnl::pnlString args)
+void INetworkPNL::MarkCallFunction(const char *name, bool bRealized, const char *args)
 {
-    Log &l = *m_pLog;
-    l << "Function '" << name << "'";
-    if(args.length())
+    if(m_pLog == 0)
     {
-	l << ", arguments = '" << args.c_str() << "' ";
+	return;
     }
-    l << ((bRealized) ? "realized\n":"not yet realized\n");
-    if(!bRealized)
+    pnl::Log &l = *m_pLog;
+    l << "Function '" << name << "'";
+    if(args)
     {
+	l << ", arguments = '" << args << "'";
+    }
+    l << ((bRealized) ? " realized\n":" not yet realized\n");
+    if(!bRealized && false)
+    {
+	m_pLogStream->Redirect("GeNIe_PNLModule2.log");
 	delete m_pLogStream;
 	m_pLogStream = 0;
 	delete m_pLog;

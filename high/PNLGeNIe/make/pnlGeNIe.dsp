@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "PNLGeNIe_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\GeNIe" /I "..\..\..\c_pgmtk\include" /I "..\..\..\c_pgmtk\src\include" /I "..\..\..\cxcore\cxcore\include" /I "..\..\include" /I "..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "PNLGeNIe_EXPORTS" /FD /GZ /c
+# ADD CPP /nologo /MD /w /W0 /GX /Zi /Od /I "..\..\GeNIe" /I "..\..\..\c_pgmtk\include" /I "..\..\..\c_pgmtk\src\include" /I "..\..\..\cxcore\cxcore\include" /I "..\..\include" /I "..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "PNLGeNIe_EXPORTS" /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
