@@ -15,7 +15,7 @@
 /////////////////////////////////////////////////////////////////////////////
 #include "pnlConfig.hpp"
 #include "pnlCondGaussianDistribFun.hpp"
-#include "pnlEMLearningEngine.hpp"
+#include "pnlEmLearningEngine.hpp"
 #include "pnlStaticStructLearnSEM.hpp"
 #include "pnlExInferenceEngine.hpp"
 
@@ -443,7 +443,7 @@ void CStaticStructLearnSEM::CreateNeighborCPDs(CBNet* pBNet,
 	for(i=0; i<nMoves; i++)
 	{
 		domain.clear();
-		curMove = vValidMoves->at(i);
+		curMove = (*vValidMoves)[i];
 		switch (curMove.DAGChangeType)
 		{
 		case DAG_DEL : 
@@ -481,14 +481,14 @@ void CStaticStructLearnSEM::CreateNeighborCPDs(CBNet* pBNet,
 	EDGEOP pre_move;
 	for(i=0; i<nMoves; i++)
 	{
-		curMove = vValidMoves->at(i);
+		curMove = (*vValidMoves)[i];
 		if(curMove.DAGChangeType == DAG_REV)
 		{
 			start = curMove.originalEdge.startNode;
 			end = curMove.originalEdge.endNode;
 			for(j=0; j<nMoves; j++)
 			{
-				pre_move = vValidMoves->at(j);
+				pre_move = (*vValidMoves)[j];
 				if( (start == pre_move.originalEdge.startNode) &&
 					(end == pre_move.originalEdge.endNode) &&
 					(pre_move.DAGChangeType == DAG_DEL) )
