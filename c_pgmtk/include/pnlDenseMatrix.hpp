@@ -26,7 +26,7 @@
 #endif 
 PNL_BEGIN
 
-template <class Type> class CDenseMatrix : public /*virtual*/ CMatrix<Type>
+template <class Type> class PNL_API CDenseMatrix : public /*virtual*/ CMatrix<Type>
 {
 public:
     static CDenseMatrix<Type> *Create( int dim, const int *range, const Type *data,

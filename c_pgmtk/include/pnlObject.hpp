@@ -8,7 +8,7 @@
 //                                                                         //
 //  File:      pnlObject.hpp                                               //
 //                                                                         //
-//  Purpose:   Implementation of the algorithm                             //
+//  Purpose:   Base class for most of library classes                      //
 //                                                                         //
 //  Author(s):                                                             //
 //                                                                         //
@@ -40,12 +40,12 @@ public:
 #ifdef PNL_RTTI
     virtual const CPNLType &GetTypeInfo() const
     {
-      return GetStaticTypeInfo();
+	return GetStaticTypeInfo();
     }
 
     static const CPNLType &GetStaticTypeInfo()
     {
-      return CPNLBase::m_TypeInfo;
+	return m_TypeInfo;
     }
 #endif
 };

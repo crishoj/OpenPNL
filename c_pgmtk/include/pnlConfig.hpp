@@ -55,16 +55,16 @@
 		try {\
 			while(0) 
 
-	#define C_CATCH()\
-			return pgmOK;\
-		}\
-		catch (CException e)\
-		{\
-			return e.GetCode();\
-		}\
-		catch(...)\
-		{\
-			return pgmInternalError;\
-		}\
+#define C_CATCH()\
+		return pgmOK;\
+	}\
+	catch (CException e)\
+	{\
+		return e.GetCode();\
+	}\
+	catch(...)\
+	{\
+		return pgmInternalError;\
+	}\
 
 #endif //__PNLCONFIG_HPP__
