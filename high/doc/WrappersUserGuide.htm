@@ -1,4 +1,4 @@
-sre<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html><head>
 <link rel="STYLESHEET" href="style.css" charset="ISO-8859-1" type="text/css">
 <title>PNL Wrappers: User Guide</title>
@@ -107,6 +107,21 @@ PNL Wrappers: User Guide
       <LI><A href="#Politics">Getting pure politics</A> 
       <LI><A href="#SaveLIMID">Saving LIMID into the file</A> 
       <LI><A href="#LoadLIMID">Loading LIMID from the file</A> 
+  </UL>
+  <LI><A href="#DiscreteMRF">Markov Random Fields</A> 
+  <UL>  
+      <LI><A href="#CreateNetMRFDiscr">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesMRFDiscr">Adding nodes</A> 
+          <LI><A href="#AddEdgesMRFDiscr">Adding edges</A> 
+      </UL>
+      <LI><A href="#SpecProbMRFDiscr">Specifying the probabilities</A> 
+      <LI><A href="#AddObservMRFDiscr">Adding observations</A> 
+      <LI><A href="#LearnMRFDiscr">Learning the network</A> 
+      <UL>
+          <LI><A href="#ParamLearnMRFDiscr">Parameters learning</A> 
+      </UL>
+      <LI><A href="#MPEandJPDMRFDiscr">Getting MPE and JPD</A> 
   </UL>
 </UL>
   </h4>
@@ -1552,4 +1567,298 @@ IDNet pigsFromFile;
 pigsFromFile.LoadNet("pigs.xml");
 </pre></p>pigs.xml - name of the file, where the desired LIMID is stored.
 <p>
+<hr>
+
+<h1><a name="DiscreteMRF">Markov Random Fields</a></h1>
+We are going to analyze Markov Random Fields (MRF) functioning by the simple example. 
+<br>The graph structure of the model and the parameters are all shown in Figure 8:
+<hr>
+<h4><a name="figWaterSprinkler">Figure8. Simple example of MRF</a></h4>
+<img align=center src="mrfModel.gif">
+<p>
+All nodes are discrete and can take on two values: true or false.
+</p>
+<hr>
+
+<h2><a name="CreateNetMRFDiscr">Creating the net</a></h2>
+<p>
+The first step of operating the MRF is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create MRF class object: 
+<p>
+<pre>MRF net;</pre>
+<p>
+Now network is empty. We have to add nodes and to form cliques.
+<hr>
+
+<h3><a name="AddNodesMRFDiscr">Adding nodes</a></h3>
+<p>
+Method AddNode is used to add new node to the network:
+<p>
+<pre>
+<p>
+net.AddNode(&quot;discrete^X&quot;, &quot;true false&quot;); 
+net.AddNode(&quot;discrete^Y&quot;, &quot;true false&quot;);
+net.AddNode(&quot;discrete^Z&quot;, &quot;true false&quot;);
+net.AddNode(&quot;discrete^W&quot;, &quot;true false&quot;);
+</pre>
+
+The first argument of this method is type and name of the new node, second argument is the corresponding 
+variate values list, and values are separated by the space.
+<br>
+In our example all the nodes are discrete and can take on the same values, so all the nodes can be 
+added by the one call of AddNode method:
+<p>
+<pre>
+net.AddNode(discrete^&quot;X Y Z W&quot;, &quot;true false&quot;);
+</pre>
+<hr>
+
+<h3><a name="SetCliqueMRFDiscr">Setting cliques</a></h3>
+<p>
+SetClique method is used to add a new arc to the network:
+<p>
+<pre>
+net.SetClique(&quot;X Y&quot;);
+net.SetClique(&quot;Y Z&quot;);
+net.SetClique(&quot;Z W&quot;);
+net.SetClique(&quot;X W&quot;);
+</pre>
+<p>
+After forming cliques with SetClique method distributions of probabilities on them are uniform. See in next paragraph 
+how they can be changed or how clique can be formed with nonuniform distribution.<p>
+</p>
+<hr>
+
+<h2><a name="SpecProbMRFDiscr">Specifying the probabilities</a></h2>
+<p>
+When we form cliques with SetClique method probability distributions on them are uniform. If we know probability 
+distributions on some of the cliques, we can specify them with the SetPTabular method for the discrete cliques.
+<br>
+In our example we are going to specify probability distributions on the clique of X and Y nodes. We will leave the 
+distributions on the other nodes uniform.
+<p>
+<pre>
+net.SetPTabular(&quot;X^true Y^true&quot;, &quot;0.1&quot;);
+net.SetPTabular(&quot;X^true Y^false&quot;, &quot;0.3&quot;); 
+net.SetPTabular(&quot;X^false Y^true&quot;, &quot;0.25&quot;);
+net.SetPTabular(&quot;X^false Y^false&quot;, &quot;0.35&quot;); 
+</pre>
+<p>
+The first argument of this method is the states of the variables; we define the probability for the clique to take on 
+this nodes states. The second argument is the value of probability.<br>
+It is possible to define probabilities for all of the values of the node in clique. Distribution on clique of 
+X and Y nodes may be set by the following code:
+<p>
+<pre>
+net.SetPTabular(&quot;X Y^true&quot;, &quot;0.1 0.25&quot;);
+net.SetPTabular(&quot;X Y^false&quot;, &quot;0.3 0.35&quot;); 
+</pre>
+<p>
+We have a chance to specify all matrix of probabilities for clique by one call of SetPTabular method:
+<p>
+<pre>
+net.SetPTabular(&quot;X Y&quot;, &quot;0.1 0.3 0.25 0.35&quot;);
+</pre>
+<p>
+In the last two cases of specifying the probabilities it is important order of enumeration of values for nodes in the
+AddNode method and order of enumeration of nodes in first parameter of the SetPTabular method.<p>
+Note also that if SetPTabular is called for nodes that are not in clique, it tries to create clique of these nodes. 
+If clique is not correct, error message will be generated.<br>
+</p>
+To get the probability distribution of the discrete clique we must call of GetPTabular method:
+<p>
+<pre>
+TokArr XY = net.GetPTabular(&quot;X Y&quot;);
+TokArr XtrueY = net.GetPTabular(&quot;X^true Y&quot;);
+TokArr XtrueYfalse = net.GetPTabular(&quot;X^true Y^false&quot;);
+</pre>
+<p>
+Now it is possible to represent this distribution as string or as float numbers: 
+<p>
+<pre>
+String PXYStr = String(XY);
+float PXtrueYtrue = XY[0].FltValue();
+float PXtrueYfalse = XY[1].FltValue();
+float PXfalseYtrue = XY[2].FltValue();
+float PXfalseYfalse = XY[3].FltValue();
+</pre>
+<p>
+The following values are now stored in the variables:
+<p>
+<pre>
+PXYStr			&quot;X^true^Y^true^0.1 X^true^Y^false^0.3 X^false^Y^true^0.25 X^false^Y^false^0.35&quot;
+PXtrueYtrue		0.1
+PXtrueYfalse		0.3
+PXfalseYtrue		0.25
+PXfalseYfalse		0.35
+</pre>
+<p>
+We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+<h2><a name="AddObservMRFDiscr">Adding observations</a></h2>
+<p>
+Here we will describe the way of working with evidences in wrappers. BayesNet class allows user to work with current evidence and with the buffer of evidences.
+<br>
+Default current evidence is empty. User can edit it with the EditEvidence method:
+<p>
+<pre>
+net.EditEvidence(&quot;X^false W^false&quot;);
+net.EditEvidence(&quot;Y^true X^true&quot;);
+</pre>
+<p>
+After these calls there is three observed nodes in the current evidence, they are X, Y (both are true) and W, which is false.
+<br>
+After editing user can copy current evidence to the evidence buffer with the help of  CurEvidToBuf method:
+<p>
+<pre>
+net.CurEvidToBuf();
+</pre>
+<p>
+It is possible to clear the current evidence with ClearEvid method:
+<p>
+<pre>
+net.ClearEvid();
+</pre>
+<p>
+You can also put evidence-to-evidence buffer without editing. Call AddEvidToBuf method:
+<p>
+<pre>
+net.AddEvidToBuf(&quot;Z^true W^true&quot;);
+</pre>
+<p>
+At the moment we have empty current evidence. Evidence buffer contains 2 evidences. In the first evidence, 
+which was copied from the current evidence, there are three observed nodes: X, Y (both are true) and W (false). 
+In second evidence there are two observed nodes, Z and W, both are true.
+<br>
+The main operations with evidence buffer are:
+<UL>
+    <LI>total clearance of the buffer with the help of  ClearEvidBuf method,</LI>
+    <LI>saving the buffer to file (SaveEvidBuffer) and loading buffer from file (LoadEvidBuffer). We support the csv file format,</LI>
+    <LI>filling the evidence buffer with random values of observations with the help of GenerateEvidences method.</LI>
+</UL>
+Current evidence is used to get JPD and MPE, evidence buffer is used for learning.
+<hr>
+
+<h2><a name="LearnMRFDiscr">Learning the network</a></h2>
+<p>
+To carry out learning process evidences from evidence buffer are used. 
+<br>
+It is possible to specify probability distributions on the net nodes with the help of learning. This setting of 
+probabilities is named parameters learning.
+</p>
+<hr>
+
+<h3><a name="ParamLearnMRFDiscr">Parameters learning</a></h3>
+<p>
+If we are going to specify probability distributions for network nodes, then we will call LearnParameters method after 
+filling the evidence buffer to learn the network:
+<p>
+<pre>
+net.LearnParameters();
+</pre>
+<p>
+As a result, the probability distributions on the nodes have been changed. To get new distributions 
+GetPTabular method is used:
+<p>
+<pre>
+TokArr PX = net.GetPTabular(&quot;X&quot;);
+TokArr PY = net.GetPTabular(&quot;Y&quot;);
+TokArr PZ = net.GetPTabular(&quot;Z&quot;);
+TokArr PW = net.GetPTabular(&quot;W&quot;);
+</pre>
+<p>
+Now distributions are presented as TokArr type objects. They can be converted into strings or float numbers, as it was 
+shown earlier. They also can be used as arguments for other methods. 
+<p>
+Using learning algorithm is Expectation Maximization algorithm.
+</p>
+<p>
+For EM Learning number of iterations of algorithm work and precision that algorithm runs up to must be specified. 
+Default number of iterations is 5 and default precision is 0.001. 
+These parameters can be changed with SetProperty method. Corresponding properties names are 
+"EMMaxNumberOfIterations" and "EMTolerance". For example:
+</p>
+<p>
+<pre>
+net.SetProperty(&quot;EMMaxNumberOfIterations&quot;, &quot;10&quot;)
+net.SetProperty(&quot;EMTolerance&quot;, &quot;1e-4&quot;)
+net.SetProperty(&quot;Learning&quot;, &quot;em&quot;);
+net.LearnParameters();
+</pre>
+<hr>
+
+<h2><a name="MPEandJPDMRFDiscr">Getting MPE and JPD</a></h2>
+<p>
+If Bayesian network and probability distributions have been already defined, we can get Joint Probability Distribution 
+(JPD) and Maximum Probability Explanation (MPE).
+<br>
+For calculating JPD and MPE current evidence is used. You can edit this evidence with the help of  EditEvidence method 
+(look through “Adding observations” section).
+<br>
+You can use GetJPD method to get the marginal probability distribution of the node:  
+<p>
+<pre>
+TokArr ZMarg = net.GetJPD(&quot;Z&quot;);
+</pre>
+<p>
+It is possible to get joint distribution for the nodes from one family (family is the set, which consists of node and node parents):
+<p>
+<pre>
+TokArr YZMarg = net.GetJPD(&quot;Z Y&quot;);
+</pre>
+<p>
+You can use GetMPE method to get Maximum Probability Explanation for one node or for some set of nodes from one family:
+<p>
+<pre>
+TokArr ZMPE = net.GetMPE(&quot;Z&quot;);
+TokArr YZMPE = net.GetMPE(&quot;Y Z&quot;);
+</pre>
+<p>
+To calculate JPD and MPE inference algorithms are used. For general MRF there are three inference algorithms: Junction 
+Tree, Gibbs Sampling and full summation, which is called PNL Naive inference. For MRF2 (MRF all whose cliques have size 2
+such as in our example) Pearl (or Loopy Belief Propagation) inference algorithm also can be used. We must mention, that 
+Junction Tree and Naive Inference are exact, Pearl Inference and Gibbs Sampling are approximate algorithms (see PNL 
+documentation for the full information).
+<br>
+Default inference algorithm, which is used to calculate MPE and JPD, is Junction Tree Inference. You can use other 
+algorithms by setting “Inference” property with SetProperty method. You must define the desired algrithm by its string 
+name: “pearl”, “jtree”, “gibbs”, or “naive”. For example:
+<p>
+<pre>
+net.SetProperty(&quot;Inference&quot;, &quot;pearl&quot;);
+TokArr ZMPE = net.GetMPE(&quot;Z&quot;);
+net.SetProperty(&quot;Inference&quot;, &quot;gibbs&quot;);
+TokArr ZWMPE = net.GetMPE(&quot;Z W&quot;);
+</pre>
+<p>
+Pearl Inference and Gibbs Sampling Inference have some parameters.<br>
+For Pearl Inference number of iterations of algorithm and precision that algorithm runs up to must be specified. 
+Default number of iterations is equal to number of nodes in net and default precision is 1e-6. 
+These parameters can be changed with SetProperty method. Corresponding properties names are 
+"PearlMaxNumberOfIterations" and "PearlTolerance". For example:
+<p>
+<pre>
+net.SetProperty(&quot;PearlMaxNumberOfIterations&quot;, &quot;10&quot;);
+net.SetProperty(&quot;PearlTolerance&quot;, &quot;1e-5&quot;);
+net.SetProperty(&quot;Inference&quot;, &quot;pearl&quot;);
+TokArr ZJPD = net.GetJPD(&quot;Z&quot;);
+</pre>
+<p>
+For Gibbs Sampling Inference number of iterations must be specified. Corresponding property name is "GibbsNumberOfIterations".
+Default number of iterations is 600. Gibbs Sampling Inference generate evidences (samples) during work. Number of first 
+itearation that use samples processing results of the previous iteration can be specified with property "GibbsThresholdIteration"
+(default value is 10). Number of streams that generate independent samples can be specified with property "GibbsNumberOfStreams"
+(1 stream by default). For example:
+<p>
+<pre>
+net.SetProperty(&quot;GibbsNumberOfIterations&quot;, &quot;1000&quot;);
+net.SetProperty(&quot;GibbsThresholdIteration&quot;, &quot;20&quot;);
+net.SetProperty(&quot;GibbsNumberOfStreams&quot;, &quot;2&quot;);
+net.SetProperty(&quot;Inference&quot;, &quot;gibbs&quot;);
+TokArr ZWMPE = net.GetMPE(&quot;Z W&quot;);
+</pre>
 <hr>

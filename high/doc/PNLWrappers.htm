@@ -50,6 +50,15 @@ rel=STYLESHEET>
     href="#decl_GetChildren">GetChildren</A> 
 
     <LI><A 
+    href="#decl_GetCurEvidenceLogLik">GetCurEvidenceLogLik</A> 
+
+    <LI><A 
+    href="#decl_GetEMLearningCriterionValue">GetEMLearningCriterionValue</A> 
+
+    <LI><A 
+    href="#decl_GetEvidBufLogLik">GetEvidBufLogLik</A> 
+
+    <LI><A 
     href="#decl_GetGaussianMean">GetGaussianMean</A> 
 
     <LI><A 
@@ -267,6 +276,93 @@ rel=STYLESHEET>
 
     <LI><A 
     href="#decl_SetValueCost">SetValueCost</A>  
+
+    </LI></UL>
+  </UL>
+<UL>
+  <LI><A 
+  href="#decl_Class_MRF">Class MRF</A> 
+  <UL>
+    <LI><A 
+    href="#decl_AddEvidToBuf_MRF">AddEvidToBuf</A> 
+
+    <LI><A 
+    href="#decl_AddNode_MRF">AddNode</A> 
+
+    <LI><A 
+    href="#decl_MRF">MRF</A> 
+
+    <LI><A 
+    href="#decl_ClearEvid_MRF">ClearEvid</A> 
+
+    <LI><A 
+    href="#decl_ClearEvidBuf_MRF">ClearEvidBuf</A> 
+
+    <LI><A 
+    href="#decl_CurEvidToBuf_MRF">CurEvidToBuf</A>
+
+    <LI><A 
+    href="#decl_DelNode_MRF">DelNode</A> 
+
+    <LI><A 
+    href="#decl_DestroyClique_MRF">DestroyClique</A> 
+
+    <LI><A 
+    href="#decl_EditEvidence_MRF">EditEvidence</A> 
+
+    <LI><A 
+    href="#decl_GenerateEvidences_MRF">GenerateEvidences</A> 
+
+    <LI><A 
+    href="#decl_GetJPD_MRF">GetJPD</A> 
+
+    <LI><A 
+    href="#decl_GetMPE_MRF">GetMPE</A> 
+
+    <LI><A 
+    href="#decl_GetNeighbours_MRF">GetNeighbours</A> 
+
+    <LI><A 
+    href="#decl_GetNodeType_MRF">GetNodeType</A> 
+
+    <LI><A 
+    href="#decl_GetNumberOfCliques_MRF">GetNumberOfCliques</A> 
+
+    <LI><A 
+    href="#decl_GetNumberOfNodes_MRF">GetNumberOfNodes</A> 
+
+    <LI><A 
+    href="#decl_GetProperty_MRF">GetProperty</A> 
+
+    <LI><A 
+    href="#decl_GetPTabular_MRF">GetPTabular</A> 
+
+    <LI><A 
+    href="#decl_LearnParameters_MRF">LearnParameters</A> 
+
+    <LI><A 
+    href="#decl_LoadEvidBuf_MRF">LoadEvidBuf</A> 
+
+    <LI><A 
+    href="#decl_LoadNet_MRF">LoadNet</A> 
+
+    <LI><A 
+    href="#decl_MaskEvidBuf_MRF">MaskEvidBuf</A> 
+
+    <LI><A 
+    href="#decl_SaveEvidBuf_MRF">SaveEvidBuf</A> 
+
+    <LI><A 
+    href="#decl_SaveNet_MRF">SaveNet</A> 
+
+    <LI><A 
+    href="#decl_SetClique_MRF">SetClique</A> 
+
+    <LI><A 
+    href="#decl_SetProperty_MRF">SetProperty</A> 
+
+    <LI><A 
+    href="#decl_SetPTabular_MRF">SetPTabular</A> 
 
     </LI></UL>
   </UL>
@@ -816,6 +912,27 @@ In current evidence there are two observed continuous nodes: "NodeA" (with 2 dim
 <HR>
 
 <H3><A 
+name=decl_GetCurEvidenceLogLik>GetCurEvidenceLogLik</A></H3>
+<P class=Blurb>Returns logarithm of likelihood for current evidence 
+</P>
+<font class="interface">
+float GetCurEvidenceLogLik();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function returns logarithm of likelihood for current evidence.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+</p>
+<p class="example">
+net.EditEvidence("NodeA^true NodeB^false");<br>
+float logLik = net.GetCurEvidenceLogLik();
+</p>
+<HR>
+
+<H3><A 
 name=decl_ClearEvid>ClearEvid</A></H3>
 <P class=Blurb>Clears current evidence 
 </P>
@@ -898,6 +1015,35 @@ net.AddEvidToBuf("ContNodeB^dim1^5.0");
 <p class="description">
 There are two evidences for continuous nodes: "NodeA" (with 2 dimensions) and "NodeB" (with one dimension) in the last example which we add to the buffer.
 </p>
+<HR>
+
+<H3><A 
+name=decl_GetEvidBufLogLik>GetEvidBufLogLik</A></H3>
+<P class=Blurb>Returns array of logarithms of likelihood for evidences from buffer
+</P>
+<font class="interface">
+TokArr GetEvidBufLogLik();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function returns array of logarithms of likelihood for evidences from buffer.
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's generate evidences in buffer and find their sum.
+</p>
+<pre>
+<p class="example">
+net.GenerateEvidences(1000);
+TokArr bufLogLiks = net.GetEvidBufLogLik();
+float logLikBest = 0.0f;
+for(int i = 0; i < 1000; i++)
+{
+    logLikBest += bufLogLiks[i].FltValue();
+}
+</p>
+</pre>
 <HR>
 
 <H3><A 
@@ -987,6 +1133,33 @@ net.LearnParameters(evidences);
 <p class="example">
 TokArr evidences[] = {"NodeA^true NodeB^false", "NodeA^false NodeC^true"};<br>
 net.LearnParameters(evidences);
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetEMLearningCriterionValue>GetEMLearningCriterionValue</A></H3>
+<P class=Blurb>Returns criterion value for last EM learning performance 
+</P>
+<font class="interface">
+float GetEMLearningCriterionValue();
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>aValue
+  <DD>Array of evidences. Each evidence is array of observed nodes with values. 
+  <DT>nValue
+  <DD>Number of evidences.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">
+The function returns criterion value that was got during last EM learning performance.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+net.SetProperty("Learning", "em");<br>
+net.LearnParameters();<br>
+float resLogLik = net.GetEMLearningCriterionValue();
 </P>
 <HR>
 
@@ -3190,5 +3363,1137 @@ Load LIMID structure and distributions from file "net.xml":
 <p class="example">
 net.LoadNet("net.xml");
 </P>
+<HR>
+<H2><A name=decl_Class_MRF>Class MRF</A></H2>
+<HR>
+
+<P>Class MRF implements all functionality required for work with MRF networks. 
+The following functional groups can be distinguished:
+<UL>
+    <LI>Network creation (addition/deletion of nodes and arcs)<BR>
+    <A href="#decl_AddNode_MRF">AddNode</A>,
+    <A href="#decl_DelNode_MRF">DelNode</A>,
+    <A href="#decl_GetNumberOfNodes_MRF">GetNumberOfNodes</A>,
+    <A href="#decl_SetClique_MRF">SetClique</A>,
+    <A href="#decl_DestroyClique_MRF">DestroyClique</A>,
+    <A href="#decl_GetNumberOfCliques_MRF">GetNumberOfCliques</A>
+    </LI>
+    <LI>Setting/getting parameters<BR>
+    <A href="#decl_SetPTabular_MRF">SetPTabular</A>,
+    <A href="#decl_GetPTabular_MRF">GetPTabular</A>,
+    <A href="#decl_EditEvidence_MRF">EditEvidence</A>,
+    <A href="#decl_ClearEvid_MRF">ClearEvid</A>,
+    <A href="#decl_CurEvidToBuf_MRF">CurEvidToBuf</A>,
+    <A href="#decl_AddEvidToBuf_MRF">AddEvidToBuf</A>,
+    <A href="#decl_ClearEvidBuf_MRF">ClearEvidBuf</A>,
+    <A href="#decl_GetChildren_MRF">GetChildren</A>,
+    <A href="#decl_GetParents_MRF">GetParents</A>,
+    <A href="#decl_GetNeighbours_MRF">GetNeighbours</A>,
+    <A href="#decl_SetProperty_MRF">SetProperty</A>,
+    <A href="#decl_GetProperty_MRF">GetProperty</A>
+    </LI>
+    <LI>Learning parameters<BR>
+    <A href="#decl_LearnParameters_MRF">LearnParameters</A>
+    </LI>
+    <LI>Learning network structure<BR>
+    <A href="#decl_LearnStructure_MRF">LearnStructure</A>
+    </LI>
+    <LI>Inference in network<BR>
+    <A href="#decl_GetJPD_MRF">GetJPD</A>,
+    <A href="#decl_GetMPE_MRF">GetMPE</A>
+    </LI>
+    <LI>Data sampling<BR>
+    <A href="#decl_GenerateEvidences_MRF">GenerateEvidences</A>
+    </LI>
+    <LI>File I/O<BR>
+    <A href="#decl_LoadNet_MRF">LoadNet</A>,
+    <A href="#decl_SaveNet_MRF">SaveNet</A>,
+    <A href="#decl_LoadEvidBuf_MRF">LoadEvidBuf</A>,
+    <A href="#decl_SaveEvidBuf_MRF">SaveEvidBuf</A>
+    </LI>
+    <LI>more...</LI>
+</UL>
+<HR>
+
+
+<H3><A name=decl_MRF>MRF</A></H3>
+<P class=Blurb>Constructor</P>
+<font class="interface">
+MRF();
+</font>
+<DL>
+</DL>
+<H5>Discussion</H5>
+<p class="description">MRF class has only default constructor.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Create empty MRF:
+</p>
+<p class="example">
+MRF net;
+</p>
+<HR>
+
+<H3><A name=decl_AddNode_MRF>AddNode</A></H3>
+<P class=Blurb>Adds nodes</P>
+<font class="interface">
+void AddNode(TokArr nodes, TokArr subnodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>List of nodes with node types (discrete or continuous) specifying. 
+  <DT>subnodes
+  <DD>Array of values that nodes can take (or names of dimensions for continuous nodes). 
+</DD></DL>
+<H5>Discussion</H5>
+<p class="description">This function adds one or several nodes with the same probable states into the network.</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's add one discrete node "NodeA" with states "true" and "false" to the net:
+</p>
+<p class="example">
+net.AddNode(discrete^"NodeA", "true false");
+</p>
+<!--
+<p class="description">
+Add one-dimensional continuous node "NodeA" to net:
+</p>
+<p class="example">
+net.AddNode(continuous^"NodeA", "dim1");
+-->
+<p class="description">
+Now we are going to add discrete nodes "NodeA" and "NodeB" with states "true" and "false" to
+the net:
+</p>
+<p class="example">
+net.AddNode(discrete^"NodeA NodeB", "true false");
+</p>
+<!--
+<p class="description">
+Add multivariate nodes "NodeA" with 2 dimensions "dim1" and "dim2" to net:
+</p>
+<p class="example">
+net.AddNodee(continuous^"NodeA", "dim1 dim2");
+</p>
+-->
+<HR>
+
+<H3><A name=decl_DelNode_MRF>DelNode</A></H3>
+<P class=Blurb>Deletes nodes</P>
+<font class="interface">
+void DelNode(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of node names, that we want to delete. 
+  </DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function deletes one or several nodes from network. All cliques,
+that contains these nodes, are destroyed. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">The following call deletes &quot;NodeA&quot; and &quot;NodeB&quot;
+nodes from net:
+</p>
+<p class="example">
+net.DelNode("NodeA NodeB");
+</P>
+<HR>
+
+<H3><A name=decl_GetNodeType_MRF>GetNodeType</A></H3>
+<P class=Blurb>Returns types of the given nodes</P>
+<font class="interface">
+TokArr GetNodeType(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of node names. We are interesting in types of these nodes. 
+</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns array of given nodes types (discrete or
+continuous).
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+The following function call gets array of node types for &quot;NodeA&quot; and
+&quot;NodeB&quot; nodes:
+</p>
+<p class="example">
+   TokArr nodeTypes = net.GetNodeType("NodeA NodeB");
+</P>
+<HR>
+
+<H3><A name=decl_GetNumberOfNodes_MRF>GetNumberOfNodes</A></H3>
+<P class=Blurb>Returns number of nodes</P>
+<font class="interface">
+int GetNumberOfNodes() const;
+</font>
+<H5>Discussion</H5>
+<p class="description">The function returns number of nodes in network.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+   int N = net.GetNumberOfNodes();
+</P>
+<HR>
+
+<H3><A name=decl_SetClique_MRF>SetClique</A></H3>
+<P class=Blurb>Joins nodes into a clique</P>
+<font class="interface">
+void SetClique(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of nodes for new clique. 
+</DD></DL>
+<H5>Discussion</H5>
+<p class="description">This function joins nodes into a clique. Default uniform distribution is
+set on the clique. 
+Clique may also be formed with <A href="#decl_SetPTabular_MRF">SetPTabular</A> method. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">Next instruction joins &quot;NodeA&quot; and &quot;NodeB&quot;
+nodes to a clique:
+</p>
+<p class="example">
+net.SetClique("NodeA", "NodeB");
+</P>
+<HR>
+
+<H3><A name=decl_DestroyClique_MRF>DestroyClique</A></H3>
+<P class=Blurb>Destroys clique</P>
+<font class="interface">
+void DestroyClique(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Node array of clique, that is destroyed. 
+  </DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function destroys clique. Nodes are not deleted from the network.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">Let's destroy clique of &quot;NodeA&quot; and &quot;NodeB&quot;nodes:
+</p>
+<p class="example">
+net.DestroyClique("NodeA", "NodeB");
+</P>
+<HR>
+
+<H3><A name=decl_GetNumberOfCliques_MRF>GetNumberOfCliques</A></H3>
+<P class=Blurb>Returns number of cliques</P>
+<font class="interface">
+int GetNumberOfCliques() const;
+</font>
+<H5>Discussion</H5>
+<p class="description">The function returns number of cliques in network.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+   int N = net.GetNumberOfNodes();
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetPTabular_MRF>SetPTabular</A></H3>
+<P class=Blurb>Assigns probability to one or several values combinations of the nodes
+in one discrete clique 
+</P>
+<font class="interface">
+void SetPTabular(TokArr value, TokArr prob);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>value
+  <DD>Values of nodes in one clique, for which probabilities are set. 
+  <DT>prob
+  <DD>Array of probability values .</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets probability to one or several values combinations of the nodes
+in one discrete clique. If clique doesn't exist, then it will be created. In value array a node may be specified without value. It means
+that probabilities will be set for values combinations with all values of this node in the same order as values were
+specified with <A href="#decl_AddNode_MRF">AddNode</A> method for the node. If distribution 
+of probabilities is not specified it is considered as uniform.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Consider &quot;NodeA&quot; and &quot;NodeB&quot; nodes both can take on one of two values: "true" and
+&quot;false&quot;. Let's join them into clique and set probabilities for some of
+their values: 
+</p>
+<p class="example">
+net.SetPTabular("NodeA^true NodeB^false", "0.3");
+</P>
+<p class="description">
+Let's consider how to specify some values of probabilities for clique omitting values for nodes:  
+</p>
+<p class="example">
+net.AddNode("NodeA NodeB", "true false");<br>
+net.SetPTabular("NodeB NodeA", "0.01 0.46 0.3 0.22");<br>
+</P>
+<p class="description">
+This SetPTabular() calling form new clique of nodes "NodeA" and "NodeB" with folowing probabilities:
+<table width=100%>
+<tr>
+  <td width=10%>NodeB</td><td width=10%>NodeA</td><td width=80%>Probability</td>
+<tr>
+<tr>
+  <td>true</td><td>true</td><td>0.01</td>
+<tr>
+<tr>
+  <td>true</td><td>false</td><td>0.46</td>
+<tr>
+<tr>
+  <td>false</td><td>true</td><td>0.3</td>
+<tr>
+<tr>
+  <td>false</td><td>false</td><td>0.22</td>
+<tr>
+</table>
+<HR>
+
+<H3><A 
+name=decl_GetPTabular_MRF>GetPTabular</A></H3>
+<P class=Blurb>Returns probability distribution of discrete clique 
+</P>
+<font class="interface">
+TokArr GetPTabular(TokArr value);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>value
+  <DD>Array of clique nodes and node values, whose probabilities are needed.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns probability of discrete clique. If values of node are
+specified in 
+node array, only probabilities of these values will be returned. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's consider getting the probabilities for clique, which is formed of &quot;NodeA&quot; and
+&quot;NodeB&quot; nodes from example in previous section. 
+Some variants of getting the probabilites are available:
+</p>
+<p class="example">
+TokArr PNodeATrue = net.GetPTabular("NodeA^true NodeB");<br>
+TokArr PNodeAFalseNodeBTrue = net.GetPTabular("NodeB^true NodeA^false");<br>
+TokArr PNodeANodeB = net.GetPTabular("NodeA NodeB");<br>
+</P>
+<p class="description">
+Here are the results of these calls:
+</p>
+<p class="example">
+<table>
+<tr>
+  <td>PNodeATrue</td>
+  <td>"NodeA^true^NodeB^true^0.01 NodeA^true^NodeB^false^0.3</td>
+</tr>
+<tr>
+  <td>PNodeAFalseNodeBTrue</td>
+  <td>"NodeB^true^NodeA^false^0.46"</td>
+</tr>
+<tr>
+  <td>PNodeBNodeATrue</td>
+  <td>"NodeA^true^NodeB^true^0.01 
+       NodeA^true^NodeB^false^0.3 
+       NodeA^false^NodeB^true^0.46 
+       NodeA^false^NodeB^false^0.22"</td>
+</tr>
+</table>
+<HR>
+
+<!--
+<H3><A 
+name=decl_SetPGaussian_MRF>SetPGaussian</A></H3>
+<P class=Blurb>Sets parameters for gaussian variate. 
+</P>
+<font class="interface">
+void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>var
+  <DD>Name of node which probability is setted. 
+  <DT>mean
+  <DD>Vector of means. 
+  <DT>variance
+  <DD>Matrix of variance (for one-dimensional variate it is only one number).
+  <DT>weight
+  <DD>Matrixes of weights. This parameter is needed only when the node has parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case" </DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets parameters for gaussian variate. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's set gaussian distribution for one - dimentional node without parents.
+</p>
+<p class="example">
+net.SetPGaussian("x0", "1.0", "4.0");
+</p>
+<p class="description">
+Let's set gaussian distribution for one - dimentional node with two parents.
+</p>
+<p class="example">
+net.SetPGaussian("x2", "0.0", "2.0", "1.0 2.0");
+</P>
+<p class="description">
+Let's set gaussian distribution for two - dimensional node without parents.
+</p>
+<p class="example">
+net.SetPGaussian("x0", "1.0 2.5", "4.0 0.1 0.1 4.0");
+</p>
+<p class="description">
+Let's set gaussian distribution for two - dimentional node with three two - dimensional parents. Three matrixes of weights are:
+</p>
+<p class="description">
+<table>
+<tr>
+  <td>The first matrix</td>
+  <td>1.0</td>
+  <td>2.0</td>
+  <td>The second</td>
+  <td>5.0</td>
+  <td>6.0</td>
+  <td>The third</td>
+  <td>9.0</td>
+  <td>10.0</td>
+</tr>
+<tr>
+  <td></td>
+  <td>3.0</td>
+  <td>4.0</td>
+  <td></td>
+  <td>7.0</td>
+  <td>8.0</td>
+  <td></td>
+  <td>11.0</td>
+  <td>12.0</td>
+</tr>
+</table>
+</p>
+<p class="example">
+net.SetPGaussian("x2", "1.0 2.5", "4.0 0.1 0.1 4.0", "1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0 12.0");
+</P>
+<HR>
+-->
+
+<H3><A 
+name=decl_EditEvidence_MRF>EditEvidence</A></H3>
+<P class=Blurb>Edits current evidence 
+</P>
+<font class="interface">
+void EditEvidence(TokArr values);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>values
+  <DD>Array of observed nodes with values.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets or edits current evidence. New observed nodes are added to current evidence
+with EditEvidence method or old values of observed nodes are changed.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+</p>
+<p class="example">
+net.EditEvidence("NodeA^true NodeB^false");<br>
+net.EditEvidence("NodeA^false NodeC^true");
+</P>
+<p class="description">
+In current evidence there are three observed tabular nodes: "NodeA", "NodeB" (both are false) and "NodeC"(true).
+</p>
+<HR>
+
+<H3><A 
+name=decl_ClearEvid_MRF>ClearEvid</A></H3>
+<P class=Blurb>Clears current evidence 
+</P>
+<font class="interface">
+void ClearEvid();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function clears current evidence. 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+net.EditEvidence("NodeA^true NodeB^false");<br>
+net.ClearEvid();
+</P>
+<p class="description">
+Current evidence is empty now.
+</p>
+<HR>
+
+<H3><A 
+name=decl_CurEvidToBuf_MRF>CurEvidToBuf</A></H3>
+<P class=Blurb>Stores current evidence to the evidence buffer 
+</P>
+<font class="interface">
+void CurEvidToBuf();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function stores current evidence to the buffer of
+evedences.&nbsp; Current evidence is not cleared after this action.
+<H5>
+Example of usage
+</H5>
+<p class="example">
+net.EditEvidence("NodeA^true NodeB^false");<br>
+net.EditEvidence("NodeA^false NodeC^true");<br>
+net.CurEvidToBuf();<br>
+net.EditEvidence("NodeB^true");<br>
+net.CurEvidToBuf();
+</P>
+<p class="description">There are three observed nodes in current evidence now:
+&quot;NodeA&quot; takes on &quot;false&quot; value , "NodeB" and "NodeC" take on
+&quot;true&quot; value.
+</p>
+<p class="description">There are two evidences in evidence buffer&nbsp; now. In first evidence "NodeA" and "NodeB" take on
+&quot;false&quot; value, and "NodeC" 
+takes on &quot;true&quot; value. In second one "NodeA" takes on &quot;false&quot;
+value, "NodeB" and "NodeC" take on &quot;true&quot; value .
+</p>
+<HR>
+
+<H3><A 
+name=decl_AddEvidToBuf_MRF>AddEvidToBuf</A></H3>
+<P class=Blurb>Adds evidence to the evidence buffer 
+</P>
+<font class="interface">
+void AddEvidToBuf(TokArr values);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>values
+  <DD>Array of observed nodes with values.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function adds evidence to the buffer. After this
+action current evidence is not changed.
+<H5>
+Example of usage
+</H5>
+<p class="example">
+net.AddEvidToBuf("NodeA^true NodeB^false");<br>
+net.AddEvidToBuf("NodeA^false NodeC^true");
+</P>
+<p class="description">There are two evidences in evidence buffer now. In first evidence "NodeA" takes on
+&quot;true&quot; value and "NodeB" takes on &quot;false&quot; value.
+In second one "NodeA" takes on &quot;false&quot; value and "NodeC" takes on
+&quot;true&quot; value.
+</p>
+<HR>
+
+<H3><A 
+name=decl_ClearEvidBuf_MRF>ClearEvidBuf</A></H3>
+<P class=Blurb>Clears evidence buffer 
+</P>
+<font class="interface">
+void ClearEvidBuf();
+</font>
+<H5>Arguments</H5>
+<DL>
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function clears evidence buffer. 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+net.AddEvidToBuf("NodeA^true NodeB^false");<br>
+net.AddEvidToBuf("NodeA^false NodeC^true");<br>
+net.ClearEvidBuf();
+</P>
+<p class="description">
+Evidence buffer is empty now.
+</p>
+<HR>
+
+<H3><A 
+name=decl_MaskEvidBuf_MRF>MaskEvidBuf</A></H3>
+<P class=Blurb>Hides nodes of current learning buffer with given probability 
+</P>
+<font class="interface">
+void MaskEvidBuf(TokArr whatNodes = "");
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>whatNodes
+  <DD>Array of nodes.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function hides nodes of current learning buffer with given probability. The function applies for all existing 
+values (hidden and observed), i.e. observed may become hidden and hidden may become observed. By default this function 
+unhides all hidden values. If a node did not have sample then it can not be unhidden.
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+</P>
+<HR>
+
+<H3><A 
+name=decl_LearnParameters_MRF>LearnParameters</A></H3>
+<P class=Blurb>Learns network parameters 
+</P>
+<font class="interface">
+void LearnParameters(TokArr aValue[] = NULL, int nValue = 0);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>aValue
+  <DD>Array of evidences. Each evidence is array of observed nodes with values. 
+  <DT>nValue
+  <DD>Number of evidences.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">
+The function learns network parameters using evidence buffer. If function is called
+with arguments, new 
+evidences are added to evidence buffer and learning is started up. EM learning algorithm
+is used for parameters learning.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Folowing three code pieces are equal:
+</p>
+<p class="example">
+net.AddEvidToBuf("NodeA^true NodeB^false");<br>
+net.AddEvidToBuf("NodeA^false NodeC^true");<br>
+net.LearnParameters();
+</P>
+<p class="example">
+net.AddEvidToBuf("NodeA^true NodeB^false");<br>
+TokArr evidences[] = {"NodeA^false NodeC^true"};<br>
+net.LearnParameters(evidences);
+</P>
+<p class="example">
+TokArr evidences[] = {"NodeA^true NodeB^false", "NodeA^false NodeC^true"};<br>
+net.LearnParameters(evidences);
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetMPE_MRF>GetMPE</A></H3>
+<P class=Blurb>Returns MPE 
+</P>
+<font class="interface">
+TokArr GetMPE(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of nodes from one clique.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns most probable explanation (MPE) for specified nodes using current evidence. The
+desired inference algorithm
+may be set to &quot;Inference&quot; property with the help of <A href="#decl_SetProperty_MRF">SetProperty()</A>
+method. Junction Tree inference engine is used by default . Besides Gibbs
+sampling
+and Naive inference are available. If network is MRF2 (all cliques consist of two
+nodes), Pearl inference can be used.
+Corresponding &quot;Inference&quot; property values are "jtree", "gibbs", "naive" and "pearl".
+<H5>
+Example of usage
+</H5>
+<p class="description">Let's get MPE for &quot;NodeA&quot; node with Pearl inference:
+</p>
+<p class="example">
+net.SetProperty("Inference", "pearl");<br>
+TokArr jtreeMPENodeA = net.GetMPE("NodeA");
+</P>
+<p class="description">The following function call gets MPE for &quot;NodeA&quot; and
+&quot;NodeB&quot; nodes&nbsp; with Junction Tree inference (&quot;NodeA&quot; and
+&quot;NodeB&quot; nodes have to be from one family):
+</p>
+<p class="example">
+net.SetProperty("Inference", "jtree");<br>
+TokArr pearlMPENodeA = net.GetMPE("NodeA NodeB");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetJPD_MRF>GetJPD</A></H3>
+<P class=Blurb>Returns JPD 
+</P>
+<font class="interface">
+TokArr GetJPD(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Array of nodes from one family.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns joint probability distribution (JPD) for specified nodes using current evidence. The inference algorithm
+may be set to &quot;Inference&quot; property&nbsp; with <A href="#decl_SetProperty_MRF">SetProperty()</A>
+method. Junction Tree inference engine is used by default. Besides Gibbs
+sampling
+and Naive inference are available. If network is MRF2 (all cliques consist of two nodes) then Pearl inference can be used.
+Corresponding property "Inference" values are "jtree", "gibbs", "naive" and "pearl".
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get JPD for &quot;NodeA&quot; node with Junction Tree inference:
+</p>
+<p class="example">
+net.SetProperty("Inference", "jtree");<br>
+TokArr jtreeJPDNodeA = net.GetJPD("NodeA");
+</P>
+<p class="description">The following function call gets JPD for &quot;NodeA&quot; and
+&quot;NodeB&quot; nodes&nbsp; with Pearl inference (&quot;NodeA&quot; and &quot;NodeB&quot;
+nodes have to be from one family):
+</p>
+<p class="example">
+net.SetProperty("Inference", "pearl");<br>
+TokArr pearlJPDNodeA = net.GetJPD("NodeA NodeB");
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetProperty_MRF>SetProperty</A></H3>
+<P class=Blurb>Sets value to the property
+</P>
+<font class="interface">
+void SetProperty(const char *name, const char *value);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>name
+  <DD>Name of property. 
+  <DT>value
+  <DD>Value of property.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function sets value to the property with given name. The function is used
+for specifying algorithms
+for learning, getting MPE and JPD and to specify parameters of algorithms. User can use this function to define his own
+properties. Available properties names with their possible values and descriptions are presented in table:
+</p>
+<table width="100%">
+<tr><td width="50pt" Rowspan="10"></td>
+<td><table BORDER="1">
+  <tr>
+     <td width="20%"><center><b>Property Name</b></center></td>
+     <td width="25%"><center><b>Possible Values</b></center></td>
+     <td width="55%"><center><b>Description</b></center></td>
+  </tr>
+  <tr>
+     <td>"Learning"</td>
+     <td>"bayes", "em"</td>
+     <td>Algorithm for parameters learning. EM Learning is used by default.</td>
+  </tr>
+  <tr>
+     <td>"EMMaxNumberOfIterations"</td>
+     <td>Any positive integer number</td>
+     <td>Maximum number of iterations of EM Learning algorithm. Default value is 5.</td>
+  </tr>
+  <tr>
+     <td>"EMTolerance"</td>
+     <td>Any positive float number</td>
+     <td>Precision that  EM Learning algorithm runs up to. Default value is 0.001.</td>
+  </tr>
+  <tr>
+     <td>"Inference"</td>
+     <td>"pearl", "jtree", "gibbs", "naive"</td>
+     <td>Inference algorithm that is used for getting MPE and JPD. Pearl Inference is used by default.</td>
+  </tr>
+  <tr>
+     <td>"PearlMaxNumberOfIterations"</td>
+     <td>Any positive integer number</td>
+     <td>Maximum number of iterations of Pearl Inference algorithm. Default value is equal to number of nodes
+      in the net.</td>
+  </tr>
+  <tr>
+     <td>"PearlTolerance"</td>
+     <td>Any positive float number</td>
+     <td>Precision that Pearl Inference algorithm runs up to. Default value is 1e-6.</td>
+  </tr>
+  <tr>
+     <td>"GibbsNumberOfIterations"</td>
+     <td>Any positive integer number</td>
+     <td>Number of iterations of Gibbs Sampling Inference algorithm. Default value is 600.</td>
+  </tr>
+  <tr>
+     <td>"GibbsThresholdIteration"</td>
+     <td>Any positive integer number less than GibbsNumberOfIterations value</td>
+     <td>Number of first itearation that use samples processing results of the previous iteration. Default value is 10.</td>
+  </tr>
+  <tr>
+     <td>"GibbsNumberOfStreams"</td>
+     <td>Any positive integer number</td>
+     <td>Number of streams that generate independent samples. Default value is 1.</td>
+  </tr>
+</table>
+</table>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's set Pearl inference for getting MPE and JPD:
+</p>
+<p class="example">
+net.SetProperty("Inference", "pearl");
+</P>
+<p class="description">
+Then set maximum of iterations for Pearl inference:
+</p>
+<p class="example">
+net.SetProperty("PearlMaxNumberOfIterations", "50");
+</P>
+<p class="description">
+Any other property can be defined by user:
+</p>
+<p class="example">
+net.SetProperty("IterationsNumber", "100");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetProperty_MRF>GetProperty</A></H3>
+<P class=Blurb>Returns value of the property with given name
+</P>
+<font class="interface">
+String GetProperty(const char *name) const;
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>name
+  <DD>Name of property.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns value of the property with given name. If property was not set with 
+<A href="#decl_SetProperty_MRF">SetProperty</A> method, empty string is returned.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+net.SetProperty("Inference", "pearl");<br>
+String inferenceType = net.GetProperty("Inference");<br>
+String learningType = net.GetProperty("Learning");
+</P>
+<p class="description">
+As result string inferenceType is "pearl" and string learningType is empty.
+</p>
+<HR>
+
+<!--
+<H3><A 
+name=decl_GetGaussianMean_MRF>GetGaussianMean</A></H3>
+<P class=Blurb>Returns mean of gaussian distribution 
+</P>
+<font class="interface">
+TokArr GetGaussianMean(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Name of node whose mean are needed</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns mean of gaussian distribution. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+TokArr MeanX2 = net.GetGaussianMean("x2");
+</p>
+
+<HR>
+
+<H3><A 
+name=decl_GetGaussianCovar_MRF>GetGaussianCovar</A></H3>
+<P class=Blurb>Returns variance of gaussian distribution 
+</P>
+<font class="interface">
+TokArr GetGaussianCovar(TokArr nodes);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Name of node whose variance are needed. 
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function returns variance of gaussian distribution. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+TokArr CovarX2 = net.GetGaussianCovar("x2");
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetGaussianWeights_MRF>GetGaussianWeights</A></H3>
+<P class=Blurb>Returns weights of gaussian distribution. 
+</P>
+<font class="interface">
+TokArr GetGaussianWeights(TokArr nodes, TokArr parent);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>Name of node whose weights are needed. 
+  <DT>parent
+  <DD>A parent of node which weights we are interested in. 
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function returns weights of parent of specified node . 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+TokArr WeightsYX2 = net.GetGaussianWeights("y", "x2");
+</P>
+<HR>
+-->
+
+<H3><A 
+name=decl_SaveNet_MRF>SaveNet</A></H3>
+<P class=Blurb>Saves network to file 
+</P>
+<font class="interface">
+void SaveNet(const char *filename);
+</font>
+<P>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">
+The function saves network to file of "xml" format with given name. Net structure and nodes
+probability distributions are stored to file.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+net.SaveNet("net.xml");
+</P>
+<HR>
+
+<H3><A 
+name=decl_SaveEvidBuf_MRF>SaveEvidBuf</A></H3>
+<P class=Blurb>Saves evidence buffer content to file 
+</P>
+<font class="interface">
+int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name. 
+  <DT>mode
+  <DD>This parameter specifies separating character. Two separating characters are available: ',' (if mode is set to eCSV)
+and tab (if mode is set to eTSV).</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function saves evidence buffer content to file of "cvs" format. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Save two evidences to file with ',' separator:
+</p>
+<p class="example">
+net.ClearEvidBuf();<br>
+net.AddEvidToBuf("NodeA^true NodeB^false");<br>
+net.AddEvidToBuf("NodeA^false NodeC^true");<br>
+net.SaveEvidBuf("evidence1.csv");
+</P>
+<p class="description">
+Save the same two evidences to file with tab separator:
+</p>
+<p class="example">
+net.ClearEvidBuf();<br>
+net.AddEvidToBuf("NodeA^true NodeB^false");<br>
+net.AddEvidToBuf("NodeA^false NodeC^true");<br>
+net.SaveEvidBuf("evidence2.csv", NetConst::eTSV);
+</P>
+<HR>
+
+<H3><A 
+name=decl_LoadNet_MRF>LoadNet</A></H3>
+<P class=Blurb>Loads network from file 
+</P>
+<font class="interface">
+void LoadNet(const char *filename);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function loads network from file with given name. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+The following function call loads net structure and distributions from file "net.xml":
+</p>
+<p class="example">
+net.LoadNet("net.xml");
+</P>
+<HR>
+
+<H3><A 
+name=decl_LoadEvidBuf_MRF>LoadEvidBuf</A></H3>
+<P class=Blurb>Loads evidence buffer content from file 
+</P>
+<pre>
+<font class="interface">
+int LoadEvidBuf(const char *filename, 
+                NetConst::ESavingType mode = NetConst::eCSV, 
+                TokArr columns = TokArr());
+</font>
+</pre>
+<H5>Arguments</H5>
+<DL>
+  <DT>filename
+  <DD>File name. 
+  <DT>mode
+  <DD>Separating character used in file is passed in this parameter. Two separating characters are available: 
+',' (if mode is set to eCSV) and tab (if mode is set to eTSV). 
+  <DT>columns
+  <DD>Names of nodes.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function loads evidence buffer content from file. Buffer is cleared before loading. We can load evidences created in
+another net with another node names but with the same values of nodes. To do this we must set new node names in evidences 
+using array "columns". The function returns number of evidences loaded from file.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Load evidences from file "evidence1.csv" with ',' separators and perform learning
+using them:
+</p>
+<p class="example">
+net.LoadEvidBuf("evidence1.csv");<br>
+net.LearnParameters();
+</P>
+<HR>
+<!--
+<H3><A 
+name=decl_MakeUniformDistribution_MRF>MakeUniformDistribution</A></H3>
+<P class=Blurb>Sets uniform distribution on all nodes 
+</P>
+<font class="interface">
+void MakeUniformDistribution();
+</font>
+<H5>Arguments</H5>
+<DL>
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function .... 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+</P>
+<HR>
+-->
+<H3><A 
+name=decl_GenerateEvidences_MRF>GenerateEvidences</A></H3>
+<P class=Blurb>Generate samples for the network 
+</P>
+<font class="interface">
+void GenerateEvidences( int nSamples, bool ignoreCurrEvid = false, TokArr whatNodes = "");
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nSamples
+  <DD>Number of samples to generate. 
+  <DT>ignoreCurrEvid 
+  <DD>Flag of current evidence ignorance. If true - the current evidence will be ignored. Default value is false.  
+  <DT>whatNodes 
+  <DD>Array of variables names to generate and portion of observed data. Default empty array means that all samples will be generated. </DD>
+</DL>
+<H5>Discussion</H5>
+<p class="description">The function generates the specified number of samples from joint probability distribution of the network.
+Samples may be generated using the current evidence (which was set with <A href="#decl_EditEvidence_MRF">EditEvidence</A> function)
+ or without the current evidence. The function allows generating samples with specified portion of missing variables.
+If current evidence is taken into account (ignoreCurrEvid == true), sampled node
+values present in evidence
+will be equal to values of current evidence. 
+The sampled data can be generated so that there will be some portion of missing values - for every node user may specify the portion of 
+non-missing values in the generated array.  
+The newly generated samples will be added to internal buffer (learning buffer). To clear learning buffer use <A href="#decl_ClearEvidBuf_MRF">ClearEvidBuf</A>. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Generate 100 samples for all network nodes ignoring current evidence: 
+</p>
+<p class="example">
+GenerateEvidences( 100, true);
+</P>
+<p class="description">
+Generate 100 samples only for nodes "NodeA","NodeB" and "NodeC" using current evidence:
+</p>
+<p class="example">
+TokArr whatNodesToSample = TokArr("NodeA") & "NodeB" & "NodeC";<br>
+GenerateEvidences(100, false, whatNodesToSample);
+</P>
+<p class="description">
+Generate 100 samples only for nodes "NodeA","NodeB" and "NodeC" using current evidence. "NodeA" should contain 90% of observed values, "NodeB" and "NodeC" should contain 100% of observed data:
+</p>
+<p class="example">
+    TokArr whatNodesToSample = Tok("NodeA")^0.9 & "NodeB" & Tok("NodeC")^1.0;<br>
+    GenerateEvidences( 100, false, whatNodesToSample);
+</P>
+<p class="description">
+Generate 100 samples for nodes "NodeA","NodeB" and "NodeC" using current evidence. All nodes should contain 90% of observed values:
+</p>
+<p class="example">
+    TokArr whatNodesToSample = (Tok("NodeA") "NodeB" & Tok("NodeC") ) ^ 0.9;<br>
+    GenerateEvidences( 100, false, whatNodesToSample);
+</P>
+<p class="description">
+Generate 100 samples for all nodes using current evidence. All nodes should contain 90% of observed values:
+</p>
+<p class="example">
+    TokArr whatNodesToSample = 0.9;<br>
+    GenerateEvidences( 100, false, whatNodesToSample);
+</P>
+
 <HR>
 </DIV></BODY></HTML>
