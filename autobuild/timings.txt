@@ -3581,3 +3581,17 @@ Data_begin
  everage time of inference doing,
  CPU Freq,
 ==
+11/16/04 21:20:05	w2k_icc	crashed	crashed_54.7	testGibbsInference
+Header_begin
+  Processor,Pentium
+  OS,WindowsNT v5.0 build 2195
+  Start_Date,
+  Start_Time,Wed Nov 17 00:57:17 2004
+Header_end
+Data_begin
+  Flavour,Function,Value,Units,Comments,Param1,Param2,Param3,Param4
+  d,testPerformanceJTreeInf,1.273905e-004,4.878274e-004,3.579545e+004,
+ time of inference procedure creation,
+ everage time of inference doing,
+ CPU Freq,
+==
