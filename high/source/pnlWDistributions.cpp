@@ -23,7 +23,8 @@ WDistributions::WDistributions(TokenCover *pToken): m_pToken(pToken)
 
 void WDistributions::Setup(int iNode)
 {
-    int nodeClass = m_pToken->NodesClassification(TokArr(Tok(m_pToken->Node(iNode))));
+    TokArr ta(Tok(m_pToken->Node(iNode)));
+    int nodeClass = m_pToken->NodesClassification(ta);
 
     if(iNode >= m_aDistribution.size())
     {
@@ -43,7 +44,8 @@ void WDistributions::Setup(int iNode)
     Vector<int> aParent;
     
     m_pToken->Graph()->GetParents(&aParent, iNode);
-    m_aDistribution[iNode]->Setup(m_pToken->Node(iNode), m_pToken->Nodes(aParent));
+    Vector<TokIdNode*> parTokId = m_pToken->Nodes(aParent);
+    m_aDistribution[iNode]->Setup(m_pToken->Node(iNode), parTokId);
     m_aDistribution[iNode]->SetDefaultDistribution();
 }
 
@@ -91,7 +93,8 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
 
     DropDistribution(iNode);
     
-    int nodeClass = m_pToken->NodesClassification(TokArr(Tok(m_pToken->Node(iNode))));
+    TokArr ta(Tok(m_pToken->Node(iNode)));
+    int nodeClass = m_pToken->NodesClassification(ta);
     if (nodeClass == eNodeClassDiscrete )
     {
         static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->GetRawData(&nElement, &pData);
@@ -123,7 +126,7 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
 }
 
 void WDistributions::FillData(TokArr &value, TokArr &probability,
-			      TokArr &parentValue, pnl::EMatrixType matType)
+			      const TokArr &parentValue, pnl::EMatrixType matType)
 {
     static const char fname[] = "FillData";
 
@@ -131,11 +134,12 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
 
     int index = Token().iNode(value[0]);
 
-    int nodeClass = m_pToken->NodesClassification(TokArr(Tok(m_pToken->Node(index))));
+    TokArr ta(Tok(m_pToken->Node(index)));
+    int nodeClass = m_pToken->NodesClassification(ta);
 
     if(parentValue.size())
     {
-	Token().Resolve(parentValue);
+	Token().Resolve(const_cast<TokArr&>(parentValue));
     }
 
     if (nodeClass == eNodeClassDiscrete)

@@ -201,7 +201,7 @@ bool WGraph::DelArc(const char *from, const char *to)
     return DelArc(INode(from), INode(to));
 }
 
-int WGraph::INode(String &name) const
+int WGraph::INode(const String &name) const
 {
     MapSI::const_iterator it = m_iNodeMap.find(name);
     return (it != m_iNodeMap.end()) ? it->second:-1;

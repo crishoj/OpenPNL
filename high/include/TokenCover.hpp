@@ -42,7 +42,7 @@ public:
     void SetValue(int iNode, int iValue, String &value);
 
     TokIdNode *Node(int iNode) const;
-    TokIdNode *Node(Tok &node) const;
+    TokIdNode *Node(const Tok &node) const;
     Vector<TokIdNode*> Nodes(Vector<int> aiNode);
     WGraph *Graph() const { return m_pGraph; }
 

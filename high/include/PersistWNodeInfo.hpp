@@ -9,7 +9,7 @@
 
 struct PNLHIGH_API WNodeInfo: public pnl::CPNLBase
 {
-    WNodeInfo(String &name, pnl::CNodeType nt);
+    WNodeInfo(const String &name, pnl::CNodeType nt);
     WNodeInfo() {}
 
     String m_Name;

@@ -123,7 +123,9 @@ bool TokenCover::CopyRecursive(TokIdNode *to, const TokIdNode *from)
 
 int TokenCover::AddNode(String &nodeName)
 {
-    return AddNode(Tok(nodeName), TokArr("True False"));
+    Tok t(nodeName);
+    TokArr ta("True False");
+    return AddNode(t, ta);
 }
 
 void TokenCover::AddNode(TokArr &nodes, TokArr &values)
@@ -241,7 +243,7 @@ TokIdNode *TokenCover::Node(int iNode) const
     return Tok(m_pGraph->NodeName(iNode)).Node(m_aNode);
 }
 
-TokIdNode *TokenCover::Node(Tok &node) const
+TokIdNode *TokenCover::Node(const Tok &node) const
 {
     return node.Node(m_aNode);
 }

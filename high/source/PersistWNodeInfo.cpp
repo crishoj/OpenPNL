@@ -9,7 +9,7 @@
 
 // WNodeInfo
 
-WNodeInfo::WNodeInfo(String &name, pnl::CNodeType nt): m_Name(name), m_NodeType(nt)
+WNodeInfo::WNodeInfo(const String &name, pnl::CNodeType nt): m_Name(name), m_NodeType(nt)
 {
 }
 

@@ -16,11 +16,15 @@
 #pragma warning(disable : 4127) // conditional expression is constant
 #endif // _MSC_VER
 
+#if !defined(WIN32)
+#define PNLHIGH_API
+#else
 #ifdef PNLHIGH_EXPORTS
 #define PNLHIGH_API __declspec(dllexport) 
 #else
 #define PNLHIGH_API __declspec(dllimport)
 #endif
+#endif // WIN32
 
 namespace NetConst
 {

@@ -308,7 +308,7 @@ int ProbabilisticNet::SaveEvidBuf(const char *filename, NetConst::ESavingType mo
 
     lex.Eol();
 
-    pnl::pnlString str;
+    pnl::pnlString str, tmpstr;
     pnl::valueVector v;
     
     // write evidences one by one
@@ -351,13 +351,15 @@ int ProbabilisticNet::SaveEvidBuf(const char *filename, NetConst::ESavingType mo
 			str << v[j].GetFlt();
 		    }
 		    
-		    lex.PutValue(String(str.c_str()));
+		    tmpstr = String(str.c_str());
+		    lex.PutValue(tmpstr);
 		}
 		++i;
 	    }
 	    else
 	    {
-		lex.PutValue(String());
+                tmpstr = String();
+		lex.PutValue(tmpstr);
 	    }
 	}
 
@@ -401,14 +403,16 @@ int ProbabilisticNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mo
 	}
     }
 
+    TokArr tmpTokArr;
     if(columns.size())
     {
 	for(iCol = 0; iCol < columns.size(); iCol++)
 	{
 	    if(columns[iCol] != "")
 	    {
-		MustBeNode(TokArr(columns[iCol]));
-		nColInUse++;
+                tmpTokArr = TokArr(columns[iCol]);
+                MustBeNode(tmpTokArr);
+                nColInUse++;
 	    }
 	}
 	header = columns;
@@ -728,7 +732,7 @@ void ProbabilisticNet::Reset(const pnl::CGraphicalModel &model)
 
 //=== inner functions ===
 
-pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
+pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
 {
     PNL_CHECK_FOR_ZERO(aValue.size());// empty aValue is prohibited
     Vector<int> aiNode, aiValue, aNodeFlag;
@@ -739,7 +743,7 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
     static const char fname[] = "CreateEvidence";
 
     Graph()->Graph();
-    ExtractTokArr(aValue, &aiNode, &aiValue, &Graph()->MapOuterToGraph());
+    ExtractTokArr(const_cast<TokArr&>(aValue), &aiNode, &aiValue, &Graph()->MapOuterToGraph());
     aNodeFlag.assign(nNetNode(), 0);
 
     // mark nodes for evidence (aNodeFlag)
@@ -1043,7 +1047,8 @@ void ProbabilisticNet::SplitNodesByObservityFlag(Vector<int> *aiObserved, Vector
 {
     PNL_CHECK_IS_NULL_POINTER(aiObserved);
 
-    Vector<TokIdNode*> aObs = Token()->ExtractNodes(m_EvidenceBoard.GetBoard());
+    TokArr board = m_EvidenceBoard.GetBoard();
+    Vector<TokIdNode*> aObs = Token()->ExtractNodes(board);
     int i, j;
     int nNode = nNetNode();
 

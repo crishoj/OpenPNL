@@ -28,7 +28,8 @@ public:
     bool IsValid(int iNode);
     void GetNodeTypeInfo(bool *pbDiscrete, int *pSize, int iNode);
     void ResetDistribution(int iNode, pnl::CFactor &ft);
-    void FillData(TokArr &value, TokArr &probability, TokArr &parentValue, pnl::EMatrixType matType = pnl::matTable);
+    void FillData(TokArr &value, TokArr &probability, const TokArr &parentValue, 
+        pnl::EMatrixType matType = pnl::matTable);
 
 protected:
     virtual void DoNotify(int message, int iNode, ModelEngine *pObj);

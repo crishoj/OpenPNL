@@ -43,7 +43,7 @@ public:
     bool DelArc(const char *from, const char *to);
 
     // translation: name of node => index
-    int INode(String &name) const;
+    int INode(const String &name) const;
     int INode(const char *name) const { return INode(String(name)); }
     
     // translation: name of node <= index

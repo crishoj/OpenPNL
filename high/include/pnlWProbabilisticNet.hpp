@@ -80,7 +80,7 @@ public:
     void Reset(const pnl::CGraphicalModel &model);
 
 public:
-    pnl::CEvidence *CreateEvidence(TokArr &aValue);
+    pnl::CEvidence *CreateEvidence(const TokArr &aValue);
     void GetTokenByEvidence(TokArr *tEvidence, pnl::CEvidence *evidence);
     int nNetNode() const;
     void MustBeNode(TokArr &nodes) const;
