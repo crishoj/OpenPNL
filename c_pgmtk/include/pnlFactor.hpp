@@ -57,6 +57,11 @@ typedef PNL_API enum
 ,   ftIDPotential
 }  EFactorType;
 
+bool PNL_API pnlIsSubset(int smaSize, int* smaDomain, int bigSize, int* bigDomain);
+intVector PNL_API pnlIntersect(int size1, int* Domain1, int size2, int* Domain2);
+intVector PNL_API pnlSetUnion(int size1, int* Domain1, int size2, int* Domain2);
+bool PNL_API pnlIsIdentical(int size1, int* Domain1, int size2, int* Domain2);
+
 class CDistribFun;
 class CTabularDistribFun ;
 class CPotential;

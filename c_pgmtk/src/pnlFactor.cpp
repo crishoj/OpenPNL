@@ -37,6 +37,61 @@
 #include "pnlTreeCPD.hpp"
 #include <sstream>
 
+PNL_BEGIN
+bool pnlIsSubset(int smaSize, int* smaDomain, int bigSize, int* bigDomain)
+{
+	if(smaSize > bigSize) return false;
+	int curDomain;
+	for(int i=0; i<smaSize; i++)
+	{
+		curDomain = smaDomain[i];
+		if( std::find(bigDomain, bigDomain+bigSize, curDomain) == bigDomain+bigSize)
+			return false;
+	}
+	return true;
+}
+
+intVector pnlIntersect(int size1, int* Domain1, int size2, int* Domain2)
+{
+	intVector ret;
+	int i, cur;
+	for(i=0; i<size1; i++)
+	{
+		cur = Domain1[i];
+		if( std::find(Domain2, Domain2+size2, cur) != Domain2+size2)
+			ret.push_back(cur);
+	}
+	std::sort(ret.begin(), ret.end());
+	return ret;
+}
+
+intVector pnlSetUnion(int size1, int* Domain1, int size2, int* Domain2)
+{
+	intVector ret;
+	ret.assign(Domain2, Domain2+size2);
+	int i,cur;
+	for(i=0; i<size1; i++)
+	{
+		cur = Domain1[i];
+		if( (std::find(Domain2, Domain2+size2, cur) == Domain2+size2))
+			ret.push_back(cur);
+	}
+	std::sort(ret.begin(), ret.end());
+	return ret;
+}
+
+bool pnlIsIdentical(int size1, int* Domain1, int size2, int* Domain2)
+{
+	if( size1 != size2 ) return false;
+	for(int i=0; i<size1; i++)
+	{
+		if(Domain1[i] != Domain2[i]) return false;
+	}
+	return true;
+}
+
+PNL_END
+
 PNL_USING
 
 CFactor::CFactor( EDistributionType dt, EFactorType ft, CModelDomain* pMD )
