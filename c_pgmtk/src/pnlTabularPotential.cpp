@@ -463,38 +463,39 @@ GenerateSample( CEvidence* evidence, int maximize ) const
                 pShrMatrix = pMargPot->GetDistribFun()->GetMatrix(matTable);
                 
             }
-            
-            float rnd = pnlRand(0.0f, pShrMatrix->SumAll(0));
-                     
-            float val = 0.0f;
-            
-            CMatrixIterator<float>* matrixIter = pShrMatrix->InitIterator();
-            for( ; pShrMatrix->IsValueHere( matrixIter ); pShrMatrix->Next( matrixIter ) )
-            {   
-                val += *pShrMatrix->Value( matrixIter );
-                if( rnd <= val)
-                {
-                    break;
-                }
-            } 
-            
-            if( !val )
-            {
-                PNL_THROW(CAlgorithmicException, "bad distribution function" );
-            }
+            float sum = pShrMatrix->SumAll(0);
             intVector indices;
-            
-            pShrMatrix->Index( matrixIter, &indices );
-            int i;
-            for( i = 0; i < nonObsDom.size(); i++ )
-            {
-                evidence->GetValue(nonObsDom[i])->SetInt(indices[i]);
-            }
-            evidence->ToggleNodeState( nonObsDom );
-            
-            
-            delete matrixIter;
-            delete pMargPot;
+	    
+	    if( sum != 0.0f )
+	    {
+		float rnd = pnlRand(0.0f, sum);                  
+		float val = 0.0f;
+		
+		CMatrixIterator<float>* matrixIter = pShrMatrix->InitIterator();
+		for( ; pShrMatrix->IsValueHere( matrixIter ); pShrMatrix->Next( matrixIter ) )
+		{   
+		    val += *pShrMatrix->Value( matrixIter );
+		    if( rnd < val)
+		    {
+			break;
+		    }
+		} 
+		pShrMatrix->Index( matrixIter, &indices );
+		delete matrixIter;
+	    }
+	    else
+	    {
+		PNL_THROW(CAlgorithmicException, "bad distribution function" );
+	   
+	    }
+	    int i;
+	    for( i = 0; i < nonObsDom.size(); i++ )
+	    {
+		evidence->GetValue(nonObsDom[i])->SetInt(indices[i]);
+	    }
+	    evidence->ToggleNodeState( nonObsDom );
+	            
+	    delete pMargPot;
             
             
         }
