@@ -1,11 +1,19 @@
+SRCROOT=`dirname $0`
+OBJROOT=`pwd`
+
+cd $SRCROOT
 tar xjf conf.tbz 2>/dev/null
+cd $OBJROOT
 rm -f libtool
+
 CC=icc
 CXX=icpc
 export CC CXX
-sh ./configure
+sh ${SRCROOT}/configure
 sed 's/predep_objects="\/.*$/predep_objects=""/' libtool >libtool.ed
 mv -f libtool.ed libtool
 echo "
-run 'make' to compile sources
+- run 'make' to compile sources
+- run 'make check' to compile and launch test suite (optionally)
+- run 'make install' to install library
 "
