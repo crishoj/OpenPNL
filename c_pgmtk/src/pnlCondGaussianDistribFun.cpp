@@ -820,7 +820,7 @@ CCondGaussianDistribFun::UpdateStatisticsEM(const CDistribFun* infData,
 	if( pEvidence->IsNodeObserved(domain[m_discrParentsIndex[i]])  )
 	{
 	    vls.push_back(pEvidence->GetValue(domain[m_discrParentsIndex[i]])->GetInt());
-	    obsInd.push_back(i);
+	    obsInd.push_back(m_discrParentsIndex[i]);
 	}
 	dnt[i] = m_NodeTypes[m_discrParentsIndex[i]]->GetNodeSize();
     }
