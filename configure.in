@@ -75,6 +75,8 @@ c_pgmtk/examples/inf_learn_bnet/Src/Makefile
 c_pgmtk/examples/learn_param/src/Makefile
 c_pgmtk/examples/mixture_gaussian_bnet/Src/Makefile
 c_pgmtk/examples/trial/Src/Makefile
+c_pgmtk/examples/parPNLTest/Makefile
+c_pgmtk/examples/parPNLTest/src/Makefile
 c_pgmtk/tests/Makefile
 c_pgmtk/tests/src/Makefile
 ])
