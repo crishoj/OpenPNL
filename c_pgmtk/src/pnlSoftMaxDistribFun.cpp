@@ -278,6 +278,8 @@ CSoftMaxDistribFun::CSoftMaxDistribFun(int NumberOfNodes,
     m_VectorOffset.assign(dataOffset, dataOffset + childNodeSize);
   }
   m_MaximizingMethod = mmGradient;
+	m_pMatrixH = NULL;
+	m_pMatrixK = NULL;
 }
 // ----------------------------------------------------------------------------
 
@@ -300,6 +302,8 @@ CSoftMaxDistribFun::CSoftMaxDistribFun(int NumberOfNodes,
   m_VectorOffset.resize(0);
   m_hessian = NULL;
   m_MaximizingMethod = mmGradient;
+	m_pMatrixH = NULL;
+	m_pMatrixK = NULL;
 }
 // ----------------------------------------------------------------------------
 
@@ -332,6 +336,8 @@ CSoftMaxDistribFun::CSoftMaxDistribFun(const CSoftMaxDistribFun & inpDistr)
   }
 
   m_VectorOffset = inpDistr.m_VectorOffset;
+	m_pMatrixH = NULL;
+	m_pMatrixK = NULL;
 }
 // ----------------------------------------------------------------------------
 
@@ -360,6 +366,18 @@ CSoftMaxDistribFun::~CSoftMaxDistribFun()
     static_cast<CMatrix<float>*>(m_hessian)->Release(pObj);
     m_hessian = NULL;
   }
+
+	if (m_pMatrixH) 
+	{
+  	static_cast<CMatrix<float>*>(m_pMatrixH)->Release(pObj);
+    m_pMatrixH = NULL;
+	}
+		
+	if (m_pMatrixK) 
+	{
+    static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
+    m_pMatrixK = NULL;
+	}
 }
 // ----------------------------------------------------------------------------
 
@@ -1023,6 +1041,7 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
   // ksi^2 = w'(sigma + mu*mu')w +2bw'mu + b^2
   
   float NewKsi = 0.0f;
+
   NewKsi = CalculateKsi( MeanContParents, CovContParents);
   float OldKsi = 0.0f;
   int iternum = 0;
@@ -1030,7 +1049,7 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
   do
   {
     floatVector MeanVector;
-    C2DNumericDenseMatrix<float> *CovMatrix;
+    C2DNumericDenseMatrix<float> *CovMatrix = NULL;
     
     OldKsi = NewKsi;
     
@@ -1038,6 +1057,7 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
     NewKsi = CalculateKsi( MeanVector, CovMatrix);
     iternum ++;
 
+    delete CovMatrix;
   }
   while((fabs(NewKsi - OldKsi) > 0.001)&&(iternum < 10));
   
@@ -1076,8 +1096,18 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
     newMatWeights->SetElementByIndexes(weight0-weight1, multiindex);
   }
   
+	void *pObj = this;
+
+	if (m_pMatrixH) 
+	{
+    static_cast<CMatrix<float>*>(m_pMatrixH)->Release(pObj);
+    m_pMatrixH = NULL;
+	}
+
   m_pMatrixH = 
     C2DNumericDenseMatrix<float>::Create(&ranges.front(), &ZeroData.front() );
+  static_cast<CMatrix<float>*>(m_pMatrixH)->AddRef(pObj);
+
   float value;
   for (i = 0; i < ranges[0]; i++)
   {
@@ -1099,11 +1129,16 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
   ranges[0] = NumAllInweights;
   ranges[1] = NumAllInweights;
   
-  m_pMatrixK = 
-    C2DNumericDenseMatrix<float>::Create(&ranges.front(), &ZeroData.front() );
+	pObj = this;
+	if (m_pMatrixK) 
+	{
+    static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
+    m_pMatrixK = NULL;
+	}
   
   C2DNumericDenseMatrix<float> *newMatWeightsTrans = newMatWeights->Transpose();
   m_pMatrixK = pnlMultiply( newMatWeights, newMatWeightsTrans, 0 );
+  static_cast<CMatrix<float>*>(m_pMatrixK)->AddRef(pObj);
   
   for (i = 0; i < ranges[0]; i++)
   {
@@ -1122,19 +1157,12 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
   memcpy(&vecK[0], &(*kvec)[0], (*kvec).size()*sizeof(float));
 
   pNodeTypeVector *NodeTypes = new pNodeTypeVector();
-  bool         isDiscrete;
-  int          nodeSize;
-  EIDNodeState nodeState;
   for (i = 0; i < m_NumberOfNodes - 1; i++)
-  {
-    isDiscrete = m_NodeTypes[i]->IsDiscrete();
-    nodeSize   = m_NodeTypes[i]->GetNodeSize();
-    nodeState  = m_NodeTypes[i]->GetNodeState();
-    
-    CNodeType *newType = new CNodeType(isDiscrete, nodeSize, nodeState);
+  {   
+    CNodeType *newType = m_NodeTypes[i];
     NodeTypes->push_back(newType);
   }
-  CNodeType *newType = new CNodeType(0, 0, nsChance);
+  CNodeType *newType = &m_ZeroNT;
   NodeTypes->push_back(newType);
   
   factData = CGaussianDistribFun::CreateInCanonicalForm(m_NumberOfNodes, 
@@ -1143,6 +1171,7 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
   delete [] multiindex;
   delete newMatWeights;
   delete newMatWeightsTrans;
+  delete NodeTypes;
   return factData;
 }
 // ----------------------------------------------------------------------------
@@ -2434,5 +2463,8 @@ void CSoftMaxDistribFun::CalculateMeanAndCovariance(float OldKsi, float r,
   delete NewMeanMatrix;
 
 }
+
+// ----------------------------------------------------------------------------
+CNodeType CSoftMaxDistribFun::m_ZeroNT = CNodeType(0,0,nsChance);
 
 // end of file ----------------------------------------------------------------
