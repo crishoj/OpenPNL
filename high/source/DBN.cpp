@@ -1156,19 +1156,20 @@ TokArr DBN::GetParents(TokArr nodes)
     }
     
     tmpParents = Net().GetParents(NewQue);
-    
+    int nodeSlice;
     for(i = 0; i < tmpParents.size(); i++)
     {
 	tmpStr = tmpParents[i].Name();
 	if(nSlice != 0)
 	{
+		nodeSlice = GetSliceNum(tmpStr);
 	    tmpStr = GetShortName(tmpStr);
-	    tmpStr << "-" << ((GetSliceNum(tmpStr) == 1) ? nSlice : nSlice - 1);
+	    tmpStr << "-" << ((nodeSlice == 1) ? nSlice : nSlice - 1);
 	    nodesParents.push_back(tmpStr);
 	}
 	else
 	{
-	    nodesParents.push_back(nodes[i]);
+	    nodesParents.push_back(tmpStr);
 	}
     }
     
