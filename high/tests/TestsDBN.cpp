@@ -13,7 +13,6 @@ int testDBNSmothing()
 	// DBN creation
 	DBN *pDBN; 
 	pDBN = new DBN();
-	BayesNet *pNet;
 	// prior slice nodes creation 
 	pDBN->AddNode(discrete ^ "Street-0", aChoice); 
 	pDBN->AddNode(discrete ^ "House-0", aChoice);
