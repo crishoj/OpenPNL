@@ -437,7 +437,20 @@ CPotential* CSoftMaxCPD::ConvertWithEvidenceToGaussianPotential(
         {
             CPotential* pot = ConvertToGaussianPotential(pEvidence, 
                 m_CorrespDistribFun, MeanContParents, CovContParents);
-            return pot;
+
+            CPotential *pot2 = NULL;
+            if (pot->GetDomainSize() >= 3)
+            {
+              pot2 = pot->ShrinkObservedNodes(pEvidence);
+            }
+            else
+            {
+              intVector Domain;
+              pot->GetDomain(&Domain);
+              pot2 = pot->Marginalize(&(Domain[0]), 1);
+            }
+            delete pot;
+            return pot2;
         }
         else //it means m_CorrespDistribFun->GetDistributionType == dtCondSoftMax
         {
@@ -494,9 +507,22 @@ CPotential* CSoftMaxCPD::ConvertWithEvidenceToGaussianPotential(
                 gauSubDomain.size(), GetModelDomain());
             
             resFactor->SetDistribFun( gauFactData );
+
+            CPotential *pot = NULL;
+            if (resFactor->GetDomainSize() >= 3)
+            {
+              pot = resFactor->ShrinkObservedNodes(pEvidence);
+            }
+            else
+            {
+              intVector Domain;
+              resFactor->GetDomain(&Domain);
+              pot = resFactor->Marginalize(&(Domain[0]), 1);
+            }
+            delete resFactor;
             
             delete gauFactData;
-            return resFactor;
+            return pot;
             
         }
     }
@@ -535,7 +561,6 @@ CPotential *CSoftMaxCPD::ConvertToGaussianPotential(const CEvidence* pEvidence,
         m_Domain.size(), GetModelDomain());
     
     resFactor->SetDistribFun( gauFactData );
-    
     delete gauFactData;
     return resFactor;
 }
