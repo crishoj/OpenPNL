@@ -40,7 +40,7 @@ public:
     //           AddNode( discrete
     //               ^ "PreviousCompTurn CurrentHumanTurn PreviousHumanTurn"),
     //               "Rock Paper Scissors");
-    void AddNode(TokArr nodes, TokArr subnodes);
+    void AddNode(TokArr nodes, TokArr subnodes = TokArr());
     
     // remove node
     void DelNode(TokArr nodes);
