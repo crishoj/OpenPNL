@@ -2962,19 +2962,17 @@ void CParPearlInfEngine::NormalizeDataInMessage(CDistribFun* Data)
     CNumericDenseMatrix<float>* pDataMatrix;
     pDataMatrix = static_cast<CNumericDenseMatrix<float>*>(
         Data->GetMatrix(matTable));
-    int dataLength;
-    float *pRawData;
-    
-    pDataMatrix->GetRawData(&dataLength, (const float**)(&pRawData));
-    
+    floatVector* RawData = (floatVector*)pDataMatrix->GetVector();
+    int dataLength = RawData->size();
+
     float sum = pDataMatrix->SumAll();
     if( sum > FLT_MIN*10.f )
     {
         if( fabs(sum - 1) > 0.00001f )
         {
             float reciprocalSum = 1 / sum;
-            floatVector::iterator it = pRawData;
-            floatVector::iterator itE = pRawData + dataLength;
+            floatVector::iterator it = RawData->begin();
+            floatVector::iterator itE = RawData->end();
             for ( ; it != itE; it++ )
             {
                 (*it) *= reciprocalSum;
@@ -2985,8 +2983,8 @@ void CParPearlInfEngine::NormalizeDataInMessage(CDistribFun* Data)
     {
         sum = dataLength;
         float reciprocalSum = 1 / sum;
-        floatVector::iterator it = pRawData;
-        floatVector::iterator itE = pRawData + dataLength;
+        floatVector::iterator it = RawData->begin();
+        floatVector::iterator itE = RawData->end();
         for ( ; it != itE; it++ )
         {
             (*it) *= reciprocalSum;
