@@ -398,10 +398,11 @@ int RunTest(int argc, char* argv[])
         EvidenceData[i]);
       m_pEv1[i] ->ToggleNodeState(numOfObsNds - offset, unObsNds);
     }
-    #if defined(INTEL_PNL)
+    #ifdef INTEL_PNL
       pLearnEng->SetData(numberOfEvidences, m_pEv);
       pLearnEng->SetMaxIterEM(numberOfEvidences);
-    #elif defined(PAR_PNL)
+    #endif
+    #ifdef PAR_PNL
       pParLearnEng->SetData(numberOfEvidences, m_pEv1);
       pParLearnEng->SetMaxIterEM(numberOfEvidences);
     #endif
