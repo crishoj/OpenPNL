@@ -44,7 +44,7 @@ enum EExInfEngineFlavour
 template< class INF_ENGINE, class MODEL = CBNet,
           EExInfEngineFlavour FLAV = PNL_EXINFENGINEFLAVOUR_DISCONNECTED_UNSORTED,
           class FALLBACK_ENGINE1 = CNaiveInfEngine, class FALLBACK_ENGINE2 = INF_ENGINE >
-class PNL_API CExInfEngine: public CInfEngine
+class CExInfEngine: public CInfEngine
 {
 public:
     static CExInfEngine *Create( CStaticGraphicalModel const *model );
