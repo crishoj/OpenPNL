@@ -699,6 +699,7 @@ TokArr BayesNet::GetMPE(TokArr nodes)
     int nnodes = nodes.size();
     int i;
     Vector<int> queryNds;
+    Vector<int> queryNdsInner;
     if( nnodes )
     {
 	queryNds.resize(nnodes);
@@ -717,14 +718,16 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 	*/
     }
 
-    infEngine->MarginalNodes(&queryNds.front(), queryNds.size());
+    Net().Graph().IGraph(&queryNds, &queryNdsInner);
+
+    infEngine->MarginalNodes(&queryNdsInner.front(), queryNdsInner.size());
 
     const pnl::CEvidence *mpe = infEngine->GetMPE();
     TokArr result;
 
     for(i = 0; i < nnodes; ++i)
     {
-	const pnl::Value *v = mpe->GetValue(queryNds[i]);
+	const pnl::Value *v = mpe->GetValue(queryNdsInner[i]);
 
 	if((v->IsDiscrete() != 0) != Net().pnlNodeType(queryNds[i]).IsDiscrete())
 	{
