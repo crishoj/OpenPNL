@@ -63,7 +63,7 @@ public:
     TokArr GetPTabular(TokArr value, TokArr parents = TokArr());
     
     // set parameters for gaussian distribution
-    void SetPGaussian(TokArr node, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
+    void SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight = TokArr());
     
     // setting evidence on the board
     void EditEvidence(TokArr values);
@@ -93,9 +93,9 @@ public:
     TokArr GetJPD(TokArr nodes);
 
     // get parameters of gaussian distribution
-    TokArr GetGaussianMean(TokArr nodes);
-    TokArr GetGaussianCovar(TokArr nodes);
-    TokArr GetGaussianWeights(TokArr nodes, TokArr parent);
+    TokArr GetGaussianMean(TokArr node);
+    TokArr GetGaussianCovar(TokArr node);
+    TokArr GetGaussianWeights(TokArr node, TokArr parent);
     
     void SaveNet(const char *filename);
     int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);

@@ -113,18 +113,18 @@ void BayesNet::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr we
     }
 }
 
-TokArr BayesNet::GetGaussianMean(TokArr vars)
+TokArr BayesNet::GetGaussianMean(TokArr node)
 {
     static const char fname[] = "GetGaussianMean";
 
-    if( !vars.size() )
+    int nnodes = node.size();
+    if(nnodes != 1)
     {
-	ThrowUsingError("Must be at least one combination for a child node", fname);
+	ThrowUsingError("Mean may be got only for one node", fname);
     }
 
-    int nnodes = vars.size();
     Vector<int> queryNds, queryVls;
-    Net().ExtractTokArr(vars, &queryNds, &queryVls);
+    Net().ExtractTokArr(node, &queryNds, &queryVls);
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
@@ -154,18 +154,18 @@ TokArr BayesNet::GetGaussianMean(TokArr vars)
     }
 }
 
-TokArr BayesNet::GetGaussianCovar(TokArr var)
+TokArr BayesNet::GetGaussianCovar(TokArr node)
 {
     static const char fname[] = "GetGaussianCovar";
 
-    if( !var.size() )
+    int nnodes = node.size();
+    if(nnodes != 1)
     {
-	ThrowUsingError("Must be at least one combination for a child node", fname);
+	ThrowUsingError("Variance may be got only for one node", fname);
     }
 
-    int nnodes = var.size();
     Vector<int> queryNds, queryVls;
-    Net().ExtractTokArr(var, &queryNds, &queryVls);
+    Net().ExtractTokArr(node, &queryNds, &queryVls);
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
@@ -204,17 +204,21 @@ TokArr BayesNet::GetGaussianCovar(TokArr var)
     }
 }
 
-TokArr BayesNet::GetGaussianWeights(TokArr nodes, TokArr parent)
+TokArr BayesNet::GetGaussianWeights(TokArr node, TokArr parent)
 {
     static const char fname[] = "GetGaussianWeight";
 
-    if( (!nodes.size())||(!parent.size()) )
+    if( (!node.size())||(!parent.size()) )
     {
 	ThrowUsingError("Node and parent variables must be specified", fname);
     }
+    if(node.size() > 1)
+    {
+	ThrowUsingError("Weights may be got only for one node", fname);
+    }
 
     Vector<int> queryNdsOuter, queryVls;
-    Net().ExtractTokArr(nodes, &queryNdsOuter, &queryVls);
+    Net().ExtractTokArr(node, &queryNdsOuter, &queryVls);
 
     Vector<int> parentsOuter;
     Net().ExtractTokArr(parent, &parentsOuter, &queryVls);

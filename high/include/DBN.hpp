@@ -120,8 +120,8 @@ public:
     TokArr GetMPE(TokArr nodes = TokArr());
     
     // get parameters of gaussian distribution
-    TokArr GetGaussianMean(TokArr vars);
-    TokArr GetGaussianCovar(TokArr var, TokArr vars);
+    TokArr GetGaussianMean(TokArr node);
+    TokArr GetGaussianCovar(TokArr node, TokArr vars);
     
     void SaveNet(const char *filename);
     int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
