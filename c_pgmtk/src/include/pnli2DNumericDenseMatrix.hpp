@@ -20,6 +20,9 @@
 #include <math.h>
 #include "cvsvd.h"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 template< typename T > class C2DNumericDenseMatrix;
@@ -84,10 +87,25 @@ public:
                  Type* vT, int ldvT,
                  Type* bufferIn ) const;
     ~iC2DNumericDenseMatrix(){};
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return iC2DNumericDenseMatrix< float >::GetStaticTypeInfo();
+    }
+#endif
 protected:
     iC2DNumericDenseMatrix( int dim, const int *range, const Type *data,
                                                                 int Clamp);
     iC2DNumericDenseMatrix( const iCNumericDenseMatrix<Type> & inputMat );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 };
 
 
@@ -874,6 +892,12 @@ Type iC2DNumericDenseMatrix<Type>::Trace() const
 }
 
 #endif // !defined(SWIG) && (!defined(PNL_VC7) || defined(PNL_EXPORTS))
+
+#ifdef PNL_RTTI
+template <class Type>
+const CPNLType iC2DNumericDenseMatrix< Type >::m_TypeInfo = CPNLType("iC2DNumericDenseMatrix", &(CNumericDenseMatrix< Type >::m_TypeInfo));
+
+#endif
 
 PNL_END
 

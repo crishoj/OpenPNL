@@ -1036,3 +1036,10 @@ bool pnl::EqualResults(CPearlInfEngine& eng1, CPearlInfEngine& eng2,
 }
 #endif // PAR_RESULTS_RELIABILITY
 /////////////////////////////////////////////////////////////////////////////
+
+#ifdef PNL_RTTI
+const CPNLType CPearlInfEngine::m_TypeInfo = CPNLType("CPearlInfEngine", &(CInfEngine::m_TypeInfo));
+
+#endif
+
+/////////////////////////////////////////////////////////////////////////////

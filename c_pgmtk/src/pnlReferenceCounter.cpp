@@ -72,3 +72,8 @@ CReferenceCounter::CReferenceCounter()
 CReferenceCounter::~CReferenceCounter()
 {
 }
+
+#ifdef PNL_RTTI
+const CPNLType CReferenceCounter::m_TypeInfo = CPNLType("CReferenceCounter", &(CPNLBase::m_TypeInfo));
+
+#endif

@@ -235,4 +235,7 @@ CPotential* CTreeCPD::ConvertWithEvidenceToPotential(const CEvidence* pEvidence,
     return resPot;
 }
 
+#ifdef PNL_RTTI
+const CPNLType CTreeCPD::m_TypeInfo = CPNLType("CTreeCPD", &(CCPD::m_TypeInfo));
 
+#endif

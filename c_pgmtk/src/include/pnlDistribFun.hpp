@@ -25,6 +25,10 @@
 #include "pnl2DNumericDenseMatrix.hpp"
 //fixme - enum use for Matrix - should it be here?
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API CDistribFun : public CPNLBase
@@ -129,6 +133,17 @@ public:
     virtual void UpdateStatisticsML(CDistribFun *pDF) = 0;
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CDistribFun::m_TypeInfo;
+    }
+#endif
+
 protected:
     CDistribFun(EDistributionType dt, int numNodes,
 		const CNodeType* const* nodeTypes,
@@ -146,6 +161,11 @@ protected:
 
     
     pConstNodeTypeVector m_NodeTypes;
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
+
 private:
     //	int m_bClamping;
     //flag if the matrices are allocated - for both unit function or not

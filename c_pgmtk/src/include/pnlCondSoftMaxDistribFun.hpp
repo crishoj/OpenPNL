@@ -26,6 +26,10 @@
 //#include "pnl2DNumericDenseMatrix.hpp"
 //#include "pnl2DMatrix.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 template <class Type> class C2DNumericDenseMatrix;
@@ -182,6 +186,17 @@ public:
 
   int GetSoftMaxSize() const;
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CCondSoftMaxDistribFun::m_TypeInfo;
+  }
+#endif
+
 protected:
   CCondSoftMaxDistribFun(int nNodes, const CNodeType *const* nodeTypes,
     CSoftMaxDistribFun* const pDefaultDistr);
@@ -190,6 +205,10 @@ protected:
 
   CCondSoftMaxDistribFun(int nNodes, const CNodeType* const* pNodeTypes,
     CMatrix<CSoftMaxDistribFun*> const* pDistribMatrix);
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 
 private:
   //we divide parents to discrete & continuous 

@@ -536,3 +536,8 @@ CCPD* CStaticStructLearnSEM::CreateRandomCPD(int nfamily, const int* family, CBN
 		}				
 	}
 }
+
+#ifdef PNL_RTTI
+const CPNLType CStaticStructLearnSEM::m_TypeInfo = CPNLType("CStaticStructLearnSEM", &(CStaticLearningEngine::m_TypeInfo));
+
+#endif

@@ -25,6 +25,10 @@
 #include "pnlNumericSparseMatrix.hpp"
 //#include "Evidence.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API CTabularDistribFun: public CDistribFun
@@ -156,6 +160,17 @@ public:
     void UpdateStatisticsML(CDistribFun *pDF);
 #endif
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CTabularDistribFun::m_TypeInfo;
+  }
+#endif
+
 protected:
     CTabularDistribFun(int NodeNumber, const CNodeType *const* nodeTypes,
         const float *data = NULL, int asDense = 1, int allocTheMatrices = 0,
@@ -167,6 +182,11 @@ protected:
     CTabularDistribFun( const CTabularDistribFun &inpDistr );
     CMatrix<float>* CreateUnitFunctionMatrix( int isDense = 1, int withoutData = 1) const;
     inline void CreateUnitFunctionData();
+
+#ifdef PNL_RTTI
+  static const CPNLType m_TypeInfo;
+#endif
+
 private:
     int m_bDense;
     bool m_bCheckNegative;

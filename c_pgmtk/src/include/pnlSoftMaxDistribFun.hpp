@@ -23,6 +23,10 @@
 #include "pnlParConfig.hpp"
 #include "pnlDistribFun.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 template <class Type> class C2DNumericDenseMatrix;
@@ -178,6 +182,17 @@ public:
       floatVector &MeanVector, 
       C2DNumericDenseMatrix<float> **CovMatrix);
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CSoftMaxDistribFun::m_TypeInfo;
+  }
+#endif
+
 protected:
   CSoftMaxDistribFun(int NodeNumber, const CNodeType *const* nodeTypes,
     const float *dataWeight, const float *dataOffset);
@@ -207,6 +222,10 @@ protected:
 
   void MaximumLikelihoodHessian(float **Observations,
     int NumberOfObservations, float Accuracy, float step = 0.1);
+
+#ifdef PNL_RTTI
+  static const CPNLType m_TypeInfo;
+#endif
 
 private:
   C2DNumericDenseMatrix<float> *m_pMatrixWeight;

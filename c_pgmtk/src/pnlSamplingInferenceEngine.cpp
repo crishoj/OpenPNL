@@ -427,3 +427,9 @@ void CSamplingInfEngine::Continue( int dt )
     Sampling( startTime, endTime );
 }
 
+
+
+#ifdef PNL_RTTI
+const CPNLType CSamplingInfEngine::m_TypeInfo = CPNLType("CSamplingInfEngine", &(CInfEngine::m_TypeInfo));
+
+#endif

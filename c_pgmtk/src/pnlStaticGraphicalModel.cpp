@@ -280,3 +280,7 @@ bool CStaticGraphicalModel::IsValidAsBaseForDynamicModel(
     return true;
 }
 
+#ifdef PNL_RTTI
+const CPNLType CStaticGraphicalModel::m_TypeInfo = CPNLType("CStaticGraphicalModel", &(CGraphicalModel::m_TypeInfo));
+
+#endif

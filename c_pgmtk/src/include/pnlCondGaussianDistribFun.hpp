@@ -26,6 +26,10 @@
 #include "pnlDenseMatrix.hpp"
 #include "pnlNumericDenseMatrix.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 
@@ -176,6 +180,17 @@ public:
     virtual void UpdateStatisticsML(CDistribFun *pPot);
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CCondGaussianDistribFun::m_TypeInfo;
+    }
+#endif
+
 protected:
     CCondGaussianDistribFun( int isFactor, int nNodes,
         const CNodeType *const* nodeTypes, int asDenseMatrix,
@@ -185,6 +200,11 @@ protected:
         const CNodeType* const* pNodeTypes,
         CMatrix<CGaussianDistribFun*> const* pDistribMatrix  );
     void GetNormExp(doubleVector &data, floatVector *normExpData) const;
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
+
 private:
     int m_numberOfDims;
     

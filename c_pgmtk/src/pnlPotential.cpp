@@ -1204,6 +1204,10 @@ Log& CPotential::dump()
     return *LogPotential();
 }
 
+#ifdef PNL_RTTI
+const CPNLType CPotential::m_TypeInfo = CPNLType("CPotential", &(CFactor::m_TypeInfo));
+
+#endif
 
 /*
 void CPotential::GenerateSample( CEvidence* evidence, unsigned int seed, int maximize  ) const

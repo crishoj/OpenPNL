@@ -29,6 +29,9 @@
 #include "pnlNumericSparseMatrix.hpp"
 #include "pnlImpDefs.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 template< typename Type > class CNumericDenseMatrix;
@@ -159,6 +162,21 @@ public:
       int numDimsToSum, const int* indicesToSumInSelf, int isUnifrom = 0,
       const Type uniVal = Type(0));
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return iCNumericDenseMatrix< int >::GetStaticTypeInfo();
+    }
+#endif
+protected:
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 };
 
@@ -3088,6 +3106,11 @@ void pnl::iCNumericDenseMatrix< T >::SumInSelf(
 
 #endif //!defined(SWIG)
 
+#ifdef PNL_RTTI
+template< typename  T >
+const CPNLType iCNumericDenseMatrix< T >::m_TypeInfo = CPNLType("iCNumericDenseMatrix", &(CDenseMatrix< T >::m_TypeInfo));
+
+#endif
 PNL_END
 
 #endif //__PNLINUMERICDENSEMATRIX_HPP__

@@ -24,6 +24,9 @@
 //#include "pnl2DNumericDenseMatrix.hpp"
 //#include "pnl2DMatrix.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 
 PNL_BEGIN
 
@@ -169,6 +172,17 @@ public:
     void UpdateStatisticsML(CDistribFun *pDF);
 #endif
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CGaussianDistribFun::m_TypeInfo;
+  }
+#endif
+
 protected:
     void ReleaseAllMatrices();
     void ShrinkToMatrices( const int* keepPositions, int numKeepPositions,
@@ -211,6 +225,9 @@ protected:
     C2DNumericDenseMatrix<float> * FormMuX(  intVector& unclumpedDims, intVector& nsVec );
     C2DNumericDenseMatrix<float> * FormCov(intVector& nsVec, float nEv );
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     int m_numberOfDims;
     

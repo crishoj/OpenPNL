@@ -694,5 +694,11 @@ void CSoftMaxCPD::CreateMeanAndCovMatrixForNode(int Node, const CEvidence* pEvid
     }
     delete [] multiindex;
 }
+//-----------------------------------------------------------------------------
+
+#ifdef PNL_RTTI
+const CPNLType CSoftMaxCPD::m_TypeInfo = CPNLType("CSoftMaxCPD", &(CCPD::m_TypeInfo));
+
+#endif
 
 // end of file ----------------------------------------------------------------

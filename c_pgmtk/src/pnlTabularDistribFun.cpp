@@ -2649,3 +2649,8 @@ void CTabularDistribFun::UpdateStatisticsML(CDistribFun *pDF)
     delete array;
 };
 #endif // PAR_OMP
+
+#ifdef PNL_RTTI
+const CPNLType CTabularDistribFun::m_TypeInfo = CPNLType("CTabularDistribFun", &(CDistribFun::m_TypeInfo));
+
+#endif

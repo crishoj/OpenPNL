@@ -31,6 +31,10 @@ typedef struct _SCARTParams
     CxMat* priors;
 } SCARTParams;
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 template <class Type> class C2DNumericDenseMatrix;
@@ -134,11 +138,26 @@ public:
     void UpdateStatisticsML(CDistribFun *pDF);
 #endif
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CTreeDistribFun::m_TypeInfo;
+  }
+#endif
+
 protected:
     CTreeDistribFun::CTreeDistribFun(int NodeNumber, 
         const CNodeType *const* NodeTypes,
         const SCARTParams* params = 0);
     CTreeDistribFun( const CTreeDistribFun & inpDistr );
+
+#ifdef PNL_RTTI
+  static const CPNLType m_TypeInfo;
+#endif
 private:
     void Clear();
     void _CreateCART();

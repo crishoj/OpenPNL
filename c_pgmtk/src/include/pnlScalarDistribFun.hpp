@@ -22,6 +22,10 @@
 #include "pnlParConfig.hpp"
 #include "pnlDistribFun.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API CScalarDistribFun: public CDistribFun
@@ -123,11 +127,25 @@ public:
     void UpdateStatisticsML(CDistribFun *pDF);
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CScalarDistribFun::m_TypeInfo;
+    }
+#endif
+
 protected:
     CScalarDistribFun( int NodeNumber, const CNodeType *const* nodeTypes,
         int asDense = 1);
     CScalarDistribFun( const CScalarDistribFun &inpDistr );
-    
+   
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     int m_bDense;
 };

@@ -135,3 +135,8 @@ void CScalarPotential::UpdateStatisticsML(CFactor *pPot)
         "UpdateStatisticsML for CScalarPotential not implemented yet");
 };
 #endif // PAR_OMP
+
+#ifdef PNL_RTTI
+const CPNLType CScalarPotential::m_TypeInfo = CPNLType("CScalarPotential", &(CPotential::m_TypeInfo));
+
+#endif

@@ -2466,4 +2466,10 @@ void CSoftMaxDistribFun::CalculateMeanAndCovariance(float OldKsi, float r,
 // ----------------------------------------------------------------------------
 const CNodeType CSoftMaxDistribFun::m_ZeroNT = CNodeType(0,0,nsChance);
 
+// ----------------------------------------------------------------------------
+#ifdef PNL_RTTI
+const CPNLType CSoftMaxDistribFun::m_TypeInfo = CPNLType("CSoftMaxDistribFun", &(CDistribFun::m_TypeInfo));
+
+#endif
+
 // end of file ----------------------------------------------------------------

@@ -480,3 +480,8 @@ void CScalarDistribFun::UpdateStatisticsML(CDistribFun *pPot)
         "UpdateStatisticsML for CScalarDistribFun not implemented yet");
 };
 #endif // PAR_OMP
+
+#ifdef PNL_RTTI
+const CPNLType CScalarDistribFun::m_TypeInfo = CPNLType("CScalarDistribFun", &(CDistribFun::m_TypeInfo));
+
+#endif

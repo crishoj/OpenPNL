@@ -621,3 +621,8 @@ void CTabularPotential::UpdateStatisticsML(CFactor *pPot)
     m_CorrespDistribFun->UpdateStatisticsML( pDF );
 };
 #endif // PAR_OMP
+
+#ifdef PNL_RTTI
+const CPNLType CTabularPotential::m_TypeInfo = CPNLType("CTabularPotential", &(CPotential::m_TypeInfo));
+
+#endif

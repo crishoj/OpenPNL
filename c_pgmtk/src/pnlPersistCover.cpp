@@ -145,3 +145,19 @@ bool CPersistPNodeTypeVector::IsHandledType(CPNLBase *pObj) const
 {
     return dynamic_cast<CCover<pNodeTypeVector>*>(pObj) != 0;
 }
+
+#ifdef PNL_RTTI
+const CPNLType CCoverGen::m_TypeInfo = CPNLType("CCoverGen", &(CPNLBase::m_TypeInfo));
+
+template<> 
+const CPNLType & CCover<int>::GetStaticTypeInfo()
+{
+  return CCover<int>::m_TypeInfo;
+}
+
+template<> 
+const CPNLType & CCoverDel<int>::GetStaticTypeInfo()
+{
+  return CCoverDel<int>::m_TypeInfo;
+}
+#endif

@@ -96,3 +96,8 @@ void CStaticLearningEngine::SetData(const pConstEvidenceVector& evidencesIn )
 {
     SetData( evidencesIn.size(), &evidencesIn.front() );
 }
+
+#ifdef PNL_RTTI
+const CPNLType CStaticLearningEngine::m_TypeInfo = CPNLType("CStaticLearningEngine", &(CLearningEngine::m_TypeInfo));
+
+#endif

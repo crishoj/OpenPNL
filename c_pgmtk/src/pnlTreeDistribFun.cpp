@@ -8,7 +8,7 @@
 //                                                                         //
 //  File:      pnlGaussianDistribFun.cpp                                   //
 //                                                                         //
-//  Purpose:   CTreeDistribFun class member functions implementation   //
+//  Purpose:   CTreeDistribFun class member functions implementation       //
 //                                                                         //
 //  Author(s):                                                             //
 //                                                                         //
@@ -1078,3 +1078,8 @@ int CTreeDistribFun::GetAdjectives( const CEvidence* pEv, float &expect,
     }
     return result;
 }
+
+#ifdef PNL_RTTI
+const CPNLType CTreeDistribFun::m_TypeInfo = CPNLType("CTreeDistribFun", &(CDistribFun::m_TypeInfo));
+
+#endif

@@ -29,3 +29,11 @@ inline int CSparseMatrix<double>::ConvertToIndex()const
     return CX_64F;
 }
 #endif
+
+#ifdef PNL_RTTI
+template<>
+const CPNLType &CSparseMatrix< int >::GetStaticTypeInfo()
+{
+  return CSparseMatrix< int >::m_TypeInfo;
+}
+#endif

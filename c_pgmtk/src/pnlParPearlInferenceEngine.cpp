@@ -3259,6 +3259,10 @@ void CParPearlInfEngine::SetIsMRF2Grille(bool Val)
 }
 #endif // PAR_MPI
 // ----------------------------------------------------------------------------
+#ifdef PNL_RTTI
+const CPNLType CParPearlInfEngine::m_TypeInfo = CPNLType("CParPearlInfEngine", &(CPearlInfEngine::m_TypeInfo));
+
+#endif
 
 #endif // PAR_PNL
 

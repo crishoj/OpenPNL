@@ -21,6 +21,9 @@
 #include "pnlNumericDenseMatrix.hpp"
 //#include "pnlNumericSparseMatrix.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 template< typename T > class CNumericDenseMatrix;
@@ -104,10 +107,24 @@ public:
     inline void SetUnitData();
     inline void SetUnitValuesOneByOne();
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return iCNumericSparseMatrix< int >::GetStaticTypeInfo();
+    }
+#endif
 protected:
     iCNumericSparseMatrix( int dim, const int *range, int Clamp );
     iCNumericSparseMatrix( const iCNumericSparseMatrix<Type> &inputMat );
     iCNumericSparseMatrix( CxSparseMat *p_sparse );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 };
 
@@ -1041,6 +1058,12 @@ iCNumericSparseMatrix< ELTYPE >::ReduceOp( const int *pDimsOfInterest,
 
 #endif //SWIG
 
+
+#ifdef PNL_RTTI
+template <class Type>
+const CPNLType iCNumericSparseMatrix< Type >::m_TypeInfo = CPNLType("iCNumericSparseMatrix", &(CSparseMatrix< Type >::m_TypeInfo));
+
+#endif
 PNL_END
 
 #endif //__PNLINUMERICSPARSEMATRIX_HPP__

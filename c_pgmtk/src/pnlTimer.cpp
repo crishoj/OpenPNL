@@ -78,3 +78,9 @@ void CTimer::Stop()
 
     m_Duration += m_DurationLast;
 }
+
+
+#ifdef PNL_RTTI
+const CPNLType CTimerAndLogWriter::m_TypeInfo = CPNLType("CTimerAndLogWriter", &(CPNLBase::m_TypeInfo));
+
+#endif

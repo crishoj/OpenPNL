@@ -538,3 +538,8 @@ void CTabularCPD::UpdateStatisticsML(CFactor *pPot)
     m_CorrespDistribFun->UpdateStatisticsML( pDF );
 };
 #endif // PAR_OMP
+
+#ifdef PNL_RTTI
+const CPNLType CTabularCPD::m_TypeInfo = CPNLType("CTabularCPD", &(CCPD::m_TypeInfo));
+
+#endif
