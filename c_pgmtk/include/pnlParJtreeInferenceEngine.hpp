@@ -109,12 +109,6 @@ private:
     // fill vector m_NbrsTypes - types of neighbours: parent or child
     void SetNbrsTypes();
 
-    // init queue for CollectEvidence
-    void InitQueueNodes();
-
-    // init some data structures for CollectEvidence
-    void InitNodeConditionsAndUpdateRatios();
-
     // return parents of choosen node
     void GetParents(int NumOfNode, intVector *Parents);
 
@@ -146,6 +140,12 @@ private:
 
     // init arrays m_pWeightesOfNodes, m_pWeightesOfSubTrees (set NULL)
     void InitWeightArrays();
+
+    // init queue for CollectEvidence
+    void InitQueueNodes();
+
+    // init some data structures for CollectEvidence
+    void InitNodeConditionsAndUpdateRatios();
 
     // collect parallel EnterEvidence results on choosen (m_CollectRanks)
     // processes

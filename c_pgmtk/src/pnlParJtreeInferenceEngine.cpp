@@ -238,6 +238,7 @@ void CParJtreeInfEngine::SetNbrsTypes()
 }
 // ----------------------------------------------------------------------------
 
+#ifdef PAR_MPI
 void CParJtreeInfEngine::InitQueueNodes()
 {
     intVector::const_iterator sourceIt, source_end;
@@ -245,7 +246,7 @@ void CParJtreeInfEngine::InitQueueNodes()
         collSeq_end = GetCollectSequence().end();
 
     int i;
-    const int numSelfNodes = GetJTree()->GetNumberOfNodes();
+    const int numSelfNodes = m_NodesOfProcess.size();
     int CurNumSelfNodes = 0;
 
     for(; layerIt != collSeq_end && CurNumSelfNodes < numSelfNodes; ++layerIt)
@@ -254,7 +255,7 @@ void CParJtreeInfEngine::InitQueueNodes()
         sourceIt != source_end && CurNumSelfNodes < numSelfNodes; ++sourceIt)
         {
             for(i = 0; i < numSelfNodes; i++)
-                if (*sourceIt == i) 
+                if (*sourceIt == m_NodesOfProcess[i]) 
                 {
                     m_QueueNodes.push(*sourceIt);
                     CurNumSelfNodes++;
@@ -263,8 +264,10 @@ void CParJtreeInfEngine::InitQueueNodes()
         }
     }
 }
+#endif // PAR_MPI
 // ----------------------------------------------------------------------------
 
+#ifdef PAR_MPI
 void CParJtreeInfEngine::InitNodeConditionsAndUpdateRatios()
 {
     const int numOfNds = GetOriginalJTree()->GetNumberOfNodes();
@@ -284,7 +287,7 @@ void CParJtreeInfEngine::InitNodeConditionsAndUpdateRatios()
         pGraph->GetNeighbors(currNode, &numOfNbrs, &nbrs, &nbrsTypes);
         m_NodeConditions[currNode].resize(numOfNbrs + 1);
         m_UpdateRatios[currNode].resize(1);
-        *m_UpdateRatios[currNode].begin() = NULL;
+        m_UpdateRatios[currNode][0] = NULL;
 
         for(ItNode = m_NodeConditions[currNode].begin(),
         end_Node = m_NodeConditions[currNode].end(); ItNode != end_Node;
@@ -299,6 +302,7 @@ void CParJtreeInfEngine::InitNodeConditionsAndUpdateRatios()
             *ItNode = numOfNbrs;
     }
 }
+#endif //PAR_MPI
 // ----------------------------------------------------------------------------
 
 void CParJtreeInfEngine::GetParents(int NumOfNode, intVector* Parents)
@@ -315,7 +319,7 @@ void CParJtreeInfEngine::GetParents(int NumOfNode, intVector* Parents)
 
     for (int i = 0; i < numOfNbrs; i++)
     {
-        if (m_NbrsTypes[NumOfNode].begin()[i] == ntParent)
+        if (m_NbrsTypes[NumOfNode][i] == ntParent)
         {
             (*Parents)[0] = nbrs[i];
             break;
@@ -429,7 +433,7 @@ void CParJtreeInfEngine::DistributeEvidenceOMP()
 
         for (nbr = nbrs, nbrs_end = nbrs + numOfNbrs; nbr != nbrs_end; ++nbr)
         {
-            if (*nbr != Parents.begin()[0])
+            if (*nbr != Parents[0])
             {
                 int posNode = 0;
                 omp_set_lock(&find_zero_lock);
@@ -438,7 +442,7 @@ void CParJtreeInfEngine::DistributeEvidenceOMP()
                 if (m_NodeConditions[sender][posNode] == 0)
                 {
                     m_NodeConditions[sender][posNode] = 1;
-                    --m_NodeConditions[sender].begin()[m_NodeConditions[sender].size() - 1];
+                    --m_NodeConditions[sender][m_NodeConditions[sender].size() - 1];
                     omp_unset_lock(&find_zero_lock);
                 }
                 else
@@ -464,8 +468,7 @@ void CParJtreeInfEngine::DistributeEvidenceOMP()
             }
         } // for nbr
 
-        if (m_NodeConditions[sender].begin()[m_NodeConditions[sender].size()
-            - 1] == 0)
+        if (m_NodeConditions[sender][m_NodeConditions[sender].size() - 1] == 0)
         {
             omp_set_lock(&queue_lock);
             if (!source.empty())
@@ -1290,7 +1293,7 @@ void CParJtreeInfEngine::CollectEvidence()
                     (nbrs[posNodeForCurr] != CurSendedNode))
                     posNodeForCurr++;
                 
-                m_NodeConditions[CurRecvingNode].begin()[posNodeForCurr] = 1;
+                m_NodeConditions[CurRecvingNode][posNodeForCurr] = 1;
                 
                 CPotential *potSep = 
                     GetJTree()->GetSeparatorPotential(CurSendedNode, CurRecvingNode);
@@ -1320,13 +1323,13 @@ void CParJtreeInfEngine::CollectEvidence()
         pGraph->GetNeighbors( currNode, &numOfNbrs, &nbrs, &nbrsTypes );
         
         ValueOfSummator = 
-            m_NodeConditions[currNode].begin()[m_NodeConditions[currNode].size()-1];
+            m_NodeConditions[currNode][m_NodeConditions[currNode].size()-1];
         if ((ValueOfSummator == 0) && (currNode != GetJTreeRootNode()))
         {
             // leafe or node which collect data from all children
             GetParents(currNode,&Parents);
             potClq = GetJTree()->GetNodePotential(currNode);
-            potSep = GetJTree()->GetSeparatorPotential(currNode, Parents.begin()[0]);
+            potSep = GetJTree()->GetSeparatorPotential(currNode, Parents[0]);
             potSep->GetDomain(&numNdsInSepDom, &sepDom);
             
             newPotSep = potClq->Marginalize(sepDom, numNdsInSepDom, m_bMaximize);
@@ -1337,7 +1340,7 @@ void CParJtreeInfEngine::CollectEvidence()
             
             delete newPotSep;
             
-            RankProcWithParentNode = m_NodeProcesses[Parents.begin()[0]];
+            RankProcWithParentNode = m_NodeProcesses[Parents[0]];
             if (RankProcWithParentNode == m_MyRank)
             {
                 m_UpdateRatios[currNode][0] = updateRatio;
@@ -1347,11 +1350,11 @@ void CParJtreeInfEngine::CollectEvidence()
                 const ENeighborType *nbrsTypes1;
                 int poschild = 0;
                 
-                pGraph->GetNeighbors( Parents.begin()[0], &numOfNbrs1, &nbrs1,
+                pGraph->GetNeighbors( Parents[0], &numOfNbrs1, &nbrs1,
                     &nbrsTypes1 );
                 while ((poschild < numOfNbrs1) && (nbrs1[poschild] != currNode))
                     poschild++;
-                m_NodeConditions[Parents.begin()[0]].begin()[poschild] = 1;
+                m_NodeConditions[Parents[0]][poschild] = 1;
             }
             else
             {
@@ -1363,7 +1366,7 @@ void CParJtreeInfEngine::CollectEvidence()
                 const float *pDataForSending;
                 MPI_Request *requests=new MPI_Request[5];
                 
-                Tag = GetTagForSending(currNode, Parents.begin()[0]);
+                Tag = GetTagForSending(currNode, Parents[0]);
                 
                 matForSending = static_cast<CNumericDenseMatrix<float>*>
                     ((updateRatio->GetDistribFun())->GetMatrix(matTable));
@@ -1387,7 +1390,7 @@ void CParJtreeInfEngine::CollectEvidence()
         {
             for(i = 0; i < m_NodeConditions[currNode].size() - 1; i++)
             {
-                if (m_NodeConditions[currNode].begin()[i] == 1)
+                if (m_NodeConditions[currNode][i] == 1)
                 {
                     potClq = GetJTree()->GetNodePotential(currNode);
                     
@@ -1403,11 +1406,11 @@ void CParJtreeInfEngine::CollectEvidence()
                         potClq->Normalize();
                         
                         delete m_UpdateRatios[nbrs[i]].front();
-                        m_NodeConditions[currNode].begin()[i] = 2;
-                        --m_NodeConditions[currNode].begin()[m_NodeConditions[currNode].size() - 1];
+                        m_NodeConditions[currNode][i] = 2;
+                        --m_NodeConditions[currNode][m_NodeConditions[currNode].size() - 1];
                 }
             }
-            if (m_NodeConditions[currNode].begin()[m_NodeConditions[currNode].size() - 1] > 0)
+            if (m_NodeConditions[currNode][m_NodeConditions[currNode].size() - 1] > 0)
             {
                 m_QueueNodes.pop();
                 m_QueueNodes.push(currNode);
@@ -2074,7 +2077,7 @@ void CParJtreeInfEngine::GetChildren(int NumOfNode, intVector *Children)
         int j = 0;
         for (int i = 0;i < numOfNbrs; i++)
         {
-            if (m_NbrsTypes[NumOfNode].begin()[i] == ntChild)
+            if (m_NbrsTypes[NumOfNode][i] == ntChild)
             {
                 (*Children)[j] = nbrs[i];
                 j++;
