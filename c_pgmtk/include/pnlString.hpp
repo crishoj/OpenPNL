@@ -89,6 +89,21 @@ public: // USER INTERFACE
     }
     void resize(int minNewSize);
     void reserve(int minNewSize);
+    const pnlString &operator+=(const char *str)
+    {
+	return operator<<(str);
+    }
+    const pnlString &operator+=(const pnlString &str)
+    {
+	return operator<<(str);
+    }
+    void append(int count, char ch)
+    {
+	for(; --count >= 0;)
+	{
+	    operator<<(ch);
+	}
+    }
 
 protected:
     // it returns always more then minNewSize
@@ -188,6 +203,11 @@ inline pnlString &pnlString::operator<<(double val)
     append(buf, l);
 
     return *this;
+}
+
+inline std::ostream &operator<<(std::ostream &stream, const pnlString &str)
+{
+    return stream << str.c_str();
 }
 
 PNL_END
