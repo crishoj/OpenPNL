@@ -197,7 +197,26 @@ void CPearlInfEngine::MarginalNodes( const int* query, int querySize,
         //get informatiom from parametr on these nodes to crate new parameter
         //with updated Data
         EDistributionType dt = params[0]->GetDistributionType();
-        message allProduct = params[0]->GetDistribFun()->ConvertCPDDistribFunToPot();
+        message allProduct;
+		CPotential *potParam = NULL;
+        switch (dt)
+        {
+        case dtTabular:
+            {
+				allProduct = params[0]->GetDistribFun()->ConvertCPDDistribFunToPot();
+                break;
+            }
+        case dtGaussian:
+            {
+				potParam = static_cast<CCPD*>(params[0])->ConvertWithEvidenceToPotential(m_pEvidence);
+				allProduct = potParam->GetDistribFun()->Clone();
+                break;
+            }
+        default:
+            {
+                PNL_THROW( CNotImplemented, "only tabular & Gaussian now");
+            }
+        }
         int domLength;
         const int *domain;
         params[0]->GetDomain( &domLength, &domain );
@@ -273,6 +292,7 @@ void CPearlInfEngine::MarginalNodes( const int* query, int querySize,
             m_pQueryJPD = NULL;
         }
         delete normalizedData;
+		delete potParam;
         delete allProduct;
         delete []domPos;
     }
@@ -284,6 +304,7 @@ void CPearlInfEngine::InitEngine(const CEvidence* pEvidence)
     //determine distribution type for messages
 //    intVector         obsNds;
 //    pConstValueVector obsNdsVals;
+    m_pEvidence = pEvidence;
 
     const int nObsNodes = pEvidence->GetNumberObsNodes();
     
