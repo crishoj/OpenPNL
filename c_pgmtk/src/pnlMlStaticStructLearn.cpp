@@ -225,11 +225,10 @@ CMlStaticStructLearn::ComputeFactor(intVector vFamily, CGraphicalModel* pGrModel
 CCPD* 
 CMlStaticStructLearn::CreateRandomCPD(int nfamily, const int* family, CGraphicalModel* pGrModel)
 {
-	int child = family[nfamily-1];
 	CModelDomain* pMD = pGrModel->GetModelDomain();
-	CFactor* factor = pGrModel->GetFactor(child);
-	EDistributionType dt = factor->GetDistributionType();
-	CCPD* pCPD;
+	EDistributionType dt = pnlDetermineDistributionType( pMD, nfamily, family, NULL);
+                 
+    CCPD* pCPD;
 
 	switch (dt)
     {
