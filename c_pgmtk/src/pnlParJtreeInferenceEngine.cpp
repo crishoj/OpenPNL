@@ -388,13 +388,16 @@ void CParJtreeInfEngine::EnterEvidenceOMP(const CEvidence *pEvidence,
     PNL_CHECK_IS_NULL_POINTER(pEvidence);
     PNL_CHECK_RANGES( maximize, 0, 2 );
 
-
 	if( pEvidence->GetModelDomain() != m_pGraphicalModel->GetModelDomain() )
 	{
 		PNL_THROW( CInvalidOperation, 
 			"evidence and the Graphical Model must be on one Model Domain" );
 	}
 	// bad-args check end
+
+    CJunctionTree *jtree = GetJTree();
+    int nNodes = jtree->GetNumberOfNodes();
+    int i;
 	
 	if (GetModel()->GetModelType() == mtBNet)
     {
