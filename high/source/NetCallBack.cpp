@@ -26,7 +26,7 @@ NetCallback::GetNodeInfo(Vector<pnl::CNodeType> *paNodeType,
 	const pnl::CNodeType &nt = net.pnlNodeType(net.Graph()->INode(aNodeName[i]));
 
 	(*paNodeAssociation)[i] = NodeAssociation(paNodeType,
-	    nt.IsDiscrete(), nt.GetNodeSize());
+	    nt.IsDiscrete(), nt.GetNodeSize(), nt.GetNodeState());
     }
 
     return true;
