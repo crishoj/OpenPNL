@@ -1,10 +1,11 @@
 
-bin_PROGRAMS=tests_pnl_c
+check_PROGRAMS = tests_pnl_c
 
 include $(top_srcdir)/Makefile.incl
 
-INCLUDES=$(PNL_INCL) -I../include -I$(top_srcdir)/trs/include
-tests_pnl_c_SOURCES=\
+INCLUDES = $(PNL_INCL) -I$(srcdir)/../include -I$(top_srcdir)/trs/include
+
+tests_pnl_c_SOURCES =     \
      A1_5JTreeInfDBNCondGauss.cpp     \
      A2TPFInfDBN.cpp     \
      AAnnealingGibbsInfEng.cpp     \
@@ -82,5 +83,11 @@ tests_pnl_c_SOURCES=\
      tsys.cpp     \
      tUtil.cpp
 
-tests_pnl_c_LDADD=$(PNL_LIBS) $(top_srcdir)/trs/src/libtrs.a
+tests_pnl_c_LDADD = $(PNL_LIBS) $(top_builddir)/trs/src/libtrs.a
+
+TESTS = run_pnlcheck
+
+run_pnlcheck: tests_pnl_c
+	@echo "./tests_pnl_c -R FAIL -s $(top_builddir)/checkfails.sum -m -B" >$@; \
+	@chmod a+x $@
 
