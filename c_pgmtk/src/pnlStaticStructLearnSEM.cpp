@@ -179,7 +179,7 @@ bool CStaticStructLearnSEM::LearnOneStep()
 	const float* familyLL = pEMLearn->GetFamilyLogLik();
 	floatVector familyScores(m_nNodes,0);
 	int j, freeparams;
-	float logebase = (float)log(m_numberOfAllEvidences);
+	float logebase = (float)log(float(m_numberOfAllEvidences));
 	float total_score = 0.0f;
 	CFactor* pCPD;
 	for(i=0; i<m_nNodes; i++)
