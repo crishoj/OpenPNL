@@ -53,8 +53,10 @@ public:
     // destroy clique
     void DestroyClique(TokArr nodes);
     
-    // returns neigbors of one node or several nodes
-    TokArr GetNeighbors(TokArr nodes);
+    // returns number of nodes in network
+    int GetNumberOfNodes() const;
+    // returns number of cliques in network
+    int GetNumberOfCliques() const;
     
     // set tabular probability
     void SetPTabular(TokArr value, TokArr prob);
@@ -83,9 +85,6 @@ public:
     // learns distributions of the network using evidence buffer and new evidences 
     void LearnParameters(TokArr aValue[] = NULL, int nValue = 0);
     
-    //learns structure of the network using input evidences or evidence history
-    void LearnStructure(TokArr aValue[], int nValue); //maybe return some quality measure?
-
     // returns MPE for nodes using current evidence
     TokArr GetMPE(TokArr nodes);
     

@@ -37,7 +37,7 @@ MRF::MRF(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
 
     m_pNet = new ProbabilisticNet("mrf");
     m_pNet->SetCallback(new MRFCallback());
-    m_pNet->Distributions()->SetMRF(true);
+    //m_pNet->Distributions()->SetMRF(true);
     m_pNet->Token()->AddProperty("Inference", aInference,
 	sizeof(aInference)/sizeof(aInference[0]));
     m_pNet->Token()->AddProperty("Learning", aLearning,
@@ -76,7 +76,10 @@ void MRF::SetClique(TokArr nodes)
 	aINode[i] = Net().Graph()->INode(nodes[i].Name());
     }
     
-    m_pNet->Distributions()->Cliques().FormClique(aINode);
+    if(!Net().Distributions()->Cliques().FormClique(aINode))
+    {
+        ThrowUsingError("Clique already exists or nodes are subset of some clique or some clique is subset of nodes.", "SetClique");
+    }
 }
 
 // destroy clique
@@ -88,22 +91,29 @@ void MRF::DestroyClique(TokArr nodes)
 	aINode[i] = Net().Graph()->INode(nodes[i].Name());
     }
     
-    m_pNet->Distributions()->Cliques().DestroyClique(aINode);
+    Net().Distributions()->Cliques().DestroyClique(aINode);
 }
 
-TokArr MRF::GetNeighbors(TokArr nodes)
+int MRF::GetNumberOfNodes() const
 {
-    return Net().GetNeighbors(nodes);
+    return Net().nNetNode();
+}
+
+int MRF::GetNumberOfCliques() const
+{
+    return Net().Distributions()->Cliques().nClique();
 }
 
 void MRF::SetPTabular(TokArr aValue, TokArr prob)
 {
     static const char fname[] = "SetPTabular";
+
     int aValSize = aValue.size();
     Vector<int> tokNumbers(aValSize, 1);
     int i, j;
     TokIdNode *node;
-    int nVal = 1, nval;
+    Vector<int> aiNode(aValSize);
+    int nVal = 1, nval, iNode;
     for(i = aValSize; --i; )
     {
         node = m_pNet->Token()->Node(aValue[i]);
@@ -111,6 +121,7 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
         {
             tokNumbers[i - 1] = tokNumbers[i];
             node = node->v_prev;
+            iNode = Net().Graph()->INode(node->Name());
             if(node->tag != eTagNetNode)
             {
                 ThrowUsingError("There is must be node", fname);
@@ -120,7 +131,8 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
         {
             if(node->tag == eTagNetNode)
             {
-                nval = m_pNet->Token()->nValue(m_pNet->Graph()->INode(node->Name()));
+                iNode = Net().Graph()->INode(node->Name());
+                nval = m_pNet->Token()->nValue(iNode);
                 tokNumbers[i - 1] = tokNumbers[i] * nval;
                 nVal *= nval;
             }
@@ -129,15 +141,36 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
                 ThrowUsingError("There is must be node", fname);
             }
         }
+        aiNode[i] = iNode;
     }
     node = m_pNet->Token()->Node(aValue[0]);
     if(node->tag == eTagNetNode)
     {
-	nVal *= m_pNet->Token()->nValue(m_pNet->Graph()->INode(node->Name()));
+        iNode = Net().Graph()->INode(node->Name());
+	nVal *= m_pNet->Token()->nValue(iNode);
     }
+    if(node->tag == eTagValue)
+    {
+        node = node->v_prev;
+        if(node->tag != eTagNetNode)
+        {
+            ThrowUsingError("There is must be node", fname);
+        }
+        iNode = Net().Graph()->INode(node->Name());
+    }
+    aiNode[0] = iNode;
     if(prob.size() != nVal)
     {
         ThrowUsingError("Number of probabilities is incorrect", fname);
+    }
+
+    if(Net().Distributions()->Cliques().iClique(aiNode) == -1)
+    {
+        // if clique does not exist then create it
+        if(!Net().Distributions()->Cliques().FormClique(aiNode))
+        {
+            ThrowUsingError("Nodes are subset of some clique or some clique is subset of nodes.", "SetClique");
+        }
     }
 
     int TokInd;
@@ -175,6 +208,7 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
     for(i = 0; i < nVal; i++)
     {
        aTok[i] ^= prob[i];
+       cout << String(aTok[i])<< endl;
     }
     TokArr ta(&aTok.front(), nVal);
     Net().Distributions()->FillDataNew(pnl::matTable, ta);
@@ -533,107 +567,6 @@ void MRF::LearnParameters(TokArr aSample[], int nSample)
 	{
 	    Net().Distributions()->ResetDistribution(i, *Net().Model()->GetFactor(Net().Graph()->IGraph(i)));
 	}
-    }
-}
-
-void MRF::LearnStructure(TokArr aSample[], int nSample)
-{
-    pnl::intVector vAnc, vDesc;//bogus vectors
-    pnl::CMlStaticStructLearnHC* pLearning = pnl::CMlStaticStructLearnHC::Create(Model(),
-        pnl::itStructLearnML, pnl::StructLearnHC, pnl::BIC, Model()->GetNumberOfNodes(), vAnc, vDesc, 1/*one restart*/ );
-
-    if(nSample)
-    {
-	for(int i = 0; i < nSample; ++i)
-	{
-	    Net().EvidenceBuf()->push_back(Net().CreateEvidence(aSample[i]));
-	}
-    }
-
-    pLearning->SetData(Net().EvidenceBuf()->size(), &Net().EvidenceBuf()->front() );
-    pLearning->Learn();
-
-    const int* pRenaming = pLearning->GetResultRenaming();
-    Vector<int> vRename(pRenaming, pRenaming + Model()->GetNumberOfNodes());
-
-    pRenaming = &vRename.front();
-    pLearning->CreateResultBNet(const_cast<pnl::CDAG*>(pLearning->GetResultDAG()));
-
-    pnl::CBNet* newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
-
-    int i;
-
-    Net().SetTopologicalOrder(pRenaming, newNet->GetGraph());
-
-    for(i = 0; i < Net().Graph()->nNode(); ++i)
-    {
-	Net().Distributions()->ResetDistribution(i, *newNet->GetFactor(i));
-    }
-
-    //change ordering in current stuff
-    // Note! it may happen that old ordering of nodes is consistent (i.e. is topological)
-    // with new graph structure so theoretically no reordering required
-    //this would be good to have such function in PNL that checks this situation and reorder
-    //new network to old ordering. So we would not have to do all below
-
-    //add nodes
-    int nnodes = newNet->GetNumberOfNodes();
-//    Net().Token()->RenameGraph(pRenaming);
-
-    //reassign model
-    Net().SetModel(0);
-
-    //clear learning engine
-    delete m_Learning;
-    m_Learning = 0;
-
-    //clear inference engine
-    delete m_Inference;
-    m_Inference = 0;
-
-    //change domain in evidences
-
-    //change evidence on board
-    //IT is in Token form, so do not need to change
-
-    //change evidences in evidence buffer
-    for( Vector<pnl::CEvidence*>::iterator it1 = Net().EvidenceBuf()->begin(); it1 != Net().EvidenceBuf()->end(); it1++ )
-    {
-        pnl::CEvidence* oldEv = *it1;
-        pnl::CNodeValues* nv = oldEv;
-
-
-       /* { //below block of code borrowed from CMLStaticStructLearn class of PNL
-            intVector obsnodes(nnodes);
-            for(i=0; i<nnodes; i++) obsnodes[i] = i;
-            valueVector new_data;
-            const Value* val;
-            for(i = 0 ; i < nEv; i++)
-            {
-	        for(j=0; j<nnodes; j++)
-	        {
-	            val = m_Vector_pEvidences[i]->GetValue(m_vResultRenaming[j]);
-		        nt = m_pResultBNet->GetNodeType(j);
-	            if(nt->IsDiscrete())
-	            {
-		            new_data.push_back(*val);
-	            }
-	            else
-	            {
-		            ns = nt->GetNodeSize();
-		            for(k=0; k<ns; k++)
-		                new_data.push_back(*(val+k));
-	            }
-	        }
-        } //end block of borrowed code
-
-	    pEv[i] = CEvidence::Create(m_pResultBNet, nnodes, &obsnodes.front(), new_data);
-
-
-        CEvidence* newEv = CEvidence::Create(
-
-        old->
-           */
     }
 }
 
