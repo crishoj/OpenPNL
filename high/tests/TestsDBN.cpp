@@ -1,5 +1,5 @@
 #include "pnlHigh.hpp"
-#include "pnlDBN.hpp"   
+#include "DBN.hpp"   
 
 
 int testDBNSmothing()
