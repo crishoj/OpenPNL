@@ -6421,8 +6421,10 @@ CDistribFun* CGaussianDistribFun::CPD_to_pi(CDistribFun *const*allPiMessages,
     C2DNumericDenseMatrix<float> *matrixMean = m_pMatrixMean;
     C2DNumericDenseMatrix<float> *matrixCov = m_pMatrixCov;
 #else
-    C2DNumericDenseMatrix<float> *matrixMean = m_pMatrixMean->Clone();
-    C2DNumericDenseMatrix<float> *matrixCov = m_pMatrixCov->Clone();
+    C2DNumericDenseMatrix<float> *matrixMean = 
+        static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixMean->Clone());
+    C2DNumericDenseMatrix<float> *matrixCov = 
+        static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixCov->Clone());
 #endif
     
     matrixMean->AddRef(resData);
@@ -6556,8 +6558,10 @@ CDistribFun* CGaussianDistribFun::CPD_to_lambda(const CDistribFun *lambda,
     C2DNumericDenseMatrix<float> *matMeanPi = m_pMatrixMean;
     C2DNumericDenseMatrix<float> *matCovPi = m_pMatrixCov;
 #else
-    C2DNumericDenseMatrix<float> *matMeanPi = m_pMatrixMean->Clone();
-    C2DNumericDenseMatrix<float> *matCovPi = m_pMatrixCov->Clone();
+    C2DNumericDenseMatrix<float> *matMeanPi = 
+        static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixMean->Clone());
+    C2DNumericDenseMatrix<float> *matCovPi = 
+        static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixCov->Clone());
 #endif
 
     matMeanPi->AddRef(resData);
