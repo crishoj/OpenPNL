@@ -93,28 +93,32 @@ void CEMLearningEngine::BuildFullEvidenceMatrix(float ***full_evid)
     int i, j;
     CStaticGraphicalModel *grmodel = GetStaticModel();
     const CEvidence* pCurrentEvid;
-    valueVector *values = new valueVector();
+    //valueVector *values = new valueVector();
   
     int NumOfNodes = grmodel->GetGraph()->GetNumberOfNodes();
     int NumOfEvid = m_Vector_pEvidences.size();
 
     (*full_evid) = new float * [NumOfNodes];
-    for (i=0; i<NumOfNodes; i++)
+    for (i = 0; i < NumOfNodes; i++)
     {
         (*full_evid)[i] = new float [NumOfEvid];
     }
 
-    for (i=0; i<NumOfNodes; i++)
-        for (j=0; j<NumOfEvid; j++)
+    for (i = 0; i < NumOfNodes; i++)
+    {
+        for (j = 0; j < NumOfEvid; j++)
+        {
             (*full_evid)[i][j] = -10000;
+        }
+    }
 
     const int * obs;
-    for (j=0; j<NumOfEvid; j++)
+    for (j = 0; j < NumOfEvid; j++)
     {
         pCurrentEvid = m_Vector_pEvidences[j];
-        int ObsNum = pCurrentEvid->GetNumberObsNodes();
+        //int ObsNum = pCurrentEvid->GetNumberObsNodes();
         obs = pCurrentEvid->GetAllObsNodes(); 
-        for (i=0; i < (pCurrentEvid->GetNumberObsNodes()); i++)
+        for (i = 0; i < (pCurrentEvid->GetNumberObsNodes()); i++)
         {
             float fl = (pCurrentEvid->GetValue(obs[i]))->GetFlt();
             (*full_evid)[int(obs[i])][j] = fl;
@@ -136,7 +140,7 @@ void CEMLearningEngine::BuildFullEvidenceMatrix(float ***full_evid)
 
 void CEMLearningEngine::BuildCurrentEvidenceMatrix(int Node, float ***full_evid, float ***evid)
 {
-  int i, j;
+  int i;
 
   CStaticGraphicalModel *grmodel = GetStaticModel();
   intVector parents;
@@ -144,7 +148,7 @@ void CEMLearningEngine::BuildCurrentEvidenceMatrix(int Node, float ***full_evid,
   grmodel->GetGraph()->GetParents(Node, &parents);
   parents.push_back(Node);
 
-  int NumOfNodes = grmodel->GetNumberOfNodes();
+//  int NumOfNodes = grmodel->GetNumberOfNodes();
   *evid = new float* [parents.size()];
   for (i = 0; i < parents.size(); i++)
   {
@@ -178,7 +182,7 @@ EMaximizingMethod CEMLearningEngine::GetMaximizingMethod()
 
 void CEMLearningEngine::Cast(const CPotential * pot, int node, int ev, float *** full_evid)
 {
-    EDistributionType dt = pot->GetDistributionType();
+//    EDistributionType dt = pot->GetDistributionType();
   //  if (dt == dtTabular) printf("Tabular distribFun\n");
     
     int dims;
@@ -201,7 +205,7 @@ void CEMLearningEngine::Cast(const CPotential * pot, int node, int ev, float ***
             segment[i] = segment[i-1] + pot->GetDistribFun()->
                 GetMatrix(matTable)->GetElementByIndexes(multiindex); 
         }
-        segment[0] = -0.001;
+        segment[0] = -0.001f;
 
         delete [] multiindex;
     }
@@ -235,7 +239,7 @@ void CEMLearningEngine::Cast(const CPotential * pot, int node, int ev, float ***
         delete [] probability;
     }
 
-    segment[0] = -0.001;
+    segment[0] = -0.001f;
     float my_val = pnlRand(0.0f, 1.0f);
     for (i=1; i<=ranges[dims-1]; i++)
     {
@@ -277,9 +281,22 @@ void CEMLearningEngine::Learn()
     
     int iteration = 0;
     int ev;
-    
+
+    bool IsCastNeed = false;
+    int i;
+    for( i = 0; i < nFactors; i++ )
+    {
+        pFactor = pGrModel->GetFactor(i);
+        EDistributionType dt = pFactor->GetDistributionType();
+        if ( dt == dtSoftMax ) IsCastNeed = true;
+    }
+
     float ** full_evid;
-    BuildFullEvidenceMatrix(&full_evid);
+    if (IsCastNeed)
+    {
+        BuildFullEvidenceMatrix(&full_evid);
+    }
+
     
     if (IsAllObserved())
     {
@@ -319,7 +336,7 @@ void CEMLearningEngine::Learn()
         bool bContinue;
         const CPotential * pot;
         
-        bool IsCastNeed = false;
+/*        bool IsCastNeed = false;
         int i;
         for( i = 0; i < nFactors; i++ )
         {
@@ -327,6 +344,12 @@ void CEMLearningEngine::Learn()
             EDistributionType dt = pFactor->GetDistributionType();
             if ( dt == dtSoftMax ) IsCastNeed = true;
         }
+
+        float ** full_evid;
+        if (IsCastNeed)
+        {
+            BuildFullEvidenceMatrix(full_evid);
+        }*/
         
         do
         {
@@ -368,7 +391,7 @@ void CEMLearningEngine::Learn()
                 }
             }
             
-            int i, j;
+            int i;
 /*
             printf ("\n My Full Evidence Matrix");
             for (i=0; i<nFactors; i++)
@@ -405,7 +428,7 @@ void CEMLearningEngine::Learn()
                     delete [] evid;
                 }
             }
-            
+                        
             loglik = UpdateModel();
             
             if( GetMaxIterEM() != 1)
@@ -424,6 +447,17 @@ void CEMLearningEngine::Learn()
         }while(bContinue);
     }
     SetNumProcEv( GetNumEv() );
+   
+    if (IsCastNeed)
+    {
+        int NumOfNodes = pGrModel->GetGraph()->GetNumberOfNodes();
+        for (i=0; i<NumOfNodes; i++)
+        {
+            delete [] full_evid[i];
+        }
+        delete [] full_evid;
+    }
+
 }
 
 
