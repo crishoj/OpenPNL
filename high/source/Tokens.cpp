@@ -906,7 +906,7 @@ void TokArr::Init(char const *s)
         {
             PNL_THROW(pnl::CBadArg, "alien symbol inside TokArr, one can use alphanumerics or + - . ^ & only");
         }
-        push_back(Tok::root);
+        push_back(Tok());
         s = back().Init(s);
     }
 }
