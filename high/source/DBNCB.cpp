@@ -64,7 +64,7 @@ pnl::CGraphicalModel *DBNCallback::CreateModel(ProbabilisticNet &net)
         }
         else
         {
-            if (dynamic_cast<WGaussianDistribFun*>(pWDF)->IsDistributionSpecific() == 1)
+			if (dynamic_cast<WGaussianDistribFun*>(pWDF)->IsDistributionSpecific() == 1)
             {
                 const pnl::pConstNodeTypeVector* ntVec = pnlNet->GetFactor(i)->GetDistribFun()
                     ->GetNodeTypesVector();
@@ -93,17 +93,21 @@ pnl::CGraphicalModel *DBNCallback::CreateModel(ProbabilisticNet &net)
                 pnlNet->GetFactor(i)->AttachMatrix(cov, pnl::matCovariance);
                 pnlNet->GetFactor(i)->AttachMatrix(cov->Copy(cov), pnl::matWishartCov);
 				
+				int NDims;
+				const int *Ranges;
+				cov->GetRanges(&NDims, &Ranges);
+				
                 dynamic_cast<pnl::CGaussianDistribFun*>(pnlNet->GetFactor(i)->GetDistribFun())
-                    ->SetFreedomDegrees(1 , cov->GetNumberDims() + 2); 
+                    ->SetFreedomDegrees(1 , Ranges[0] + 2); 
                 
                 int NumOfNds = pnlNet->GetFactor(i)->GetDistribFun()->GetNumberOfNodes();
-                if (NumOfNds > 1)
-                {
+				for (int parent = 0; parent < (NumOfNds-1); parent++)
+				{
                     pnl::CDenseMatrix<float> *weight = 
-                        dynamic_cast<WGaussianDistribFun*>(pWDF)->Matrix(3);
+                        dynamic_cast<WGaussianDistribFun*>(pWDF)->Matrix(3,parent);
                     PNL_CHECK_IS_NULL_POINTER(weight);
 					
-                    pnlNet->GetFactor(i)->AttachMatrix(weight, pnl::matWeights, 0);
+                    pnlNet->GetFactor(i)->AttachMatrix(weight, pnl::matWeights,parent);
                 }
             }
         }

@@ -62,14 +62,14 @@ public:
 #endif
     
     // set tabular probability
-    void SetP(TokArr value, TokArr prob, TokArr parentValue = TokArr());
+    void SetPTabular(TokArr value, TokArr prob, TokArr parentValue = TokArr());
 
     // get tabular probability
-    TokArr P(TokArr value, TokArr parents = TokArr());
+    TokArr GetPTabular(TokArr value, TokArr parents = TokArr());
     
     TokArr GetJPD(TokArr value );
     // set parameters for gaussian distribution
-    void SetGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
+    void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
     
     // setting evidence on the board 
     void EditEvidence(TokArr values = TokArr());
@@ -133,6 +133,7 @@ private:
     int GetSliceNum(String nodeName);
 	String GetNodeName(String nodeEvid);
 	String GetShortName(String nodeName);
+	String GetValue(String nodeEvid);
 	TokArr ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice);
 
     void CreateModel();
