@@ -54,7 +54,7 @@ typedef PNL_API enum
 {
 	MaxLh, //maximized likelihood
 	PreAs, //predictive assessment
-	MarLh	//marginal likelyhood ,not implemented yet
+	MarLh  //marginal likelyhood 
 } EScoreMethodTypes;
 
 class PNL_API CMlStaticStructLearn : public CStaticLearningEngine
