@@ -531,26 +531,26 @@ struct PNLHIGH_API Tok
                   TokIdNode const *soft_context = 0,
                   TokIdNode const *subroot = 0 );
     inline void Resolve( int hint_num_nodes,
-                  Matcher const &hard_matcher,
-                  TokIdNode const *hard_context = 0,
-                  TokIdNode const *soft_context = 0,
-                  TokIdNode const *subroot = 0 );
+                         Matcher const &hard_matcher,
+                         TokIdNode const *hard_context = 0,
+                         TokIdNode const *soft_context = 0,
+                         TokIdNode const *subroot = 0 );
     inline void Resolve( int hint_num_nodes,
-                  TokIdNode const *hard_context = 0,
-                  TokIdNode const *soft_context = 0,
-                  TokIdNode const *subroot = 0 );
+                         TokIdNode const *hard_context = 0,
+                         TokIdNode const *soft_context = 0,
+                         TokIdNode const *subroot = 0 );
     inline void Resolve( Matcher const &hard_matcher,
-                  Matcher const &soft_matcher,
-                  TokIdNode const *hard_context = 0,
-                  TokIdNode const *soft_context = 0,
-                  TokIdNode const *subroot = 0 );
+                         Matcher const &soft_matcher,
+                         TokIdNode const *hard_context = 0,
+                         TokIdNode const *soft_context = 0,
+                         TokIdNode const *subroot = 0 );
     inline void Resolve( Matcher const &hard_matcher,
-                  TokIdNode const *hard_context = 0,
-                  TokIdNode const *soft_context = 0,
-                  TokIdNode const *subroot = 0 );
+                         TokIdNode const *hard_context = 0,
+                         TokIdNode const *soft_context = 0,
+                         TokIdNode const *subroot = 0 );
     inline void Resolve( TokIdNode const *hard_context = 0,
-                  TokIdNode const *soft_context = 0,
-                  TokIdNode const *subroot = 0 );
+                         TokIdNode const *soft_context = 0,
+                         TokIdNode const *subroot = 0 );
     inline void Resolve( int hint_num_nodes,
                          Matcher const &hard_matcher,
                          Matcher const &soft_matcher,
