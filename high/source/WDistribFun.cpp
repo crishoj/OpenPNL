@@ -361,7 +361,8 @@ WGaussianDistribFun::~WGaussianDistribFun()
 
 void WGaussianDistribFun::SetDefaultDistribution()
 {
-    CreateDistribution();
+//    CreateDistribution();
+    CreateDefaultDistribution();
 }
 
 void WGaussianDistribFun::CreateDistribution()
@@ -390,7 +391,8 @@ Vector<int> WGaussianDistribFun::Dimensions(int matrixType)
 {
     if(!m_pDistrib)
     {
-	CreateDistribution();
+//	CreateDistribution();
+        CreateDefaultDistribution();
     }
 
     return desc()->nodeSizes();
@@ -399,8 +401,8 @@ Vector<int> WGaussianDistribFun::Dimensions(int matrixType)
 
 void WGaussianDistribFun::DoSetup()
 {
-//    CreateDefaultDistribution();
-    CreateDistribution();
+    CreateDefaultDistribution();
+//    CreateDistribution();
 }
 
 
@@ -425,6 +427,12 @@ pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType, int numWei
 	break;
     case matWeights:
 	pMatrix = m_pDistrib->GetMatrix(matWeights, numWeightMat);
+	break;
+    case matWishartMean:
+        pMatrix = m_pDistrib->GetMatrix(matWishartMean);
+	break;
+    case matWishartCov:
+        pMatrix = m_pDistrib->GetMatrix(matWishartCov);
 	break;
     default:
 	ThrowUsingError("Unsupported matrix type", fname);
@@ -581,6 +589,8 @@ void WGaussianDistribFun::SetData(int matrixId, const float *probability, int nu
     case matMean:
     case matCovariance:
     case matWeights:
+    case matWishartMean:
+    case matWishartCov:
 	matType = static_cast<EMatrixType>(matrixId);
 	break;
     default:
