@@ -108,7 +108,11 @@ public:
     // learn using evidences buffer
     void LearnParameters();
 
+	// unrolls current dbn
     BayesNet* Unroll();
+
+	// checking net model for dbn creation 
+	bool IsFullDBN();
 
     // returns MPE for nodes using current evidence
     TokArr GetMPE(TokArr nodes = TokArr());
@@ -148,6 +152,8 @@ private:
 	String GetShortName(String nodeName);
 	String GetValue(String nodeEvid);
 	TokArr ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice);
+	pnl::intVector GetSlicesNodesCorrespInd();
+
 
     void CreateModel();
     pnl::CDBN *Model();

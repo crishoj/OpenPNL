@@ -268,8 +268,8 @@ TokArr DBN::GetPTabular(TokArr child, TokArr parents)
     parentNds.resize(nparents + 1);
     parentVls.resize(nparents + 1);
     
-    const pnl::CFactor * cpd = Model()->GetFactor(childNd.front());
-    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matTable);
+    int node = childNd.front();
+	const pnl::CMatrix<float> *mat = Net().Distributions()->Distribution(node)->Matrix(0,0);
     
     TokArr result = "";
     int i;
@@ -1307,6 +1307,64 @@ BayesNet* DBN::Unroll()
     }
     pNet->Net().SetModel(Model()->UnrollDynamicModel(GetNumSlices()));
     return pNet;
+}
+
+pnl::intVector DBN::GetSlicesNodesCorrespInd()
+{
+	int i,j;
+	int numNodesPerSlice;
+	String NodeNameS1;
+	pnl::intVector indexes;
+    Vector<String> names;
+	
+	j = 0;
+	names = Net().Graph()->Names();
+	indexes.resize(names.size());
+	numNodesPerSlice = names.size() / 2;
+	
+	
+	for(i = 0; i < 2 * numNodesPerSlice; i++)
+	{
+		if(GetSliceNum(names[i]) == 0)
+		{
+			NodeNameS1 = GetShortName(names[i]);
+			NodeNameS1<<"-1";
+			indexes[j] = Net().Graph()->INode(names[i]);
+			indexes[j + numNodesPerSlice] = Net().Graph()->INode(NodeNameS1); 
+			j++;
+		}
+	}
+	return indexes;
+}
+
+bool DBN::IsFullDBN()
+{
+	int i,j;
+	int numberOfNodes;
+	String NodeNameS1;
+	pnl::intVector indexes;
+    Vector<String> names;
+	
+	j = 0;
+	names = Net().Graph()->Names();
+	indexes.resize(names.size());
+	numberOfNodes = names.size();
+	
+	
+	for(i = 0; i < numberOfNodes; i++)
+	{
+		if(GetSliceNum(names[i]) == 0)
+		{
+			NodeNameS1 = GetShortName(names[i]);
+			NodeNameS1<<"-1";
+			if( Net().Graph()->INode(NodeNameS1) == -1)
+			{
+				return false;
+			};
+			
+		}
+	}
+	return true;
 }
 
 PNLW_END
