@@ -1157,7 +1157,6 @@ CNumericDenseMatrix<float>* CCondSoftMaxDistribFun:: GetProbMatrix(const CEviden
     int i = 0;
     float *Values = new float[SizeOfProbMatrix];
     int *multInd;
-    int numOfDiscrNodesInDomain = m_discrParentsIndex.size()+1;
     multInd = new int[1];
     const float *data;
     CNumericDenseMatrix<float> *currentMatrix;
