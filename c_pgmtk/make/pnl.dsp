@@ -54,7 +54,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\Lib\pnld.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\pnlds.lib" /nodefaultlib
 
@@ -83,7 +83,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\Lib\pnl.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\pnls.lib" /nodefaultlib
 
@@ -455,6 +455,18 @@ SOURCE=..\src\pnlGraphicalModel.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\pnlIDNet.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlIDPotential.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlIDTabularPotential.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\pnlInferenceEngine.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
 # End Source File
@@ -472,6 +484,10 @@ SOURCE=..\src\pnlJunctionTree.cpp
 
 SOURCE=..\src\pnlLearningEngine.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlLIMIDInfEngine.cpp
 # End Source File
 # Begin Source File
 
@@ -912,6 +928,18 @@ SOURCE=..\include\pnlGraphicalModel.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\pnlIDNet.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlIDPotential.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlIDTabularPotential.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\pnlInferenceEngine.hpp
 # End Source File
 # Begin Source File
@@ -925,6 +953,10 @@ SOURCE=..\include\pnlJunctionTree.hpp
 # Begin Source File
 
 SOURCE=..\include\pnlLearningEngine.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlLIMIDInfEngine.hpp
 # End Source File
 # Begin Source File
 
