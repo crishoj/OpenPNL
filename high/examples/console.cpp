@@ -164,13 +164,13 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eSaveNet:	    BNet().SaveNet(args[0].c_str());  break;
 	case eLoadEvidBuf: BNet().LoadEvidBuf(args[0].c_str());  break;
 	case eSaveEvidBuf: BNet().SaveEvidBuf(args[0].c_str());  break;
-	case eSetP:	    BNet().SetP(args[0], args[1], args[2]); break;
-	case eP:	    Print(BNet().P(args[0], args[1]));break;
-	case eLearnStructure:BNet().LearnStructure(0, 0); break;
-        case eGaussianMean: Print(BNet().GaussianMean(args[0]));break;
-        case eGaussianCovar: Print(BNet().GaussianCovar(args[0], args[1]));break;
+	case eSetPTabular:  BNet().SetPTabular(args[0], args[1], args[2]); break;
+	case eGetPTabular:  Print(BNet().GetPTabular(args[0], args[1]));break;
+	case eLearnStructure:	BNet().LearnStructure(0, 0); break;
+        case eGaussianMean: Print(BNet().GetGaussianMean(args[0]));break;
+        case eGaussianCovar: Print(BNet().GetGaussianCovar(args[0], args[1]));break;
 	case eSetProperty:  BNet().SetProperty(args[0].c_str(), args[1].c_str()); break;
-        case eSetGaussian:  BNet().SetGaussian(args[0], args[1], args[2], args[3]); break;
+        case eSetPGaussian:  BNet().SetPGaussian(args[0], args[1], args[2], args[3]); break;
 	case eGenerateEvidences:
 	    {
 		int nSample = atoi(args[0].c_str());
@@ -197,9 +197,9 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eAddEvidToBuf:    BNet().AddEvidToBuf(args[0]); break;
 	case eClearEvidBuf: BNet().ClearEvidBuf(); break;
 	case eCurEvidToBuf: BNet().CurEvidToBuf(); break;
-	case eLearn:	    BNet().Learn(); break;
-	case eMPE:	    Print(BNet().MPE(args[0])); break;
-	case eJPD:	    Print(BNet().JPD(args[0])); break;
+	case eLearn:	    BNet().LearnParameters(); break;
+	case eMPE:	    Print(BNet().GetMPE(args[0])); break;
+	case eJPD:	    Print(BNet().GetJPD(args[0])); break;
 	case eNodeType:
 	default:
 	    fprintf(Stdout(), "Unrealized command: '%s'\n", fname.c_str());

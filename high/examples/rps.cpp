@@ -254,7 +254,7 @@ int rpsMain2()
     if(bSkipInitialLearning == false)
     {
 	net.SaveEvidBuf("rpsLearnCheck.csv");// for checking
-	net.Learn();
+	net.LearnParameters();
 	net.ClearEvidBuf();
     }
 
@@ -280,7 +280,7 @@ int rpsMain2()
 	}
 
 	net.EditEvidence(evidence);
-	TokArr prediction = net.MPE("CurrentHumanTurn");
+	TokArr prediction = net.GetMPE("CurrentHumanTurn");
 
 	if(sMode & cShowPrediction)
 	{
@@ -321,7 +321,7 @@ int rpsMain2()
         // Learn with data
 	net.EditEvidence(evidence);
         net.CurEvidToBuf();
-        net.Learn();
+        net.LearnParameters();
     }
 
     cout << "Computer score: " << score[2] << " WINs, " << score[0] << " DRAWs and " << score[1] << " LOSEs\n";
@@ -377,7 +377,7 @@ int rpsMain()
     if(bSkipInitialLearning == false)
     {
 	net.SaveEvidBuf("rpsLearnCheck.csv");// for checking
-	net.Learn();
+	net.LearnParameters();
 	net.ClearEvidBuf();
     }
 
@@ -403,7 +403,7 @@ int rpsMain()
 	}
 
 	net.EditEvidence(evidence);
-	TokArr prediction = net.MPE("CurrentHumanTurn");
+	TokArr prediction = net.GetMPE("CurrentHumanTurn");
 	    cout << "prediction = " << prediction << "\n";
 
 	if(sMode & cShowPrediction)
@@ -446,7 +446,7 @@ int rpsMain()
         // Learn with data
 	net.EditEvidence(evidence);
         net.CurEvidToBuf();
-        net.Learn();
+        net.LearnParameters();
     }
 
     cout << "Computer score: " << score[2] << " WINs, "
