@@ -560,8 +560,10 @@ TokArr BayesNet::MPE(TokArr nodes)
 	    ThrowInternalError("Non-discrete value for discrete variable", "MPE");
 	}
 
-	result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v.GetInt()));
-//	result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v.GetFlt()));
+        if (Net().pnlNodeType(queryNds[i]).IsDiscrete())
+            result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v.GetInt()));
+        else
+    	    result.push_back(v.GetFlt());
     }
 
     return result;
