@@ -203,3 +203,9 @@ void CNodeValues::GetObsNodesFlags( intVector* obsNodesFlagsOut ) const
     obsNodesFlagsOut->assign( m_isObsNow.begin(), m_isObsNow.end() );
 }
 
+
+#ifdef PNL_RTTI
+const CPNLType CNodeValues::m_TypeInfo = CPNLType("CNodeValues", &(CPNLBase::m_TypeInfo));
+
+#endif
+

@@ -279,4 +279,7 @@ void CMlStaticStructLearnHC::LearnInOneStart(CDAG* InitDag,
 	delete iDAG;
 }
 
+#ifdef PNL_RTTI
+const CPNLType CMlStaticStructLearnHC::m_TypeInfo = CPNLType("CMlStaticStructLearnHC", &(CMlStaticStructLearn::m_TypeInfo));
 
+#endif

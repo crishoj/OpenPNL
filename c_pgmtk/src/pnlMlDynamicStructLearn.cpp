@@ -241,3 +241,7 @@ void CMlDynamicStructLearn::Learn()
     delete pSSL0;
 }
 
+#ifdef PNL_RTTI
+const CPNLType CMlDynamicStructLearn::m_TypeInfo = CPNLType("CMlDynamicStructLearn", &(CDynamicLearningEngine::m_TypeInfo));
+
+#endif

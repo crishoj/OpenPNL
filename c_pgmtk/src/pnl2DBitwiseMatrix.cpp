@@ -161,3 +161,8 @@ void C2DBitwiseMatrix::ZeroOneRow(int nRow)
     for(int i=0; i<nLength; i++)
 	m_pMatrix[nRow][i] =0;
 }
+
+#ifdef PNL_RTTI
+const CPNLType C2DBitwiseMatrix::m_TypeInfo = CPNLType("C2DBitwiseMatrix", &(CPNLBase::m_TypeInfo));
+
+#endif

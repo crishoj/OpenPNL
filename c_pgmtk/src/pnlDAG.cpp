@@ -1354,3 +1354,8 @@ void CDAG::GetAllValidMove(EDGEOPVECTOR *pvOutput, const int* pNotChangeNodes, i
 	}
 }
 
+#ifdef PNL_RTTI
+const CPNLType CDAG::m_TypeInfo = CPNLType("CDAG", &(CGraph::m_TypeInfo));
+
+#endif
+

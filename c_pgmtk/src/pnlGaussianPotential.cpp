@@ -778,4 +778,9 @@ void CGaussianPotential::UpdateStatisticsML(CFactor *pPot)
 }
 #endif // PAR_OMP
 
+#ifdef PNL_RTTI
+const CPNLType CGaussianPotential::m_TypeInfo = CPNLType("CGaussianPotential", &(CPotential::m_TypeInfo));
+
+#endif
+
 PNL_END

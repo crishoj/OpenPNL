@@ -27,7 +27,6 @@ CDynamicInfEngine(  pGraphicalModel )
 	
 }
 
-
 C2TBNInfEngine::~C2TBNInfEngine()
 {
 }
@@ -118,3 +117,8 @@ void C2TBNInfEngine::FixLagSmoothing(int time)
     }
     
 }
+
+#ifdef PNL_RTTI
+const CPNLType C2TBNInfEngine::m_TypeInfo = CPNLType("C2TBNInfEngine", &(CDynamicInfEngine::m_TypeInfo));
+
+#endif

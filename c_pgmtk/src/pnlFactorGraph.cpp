@@ -471,3 +471,8 @@ CFactorGraph::CFactorGraph( const CFactorGraph& rFG)
 	    rFG.m_paramInds.end() );
     }
 }
+
+#ifdef PNL_RTTI
+const CPNLType CFactorGraph::m_TypeInfo = CPNLType("CFactorGraph", &(CStaticGraphicalModel::m_TypeInfo));
+
+#endif

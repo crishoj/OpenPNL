@@ -1447,4 +1447,10 @@ int CLIMIDInfEngine::GetIterNum()
 {
   return m_IterNum;
 }
+//-----------------------------------------------------------------------------
+
+#ifdef PNL_RTTI
+const CPNLType CLIMIDInfEngine::m_TypeInfo = CPNLType("CLIMIDInfEngine", &(CPNLBase::m_TypeInfo));
+
+#endif
 // end of file ----------------------------------------------------------------

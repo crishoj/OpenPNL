@@ -419,3 +419,8 @@ const CEvidence* CNaiveInfEngine::GetMPE() const
         PNL_THROW( CInvalidOperation, "getting MPE before calling MarginalNodes" )
     }
 }
+
+#ifdef PNL_RTTI
+const CPNLType CNaiveInfEngine::m_TypeInfo = CPNLType("CNaiveInfEngine", &(CInfEngine::m_TypeInfo));
+
+#endif

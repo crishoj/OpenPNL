@@ -69,3 +69,8 @@ CGraphicalModel::~CGraphicalModel()
     void *pObj = this;
     m_pMD->Release(pObj);
 }
+
+#ifdef PNL_RTTI
+const CPNLType CGraphicalModel::m_TypeInfo = CPNLType("CGraphicalModel", &(CPNLBase::m_TypeInfo));
+
+#endif

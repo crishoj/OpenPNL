@@ -939,3 +939,8 @@ void CBNet::GetContinuousParents(int nodeNum, intVector *contParents) const
      }
 
 }
+
+#ifdef PNL_RTTI
+const CPNLType CBNet::m_TypeInfo = CPNLType("CBNet", &(CStaticGraphicalModel::m_TypeInfo));
+
+#endif

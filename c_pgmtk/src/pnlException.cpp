@@ -223,3 +223,51 @@ CNotImplemented::CNotImplemented( std::string file, int line,
 CInternalError( file, line, description, pgmNotImplemented )
 {
 }
+
+#ifdef PNL_RTTI
+const CPNLType CException::m_TypeInfo = CPNLType("CException", &(CPNLBase::m_TypeInfo));
+
+
+const CPNLType CAlgorithmicException::m_TypeInfo = CPNLType("CAlgorithmicException", &(CException::m_TypeInfo));
+
+const CPNLType CBadArg::m_TypeInfo = CPNLType("CBadArg", &(CException::m_TypeInfo));
+
+const CPNLType CInternalError::m_TypeInfo = CPNLType("CInternalError", &(CException::m_TypeInfo));
+
+const CPNLType CMemoryException::m_TypeInfo = CPNLType("CMemoryException", &(CException::m_TypeInfo));
+
+const CPNLType CNumericException::m_TypeInfo = CPNLType("CNumericException", &(CException::m_TypeInfo));
+
+
+const CPNLType CInconsistentState::m_TypeInfo = CPNLType("CInconsistentState", &(CAlgorithmicException::m_TypeInfo));
+
+const CPNLType CInvalidOperation::m_TypeInfo = CPNLType("CInvalidOperation", &(CAlgorithmicException::m_TypeInfo));
+
+const CPNLType CNotConverged::m_TypeInfo = CPNLType("CNotConverged", &(CAlgorithmicException::m_TypeInfo));
+
+
+const CPNLType CBadConst::m_TypeInfo = CPNLType("CBadConst", &(CBadArg::m_TypeInfo));
+
+const CPNLType CInconsistentSize::m_TypeInfo = CPNLType("CInconsistentSize", &(CBadArg::m_TypeInfo));
+
+const CPNLType CInconsistentType::m_TypeInfo = CPNLType("CInconsistentType", &(CBadArg::m_TypeInfo));
+
+const CPNLType CNULLPointer::m_TypeInfo = CPNLType("CNULLPointer", &(CBadArg::m_TypeInfo));
+
+const CPNLType COutOfRange::m_TypeInfo = CPNLType("COutOfRange", &(CBadArg::m_TypeInfo));
+
+
+const CPNLType CNotImplemented::m_TypeInfo = CPNLType("CNotImplemented", &(CInternalError::m_TypeInfo));
+
+
+const CPNLType CBadPointer::m_TypeInfo = CPNLType("CBadPointer", &(CMemoryException::m_TypeInfo));
+
+const CPNLType CDamagedMemory::m_TypeInfo = CPNLType("CDamagedMemory", &(CMemoryException::m_TypeInfo));
+
+const CPNLType CNotEnoughMemory::m_TypeInfo = CPNLType("CNotEnoughMemory", &(CMemoryException::m_TypeInfo));
+
+
+const CPNLType COverflow::m_TypeInfo = CPNLType("COverflow", &(CNumericException::m_TypeInfo));
+
+const CPNLType CUnderflow::m_TypeInfo = CPNLType("CUnderflow", &(CNumericException::m_TypeInfo));
+#endif

@@ -64,3 +64,8 @@ void CDynamicInfEngine::MarginalNodes(const intVector& query, int time, int notE
 {
     MarginalNodes( &query.front(), query.size(), time, notExpanded );
 }
+
+#ifdef PNL_RTTI
+const CPNLType CDynamicInfEngine::m_TypeInfo = CPNLType("CDynamicInfEngine", &(CPNLBase::m_TypeInfo));
+
+#endif

@@ -794,3 +794,8 @@ float CMNet::ComputeLogLik( const CEvidence *pEv ) const
     }
     return ll;
 }
+
+#ifdef PNL_RTTI
+const CPNLType CMNet::m_TypeInfo = CPNLType("CMNet", &(CStaticGraphicalModel::m_TypeInfo));
+
+#endif

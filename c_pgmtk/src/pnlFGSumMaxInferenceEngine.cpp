@@ -592,3 +592,7 @@ CInfEngine( itFGSumMaxProduct, pFactorGraph )
     m_pShrinkedFG = NULL;   
 }
 
+#ifdef PNL_RTTI
+const CPNLType CFGSumMaxInfEngine::m_TypeInfo = CPNLType("CFGSumMaxInfEngine", &(CInfEngine::m_TypeInfo));
+
+#endif

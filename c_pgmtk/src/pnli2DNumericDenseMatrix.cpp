@@ -15,6 +15,8 @@
 /////////////////////////////////////////////////////////////////////////////
 #include "pnlConfig.hpp"
 #include "pnli2DNumericDenseMatrix.hpp"
+
+PNL_USING
 /*
 PNL_BEGIN
 
@@ -194,4 +196,10 @@ void iC2DNumericDenseMatrix<float>::icvSVD( float* a, int lda, int m, int n,
     icvSVD_32f( a, lda, m, n, w, uT, lduT, nu, vT, ldvT, buffer );
 }*/
 
-
+#ifdef PNL_RTTI
+template<>
+const CPNLType &iC2DNumericDenseMatrix< float >::GetStaticTypeInfo()
+{
+  return iC2DNumericDenseMatrix< float >::m_TypeInfo;
+}
+#endif

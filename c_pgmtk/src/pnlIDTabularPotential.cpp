@@ -111,4 +111,10 @@ void CIDTabularPotential::Dump() const
   GetUtilityDistribFun()->Dump();
   dump().flush();
 }
+// ----------------------------------------------------------------------------
+
+#ifdef PNL_RTTI
+const CPNLType CIDTabularPotential::m_TypeInfo = CPNLType("CIDTabularPotential", &(CIDPotential::m_TypeInfo));
+
+#endif
 // end of file ----------------------------------------------------------------

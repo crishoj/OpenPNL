@@ -2035,3 +2035,9 @@ CGraph *CGraph::ExtractSubgraph( intVector const &subGraph ) const
 
     return CGraph::Create( nbrs, nbrs_types );
 }
+
+
+#ifdef PNL_RTTI
+const CPNLType CGraph::m_TypeInfo = CPNLType("CGraph", &(CPNLBase::m_TypeInfo));
+
+#endif

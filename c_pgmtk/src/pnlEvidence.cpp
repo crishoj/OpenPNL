@@ -912,4 +912,9 @@ bool CEvidence::IsAllCountinuesNodesObs( const CStaticGraphicalModel *pGrModel) 
     
 }
 
+#ifdef PNL_RTTI
+const CPNLType CEvidence::m_TypeInfo = CPNLType("CEvidence", &(CNodeValues::m_TypeInfo));
+
+#endif
+
 PNL_END

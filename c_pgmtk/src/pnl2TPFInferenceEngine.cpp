@@ -771,7 +771,10 @@ DefineProcedure( EProcedureTypes procedureType, int lag )
 	m_CRingpEv.resize(0);
 }
 
+#ifdef PNL_RTTI
+const CPNLType C2TPFInfEngine::m_TypeInfo = CPNLType("C2TPFInfEngine", &(C2TBNInfEngine::m_TypeInfo));
 
+#endif
 //////////////////////////////////////////////////////////////////////////////////////////
 
 

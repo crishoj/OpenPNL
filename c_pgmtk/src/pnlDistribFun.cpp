@@ -35,5 +35,7 @@ CDistribFun::CDistribFun( EDistributionType dt )
     m_DistributionType = dt;
 }
 
+#ifdef PNL_RTTI
+const CPNLType CDistribFun::m_TypeInfo = CPNLType("CDistribFun", &(CPNLBase::m_TypeInfo));
 
-
+#endif

@@ -252,3 +252,8 @@ CMlStaticStructLearn::CreateRandomCPD(int nfamily, const int* family, CGraphical
     }
 	return pCPD;
 }
+
+#ifdef PNL_RTTI
+const CPNLType CMlStaticStructLearn::m_TypeInfo = CPNLType("CMlStaticStructLearn", &(CStaticLearningEngine::m_TypeInfo));
+
+#endif

@@ -218,4 +218,11 @@ bool CIDNet::IsLIMID(void) const
 
   return ret;
 }
+// ----------------------------------------------------------------------------
+
+#ifdef PNL_RTTI
+const CPNLType CIDNet::m_TypeInfo = CPNLType("CIDNet", &(CBNet::m_TypeInfo));
+
+#endif
+
 // end of file ----------------------------------------------------------------

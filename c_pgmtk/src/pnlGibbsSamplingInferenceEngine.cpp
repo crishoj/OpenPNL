@@ -902,6 +902,11 @@ ConvertingFamilyToPot( int node, const CEvidence* pEv )
   return ret;
 }
 
+#ifdef PNL_RTTI
+const CPNLType CGibbsSamplingInfEngine::m_TypeInfo = CPNLType("CGibbsSamplingInfEngine", &(CSamplingInfEngine::m_TypeInfo));
+
+#endif
+
 /*
 // to delete
 bool CGibbsSamplingInfEngine::

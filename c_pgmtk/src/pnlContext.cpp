@@ -130,6 +130,131 @@ CPNLBase *CContext::Get(const char *name)
 
 static const char *GetClassName(CPNLBase *pObj)
 {
+#ifdef PNL_RTTI
+    if (pObj->GetTypeInfo() == CGraph::GetStaticTypeInfo())
+    {
+        return "Graph";
+    }
+    else if(pObj->GetTypeInfo() == CGraphicalModel::GetStaticTypeInfo())
+    {
+        if(pObj->GetTypeInfo() == CDBN::GetStaticTypeInfo())
+        {
+            return "DBN";
+        }
+        else if(pObj->GetTypeInfo() == CIDNet::GetStaticTypeInfo())
+        {
+            return "IDNet";
+        }
+        else if(pObj->GetTypeInfo() == CBNet::GetStaticTypeInfo())
+        {
+            return "BNet";
+        }
+        else if(pObj->GetTypeInfo() == CMRF2::GetStaticTypeInfo())
+        {
+            return "MRF2";
+        }
+        else if(pObj->GetTypeInfo() == CMNet::GetStaticTypeInfo())
+        {
+            return "MNet";
+        }
+    }
+    else if(pObj->GetTypeInfo() == CFactor::GetStaticTypeInfo())
+    {
+        return "Factor";
+    }
+    else if(pObj->GetTypeInfo() == CNodeType::GetStaticTypeInfo())
+    {
+        return "NodeType";
+    }
+    else if(pObj->GetTypeInfo() == CNodeValues::GetStaticTypeInfo())
+    {
+        if(pObj->GetTypeInfo() == CEvidence::GetStaticTypeInfo())
+        {
+            return "Evidence";
+        }
+        else
+        {
+            return "NodeValues";
+        }
+    }
+    
+    
+    else if(dynamic_cast<CCoverGen*>(pObj) != 0)
+    {
+        if(dynamic_cast<CCover<intVector>*>(pObj) != 0)
+        {
+            return "intVector";
+        }
+        else if(dynamic_cast<CCover<intVecVector>*>(pObj) != 0)
+        {
+            return "intVecVector";
+        }
+        else if(dynamic_cast<CCover<floatVector>*>(pObj) != 0)
+        {
+            return "floatVector";
+        }
+        else if(dynamic_cast<CCover<nodeTypeVector>*>(pObj) != 0)
+        {
+            return "NodeTypeVector";
+        }
+        else if(dynamic_cast<CCover<pNodeTypeVector>*>(pObj) != 0)
+        {
+            return "PNodeTypeVector";
+        }
+        else if(dynamic_cast<CCover<valueVector>*>(pObj) != 0)
+        {
+            return "ValueVector";
+        }
+        else
+        {
+            return "";
+        }
+    }
+    else if(dynamic_cast<CDistribFun*>(pObj) != 0)
+    {
+        if(dynamic_cast<CGaussianDistribFun*>(pObj) != 0)
+        {
+            return "GaussianDistribFun";
+        }
+        else if(dynamic_cast<CTabularDistribFun*>(pObj) != 0)
+        {
+            return "TabularDistribFun";
+        }
+        else if(dynamic_cast<CSoftMaxDistribFun*>(pObj) != 0)
+        {
+            return "SoftMaxDistribFun";
+        }
+        else if(dynamic_cast<CCondGaussianDistribFun*>(pObj) != 0)
+        {
+            return "ConditionalGaussianDistribFun";
+        }
+        else if(dynamic_cast<CCondSoftMaxDistribFun*>(pObj) != 0)
+        {
+            return "ConditionalSoftMaxDistribFun";
+        }
+        else if(dynamic_cast<CScalarDistribFun*>(pObj) != 0)
+        {
+            return "ScalarDistribFun";
+        }
+    }
+    else if(dynamic_cast<CMatrix<float>*>(pObj) != 0)
+    {
+        return "MatrixOfFloat";
+    }
+    else if(dynamic_cast<CMatrix<CDistribFun*>*>(pObj) != 0
+        || dynamic_cast<CMatrix<CGaussianDistribFun*>*>(pObj) != 0
+        || dynamic_cast<CMatrix<CSoftMaxDistribFun*>*>(pObj) != 0)
+    {
+        return "MatrixDistribFun";
+    }
+    else if(dynamic_cast<CModelDomain*>(pObj) != 0)
+    {
+        return "ModelDomain";
+    }
+    
+    return "";
+    // THROW(UNHANDLED TYPE);??
+#else
     if(dynamic_cast<CGraph*>(pObj) != 0)
     {
         return "Graph";
@@ -251,6 +376,7 @@ static const char *GetClassName(CPNLBase *pObj)
     
     return "";
     // THROW(UNHANDLED TYPE);??
+#endif
 }
 
 void CContext::Traverse(int iTree)

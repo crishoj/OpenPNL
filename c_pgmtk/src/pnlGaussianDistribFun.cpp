@@ -7166,3 +7166,8 @@ void CGaussianDistribFun::UpdateStatisticsML(CDistribFun *pDF)
     }
 };
 #endif // PAR_OMP
+
+#ifdef PNL_RTTI
+const CPNLType CGaussianDistribFun::m_TypeInfo = CPNLType("CGaussianDistribFun", &(CDistribFun::m_TypeInfo));
+
+#endif

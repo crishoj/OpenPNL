@@ -858,3 +858,9 @@ void CMixtureGaussianCPD::UpdateStatisticsML(CFactor *pPot)
         "UpdateStatisticsML for CMixtureGaussianCPD not implemented yet");
 };
 #endif // PAR_OMP
+
+#ifdef PNL_RTTI
+const CPNLType CMixtureGaussianCPD::m_TypeInfo = CPNLType("CMixtureGaussianCPD", &(CCPD::m_TypeInfo));
+
+#endif
+

@@ -507,5 +507,10 @@ bool pnl::EqualResults(CEMLearningEngine& eng1, CEMLearningEngine& eng2,
 }
 #endif // PAR_RESULTS_RELIABILITY
 
+#ifdef PNL_RTTI
+const CPNLType CParEMLearningEngine::m_TypeInfo = CPNLType("CParEMLearningEngine", &(CEMLearningEngine::m_TypeInfo));
+
+#endif
+
 #endif // PAR_PNL
 // end of file ----------------------------------------------------------------

@@ -985,3 +985,9 @@ FindNonObsSubset(const intVector &subset, const CEvidence *evidence,
 	}
     }
 }
+
+
+#ifdef PNL_RTTI
+const CPNLType C1_5SliceJtreeInfEngine::m_TypeInfo = CPNLType("C1_5SliceJtreeInfEngine", &(C1_5SliceInfEngine::m_TypeInfo));
+
+#endif

@@ -698,3 +698,8 @@ float CGibbsWithAnnealingInfEngine::GetLikelihood(const CEvidence *pEv)
     }
     return logLik;
 }
+
+#ifdef PNL_RTTI
+const CPNLType CGibbsWithAnnealingInfEngine::m_TypeInfo = CPNLType("CGibbsWithAnnealingInfEngine", &(CSamplingInfEngine::m_TypeInfo));
+
+#endif

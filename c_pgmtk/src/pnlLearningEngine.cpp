@@ -118,3 +118,8 @@ void CLearningEngine::ClearStatisticData()
 	PNL_THROW( CNULLPointer, "no graphical model")
     }
 }
+
+#ifdef PNL_RTTI
+const CPNLType CLearningEngine::m_TypeInfo = CPNLType("CLearningEngine", &(CPNLBase::m_TypeInfo));
+
+#endif

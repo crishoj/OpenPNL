@@ -995,3 +995,8 @@ void CGaussianCPD::UpdateStatisticsML(CFactor *pPot)
         "UpdateStatisticsML for CGaussianCPD not implemented yet");
 };
 #endif // PAR_OMP
+
+#ifdef PNL_RTTI
+const CPNLType CGaussianCPD::m_TypeInfo = CPNLType("CGaussianCPD", &(CCPD::m_TypeInfo));
+
+#endif

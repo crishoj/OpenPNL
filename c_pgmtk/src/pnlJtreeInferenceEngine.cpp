@@ -1778,3 +1778,8 @@ CPotential* CJtreeInfEngine::MergeCliques(int domSize, int* Domain)
     }
     PNL_THROW(CInternalError, "internal error");
 }
+
+#ifdef PNL_RTTI
+const CPNLType CJtreeInfEngine::m_TypeInfo = CPNLType("CJtreeInfEngine", &(CInfEngine::m_TypeInfo));
+
+#endif

@@ -305,3 +305,8 @@ bool CBICLearningEngine::IsInputModelValid(const CStaticGraphicalModel *pGrModel
     }
     return true;
 }
+
+#ifdef PNL_RTTI
+const CPNLType CBICLearningEngine::m_TypeInfo = CPNLType("CBICLearningEngine", &(CStaticLearningEngine::m_TypeInfo));
+
+#endif

@@ -946,3 +946,8 @@ RemoveUnitClusters(intVecVector &clustersIn, intVecVector *clustersOut)
 	}
     }
 }
+
+#ifdef PNL_RTTI
+const CPNLType CBKInfEngine::m_TypeInfo = CPNLType("CBKInfEngine", &(C1_5SliceInfEngine::m_TypeInfo));
+
+#endif

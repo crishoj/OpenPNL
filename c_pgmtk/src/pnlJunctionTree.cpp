@@ -2003,4 +2003,10 @@ bool CJunctionTree::IsAllNodesInClsObs(int NumCls, const CEvidence *pEvidence )
 
     return true;
 }
+
+#ifdef PNL_RTTI
+const CPNLType CJunctionTree::m_TypeInfo = CPNLType("CJunctionTree", &(CStaticGraphicalModel::m_TypeInfo));
+
+#endif
+
 //////////////////////////////////////////////////////////////////////////

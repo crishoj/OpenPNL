@@ -395,4 +395,10 @@ else IsDiscreteNodes.push_back(0);
                 */
 
 
+#ifdef PNL_RTTI
+const CPNLType CInfEngine::m_TypeInfo = CPNLType("CInfEngine", &(CPNLBase::m_TypeInfo));
+
+#endif
+
+
 PNL_END

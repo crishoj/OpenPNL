@@ -1211,4 +1211,10 @@ int CCondSoftMaxDistribFun::GetSoftMaxSize() const
     delete [] multiindex;
     return res;
 }
+//-----------------------------------------------------------------------------
+#ifdef PNL_RTTI
+const CPNLType CCondSoftMaxDistribFun::m_TypeInfo = CPNLType("CCondSoftMaxDistribFun", &(CDistribFun::m_TypeInfo));
+
+#endif
+
 // end of file ----------------------------------------------------------------

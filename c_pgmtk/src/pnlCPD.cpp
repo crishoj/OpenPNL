@@ -60,5 +60,7 @@ CPotential* CCPD::ConvertWithEvidenceToPotential(const CEvidence* pEvidence,
     return potWithEvid;
 }
 
+#ifdef PNL_RTTI
+const CPNLType CCPD::m_TypeInfo = CPNLType("CCPD", &(CFactor::m_TypeInfo));
 
-
+#endif

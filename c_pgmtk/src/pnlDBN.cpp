@@ -425,3 +425,7 @@ void CDBN::GenerateSamples( pEvidencesVecVector* evidences,
     delete pEv;
 }
 
+#ifdef PNL_RTTI
+const CPNLType CDBN::m_TypeInfo = CPNLType("CDBN", &(CDynamicGraphicalModel::m_TypeInfo));
+
+#endif

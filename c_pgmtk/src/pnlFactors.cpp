@@ -209,3 +209,8 @@ PNL_CHECK_IS_NULL_POINTER(pEvidence);
                     }
 }*/
 }
+
+#ifdef PNL_RTTI
+const CPNLType CFactors::m_TypeInfo = CPNLType("CFactors", &(CPNLBase::m_TypeInfo));
+
+#endif

@@ -454,23 +454,7 @@ const CEvidence* CLWSamplingInfEngine::GetMPE() const
 }
 
 
+#ifdef PNL_RTTI
+const CPNLType CLWSamplingInfEngine::m_TypeInfo = CPNLType("CLWSamplingInfEngine", &(CInfEngine::m_TypeInfo));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#endif

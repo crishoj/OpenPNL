@@ -241,3 +241,8 @@ int CMRF2::GetFactors( int numberOfNodes, const int *nodes,
     
     return 1;
 }
+
+#ifdef PNL_RTTI
+const CPNLType CMRF2::m_TypeInfo = CPNLType("CMRF2", &(CMNet::m_TypeInfo));
+
+#endif

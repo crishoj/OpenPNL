@@ -157,5 +157,7 @@ void CBayesLearningEngine::Learn()
     m_numberOfLearnedEvidences = m_numberOfAllEvidences;                    
 }
 
+#ifdef PNL_RTTI
+const CPNLType CBayesLearningEngine::m_TypeInfo = CPNLType("CBayesLearningEngine", &(CStaticLearningEngine::m_TypeInfo));
 
-
+#endif

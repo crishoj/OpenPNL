@@ -963,3 +963,8 @@ int CFactor::GetNumberOfFreeParameters() const
 	return m_CorrespDistribFun->GetNumberOfFreeParameters();
 }
 
+#ifdef PNL_RTTI
+const CPNLType CFactor::m_TypeInfo = CPNLType("CFactor", &(CPNLBase::m_TypeInfo));
+
+#endif
+

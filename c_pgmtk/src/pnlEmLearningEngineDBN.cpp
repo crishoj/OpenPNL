@@ -345,3 +345,9 @@ bool CEMLearningEngineDBN::IsDomainObserved(int nnodes, const int* domain,
     return true;
     
 }
+
+
+#ifdef PNL_RTTI
+const CPNLType CEMLearningEngineDBN::m_TypeInfo = CPNLType("CEMLearningEngineDBN", &(CDynamicLearningEngine::m_TypeInfo));
+
+#endif

@@ -465,6 +465,11 @@ void CModelDomain::ChangeNodeType(int NodeNumber, bool ToCont)
     }
 }
 
+#ifdef PNL_RTTI
+const CPNLType CModelDomain::m_TypeInfo = CPNLType("CModelDomain", &(CReferenceCounter::m_TypeInfo));
+
+#endif
+
 #else // PAR_OMP
 
 CModelDomain*
@@ -722,4 +727,8 @@ void CModelDomain::ChangeNodeType(int NodeNumber, bool ToCont)
     }
 }
 
+#ifdef PNL_RTTI
+const CPNLType CModelDomain::m_TypeInfo = CPNLType("CModelDomain", &(CReferenceCounter::m_TypeInfo));
+
+#endif
 #endif // PAR_OMP

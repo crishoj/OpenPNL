@@ -118,4 +118,22 @@ CNumericSparseMatrix<float>::CNumericSparseMatrix(int dim, const int *range,
                     iCNumericSparseMatrix<float>(dim, range, Clamp)
 {
 }
+
+#ifdef PNL_RTTI
+template<>
+const CPNLType &iCNumericSparseMatrix< int >::GetStaticTypeInfo()
+{
+  return iCNumericSparseMatrix< int >::m_TypeInfo;
+}
+
+template<>
+const CPNLType &CNumericSparseMatrix< int >::GetStaticTypeInfo()
+{
+  return CNumericSparseMatrix< int >::m_TypeInfo;
+}
+
+template <> 
+const CPNLType CNumericSparseMatrix< float > ::m_TypeInfo = CPNLType("CNumericSparseMatrix", &(iCNumericSparseMatrix< Type >::m_TypeInfo));
+
+#endif  
 PNL_END

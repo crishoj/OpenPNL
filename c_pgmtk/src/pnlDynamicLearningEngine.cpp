@@ -109,3 +109,7 @@ SetData(const pEvidencesVecVector& evidences )
     delete []evFinal;
 }
 
+#ifdef PNL_RTTI
+const CPNLType CDynamicLearningEngine::m_TypeInfo = CPNLType("CDynamicLearningEngine", &(CLearningEngine::m_TypeInfo));
+
+#endif

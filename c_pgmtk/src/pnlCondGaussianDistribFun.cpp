@@ -1286,6 +1286,8 @@ CNodeValues* CCondGaussianDistribFun::GetMPE()
   {
       PNL_THROW( CNotImplemented, "MPE for mixture of Gaussians" )
   }
+
+  return NULL;
 }
 
 CDistribFun* CCondGaussianDistribFun::ConvertToSparse() const
@@ -1967,3 +1969,8 @@ void CCondGaussianDistribFun::ResetNodeTypes(pConstNodeTypeVector &nodeTypes)
 	}
 	delete iter;
 }
+
+#ifdef PNL_RTTI
+const CPNLType CCondGaussianDistribFun::m_TypeInfo = CPNLType("CCondGaussianDistribFun", &(CDistribFun::m_TypeInfo));
+
+#endif

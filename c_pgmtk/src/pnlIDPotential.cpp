@@ -627,5 +627,10 @@ void CIDPotential::UpdateStatisticsML(CFactor *pPot)
       "UpdateStatisticsML for CIDPotential not implemented yet");
 };
 #endif // PAR_OMP
+// ----------------------------------------------------------------------------
 
+#ifdef PNL_RTTI
+const CPNLType CIDPotential::m_TypeInfo = CPNLType("CIDPotential", &(CFactor::m_TypeInfo));
+
+#endif
 // end of file ----------------------------------------------------------------

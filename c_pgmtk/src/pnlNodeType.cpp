@@ -15,3 +15,9 @@
 /////////////////////////////////////////////////////////////////////////////
 #include "pnlConfig.hpp"
 #include "pnlNodeType.hpp"
+
+PNL_USING
+
+#ifdef PNL_RTTI
+const CPNLType CNodeType::m_TypeInfo = CPNLType("CNodeType", &(CPNLBase::m_TypeInfo));
+#endif

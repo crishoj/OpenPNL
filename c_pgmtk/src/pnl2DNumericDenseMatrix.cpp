@@ -260,4 +260,9 @@ C2DNumericDenseMatrix<double>::C2DNumericDenseMatrix(
 }
 */
 
+#ifdef PNL_RTTI
+template <>
+const CPNLType C2DNumericDenseMatrix< float >::m_TypeInfo = CPNLType("C2DNumericDenseMatrix", &(iC2DNumericDenseMatrix< Type >::m_TypeInfo));
+
+#endif
 PNL_END

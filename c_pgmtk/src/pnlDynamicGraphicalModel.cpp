@@ -147,3 +147,8 @@ bool CDynamicGraphicalModel::IsValid( std::string* description ) const
     }
     return true;
 }
+
+#ifdef PNL_RTTI
+const CPNLType CDynamicGraphicalModel::m_TypeInfo = CPNLType("CDynamicGraphicalModel", &(CGraphicalModel::m_TypeInfo));
+
+#endif

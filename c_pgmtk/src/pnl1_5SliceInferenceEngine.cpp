@@ -233,4 +233,7 @@ CGraph *C1_5SliceInfEngine::Create1_5SliceGraph()
     return pFinalGraph;
 }
 
+#ifdef PNL_RTTI
+const CPNLType C1_5SliceInfEngine::m_TypeInfo = CPNLType("C1_5SliceInfEngine", &(C2TBNInfEngine::m_TypeInfo));
 
+#endif

@@ -805,3 +805,7 @@ const float* CEMLearningEngine::GetFamilyLogLik() const
     return &m_vFamilyLogLik.front();
 }
 
+#ifdef PNL_RTTI
+const CPNLType CEMLearningEngine::m_TypeInfo = CPNLType("CEMLearningEngine", &(CStaticLearningEngine::m_TypeInfo));
+
+#endif

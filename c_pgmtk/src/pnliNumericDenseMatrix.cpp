@@ -87,5 +87,11 @@ CNumericDenseMatrix<double>* CNumericDenseMatrix<double>::Create( int dim,
 }
 */
 
-
+#ifdef PNL_RTII
+template<>
+const CPNLType &iCNumericDenseMatrix< int >::GetStaticTypeInfo()
+{
+  return iCNumericDenseMatrix< int >::m_TypeInfo;
+}
+#endif
 PNL_END
