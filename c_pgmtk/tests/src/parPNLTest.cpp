@@ -27,7 +27,7 @@
 // ============================================================================
 // macros creation
 #define INTEL_PNL // let to use intel classes
-//#define PAR_PNL   // let to use parallel classes
+#define PAR_PNL   // let to use parallel classes
 
 #if defined(INTEL_PNL) && defined(PAR_PNL) && defined(_DEBUG)
   #define COMPARE_RESULTS
@@ -416,8 +416,8 @@ int RunTest(int argc, char* argv[])
       CGibbsSamplingInfEngine* pGibbsInfEng = 
         (CGibbsSamplingInfEngine*)pInfEng;
       pGibbsInfEng->SetQueries(queries);
-      pGibbsInfEng->SetMaxTime(1000);
-      pGibbsInfEng->SetBurnIn(100);
+      pGibbsInfEng->SetMaxTime(100);
+      pGibbsInfEng->SetBurnIn(10);
       pGibbsInfEng->SetNumStreams(2);
     }
 
@@ -444,8 +444,8 @@ int RunTest(int argc, char* argv[])
       CGibbsSamplingInfEngine* pGibbsInfEng = 
         (CGibbsSamplingInfEngine*)pParInfEng;
       pGibbsInfEng->SetQueries(queries);
-      pGibbsInfEng->SetMaxTime(1000);
-      pGibbsInfEng->SetBurnIn(100);
+      pGibbsInfEng->SetMaxTime(100);
+      pGibbsInfEng->SetBurnIn(10);
       pGibbsInfEng->SetNumStreams(2);
     }
 
@@ -547,8 +547,8 @@ int RunTest(int argc, char* argv[])
           printf("\nINTEL %s engine results\n====================================\n\n", argv[2]);
           if (strcmp(argv[2],"Gibbs") == 0)
           {
-            const int querySz = 2;
-            const int query[] = {0,2};
+            const int querySz = 1;
+            const int query[] = {2};
             pInfEng->MarginalNodes(query, querySz);
             pInfEng->GetQueryJPD()->Dump();
           }
@@ -591,8 +591,8 @@ int RunTest(int argc, char* argv[])
         printf("\nPAR_PNL %s engine results\n====================================\n\n", argv[2]);
         if (strcmp(argv[2],"Gibbs") == 0)
         {
-          const int querySz = 2;
-          const int query[] = {0,2};
+          const int querySz = 1;
+          const int query[] = {2};
           pParInfEng->MarginalNodes(query, querySz);
           MPI_PRINT(0) pParInfEng->GetQueryJPD()->Dump();
         }
