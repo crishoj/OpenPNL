@@ -745,9 +745,9 @@ void LearnParameters(TokArr aValue[] = NULL, int nValue = 0);
 <H5>Discussion</H5>
 <p class="description">
 The function learns network parameters using evidence buffer. If function with parameters is called then new 
-evidences are added to evidence buffer then learning is started up. Learn algorithm is set to property "Learning" with 
+evidences are added to evidence buffer then learning is started up. Learning algorithm is set to property "Learning" with 
 method <A href="#decl_SetProperty">SetProperty()</A>. By default EM learning is used. Besides Bayes learning is availabile.
-</font>
+</p>
 <H5>
 Example of usage
 </H5>
@@ -772,7 +772,7 @@ net.LearnParameters(evidences);
 
 <H3><A 
 name=decl_LearnStructure>LearnStructure</A></H3>
-<P class=Blurb>Learn structure of the network. 
+<P class=Blurb>Learns structure of the network. 
 </P>
 <font class="interface">
 void LearnStructure(TokArr aValue[], int nValue);
@@ -785,9 +785,8 @@ void LearnStructure(TokArr aValue[], int nValue);
   <DD>Number of evidences.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function learn structure of the network using evidence buffer. If function with parameters is called then new 
-evidences are added to evidence buffer then learning is started up. Learn algorithm is set to property "Learning" with 
-method <A href="#decl_SetProperty">SetProperty()</A>. By default EM learning is used. Besides Bayes learning is availabile.
-</font>
+evidences are added to evidence buffer then learning is started up. 
+</p>
 <H5>
 Example of usage
 </H5>
@@ -896,8 +895,65 @@ void SetProperty(const char *name, const char *value);
   <DT>value
   <DD>Array of nodes from one family.</DD></DL>
 <H5>Discussion</H5>
-<p class="description">The function sets value to the property with given name. 
-</font>
+<p class="description">The function sets value to the property with given name. The function is used to specify algorithms
+for learning and getting MPE and JPD and to specify parameters of algorithms. User can use this function to define his own
+properties. Used properties names with their possible values and descriptions are presented in table:
+</p>
+<table width="100%">
+<tr><td width="50pt" Rowspan="10"></td>
+<td><table BORDER="1">
+  <tr>
+     <td width="20%"><center><b>Property Name</b></center></td>
+     <td width="25%"><center><b>Possible Values</b></center></td>
+     <td width="55%"><center><b>Description</b></center></td>
+  </tr>
+  <tr>
+     <td>"Learning"</td>
+     <td>"bayes", "em"</td>
+     <td>Algorithm for parameters learning. EM Learning is used by default.</td>
+  </tr>
+  <tr>
+     <td>"EMMaxNumberOfIterations"</td>
+     <td>Any positive integer number</td>
+     <td>Maximum number of iterations of EM Learning algorithm. Default value is 5.</td>
+  </tr>
+  <tr>
+     <td>"EMTolerance"</td>
+     <td>Any positive float number</td>
+     <td>Precision that  EM Learning algorithm runs up to. Default value is 0.001.</td>
+  </tr>
+  <tr>
+     <td>"Inference"</td>
+     <td>"pearl", "jtree", "gibbs", "naive"</td>
+     <td>Inference algorithm that is used for getting MPE and JPD. Pearl Inference is used by default.</td>
+  </tr>
+  <tr>
+     <td>"PearlMaxNumberOfIterations"</td>
+     <td>Any positive integer number</td>
+     <td>Maximum number of iterations of Pearl Inference algorithm. Default value is equal to number of nodes of net.</td>
+  </tr>
+  <tr>
+     <td>"PearlTolerance"</td>
+     <td>Any positive float number</td>
+     <td>Precision that Pearl Inference algorithm runs up to. Default value is 1e-6.</td>
+  </tr>
+  <tr>
+     <td>"GibbsNumberOfIterations"</td>
+     <td>Any positive integer number</td>
+     <td>Number of iterations of Gibbs Sampling Inference algorithm. Default value is 600.</td>
+  </tr>
+  <tr>
+     <td>"GibbsThresholdIteration"</td>
+     <td>Any positive integer number less than GibbsNumberOfIterations value</td>
+     <td>Number of first itearation that use samples processing results of the previous iteration. Default value is 10.</td>
+  </tr>
+  <tr>
+     <td>"GibbsNumberOfStreams"</td>
+     <td>Any positive integer number</td>
+     <td>Number of streams that generate independent samples. Default value is 1.</td>
+  </tr>
+</table><tr></td>
+</table>
 <H5>
 Example of usage
 </H5>
@@ -906,6 +962,12 @@ Set Pearl inference for getting MPE and JPD:
 </p>
 <p class="example">
 net.SetProperty("Inference", "pearl");
+</P>
+<p class="description">
+Set maximum of iterations for Pearl inference:
+</p>
+<p class="example">
+net.SetProperty("PearlMaxNumberOfIterations", "50");
 </P>
 <p class="description">
 Set Bayes learning as algorithm for parameters learning:
