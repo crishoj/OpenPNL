@@ -90,7 +90,7 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	if((value.size() != probability.size() || value.size() == 0)/*&&(matrixId == matTable)*/)
 	{
     	    ThrowUsingError("The number of values must be equals to number of probabilities", fname);
-	};
+	}
 
 	aIndex.resize(desc()->nNode(), -1);
     }
@@ -99,7 +99,7 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	for (int parent = 0; parent < (NumberOfNodes-1); parent++)
 	{
 	    WeightsSize += desc()->nodeSize(parent);
-	};
+	}
 	WeightsSize *= ChildNodeSize;
 
 	//cont case
@@ -110,7 +110,7 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	    if(ChildNodeSize != probability.size())
 	    {
     		ThrowUsingError("The number of probabilities must be equals to number of dimensions of child node", fname);
-	    };
+	    }
 	    aIndex.resize(1, -1);
 	    break;
 
@@ -119,7 +119,7 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	    if((ChildNodeSize*ChildNodeSize) != probability.size())
 	    {
     		ThrowUsingError("The number of probabilities must be equals to (number of dimensions of child node)^2", fname);
-	    };
+	    }
 	    aIndex.resize(2, -1);
 	    break;
 
@@ -127,7 +127,7 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	    if((WeightsSize) != probability.size())
 	    {
     		ThrowUsingError("The number of probabilities is wrong. The correct value is sum(nodeSize(parent))*ChildNodeSize", fname);
-	    };
+	    }
 	    aIndex.resize(3, -1);
 	    aIndex[1] = 0;
 	    break;
@@ -211,7 +211,8 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	        ThrowUsingError("mixed parent and node itself", fname);
 	    }
             aIndex[mIndex] = mValue;
-        };
+	    SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
+        }
 
 	//In continuous case aIndex means an index in vectors mean or cov or weights
 	if (matrixId == matMean)
@@ -223,10 +224,10 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	    {
 		SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
 	    }
-	};
+	}
 
 	if (matrixId == matCovariance)
-	{	    
+	{
 	    //aIndex[0] - col index in the covariance matrix
 	    //aIndex[1] - row index in the covariance matrix
 	    int col = static_cast<int> (i/ChildNodeSize);
@@ -237,8 +238,8 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	    if(!probability[i].FltValue(0).IsUndef())
 	    {
 		SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
-	    };
-	};
+	    }
+	}
 
 	if (matrixId == matWeights)
 	{
@@ -252,15 +253,15 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	    if(!probability[i].FltValue(0).IsUndef())
 	    {
 	        SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
-	    };
+	    }
 
 	    if ((aIndex[1] == ChildNodeSize -1)&&(aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1))
 	    {
 		IndexWeightsMatrix++;
 		aIndex[1] = 0;
 		aIndex[2] = -1;
-	    };	    
-	};
+	    }
+	}
     }
 }
 
