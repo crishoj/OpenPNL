@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+
+<PNLObjects version="1.1">
+
+ <Model TypeName="BNet" NumberOfFactors="5">
+    
+  <Graph TypeName="Graph" SavingType="ByEdges" NumberOfNodes="5">
+    0:3_(c) 
+1:3_(c) 
+2:3_(c) 
+3:4_(c) 2_(p) 1_(p) 0_(p) 
+4:3_(p) 
+
+  </Graph>
+  <ModelDomain TypeName="ModelDomain">
+    
+   <VarAssociations TypeName="intVector">
+    [0 1 2 2 0 ]
+   </VarAssociations>
+   <NodeTypes TypeName="NodeTypeVector" NumberOfNodes="3">
+    0:1,0:2,0:3
+   </NodeTypes>
+  </ModelDomain>
+  <Factor0 TypeName="Factor" FactorType="1" DistributionType="1">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [0 ]
+   </Domain>
+   <DistributionFunction TypeName="GaussianDistribFun" NumberOfNodes="1" IsUnitFunction="0" IsCanonical="0" IsFactor="0" IsDelta="0" IsMoment="1" NormCoefficient="0.398942">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="1">
+    0:1
+    </NodeTypes>
+    <MatMean TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[1 1 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [0.500000 ]
+    </MatMean>
+    <MatCovariance TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[1 1 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [1.000000 ]
+    </MatCovariance>
+   </DistributionFunction>
+  </Factor0>
+  <Factor1 TypeName="Factor" FactorType="1" DistributionType="1">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [1 ]
+   </Domain>
+   <DistributionFunction TypeName="GaussianDistribFun" NumberOfNodes="1" IsUnitFunction="0" IsCanonical="0" IsFactor="0" IsDelta="0" IsMoment="1" NormCoefficient="0.159155">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="1">
+    0:2
+    </NodeTypes>
+    <MatMean TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 1 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [0.500000 1.500000 ]
+    </MatMean>
+    <MatCovariance TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 2 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [1.000000 0.000000 0.000000 1.000000 ]
+    </MatCovariance>
+   </DistributionFunction>
+  </Factor1>
+  <Factor2 TypeName="Factor" FactorType="1" DistributionType="1">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [2 ]
+   </Domain>
+   <DistributionFunction TypeName="GaussianDistribFun" NumberOfNodes="1" IsUnitFunction="0" IsCanonical="0" IsFactor="0" IsDelta="0" IsMoment="1" NormCoefficient="0.0634936">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="1">
+    0:3
+    </NodeTypes>
+    <MatMean TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[3 1 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [0.500000 1.500000 2.500000 ]
+    </MatMean>
+    <MatCovariance TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[3 3 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [1.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 1.000000 ]
+    </MatCovariance>
+   </DistributionFunction>
+  </Factor2>
+  <Factor3 TypeName="Factor" FactorType="1" DistributionType="1">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [0 1 2 3 ]
+   </Domain>
+   <DistributionFunction TypeName="GaussianDistribFun" NumberOfNodes="4" IsUnitFunction="0" IsCanonical="0" IsFactor="0" IsDelta="0" IsMoment="1" NormCoefficient="0.0401569">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="4">
+    0:1,0:2,0:3,0:3
+    </NodeTypes>
+    <MatMean TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[3 1 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [1.500000 2.500000 3.500000 ]
+    </MatMean>
+    <MatCovariance TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[3 3 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [2.000000 1.000000 0.000000 1.000000 3.000000 0.000000 0.000000 0.000000 0.500000 ]
+    </MatCovariance>
+    <MatWeight0 TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[3 1 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [0.100000 0.200000 0.300000 ]
+    </MatWeight0>
+    <MatWeight1 TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[3 2 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [0.400000 0.500000 0.600000 0.700000 0.800000 0.900000 ]
+    </MatWeight1>
+    <MatWeight2 TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[3 3 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [1.000000 1.100000 1.200000 1.300000 1.400000 1.500000 1.600000 1.700000 1.800000 ]
+    </MatWeight2>
+   </DistributionFunction>
+  </Factor3>
+  <Factor4 TypeName="Factor" FactorType="1" DistributionType="1">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [3 4 ]
+   </Domain>
+   <DistributionFunction TypeName="GaussianDistribFun" NumberOfNodes="2" IsUnitFunction="0" IsCanonical="0" IsFactor="0" IsDelta="0" IsMoment="1" NormCoefficient="0.325735">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    0:3,0:1
+    </NodeTypes>
+    <MatMean TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[1 1 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [1.000000 ]
+    </MatMean>
+    <MatCovariance TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[1 1 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [1.500000 ]
+    </MatCovariance>
+    <MatWeight0 TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[1 3 ]" MatrixClass="2DNumericDense" IsClamped="0">
+    [1.500000 2.500000 3.500000 ]
+    </MatWeight0>
+   </DistributionFunction>
+  </Factor4>
+ </Model>
+ <NodeInfo TypeName="ProbabilisticNet" NumberOfNodes="5">
+    
+  <Node0 TypeName="WNode" NodeName="x0">
+    [dim1]
+   <NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="0">
+    
+   </NodeType>
+  </Node0>
+  <Node1 TypeName="WNode" NodeName="x">
+    [dim1 dim2]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="0">
+    
+   </NodeType>
+  </Node1>
+  <Node2 TypeName="WNode" NodeName="x2">
+    [dim1 dim2 dim3]
+   <NodeType TypeName="NodeType" NodeSize="3" IsDiscrete="0">
+    
+   </NodeType>
+  </Node2>
+  <Node3 TypeName="WNode" NodeName="y">
+    [dim1 dim2 dim3]
+   <NodeType TypeName="NodeType" NodeSize="3" IsDiscrete="0">
+    
+   </NodeType>
+  </Node3>
+  <Node4 TypeName="WNode" NodeName="z">
+    [dim1]
+   <NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="0">
+    
+   </NodeType>
+  </Node4>
+ </NodeInfo>
+</PNLObjects>
