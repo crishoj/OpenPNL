@@ -16,4 +16,4 @@ LoadNet(BayesNet, filename)
 
 LoadNet(net, "net.xml") 
 }
-\keyword{Bayesian Network}
+\keyword{LoadNet}

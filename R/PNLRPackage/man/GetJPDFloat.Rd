@@ -23,4 +23,4 @@ jtreeJPDNodeAFlt = GetJPDFloat(net, "NodeA")
 SetProperty(net, "Inference", "pearl")
 pearlJPDNodeAFlt = GetJPDFloat(net, "NodeA NodeB") 
 }
-\keyword{Bayesian Network}
+\keyword{GetJPDFloat}

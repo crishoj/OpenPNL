@@ -18,4 +18,4 @@ learningType <- GetProperty(net, "Learning")
 
 ##As result string inferenceType is "pearl" and string learningType is empty
 }
-\keyword{Bayesian Network}
+\keyword{GetProperty}

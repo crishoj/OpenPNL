@@ -21,4 +21,4 @@ AddArc(net, "NodeA", "NodeB NodeC")
 AddArc(net, "NodeA NodeB", "NodeC NodeD") 
 
 }
-\keyword{Bayesian Network}
+\keyword{AddArc}

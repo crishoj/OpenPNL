@@ -23,4 +23,4 @@ jtreeJPDNodeAStr <- GetJPDString(net, "NodeA")
 SetProperty(net, "Inference", "pearl")
 pearlJPDNodeAStr <- GetJPDString(net, "NodeA NodeB") 
 }
-\keyword{Bayesian Network}
+\keyword{GetJPDString}

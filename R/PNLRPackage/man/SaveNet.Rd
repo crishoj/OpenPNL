@@ -14,4 +14,4 @@ SaveNet(net, filename)
 \examples{
 SaveNet(net, "net.xml") 
 }
-\keyword{Bayesian Network}
+\keyword{SaveNet}

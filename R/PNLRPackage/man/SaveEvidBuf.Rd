@@ -21,4 +21,4 @@ SaveEvidBuf(net, "evidence1.csv")
 
 
 }
-\keyword{Bayesian Network}
+\keyword{SaveEvidBuf}

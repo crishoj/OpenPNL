@@ -15,4 +15,4 @@ GetGaussianWeights(BayesNet, nodes, parent)
 \examples{
 WeightsYX2 <- GetGaussianWeights(net, "y", "x2") 
 }
-\keyword{Bayesian Network}
+\keyword{GetGaussianWeights}

@@ -15,4 +15,4 @@ DelNode(BayesNet, nodes)
 ## Delete nodes "NodeA" and "NodeB" from Bayessian net
 DelNode(net, "NodeA NodeB")  
 }
-\keyword{Bayesian Network}
+\keyword{DelNode}

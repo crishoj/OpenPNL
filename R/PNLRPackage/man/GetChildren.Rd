@@ -17,4 +17,4 @@ NodeAChildren <- GetChildren(net, "NodeA")
 ##Get children of node "NodeA" and children of node "NodeB". If node "NodeC" is child both "NodeA" and "NodeB" then it is once in result list of children
 NodeAandBChildren <- GetChildren(net, "NodeA NodeB") 
 }
-\keyword{Bayesian Network}
+\keyword{GetChildren}

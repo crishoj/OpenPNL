@@ -18,4 +18,4 @@ ClearEvidBuf(net)
 ##Evidence buffer is empty now. 
 
 }
-\keyword{Bayesian Network}
+\keyword{ClearEvidBuf}

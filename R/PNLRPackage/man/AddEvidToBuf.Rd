@@ -25,4 +25,4 @@ AddEvidToBuf(net, "ContNodeB^dim1^5.0")
 ##There are two evidences for continuous nodes: "NodeA" (with 2 dimensions) and 
 ##"NodeB" (with one dimension) in the last example which we add to the buffer. 
 }
-\keyword{Bayesian Network}
+\keyword{AddEvidToBuf}

@@ -17,4 +17,4 @@ NodeANeighbors <- GetNeighbours(net, "NodeA")
 ##Get neighbors of node "NodeA" and neighbors of node "NodeB". If node "NodeC" is neighbor of both "NodeA" and "NodeB" then it is once in result list of neighbors
 NodeAandBNeighbors <- GetNeighbours(net, "NodeA NodeB") 
 }
-\keyword{Bayesian Network}
+\keyword{GetNeighbors}

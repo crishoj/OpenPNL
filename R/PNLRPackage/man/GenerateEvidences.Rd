@@ -34,4 +34,4 @@ GenerateEvidences(net, 100, false, "NodeA^0.9 NodeB^0.9 NodeC^0.9 ")
 
 GenerateEvidences(net, 100, false, whatNodesToSample, "0.9") 
 }
-\keyword{Bayesian Network}
+\keyword{GenerateEvidences}

@@ -19,4 +19,4 @@ LoadEvidBuf(net, "evidence1.csv")
 LearnParameters(net) 
 
 }
-\keyword{Bayesian Network}
+\keyword{LoadEvidBuf}

@@ -16,4 +16,4 @@ GetNodeType(BayesNet, nodes)
 GetNodeType(net, "NodeA NodeB") 
 ##The output of this function call will be the following: "discrete" "discrete"
 }
-\keyword{Bayesian Network}
+\keyword{GetNodeType}

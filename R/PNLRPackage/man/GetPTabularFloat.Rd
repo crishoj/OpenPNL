@@ -35,4 +35,4 @@ PNodeBNodeATrue
 PNodeBTrueNodeAFalse
 0.4
 }
-\keyword{Bayesian Network}
+\keyword{GetPTabularFloat}

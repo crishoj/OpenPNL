@@ -14,4 +14,4 @@ GetGaussianMean(BayesNet, nodes)
 \examples{
 MeanX2 <- GetGaussianMean(net, "x2") 
 }
-\keyword{Bayesian Network}
+\keyword{GetGaussianMean}

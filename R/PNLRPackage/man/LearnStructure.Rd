@@ -15,4 +15,4 @@ AddEvidToBuf(net, "NodeA^true NodeB^false")
 AddEvidToBuf(net, "NodeA^false NodeC^true")
 LearnStructure(net) 
 }
-\keyword{Bayesian Network}
+\keyword{LearnStructure}

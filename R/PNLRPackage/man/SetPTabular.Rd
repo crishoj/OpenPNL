@@ -28,4 +28,4 @@ probB2 <- c(0.4, 0.6)
 SetPTabular(net, "NodeB^true NodeB^false", probB1, "NodeA^true")
 SetPTabular(net, "NodeB^true NodeB^false", probB2, "NodeA^false") 
 }
-\keyword{Bayesian Network}
+\keyword{SetPTabular}

@@ -24,4 +24,4 @@ EditEvidence(net, "ContNodeB^dim1^5.0")
 ##In current evidence there are two observed continuous nodes: 
 ##"NodeA" (with 2 dimensions), "NodeB" (with one dimension). 
 }
-\keyword{Bayesian Network}
+\keyword{EditEvidence}

@@ -35,4 +35,4 @@ PNodeBNodeATrue
 PNodeBTrueNodeAFalse
 "NodeB^true^NodeA^false^0.4"
 }
-\keyword{Bayesian Network}
+\keyword{GetPTabularString}

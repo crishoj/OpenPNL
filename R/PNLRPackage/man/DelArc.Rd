@@ -21,4 +21,4 @@ DelArc(net, "NodeA", "NodeB NodeC")
 DelArc(net, "NodeA NodeB", "NodeC NodeD") 
 
 }
-\keyword{Bayesian Network}
+\keyword{DelArc}

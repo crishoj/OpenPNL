@@ -1,5 +1,5 @@
-\name{GetProperty}
-\alias{GetProperty}
+\name{SetProperty}
+\alias{SetProperty}
 \title{Returns value of the property with given name }
 \description{
 The function returns value of the property with given name. If property was not set with SetProperty method then empty string is returned. 
@@ -18,4 +18,4 @@ learningType <- GetProperty(net, "Learning")
 
 ##As result string inferenceType is "pearl" and string learningType is empty
 }
-\keyword{Bayesian Network}
+\keyword{SetProperty}

@@ -14,4 +14,4 @@ MaskEvidBuf(BayesNet, whatNodes)
 \examples{
 MaskEvidToBuf(net, "NodeA^true NodeB^false") 
 }
-\keyword{Bayesian Network}
+\keyword{MaskEvidBuf}

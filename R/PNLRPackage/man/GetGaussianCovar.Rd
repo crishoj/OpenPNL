@@ -14,4 +14,4 @@ GetGaussianCovar(BayesNet, nodes)
 \examples{
 CovarX2 <- GetGaussianCovar(net, "x2") 
 }
-\keyword{Bayesian Network}
+\keyword{GetGaussianCovar}

@@ -24,4 +24,4 @@ AddNode(net, "discrete^NodeA discrete^NodeB", "true false")
 ## Add multivariate nodes "NodeA" with 2 dimensions "dim1" and "dim2" to bayes net
 AddNode(net, "continuous^NodeA", "dim1 dim2") 
 }
-\keyword{Bayesian Network}
+\keyword{AddNode}

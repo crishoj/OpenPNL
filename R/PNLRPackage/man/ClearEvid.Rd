@@ -16,4 +16,4 @@ ClearEvid(net)
 
 ##Current evidence is empty now.
 }
-\keyword{Bayesian Network}
+\keyword{ClearEvid}

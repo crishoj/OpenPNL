@@ -24,4 +24,4 @@ CurEvidToBuf(net)
 ##take on "false" values, and "NodeC" takes on "true" value. In second one "NodeA" takes 
 ##on "false" value, "NodeB" and "NodeC" take on "true" values. 
 }
-\keyword{Bayesian Network}
+\keyword{CurrEvidToBuf}

@@ -17,4 +17,4 @@ NodeAParents <- GetParents(net, "NodeA")
 ##Get parents of node "NodeA" and parents of node "NodeB". If node "NodeC" is parent of both "NodeA" and "NodeB", it will occure once in result list of parents
 NodeAandBParents <- GetParents(net, "NodeA NodeB") 
 }
-\keyword{Bayesian Network}
+\keyword{GetParents}

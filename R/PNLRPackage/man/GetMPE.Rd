@@ -23,4 +23,4 @@ jtreeMPENodeA <- GetMPE(net, "NodeA")
 SetProperty(net, "Inference", "pearl")
 pearlMPENodeA <- GetMPE(net, "NodeA NodeB") 
 }
-\keyword{Bayesian Network}
+\keyword{GetMPE}
