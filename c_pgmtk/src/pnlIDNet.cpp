@@ -238,6 +238,20 @@ bool CIDNet::IsValid(std::string* descriptionOut) const
       ret = 0;
   }
 
+  intVector chanceNodes;
+  GetChanceNodes(chanceNodes);
+  if (chanceNodes.size() == 0)
+  {
+      if (descriptionOut)
+      {
+          std::stringstream st;
+          st<<"The Influence Diagram hasn't chance nodes."<<std::endl;
+          std::string s = st.str();
+          descriptionOut->insert(descriptionOut->begin(), s.begin(), s.end());
+      }
+      ret = 0;
+  }
+
   return ret;
 }
 // ----------------------------------------------------------------------------
