@@ -226,14 +226,16 @@ bool CEvidence::Load(const char *fname,  pEvidencesVector* evVec, const CModelDo
 	//fread(&next, 1, 1, stream);
 	if( feof(stream) ||  i == nnodes )
 	{
-	    if( it != itEnd)
+	    if( i )
 	    {
-		vls.erase(it, itEnd);
+		if( it != itEnd)
+		{
+		    vls.erase(it, itEnd);
+		}
+		ev++;
+		CEvidence *pEv = CEvidence::Create(pMD, obsNds, vls);
+		evVec->push_back(pEv);
 	    }
-	    ev++;
-	    CEvidence *pEv = CEvidence::Create(pMD, obsNds, vls);
-	    evVec->push_back(pEv);
-	   
 
 	    if( i== nnodes && !feof(stream) )
 	    {
