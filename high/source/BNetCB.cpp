@@ -50,12 +50,43 @@ pnl::CGraphicalModel *BayesNetCallback::CreateModel(ProbabilisticNet &net)
     for(i = 0; i < nNode; i++)
     {// tabular only
 	WDistribFun *pWDF = net.Distributions()->Distribution(i);
-	PNL_CHECK_IS_NULL_POINTER(dynamic_cast<WTabularDistribFun*>(pWDF));
-	pnl::CDenseMatrix<float> *mat = dynamic_cast<WTabularDistribFun*>(pWDF)->Matrix(0);
-	PNL_CHECK_IS_NULL_POINTER(mat);
-	pnlNet->AllocFactor(i);
-	pnlNet->GetFactor(i)->AttachMatrix(mat, pnl::matTable);
-	pnlNet->GetFactor(i)->AttachMatrix(mat->Copy(mat), pnl::matDirichlet);
+//	PNL_CHECK_IS_NULL_POINTER(dynamic_cast<WTabularDistribFun*>(pWDF));
+        PNL_CHECK_IS_NULL_POINTER(pWDF);
+        pnlNet->AllocFactor(i);
+        if (net.pnlNodeType(i).IsDiscrete())
+        {
+            pnl::CDenseMatrix<float> *mat = dynamic_cast<WTabularDistribFun*>(pWDF)->Matrix(0);
+            PNL_CHECK_IS_NULL_POINTER(mat);
+//       	    pnlNet->AllocFactor(i);
+	    pnlNet->GetFactor(i)->AttachMatrix(mat, pnl::matTable);
+	    pnlNet->GetFactor(i)->AttachMatrix(mat->Copy(mat), pnl::matDirichlet);
+        }
+        else
+        {
+//            pnlNet->AllocFactor(i);
+/*            if (pnlNet->GetFactor(i)->GetDistribFun()->IsDistributionSpecific() == 1)
+            {
+*/                const pnl::pConstNodeTypeVector* ntVec = pnlNet->GetFactor(i)->GetDistribFun()->GetNodeTypesVector();
+                int NumberOfNodes = pnlNet->GetFactor(i)->GetDistribFun()->GetNumberOfNodes();
+
+                pnl::CGaussianDistribFun *gaudf;
+                gaudf = pnl::CGaussianDistribFun::CreateUnitFunctionDistribution(NumberOfNodes, &ntVec->front());
+                pnlNet->GetFactor(i)->SetDistribFun(gaudf);
+                
+                delete gaudf;
+/*            }
+            else
+            {
+                pnl::CDenseMatrix<float> *mean = dynamic_cast<WGaussianDistribFun*>(pWDF)->Matrix(1);
+                pnl::CDenseMatrix<float> *cov = dynamic_cast<WGaussianDistribFun*>(pWDF)->Matrix(2);
+                pnl::CDenseMatrix<float> *weight = dynamic_cast<WGaussianDistribFun*>(pWDF)->Matrix(3);
+                pnlNet->GetFactor(i)->AttachMatrix(mean, pnl::matMean);
+                pnlNet->GetFactor(i)->AttachMatrix(cov, pnl::matCovariance);
+                pnlNet->GetFactor(i)->AttachMatrix(weight, pnl::matWeights);
+            }
+*/
+        }
+
     }
 
     return pnlNet;
