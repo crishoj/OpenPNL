@@ -104,7 +104,7 @@ void WDistributions::SetupNew(int iDistribution)
 
     if(IsMRF())
     {
-	// some sophisticated algo to determine type of clique
+	// some sophisticated method to determine type of clique
 	TokIdNode *tokNode = Token().Node("continuous");
 
 	if(tokNode->v_next)
@@ -345,12 +345,17 @@ void WDistributions::DoNotify(int message, int iNode, ModelEngine *pObj)
 	break;
     case eChangeParentNState:
     case eChangeNState:
-	Setup(iNode);
-	Apply(iNode);
-	break;
     case eInit:
-	Setup(iNode);
-	Apply(iNode);
+	if(IsMRF())
+	{
+	    SetupNew(iNode);
+	    ApplyNew(iNode);
+	}
+	else
+	{
+	    Setup(iNode);
+	    Apply(iNode);
+	}
 	break;
     default:
 	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
