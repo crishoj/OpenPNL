@@ -24,8 +24,10 @@ extern "C" __declspec(dllexport) SEXP pnlGetChildren(SEXP net, SEXP nodes);
 extern "C" __declspec(dllexport) SEXP pnlSetPTabular(SEXP net, SEXP value, SEXP prob);
 extern "C" __declspec(dllexport) SEXP pnlSetPTabularCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue);
 
-extern "C" __declspec(dllexport) SEXP pnlGetPTabular(SEXP net, SEXP value);
-extern "C" __declspec(dllexport) SEXP pnlGetPTabularCond(SEXP net, SEXP value, SEXP parents);
+extern "C" __declspec(dllexport) SEXP pnlGetPTabularString(SEXP net, SEXP value);
+extern "C" __declspec(dllexport) SEXP pnlGetPTabularStringCond(SEXP net, SEXP value, SEXP parents);
+extern "C" __declspec(dllexport) SEXP pnlGetPTabularFloat(SEXP net, SEXP value);
+extern "C" __declspec(dllexport) SEXP pnlGetPTabularFloatCond(SEXP net, SEXP value, SEXP parents);
 
 extern "C" __declspec(dllexport) SEXP pnlSetPGaussian(SEXP net, SEXP node, SEXP mean, SEXP variance);
 extern "C" __declspec(dllexport) SEXP pnlSetPGaussianCond(SEXP net, SEXP node, SEXP mean, SEXP variance, SEXP weight);
@@ -37,7 +39,8 @@ extern "C" __declspec(dllexport) SEXP pnlAddEvidToBuf(SEXP net, SEXP values);
 extern "C" __declspec(dllexport) SEXP pnlClearEvidBuf(SEXP net);
 
 extern "C" __declspec(dllexport) SEXP pnlGetMPE(SEXP net, SEXP nodes);
-extern "C" __declspec(dllexport) SEXP pnlGetJPD(SEXP net, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetJPDString(SEXP net, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetJPDFloat(SEXP net, SEXP nodes);
 extern "C" __declspec(dllexport) SEXP pnlGetGaussianMean(SEXP net, SEXP nodes);
 extern "C" __declspec(dllexport) SEXP pnlGetGaussianCovar(SEXP net, SEXP nodes);
 extern "C" __declspec(dllexport) SEXP pnlGetGaussianWeights (SEXP net, SEXP nodes, SEXP parents);
@@ -372,7 +375,7 @@ extern "C"
             SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
         else
             SET_STRING_ELT(res, 0, mkChar(result));
-        UNPROTECT(2);
+        UNPROTECT(3);
         return (res);
     }
 //----------------------------------------------------------------------------
@@ -534,7 +537,7 @@ extern "C"
 
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetPTabular(SEXP net, SEXP value)
+    SEXP pnlGetPTabularString(SEXP net, SEXP value)
     {
         SEXP res;
         const char * result = "";
@@ -572,7 +575,7 @@ extern "C"
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetPTabularCond(SEXP net, SEXP value, SEXP parents)
+    SEXP pnlGetPTabularStringCond(SEXP net, SEXP value, SEXP parents)
     {
         SEXP res;
         const char * result = "";
@@ -611,6 +614,106 @@ extern "C"
         UNPROTECT(4);
         return (res);
     }
+//----------------------------------------------------------------------------
+    SEXP pnlGetPTabularFloat(SEXP net, SEXP value)
+    {
+        SEXP res;
+        int flag = 0;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(value = AS_CHARACTER(value));
+        char * arg = CHAR(asChar(value));
+        
+        TokArr ResTok;
+        try
+        {
+            ResTok = pBNets[NetNum]->GetPTabular(arg);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetPTabular function";
+            flag = 1;
+        }
+
+        if (flag == 1)
+        {
+            //there were exceptions during the function executions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+        else
+        {
+            //there were no exceptions
+            int len = ResTok.size();
+            PROTECT(res = NEW_NUMERIC(len));
+            double * pRes = NUMERIC_POINTER(res);
+            for (int i=0; i < len; i++)
+            {
+                pRes[i] = ResTok[i].FltValue();
+            }
+        }
+        UNPROTECT(3);
+        return (res);
+    }
+//----------------------------------------------------------------------------
+    SEXP pnlGetPTabularFloatCond(SEXP net, SEXP value, SEXP parents)
+    {
+        SEXP res;
+        int flag = 0;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(value = AS_CHARACTER(value));
+        char * arg = CHAR(asChar(value));
+
+        PROTECT(parents = AS_CHARACTER(parents));
+        char * arg2 = CHAR(asChar(parents));
+        
+        TokArr ResTok;
+        try
+        {
+            ResTok = pBNets[NetNum]->GetPTabular(arg, arg2);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetPTabular function";
+            flag = 1;
+        }
+
+        if (flag == 1)
+        {
+            //there were exceptions during the function executions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+        else
+        {
+            //there were no exceptions
+            int len = ResTok.size();
+            PROTECT(res = NEW_NUMERIC(len));
+            double * pRes = NUMERIC_POINTER(res);
+            for (int i=0; i < len; i++)
+            {
+                pRes[i] = ResTok[i].FltValue();
+            }
+        }
+        UNPROTECT(4);
+        return (res);
+    }
+
 //----------------------------------------------------------------------------
     SEXP pnlSetPGaussian(SEXP net, SEXP node, SEXP mean, SEXP variance)
     {
@@ -1003,7 +1106,55 @@ extern "C"
         return (res);
     }
 //----------------------------------------------------------------------------
-   SEXP pnlGetJPD(SEXP net, SEXP nodes)
+   SEXP pnlGetJPDFloat(SEXP net, SEXP nodes)
+    {
+        SEXP res;
+        int flag = 0;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(nodes = AS_CHARACTER(nodes));
+        char * arg = CHAR(asChar(nodes));
+        
+        TokArr ResTok;
+
+        try
+        {
+            ResTok = pBNets[NetNum]->GetJPD(arg);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetJPD function";
+            flag = 1;
+        }
+
+        if (flag == 1)
+        {
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+        else
+        {
+            int len = ResTok.size();
+            PROTECT(res = NEW_NUMERIC(len));
+            double * pRes = NUMERIC_POINTER(res);
+            for (int i=0; i < len; i++)
+            {
+                pRes[i] = ResTok[i].FltValue();
+            }
+        }
+
+        UNPROTECT(3);
+        return (res);
+    }
+//----------------------------------------------------------------------------
+   SEXP pnlGetJPDString(SEXP net, SEXP nodes)
     {
         SEXP res;
         const char * result = "";

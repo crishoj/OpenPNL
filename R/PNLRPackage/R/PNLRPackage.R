@@ -98,13 +98,19 @@ SetPTabular.pnlBNet <- function (x, value, probability, ParentValue = -1)
 	}
 }
 
-GetPTabular <- function(x, value, parents) UseMethod("GetPTabular", x)
-GetPTabular.pnlBNet <- function(x, value, parents = -1)
+GetPTabularString <- function(x, value, parents) UseMethod("GetPTabularString", x)
+GetPTabularString.pnlBNet <- function(x, value, parents = -1)
 {
-	if (parents < 0) .Call("pnlGetPTabular", x, value)
-	else .Call("pnlGetPTabularCond", x, value, parents)
+	if (parents < 0) .Call("pnlGetPTabularString", x, value)
+	else .Call("pnlGetPTabularStringCond", x, value, parents)
 }
 
+GetPTabularFloat <- function(x, value, parents) UseMethod("GetPTabularFloat", x)
+GetPTabularFloat.pnlBNet <- function(x, value, parents = -1)
+{
+	if (parents < 0) .Call("pnlGetPTabularFloat", x, value)
+	else .Call("pnlGetPTabularFloatCond", x, value, parents)
+}
 
 
 SetPGaussian <- function(x, node, mean, variance, weight) UseMethod("SetPGaussian", x)
@@ -190,8 +196,11 @@ ClearEvidBuf.pnlBNet <- function(x)
 GetMPE <- function(x, nodes) UseMethod("GetMPE", x)
 GetMPE.pnlBNet <- function(x, nodes) .Call("pnlGetMPE",x, nodes)
 
-GetJPD <- function(x, nodes) UseMethod("GetJPD", x)
-GetJPD.pnlBNet <- function(x, nodes) .Call("pnlGetJPD", x, nodes)
+GetJPDString <- function(x, nodes) UseMethod("GetJPDString", x)
+GetJPDString.pnlBNet <- function(x, nodes) .Call("pnlGetJPDString", x, nodes)
+
+GetJPDFloat <- function(x, nodes) UseMethod("GetJPDFloat", x)
+GetJPDFloat.pnlBNet <- function(x, nodes) .Call("pnlGetJPDFloat", x, nodes)
 
 GetGaussianMean <- function(x, nodes) UseMethod("GetGaussianMean", x)
 GetGaussianMean.pnlBNet <- function(x, nodes) .Call("pnlGetGaussianMean", x, nodes)
