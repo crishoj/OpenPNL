@@ -148,100 +148,196 @@ void CParGibbsSamplingInfEngine::InitIPCConsts()
 // ----------------------------------------------------------------------------
 
 void CParGibbsSamplingInfEngine::MarginalNodes(const int *queryIn, int querySz,
-    int notExpandJPD)
+											   int notExpandJPD)
 {
     PNL_CHECK_IS_NULL_POINTER(queryIn);
+	
+	EDistributionType paramDistrType = 
+		pnlDetermineDistributionType( GetModel()->GetModelDomain(), querySz, queryIn, m_pEvidence);
 
-    CGibbsSamplingInfEngine::MarginalNodes(queryIn, querySz, notExpandJPD);
+	bool IsUnobservedNodes = false;
+		
+	for (int variable = 0; variable < querySz; variable++)
+	{
+		if (!(m_pEvidence->IsNodeObserved(queryIn[variable])))
+			IsUnobservedNodes = true;
+	};
 
-    bool IsUnobservedNodes = false;
+	intVector Query(querySz);
+	int NumberOfFactor;
+	pFactorVector queryFactors;
+	GetQueryFactors( &queryFactors);
+	
+	switch (paramDistrType)
+	{
+	case dtTabular:
+		CGibbsSamplingInfEngine::MarginalNodes(queryIn, querySz, notExpandJPD);
+		
+		if (IsUnobservedNodes)
+			if (m_MyRank != 0)
+			{
+				SendMyPotentialViaMpi();
+			}
+			else
+			{
+				CNumericDenseMatrix<float> *mat;
+				int dataLength;
+				const float *pData;
+				
+				//need to know size of vector pData
+				CPotential *ShrinkPot;
+				
+				ShrinkPot = m_pQueryJPD->ShrinkObservedNodes(m_pEvidence);
+				
+				mat = static_cast<CNumericDenseMatrix<float>*>
+					((ShrinkPot->GetDistribFun())->GetMatrix(matTable));
+				mat->GetRawData(&dataLength, &pData);
+				
+				intVector NumbersOfSamples(m_NumberOfProcesses, -1);
+				NumbersOfSamples[0] =
+					(m_currentTime-GetBurnIn()-1) * GetNumStreams();
+				
+				floatVecVector ProbDistrib(m_NumberOfProcesses,
+					floatVector(dataLength, -1));
+				ProbDistrib[0].assign(pData, &(pData[dataLength - 1]));
+				ProbDistrib[0].push_back( pData[dataLength - 1] );
+				
+				RecvPotentialsViaMpi(&NumbersOfSamples, &ProbDistrib);
+				
+				//Claculating of evidences
+				int SumNumberOfSamples = 0;
+				floatVector SumNumberOfProperSamples(dataLength, 0);
+				floatVector FinalDistrib(dataLength, 0);
+				
+				for (int i = 0; i < m_NumberOfProcesses; i++)
+				{
+					SumNumberOfSamples += NumbersOfSamples[i];
+					
+					for (int variant = 0; variant < dataLength; variant++)
+						SumNumberOfProperSamples[variant] +=
+						ProbDistrib[i][variant]*NumbersOfSamples[i];
+				}
+				
+				for (int variant = 0; variant < dataLength; variant++)
+				{
+					FinalDistrib[variant] =
+						SumNumberOfProperSamples[variant] / SumNumberOfSamples;
+				}
+				
+				// set new potential
+				CModelDomain* pMD=ShrinkPot->GetModelDomain();
+				
+				// this is a vector of domain
+				intVector Domain(querySz);
+				
+				Domain.assign(queryIn, queryIn + (querySz - 1));
+				Domain.push_back( queryIn[querySz - 1] );
+				
+				intVector obsIndicesIn(0);
+				
+				for (int variable = 0; variable < querySz; variable++)
+				{
+					if (m_pEvidence->IsNodeObserved(queryIn[variable]))
+						obsIndicesIn.push_back(queryIn[variable]);
+				}
+				
+				//need to recv Final Distribution
+				CPotential *deltaPot = CTabularPotential::Create(Domain, pMD,
+					&FinalDistrib.front(), obsIndicesIn);
+				
+				delete ShrinkPot;
+				
+				ShrinkPot = deltaPot->ExpandObservedNodes(m_pEvidence);
+				
+				m_pQueryJPD->SetDistribFun(ShrinkPot->GetDistribFun());
+				
+				delete deltaPot;
+			}
+			break;
+	case dtGaussian:
+		int i;
+		for (i=0; i< querySz; i++) Query[i] = queryIn[i];
+		NumberOfFactor = GetFactorNumber(Query);
+		if (IsUnobservedNodes)
+			if (m_MyRank != 0)
+			{
+				SendMyGaussianStatisticsViaMpi(NumberOfFactor);
+			}
+			else
+			{
+				intVector NumberOfSamples;
+				floatVecVector LearnMean;
+				floatVecVector LearnCov;
 
-    for (int variable = 0; variable < querySz; variable++)
-    {
-        if (!(m_pEvidence->IsNodeObserved(queryIn[variable])))
-            IsUnobservedNodes = true;
-    }
+				RecvGaussianStatisticsViaMpi(&NumberOfSamples, &LearnMean, &LearnCov, NumberOfFactor);
 
-    if (IsUnobservedNodes)
-        if (m_MyRank != 0)
-        {
-            SendMyPotentialViaMpi();
-        }
-        else
-        {
-            CNumericDenseMatrix<float> *mat;
-            int dataLength;
-            const float *pData;
+				CFactor *factor = CGaussianPotential::Create(Query, GetModel()->GetModelDomain());
 
-            //need to know size of vector pData
-            CPotential *ShrinkPot;
+				CNumericDenseMatrix<float> *pMatLearnMean = dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
+					GetDistribFun()->GetStatisticalMatrix(stMatMu));
+				CNumericDenseMatrix<float> *pMatLearnCov = dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
+					GetDistribFun()->GetStatisticalMatrix(stMatSigma));
 
-            ShrinkPot = m_pQueryJPD->ShrinkObservedNodes(m_pEvidence);
+		        int length = 0;   	
+				pConstNodeTypeVector *pNodeTypes;
+				pNodeTypes = queryFactors[NumberOfFactor]->GetDistribFun()->GetNodeTypesVector();
+				int NumberOfNodes = pNodeTypes->size();
 
-            mat = static_cast<CNumericDenseMatrix<float>*>
-                ((ShrinkPot->GetDistribFun())->GetMatrix(matTable));
-            mat->GetRawData(&dataLength, &pData);
+				for (int node = 0; node < NumberOfNodes; node++)
+				{
+					length += ( (*pNodeTypes)[node]->GetNodeSize() );
+				}
 
-            intVector NumbersOfSamples(m_NumberOfProcesses, -1);
-            NumbersOfSamples[0] =
-                (m_currentTime-GetBurnIn()) * GetNumStreams();
+				int DimMean = 2;
+				int DimCov = 2;
+				const int RangeMean[2] = {length, 1} ;
+				const int RangeCov[2] = {length, length};
 
-            floatVecVector ProbDistrib(m_NumberOfProcesses,
-                floatVector(dataLength, -1));
-            ProbDistrib[0].assign(pData, &(pData[dataLength - 1]));
-            ProbDistrib[0].push_back( pData[dataLength - 1] );
+				float *pData = new float[length * length];
 
-            RecvPotentialsViaMpi(&NumbersOfSamples, &ProbDistrib);
+				for (i = 1; i < m_NumberOfProcesses; i++)
+				{
+					C2DNumericDenseMatrix<float> * pLearnMean = C2DNumericDenseMatrix<float>::Create(RangeMean, &(LearnMean[i].front()));
+					C2DNumericDenseMatrix<float> * pLearnCov = C2DNumericDenseMatrix<float>::Create(RangeCov, &(LearnCov[i].front()));
+					//pLearnMean->GetRaw
 
-            //Claculating of evidences
-            int SumNumberOfSamples = 0;
-            floatVector SumNumberOfProperSamples(dataLength, 0);
-            floatVector FinalDistrib(dataLength, 0);
 
-            for (int i = 0; i < m_NumberOfProcesses; i++)
-            {
-                SumNumberOfSamples += NumbersOfSamples[i];
+					factor->SetStatistics(pLearnMean, stMatMu);
+					factor->SetStatistics(pLearnCov, stMatSigma);
 
-                for (int variant = 0; variant < dataLength; variant++)
-                    SumNumberOfProperSamples[variant] +=
-                    ProbDistrib[i][variant]*NumbersOfSamples[i];
-            }
+					queryFactors[NumberOfFactor]->UpdateStatisticsML(factor);
+				};
 
-            for (int variant = 0; variant < dataLength; variant++)
-            {
-                FinalDistrib[variant] =
-                    SumNumberOfProperSamples[variant] / SumNumberOfSamples;
-            }
+				int AdditionalSamples = 0;
+				for (i = 1; i < m_NumberOfProcesses; i++)
+				{
+					AdditionalSamples += NumberOfSamples[i];
+				};
 
-            // set new potential
-            CModelDomain* pMD=ShrinkPot->GetModelDomain();
+				int OldMaxTime = GetMaxTime();
+				int OldBarnIn = GetBurnIn();
+				int OldNumberOfStreams = GetNumStreams();
 
-            // this is a vector of domain
-            intVector Domain(querySz);
+				AdditionalSamples += (OldMaxTime-OldBarnIn-1)*OldNumberOfStreams;
 
-            Domain.assign(queryIn, queryIn + (querySz - 1));
-            Domain.push_back( queryIn[querySz - 1] );
+				SetMaxTime(AdditionalSamples+1);
+				SetBurnIn(0);
+				SetNumStreams(1);
 
-            intVector obsIndicesIn(0);
+				CGibbsSamplingInfEngine::MarginalNodes(queryIn, querySz, notExpandJPD);
+	
+				SetMaxTime(OldMaxTime);
+				SetBurnIn(OldBarnIn);
+				SetNumStreams(OldNumberOfStreams);
+			};
 
-            for (int variable = 0; variable < querySz; variable++)
-            {
-                if (m_pEvidence->IsNodeObserved(queryIn[variable]))
-                    obsIndicesIn.push_back(queryIn[variable]);
-            }
-
-            //need to recv Final Distribution
-            CPotential *deltaPot = CTabularPotential::Create(Domain, pMD,
-                &FinalDistrib.front(), obsIndicesIn);
-
-            delete ShrinkPot;
-
-            ShrinkPot = deltaPot->ExpandObservedNodes(m_pEvidence);
-
-            m_pQueryJPD->SetDistribFun(ShrinkPot->GetDistribFun());
-
-            delete deltaPot;
-        }
+		break;										   
+    default:
+		{
+			PNL_THROW( CInconsistentType, "distribution type" )
+		}
+		
+	}
 }
 // ----------------------------------------------------------------------------
 
@@ -254,7 +350,7 @@ void CParGibbsSamplingInfEngine::SendMyPotentialViaMpi()
     PNL_CHECK_IS_NULL_POINTER(m_pQueryJPD);
 
     //send number of samples 
-    int NumberOfSamples = (m_currentTime-GetBurnIn()) * GetNumStreams();
+    int NumberOfSamples = (m_currentTime-GetBurnIn()-1) * GetNumStreams();
     MPI_Send(&NumberOfSamples, 1, MPI_INT, 0, m_MyRank, MPI_COMM_WORLD);
 
     //send vector of probability
@@ -389,8 +485,8 @@ Sampling( int statTime, int endTime )
 
                 int digit = ndsForSampling[(ndsSampleIsNeed[i])] + 
                     myid * numNdsForSampling;
-                bool canBeSample =
-                    ConvertingFamilyToPot( digit, pCurrentEvidence );
+           
+				bool canBeSample = ConvertingFamilyToPot( digit, pCurrentEvidence );
 
                 if(canBeSample)
                 {
@@ -448,7 +544,9 @@ Sampling( int statTime, int endTime )
 
     rfQueryFactors.resize(queryFactorsSize);
 
+#ifdef PAR_OMP
 	GetModel()->GetModelDomain()->ClearNodeTypeCopies();
+#endif
 }
 // ----------------------------------------------------------------------------
 
@@ -655,7 +753,11 @@ ConvertingFamilyToPot( int node, const CEvidence* pEv )
 							float weight1 = pMatWeights->GetElementByIndexes(multidimindexes);;
 							
 							if (weight0 != weight1) {
+#ifdef PAR_OMP
 								GetModel()->GetModelDomain()->ChangeNodeTypeOnThread(num%NNodes, 1);
+#else
+								GetModel()->GetModelDomain()->ChangeNodeType(num%NNodes, 1);
+#endif
 								
 								CPotential *pot1 = (static_cast< CSoftMaxCPD* >( (*GetCurrentFactors())[num] )
 									->ConvertWithEvidenceToGaussianPotential(pEv, MeanContParents, CovContParents, parentComb));
@@ -666,7 +768,11 @@ ConvertingFamilyToPot( int node, const CEvidence* pEv )
 								*potToSample *= *pot2;
 								delete pot2;
 								
+#ifdef PAR_OMP
 								GetModel()->GetModelDomain()->ChangeNodeTypeOnThread(num%NNodes, 0);
+#else
+								GetModel()->GetModelDomain()->ChangeNodeType(num%NNodes, 0);
+#endif
 							};
 							
 							delete[] parentComb;
@@ -999,7 +1105,185 @@ void CParGibbsSamplingInfEngine::Initialization()
 }
 // ----------------------------------------------------------------------------
 
+int CParGibbsSamplingInfEngine::GetFactorNumber(intVector queryIn)
+{
+	int FactorNumber = -1;
+	const CFactor *pFactor;
+	int *begin1;
+	int *end1;
+	int *begin2;
+	int *end2;
+	intVector domainVec;
+	intVector queryVec;
+    pFactorVector queryFactors;
 
+	queryVec.reserve(queryIn.size());
+	int i;
+	int querySz = queryIn.size();
+	for( i = 0; i < querySz; i++ )
+	{
+		if (! m_pEvidence->IsNodeObserved(queryIn[i]))
+			queryVec.push_back(queryIn[i]);
+	}
+	
+	GetQueryFactors( &queryFactors);
+
+	if( queryVec.size() )
+	{
+		for( i = 0; i < queryFactors.size(); i++)     
+		{
+			domainVec.clear();
+			pFactor = queryFactors[i];
+			pFactor->GetDomain(&domainVec);
+			begin1 = &domainVec.front();
+			end1 = &domainVec.back() + 1;
+			std::sort(begin1, end1);
+			
+			begin2 = &queryVec.front();
+			end2 = &queryVec.back() + 1;
+			std::sort(begin2, end2);
+			
+			if( std::includes(begin1, end1, begin2, end2) )
+			{
+				FactorNumber = i;
+				break;
+			}
+			
+		}
+	}
+	
+	return FactorNumber;
+}
+
+// ----------------------------------------------------------------------------
+// send gaussian learn matrixes, where index in m_queryFactors is NumberOfFactor
+void CParGibbsSamplingInfEngine::SendMyGaussianStatisticsViaMpi(int NumberOfFactor)
+{
+#ifdef PAR_MPI
+    if (m_MyRank == 0)
+        return;
+
+	pFactorVector queryFactors;
+	GetQueryFactors( &queryFactors);
+	PNL_CHECK_RANGES(NumberOfFactor, 0, queryFactors.size()-1);
+
+    //send number of samples 
+    int NumberOfSamples = (m_currentTime-GetBurnIn()-1) * GetNumStreams();
+    MPI_Send(&NumberOfSamples, 1, MPI_INT, 0, m_MyRank, MPI_COMM_WORLD);
+
+	//send learn matrix of mean
+	CNumericDenseMatrix<float> *pMatLearnMean = dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
+		GetDistribFun()->GetStatisticalMatrix(stMatMu));
+
+	int dataLength;
+    const float *pDataForSending;
+
+    pMatLearnMean->GetRawData(&dataLength, &pDataForSending);
+
+    MPI_Send((float*)pDataForSending, dataLength, MPI_FLOAT, 0, m_MyRank, 
+        MPI_COMM_WORLD);
+
+	//send learn matrix of cov
+	CNumericDenseMatrix<float> *pMatLearnCov = dynamic_cast<CNumericDenseMatrix<float> *> (queryFactors[NumberOfFactor]->
+		GetDistribFun()->GetStatisticalMatrix(stMatSigma));
+
+    pMatLearnCov->GetRawData(&dataLength, &pDataForSending);
+
+    MPI_Send((float*)pDataForSending, dataLength, MPI_FLOAT, 0, m_MyRank, 
+        MPI_COMM_WORLD);
+#endif
+}
+
+// ----------------------------------------------------------------------------
+
+// recv gaussian learn matrixes from all processes but 0
+void CParGibbsSamplingInfEngine::
+RecvGaussianStatisticsViaMpi(intVector *pNumberOfSamples, floatVecVector *pLearnMean, floatVecVector *pLearnCov, int NumberOfFactor)
+{
+#ifdef PAR_MPI
+    if (m_MyRank != 0)
+        return;
+
+    PNL_CHECK_IS_NULL_POINTER(pNumberOfSamples);
+    PNL_CHECK_IS_NULL_POINTER(pLearnMean);
+    PNL_CHECK_IS_NULL_POINTER(pLearnCov);
+
+	pFactorVector queryFactors;
+	GetQueryFactors( &queryFactors);
+	PNL_CHECK_RANGES(NumberOfFactor, 0, queryFactors.size()-1);
+
+    // HaveMsg[0] is never used
+    intVector HaveMsg(m_NumberOfProcesses, -1);
+    // -1 - no messages
+    //  1 - have int
+    //  2 - have int and one float array
+	//  3 - have int and 2 float arrays
+
+	//Resizing
+	pNumberOfSamples->resize(m_NumberOfProcesses,-1);
+	pLearnMean->resize(m_NumberOfProcesses);
+	pLearnCov->resize(m_NumberOfProcesses);
+
+	int numOfDimsOut;
+	const int *rangesOut;
+	queryFactors[NumberOfFactor]->GetDistribFun()->GetStatisticalMatrix(stMatMu)
+		->GetRanges(&numOfDimsOut, &rangesOut);
+
+	int Rank = 1;
+	int i;
+	for (i = 0; i < numOfDimsOut; i++)
+	{
+		Rank *= rangesOut[i];
+	};
+
+	if (!numOfDimsOut)
+	{
+		Rank = 0;
+	};
+
+    // number of recieved msges
+    int NumberOfMsg = 0;
+
+    while (NumberOfMsg != (m_NumberOfProcesses - 1))
+    {
+        for (int i = 1; i < m_NumberOfProcesses; i++)
+            if (HaveMsg[i] != 3)
+            {
+                //have some msg from i ?
+                int flag;
+                MPI_Status status;
+
+                MPI_Iprobe(i , MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
+
+                if (flag)
+                    if (HaveMsg[i] == -1)
+                    {
+                        MPI_Recv(&(pNumberOfSamples->operator[](i)), 1,
+                            MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+                        HaveMsg[i] = 1;
+                    }
+                    else
+					if (HaveMsg[i] == 1)
+                    {//HaveMsg[i] == 1
+                        MPI_Recv(&(pLearnMean->operator[](i).front()),
+                            Rank, MPI_FLOAT, i, MPI_ANY_TAG,
+                            MPI_COMM_WORLD, &status);
+                        HaveMsg[i] = 2;
+                    }
+					else
+					{//HaveMsg[i] == 2
+                        MPI_Recv(&(pLearnCov->operator[](i).front()),
+                            Rank*Rank, MPI_FLOAT, i, MPI_ANY_TAG,
+                            MPI_COMM_WORLD, &status);
+                        HaveMsg[i] = 3;
+                        NumberOfMsg++;
+					};
+            } //if (HaveMsg[i] != 3...
+    } //while...
+#endif // PAR_MPI
+}
+
+// ----------------------------------------------------------------------------
 #ifdef PNL_RTTI
 const CPNLType CParGibbsSamplingInfEngine::m_TypeInfo = CPNLType("CParGibbsSamplingInfEngine", &(CGibbsSamplingInfEngine::m_TypeInfo));
 
