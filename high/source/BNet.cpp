@@ -97,43 +97,46 @@ TokArr BayesNet::GaussianMean(TokArr vars)
 {
     static const char fname[] = "GaussianMean";
     
-    int nchldComb = vars.size();
-    if( !nchldComb )
+    if( !vars.size() )
     {
 	ThrowUsingError("Must be at least one combination for a child node", fname);
     }
 
-    Vector<int> childNd, childVl;
-    Net().ExtractTokArr(vars, &childNd, &childVl);
-
-    if( !childVl.size())
+    int nnodes = vars.size();
+    Vector<int> queryNds, queryVls;
+    Net().ExtractTokArr(vars, &queryNds, &queryVls);
+    if(!queryVls.size())
     {
-	childVl.assign(nchldComb, -1);
+	queryVls.assign(nnodes, -1);
     }
-           
-    const pnl::CFactor * cpd = Model()->GetFactor(childNd.front());
+    
+    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matMean);
     
-/*    TokArr result = "";
-    int i;
-    for( i = 0; i < nchldComb; i++ )
-    {
-	parentNds[nparents] = childNd.front();
-	parentVls[nparents] = childVl[i];
-	result << Net().CutReq( parentNds, parentVls, mat);
-    }    
-    
-    return result;
-*/
-    TokArr result = "there is mean";
-    return result;
-
+    return Net().ConvertMatrixToToken(mat);
 }
 
 TokArr BayesNet::GaussianCovar(TokArr var, TokArr vars)
 {
-    TokArr result = "there is covariance";
-    return result;
+    static const char fname[] = "GaussianCovar";
+
+    if( !var.size() )
+    {
+	ThrowUsingError("Must be at least one combination for a child node", fname);
+    }
+
+    int nnodes = var.size();
+    Vector<int> queryNds, queryVls;
+    Net().ExtractTokArr(var, &queryNds, &queryVls);
+    if(!queryVls.size())
+    {
+	queryVls.assign(nnodes, -1);
+    }
+    
+    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
+    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matCovariance);
+
+    return Net().ConvertMatrixToToken(mat);
 }
 
 TokArr BayesNet::P(TokArr child, TokArr parents)
@@ -234,9 +237,21 @@ TokArr BayesNet::JPD( TokArr nodes )
     Inference().MarginalNodes(&queryNds.front(), queryNds.size());
 
     const pnl::CPotential *pot = Inference().GetQueryJPD();
-    const pnl::CMatrix<float> * mat = pot->GetMatrix(pnl::matTable);
-    
-    return Net().CutReq( queryNds, queryVls, mat);
+
+    TokArr res = "";
+    if (pot->GetDistribFun()->GetDistributionType() == pnl::dtTabular)
+    {
+        const pnl::CMatrix<float> *mat = pot->GetMatrix(pnl::matTable);
+        res << Net().CutReq( queryNds, queryVls, mat);
+    }
+    else
+    {
+        const pnl::CMatrix<float> *mean = pot->GetMatrix(pnl::matMean);
+        res << Net().ConvertMatrixToToken(mean);
+        const pnl::CMatrix<float> *cov = pot->GetMatrix(pnl::matCovariance);
+        res << Net().ConvertMatrixToToken(cov);
+    }
+    return res;
 }
 
 void BayesNet::Evid(TokArr values, bool bPush)
@@ -552,6 +567,7 @@ TokArr BayesNet::MPE(TokArr nodes)
 	}
 
 	result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v.GetInt()));
+//	result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v.GetFlt()));
     }
 
     return result;
