@@ -4,6 +4,12 @@
   ! Known bugs
 
 -----------------------------------------------------------------
+Build 24                                          -December -2004
+-----------------------------------------------------------------
++ PNLHigh is a new interface for our library. It is experimental
+  for now. See high/readme.txt for more details
+
+-----------------------------------------------------------------
 Build 23                                        18-September-2004
 -----------------------------------------------------------------
 + Add a new inference algorithm for Influence Diagram (LIMID).

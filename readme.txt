@@ -30,6 +30,7 @@ Directory tree.
               make         -- project definition files for tests        
               testdata     -- data files used by tests 
               !readme!.txt -- read it before you start building tests
+           high            -- high level API for PNL (experimental for now)
         cxcore             -- openCV core. Used for operation with sparse matrices
         doc                -- users guide and reference manual           
         trs                -- TRS test system
