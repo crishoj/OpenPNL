@@ -222,6 +222,10 @@ SOURCE=..\src\ALearningCondGaussDBN.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\ALIMIDInfEngine.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\ALog.cpp
 # End Source File
 # Begin Source File

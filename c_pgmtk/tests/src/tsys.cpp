@@ -98,6 +98,7 @@ void initAExInfEngine();
 void initAExLearnEngine();
 void initACondSoftMaxAndSoftMaxInfAndLearn();
 void initStructLearnEngWithJTreeInf();
+void initA_LIMIDinfEngine();
 
 struct {
     void (*pFunc)();
@@ -171,9 +172,10 @@ struct {
     FUNC_ENTITY(initALearningCondGaussDBN),	       1,
     FUNC_ENTITY(initAInfForRndBNet),                   1,
     FUNC_ENTITY(initAExInfEngine),                     1,
- //   FUNC_ENTITY(initAExLearnEngine),                   1,
+    FUNC_ENTITY(initAExLearnEngine),                   1,
     FUNC_ENTITY(initACondSoftMaxAndSoftMaxInfAndLearn),1,
     FUNC_ENTITY(initStructLearnEngWithJTreeInf), 1,
+	FUNC_ENTITY(initA_LIMIDinfEngine), 1,
 
     0, 0 // don't delete this line!
 };
