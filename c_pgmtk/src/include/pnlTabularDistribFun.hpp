@@ -156,6 +156,10 @@ public:
 
     void SetCheckNegative(bool val);
 
+    void InitPseudoCounts();
+
+    float CalculateBayesianScore(); 
+
 #ifdef PAR_PNL
     void UpdateStatisticsML(CDistribFun *pDF);
 #endif
@@ -186,6 +190,8 @@ protected:
 #ifdef PNL_RTTI
   static const CPNLType m_TypeInfo;
 #endif
+
+  double Gamma (int arg);
 
 private:
     int m_bDense;

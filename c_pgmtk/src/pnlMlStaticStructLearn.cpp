@@ -15,6 +15,7 @@
 /////////////////////////////////////////////////////////////////////////////
 #include "pnlConfig.hpp"
 #include "pnlMlStaticStructLearn.hpp"
+#include "pnlTabularDistribFun.hpp"
 
 PNL_USING
 const CBNet* CMlStaticStructLearn::GetResultBNet() const
@@ -90,6 +91,10 @@ float CMlStaticStructLearn::ScoreDAG(CDAG* pDAG, floatVector* familyScore)
     familyScore->clear();
     intVector vFamily;
     float fscore, score = 0.0f;
+    if (m_ScoreMethod == MarLh)
+    {
+        score = 1.0f;
+    }
     for(int i=0; i<m_nNodes; i++)
     {
         vFamily.clear();
@@ -97,7 +102,14 @@ float CMlStaticStructLearn::ScoreDAG(CDAG* pDAG, floatVector* familyScore)
         vFamily.push_back(i);
         fscore = ScoreFamily(vFamily);
         familyScore->push_back(fscore);
-        score += fscore;
+        if (m_ScoreMethod == MarLh)
+        {
+            score *= fscore;
+        }
+        else
+        {
+            score += fscore;
+        }
     }
     return score;
 }
@@ -224,9 +236,37 @@ float CMlStaticStructLearn::ComputeFamilyScore(intVector vFamily)
 				
 		score = pred;
 		break;
-	case MarLh : PNL_THROW(CNotImplemented, 
-					 "This type score method has not been implemented yet");
+	case MarLh : 
+        {
+                //проверка того, что потенциал дискретный
+        if (iCPD->GetDistributionType() != dtTabular)
+        {
+            PNL_THROW(CNotImplemented, 
+			    "This type of score method has been implemented only for discrete nets");
+        }
+        
+        int DomainSize;
+        const int * domain;
+        iCPD->GetDomain(&DomainSize, &domain);
+
+        CTabularDistribFun * pDistribFun = 
+            static_cast<CTabularDistribFun *>(iCPD->GetDistribFun());
+
+        pDistribFun->InitPseudoCounts();
+
+    
+        const CEvidence * pEv;
+        for (i=0; i<ncases; i++)
+        {
+            pEv = m_Vector_pEvidences[i];
+            const CEvidence *pEvidences[] = { pEv };
+            pDistribFun->BayesUpdateFactor(pEvidences, 1, domain);
+        }
+        score = pDistribFun->CalculateBayesianScore();
+        pDistribFun->PriorToCPD();
+
 		break;
+        }
 	default : PNL_THROW(CNotImplemented, 
 				  "This type score method has not been implemented yet");
 		break;

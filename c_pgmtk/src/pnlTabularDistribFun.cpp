@@ -2174,6 +2174,137 @@ bool CTabularDistribFun::IsMatrixNormalizedForCPD(float eps) const
     return ret;
 }
 
+void CTabularDistribFun::InitPseudoCounts()
+{
+    if (!m_pPseudoCounts)
+    {
+        int DomainSize; 
+        const int *NodeSizes;
+        m_pMatrix->GetRanges( &DomainSize, &NodeSizes );
+
+        m_pPseudoCounts = m_pMatrix->CreateEmptyMatrix(DomainSize,
+            NodeSizes, 0);
+        void *pObj = this;
+            m_pPseudoCounts->AddRef(pObj);
+    }
+    m_pPseudoCounts->ClearData();
+}
+
+double CTabularDistribFun::Gamma (int arg)
+{
+    double res = 1;
+    for (int i = arg-1; i > 0; i--)
+    {
+        res = res*i;
+    }
+    return res;
+}
+
+float CTabularDistribFun::CalculateBayesianScore()
+{
+    const int * ranges;
+    int dims;
+    m_pPseudoCounts->GetRanges(&dims, &ranges);
+        
+    int StateNumber = ranges[0]; //количество состояний вершины
+
+    int ConfigNum = 1; //количество конфигураций дискретных родителей
+    
+    int i, j;
+
+    for (i = 1; i < dims; i++)
+    {
+        ConfigNum *= ranges[i];
+    }
+        
+    int a = 0; 
+    double b = 1;
+
+    int * array;
+
+    double score = 1.0f;
+
+    double bmin = exp(50);
+    double bmax = exp(200);
+        
+    const float * output;
+    int length = 0;
+    static_cast<CNumericDenseMatrix<float> *>(m_pPseudoCounts)->GetRawData(&length, &output);
+        
+    //вычисляем произведение по количеству состояний вершины
+    if (ConfigNum == 1)
+    {
+        score = 1; 
+    }
+    else
+    {
+    for (i=0; i < StateNumber; i++)
+    {
+        a = 0; b = 1;
+        int counter;
+        //вычисление суммы в знаменателе
+        for (j=0, counter = i; j < ConfigNum; j++, counter += StateNumber)
+        {
+            a += int(output[counter]);
+        }
+        
+        //формирование массива для вычисления произведения 
+        //факториалов по количеству конфигураций
+        array = new int [a];
+        int k, curr = 0;
+        for (j=0, counter = i; j < ConfigNum; j++, counter += StateNumber)
+        {
+            for (k=1; k <= int(output[counter]); k++)
+            {
+                array[curr] = k;
+                curr++;
+            }
+        }
+
+        a = a + ConfigNum;
+
+        for (j = 0; j < curr; j++)
+        {
+            if ((b < bmax) || ((b > bmax) && (a == 0)))
+            {
+                b = b * array[j];
+            }
+            else
+            {
+                while ((b > bmin) && (a>0))
+                {
+                    b = b/a;
+                    a--;
+                }
+            }
+        }
+
+  /*      for (j=0, counter = i; j < ConfigNum; j++, counter += StateNumber)
+        {
+            if ((b < bmax) || ((b > bmax) && (a == 0)))
+            {
+                b = b * Gamma(1 + int(output[counter]));
+            }
+            else
+            {
+                while ((b > bmin) && (a>0))
+                {
+                    b = b/a;
+                    a--;
+                }
+            }
+        }*/
+
+        score = score * b * Gamma(ConfigNum) / Gamma(a);
+        delete [] array;
+    }
+    }
+    //score = log(score);
+    return score;
+
+}
+
+
 CNodeValues *CTabularDistribFun::GetMPE() 
 {
     if( m_bUnitFunctionDistribution )
