@@ -38,6 +38,12 @@ CLIMIDInfEngine* CLIMIDInfEngine::Create(
 {
   PNL_CHECK_IS_NULL_POINTER(pGraphicalModel);
 
+  std::string description;
+  if(!pGraphicalModel->IsValid( &description) )
+  {
+    PNL_THROW(CAlgorithmicException, description )
+  }
+
   intVector vec_association(0);
   CIDNet* pConvertedIDNet = CreateIDWithLastUtilityNodes(pGraphicalModel, 
     vec_association);

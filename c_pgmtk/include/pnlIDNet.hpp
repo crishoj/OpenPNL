@@ -46,6 +46,8 @@ public:
   
   intVector* GetUnValueNodes() const;
 
+  void GetChanceNodes(intVector& chanceNodesOut) const;
+
   void GetDecisionNodes(intVector& decisionNodesOut) const;
 
   void GetValueNodes(intVector& valueNodesOut) const;

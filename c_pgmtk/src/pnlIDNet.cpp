@@ -30,6 +30,7 @@ CIDNet* CIDNet::Create(int numberOfNodes, int numberOfNodeTypes,
   PNL_CHECK_LEFT_BORDER(numberOfNodes, 1);
   PNL_CHECK_RANGES(numberOfNodeTypes, 1, numberOfNodes);
   PNL_CHECK_IS_NULL_POINTER(nodeTypes);
+
   PNL_CHECK_IS_NULL_POINTER(nodeAssociation);
   
   // creating the model
@@ -119,16 +120,16 @@ intVector* CIDNet::GetUnValueNodes() const
 }
 // ----------------------------------------------------------------------------
 
-void CIDNet::GetValueNodes(intVector& valueNodesOut) const
+void CIDNet::GetChanceNodes(intVector& chanceNodesOut) const
 {
-  valueNodesOut.resize(0);
+  chanceNodesOut.resize(0);
   int nnodes = GetNumberOfNodes();
   int i;
 
   for (i = 0; i < nnodes; i++)
   {
-    if (GetNodeType(i)->GetNodeState() == nsValue)
-      valueNodesOut.push_back(i);
+    if (GetNodeType(i)->GetNodeState() == nsChance)
+      chanceNodesOut.push_back(i);
   }
 }
 // ----------------------------------------------------------------------------
@@ -143,6 +144,20 @@ void CIDNet::GetDecisionNodes(intVector& decisionNodesOut) const
   {
     if (GetNodeType(i)->GetNodeState() == nsDecision)
       decisionNodesOut.push_back(i);
+  }
+}
+// ----------------------------------------------------------------------------
+
+void CIDNet::GetValueNodes(intVector& valueNodesOut) const
+{
+  valueNodesOut.resize(0);
+  int nnodes = GetNumberOfNodes();
+  int i;
+
+  for (i = 0; i < nnodes; i++)
+  {
+    if (GetNodeType(i)->GetNodeState() == nsValue)
+      valueNodesOut.push_back(i);
   }
 }
 // ----------------------------------------------------------------------------
@@ -192,6 +207,35 @@ bool CIDNet::IsValid(std::string* descriptionOut) const
       ret = 0;
       break;
     }
+  }
+
+  intVector DesNodes;
+  GetDecisionNodes(DesNodes);
+
+  if (DesNodes.size() == 0)
+  {
+      if (descriptionOut)
+      {
+          std::stringstream st;
+          st<<"The Influence Diagram hasn't decision nodes."<<std::endl;
+          std::string s = st.str();
+          descriptionOut->insert(descriptionOut->begin(), s.begin(), s.end());
+      }
+      ret = 0;
+  }
+
+  intVector ValNodes;
+  GetValueNodes(ValNodes);
+  if (ValNodes.size() == 0)
+  {
+      if (descriptionOut)
+      {
+          std::stringstream st;
+          st<<"The Influence Diagram hasn't value nodes."<<std::endl;
+          std::string s = st.str();
+          descriptionOut->insert(descriptionOut->begin(), s.begin(), s.end());
+      }
+      ret = 0;
   }
 
   return ret;
