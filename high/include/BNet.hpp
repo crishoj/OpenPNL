@@ -122,6 +122,9 @@ public:
     void MaskEvidences( TokArr whatNodes = "");
     ProbabilisticNet &Net() const { return *m_pNet; }
 
+    void SetProperty(const char *name, const char *value);
+    String Property(const char *name) const;
+
 private:
     typedef Vector<int> IIMap;
 
@@ -130,6 +133,7 @@ private:
     void CreateModel();
     pnl::CBNet *Model();
 
+    const char PropertyAbbrev(const char *name) const;
 //    void RebindFrom(BayesNet *bnet);
 
 private:// DATA members

@@ -24,7 +24,7 @@ BayesNet::BayesNet(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
 {
     static const char *aInference[] = 
     {
-	"Pearl Inference"
+	"Pearl Inference", "Jtree Inference", "Gibbs Inference", "Naive Inference"
     };
 
     static const char *aLearning[] = 
@@ -609,15 +609,140 @@ pnl::CMatrix<float> *BayesNet::Matrix(int iNode) const
 
 pnl::CInfEngine &BayesNet::Inference()
 {
-    if(!m_Inference)
+    switch(PropertyAbbrev("Inference"))
     {
-	m_Inference = pnl::CPearlInfEngine::Create(Model());
+    case 'j': //Junction tree inference 
+	if(m_Inference)
+	{
+	    pnl::CJtreeInfEngine *infJtree;
+	    infJtree = dynamic_cast<pnl::CJtreeInfEngine *>(m_Inference);
+	    if(!infJtree)
+	    {		    
+		delete m_Inference;
+		m_Inference = pnl::CJtreeInfEngine::Create(Model());
+	    }
+	}
+	else
+	{
+	    m_Inference = pnl::CJtreeInfEngine::Create(Model());
+	}
+	break; 
+    case 'g': // Gibbs Sampling
+	if(m_Inference)
+	{
+	    pnl::CGibbsSamplingInfEngine *infGibbs;
+	    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(m_Inference);
+	    if(!infGibbs)
+	    {		    
+		delete m_Inference;
+		m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model()); 
+		((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetMaxTime( 10000 );
+		((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetBurnIn( 1000 );
+	    }
+	} 
+	else
+	{
+            m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model()); 
+	    ((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetMaxTime( 10000 );
+            ((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetBurnIn( 1000 );
+	}
+	break; 
+    case 'n': // Naive inference
+	if(m_Inference)
+	{
+	    pnl::CNaiveInfEngine *infNaive;
+	    infNaive = dynamic_cast<pnl::CNaiveInfEngine *>(m_Inference);
+	    if(!infNaive)
+	    {		    
+		delete m_Inference;
+		m_Inference = pnl::CNaiveInfEngine::Create(Model());
+	    }
+	}
+	else
+	{
+	    m_Inference = pnl::CNaiveInfEngine::Create(Model());
+	}
+	break; 
+    case 'p': // Pearl inference
+        if(m_Inference)
+	{
+	    pnl::CPearlInfEngine *infPearl;
+	    infPearl = dynamic_cast<pnl::CPearlInfEngine *>(m_Inference);
+	    if(!infPearl)
+	    {		    
+		delete m_Inference;
+		m_Inference = pnl::CPearlInfEngine::Create(Model()); 
+	    }
+	}
+	else
+	{
+	    m_Inference = pnl::CPearlInfEngine::Create(Model()); 
+	}
+	break; 
+    default: //default inference algorithm
+	if(m_Inference)
+	{
+	    pnl::CPearlInfEngine *infPearl;
+	    infPearl = dynamic_cast<pnl::CPearlInfEngine *>(m_Inference);
+	    if(!infPearl)
+	    {		    
+		delete m_Inference;
+		m_Inference = pnl::CPearlInfEngine::Create(Model()); 
+	    }
+	}
+	else
+	{
+	    m_Inference = pnl::CPearlInfEngine::Create(Model()); 
+	}
+	break; 
     }
-
+    
     return *m_Inference;
 }
 
 pnl::CBNet *BayesNet::Model()
 {
     return static_cast<pnl::CBNet*>(Net().Model());
+}
+
+void BayesNet::SetProperty(const char *name, const char *value)
+{
+    m_pNet->SetProperty(name, value);
+}
+
+String BayesNet::Property(const char *name) const
+{
+    return m_pNet->Property(name);
+}
+
+const char BayesNet::PropertyAbbrev(const char *name) const
+{
+    String infName = Property("Inference");
+    pnl::pnlVector<char> infNameVec(infName.length());
+    for(int i = 0; i < infName.length(); ++i)
+    {
+	infNameVec[i] = tolower(infName[i]);
+    }
+    char *pInfName = &infNameVec.front();
+    
+    if(strstr(pInfName, "gibbs"))
+    {
+	return 'g';
+    }
+    if(strstr(pInfName, "pearl"))
+    {
+	return 'p';
+    }
+    if(strstr(pInfName, "jtree"))
+    {
+	return 'j';
+    }
+    if(strstr(pInfName, "naive"))
+    {
+	return 'n';
+    }
+    else 
+    {
+	return 0;
+    }
 }
