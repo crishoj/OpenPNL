@@ -210,17 +210,17 @@ int RunTest(int argc, char* argv[])
   double start, finish, duration;
   int i;
 
-  // Параметры формирования случайной сети:
+  // Parametrs to create random model:
   int nnodes = 30;        
-  // количество узлов в модели
+  // common number of nodes
   int num_indep_nodes = 3;
-  // кол-во независимых узлов (допустимые значения: от одной до 10% от числа узлов)
+  // number of nodes that hanen't got any parents
   int max_family_size = 4;
-  // максимальный размер семьи (допустимые значения: от двух до 7)
+  // maximum of family size
   int max_number_of_states = 4;
-  // максимальное кол-во состояний (допустимые значения: от двух до 5)
+  // upper limit of number of states
   long num_edges;
-  // число ребер
+  // number of edges
   
 // - BNet creation ------------------------------------------------------------
   if (argc <= 1)
