@@ -59,4 +59,6 @@ TokIdNode *ancestorByTagValue(TokIdNode *node, int tag, int value);
 
 typedef Vector<int> IIMap;
 
+void PrintTokTree(const char *filename, TokIdNode *node);
+
 #endif // __WINNER_HPP__

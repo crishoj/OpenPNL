@@ -69,3 +69,26 @@ void ThrowInternalError(const char *message, const char *func)
     //fputs(str.c_str(), stderr);
     PNL_THROW(pnl::CInternalError, str.c_str());
 }
+
+static void recursivePrintTokTree(FILE *fout, TokIdNode *node)
+{
+    pnl::pnlString name = node->Name();
+    fprintf(fout, "<%s>\n", name.c_str());
+    TokIdNode *subNode = node->v_next;
+    while(subNode)
+    {
+        recursivePrintTokTree(fout, subNode);
+        subNode = subNode->h_next;
+    }
+    fprintf(fout, "</%s>\n", name.c_str());
+}
+
+void PrintTokTree(const char *filename, TokIdNode *node)
+{
+    FILE *fp = fopen(filename, "w");
+    if(fp)
+    {
+        recursivePrintTokTree(fp, node);
+        fclose(fp);
+    }
+}
