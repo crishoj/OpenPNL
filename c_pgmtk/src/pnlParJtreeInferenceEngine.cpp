@@ -1566,7 +1566,7 @@ void CParJtreeInfEngine::InitWeightArrays()
 #ifdef PAR_MPI
 void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
 {
-        
+    int i;        
     
     MPI_Group World_group, CollectF_group;
     MPI_Comm CollectF_comm;
@@ -1574,7 +1574,7 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
     
     MPI_Comm_size(MPI_COMM_WORLD,&np);
     Ranks = new int[np];
-    for (int i = 0; i < np; i++)
+    for (i = 0; i < np; i++)
         Ranks[i] = i;
     MPI_Comm_group (MPI_COMM_WORLD, &World_group);
     MPI_Group_incl(World_group, np, Ranks, &CollectF_group);
@@ -1617,7 +1617,7 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
     {
         intVector NumOfNodesInProcess(m_NumberOfUsedProcesses, 0);
         int NumOfNds = m_NodeProcesses.size();
-        for(int i = 0; i < NumOfNds; i++)
+        for(i = 0; i < NumOfNds; i++)
             NumOfNodesInProcess[m_NodeProcesses[i]]++;
         
         MPI_Status status;
@@ -1690,7 +1690,7 @@ void CParJtreeInfEngine::DivideNodes(int AlgType)
     bool NeedToSendASubTreeToProcess = false;
     
     list<int> NodesList;
-    list<int>::iterator NodesListIterator;
+    list<int>::const_iterator NodesListIterator;
     
     const CJunctionTree* pJTree = GetJTree();
 

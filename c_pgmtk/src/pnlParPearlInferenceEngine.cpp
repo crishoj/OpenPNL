@@ -24,7 +24,7 @@
 #include "pnlTabularPotential.hpp"
 #include "pnlGaussianPotential.hpp"
 #include "pnlMNet.hpp"
-#include "pnlAllocator.hpp"
+//#include "pnlAllocator.hpp"
 
 #ifdef PAR_OMP
 #include <omp.h>
@@ -48,19 +48,6 @@ struct CEdgeValue
     In graph and skeleton systems nodes have different numbers. 
     According between systems sets by array m_pTreeGraphAccord
 */
-  
-    bool operator < (CEdgeValue& SecondValue)
-    {
-        if (EdgeWeight < SecondValue.EdgeWeight)
-            return true;
-        else return false;
-    };
-    bool operator > (CEdgeValue& SecondValue)
-    {
-        if (EdgeWeight > SecondValue.EdgeWeight)
-            return true;
-        else return false;
-    };
     CEdgeValue()
     {
         RootFromInSkeletonSystem = RootToInGraphSystem = -1;
@@ -68,6 +55,18 @@ struct CEdgeValue
         Step = -1;
     };
 };
+bool operator < (const CEdgeValue& lhs, const CEdgeValue& rhs)
+{
+    if (lhs.EdgeWeight < rhs.EdgeWeight)
+	return true;
+    else return false;
+}
+bool operator > (const CEdgeValue& lhs, const CEdgeValue& rhs)
+{
+    if (lhs.EdgeWeight > rhs.EdgeWeight)
+        return true;
+    else return false;
+}
 #endif // PAR_MPI
 // ----------------------------------------------------------------------------
 
@@ -511,7 +510,7 @@ void CParPearlInfEngine::DivideNodes(const CEvidence *pEvidence, int AlgType)
   bool NeedToSendASubTreeToProcess = false;
   
   list<int> NodesList;
-  list<int>::iterator NodesListIterator;
+  list<int>::const_iterator NodesListIterator;
   
   NumberOfNodes = GetNumberOfNodes();
   
@@ -640,6 +639,7 @@ void CParPearlInfEngine::PickOutSkeleton()
   int CurrentRoot;
   //Bool vector: is node in graph inserted in skeleton
   boolVector InsertedNodes;
+  int i;
   
   if (m_pSkeleton == NULL)
     m_pSkeleton = CGraph::Create(0, NULL);
@@ -711,7 +711,7 @@ void CParPearlInfEngine::PickOutSkeleton()
   //we set arrays CurrentNeighbour and IsValueCurrentNeighbour with
   //using NeighbourOut and InsertedNodes
   CEdgeValue EdgeValue;
-  for (int i = 0; i<NumberOfNeighbors; i++)
+  for (i = 0; i<NumberOfNeighbors; i++)
     if (!InsertedNodes[NeighborsOut[i]])
     {
       EdgeValue.RootFromInSkeletonSystem = CurrentRoot - 1;
@@ -1394,8 +1394,9 @@ int CParPearlInfEngine::NumberFromGraphToSkeleton(int NumberInGraph)
   PNL_CHECK_IS_NULL_POINTER(m_pTreeGraphAccord);
   
   int NumberOfNodes = GetNumberOfNodes();
+  int i;
   
-  for (int i = 0; i < NumberOfNodes; i++)
+  for (i = 0; i < NumberOfNodes; i++)
     if ((*m_pTreeGraphAccord)[i] == NumberInGraph)
       break;
     
@@ -1620,6 +1621,7 @@ void CParPearlInfEngine::CollectBeliefsOnProcess(int MainProcNum)
     return;
   
   messageVector& rfCurBeliefs = GetCurBeliefs();
+  int node, i;
 
   if (m_MyRank != MainProcNum)
   {
@@ -1629,7 +1631,7 @@ void CParPearlInfEngine::CollectBeliefsOnProcess(int MainProcNum)
     float *pDataForSending;
     
     int NumberOfNodes = GetNumberOfNodes();
-    for (int node=0; node<NumberOfNodes; node++)
+    for (node=0; node<NumberOfNodes; node++)
     {
       if (m_NodeProcesses[node] == m_MyRank)
       {
@@ -1652,7 +1654,7 @@ void CParPearlInfEngine::CollectBeliefsOnProcess(int MainProcNum)
           GetMatrix(matTable))->GetRawData(&smallDataLength, 
           &pSmallDataForSending);
         
-        for (int i =0; i < smallDataLength; i++)
+        for (i =0; i < smallDataLength; i++)
         {
           pDataForSending[lastIndex + 1 + i] = pSmallDataForSending[i];
         }
@@ -1671,12 +1673,12 @@ void CParPearlInfEngine::CollectBeliefsOnProcess(int MainProcNum)
     float *pDataForReceiving;
     dataLength = new int[m_NumberOfUsedProcesses];
     
-    for (int i = 0; i < m_NumberOfUsedProcesses; i++)
+    for (i = 0; i < m_NumberOfUsedProcesses; i++)
     {
       dataLength[i] = 0;
     }
     int NumberOfNodes = GetNumberOfNodes();
-    for (int node = 0; node < NumberOfNodes; node++)
+    for (node = 0; node < NumberOfNodes; node++)
     {
       dataLength[m_NodeProcesses[node]] += 
         static_cast<CNumericDenseMatrix<float>*>(rfCurBeliefs[node]->
@@ -1696,7 +1698,7 @@ void CParPearlInfEngine::CollectBeliefsOnProcess(int MainProcNum)
       
       int lastUsedIndex = -1;
       
-      for (int node =0; node<NumberOfNodes; node++)
+      for (node =0; node<NumberOfNodes; node++)
       {
         int matDim;
         const int *pMatRanges;
@@ -2120,7 +2122,7 @@ void CParPearlInfEngine::CPD_to_pi(int nodeNumber,
     }
   }
   int NumberOfNodes = m_factorDistrib[nodeNumber]->GetNumberOfNodes();
-  std::vector< int, CFusedAllocator< int > > domNumbers(NumberOfNodes);
+  pnlVector<int> domNumbers(NumberOfNodes);
   for (i = 0; i < NumberOfNodes; i++)
   {
     domNumbers[i] = i;
@@ -2130,8 +2132,8 @@ void CParPearlInfEngine::CPD_to_pi(int nodeNumber,
     MultiplyOnMessage(m_factorDistrib[nodeNumber], &domNumbers.front(), 
       multParentIndices+i, allPiMessages[multParentIndices[i]]);
   }
-  std::vector< int, CFusedAllocator< int > > keepedNodes = 
-    std::vector< int, CFusedAllocator< int > >(1, domNumbers[NumberOfNodes-1]);
+  intVector keepedNodes(1, domNumbers[NumberOfNodes-1]);
+    
   if (posOfExceptNode >= 0)
   {
     keepedNodes.push_back(posOfExceptNode);
@@ -2204,17 +2206,16 @@ void CParPearlInfEngine::ComputeProductPi(int nodeNumber, int except)
   CopyMatrixOfMessage(m_factorDistrib[nodeNumber],parameter->GetDistribFun());
   
   parameter->GetDomain(&bigDomSize, &BigDomain);
-  
-  std::vector< int, CFusedAllocator< int > > domNumbers(bigDomSize);
+  intVector domNumbers(bigDomSize);
   for (i = 0; i < bigDomSize; i++)
   {
     domNumbers[i] = i;
   }
 
   int location;
-  std::vector< int, CFusedAllocator< int > > parentIndices;
-  std::vector< message, CFusedAllocator< message > > parentMessages = 
-    std::vector< message, CFusedAllocator< message > >(bigDomSize - 1);
+  intVector parentIndices;
+  messageVector parentMessages(bigDomSize - 1);
+    
   int keepNode = -1;
 
   for (i = 0; i < numNeighb; i++)
@@ -2267,8 +2268,7 @@ void CParPearlInfEngine::CPD_to_lambda(int nodeNumber,
         "Gaussian pi messages can't produce Tabular message to parent")
     }
   }
-  std::vector< int, CFusedAllocator< int > > allDomain = 
-    std::vector< int, CFusedAllocator< int > >(NumberOfNodes);
+  intVector allDomain(NumberOfNodes);
   for (i= 0; i < NumberOfNodes; i++)
   {
     allDomain[i] = i;
@@ -2350,15 +2350,15 @@ void CParPearlInfEngine::ComputeProductLambda(int nodeNumber, message lambda,
   
   parameter->GetDomain(&bigDomSize, &BigDomain);
   
-  std::vector< int, CFusedAllocator< int > > domNumbers(bigDomSize);
+  intVector domNumbers(bigDomSize);
   for (i = 0; i < bigDomSize; i++)
   {
     domNumbers[i] = i;
   }
 
   int location;
-  std::vector< int, CFusedAllocator< int > > parentIndices;
-  std::vector<message> parentMessages = std::vector<message>(bigDomSize - 1);
+  intVector parentIndices;
+  messageVector parentMessages(bigDomSize - 1);
   int keepNode = -1;
 
   for (i = 0; i < numNeighb; i++)
@@ -2438,6 +2438,7 @@ void CParPearlInfEngine::ParallelProtocol()
   }
   
   int i, j;
+  int i1;
   int converged = 0;
   int changed = 0;
   int iter = 0;
@@ -2460,7 +2461,7 @@ void CParPearlInfEngine::ParallelProtocol()
 
   float **messData=new float*[m_NumberOfProcesses];
 
-  for (int i1 = 0; i1 < m_NumberOfProcesses; i1++)
+  for (i1 = 0; i1 < m_NumberOfProcesses; i1++)
   {
     messData[i1] = new float[messLengthSend[i1]];
   }
@@ -2474,7 +2475,6 @@ void CParPearlInfEngine::ParallelProtocol()
 
   int pos = 0;
   const int AllNumberNodes=m_NodesOfProcess.size();
-
   while ((!converged) && (iter < GetMaxNumberOfIterations()))
   {
     int Count = m_NodesOfProcess.size();
@@ -2507,7 +2507,7 @@ void CParPearlInfEngine::ParallelProtocol()
       indexmess[NumOfProc]++;
       messData[NumOfProc][indexmess[NumOfProc]]=(float)sources[i]+0.3;
       indexmess[NumOfProc]++;
-      for(int i1 = 0; i1 < dataLength; i1++)
+      for(i1 = 0; i1 < dataLength; i1++)
       {
         messData[NumOfProc][indexmess[NumOfProc]] = pDataForSending[i1];
         indexmess[NumOfProc]++;
@@ -2555,7 +2555,7 @@ void CParPearlInfEngine::ParallelProtocol()
           ((*GetCurMsgsFromNeighbors())[sinkNode][sourceNode]->GetMatrix(
           matTable));
         matFor->GetRawData(&dataLength, (const float**)(&pDataForRecving));
-        for (int i1 = 0; i1 < dataLength; i1++) 
+        for (i1 = 0; i1 < dataLength; i1++) 
         {
           pDataForRecving[i1] = messDataRecv[NumOfProc][indexmess_new];
           indexmess_new++;
@@ -2848,7 +2848,7 @@ void CParPearlInfEngine::MultiplyOnMessage(message thisData,
   {
     pNewMatrix = thisData->GetMatrix(matTable);
   }
-  std::vector< int, CFusedAllocator< int > > orderOfBigInSmall;
+  intVector orderOfBigInSmall;
   
   orderOfBigInSmall.assign(smallNumNodes, 0);
   for(int i = 0; i < smallNumNodes; i++)
@@ -2888,9 +2888,9 @@ void CParPearlInfEngine::MarginalizeDataInMessage(CDistribFun *pUpdateData,
   float* new_bulk;
   pOldMatrix->GetRawData(&old_bulk_size, (const float**)(&old_bulk));
   pNewMatrix->GetRawData(&new_bulk_size, (const float**)(&new_bulk));
-  std::vector< int, CFusedAllocator< int > > steps(old_dims);
-  std::vector< int, CFusedAllocator< int > > backsteps(old_dims);
-  std::vector< int, CFusedAllocator< int > > stats(old_dims);
+  intVector steps(old_dims);
+  intVector backsteps(old_dims);
+  intVector stats(old_dims);
   
   j = old_dims;
   while (j--)
@@ -3054,8 +3054,9 @@ void CParPearlInfEngine::DivideGrille()
 
   //Last used number (element in array NewNumbers)
   int LastUsedNumber = -1;
+  int Node, i, j;
   
-  for (int Node = 0; (Node < NNodes) || (CornerNodeForChain!=-1); Node++)
+  for (Node = 0; (Node < NNodes) || (CornerNodeForChain!=-1); Node++)
   {
     clqOut.clear();
     pMNet->GetClqsNumsForNode( Node, &clqOut);
@@ -3112,7 +3113,7 @@ void CParPearlInfEngine::DivideGrille()
       int nbrsSize1 = nbrs1.size();
       int nbrsSize2 = nbrs2.size();
       
-      for (int j = 0; j< nbrsSize1; j++)
+      for (j = 0; j< nbrsSize1; j++)
       {
         if ((AllNodesRank[nbrs1[j]] == 2)||(AllNodesRank[nbrs1[j]] == 3))
         {
@@ -3151,7 +3152,7 @@ void CParPearlInfEngine::DivideGrille()
   }
   
   int SizePL = PrevLayer.size();
-  for (int i =0; i<SizePL; i++)
+  for (i =0; i<SizePL; i++)
   {
     RenumberNodes[PrevLayer[i]] = true;
     NewNumbers[++LastUsedNumber] = PrevLayer[i];
@@ -3161,13 +3162,13 @@ void CParPearlInfEngine::DivideGrille()
   {
     SizePL = PrevLayer.size();
     NextLayer.resize(SizePL);
-    for (int i = 0; i < SizePL; i++)
+    for (i = 0; i < SizePL; i++)
     {
       intVector nbrs(0);
       GetNbrsInGrilleModel(PrevLayer[i], &nbrs);
       
       int SizeNbrs = nbrs.size();
-      for (int j = 0; j < SizeNbrs; j++)
+      for (j = 0; j < SizeNbrs; j++)
         if (!RenumberNodes[nbrs[j]])
         {
           NextLayer[i] = nbrs[j];
