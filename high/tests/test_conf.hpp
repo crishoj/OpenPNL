@@ -55,3 +55,4 @@ void TestForGetPTabular();
 void TestForSetInferenceProperties();
 void TestMRFGetJPD();
 void TestMRFModelCreate();
+void TestForGetMPE();
