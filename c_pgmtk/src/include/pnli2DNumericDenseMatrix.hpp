@@ -590,10 +590,10 @@ void iC2DNumericDenseMatrix<Type>::GetBlocks( const int *X, int xSize,
         {
             if( i == X[j])
             {
-                xBackMap[i] = xCount;
+                xBackMap[i] = j;
                 mapX[i] = 1;
                 xSizeInTypes += blockSizes[i];
-                xBlockSizes[xCount] = blockSizes[i];
+                xBlockSizes[j] = blockSizes[i];
                 isInX = 1;
                 xCount++;
                 break;
@@ -783,36 +783,51 @@ void iC2DNumericDenseMatrix<Type>::GetLinearBlocks(const int *X,
     dataX.reserve(sumBlockSizes);
     pnlVector<Type> dataY;
     dataY.reserve(sumBlockSizes);
+    for( i = 0; i < xSize; i++ )
+    {
+		dataX.insert(dataX.end(), m_Table.begin() + offsets[X[i]],
+			m_Table.begin() + offsets[X[i] + 1]);
+	}
     int loc;
     for( i = 0; i < numBlocks; i++ )
     {
         loc = std::find( X, X + xSize, i ) - X;
-        if( loc < xSize )
+        if( loc == xSize )
         {
-            dataX.insert( dataX.end(), m_Table.begin()+offsets[i],
-                m_Table.begin()+offsets[i+1]);
-        }
-        else
-        {
-            dataY.insert(dataY.end(), m_Table.begin()+offsets[i],
-                m_Table.begin()+offsets[i+1]);
+            dataY.insert(dataY.end(), m_Table.begin() + offsets[i],
+                m_Table.begin() + offsets[i + 1]);
         }
     }
     int xSizeInTypes = dataX.size();
     int ySizeInTypes = dataY.size();
+    if( xSizeInTypes == 0 )
+    {
+        //we have only Y matrices
+        (*matX) = NULL;
+        (*matY) = C2DNumericDenseMatrix<Type>::Create( &m_Range.front(), &m_Table.front(),
+                                                    GetClampValue() );
+        return;
+    }
+    if( ySizeInTypes == 0 )
+    {
+        (*matX) = C2DNumericDenseMatrix<Type>::Create( &m_Range.front(), &m_Table.front(),
+                                                    GetClampValue() );
+        (*matY) = NULL;
+        return;
+    }
     intVector ranges( 2 );
     ranges[0] = xSizeInTypes;
-    if( xSizeInTypes )
-    {
-        dataX.push_back(0);//add data to avoid exception for NULL pointer
-    }
+//    if( xSizeInTypes )
+//    {
+//        dataX.push_back(0);//add data to avoid exception for NULL pointer
+//    }
     ranges[1] = 1;
     (*matX) = C2DNumericDenseMatrix<Type>::Create( &ranges.front(), &dataX.front());
     ranges[0] = ySizeInTypes;
-    if( ySizeInTypes == 0 )
-    {
-        dataY.push_back(0);//add data to avoid exception for NULL pointer
-    }
+//    if( ySizeInTypes == 0 )
+//    {
+//        dataY.push_back(0);//add data to avoid exception for NULL pointer
+//    }
     (*matY) = C2DNumericDenseMatrix<Type>::Create( &ranges.front(), &dataY.front());
 }
 
