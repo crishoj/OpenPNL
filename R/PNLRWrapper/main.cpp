@@ -40,6 +40,7 @@ extern "C" __declspec(dllexport) SEXP pnlGetMPE(SEXP net, SEXP nodes);
 extern "C" __declspec(dllexport) SEXP pnlGetJPD(SEXP net, SEXP nodes);
 extern "C" __declspec(dllexport) SEXP pnlGetGaussianMean(SEXP net, SEXP nodes);
 extern "C" __declspec(dllexport) SEXP pnlGetGaussianCovar(SEXP net, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetGaussianWeights (SEXP net, SEXP nodes, SEXP parents);
 
 extern "C" __declspec(dllexport) SEXP pnlSetProperty(SEXP net, SEXP name, SEXP value);
 extern "C" __declspec(dllexport) SEXP pnlGetProperty(SEXP net, SEXP name);
@@ -422,13 +423,35 @@ extern "C"
         int NetNum = INTEGER_VALUE(net);
 
         PROTECT(value = AS_CHARACTER(value));
-        PROTECT(prob = AS_CHARACTER(prob));
         char * arg1 = CHAR(asChar(value));
-        char * arg2 = CHAR(asChar(prob));
 
+        char * arg2;
+        TokArr arg3;
+        if (IS_CHARACTER(prob))
+        {
+            PROTECT(prob = AS_CHARACTER(prob));
+            arg2 = CHAR(asChar(prob));
+        }
+        else //the float vector is the input parameter
+        {
+            if (IS_NUMERIC(prob))
+            {
+                PROTECT(prob = AS_NUMERIC(prob));
+                double * Pprob = NUMERIC_POINTER(prob);
+                int len = LENGTH(prob);
+                
+                for (int i=0; i<len; i++)
+                {
+                    arg3.push_back((float)Pprob[i]);
+                }
+
+            }
+        }
+        
         try
         {
-            pBNets[NetNum]->SetPTabular(arg1, arg2);
+            if (IS_CHARACTER(prob)) pBNets[NetNum]->SetPTabular(arg1, arg2);
+            if (IS_NUMERIC(prob)) pBNets[NetNum]->SetPTabular(arg1, arg3);
         }
         catch (pnl::CException &E)
         {
@@ -440,6 +463,7 @@ extern "C"
             ErrorString = "Unrecognized exception during execution of SetPTabular function";
             flag = 1;
         }
+        
 
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
@@ -457,26 +481,50 @@ extern "C"
         int NetNum = INTEGER_VALUE(net);
 
         PROTECT(value = AS_CHARACTER(value));
-        PROTECT(prob = AS_CHARACTER(prob));
         PROTECT(parentValue = AS_CHARACTER(parentValue));
         char * arg1 = CHAR(asChar(value));
-        char * arg2 = CHAR(asChar(prob));
-        char * arg3 = CHAR(asChar(parentValue));
+        char * arg4 = CHAR(asChar(parentValue));
 
-            try
+        char * arg2;
+        TokArr arg3;
+        if (IS_CHARACTER(prob))
+        {
+            PROTECT(prob = AS_CHARACTER(prob));
+            arg2 = CHAR(asChar(prob));
+        }
+        else //the float vector is the input parameter
+        {
+            if (IS_NUMERIC(prob))
             {
-                pBNets[NetNum]->SetPTabular(arg1, arg2, arg3);
+                PROTECT(prob = AS_NUMERIC(prob));
+                double * Pprob = NUMERIC_POINTER(prob);
+                int len = LENGTH(prob);
+                
+                for (int i=0; i<len; i++)
+                {
+                    arg3.push_back((float)Pprob[i]);
+                }
+
             }
-            catch (pnl::CException &E)
-            {
-                ErrorString = E.GetMessage();
-                flag = 1;
-            }
-            catch(...)
-            {
-                ErrorString = "Unrecognized exception during execution of SetPTabular function";    
-                flag = 1;
-            }
+        }
+
+        try
+        {
+            if (IS_CHARACTER(prob)) 
+                pBNets[NetNum]->SetPTabular(arg1, arg2, arg4);
+            if (IS_NUMERIC(prob)) 
+                pBNets[NetNum]->SetPTabular(arg1, arg3, arg4);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of SetPTabular function";    
+            flag = 1;
+        }
 
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
@@ -573,15 +621,55 @@ extern "C"
         int NetNum = INTEGER_VALUE(net);
 
         PROTECT(node = AS_CHARACTER(node));
-        PROTECT(mean = AS_CHARACTER(mean));
-        PROTECT(variance = AS_CHARACTER(variance));
         char * arg1 = CHAR(asChar(node));
-        char * arg2 = CHAR(asChar(mean));
-        char * arg3 = CHAR(asChar(variance));
+        
+        char * mean_str;
+        char * variance_str;
+        TokArr MeanTok;
+        TokArr VarianceTok;
+
+        if (IS_CHARACTER(mean))
+        {
+            PROTECT(mean = AS_CHARACTER(mean));
+            mean_str = CHAR(asChar(mean));
+        }
+        else if (IS_NUMERIC(mean))
+        {
+            PROTECT(mean = AS_NUMERIC(mean));
+            double * pMean = NUMERIC_POINTER(mean);
+            int len = LENGTH(mean);
+            for (int i=0; i<len; i++)
+            {
+                MeanTok.push_back((float)pMean[i]);
+            }
+        }
+
+        if (IS_CHARACTER(variance))
+        {
+            PROTECT(variance = AS_CHARACTER(variance));
+            variance_str = CHAR(asChar(variance));
+        }
+        else if (IS_NUMERIC(variance))
+        {
+            PROTECT(variance = AS_NUMERIC(variance));
+            double * pVariance = NUMERIC_POINTER(variance);
+            int len = LENGTH(variance);
+            for (int i=0; i<len; i++)
+            {
+                VarianceTok.push_back((float)pVariance[i]);
+            }
+        }
 
             try
             {
-                pBNets[NetNum]->SetPGaussian(arg1, arg2, arg3);
+                if ((IS_CHARACTER(mean)) && (IS_CHARACTER(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str);
+                if ((IS_CHARACTER(mean)) && (IS_NUMERIC(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok);
+                if ((IS_NUMERIC(mean)) && (IS_CHARACTER(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str);
+                if ((IS_NUMERIC(mean)) && (IS_NUMERIC(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok);
             }
             catch (pnl::CException &E)
             {
@@ -612,28 +700,101 @@ extern "C"
         int NetNum = INTEGER_VALUE(net);
 
         PROTECT(node = AS_CHARACTER(node));
-        PROTECT(mean = AS_CHARACTER(mean));
-        PROTECT(variance = AS_CHARACTER(variance));
-        PROTECT(weight = AS_CHARACTER(weight));
         char * arg1 = CHAR(asChar(node));
-        char * arg2 = CHAR(asChar(mean));
-        char * arg3 = CHAR(asChar(variance));
-        char * arg4 = CHAR(asChar(weight));
 
-            try
+        char * mean_str;
+        char * variance_str;
+        char * weight_str;
+        TokArr MeanTok;
+        TokArr VarianceTok;
+        TokArr WeightTok;
+
+        int len;
+
+        if (IS_CHARACTER(mean))
+        {
+            PROTECT(mean = AS_CHARACTER(mean));
+            mean_str = CHAR(asChar(mean));
+        }
+        else if (IS_NUMERIC(mean))
+        {
+            PROTECT(mean = AS_NUMERIC(mean));
+            double * pMean = NUMERIC_POINTER(mean);
+            len = LENGTH(mean);
+            for (int i=0; i<len; i++)
             {
-                pBNets[NetNum]->SetPGaussian(arg1, arg2, arg3, arg4);
+                MeanTok.push_back((float)pMean[i]);
             }
-            catch (pnl::CException &E)
+        }
+
+        if (IS_CHARACTER(variance))
+        {
+            PROTECT(variance = AS_CHARACTER(variance));
+            variance_str = CHAR(asChar(variance));
+        }
+        else if (IS_NUMERIC(variance))
+        {
+            PROTECT(variance = AS_NUMERIC(variance));
+            double * pVariance = NUMERIC_POINTER(variance);
+            len = LENGTH(variance);
+            for (int i=0; i<len; i++)
             {
-                ErrorString = E.GetMessage();
-                flag = 1;
+                VarianceTok.push_back((float)pVariance[i]);
             }
-            catch(...)
+        }
+      
+        if (IS_CHARACTER(weight))
+        {
+            PROTECT(weight = AS_CHARACTER(weight));
+            weight_str = CHAR(asChar(weight));
+        }
+        else if (IS_NUMERIC(weight))
+        {
+            PROTECT(weight = AS_NUMERIC(weight));
+            double * pWeight = NUMERIC_POINTER(weight);
+            len = LENGTH(weight);
+            for (int i=0; i<len; i++)
             {
-                ErrorString = "Unrecognized exception during execution of SetPGaussian function"; 
-                flag = 1;
+                WeightTok.push_back((float)pWeight[i]);
             }
+        }
+
+
+        try
+        {
+            if (IS_CHARACTER(weight))
+            {
+                if ((IS_CHARACTER(mean)) && (IS_CHARACTER(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str, weight_str);
+                if ((IS_CHARACTER(mean)) && (IS_NUMERIC(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok, weight_str);
+                if ((IS_NUMERIC(mean)) && (IS_CHARACTER(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str, weight_str);
+                if ((IS_NUMERIC(mean)) && (IS_NUMERIC(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok, weight_str);
+            }
+            else if (IS_NUMERIC(weight))
+            {
+                if ((IS_CHARACTER(mean)) && (IS_CHARACTER(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str, WeightTok);
+                if ((IS_CHARACTER(mean)) && (IS_NUMERIC(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok, WeightTok);
+                if ((IS_NUMERIC(mean)) && (IS_CHARACTER(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str, WeightTok);
+                if ((IS_NUMERIC(mean)) && (IS_NUMERIC(variance)))
+                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok, WeightTok);
+            }
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of SetPGaussian function"; 
+            flag = 1;
+        }
 
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
@@ -894,10 +1055,12 @@ extern "C"
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
+        TokArr ResTok;
+
         try
         {
-            str = pBNets[NetNum]->GetGaussianMean(arg);
-            result = str.c_str();
+            ResTok = pBNets[NetNum]->GetGaussianMean(arg);
+           // result = str.c_str();
         }
         catch (pnl::CException &E)
         {
@@ -913,9 +1076,13 @@ extern "C"
         if (temp == 0)
         {
             //there was no exceptions
-            PROTECT(res = NEW_NUMERIC(1));
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
             double * pres = NUMERIC_POINTER(res);
-            pres [0] = atof(result); 
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
         }
         else
         {
@@ -941,11 +1108,12 @@ extern "C"
 
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
+        TokArr ResTok;
         
         try
         {
-            str = pBNets[NetNum]->GetGaussianCovar(arg);
-            result = str.c_str();
+            ResTok = pBNets[NetNum]->GetGaussianCovar(arg);
+         //   result = str.c_str();
         }
         catch (pnl::CException &E)
         {
@@ -961,9 +1129,13 @@ extern "C"
         if (temp == 0)
         {
             //there was no exceptions
-            PROTECT(res = NEW_NUMERIC(1));
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
             double * pres = NUMERIC_POINTER(res);
-            pres [0] = atof(result); 
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
         }
         else
         {
@@ -976,6 +1148,61 @@ extern "C"
         return (res);
     }
 
+//----------------------------------------------------------------------------
+    SEXP pnlGetGaussianWeights (SEXP net, SEXP nodes, SEXP parents)
+    {
+        SEXP res;
+        const char * result = "";
+        int temp = 0;
+        String str;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(nodes = AS_CHARACTER(nodes));
+        char * arg = CHAR(asChar(nodes));
+
+        PROTECT(parents = AS_CHARACTER(parents));
+        char * arg2 = CHAR(asChar(parents));
+        TokArr ResTok;
+        
+        try
+        {
+            ResTok = pBNets[NetNum]->GetGaussianWeights(arg, arg2);
+         //   result = str.c_str();
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            temp = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetGaussianCovar function";
+            temp = 1;
+        }
+
+        if (temp == 0)
+        {
+            //there was no exceptions
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
+            double * pres = NUMERIC_POINTER(res);
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
+        }
+        else
+        {
+            //there were exceptions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+
+        UNPROTECT(4);
+        return (res);
+    }
 //----------------------------------------------------------------------------
     SEXP pnlSetProperty(SEXP net, SEXP name, SEXP value)
     {
