@@ -267,19 +267,36 @@ CStaticGraphicalModel *CDBN::CreatePriorSliceGrModel() const
     int node;
     for ( node = 0; node < m_nnodesPerSlice; node++ )
     {
-        /*
+        pFactor = GrModel()->GetFactor(node);
+	if( pFactor->GetDistributionType() == dtMixGaussian )
+	{
+	    domain.clear();
+	    pPriorSliceGraph->GetParents(node, &domain);
+	    domain.push_back(node);
+	    floatVector prob;
+	    static_cast<CMixtureGaussianCPD *>(pFactor)->GetProbabilities(&prob);
+	    CMixtureGaussianCPD *pCPD = CMixtureGaussianCPD::Create(domain, pPriorSliceGrModel->GetModelDomain(), prob );
+	    pCPD->TieDistribFun(pFactor);
+	    pPriorSliceGrModel->AttachFactor(pCPD);
+	    
+	}
+	else
+	{
+	    
+	/*
         domain.clear();
-                pPriorSliceGraph->GetParents(node, &domain);
-                domain.push_back(node);
+	pPriorSliceGraph->GetParents(node, &domain);
+	domain.push_back(node);
         
-                pFactor = CFactor::
-                    CopyWithNewDomain( GrModel()->GetFactor(node), domain, pPriorSliceGrModel->GetModelDomain() );
-        
-        	pPriorSliceGrModel->AttachFactor( pFactor );
-	*/
-	pPriorSliceGrModel->AllocFactor(node);
-	pPriorSliceGrModel->GetFactor(node)->TieDistribFun(GrModel()->GetFactor(node));
-       
+	  pFactor = CFactor::
+	  CopyWithNewDomain( GrModel()->GetFactor(node), domain, pPriorSliceGrModel->GetModelDomain() );
+	  
+	    pPriorSliceGrModel->AttachFactor( pFactor );
+	    */
+	    pPriorSliceGrModel->AllocFactor(node);
+	    pPriorSliceGrModel->GetFactor(node)->TieDistribFun(GrModel()->GetFactor(node));
+	    
+	}
     }
     delete []FinalNodeAssociations;
     return (pPriorSliceGrModel);

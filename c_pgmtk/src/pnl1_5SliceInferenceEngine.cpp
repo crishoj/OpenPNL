@@ -22,6 +22,7 @@
 #include "pnlTabularPotential.hpp"
 #include "pnlGaussianPotential.hpp"
 #include "pnlScalarPotential.hpp"
+#include "pnlMixtureGaussianCPD.hpp"
 
 PNL_USING
 
@@ -157,8 +158,21 @@ CBNet *C1_5SliceInfEngine::Create1_5SliceBNet()
        	    CopyWithNewDomain(GrModel()->GetFactor( num ), domain, p1_5SliceGrModel->GetModelDomain());
        	p1_5SliceGrModel->AttachFactor(pFactor );
        */
-	p1_5SliceGrModel->AllocFactor(node);
-	p1_5SliceGrModel->GetFactor(node)->TieDistribFun(GrModel()->GetFactor(num));
+	pFactor = GrModel()->GetFactor(num);
+	if( pFactor->GetDistributionType() == dtMixGaussian )
+	{
+	    floatVector prob;
+	    static_cast<CMixtureGaussianCPD *>(pFactor)->GetProbabilities(&prob);
+	    CMixtureGaussianCPD *pCPD = CMixtureGaussianCPD::Create(domain, p1_5SliceGrModel->GetModelDomain(), prob );
+	    pCPD->TieDistribFun(pFactor);
+	    p1_5SliceGrModel->AttachFactor(pCPD);
+
+	}
+	else
+	{
+		p1_5SliceGrModel->AllocFactor(node);
+		p1_5SliceGrModel->GetFactor(node)->TieDistribFun(GrModel()->GetFactor(num));
+	}
        
     }
 
