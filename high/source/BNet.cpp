@@ -532,7 +532,22 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
     }
     
+
+    pnl::CInfEngine *infEngine = &Inference();
+
     pnl::CGibbsSamplingInfEngine *infGibbs; 
+    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(infEngine);
+    if(infGibbs != NULL)
+    {
+	Vector<int> queryVls;
+	pnl::intVecVector queries(1);
+	queries[0].clear();
+
+	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
+	infGibbs->SetQueries( queries ); 
+    }
+
+/*    pnl::CGibbsSamplingInfEngine *infGibbs; 
     infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(&Inference());
     if(infGibbs != NULL)
     {
@@ -543,8 +558,8 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
 	infGibbs->SetQueries( queries ); 
     }
-    
-    Inference().EnterEvidence(evid, 1);
+*/    
+    infEngine->EnterEvidence(evid, 1);
     
     int nnodes = nodes.size();
     int i;
@@ -567,9 +582,9 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 	*/
     }
 
-    Inference().MarginalNodes(&queryNds.front(), queryNds.size());
+    infEngine->MarginalNodes(&queryNds.front(), queryNds.size());
 
-    const pnl::CEvidence *mpe = Inference().GetMPE();
+    const pnl::CEvidence *mpe = infEngine->GetMPE();
     TokArr result;
 
     for(i = 0; i < nnodes; ++i)
