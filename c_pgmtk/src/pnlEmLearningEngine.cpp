@@ -587,7 +587,7 @@ float CEMLearningEngine::_LearnPotentials()
 
     CMatrix<float> *itogMatrix;
 
-#if 0
+#if 1
     CInfEngine *pJPDInfEng = CNaiveInfEngine::Create(grmodel);
 #else
     CInfEngine *pJPDInfEng = CExInfEngine< CJtreeInfEngine >::Create(grmodel);
@@ -595,7 +595,7 @@ float CEMLearningEngine::_LearnPotentials()
     intVector obsNodes(0);
     valueVector obsVals(0);
     CEvidence *emptyEvidence = CEvidence::Create(grmodel->GetModelDomain(), obsNodes, obsVals);
-    m_pInfEngine -> EnterEvidence( emptyEvidence );
+    pJPDInfEng -> EnterEvidence( emptyEvidence );
     int querySize = grmodel->GetNumberOfNodes();
     int *query;
     int i;
@@ -605,8 +605,8 @@ float CEMLearningEngine::_LearnPotentials()
     {
 	query[i] = i;
     }
-    m_pInfEngine->MarginalNodes( query, querySize );
-    joint_prob = m_pInfEngine->GetQueryJPD();
+    pJPDInfEng->MarginalNodes( query, querySize );
+    joint_prob = pJPDInfEng->GetQueryJPD();
     CPotential *itog_joint_prob =
     static_cast<CPotential *>(joint_prob->Marginalize(query, querySize));
     delete (pJPDInfEng);
