@@ -33,8 +33,8 @@ libcxcore_a_SOURCES = \
 # here you should add all header files, which shouldn't be installed
 noinst_HEADERS =
 
-EXTRA_DIST =
+EXTRA_DIST = _cxcore.h _cxexport.def _cxipp.h
 
 LIBS = -lm
 
-INCLUDES = -I. -I../include -I../..
+INCLUDES = -I$(srcdir) -I$(srcdir)/../include

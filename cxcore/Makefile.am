@@ -1,1 +1,1 @@
-SUBDIRS=cxcore
+SUBDIRS = cxcore
