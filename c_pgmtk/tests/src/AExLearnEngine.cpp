@@ -35,7 +35,7 @@ static char* test_class = "Algorithm";
 int testExLearnEngine()
 {
     int ret = TRS_OK;
-   
+   //pnlSeed(1088368891);
     int seed = pnlTestRandSeed();
        
        std::cout<<"seed"<<seed<<std::endl;
@@ -66,6 +66,7 @@ int testExLearnEngine()
        CGraph *pGraph =pBNet->GetGraph();
 
        CBNet* pBNetToLearn = CBNet::CreateWithRandomMatrices(CGraph::Copy(pGraph), pMD);
+       std::cout<<"bnet"<<std::endl;
        
        
        
@@ -86,8 +87,12 @@ int testExLearnEngine()
 	   pEv[i]->MakeNodeHiddenBySerialNum(sn);
        }
        
+        std::cout<<"samples"<<std::endl;
+
        pLearn->SetData(nSamples, &pEv.front() );
        pLearn->Learn();
+       std::cout<<"learn"<<std::endl;
+
 
        for( i = 0; i < pBNet->GetNumberOfNodes(); i++ )
        {
