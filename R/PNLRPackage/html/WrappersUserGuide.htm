@@ -1,0 +1,654 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html><head>
+<link rel="STYLESHEET" href="style.css" charset="ISO-8859-1" type="text/css">
+<title>PNL Wrappers: User Guide</title>
+</head><body>
+
+<center><table cellspacing=0 cellpadding=5 width="90%" bgcolor="#6a9bed" nosave >
+<tr nosave>
+<td nosave>
+<center><i><font color="#000000"><font size=+4>
+PNL Wrappers: User Guide
+</font></font></i></center>
+</td>
+</tr>
+</table></center>
+<HR>
+
+<P>
+  <h4>
+</h4>
+<UL>
+  <LI><A href="#Intro">Intro</A> 
+  <LI><A href="#DiscreteNet">Bayesian networks with discrete nodes</A> 
+  <UL>  
+      <LI><A href="#CreateNetDiscr">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesDiscr">Adding nodes</A> 
+          <LI><A href="#AddEdgesDiscr">Adding edges</A> 
+      </UL>
+      <LI><A href="#SpecProbDiscr">Specifying the probabilities</A> 
+      <LI><A href="#AddObservDiscr">Adding observations</A> 
+      <LI><A href="#LearnDiscr">Learning the network</A> 
+      <UL>
+          <LI><A href="#ParamLearnDiscr">Parameters learning</A> 
+          <LI><A href="#StructLearnDiscr">Structural learning</A> 
+      </UL>
+      <LI><A href="#MPEandJPDDiscr">Getting MPE and JPD</A> 
+      <LI><A href="#HintsDiscr">Hints</A> 
+      <UL>
+          <LI><A href="#Operation1Discr">"^" operation</A> 
+          <LI><A href="#Operation2Discr">[ ] operation</A> 
+          <LI><A href="#StrAndFltMethodsDiscr">String and FltValue methods</A> 
+      </UL>
+  </UL>
+  <LI><A href="#Gaussian">Bayesian networks with continuous nodes</A> 
+  <UL>  
+      <LI><A href="#CreateNetGau">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesGau">Adding nodes</A> 
+          <LI><A href="#AddEdgesGau">Adding edges</A> 
+      </UL>
+      <LI><A href="#SpecProbGau">Specifying the probabilities</A> 
+      <LI><A href="#AddObservGau">Adding observations</A> 
+      <LI><A href="#LearnGau">Learning the network</A> 
+      <LI><A href="#MPEandJPDGau">Getting MPE and JPD</A> 
+      <LI><A href="#MultiGau">Multivariate Gaussian case</A> 
+      <UL>
+          <LI><A href="#CreateNetMultiGau">Creating the net</A> 
+          <LI><A href="#SpecProbMultiGau">Specifying the probabilities</A> 
+	  <LI><A href="#AddObservMultiGau">Adding observations</A> 
+          <LI><A href="#ExampleMultiGau">An example</A> 
+      </UL>
+  </UL>
+  <LI><A href="#Limitations">Limitations</A> 
+</UL>
+<hr>
+<h1><a name="Intro">Intro</a></h1>
+
+<hr>
+<P>
+This manual describes usage of Probabilistic Network Library (PNL) using R
+environment with the help of wrappers.
+<p>
+It is BayesNet class, that is used for working with Bayesian networks in wrappers. 
+It is main class, all the operations are made by it. This class allows user 
+<UL>
+    <LI>to create new Bayesian network,</LI>
+    <LI>to specify probability distributions on the net nodes,</LI>
+    <LI>to assign observations (evidences),</LI>
+    <LI>to carry out learning process,</LI>
+    <LI>to get joint probability distribution (JPD) and maximum probability explanation (MPE) for network nodes,</LI>
+    <LI>to save Bayesian network and observations (evidences) as files and to load them from files,
+    <br>etc.</LI>
+</UL>
+With the help of BayesNet class methods user specifies parameters of the network, evidences and other net 
+characteristics and demands desired results. Required algorithms are called automatically. Learning 
+and inference processes can be carried out with the help of different PNL algorithms. If it is not 
+convenient for user to use default algorithm, he can specify definite algorithm that he want to use 
+to solve his task.
+
+
+
+
+<hr>
+
+<h1><a name="DiscreteNet">Bayesian networks with discrete nodes</a></h1>
+We are going to analyze Bayesian network functioning by the well-known example of "water-sprinkler". 
+<br>The graph structure of the model and the parameters are all shown in Figure 1:
+<hr>
+<h4><a name="figWaterSprinkler">Figure1. Water-sprinkler model</a></h4>
+<img align=center src="WSModel.gif">
+<p>
+All nodes are discrete and can take on two values: true or false.
+</p>
+<hr>
+
+<h2><a name="CreateNetDiscr">Creating the net</a></h2>
+<p>
+The first step of operating the Bayesian network is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create BayesNet class object: 
+<p>
+<pre>net &lt;- pnlCreateBNet()</pre>
+Now network is empty. We have to add nodes and edges.
+<hr>
+
+<h3><a name="AddNodesDiscr">Adding nodes</a></h3>
+<p>
+Method AddNode is used to add new node to the network:
+<p>
+<pre>
+AddNode(net, &quot;discrete^Cloudy&quot;, &quot;true false&quot;)
+AddNode(net, &quot;discrete^Sprinkler&quot;, &quot;true false&quot;)
+AddNode(net, &quot;discrete^Rain&quot;, &quot;true false&quot;)
+AddNode(net, &quot;discrete^WetGrass&quot;, &quot;true false&quot;)
+</pre>
+
+The second argument of this method is type and name of the new node, third argument is the corresponding 
+variate values list, and values are separated by the space.
+<br>
+In our example all the nodes are discrete and can take on the same values, so all the nodes can be 
+added by the one call of AddNode method:
+<p>
+<pre>
+AddNode(net,  &quot;discrete^Cloudy discrete^Sprinkler discrete^Rain discrete^WetGrass&quot;, &quot;true false&quot;)
+</pre>
+<hr>
+
+<h3><a name="AddEdgesDiscr">Adding edges</a></h3>
+<p>
+AddArc method is used to add a new arc to the network:
+<p>
+<pre>
+AddArc(net, &quot;Cloudy&quot;, &quot;Sprinkler&quot;)
+AddArc(net, &quot;Cloudy&quot;, &quot;Rain&quot;)
+AddArc(net, &quot;Sprinkler&quot;, &quot;WetGrass&quot;)
+AddArc(net, &quot;Rain&quot;, &quot;WetGrass&quot;)
+</pre>
+We can indicate several nodes as the beginning and end of the arc. In this case every node from the beginning 
+list will be connected with every node from the end list. In our example two calls of AddArc method are enough:
+<p>
+<pre>
+AddArc(net, &quot;Cloudy&quot;, &quot;Sprinkler Rain&quot;)
+AddArc(net, &quot;Sprinkler Rain&quot;, &quot;WetGrass&quot;)
+</pre>
+<hr>
+
+<h2><a name="SpecProbDiscr">Specifying the probabilities</a></h2>
+<p>
+Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. If we know probability distributions on some of the network nodes, we can specify them with the SetPTabular method for the discrete nodes.
+<br>
+In our example we are going to specify probability distributions on the Cloudy and Sprinkler nodes.  We will leave the distributions on the other nodes uniform.
+<br>
+Probability distribution on the Cloudy node is unconditional:
+<p>
+<pre>
+SetPTabular(net, &quot;Cloudy^true&quot;, &quot;0.6&quot;)
+SetPTabular(net, &quot;Cloudy^false&quot;, &quot;0.4&quot;) 
+</pre>
+The first argument of this method is the state of the variable; we define the probability for the node to take on this state. The second argument is the value of probability. It is possible to define the list of states and list of values:
+<p>
+<pre>
+SetPTabular(net, &quot;Cloudy^true Cloudy^false&quot;, &quot;0.6 0.4&quot;)
+</pre>
+Probability distribution on the Sprinkler node is conditional:
+<p>
+<pre>
+SetPTabular(net, &quot;Sprinkler^true&quot;, &quot;0.1&quot;, &quot;Cloudy^true&quot;)
+SetPTabular(net, &quot;Sprinkler^false&quot;, &quot;0.9&quot;, &quot;Cloudy^true&quot;)
+SetPTabular(net, &quot;Sprinkler^true&quot;, &quot;0.5&quot;, &quot;Cloudy^false&quot;)
+SetPTabular(net, &quot;Sprinkler^false&quot;, &quot;0.5&quot;, &quot;Cloudy^false&quot;)
+</pre>
+For the conditional distribution one new argument was added. This argument specifies the parents state configuration, the probability value is defined for the indicated state and indicated parent's configuration. The probabilities for the same parents configuration can be defined by the one call of SetPTabular method:
+<p>
+<pre>
+SetPTabular(net, &quot;Sprinkler^true Sprinkler^false&quot;, &quot;0.1 0.9&quot;, &quot;Cloudy^true&quot;)
+SetPTabular(net, &quot;Sprinkler^true Sprinkler^false&quot;, &quot;0.5 0.5&quot;, &quot;Cloudy^false&quot;)
+</pre>
+To get the probability distribution of the node we must call of GetPTabular
+method:
+<pre>
+PCloudy &lt;- GetPTabular(net, &quot;Cloudy&quot;)
+</pre>
+The following values are now stored in the variables:
+<pre>
+PCloudyStr		&quot;Cloudy^true^0.6 Cloudy^false^0.4&quot;
+</pre>
+For the conditional distribution it is possible to get probabilities for the indicated parents state configuration (or for the definite states of some parents):
+<p>
+<pre>PSprinkler &lt;- GetPTabular(net, &quot;Sprinkler&quot;, &quot;Cloudy^true&quot;)
+</pre>
+The values of the variables:
+<pre>&nbsp;</pre>
+<pre>PSprinklerStr		&quot;Sprinkler^true^Cloudy^true^0.1 Sprinkler^false^Cloudy^true^0.9&quot;
+</pre>
+With the help of  GetPTabular method user can also get the probability of some state of the
+variate:
+<p>
+<pre>PCloudyFalse &lt;- GetPTabular(net, &quot;Cloudy^false&quot;)
+</pre>
+The values of the variables:<pre>
+PCloudyFalse		&quot;Cloudy^false^0.4&quot;
+</pre>
+<p>
+We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+<h2><a name="AddObservDiscr">Adding observations</a></h2>
+<p>
+Here we will describe the way of working with evidences in wrappers. BayesNet class allows user to work with current evidence and with the buffer of evidences.
+<br>
+Default current evidence is empty. User can edit it with the EditEvidence method:
+<p>
+<pre>
+EditEvidence(net, &quot;Cloudy^false WetGrass^false&quot;)
+EditEvidence(net, &quot;Sprinkler^true Cloudy^true&quot;)
+</pre>
+After these calls there is three observed nodes in the current evidence, they are Cloudy, Sprinkler (both are true) and WetGrass, which is false.
+<br>
+After editing user can copy current evidence to the evidence buffer with the help of  CurEvidToBuf method:
+<p>
+<pre>
+CurEvidToBuf(net)
+</pre>
+It is possible to clear the current evidence with ClearEvid method:
+<p>
+<pre>
+ClearEvid(net)
+</pre>
+You can also put evidence-to-evidence buffer without editing. Call AddEvidToBuf method:
+<p>
+<pre>
+AddEvidToBuf(net, &quot;Rain^true WetGrass^true&quot;)
+</pre>
+At the moment we have empty current evidence. Evidence buffer contains 2 evidences. In the first evidence, which was copied from the current evidence, there are three observed nodes: Cloudy, Sprinkler (both are true) and WetGrass (false). In second evidence there are two observed nodes, Rain and WetGrass, both are true.
+<br>
+The main operations with evidence buffer are:
+<UL>
+    <LI>total clearance of the buffer with the help of  ClearEvidBuf method,</LI>
+    <LI>saving the buffer to file (SaveEvidBuffer) and loading buffer from file (LoadEvidBuffer). We support the csv file format,</LI>
+    <LI>filling the evidence buffer with random values of observations with the help of GenerateEvidences method.</LI>
+</UL>
+Current evidence is used to get JPD and MPE, evidence buffer is used for learning.
+<hr>
+
+<h2><a name="LearnDiscr">Learning the network</a></h2>
+<p>
+To carry out learning process evidences from evidence buffer are used. 
+<br>
+It is possible to specify probability distributions on the net nodes with the help of learning. This setting of probabilities is named parameters learning. We can find out not only probability distributions, but also the net structure, i.e. structure of net edges. This process is named structural learning.
+</p>
+<hr>
+
+<h3><a name="ParamLearnDiscr">Parameters learning</a></h3>
+<p>
+If we are going to specify probability distributions for network nodes, then we will call LearnParameters method after filling the evidence buffer to learn the network:
+<p>
+<pre>
+net.LearnParameters()
+</pre>
+As a result, the probability distributions on the nodes have been changed. To get new distributions GetPTabular method is used:
+<p>
+<pre>
+PCloudy &lt;- net.GetPTabular(&quot;Cloudy&quot;)
+PSprinkler &lt;- net.GetPTabular(&quot;Sprinkler&quot;)
+PRain &lt;- net.GetPTabular(&quot;Sprinkler&quot;)
+PWetGrass &lt;- net.GetPTabular(&quot;WetGrass&quot;)
+
+</pre>
+Now distributions are presented as String objects.&nbsp;
+<p> 
+<br>
+Default learning algorithm is Expectation Maximization algorithm. You also can carry out learning using Bayesian method. You have to set “Learning” property to “bayes” by SetProperty
+method:</p>
+<pre>SetProperty(net, &quot;Learning&quot;, &quot;bayes&quot;)
+LearnParameters(net)
+
+</pre>
+To run EM learning algorithm set the “Learning” property to “em”:
+<pre>&nbsp;</pre>
+<pre>SetProperty(net, &quot;Learning&quot;, &quot;em&quot;)
+LearnParameters(net)
+
+</pre>
+For EM Learning number of iterations of algorithm work and precision that algorithm runs up to must be specified. 
+Default number of iterations is 5 and default precision is 0.001. 
+These parameters can be changed with SetProperty method. Corresponding properties names are 
+"EMMaxNumberOfIterations" and "EMTolerance". For example:
+<pre>&nbsp;</pre>
+<pre>SetProperty(net, &quot;EMMaxNumberOfIterations&quot;, &quot;10&quot;)
+SetProperty(net, &quot;EMTolerance&quot;, &quot;1e-4&quot;)
+SetProperty(net, &quot;Learning&quot;, &quot;em&quot;)
+LearnParameters(net)
+
+</pre>
+<hr>
+
+<h3><a name="StructLearnDiscr">Structural learning</a></h3>
+<p>
+If we are going to find not only distributions, but also the network structure, we will call LearnStructure method:
+<pre>&nbsp;</pre>
+<pre>LearnStructure(net)
+</pre>
+In this case probability distributions and network structure have been changed. New distributions can be taken with the help of GetPTabular method. We can investigate new network structure using following methods: GetNeighbors, GetParents and GetChildren. For
+example:
+<p>
+<pre>
+SprinklerParents &lt;- GetParents(net, &quot;Sprinkler&quot;)
+SprinklerChildren &lt;- GetChildren(net, &quot;Sprinkler&quot;)
+
+</pre>
+SprinklerParents and SprinklerChildren are the lists of Sprinkler node parents and
+children.&nbsp;
+<p>
+Another way of getting the learning results is saving the final net to file (SaveNet
+method).
+<br>
+<hr>
+
+<h2><a name="MPEandJPDDiscr">Getting MPE and JPD</a></h2>
+<p>
+If Bayesian network and probability distributions have been already defined, we can get Joint Probability Distribution (JPD) and Maximum Probability Explanation (MPE).
+<br>
+For calculating JPD and MPE current evidence is used. You can edit this evidence with the help of  EditEvidence method (look through “Adding observations” section).
+<br>
+You can use GetJPD method to get the marginal probability distribution of the node:  
+<pre>
+WetGrassMarg &lt;- GetJPD(net, &quot;WetGrass&quot;)
+</pre>
+It is possible to get joint distribution for the nodes from one family (family is the set, which consists of node and node parents):
+<pre>
+WetGrassAndSprinklerMarg &lt;- GetJPD(net, &quot;WetGrass Sprinkler&quot;)
+</pre>
+You can use GetMPE method to get Maximum Probability Explanation for one node or for some set of nodes from one
+family:
+<p>
+<pre>
+WetGrassMPE &lt;- GetMPE(net, &quot;WetGrass&quot;)
+WetGrassAndSprinklerMPE &lt;- GetMPE(net, &quot;WetGrass Sprinkler&quot;)
+</pre>
+To calculate JPD and MPE inference algorithms are used. There are four inference algorithms: Pearl (or Loopy Belief Propagation), Junction Tree, Gibbs Sampling and full summation, which is called PNL Naive inference. We must mention, that Junction Tree and Naive Inference are exact, Pearl Inference and Gibbs Sampling are approximate algorithms (see PNL documentation for the full information).
+<br>
+Default inference algorithm, which is used to calculate MPE and JPD, is Pearl Inference. You can use other algorithms by setting “Inference” property with SetProperty method. You must define the desired algrithm by its string name: “pearl”, “jtree”, “gibbs”, or “naive”. For
+example:
+<p>
+<pre>
+SetProperty(net, &quot;Inference&quot;, &quot;jtree&quot;)
+WetGrassMPE &lt;- GetMPE(net, &quot;WetGrass&quot;)
+SetProperty(net, &quot;Inference&quot;, &quot;gibbs&quot;)
+WetGrassMPE = GetMPE(net, &quot;WetGrass Sprinkler&quot;)
+
+</pre>
+Pearl Inference and Gibbs Sampling Inference have some parameters.<br>
+For Pearl Inference number of iterations of algorithm and precision that algorithm runs up to must be specified. 
+Default number of iterations is equal to number of nodes in net and default precision is 1e-6. 
+These parameters can be changed with SetProperty method. Corresponding properties names are 
+"PearlMaxNumberOfIterations" and "PearlTolerance". For example:
+<p>
+<pre>
+SetProperty(net, &quot;PearlMaxNumberOfIterations&quot;, &quot;10&quot;)
+SetProperty(net, &quot;PearlTolerance&quot;, &quot;1e-5&quot;)
+SetProperty(net, &quot;Inference&quot;, &quot;pearl&quot;)
+WetGrassJPD &lt;- GetJPD(net, &quot;WetGrass&quot;)
+
+</pre>
+For Gibbs Sampling Inference number of iterations must be specified. Corresponding property name is "GibbsNumberOfIterations".
+Default number of iterations is 600. Gibbs Sampling Inference generate evidences (samples) during work. Number of first 
+itearation that use samples processing results of the previous iteration can be specified with property "GibbsThresholdIteration"
+(default value is 10). Number of streams that generate independent samples can be specified with property "GibbsNumberOfStreams"
+(1 stream by default). For example:
+<p>
+<pre>
+SetProperty(net, &quot;GibbsNumberOfIterations&quot;, &quot;1000&quot;)
+SetProperty(net, &quot;GibbsThresholdIteration&quot;, &quot;20&quot;)
+SetProperty(net, &quot;GibbsNumberOfStreams&quot;, &quot;2&quot;)
+SetProperty(net, &quot;Inference&quot;, &quot;gibbs&quot;)
+WetGrassMPE &lt;- GetMPE(net, &quot;WetGrass Sprinkler&quot;)
+
+</pre>
+<hr>
+
+<h1><a name="Gaussian">Bayesian networks with continuous nodes</a></h1>
+
+<P>
+We will show the operations with Bayesian network, which consists of continuous nodes, by the example of Satnam Alag's PhD thesis, USB ME dept 1996 p. 48.
+<br>The graph structure of the model and the parameters are all shown in Figure 2:
+</p>
+<hr>
+<h4><a name="figModel">Figure 2. Simple model with continuous nodes</a></h4>
+<img align=center src="GauModel.gif">
+<p>All nodes are continuous and have only one dimension.
+</p>
+<hr>
+
+<h2><a name="CreateNetGau">Creating the net</a></h2>
+<p>
+The first step of operating the Bayesian network is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create BayesNet class object: 
+<p>
+<pre>net &lt;- pnlCreateBNet()</pre>
+Now network is empty. We have to add nodes and edges.
+<hr>
+
+<h3><a name="AddNodesGau">Adding nodes</a></h3>
+<p>
+Method AddNode is used to add new node to the network:
+<p>
+<pre>
+AddNode(net, &quot;continuous^x0&quot;, &quot;dim1&quot;) 
+AddNode(net, &quot;continuous^x1&quot;, &quot;dim1&quot;) 
+AddNode(net, &quot;continuous^x2&quot;, &quot;dim1&quot;) 
+AddNode(net, &quot;continuous^x3&quot;, &quot;dim1&quot;) 
+AddNode(net, &quot;continuous^x4&quot;, &quot;dim1&quot;)
+</pre>
+The first argument of this method is type and name of the new node.  The second argument is the name of dimension. In our example all nodes have only one dimension, and that is why the second argument is always the same – the name of single dimension. The name of dimension is essential only for user, it can be chosen at will.
+<hr>
+
+<h3><a name="AddEdgesGau">Adding edges</a></h3>
+<p>
+AddArc method is used to add a new arc to the network:
+<p>
+<pre>
+AddArc(net, &quot;x0&quot;, &quot;x2&quot;)
+AddArc(net, &quot;x1&quot;, &quot;x2&quot;)
+AddArc(net, &quot;x2&quot;, &quot;x3&quot;)
+AddArc(net, &quot;x2&quot;, &quot;x4&quot;)
+</pre>
+Adding new edges is similar to the discrete case.
+<hr>
+
+<h2><a name="SpecProbGau">Specifying the probabilities</a></h2>
+<p>
+Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. If we know probability distributions on some of the network nodes, we can specify them with SetPGaussian method for the continuous nodes.
+<br>
+Let's set distributions on the nodes x0 and x1.
+<p>
+<pre>
+SetPGaussian(net, &quot;x0&quot;, &quot;1.0&quot;, &quot;4.0&quot;)
+SetPGaussian(net, &quot;x1&quot;, &quot;1.0&quot;, &quot;1.0&quot;)
+</pre>
+The first argument of this function is the name of the node. The second is the mean of the corresponding variate, the third – dispersion.
+<br>The rest nodes have parents. To set probability distributions on this node we have to call the following functions:
+<p>
+<pre>
+SetPGaussian(net, &quot;x2&quot;, &quot;0.0&quot;, &quot;2.0&quot;, &quot;1.0 2.0&quot;)
+SetPGaussian(net, &quot;x3&quot;, &quot;0.0&quot;, &quot;4.0&quot;, &quot;1.1&quot;)
+SetPGaussian(net, &quot;x4&quot;, &quot;-0.8&quot;, &quot;1.2&quot;, &quot;2.0&quot;)
+</pre>
+The last parameter defines weights. We must specify weight for every parent of the current node.
+We can get the parameters of continuous distribution, that we have already specified, with the help of the following methods:
+<p>
+<pre>
+MeanX0 &lt;- GetGaussianMean(net, &quot;x0&quot;) 
+</pre>
+This method will return the mean of the variate, which corresponds the x0 node.
+<p>
+<pre>
+CovarX0 = GetGaussianCovar(net, &quot;x0&quot;)
+</pre>
+This method will return the dispersion of the variate, which corresponds the x0 node.
+<p>We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+
+<h2><a name="AddObservGau">Adding observations</a></h2>
+<p>
+Here we will describe the way of working with evidences in wrappers. BayesNet class allows user to work with current evidence and with the buffer of  evidences.
+<br>Default current evidence is empty. User can edit it with the EditEvidence method:
+<p>
+<pre>
+EditEvidence(net, &quot;x0^dim1^0.4&quot;)
+</pre>
+While defining the observation on the continuous node, it is necessary to specify the name of the node, the name of the dimension and the observed value. 
+<br>You can also put evidence to evidence buffer without editing. Call AddEvidToBuf method:
+<p>
+<pre>
+AddEvidToBuf(net, &quot;x0^dim1^0.4&quot;)
+</pre>
+Usage of the other functions, which are calling to work with evidences (CurEvidToBuf, ClearEvid, ClearEvidBuf, SaveEvidBuffer, LoadEvidBuffer, GenerateEvidences), is similar to the discrete case.
+<hr>
+
+
+<h2><a name="LearnGau">Learning the network</a></h2>
+<p>
+Learning of continuous network is similar to learning the discrete one. To carry out learning process use the following calls: 
+<p> 
+<pre>
+LearnParameters(net)
+LearnStructure(net)
+</pre>
+To get the result distributions after learning user have to use GetGaussianMean and GetGaussianCovar methods:
+<p>
+<pre>
+MeanX2 &lt;- GetGaussianMean(net, &quot;x2&quot;)
+CovarX2 &lt;- GetGaussianCovar(net, &quot;x2&quot;)
+</pre>
+<hr>
+
+<h2><a name="MPEandJPDGau">Getting MPE and JPD</a></h2>
+<p>
+If Bayesian network and probability distributions have been already defined, we can get Joint Probability Distribution (JPD) and Maximum Probability Explanation (MPE). 
+<br>This possibility is well described for the discrete networks. For the continuous networks it is the same.
+<p>
+<pre>
+X3Marg &lt;- GetJPD(net, &quot;x3&quot;)
+X3MPE &lt;- GetMPE(net, &quot;x3&quot;)
+</pre>
+<hr>
+
+<h2><a name="MultiGau">Multivariate Gaussian case</a></h2>
+<p>
+Each continuous node in Bayesian network can be multivariate. We have already discussed only one-dimensional case above.
+</p>
+<p>
+Multivariate Gaussian variable is a set of one-dimensional variables that are connected with each other via covariation matrix. Value of multivariate is a vector of values of one-dimensional variables. The number of variables in the set is the number of dimensions of multivariate.
+</p>
+<p>
+If multivariate Gaussian node without parents has n dimensions, then it is characterized by vector of averages of distribution E which has n elements and by squarte matrix (n*n) of covariations C. The element (i,j) of the matrix C is equal to
+</p>
+<img align=center src="Formula1.gif">
+<p>
+where M is a function for calculating average of distribution. If multivariate node has parents (we suppose that all nodes in the network are continuous) then the third parameter characterizing the node is a vector (W) of weights matrixes. Number of elements in the vector is equal to number of parents. The size of matrix for the k-th parent (W[k]) is NDimChild * NDimParent[k], where NDimChild is a number of dimensions of the child node, NDimParent[k] is a number of dimensions of the k-th parent. The covariation matrix C does not depent on values of parents by definition. But matrix of averages of distribution depends on them in the following way:
+</p>
+<img align=center src="Formula2.gif">
+<hr>
+
+<h3><a name="CreateNetMultiGau">Creating the net</a></h3>
+<p>
+The only difference between multivariate and one-dimensional case in creating the network is how we add new nodes to the network. You should list names for each dimension of multivariate. For example, if you want to add a continuous node x, which has 3 dimensions, you should write the command
+</p>
+<pre>
+net.AddNode(&quot;continuous^x&quot;, &quot;First Second Third&quot;)
+</pre>
+<p>
+The second parameter in the command is a list of names of dimensions.
+</p>
+<hr>
+
+<h3><a name="SpecProbMultiGau">Specifying the probabilities</a></h3>
+<p>
+Specifying the probabilities is the same process as in the one-dimensional case. The only difference between them is specifying matrixes. Matrixes are specified by sequential row-wise specifying all elements separated by space gaps.
+</p>
+<p>
+For example the matrix
+</p>
+<pre>
+1 2
+3 4,
+</pre>
+<p>
+will be written in the following way: 1 2 3 4.
+</p>
+<p>
+If you want to set the vector of matrixes (in the setting of weights) then you should set all matrixes one by one. For example two matrixes:
+</p>
+<pre>
+1 2  5  6  7
+3 4  8  9  10
+     11 12 13,
+</pre>
+<p>
+will be written in the following way: 1 2 3 4 5 6 7 8 9 10 11 12 13.
+</p>
+<hr>
+
+<h3><a name="AddObservMultiGau">Adding observations</a></h3>
+<p>
+You should set observations for each dimension of multivariate variable. For example, if you want to set observations on the node x, which has 3 dimentions, then you should write the command:
+</p>
+<pre>
+EditEvidence(net, &quot;x^First^0.4 x^Second^0.6 y^Third^-17.34&quot;)
+</pre>
+<hr>
+
+<h3><a name="ExampleMultiGau">An example</a></h3>
+<p>
+In the example we create the network shown below:
+</p>
+<h4><a name="Formula3">Figure 3.</a></h4>
+<img align=center src="Formula3.gif">
+<p>
+where x0 and z are one-dimensional variables, x has two dimensions, and x2 and y have 3 dimensions.
+</p>
+<pre>
+AddNode(net, &quot;continuous^x0&quot;, &quot;dim1&quot;)
+AddNode(net, &quot;continuous^x&quot;, &quot;dim1 dim2&quot;)
+AddNode(net, &quot;continuous^x2&quot;, &quot;dim1 dim2 dim3&quot;)
+AddNode(net, &quot;continuous^y&quot;, &quot;dim1 dim2 dim3&quot;)
+AddNode(net, &quot;continuous^z&quot;, &quot;dim1&quot;)
+
+AddArc(net, &quot;x0 x x2&quot;, &quot;y&quot;)
+
+AddArc(net, &quot;y&quot;, &quot;z&quot;)
+
+SetPGaussian(net, &quot;x0&quot;, &quot;0.5&quot;, &quot;1.0&quot;)
+
+SetPGaussian(net, &quot;x&quot;, &quot;0.5 1.5&quot;, &quot;1.0 0.0 0.0 1.0&quot;)
+
+SetPGaussian(net, &quot;x2&quot;, &quot;0.5 1.5 2.5&quot;, &quot;1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0&quot;)
+
+SetPGaussian(net, &quot;y&quot;, &quot;1.5 2.5 3.5&quot;, &quot;2.0 1.0 0.0 1.0 3.0 0.0 0.0 0.0 0.5&quot;, &quot;0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8&quot;)
+
+SetPGaussian(net, &quot;z&quot;, &quot;1.0&quot;, &quot;1.5&quot;, &quot;1.5 2.5 3.5&quot;)
+
+EditEvidence(net, &quot;x^dim1^-15.0&quot;)
+
+EditEvidence(net, &quot;x^dim2^5.0 z^dim1^15.67&quot;)
+
+GetJPD(net, &quot;y z&quot;)
+
+</pre>
+<hr>
+<h1><a name="Limitations">Limitations</a></h1>
+
+<hr>
+<P>
+Here we are going to discuss some limitations of work with Bayesian nets. 
+<UL>
+    <LI>Limitations of string nodes names:
+    <ul>
+        <li>Name cannot contain characters '_', '^' and space character.
+        <li>The first character cannot be number.
+        <li>Names are case sensitive.
+    </ul>
+    <LI>Limitations of saving in file:
+    <ul>
+        <li>It is possible to save Bayes net to file if its graph is connected and it has more than one node only.
+        <li>If we save empty evidence buffer to file result file is empty. But loading evidence buffer from empty file is impossible.
+    </ul>
+    <LI>Current limitations that are planed to be removed:
+    <ul>
+        <li>Names of nodes may be only strings but cannot be integer numbers.
+        <li>Now nodes and edges must be added to net in such order that graph is topological sorted. That means that parents are added to graph before their children.
+        <li>Operation of nodes deleting may work incorrectly now.
+    </ul>
+</UL>
+<p>
+<hr>
+
