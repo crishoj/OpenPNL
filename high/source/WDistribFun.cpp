@@ -71,15 +71,71 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 {
     static const char fname[] = "FillData";
 
+    Vector<int> aIndex;
+    int i, mIndex, mValue;
+
     if(m_pDesc == 0)
     {
 	ThrowInternalError("desc is null", fname);
     }
 
+    int NumberOfNodes = desc()->nNode();
+    int ChildNodeSize = desc()->nodeSize(NumberOfNodes-1);
+    int WeightsSize = 0;
+
     // argument checking
-    if((value.size() != probability.size() || value.size() == 0)/*&&(matrixId == matTable)*/)
+    if (matrixId == matTable) 
     {
-	ThrowUsingError("The number of values must be equals to number of probabilities", fname);
+	//tabular case
+	if((value.size() != probability.size() || value.size() == 0)/*&&(matrixId == matTable)*/)
+	{
+    	    ThrowUsingError("The number of values must be equals to number of probabilities", fname);
+	};
+
+	aIndex.resize(desc()->nNode(), -1);
+    }
+    else 
+    {
+	for (int parent = 0; parent < (NumberOfNodes-1); parent++)
+	{
+	    WeightsSize += desc()->nodeSize(parent);
+	};
+	WeightsSize *= ChildNodeSize;
+
+	//cont case
+	switch(matrixId)
+	{
+	case matMean:
+	//Number of values and number of child node size must be equal
+	    if(ChildNodeSize != probability.size())
+	    {
+    		ThrowUsingError("The number of probabilities must be equals to number of dimensions of child node", fname);
+	    };
+	    aIndex.resize(1, -1);
+	    break;
+
+	case matCovariance:
+	//Number of values and (number of child node size)^2 must be equal
+	    if((ChildNodeSize*ChildNodeSize) != probability.size())
+	    {
+    		ThrowUsingError("The number of probabilities must be equals to (number of dimensions of child node)^2", fname);
+	    };
+	    aIndex.resize(2, -1);
+	    break;
+
+	case matWeights:
+	    if((WeightsSize) != probability.size())
+	    {
+    		ThrowUsingError("The number of probabilities is wrong. The correct value is sum(nodeSize(parent))*ChildNodeSize", fname);
+	    };
+	    aIndex.resize(3, -1);
+	    aIndex[1] = 0;
+	    break;
+
+	default:
+		ThrowUsingError("This matrixId is not supported", fname);
+	    break;
+	}
     }
 
     if((parentValue.size() != (desc()->nNode() - 1))&&(matrixId == matTable))
@@ -87,8 +143,6 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	ThrowUsingError("Wrong number of parent's values", fname);
     }
 
-    Vector<int> aIndex(desc()->nNode(), -1);
-    int i, mIndex, mValue;
     TokIdNode *valueBayesNode = value[0].Node();
     TokIdNode *node = (valueBayesNode->tag != eTagNetNode) ? valueBayesNode->v_prev:valueBayesNode;
 
@@ -140,7 +194,8 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	aIndex[mIndex] = mValue;
     }
 
-    for(i = value.size(); --i >= 0;)
+    int IndexWeightsMatrix = 0;
+    for(i = 0; i < probability.size(); i++)
     {
         if (matrixId == matTable)  
         {
@@ -156,11 +211,56 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	        ThrowUsingError("mixed parent and node itself", fname);
 	    }
             aIndex[mIndex] = mValue;
-        }
-	if(!probability[i].FltValue(0).IsUndef())
+        };
+
+	//In continuous case aIndex means an index in vectors mean or cov or weights
+	if (matrixId == matMean)
 	{
-	    SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
-	}
+	    //aIndex[0] - index of a dimension
+	    aIndex[0] = i;
+
+	    if(!probability[i].FltValue(0).IsUndef())
+	    {
+		SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
+	    }
+	};
+
+	if (matrixId == matCovariance)
+	{	    
+	    //aIndex[0] - col index in the covariance matrix
+	    //aIndex[1] - row index in the covariance matrix
+	    int col = static_cast<int> (i/ChildNodeSize);
+	    int row = i % ChildNodeSize;
+	    aIndex[0] = col;
+	    aIndex[1] = row;
+
+	    if(!probability[i].FltValue(0).IsUndef())
+	    {
+		SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
+	    };
+	};
+
+	if (matrixId == matWeights)
+	{
+	    //aIndex[0] - index of weights matrix
+	    //aIndex[1] - col index in the weights matrix
+	    //aIndex[2] - row index in the weights matrix
+	    aIndex[0] = IndexWeightsMatrix;
+	    aIndex[1] = (aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1)?(aIndex[1]+1):(aIndex[1]);
+	    aIndex[2] = (aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1)?(0):(aIndex[2]+1);
+	    
+	    if(!probability[i].FltValue(0).IsUndef())
+	    {
+	        SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
+	    };
+
+	    if ((aIndex[1] == ChildNodeSize -1)&&(aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1))
+	    {
+		IndexWeightsMatrix++;
+		aIndex[1] = 0;
+		aIndex[2] = -1;
+	    };	    
+	};
     }
 }
 
@@ -303,7 +403,7 @@ void WGaussianDistribFun::DoSetup()
 }
 
 
-pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType) const
+pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType, int numWeightMat) const
 {
     static const char fname[] = "Matrix";
 
@@ -323,7 +423,7 @@ pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType) const
 	pMatrix = m_pDistrib->GetMatrix(matCovariance);
 	break;
     case matWeights:
-	pMatrix = m_pDistrib->GetMatrix(matWeights, 0);
+	pMatrix = m_pDistrib->GetMatrix(matWeights, numWeightMat);
 	break;
     default:
 	ThrowUsingError("Unsupported matrix type", fname);
@@ -346,28 +446,126 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
 
     if(!m_pDistrib)
     {
+//	CreateDistribution();
         CreateDefaultDistribution();
     }
 
+    //In continuous case aIndex means an index in vectors mean or cov or weights
+
     EMatrixType matType;
+    int Index[2];
+    CMatrix<float> * pMatrix;
     switch (matrixId)
     {
     case matMean:
+	Index[0] = aIndex[0];
+	Index[1] = 0;
+	pMatrix = m_pDistrib->GetMatrix( static_cast<EMatrixType>(matrixId) );
+	pMatrix->SetElementByIndexes(probability, Index);
+	break;
     case matCovariance:
+	Index[0] = aIndex[0];
+	Index[1] = aIndex[1];
+	pMatrix = m_pDistrib->GetMatrix( static_cast<EMatrixType>(matrixId) );
+	pMatrix->SetElementByIndexes(probability, Index);
+
+	Index[0] = aIndex[1];
+	Index[1] = aIndex[0];
+	pMatrix->SetElementByIndexes(probability, Index);
+	break;
     case matWeights:
-    case matH:
-    case matK:
-	matType = static_cast<EMatrixType>(matrixId);
+	Index[0] = aIndex[1];
+	Index[1] = aIndex[2];
+	pMatrix = m_pDistrib->GetMatrix( static_cast<EMatrixType>(matrixId), aIndex[0]);
+	pMatrix->SetElementByIndexes(probability, Index);
 	break;
     default:
 	ThrowUsingError("Unsupported type of matrix in gaussian distribution", fname);
 	break;
     }
-
-   m_pDistrib->AllocMatrix( &probability, matType, 0);
 }
 
-void WGaussianDistribFun::SetData(int matrixId, const float *probability)
+//Changed: I changed sizes of dataMean and dataCov and dataWeight
+void WGaussianDistribFun::CreateDefaultDistribution()
+{
+    if (m_pDistrib != 0)
+    {
+	delete m_pDistrib;
+	m_pDistrib = 0;
+    }
+
+    int NumberOfNodes = desc()->nNode();
+    const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
+
+    int ChildNodeSize = desc()->nodeSize(NumberOfNodes-1);
+    int WeightsSize = 0;
+
+    //We think that all parents are continuous 
+    int node;
+    int dim;
+    for (node = 0; node < NumberOfNodes; node++)
+    {
+	nodeTypes[node] = new CNodeType(false, desc()->nodeSize(node), nsChance);
+	
+	if (node != (NumberOfNodes-1))
+	{
+	    WeightsSize += desc()->nodeSize(node);
+	};
+    }
+
+    float *dataMean = new float[ChildNodeSize];
+    float *dataCov = new float[ChildNodeSize*ChildNodeSize];
+    float **dataWeight = ((NumberOfNodes)!=1)?(new float *[NumberOfNodes-1]):(NULL);
+
+    for (dim = 0; dim < ChildNodeSize; dim++)
+    {
+        dataMean[dim] = 1;
+
+        for (int dim2 = 0; dim2 < ChildNodeSize; dim2++)
+        {
+            if (dim != dim2)
+            {
+                dataCov[dim*ChildNodeSize+dim2] = 0;
+            }
+            else 
+            {
+                dataCov[dim*ChildNodeSize+dim2] = 1;
+            }
+        };      
+    }
+
+    for (node = 0; node < NumberOfNodes-1; node++)
+    {
+	int WeightsVecSize = desc()->nodeSize(NumberOfNodes-1)*desc()->nodeSize(node);
+        dataWeight[node] = new float[WeightsVecSize];
+
+        for (int index = 0; index < WeightsVecSize; index++)
+        {
+            dataWeight[node][index] = 0;
+        };      
+    }
+
+    m_pDistrib = CGaussianDistribFun::CreateInMomentForm(false, NumberOfNodes, nodeTypes, 
+        dataMean, dataCov, (const float **)dataWeight);
+    m_pDistrib->CheckMomentFormValidity();
+
+    delete nodeTypes;
+
+    delete dataMean;
+    delete dataCov;
+    for (node = 0; node < NumberOfNodes-1; node++)
+    {
+        delete dataWeight[node];     
+    };
+    delete dataWeight;
+}
+
+int WGaussianDistribFun::IsDistributionSpecific()
+{
+    return m_pDistrib->IsDistributionSpecific();
+}
+
+void WGaussianDistribFun::SetData(int matrixId, const float *probability, int numWeightMat)
 {
     static const char fname[] = "SetData";
 
@@ -382,8 +580,6 @@ void WGaussianDistribFun::SetData(int matrixId, const float *probability)
     case matMean:
     case matCovariance:
     case matWeights:
-    case matH:
-    case matK:
 	matType = static_cast<EMatrixType>(matrixId);
 	break;
     default:
@@ -391,74 +587,5 @@ void WGaussianDistribFun::SetData(int matrixId, const float *probability)
 	break;
     }
 
-   m_pDistrib->AllocMatrix( probability, matType, 0);
-}
-
-void WGaussianDistribFun::CreateDefaultDistribution()
-{
-    if (m_pDistrib != 0)
-    {
-	delete m_pDistrib;
-	m_pDistrib = 0;
-    }
-
-    int NumberOfNodes = desc()->nNode();
-    const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
-
-    int node;
-    for (node = 0; node < NumberOfNodes; node++)
-    {
-	nodeTypes[node] = new CNodeType(false, desc()->nodeSize(node), nsChance);
-    }
-
-    float *dataMean = new float[NumberOfNodes];
-    float *dataCov = new float[NumberOfNodes*NumberOfNodes];
-    float **dataWeight = new float *[NumberOfNodes];
-
-    for (node = 0; node < NumberOfNodes; node++)
-    {
-        dataMean[node] = 1;
-        dataWeight[node] = new float[NumberOfNodes-1];
-
-        for (int node2 = 0; node2 < NumberOfNodes-1; node2++)
-        {
-            if (node != node2)
-            {
-                dataCov[node*NumberOfNodes+node2] = 0;
-            }
-            else 
-            {
-                dataCov[node*NumberOfNodes+node2] = 1;
-            }
-
-            dataWeight[node][node2] = 0;
-        };
-
-        if (node != (NumberOfNodes-1))
-        {
-            dataCov[node*NumberOfNodes+NumberOfNodes-1] = 0;
-        }
-        else 
-        {
-            dataCov[node*NumberOfNodes+NumberOfNodes-1] = 1;
-        };       
-    }
-
-    m_pDistrib = CGaussianDistribFun::CreateInMomentForm(false, NumberOfNodes, nodeTypes, 
-        dataMean, dataCov, (const float **)dataWeight);
-
-    delete nodeTypes;
-
-    delete dataMean;
-    delete dataCov;
-    for (node = 0; node < NumberOfNodes; node++)
-    {
-        delete dataWeight[node];     
-    };
-    delete dataWeight;
-}
-
-int WGaussianDistribFun::IsDistributionSpecific()
-{
-    return m_pDistrib->IsDistributionSpecific();
+   m_pDistrib->AllocMatrix( probability, matType, numWeightMat);
 }
