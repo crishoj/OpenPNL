@@ -4,19 +4,17 @@ AddNode("continuous^y", "dim1")
 AddNode("continuous^z", "dim1")
 AddArc("x", "y")
 AddArc("y", "z")
-print("create net...")
-Evid("x^dim1^0.5")
-GenerateEvidences(20, 0)
+print("created net...")
+GenerateEvidences(20)
 print("generate evidences...")
 Learn()
 print("learned")
 ClearEvidHistory()
+Evid("x^dim1^0.5")
 MPE("z")
-print("MPE, wait for second evid")
-
-//GaussianMean("z");
-//GaussianCovar("z", TokArr vars);
-
+print("MPE id done")
+GaussianMean("z");
+GaussianCovar("z", "z");
 // run console
 console()
 print("bye")
