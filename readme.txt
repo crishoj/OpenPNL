@@ -60,6 +60,8 @@ To build the library and utilities from Developer Studio 6.0 do the following:
      learn_param            Example of using learn class
      mixture_gaussian_bnet  Example of mixture gaussian bnet creation
      pnl                    C++ version of PNL 
+     testLIMID              Example of using LIMID inference for Influence Diagrams
+     testParPNL             Example of using parallel methods for some algorithms
      test_pnl_c             Tests for C++ version of PGMTk 
      testSL                 Test on structure learning of BNet
      trial                  Example of working with junction tree inference engine
@@ -75,6 +77,10 @@ Notes:
   (b) Debug variants of library, examples and tests have the suffix "d",
       for example: "pnld.dll", "triald.exe".
 
+  (c) Configurations "Win32 Parallel Debug" and "Win32 Parallel Release" build DLL
+      version of the library, that contains parallel classes. MPI or(and) OpenMP
+      versions can be built by using "BUILD_MPI" or(and) "BUILD_OMP" precompiler's 
+      definitions. OpenMP case suppose to use "/Qopenmp" key as a compiler's option.
 
 --------------------------------------------------------
 Building the library, examples and tests for

@@ -4,6 +4,42 @@
   ! Known bugs
 
 -----------------------------------------------------------------
+Build 23                                        18-September-2004
+-----------------------------------------------------------------
++ Add a new inference algorithm for Influence Diagram (LIMID).
+  It's destination is to find the local best strategy for 
+  decisions on limit memory influence diagram.
+
++ Add new documentation about LIMID and SoftMax distribution.
+
++ Add new classes for parallel inferences: Junction Tree,
+  Gibbs Sampling, Pearl and EMLearning algorithm. 
+
++ Add persistence of SoftMax and CondSoftMax distributions.
+
++ Implement EMLearning for BNets with SoftMax nodes (in case 
+  when all nodes are observed).
+
++ Implement Junction Tree inference for BNets with SoftMax nodes
+  in case when all continuous nodes are observed (discrete may
+  be observed or not)
+
++ Implement Junction Tree inference for BNets with SoftMax nodes
+  in case when all descrete nodes are observed (continuous nodes
+  may be obsreved or not)
+
++ Implement EMLearning for BNets with SoftMax nodes (in case 
+  when aome nodes are not observed).
+
+* Improved random values generation in case of multi-threaded
+  mode. It's necessary to use in parallel Gibbs Sampliing.
+
+* Improved performance of Junction Tree inference (for discrete
+  case only).
+
+! Test AComputeLikelihood fail.
+
+-----------------------------------------------------------------
 Build 22                                            25-March-2004
 -----------------------------------------------------------------
 + Compilation under linux by gcc 3.x.x and icc 8.0.061
