@@ -438,7 +438,12 @@ void TestMultivariateWrapperJPD()
 {
     int i;
     vector<CEvidence*> evidences;
-    CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));
+    CBNet *pBNet = NULL;
+    pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML("./TestMultivariate/5Nodes.xml", &evidences));
+    if (!pBNet)
+    {
+	pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML("../tests/TestMultivariate/5Nodes.xml", &evidences));
+    }
 
     CEvidence *empty = CEvidence::Create(pBNet, 0, NULL, valueVector(0));
 
@@ -503,7 +508,13 @@ void TestMultivariateWrapperJPD()
 void TestMultivariateWrapperLearn()
 {
     vector<CEvidence*> evidences;
-    CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));
+    CBNet *pBNet = NULL;
+    
+    pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML("./TestMultivariate/5Nodes.xml", &evidences));
+    if (!pBNet)
+    {
+	pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML("../tests/TestMultivariate/5Nodes.xml", &evidences));
+    }
 
     int nSamples = 20;  
     pEvidencesVector evidBnet(nSamples);
@@ -786,7 +797,13 @@ void TestMultivariateWrapperLearn()
 void TestMultivariateWrapperLearnPartOfObservation()
 {
     vector<CEvidence*> evidences;
-    CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));
+    CBNet *pBNet = NULL;
+    
+    pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML("./TestMultivariate/5Nodes.xml", &evidences));
+    if (!pBNet)
+    {
+	pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML("../tests/TestMultivariate/5Nodes.xml", &evidences));
+    }
 
     int nSamples = 20;  
     pEvidencesVector evidBnet(nSamples);
@@ -1006,7 +1023,13 @@ void TestMultivariateWrapperLearnPartOfObservation()
 void TestMultivariateWrapperMPE()
 {
     vector<CEvidence*> evidences;
-    CBNet *pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(".\\TestMultivariate\\5Nodes.xml", &evidences));
+    CBNet *pBNet = NULL;
+    
+    pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML("./TestMultivariate/5Nodes.xml", &evidences));
+    if (!pBNet)
+    {
+	pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML("../tests/TestMultivariate/5Nodes.xml", &evidences));
+    }
 
     const int nodes1[] = { 0 };
     const int nodes2[] = { 1 };
