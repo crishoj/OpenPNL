@@ -45,15 +45,15 @@ int main(int argc, char* argv[])
     try 
     {
         LimidTopology();
-#if 0
-//        PureLimidModel();
+        PureLimidModel1();
+        PureLimidModel2();
+        PureLimidModel3();
         DelNodes();
         TestPigs();
 	OilTest();
 	testRandom1();
         testRandom2();
 	testRandom3();
-#endif
     }
     catch(pnl::CException e)
     {

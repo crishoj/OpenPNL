@@ -25,7 +25,9 @@ int testDBNLearning();
 int testDBNSaveLoad();
 
 pnl::CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<pnl::CEvidence*>* pEv);
-void PureLimidModel();
+void PureLimidModel1();
+void PureLimidModel2();
+void PureLimidModel3();
 void LimidTopology();
 void DelNodes();
 void OilTest();
