@@ -495,7 +495,7 @@ SOURCE=..\src\pnlDBN.cpp
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\..\bader\Work Materials\PNL\Diagnistics\pnlDiagnostics.cpp"
+SOURCE=..\src\pnlDiagnostics.cpp
 # End Source File
 # Begin Source File
 
@@ -1081,7 +1081,7 @@ SOURCE=..\include\pnlDBN.hpp
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\..\bader\Work Materials\PNL\Diagnistics\pnlDiagnostics.hpp"
+SOURCE=..\include\pnlDiagnostics.hpp
 # End Source File
 # Begin Source File
 
