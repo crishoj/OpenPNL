@@ -30,7 +30,7 @@ namespace pnl
 class PNLHIGH_API ProbabilisticNet: protected ModelEngine
 {
 public:
-    ProbabilisticNet();
+    ProbabilisticNet(const char *netType = "bnet");
     virtual ~ProbabilisticNet();
 
     void SetCallback(NetCallback *pCallback) { m_pCallback = pCallback; }
