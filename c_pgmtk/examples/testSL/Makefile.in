@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(testSL_SOURCES) $(testSL_DBN_SOURCES)
+SOURCES = $(testSEM_SOURCES) $(testSL_SOURCES) $(testSL_DBN_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -37,7 +37,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_triplet = @host@
-bin_PROGRAMS = testSL$(EXEEXT) testSL_DBN$(EXEEXT)
+bin_PROGRAMS = testSL$(EXEEXT) testSL_DBN$(EXEEXT) testSEM$(EXEEXT)
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.incl
 subdir = c_pgmtk/examples/testSL
@@ -48,10 +48,13 @@ CONFIG_CLEAN_FILES =
 am__installdirs = $(DESTDIR)$(bindir)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
+am_testSEM_OBJECTS = testSEM.$(OBJEXT)
+testSEM_OBJECTS = $(am_testSEM_OBJECTS)
+am__DEPENDENCIES_1 = $(PNLBUILDD)/src/libpnl.la \
+	$(top_builddir)/cxcore/cxcore/src/libcxcore.a
+testSEM_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_testSL_OBJECTS = testSL.$(OBJEXT)
 testSL_OBJECTS = $(am_testSL_OBJECTS)
-am__DEPENDENCIES_1 = $(PNLD)/src/libpnl.la \
-	$(top_srcdir)/cxcore/cxcore/src/libcxcore.a
 testSL_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_testSL_DBN_OBJECTS = testSL_DBN.$(OBJEXT)
 testSL_DBN_OBJECTS = $(am_testSL_DBN_OBJECTS)
@@ -67,8 +70,9 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(testSL_SOURCES) $(testSL_DBN_SOURCES)
-DIST_SOURCES = $(testSL_SOURCES) $(testSL_DBN_SOURCES)
+SOURCES = $(testSEM_SOURCES) $(testSL_SOURCES) $(testSL_DBN_SOURCES)
+DIST_SOURCES = $(testSEM_SOURCES) $(testSL_SOURCES) \
+	$(testSL_DBN_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -186,13 +190,16 @@ target_os = @target_os@
 target_vendor = @target_vendor@
 AM_CPPFLAGS = -x c++ $(DEBUG)
 PNLD = $(top_srcdir)/c_pgmtk
-PNL_LIBS = $(PNLD)/src/libpnl.la $(top_srcdir)/cxcore/cxcore/src/libcxcore.a
+PNLBUILDD = $(top_builddir)/c_pgmtk
+PNL_LIBS = $(PNLBUILDD)/src/libpnl.la $(top_builddir)/cxcore/cxcore/src/libcxcore.a
 PNL_INCL = -I$(top_srcdir)/cxcore/cxcore/include -I$(PNLD)/include -I$(PNLD)/src/include/cart -I$(PNLD)/src/include
 INCLUDES = $(PNL_INCL)
 testSL_SOURCES = testSL.cpp
 testSL_LDADD = $(PNL_LIBS)
 testSL_DBN_SOURCES = testSL_DBN.cpp
 testSL_DBN_LDADD = $(PNL_LIBS)
+testSEM_SOURCES = testSEM.cpp
+testSEM_LDADD = $(PNL_LIBS)
 all: all-am
 
 .SUFFIXES:
@@ -254,6 +261,9 @@ clean-binPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
+testSEM$(EXEEXT): $(testSEM_OBJECTS) $(testSEM_DEPENDENCIES) 
+	@rm -f testSEM$(EXEEXT)
+	$(CXXLINK) $(testSEM_LDFLAGS) $(testSEM_OBJECTS) $(testSEM_LDADD) $(LIBS)
 testSL$(EXEEXT): $(testSL_OBJECTS) $(testSL_DEPENDENCIES) 
 	@rm -f testSL$(EXEEXT)
 	$(CXXLINK) $(testSL_LDFLAGS) $(testSL_OBJECTS) $(testSL_LDADD) $(LIBS)

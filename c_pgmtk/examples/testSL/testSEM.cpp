@@ -397,7 +397,7 @@ CBNet* CreateInitSimpleBNet()
     return pBNet;
 }
 
-void main()
+int main()
 {
     int nodes = 11;
 	CBNet* pMix = Create1DMixBNet();
@@ -414,7 +414,7 @@ void main()
 	}*/
 	CBNet* pInit = CreateInitSimpleBNet();
 	CStaticStructLearnSEM* pLearn = CStaticStructLearnSEM::Create(pInit, itStructLearnSEM, 3);
-    pLearn -> SetData(nEv, evidences.begin());
+    pLearn -> SetData(nEv, &evidences.front());
 
     pLearn->Learn();
     CBNet *resBNet;
