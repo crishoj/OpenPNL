@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html><head>
+<title>PNLM Documentation (draft)</title>
+</head><body>
+
+<center><table cellspacing=0 cellpadding=5 width="90%" bgcolor="#6a9bed" nosave >
+<tr nosave>
+<td nosave>
+<center><i><font color="#000000"><font size=+4>
+Intel<sup>&reg;</sup> Probabilistic Network Library For Matlab<sup>&reg;</sup>
+</font></font></i></center>
+</td>
+</tr>
+</table></center>
+
+<h1>What is PNLM</h1>
+
+<p>PNLM means Intel&reg; Open Source Probabilistic Network Library for Matlab.
+</p>
+
+<hr>
+
+<p>
+This manual as well as the software described in it is furnished under license and may only be used or copied in accordance with the terms
+of the license. The information in this manual is furnished for informational use only, is subject to change without notice, and should not be
+construed as a commitment by Intel Corporation. Intel Corporation assumes no responsibility or liability for any errors or inaccuracies that
+may appear in this document or any software that may be provided in association with this document.
+Except as permitted by such license, no part of this document may be reproduced, stored in a retrieval system, or transmitted in any form or
+by any means without the express written consent of Intel Corporation.
+</p>
+<p>
+INFORMATION IN THIS DOCUMENT IS PROVIDED IN CONNECTION WITH INTEL&reg; PRODUCTS. NO LICENSE, EXPRESS OR
+IMPLIED, BY ESTOPPEL OR OTHERWISE, TO ANY INTELLECTUAL PROPERTY RIGHTS IS GRANTED BY THIS
+DOCUMENT. EXCEPT AS PROVIDED IN INTEL'S TERMS AND CONDITIONS OF SALE FOR SUCH PRODUCTS, INTEL
+ASSUMES NO LIABILITY WHATSOEVER, AND INTEL DISCLAIMS ANY EXPRESS OR IMPLIED WARRANTY, RELATING
+TO SALE AND/OR USE OF INTEL PRODUCTS INCLUDING LIABILITY OR WARRANTIES RELATING TO FITNESS FOR A
+PARTICULAR PURPOSE, MERCHANTABILITY, OR INFRINGEMENT OF ANY PATENT, COPYRIGHT OR OTHER
+INTELLECTUAL PROPERTY RIGHT. INTEL PRODUCTS ARE NOT INTENDED FOR USE IN MEDICAL, LIFE SAVING, OR
+LIFE SUSTAINING APPLICATIONS. INTEL MAY MAKE CHANGES TO SPECIFICATIONS AND PRODUCT DESCRIPTIONS AT
+ANY TIME, WITHOUT NOTICE.
+</p>
+<p>
+Designers must not rely on the absence or characteristics of any features or instructions marked "reserved" or "undefined." Intel reserves
+these for future definition and shall have no responsibility whatsoever for conflicts or incompatibilities arising from future changes to them.
+Processors may contain design defects or errors known as errata which may cause the product to deviate from published specifications.
+Current characterized errata are available on request.
+</p>
+<p>
+Celeron, Dialogic, i386, i486, iCOMP, Intel, Intel logo, Intel386, Intel486, Intel740, IntelDX2, IntelDX4, IntelSX2, Intel Inside, Intel
+Inside logo, Intel NetBurst, Intel NetStructure, Intel Xeon, Intel XScale, Itanium, MMX, MMX logo, Pentium, Pentium II Xeon, Pentium
+III Xeon, and VTune are trademarks or registered trademarks of Intel Corporation or its subsidiaries in the United States and other countries.
+* Other names and brands may be claimed as the property of others.
+</p>
+<hr>
+
+<h1>Where to get PNLM</h1>
+
+<p>Go <a href="http://www.sourceforge.net/projects/openpnl">http://www.sourceforge.net/projects/openpnl</a>.
+
+
+<hr>
+
+<hr><h1><a name="ug_Overview">Overview</a></h1>
+
+<p>
+This manual describes Probabilistic Network Library for MATLAB (PNLM), the
+general tool for working with graphical models. The library contains
+high-performance implementation of algorithms for working with Bayesian networks
+and Markov networks, such as belief propagation and Junction tree inference,
+maximum likelihood and expectation maximization. The library is aimed at a wide
+spectrum of graphical models applications including computer vision, pattern
+recognition, data mining, and decision theory. The PNLM core engine will be
+optimized and parallized to give maximum performance on Intel® Architectures.
+</p>
+
+
+<hr><h2><a name="ug_AboutLib">About This Library</a></h2>
+
+<p>
+The library can be roughly divided into three parts:
+graphical models that implement graphical models (Bayesian and Markov networks),
+including dynamic graphical models (Dynamic Bayesian networks). This part
+includes an implementation of the graph structure along with the factors
+(tabular and Gaussian so far) to specify the factorized distribution;
+inference engines that contain Naive inference, Junction tree inference, and
+belief propagation;
+learning engines that implement maximum likelihood, expectation maximization,
+and score-based structure learning.
+</p>
+
+<hr><h2><a name="ug_AboutSoft">About This Software</a></h2>
+
+<p>
+The library is open source and free for use on license terms.
+The library is available for MATLAB&reg; only.
+</p>
+
+<hr><h2><a name="ug_AboutMan">About This Manual</a></h2>
+
+<p>
+The manual consists of two parts: User Guide and Reference Manual. The first
+part contains the overview of the implemented algorithms together with sample
+calls of PNLM functions to solve specific tasks. The second part gives a
+systematic description of the objects and their member functions.
+</p>
+
+
+<hr><h2><a name="ug_NameConv">Naming Conventions</a></h2>
+
+<p>
+The PNLM software uses the following naming conventions for different items:
+All class names start with prefix C, for example, CGraphicalModel .
+All global functions start with prefix pnl, for example, pnlDetermineDistributionType.
+Every new part of a function name starts with an uppercase character, without
+underscore; for example, GetDomainSize.
+</p>
+<hr>
+
+
+
+<h1><a name="#ref">PNLM Contence</a></h1>
+<ul>
+<li><a href="openpnlm_userGuide.htm">Users Guide</a>
+<li><a href="openpnlm_refman.htm">Reference Manual</a>
+<li><a href="openpnl_bibliography.htm">Bibliography</a>
+</ul>
+
+</body></html>

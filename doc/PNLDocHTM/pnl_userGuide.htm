@@ -1,0 +1,1361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html><head>
+<link rel="STYLESHEET" href="openpnlref.css" charset="ISO-8859-1" type="text/css">
+<title>PNL: User Guide</title>
+</head><body>
+
+<center><table cellspacing=0 cellpadding=5 width="90%" bgcolor="#6a9bed" nosave >
+<tr nosave>
+<td nosave>
+<center><i><font color="#000000"><font size=+4>
+PNL: User Guide
+</font></font></i></center>
+</td>
+</tr>
+</table></center>
+
+
+<hr><p>
+<ul>
+<li><a href="#ug_GrM">Graphical Models</a>
+
+<li><a href="#ug_DGrM">Dynamic Graphical Models</a>
+
+<li><a href="#ug_Inf">Inference Algorithms for Bayesian and Markov Networks</a>
+
+<li><a href="#ug_PBInf">Particle-based Inference</a>
+
+<li><a href="#ug_InfDBN">Inference Algorithms for DBNs</a>
+
+<li><a href="#ug_Learning">Learning for Bayesian and Markov Network</a>
+<ul>
+<li> <a href="#decl_Type1">Type 1</a>
+<li> <a href="#decl_Type2">Type 2</a>
+<li> <a href="#decl_Type3">Type 3</a>
+</ul>
+
+<li><a href="#ug_LearningDBN">Learning for DBNs</a>
+<li><a href="#ug_LogSubsystem">Log Subsystem</a>
+</ul></p>
+
+
+<hr><h2><a name="ug_GrM">Graphical Models</a></h2>
+
+<p>
+A <i>Probabilistic graphical model</i> (PGM) is a factorized joint probability
+distribution over a set of random variables which are called <i>model domain</i>. A
+<i>factor</i> is a function defined on a small subset of variables called <i>factor domain</i>.
+From the probabilistic viewpoint the factorized representation encodes
+independence relationships, while from the technical viewpoint it relaxes strict
+memory and computing power requirements for using PGMs, which allows
+exploitation of models with large domains.
+</p>
+<p>
+Probabilistic graphical models have three components:
+<ul>
+  <li>variables (model domain)
+  <li>factorization type (structure)
+  <li>factors proper.
+</ul>
+Variables of the model can be either discrete vectors, which take a finite
+number of values, or continuous vectors.
+</p>
+<p>
+All commonly used factorization types have a corresponding graph representation.
+Nodes of a graph correspond to random variables. In this documentation we will
+further identify the notion of a random variable with the notion of a node in a
+graph. Edges of the graph reflect the factorization of the joint probability
+distribution.
+</p>
+<p>
+PNL implements some important classes of graphical models:
+<ul>
+  <li><i>Markov Random Fields (MRFs)</i>, also called <i>Markov Networks (MNets)</i>, that are
+characterized by undirected graphs. The domain of each factor is a number of
+nodes of the graph, which form a clique.</li>
+<li><i>Bayesian Networks (BNets)</i> are represented by directed acyclic graphs (DAG),
+where each factor is associated with a child node and has the domain consisting
+of all parent nodes and the child node.</li>
+</ul>
+</p>
+<p>
+A factor in a Bayesian Network has the form of <i>conditional probability distribution (CPD)</i>
+for a child node, with its parent nodes provided. In this
+context a directed edge from node A to node B may be interpreted as a causal
+relationship, though the absence of the edge does not mean that nodes are
+statistically independent.
+</p>
+<p>
+The third constituent of a graphical model is a factor. It may have different
+forms and functionality depending on the type of the model. MRF factors are
+arbitrary positive functions called potentials. BNet factors are CPDs - positive
+functions that sum to 1 over the child node regardless of parent node values.
+</p>
+<p>
+A graphical model is created in PNL by the routine shown in Example 2-1. The
+routine applies to Bayesian networks and with some changes - to Markov Networks.
+The model of the example is called "water-sprinkler". The graph structure of the
+model and its parameters (CPDs) are all shown in <a href="#figWaterSprinkler"> Figure 2-1 </a>:
+</p>
+
+<hr><h4><a name="figWaterSprinkler"> Figure 2-1. Water-sprinkler model</a></h4>
+
+<img align=center src="fig/ugfig2.gif">
+
+<p>
+The nodes are numbered as follows:
+<ul>
+  <li>Cloudy (C) = 0;
+  <li>Sprinkler (S) = 1;
+  <li>Rain (R) = 2;
+  <li>Wet Grass (W) = 3
+</ul>
+</p>
+
+<p>
+PNL has special containers for storing scalar and vector data. A <tt>CValue</tt> object
+is created to store inhomogeneous scalar data used as evidence. <tt>pnlVector</tt> is a
+template that stores vector data. For the sake of brevity PNL defines several
+synonyms to specializations of <tt>pnlVector.</tt> For more details see Reference Manual.
+</p>
+
+<hr>
+<h4><a name="exWaterSprinkler">Example 2-1. Creation of water sprinkler Bayesian network</a></h4>
+
+<pre>
+// need to specify the graph structure of the model;
+// there are two way to do it
+CGraph *pGraph;
+if(1)
+{
+    // Graph creation using adjacency matrix
+    int numAdjMatDims = 2;
+    int ranges[] = { numOfNds, numOfNds };
+    intVector matrixData( numOfNds*numOfNds, 0 );
+    CDenseMatrix<int>* adjMat = CDenseMatrix<int>::Create( numAdjMatDims, ranges, &amp;matrixData.front() );
+    int indices[] = { 0, 1 };
+    adjMat-&gt;SetElementByIndexes( 1, indices );
+    indices[1] = 2;
+    adjMat-&gt;SetElementByIndexes( 1, indices );
+    indices[0] = 1;
+    indices[1] = 3;
+    adjMat-&gt;SetElementByIndexes( 1, indices );
+    indices[0] = 2;
+    adjMat-&gt;SetElementByIndexes( 1, indices );
+    // this is a creation of directed graph for the BNet model based on
+    //adjacency matrix
+    pGraph = CGraph::Create(adjMat);
+}
+else
+{
+    // Graph creation using neighbors list
+    int numOfNbrs[numOfNds] = { 2, 2, 2, 2 };
+    int nbrs0[] = { 1, 2 };
+    int nbrs1[] = { 0, 3 };
+    int nbrs2[] = { 0, 3 };
+    int nbrs3[] = { 1, 2 };
+    // number of neighbors for every node
+    int *nbrs[] = { nbrs0, nbrs1, nbrs2, nbrs3 };
+    // neighbors can be of either one of the three following types:
+    // a parent, a child (for directed arcs) or just a neighbor (for
+    //undirected graphs).
+    // Accordingly, the types are ntParent, ntChild or ntNeighbor.
+    ENeighborType nbrsTypes0[] = { ntChild, ntChild };
+    ENeighborType nbrsTypes1[] = { ntParent, ntChild };
+    ENeighborType nbrsTypes2[] = { ntParent, ntChild };
+    ENeighborType nbrsTypes3[] = { ntParent, ntParent };
+    ENeighborType *nbrsTypes[] = { nbrsTypes0, nbrsTypes1, nbrsTypes2, nbrsTypes3 };
+    // this is creation of a directed graph for the BNet model using neighbors list
+    pGraph = CGraph::Create( numOfNds, numOfNbrs, nbrs, nbrsTypes );
+}
+// 2 STEP:
+// Creation NodeType objects and specify node types for all nodes of the model.
+nodeTypeVector nodeTypes;
+// number of node types is 1, because all nodes are of the same type
+// all four are discrete and binary
+CNodeType nt(1,2);
+nodeTypes.push_back(nt);
+intVector nodeAssociation;
+// reflects association between node numbers and node types
+// nodeAssociation[k] is a number of node type object in the
+// node types array for the k-th node
+nodeAssociation.assign(numOfNds, 0);
+// 2 STEP:
+// Creation base for BNet using Graph, types of nodes and nodes association
+CBNet* pBNet = CBNet::Create( numOfNds, nodeTypes, nodeAssociation, pGraph );
+// 3 STEP:
+// Allocation space for all factors of the model
+pBNet-&gt;AllocFactors();
+// 4 STEP:
+// Creation factors and attach their to model
+//create raw data tables for CPDs
+float table0[] = { 0.5f, 0.5f };
+float table1[] = { 0.5f, 0.5f, 0.9f, 0.1f };
+float table2[] = { 0.8f, 0.2f, 0.2f, 0.8f };
+float table3[] = { 1.0f, 0.0f, 0.1f, 0.9f, 0.1f, 0.9f, 0.01f, 0.99f };
+float* table[] = { table0, table1, table2, table3 };
+int i;
+for( i = 0; i &lt; numOfNds; ++i )
+{
+    pBNet-&gt;AllocFactor(i);
+    CFactor* pFactor = pBNet-&gt;GetFactor(i);
+    pFactor-&gt;AllocMatrix( table[i], matTable );
+}
+</pre>
+
+<hr><h3><a name="ug_DGrM">Dynamic Graphical Models</a></h3>
+
+<p>
+<i>Dynamic Bayesian Network (DBN)</i> represents a directed graphical model of
+stochastic processes that generalize <i>Hidden Markov models (HMMs)</i> and
+<i>Kalman Filter models (KFMs)</i> by representing the hidden and the observed state in terms
+of state variables, which can have complex interdependencies. DBN is defined by
+the following characteristics:
+<ul>
+  <li>prior, or initial, network
+  <li>transition network frequently named <i>two-slice temporal Bayesian Network (2TBN)</i>.
+</ul>
+Prior network determines distribution of probabilities for all variables at the
+initial moment of time. 2TBN represents a two-slice Bayesian network whose first
+layer nodes have no parameters associated with them and determine the system at
+the previous moment of time while each second layer node has conditional
+probabilities (<a href="#figDBNr"> Figure 2-2.</a>).
+</p><p>
+Nodes of the second slice can have parents both in that very same layer
+(corresponding to time <i>t</i>), and in the layer that represents the previous moment.
+Note, that the word "dynamic" does not mean that the network changes over time.
+It only means that a dynamic process is modelled.
+</p>
+
+<hr><h4><a name="figDBNr"> Figure 2-2. Dynamic Bayesian Network<a></h4>
+<img align=center src="fig/ugfig3.gif">
+
+<p>
+The semantics of the DBN can be defined by unrolling the 2TBN for T time slices.
+The resulting joint probability distribution is defined by the formula:
+</p>
+<img align=center src="fig/ugfig4.gif">,
+<p>
+where <i>&pi;(x<sub>t</sub><sup>i</sup>)</i>  means parents of <i>i-th</i> node in <i>t-th</i> time-slice, <i>n</i> is the number of nodes.
+</p>
+<p>
+The Dynamic Bayesian network is stored in terms of PNL in a similar way as the
+Bayesian network. Suppose, the prior network consists of <i>n</i> nodes. Then the
+network stored internally to represent the Dynamic Bayesian network will consist
+of <i>2n</i> nodes. First <i>n</i> nodes are joined in one graph to represent the topology of
+the prior network. Nodes with numbers starting with <i>n</i> to <i>2n-1</i> are joined in a
+graph that represents the <i>i-th</i> slice, where <i>i &gt; 0.</i> The joint graph is formed by
+the combination of the two layers (prior and the <i>i-th</i> layers). <a href="#figUnrolledDBNr"> Figure 2-3</a>
+shows a Bayesian network constructed by unrolling in two
+time-slices of a dynamic Bayesian network. Note, that it is always possible to
+restore the prior and the transition networks.
+</p>
+
+<hr><h4><a name="figUnrolledDBNr"> Figure 2-3. Unrolled Bayesian Networks<a></h4>
+
+<img align=center src="fig/ugfig8.gif">
+
+<p>
+A DBN is created in terms of PNL by the following routine:
+</p>
+<hr><h4><a name="exCreationDBN">Example 2-2. Creation of DBN</a></h4>
+<pre>
+Creation of DBN model
+X0 -&gt;X1
+|    |
+v    v
+Y0 -&gt;Y1
+all nodes are discrete and binary
+*/
+//Create static model
+const int nnodes = 4;//Number of nodes
+// 1) First need to specify the graph structure of the model;
+int numOfNeigh[] = {2, 2, 2, 2};
+int neigh0[] = {1, 2};
+int neigh1[] = {0, 3};
+int neigh2[] = {0, 3};
+int neigh3[] = {1, 2};
+ENeighborType orient0[] = { ntChild, ntChild };
+ENeighborType orient1[] = { ntParent, ntChild };
+ENeighborType orient2[] = { ntParent, ntChild };
+ENeighborType orient3[] = { ntParent, ntParent };
+int *neigh[] = { neigh0, neigh1, neigh2, neigh3 };
+ENeighborType *orient[] = { orient0, orient1, orient2, orient3 };
+CGraph* pGraph = CGraph::Create( nnodes, numOfNeigh, neigh, orient);
+// 2) Creation of the Model Domain.
+nodeTypeVector variableTypes;
+const int numNt = 1;//number of Node types (all nodes are discrete)
+variableTypes.resize(numNt);
+variableTypes[0].SetType(1, 2);
+intVector variableAssociation;
+variableAssociation.assign(nnodes, 0);
+CModelDomain *pMD;
+pMD = CModelDomain::Create( variableTypes, variableAssociation );
+// 3) Creation static BNet with random matrices
+CBNet *pBNet = CBNet::CreateWithRandomMatrices( pGraph, pMD );
+// 4) Creation DBN
+CDBN *pDBN = CDBN::Create( pDBN );
+</pre>
+
+<hr><h3><a name="ug_Inf">Inference Algorithms for Bayesian and Markov Networks</a></h3>
+
+<p>
+The inference problem in the context of a graphical model is equivalent to the
+estimation of joint probability distribution, also called marginal distribution
+or simply marginal, of one or several nodes without evidence or with a limited
+number of observed nodes:
+</p>
+
+<i>P ( x<sub>q1</sub> , x<sub>q2</sub> , ... x<sub>qk</sub> | x<sub>e1</sub> , x<sub>e2</sub> ,... x<sub>es</sub> ) = P ( X<sub>q</sub> | X<sub>e</sub> ),</i>
+<p>
+where <i>e</i> denotes the evidences or observed nodes, and <i>q</i> denotes the query nodes
+whose distribution is to be calculated.
+</p>
+<p>
+This problem has several solutions. The most evident of them is the direct
+computation of joint probability distribution for all nodes of the graphical
+model followed by calculation of probability distribution for the query nodes
+using Bayes equation:
+</p>
+
+<img align=center src="fig/ugfig9.gif">
+
+<p>
+This joint probability distribution can be found through multiplication of all
+conditional probability distributions of a Bayesian network or of all joint
+probability distributions at the cliques of the Markov network. Before
+multiplication these conditional and unconditional distributions should be
+adjusted to the values of observed nodes of the network. The final step is to
+sum up the resulting values. This description fully applies to the <tt>CNaiveInfEngine.</tt>
+See Creation of inference engine for water srinkler BNet of call of such
+inference engine for the "water-sprinkler" model (<a href="#exInfWS">Example 2-3</a>).
+</p>
+
+<hr><h4><a name="exInfWS">Example 2-3. Creation of inference engine for water srinkler BNet</a></h4>
+
+<pre>
+//create Water - Sprinkler BNet
+CBNet* pWSBnet =
+pnlExCreateWaterSprinklerBNet();//CreateWaterSprinklerBNet();
+//get content of Graph
+pWSBnet-&gt;GetGraph()-&gt;Dump();
+//create simple evidence for node 0 from BNet
+CEvidence* pEvidForWS;
+//make one node observed
+int nObsNds = 1;
+//the observed node is 0
+int obsNds[] = { 0 };
+//node 0 takes its second value (from two possible values {0, 1})
+valueVector obsVals;
+obsVals.resize(1);
+obsVals[0].SetInt(1);
+pEvidForWS = CEvidence::Create( pWSBnet, nObsNds, obsNds, obsVals );
+//create Naive inference for BNet
+CNaiveInfEngine* pNaiveInf = CNaiveInfEngine::Create( pWSBnet );
+//enter evidence created before
+pNaiveInf-&gt;EnterEvidence( pEvidForWS );
+//get a marginal for query set of nodes
+int numQueryNds = 2;
+int queryNds[] = { 1, 3 };
+pNaiveInf-&gt;MarginalNodes( queryNds, numQueryNds );
+const CPotential* pMarg = pNaiveInf-&gt;GetQueryJPD();
+intVector obsNds;
+pConstValueVector obsVls;
+pEvidForWS-&gt;GetObsNodesWithValues(&amp;obsNds, &amp;obsVls);
+int i;
+for( i = 0; i &lt; obsNds.size(); i++ )
+{
+    std::cout&lt;&lt;" observed value for node "&lt;&lt;obsNds[i];
+    std::cout&lt;&lt;" is "&lt;&lt;obsVls[i]-&gt;GetInt()&lt;&lt;std::endl;
+}
+int nnodes;
+const int* domain;
+pMarg-&gt;GetDomain( &amp;nnodes, &amp;domain );
+std::cout&lt;&lt;" inference results: \n";
+std::cout&lt;&lt;" probability distribution for nodes [ ";
+for( i = 0; i &lt; nnodes; i++ )
+{
+    std::cout &lt;&lt;domain[i] &lt;&lt;" ";
+}
+std::cout&lt;&lt;"]"&lt;&lt;std::endl;
+CMatrix&lt;float&gt;* pMat = pMarg-&gt;GetMatrix(matTable);
+// graphical model hase been created using dense matrix
+// so, the marginal is also dense
+EMatrixClass type = pMat-&gt;GetMatrixClass();
+if( ! ( type == mcDense || type == mcNumericDense || type == mc2DNumericDense ) )
+{
+    assert(0);
+}
+int nEl;
+const float* data;
+static_cast&gt;CNumericDenseMatrix&lt;float&gt;*&gt;(pMat)-&gt;GetRawData(&amp;nEl, &amp;data);
+for( i = 0; i &gt; nEl; i++ )
+{
+    std::cout&lt;&ltl;" "&lt;&lt;data[i];
+}
+std::cout&lt;&lt;std::endl;
+delete pEvidForWS;
+delete pNaiveInf;
+delete pWSBnet;
+</pre>
+<p>
+However, the direct computation is too laborious, as the complexity of
+computations grows exponentially with the number of nodes in a network. This
+type of computation appears to be ineffective even for small models and is
+seldom used in practice.
+</p><p>
+To reduce the complexity of computations, you may use the distribution law.
+Since in certain areas of the network local distributions are independent of
+variables,you can apply the distribution law to calculate distributions for
+query nodes. So, for example, the probability distribution for the
+"water-sprinkler" problem at node 3, which has no observed variables, is
+expanded as follows:
+</p>
+
+<img align=center src="fig/ugfig10.gif"><br>
+<img align=center src="fig/ugfig11.gif">
+
+<p>
+A number of exact and approximate inference engines are based on the use of the
+distribution law.
+</p>
+<p>
+Initially each component of the network, be it a single node or a group of
+nodes, is assigned a certain distribution function, which represents assumed
+node values of the network. In the course of iterative message passing between
+neighboring components of the network the distribution function is modified. So,
+two components can be neighbors in terms of one inference engine and
+non-neighbors in terms of another. The sequence of message passing, often called
+a protocol, can also be different: from one component to all the others and back
+(tree protocol, or serial protocol) or all-to-all simultaneous message passing
+(parallel protocol).
+</p><p>
+If a graph of a Bayesian or a Markov network is a tree, most obvious network
+components are nodes. Neighboring nodes in the graph are also neighbors in the
+network. In this case you use the exact <i>Pearl Inference</i> or <i>Belief Propagation.</i>
+If the graph contains undirected cycles, you can assume nodes as network
+components and get an approximate result. To get a more accurate result, you
+should increase the number of iterations and use, for example, the algorithm of
+Loopy Belief Propagation. In certain cases it does not converges or converges to
+a local minimum <a href="openpnl_bibliography.htm#ref_MWJ">[ MWJ ]</a>, <a href="openpnl_bibliography.htm#ref_H">[ H ]</a>, yet it has proven to be exact on acyclic
+networks <a href="openpnl_bibliography.htm#ref_P1">[ P1 ]</a>. A lot of research is being carried out at present on the
+adaptability of Belief Propagation to networks of various types (<a href="openpnl_bibliography.htm#ref_WF2000">[ WF2000 ]</a>,<a href="openpnl_bibliography.htm#ref_WF2001">[ WF2001 ]</a>).
+</p><p>
+Inference engines of different types are created in the same manner:<br>
+<blockquote>
+  <tt>InfEngine = CPearlInfEngineCreate( grm );</tt>
+</blockquote>
+</p>
+<p>
+As the sample model contains an undirected cycle (through nodes 0, 1, 2, and 3)
+any inferred result is approximate.
+</p>
+<p>
+To infer the exact result on an arbitrary network, nodes of the network are
+grouped into subsets, or clusters, which are set in accordance with the nodes of
+an auxiliary junction tree structure. Message passing in this case takes place
+between the nodes of this junction tree. This procedure is called
+<i>Junction Tree Inference</i>, which is exact <a href="openpnl_bibliography.htm#ref_LS">[ LS ]</a>, <a href="openpnl_bibliography.htm#ref_CDLS">[ CDLS ]</a>.
+</p>
+
+<hr><h3><a name="ug_PBInf">Particle-based Inference</a></h3>
+
+<p>
+Besides exact inference engines, for example, the Junction Tree Inference, there
+is an important class of <i>particle-based inference</i> methods. To approximate the
+joint distribution either of all or of a number of the network variables, the
+method generates a set of approximations, called <i>particles</i>, that represent a
+part of the probability mass. Particle-based approximate inference engine can
+calculate query potentials and estimate real states of query nodes. Commonly
+used particle-based method is <i>GibbsSampling.</i>
+</p>
+
+<hr><h3><a name="ug_InfDBN">Inference Algorithms for DBNs</a></h3>
+
+<p>
+The inference problem in the context of a dynamic graphical model is equivalent
+to the marginal estimation of one or several nodes from a number of slices
+irrespective of whether the nodes are observed or hidden. It is implemented
+through the following computation <nobr><i>P(x(i, t)|y(:, t<sub>1</sub>:t<sub>2</sub>))</i>,</nobr>
+where <i>x(i, t)</i>  represents the <i>i-th</i> hidden variable
+at time moment <i>t</i>, and <i>t</i> and <nobr><i>y(:, t<sub>1</sub>:t<sub>2</sub>)</i></nobr>
+represent all the evidence between times <nobr><i>t<sub>1</sub></i> and <i>t<sub>2</sub>.</i></nobr>
+The algorithm often performs computation of joint probability distributions
+of variables over one or more time slices.
+</p>
+
+<TABLE BORDER>
+<CAPTION><b>Types of Inference Problems for DBNs</b></CAPTION>
+<TR>
+<TH>Procedure</TH>
+<TH>Goal</TH>
+</TR><TR>
+<TD>Filtering</TD>
+<TD><i>P(x(t)|y(1:t))</i><br>
+On-line procedure to estimate current model state.</TD>
+</TR><TR>
+<TD>Smoothing</TD>
+<TD><i>P(x(1:t)|y(1:t))</i><br>
+Off-line procedure to estimate the states of the past, given all evidence up to the current time t.</TD>
+</TR><TR>
+<TD> Fixed-Lag Smoothing</TD>
+<TD><i>P(x(t-dt)|y(1:t))</i><br>
+On-line procedure to estimate the state of some past moment (t-dt), given
+all evidence up to the current time t.</TD>
+</TR><TR>
+<TD>Viterbi</TD>
+<TD><i>max<sub>x(1:t)</sub>P(x(t)|y(1:t))</i><br>
+Off-line procedure to compute the most likely sequence of hidden states,
+given the data.</TD>
+</TR><TR>
+<TD>Prediction</TD>
+<TD><i>P(x(t+dt)|y(1:t))</i><br>
+On-line procedure that extrapolates probability distribution for future
+time slices.</TD>
+</TR>
+</TABLE>
+<p>
+Note that filtering is equivalent to fixed-lag smoothing with zero lag.
+</p><p>
+Inference procedure can be implemented through various approaches, some of which
+are naïve as those that follow:
+<ul>
+  <li>combine all the latent nodes from a single layer into a single meganode and
+  apply the forward-backward algorithm for HMM, if the nodes are discrete.</li>
+  <li>unroll DBN and do inference, for example Junction Tree or Pearl Inference, for
+  the BNet obtained as a result of unroll operation.</li>
+</ul>
+To compute statistics which are used to learn parameter values, you call
+inference (smoothing) for a BNet which is as long as the sequence of evidence.
+If sequences of evidences are of variable lengths, junction trees (for the
+Junction Tree Inference) should be constructed many times, which considearbly
+slows down the process, or precomputed and stored for all possible unrolled DBN,
+which requires a lot of memory. Hence, it is necessary to use a DBN with
+repeating structure. One of the algorithms that uses repeating structures of
+DBNs is Zweig's inference algorithm. The algorithm unrolls a DBN once to some
+<i>T<sub>max</sub></i> slices, creates a junction tree and splices out extra cliques from it, when
+<i>t &lt; T<sub>max</sub></i> . But <i>T<sub>max</sub></i> should be preliminarily specified for the inference, and
+online inference can be performed for this maximum number of slices. PNL
+implements 1.5-slice Junction tree inference algorithm <a href="openpnl_bibliography.htm#ref_Murphy02">[ Murphy02 ]</a>. This
+approach involves the following steps:
+<ol>
+  <li> Create a 1.5-slice DBN - one time slice of DBN plus interface nodes from the
+  previous slice. Interface nodes are the nodes connected with the nodes from the
+  next slice and they are always the same for all time slices.</li>
+  <li> Create a junction tree for the obtained network.</li>
+  <li> Link up all the junction trees via interfaces.</li>
+</ol>
+</p><p>
+This algorithm can perform on-line inference with no preliminarily specified T
+max. Inference procedure consists of two steps, which are the forward and the
+backward operation. They are the same as the steps in the classical inference
+algorithm for HMM. See <a href="#exInfDNM">Example 2-4.</a>
+</p></p>
+Besides exact inferences described above there are different variants of
+approximate inferences. One of them is the Boyen-Koller inference (BK). BK
+inference is the approximate inference in which the belief state of the
+interface clique (clique consists of interface nodes and is used for message
+passing between slices in 1.5 Slice Junction tree inference) is represented as a
+product of marginals, even though the factors may be dependent. For details, see
+[BKUAI98] and [BKNIPS98] , which discuss filtering and smoothing respectively.
+Note that the exact 1.5 Slice Junction tree inference is the special case of BK
+inference.
+</p>
+
+<hr><h4><a name="exInfDNM">Example 2-4. Creation of inference engine for DBNt</a></h4>
+
+<pre>
+CBNet *pBNetForArHMM = pnlExCreateRndArHMM();
+CDBN *pArHMM = CDBN::Create( pBNetForArHMM );
+//Create an inference engine
+C1_5SliceJtreeInfEngine* pInfEng;
+pInfEng = C1_5SliceJtreeInfEngine::Create(pArHMM);
+//Number of time slices for unrolling
+int nTimeSlices = 5;
+const CPotential* pQueryJPD;
+//Crate evidence for every slice
+CEvidence** pEvidences;
+pEvidences = new CEvidence*[nTimeSlices];
+//Let node 1 is always observed
+const int obsNodesNums[] = { 1 };
+valueVector obsNodesVals(1);
+int i;
+for( i = 0; i &lt; nTimeSlices; i++ )
+{
+    // Generate random value
+    // all nodes in the model are discrete
+    obsNodesVals[0].SetInt(rand()%2);
+    pEvidences[i] = CEvidence::Create( pArHMM, 1, obsNodesNums,
+    obsNodesVals );
+}
+// Create smoothing procedure
+pInfEng-&gt;DefineProcedure(ptSmoothing, nTimeSlices);
+// Enter created evidences
+pInfEng-&gt;EnterEvidence(pEvidences, nTimeSlices);
+// Start smoothing process
+pInfEng-&gt;Smoothing();
+// Choose query set of nodes for every slice
+int queryPrior[] = { 0 };
+int queryPriorSize = 1;
+int query[] = { 0, 2 };
+int querySize = 2;
+// inference results gaining and representation
+std::cout &lt;&lt; " Results of smoothing " &lt;&lt; std::endl;
+int slice = 0;
+pInfEng-&gt;MarginalNodes( queryPrior, queryPriorSize, slice );
+pQueryJPD = pInfEng-&gt;GetQueryJPD();
+std::cout&lt;&lt;"Query slice"&lt;&lt;slice&lt;&lt;std::endl;
+int nnodes;
+const int* domain;
+pQueryJPD-&gt;GetDomain( &amp;nnodes, &amp;domain );
+std::cout&lt;&lt;" domain :";
+for( i = 0; i &lt; nnodes; i++ )
+{
+    std::cout&lt;&lt;domain[i]&lt;&lt;" ";
+}
+std::cout&lt;&lt;std::endl;
+CMatrix&lt;float&gt;* pMat = pQueryJPD-&gt;GetMatrix(matTable);
+// graphical model hase been created using dense matrix
+std::cout&lt;&lt;" probability distribution \n";
+int nEl;
+const float* data;
+static_cast&lt;CNumericDenseMatrix&lt;float&gt;*&gt;(pMat)-&gt;GetRawData(&amp;nEl,&amp;data);
+for( i = 0; i &lt; nEl; i++ )
+{
+    std::cout&lt;&lt;" "&lt;&lt;data[i];
+}
+std::cout &lt;&lt; std::endl;
+for( slice = 1; slice &lt; nTimeSlices; slice++ )
+{
+    pInfEng-&gt;MarginalNodes( query, querySize, slice );
+    pQueryJPD = pInfEng-&gt;GetQueryJPD();
+    std::cout&lt;&lt;"Query slice"&lt;&lt;slice&lt;&lt;std::endl;
+    // Representation information using Dump()
+    pQueryJPD-&gt;Dump();
+}
+slice = 0;
+//Create filtering procedure
+pInfEng-&gt;DefineProcedure( ptFiltering );
+pInfEng-&gt;EnterEvidence( &amp;(pEvidences[slice]), 1 );
+pInfEng-&gt;Filtering( slice );
+pInfEng-&gt;MarginalNodes( queryPrior, queryPriorSize );
+pQueryJPD = pInfEng-&gt;GetQueryJPD();
+std::cout&lt;&lt;" Results of filtering " &lt;&lt; std::endl;
+std::cout&lt;&lt;" Query slice "&lt;&lt;slice&lt;&lt;std::endl;
+pQueryJPD-&gt;Dump();
+for( slice = 1; slice &lt; nTimeSlices; slice++ )
+{
+    pInfEng-&gt;EnterEvidence( &amp;(pEvidences[slice]), 1 );
+    pInfEng-&gt;Filtering( slice );
+    pInfEng-&gt;MarginalNodes( query, querySize );
+    pQueryJPD = pInfEng-&gt;GetQueryJPD();
+    std::cout&lt;&lt;" Query slice "&lt;&lt;slice&lt;&lt;std::endl;
+    pQueryJPD-&gt;Dump();
+}
+//Create fixed-lag smoothing (online)
+int lag = 2;
+pInfEng-&gt;DefineProcedure( ptFixLagSmoothing, lag );
+for (slice = 0; slice &lt; lag + 1; slice++)
+{
+    pInfEng-&gt;EnterEvidence( &amp;(pEvidences[slice]), 1 );
+}
+pInfEng-&gt;FixLagSmoothing( slice );
+pInfEng-&gt;MarginalNodes( queryPrior, queryPriorSize );
+pQueryJPD = pInfEng-&gt;GetQueryJPD();
+std::cout&lt;&lt;" Results of fixed-lag smoothing " &lt;&lt; std::endl;
+std::cout&lt;&lt;" Query slice "&lt;&lt;slice&lt;&lt;std::endl;
+pQueryJPD-&gt;Dump();
+std::cout &lt;&lt; std::endl;
+for( ; slice &lt; nTimeSlices; slice++ )
+{
+    pInfEng-&gt;EnterEvidence( &amp;(pEvidences[slice]), 1 );
+    pInfEng-&gt;FixLagSmoothing( slice );
+    pInfEng-&gt;MarginalNodes( query, querySize );
+    pQueryJPD = pInfEng-&gt;GetQueryJPD();
+    std::cout&lt;&lt;" Query slice "&lt;&lt;slice&lt;&lt;std::endl;
+    pQueryJPD-&gt;Dump();
+}
+delete pInfEng;
+for( slice = 0; slice &lt; nTimeSlices; slice++)
+{
+    delete pEvidences[slice];
+}
+delete pArHMM;
+
+</pre>
+<p>
+The dynamic bayesian network is created by a BNet with <i>2n</i> nodes, that is a DBN,
+unrolled in two slices. Nodes with numbers from <i>0</i> to <i>n-1</i> form a connected graph
+corresponding to the prior slice. The topology of the prior slice may differ
+from the topology of other slices with node numbers from <i>n</i> to <i>2n-1.</i>
+Evidence of every slice with n nodes is formed from nodes with numbers from <i>0</i> to
+<i>n-1.</i>
+</p><p>
+To get inference results, the query for the prior slice (slice = 0) should
+contain nodes with numbers from <i>0</i> to <i>n-1.</i> Probability distribution for other
+slices is acquired from the current <i>i-th</i> slice and the preceding slice <i>i-1.</i> In
+this query node numbers <i>n...2n-1</i> correspond to the nodes of the current slice,
+while node numbers <i>0...n-1</i> correspond to the nodes of the preceding slice.
+</p>
+
+<hr><h3><a name="ug_Learning">Learning for Bayesian and Markov Network</a></h3>
+
+<p>
+A graphical model can be defined by its structure and its set of parameters,
+which are <i>conditional probability distributions</i> for dynamic and static Bayesian
+networks and potentials for Markov network. Learning of a graphical model
+consists in the estimation of model factors so as to ensure the best explanation
+of information for the model.
+</p><p>
+Usually input data for learning is presented in a table, where columns
+correspond to variables of the model and each row represents a learning sample
+or observation. So, for example, See <a href="#table2_2">Table 2-2</a> for Sprinkler Model presents
+the input data for the sprinkler model (<a href="#figWaterSprinkler"> Figure 2-1 </a>).
+</p>
+
+<CENTER>
+<TABLE BORDER>
+<CAPTION> <b><a name="table2_2">Table 2-2.</a> Learning Data for Sprinkler Model</b></CAPTION>
+  <TR>
+  <TH>Node 1</TH> <TH>Node 2</TH> <TH>Node 3</TH> <TH>Node 4</TH>
+  </TR><TR>
+  <TD>0</TD><TD>1</TD><TD>0</TD><TD>1</TD>
+  </TR><TR>
+  <TD>1</TD><TD>0</TD><TD>1</TD><TD>1</TD>
+  </TR><TR>
+  <TD>0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
+  </TR><TR>
+  <TD>0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
+  </TR><TR>
+  <TD>1</TD><TD>0</TD><TD>1</TD><TD>1</TD>
+  </TR><TR>
+  <TD>0</TD><TD>1</TD><TD>0</TD><TD>1</TD>
+  </TR>
+  </TABLE>
+  </CENTER>
+
+ <p>
+If a variable is hidden, its value will be missing from the data for learning.
+Samples in the table are assumed to be independent. The following four types of
+learning tasks are distinguished to correspond to different a priori information <a href="openpnl_bibliography.htm#ref_Introd">[ Introd ]</a>:
+</p>
+
+<CENTER>
+<TABLE BORDER>
+<CAPTION><b>Types of Learning Tasks</b></CAPTION>
+<TR>
+<TH>Type of Task</TH> <TH>Graphical Model Structure</TH> <TH>Observability of Variables</TH>
+</TR><TR>
+<TD><a href = "#decl_Type1">Type1 </a></TD> <TD>known</TD> <TD>All variables are observed</TD>
+</TR><TR>
+<TD><a href = "#decl_Type2">Type2 </a></TD> <TD>known</TD> <TD>Some variables are not observed</TD>
+</TR><TR>
+<TD><a href = "#decl_Type3">Type3 </a></TD> <TD>unknown</TD> <TD>All variables are observed</TD>
+</TR><TR>
+<TD>Type 4</TD> <TD>unknown</TD> <TD>Some variables are not observed</TD>
+</TR>
+</TABLE>
+</CENTER>
+
+<blockquote>
+<hr>
+<b> NOTE. </b> <i>Only the first three types of learning tasks are considered below. Type
+  four is not supported by the current version of PNL.</i>
+<hr>
+</blockquote>
+
+<h4><a name="decl_Type1">Type 1 </a></h4>
+
+<p>
+This type of learning uses the ML algorithm which is based on <i>Maximum Likelihood Estimation </i>
+<a href="openpnl_bibliography.htm#ref_JorBish">[ JorBish ]</a>. The algorithm estimates parameters of the graphical
+model maximizing the value of the likelihood function <i>p(D|&theta;),</i> that is, the
+probability of observability of learning data <i>D</i> for given parameters <i>&theta;.</i>
+</p>
+
+<h5><a name="decl_MLBayesian">Maximum Likelihood Estimation for Bayesian Network </a></h5>
+
+<p>
+
+<b>Discrete Case.</b> Consider the case when all variables of the network are discrete
+<a href="openpnl_bibliography.htm#ref_JorBish">[ JorBish ]</a>. For a given Bayesian network denote the total number of its nodes
+by <i>U.</i> For a certain node  the set of all its parents may be denoted by <i>&pi;<sub>&nu;</sub></i>
+and  <i>&phi;<sub>&nu;</sub> = {&nu;}&cup; &pi;<sub>&nu;</sub></i>.
+Let <i>A</i> be an arbitrary subset of nodes. Then <i>x<sub>A</sub></i> stands for a tuple of values for
+the nodes from <i>A.</i> The count of observations, in which the nodes from the set <i>A</i>
+assume values specified by <i>x<sub>A</sub></i> tuple, may be denoted by <i>m(x<sub>A</sub>)</i>. The logarithm of the
+previously described likelihood function is more convenient than the function
+itself. The logarithm may be found according to the formula:
+</p>
+<i>
+l(&theta;, D)= log p(D|&theta;) = log( &prod;<sub>n</sub>p(x<sub>U, n</sub>|&theta;))
+=&Sigma;<sub>x<sub>U</sub></sub>m(x<sub>U</sub>log p(x<sub>U</sub>)&theta;)=
+&Sigma;<sub>&nu;</sub>&Sigma;<sub>x<sub>&phi;<sub>&nu;</sub></sub></sub> m(x<sub>&phi;<sub>&nu;</sub></sub> )
+log &theta;<sub>&nu;</sub>(x<sub>&phi;<sub>&nu;</sub></sub>)
+</i>
+
+<p>
+The values maximizing this function are:
+</p>
+<i>
+p(x<sub>&nu;</sub>|x<sub>&phi;<sub>&nu;</sub></sub>) =
+&theta;<sub>&nu;</sub>(x<sub>&phi;<sub>&nu;</sub></sub>) =
+m(x<sub>&phi;<sub>&nu;</sub></sub>) / m(x<sub>&pi;<sub>&nu;</sub></sub>)
+</i>
+<p>
+These estimates are formed independently for each node in the graph.
+</p>
+<p>
+<b>Multivariate Gaussian Case.</b> In PNL the Multivariate Gaussian case is
+implemented only for Bayesian networks.
+The vector <i>x<sup>k</sup></i>  may be formed as follows:
+<i>x<sup>k</sup></i>=(<i>y<sup>k</sup><sub>0</sub>,y<sup>k</sup><sub>1</sub>, ...,  </i>), where  and  are the vectors of values of
+the <i>i-th</i> parent and its child in the <i>k-th</i> example of the table.
+The current approach models the joint distribution over a node and its parents
+as the multivariate Gaussian distribution and finds its Ml estimation. The
+sufficient statistics after <i>N</i> examples are <a href="openpnl_bibliography.htm#ref_Murphy98">[ Murphy98 ]</a>, <a href="openpnl_bibliography.htm#ref_Jordan">[ Jordan ]</a>:
+</p>
+<i>
+  &mu;=1/N &Sigma;x<sub>i</sub>, &Sigma; = 1/N &Sigma;<sub>i</sub>x<sub>i</sub>x<sub>i</sub><sup>T</sup>-&mu;&mu;<sup>T</sup>
+</i>
+<p>
+<i>&Sigma;</i> and <i>&mu;</i> can be broken up into blocks corresponding to parent nodes and the child:
+</p>
+<img align=center src="fig/ugfig43.gif">, <i>&mu; = (&mu;<sub>y</sub>, &mu;<sub>x</sub>)<sup>T</sup></i>
+<p>
+The result is the Gaussian distribution at the child node in a moment notation:
+</p>
+<i>B</i>=&Sigma;<sub>xy</sub>&Sigma;<sub>yy</sub><sup>-1</sup>,
+&mu;=&mu;<sub>x</sub>-<i>B</i>&mu;,
+&Sigma;=&Sigma;<sub>xx</sub>-B&Sigma;<sub>yx</sub>,
+<p>
+where matrix <i>B</i>  is broken into individual blocks, one for each parent.
+</p>
+<hr><h5><a name="ug_LearningML">Maximum Likelihood Estimation for Markov Networ</a></h5>
+<p>
+Undirected models are more flexible than their directed counterparts. Assume
+that all network variables are discrete. In this case, the log likelihood is
+found as follows:
+</p>
+l(&theta; D)= log<i>p</i>(D|&theta;)=&Sigma;m(x<sub>C</sub>)log&psi;<sub>C</sub>(x<sub>C</sub>)-<i>N</i>log<i>Z</i>
+<p>
+where &psi;<sub>C</sub>(x<sub>C</sub>) is the clique potential, <i>N</i> is the number of evidences, and Z is the
+normalization factor <a href="openpnl_bibliography.htm#ref_JorBish">[ JorBish ]</a>, <a href="openpnl_bibliography.htm#ref_Jirousek">[ Jirousek ]</a>.
+</p>
+<i>Z</i>=&Sigma;<sub>x<sub>&nu;</sub></sub>&Pi;<sub>C</sub>&psi;<sub>C</sub>(x<sub>C</sub>)
+<p>
+If potentials are defined on maximal cliques of the graph, the maximum
+likelihood estimates for decomposable graphs can be found through inspection:
+<LI>for every clique set the clique potential to the empirical marginal for
+that clique;
+<LI>for every non-empty intersection between cliquesassociate an empirical
+marginal with the intersection, and divide that empirical marginal by the
+potential of one of the two cliques that form the intersection.
+</p>
+<p>
+If the graph is arbitrary, the <i>Iterative Proportional Fitting (IPF)</i> can be used
+<a href="openpnl_bibliography.htm#ref_JorBish">[ JorBish ]</a>, <a href="openpnl_bibliography.htm#ref_Jirousek">[ Jirousek ]</a>. If the graph is decomposable, this algorithm
+converges in a finite number of iterations, updating each potential once.
+</p>
+<p>
+The IPF process runs as follows. Denote the potential of a clique <i>C</i> at <i>i-th</i>
+iteration by &psi;<sub>C</sub><sup>i</sup>(x<sub>C</sub>)  and the joint probability distribution based on these parameter
+estimates by <i>p</i><sup>i</sup>(<i>x</i>). In this notation the IPF can be written as follows:
+</p>
+<img align=center src="fig/ugfig54.gif">, where <img align=center src="fig/ugfig55.gif"> .
+<p>
+The normalization factor <i>Z</i> remains constant through all iteration process, so
+IPF may be presented in terms of joint probabilities:
+</p>
+<img align=center src="fig/ugfig56.gif">
+<p>
+In PNL the estimation of Markov network parameters is based on IPF.
+
+<hr><h4><a name="ug_BayesLerning">Bayesian Update</a></h4>
+
+<p>
+Besides factor parameters with exact values (such as, mean and variance in
+Gaussian distribution), there are parameters in the form of unknown variables
+which have their own probability distributions with other parameters, termed
+<i>superparameters.</i> Superparameters are variables too, thus finally there appears
+to be an infinite hierarchy of parameters. The current version of PNL supports
+only a two-level hierarchy in discrete tabular distributions.
+</p>
+<p>
+Let &theta; be a parameter of a probability distribution corresponding to some
+variable.
+<i>P</i>&theta; is a prior distribution of the parameter &theta;. The task of Bayesian parameter
+learning is to update the given data <i>D</i>, that is to find the conditional
+distribution <i>P</i>(&theta;|<i>D</i>).
+According to the Bayes formula
+</p>
+<i>P(&theta;|i)=P(D|&theta;)P(D,&theta;)/P(D)</i>
+where  <i>P(D)=&int;P(&theta;)P(D|&theta;).</i>
+<p>
+Based on the given parameter distribution function, the distribution function
+for the unknown variable <i>x</i> is <i>P(x)=&int;P(&theta;)P(x|D)</i>
+<p>
+The Dirichlet distribution with parameters <i> a<sub>1</sub>,...,a<sub>n</sub> </i>
+is a suitable prior distribution for
+a discrete multinomial distribution (where a variable can give <i>n</i> outcomes) with
+parameters &theta;<sub>1</sub>,..., &theta;<sub>n</sub>. Dirichlet parameters are interpreted in terms of pseudo counts,
+where <i>a<sub>i</sub></i> stands for an imaginary observed number of cases when the discrete
+variable has taken the <i>i-th</i> value. When training data contains a small number of
+cases, positive pseudo counts allow to assign to its unobserved values a
+non-zero probability.
+</p>
+<p>
+Let training data contain <i>N<sub>1</sub>,...,N<sub>n</sub></i> cases, and <i>N<sub>i</sub></i> be a number of
+cases when the <i>i-th</i> value is observed.
+On learning these cases, a posterior distribution of &theta;  becomes a Dirichlet
+distribution with parameters <i>a<sub>1</sub>+N<sub>1</sub>,...,a<sub>n</sub>+N<sub>n</sub></i>. The target
+distribution of <i>x</i> after integration through parameters is<br>
+<i>
+  P(x=i)=(a<sub>i</sub>+N<sub>i</sub>)/&Sigma;(a<sub>k</sub>+N<sub>k</sub>)
+</i>
+</p>
+<p>
+This discussion applies to the case of an unconditional distribution where the
+considered node of the BNet does not have parents. However, you may easily
+extend it to cases when the node has parents. As there are counts <i>N<sub>ij</sub></i>  and pseudo
+counts  <i>a<sub>ij</sub></i>, that correspond to the case when <i>x = j</i>, and parents of<i> x</i> are in
+configuration <i>i</i>, the target distribution of <i>x</i> becomes
+</p>
+<i>
+  P(x=i|parents &#60; x &#62; =i)=(a<sub>ij</sub>+N<sub>ij</sub>)/&Sigma;(a<sub>ik</sub>+N<sub>ik</sub>).
+</i>
+
+<h4><a name="decl_Type2">Type 2 </a></h4>
+
+<p>
+This type of inference uses the <i>Expectation Maximization (EM)</i> algorithm [Dempster ], <a href="openpnl_bibliography.htm#ref_Jordan">[ Jordan ]</a>.
+The algorithm first assumes the initial state of parameters &theta;<sup>0</sup> and then starts the iterative
+process alternately repeating two steps: E-step and M-step.
+</p>
+<p>
+Consider the process at the <i>i-th</i> iteration:
+</p>
+<table border>
+
+  <tr>
+    <td>E-step</td> <td>For each example of the table the probability distribution of the
+      unobserved variable is found from the values of observed variables and the
+      current values of model parameters  <i>&theta;<sup>i-1</sup>.</i>
+      The expectations of unobserved variables are calculated for each example in the table.</td>
+  </tr>
+
+  <tr>
+    <td>M-step</td> <td>To maximize the value of the likelihood function, a new value of <i>&theta;<sup>i</sup></i> is found.</td>
+  </tr>
+</table>
+<p>
+E-step is repeated with the new parameter values.
+This process converges to a local maximum.
+In PNL the EM learning engine is implemented for:
+<ul>
+  <li>Bayesian networks with discrete or multivariate Gaussian distribution.
+  <li>Markov networks with discrete distribution.
+</ul>
+The following example considers learning of parameters for the water-sprinkler
+Bayesian network (see <a href="#figWaterSprinkler">Figure 2-1</a>). If all the nodes are observed,
+learning <a href="#decl_Type1">Type 1</a> is used. In this case the E-step, which creates an inference
+engine and performs the inference procedure, does not take place. If some nodes
+are hidden, learning <a href="#decl_Type2">Type 2</a> is used. In this case the E-step takes place,
+creating an instance of inference engine, which is a junction tree engine by
+default.
+</p>
+
+<hr><h4><a name="exLearnWS">Example 2-5. Creation of learning engine for water-sprinkler BNet</a></h4>
+
+<pre>
+CBNet* pWSBnet = pnlExCreateWaterSprinklerBNet();
+//create WS BNet with different matrices
+std::cout&lt;&lt;"Learning procedure \n ";
+CGraph *pGraph = CGraph::Copy( pWSBnet-&gt;GetGraph() );
+CModelDomain *pMD = pWSBnet-&gt;GetModelDomain();
+CBNet* pWSLearnBNet = CBNet::CreateWithRandomMatrices( pGraph, pMD );
+//loading data from file
+const char * fname = "..\\c_pgmtk\\examples\\Data\\casesForWS";
+pEvidencesVector evVec;
+if( ! pnlLoadEvidences(fname, &amp;evVec, pMD) )
+{
+    printf("can't open file with cases");
+    exit(1);
+}
+int numOfSamples = evVec.size();
+std::cout&lt;&lt;"Number of cases for learning = "&lt;&lt;numOfSamples&lt;&lt;std::endl;
+//create learning engine
+CEMLearningEngine *pLearn = CEMLearningEngine::Create( pWSLearnBNet );
+//set data for learning
+pLearn-&gt;SetData( numOfSamples, &amp;evVec.front() );
+pLearn-&gt;Learn();
+//get information from learned model
+int nFactors = pWSLearnBNet-&gt;GetNumberOfFactors();
+const CFactor *pCPD;
+const CNumericDenseMatrix&lt;float&gt; *pMatForCPD;
+int numOfEl;
+const float *dataCPD;
+int f;
+for( f = 0; f &lt; nFactors; f++ )
+{
+    std::cout&lt;&lt;std::endl&lt;&lt;" probability distribution for node"&lt;&lt;f&lt;&lt;std::endl;
+    pCPD = pWSLearnBNet-&gt;GetFactor(f);
+    //all matrices are dense
+    pMatForCPD = static_cast&lt;CNumericDenseMatrix&lt;float&gt; *&gt;(pCPD-&gt;GetMatrix(matTable));
+    pMatForCPD-&gt;GetRawData( &amp;numOfEl, &amp;dataCPD );
+    int j;
+    for( j = 0; j &lt; numOfEl; j++ )
+    {
+    std::cout&lt;&lt;" "&lt;&lt;dataCPD[j];
+    }
+}
+std::cout&lt;&lt;std::endl;
+int ev;
+for( ev = 0; ev &lt; evVec.size(); ev++ )
+{
+    delete evVec[ev];
+}
+delete pLearn;
+delete pWSBnet;
+delete pWSLearnBNet;
+</pre>
+  <p>
+After learning parameters of the Bayesian network assume new values which
+maximize the likelihood function. The new values correspond to the array of
+learning data. The table with updated data may be used in further training in
+the following two ways:
+</p>
+<p>
+<b>Option 1.</b> Ignore the data of the previous learning. Use the <tt>SetData</tt> function to
+implement the variant.
+</p>
+
+<hr><h4><a name="exLearnWSOption1">Example 2-6. Entering New Datat</a></h4>
+
+<pre>
+// entering new data and clear accumulated information.
+// here pEvNew is the pointer to a newly created array of Evidences
+pLearn-&gt;SetData( newNumOfCases, pEvNew)
+// call learning
+pLearn-&gt;Learn();
+
+</pre>
+<p>
+The parameters of the Bayesian network assume new values that correspond to the
+learning data.
+</p>
+
+<p>
+<b>Option 2.</b> Use data from the previous learning. Use the <tt>ApprendData</tt> function to
+implement the variant.
+</p>
+
+<hr><h4><a name="exLearnWSOption2">Example 2-6. Using data from previous learning</a></h4>
+
+<pre>
+pLearn-&gt;AppendData( newNumOfCases, pEvNew )
+pLearn-&gt;Learn();
+
+</pre>
+
+<h4><a name="decl_Type3">Type 3 </a></h4>
+
+<p>
+The current version of PNL carries out structure learning for static BNets and
+does not support other models. The learning engine calls Maximal Likelihood
+parameter learning. In this version of PNL learning is carried out under the
+condition that the input data is complete, that is, when all nodes of training
+cases are observed. The algorithm supports graphical models with tabular
+distributions.
+</p>
+
+<hr><h4><a name="ug_Metric">Structure Comparison Metrie</a></h4>
+
+<p>
+One of the solutions to the learning task in this case is the computation of
+joint probability <i>p(D, S<sup>h</sup>)</i>
+for the learning data <i>D</i> and the model structure  <i>S<sup>h</sup></i>:
+</p>
+<i>log p(D, S<sup>h</sup>) = log p(D | S<sup>h</sup>)+log p(S<sup>h</sup>)</i>.
+<p>
+In the case of a Bayesian network with discrete variables, the first item in the
+above formula is found by applying <i>Bayesian Information Criterion (BIC)</i>
+[Jordan]:
+</p>
+<i>log p(D | S<sup>h</sup>) &asymp; log p(D | &theta;, S<sup>h</sup>) - d/2*log&Lambda;</i> ,
+<p>
+where &theya;  stands for the network parameters, <i>N</i> is the number of observations, and <i>d</i>
+is the number of network parameters. This criterion is a good approximation of
+the ML criterion discussed above. In BIC the first item shows the degree of
+consistency of the network parameters with the modelled data, and the addend
+reflects the descriptive complexity of the network. Vector &theta;<sup>*</sup>  can be found by the
+formula:
+</p>
+&theta;<sup>*</sup>=argmax<sub>&theta;</sub> log (p(D | &theta;, S<sup>h</sup>)p( &theta;| S<sup>h</sup>).
+ <p>
+The problem of selecting the most suitable Bayesian network from all network
+configurations is NP hard. The algorithm implemented in PNL iterates through
+all graph topologies that contain no directed
+cycles. The total number of such topologies is  <i>2<sup>N(N-1)/2</sup></i>, where <i>N</i> is the number of
+nodes, and <i>N!</i>  is the number of node permutations. The total number of Bayesian networks with the topology is
+<i>N!*2<sup>N(N-1)/2</sup>.</i>
+The following example considers structure learning for a Bayesian network using
+<tt>CBICLearningEngine.</tt> This class is used for learning networks with discrete
+parents only.
+</p>
+<hr><h4><a name="exLearnStruct">Example 2-8. Structure learning for Bayesian network using PNL</a></h4>
+
+<pre>
+// create an empty graph with number of nodes numOfNds
+int numOfNds = 4;
+CGraph *pGraph = CGraph::Create( numOfNds, NULL, NULL, NULL );
+// here the user has to set all other variable values necessary to
+//create a Bayesian network with an empty graph (the number of node
+// types, actual node types, etc.)
+const int numOfNdTypes = 1;
+// number of node types is 1, because all nodes are of the same type
+// all four are discrete and binary
+CNodeType *nodeTypes = new CNodeType [numOfNdTypes];
+int *nodeAssociation = new int [numOfNds];
+nodeTypes[0].SetType(1, 2);// node type - discrete and binary
+int i;
+for( i = 0; i &lt; numOfNds; ++i )
+{
+    nodeAssociation[i] = 0;
+}
+pBNet = CBNet::Create( numOfNds, numOfNdTypes, nodeTypes, nodeAssociation, pGraph );
+pBNet-&gt;AllocFactors();
+for( i = 0; i &lt; numOfNds; i++ )
+{
+    pBNet-&gt;AllocFactor(i);
+    pBNet-&gt;GetFactor(i)-&gt;CreateAllNecessaryMatrices();
+}
+// create learning engine
+CBICLearningEngine *pLearn = CBICLearningEngine::Create( pBNet );
+// set input data
+pLearn-&gt;SetData(numOfCases, pEv);
+//start learning
+pLearn-&gt;Learn();
+// the output Bayesian network
+const CBNet *pFinalBNet = NULL;
+pFinalBNet= static_cast&lt;const CBNet *&gt;(pLearn-&gt;GetGraphicalModel());
+// the output graphical model is sorted topologically
+// get the relation to initial node numeration
+cost int *reordering = pLearn-&gt;GetOrder();
+
+</pre>
+
+<hr><h3><a name="ug_LearningDBN">Learning for DBNs</a></h3>
+
+<p>
+Parameter estimation algorithms for DBNs correspond to the
+<i>Expectation Maximization (EM) </i> algorithms used for learning BNets. Note that the parameters
+of a model must be tied across time-slices. Thus, sequences of unbounded length
+may be modelled and the initial state of the dynamic system may be learned
+independently of the transition matrix. The expected sufficient statistics
+should be pooled for all the nodes that share the same parameters.
+<p>
+<hr><h4><a name="exLearnDBN">Example 2-9. Learning for DBN</a></h4>
+
+<pre>
+CBNet *pBNetForArHMM = pnlExCreateRndArHMM();
+CDBN *pArHMM = CDBN::Create( pBNetForArHMM );
+//Create learning procedure for DBN
+pEvidencesVecVector evidencesOut;
+const int nTimeSeries = 500;
+intVector nSlices(nTimeSeries);
+//define number of slices in the every time series
+pnlRand(nTimeSeries, &amp;nSlices.front(), 3, 20);
+// Generate evidences in a random way
+pArHMM-&gt;GenerateSamples( &amp;evidencesOut, nSlices);
+// Create DBN for learning
+CDBN *pDBN = CDBN::Create(pnlExCreateRndArHMM());
+// Create learning engine
+CEMLearningEngineDBN *pLearn = CEMLearningEngineDBN::Create( pDBN );
+// Set data for learning
+pLearn-&gt;SetData( evidencesOut );
+// Start learning
+try
+{
+    pLearn-&gt;Learn();
+}
+catch(CAlgorithmicException except)
+{
+    std::cout &lt;&lt; except.GetMessage() &lt;&lt; std::endl;
+}
+//Iieo?aiea ?acoeuoaoia iao?aiea, ioia?a?aiea
+int nFactors = pDBN-&gt;GetNumberOfFactors();
+const CTabularDistribFun* pDistribFun;
+const CFactor* pCPD;
+int i;
+for( i = 0; i &lt; nFactors; i++ )
+{
+    pCPD = pArHMM-&gt;GetFactor(i);
+    int nnodes;
+    const int* domain;
+    pCPD-&gt;GetDomain( &amp;nnodes, &amp;domain );
+    std::cout&lt;&lt;" node "&lt;&lt;domain[
+    int node;
+    for( node = 0; node &lt; nnodes-1; node++ )
+    {
+        std::cout&lt;&lt;domain[node]&lt;&lt;" ";
+    }
+    std::cout&lt;&lt;" Conditional probability distribution for node"&lt;&lt;i&lt;&lt;std::endl;
+    std::cout&lt;&lt;" initial model"&lt;&lt;std::endl;
+    pDistribFun = static_cast&lt;const
+    CTabularDistribFun*&gt;(pCPD-&gt;GetDistribFun());
+    pDistribFun-&gt;Dump();
+    std::cout&lt;&lt;" model after learning"&lt;&lt;std::endl;
+    pCPD = pDBN-&gt;GetFactor(i);
+    pDistribFun = static_cast&lt;const
+    CTabularDistribFun*&gt;(pCPD-&gt;GetDistribFun());
+    pDistribFun-&gt;Dump();
+}
+for( i = 0; i &lt; evidencesOut.size(); i++ )
+{
+    int j;
+    for( j = 0; j &lt; evidencesOut[i].size(); j++ )
+    {
+        delete evidencesOut[i][j];
+    }
+}
+delete pDBN;
+delete pArHMM;
+
+</pre>
+
+<hr><h3><a name="ug_LogSubsystem">Log Subsystem</a></h3>
+<p>
+<b>Attachment to Output and Dumping</b>
+</p>
+<p>
+When a <em>Log</em> object is created it is automatically attached to the output. An embedded
+type is dumped through Log interface. All strings dumped through Log have the prefix
+of the first constructor argument. The second and the third constructor arguments
+control filtering.</br>
+When a <em>Log</em> object is created it is automatically attached to the multiplexor and when
+the object is destroyed it is automatically detached from it.
+</p>
+
+<hr><h4><a name="exCode10">Example 2-10. Code example</a></h4>
+<pre>
+Class Point {
+    double x, y, z;
+    public:
+    Point(double x_, double y_, double z_): x(x_), y(y_), z(z_) {}
+    void dump() const;
+};
+void Point::dump() const
+{
+    Log out(“point: “, eLOG_INFO, eLOGSRV_PNL);
+    out &lt;&lt; “x = “ &lt;&lt; x &lt;&lt; ‘\n’;
+    out &lt;&lt; “y = “ &lt;&lt; y &lt;&lt; ‘\n’;
+    out &lt;&lt; “z = “ &lt;&lt; z &lt;&lt; ‘\n’;
+}
+Point pt(1.0, 2.0, 3.0);
+pt.dump();
+</pre>
+<p>
+Devices which ensure outputting with level eLOG_INFO and service eLOGSRV_PNL
+dump the following strings:
+<li>point: x = 1.0
+<li>point: y = 2.0
+<li>point: z = 3.0
+</p>
+<p>
+<b>Creating a <tt>Driver</tt></b><br>
+When a driver is created it is automatically attached to the multiplexor. When a driver
+is destroyed it is automatically detached from the multiplexor.
+In the current version of PNL only one driver writes to std::ostream:LogDrvStream.
+</p>
+<hr><h4><a name="exCode10">Example 2-10. Code example</a></h4>
+<pre>
+{
+LogDrvStream tempStream(“c:\\pnl_add.log”, eLOG_RESULT| eLOG_SYSERR|eLOG_PROGERR,eLOGSRV_ALL);
+Log out(“demo out: ”, eLOG_RESULT|eLOG_DEBUG, eLOGSRV_PNL);
+out &lt;&lt; “test string\n”;
+…
+}
+</pre>
+<p>
+The driver tempStream is created before the implementation of the function. The
+driver receives the logging information that corresponds to the given level and
+service. Thus, for example, out dumps to tempStream.
+</p>
+<p>
+<b>Description of Log Subsystem Classes</b></br>
+<table border>
+
+  <tr>
+	  <td>Log</td> <td>Implements optimization. Has no virtual functions and does not presuppose derivation.</td>
+  </tr>
+  <tr>
+	  <td>LogMultiplexor</td> <td>Implements commutation. There is only one LogMultiplexor and it does not have any derived classes.
+		  Generally you do not create or destroy this class.</td>
+  </tr>
+  <tr>
+	  <td>LogDriver</td> <td>Basic purely virtual class.
+		  <li> LogDrvStream. This driver outputs to std::ostream. It
+may be created by std::ostream. In this case you
+need to delete std::ostream after destroing
+LogDrvStream. It may also be created by the file name.
+In this case the std::ostream is deleted by
+LogDrvStream.
+<li> LogDrvSystem. This driver resembles LogDrvStream
+but is configured through ConfigureSystem, not
+through Configure, so that its configuration cannot be
+changed by LogMultiplexor.
+</td>
+</tr>
+</table>
+</p>
+<p>
+<b>Filtering Control</b></br>
+Filtering is controled through a pair of parameters: level and service.
+<ul>
+<li>level identifies a type of information outputted through Log such as, for example,
+a system error message eLOG_SYSERR or a message with debugging information
+eLOG_DEBUG.</li>
+<li>service identifies a part of the system from which the information comes.</li>
+</ul>
+Folowing table graphically represents level and service as they specify a subset of
+rectangles.
+
+</p>
+<p>
+
+<TABLE BORDER>
+<CAPTION><b>Parameter graphic representation</b></CAPTION>
+<tr>
+	<td> </td> <td>eLOGSRV_LOG</td> <td>eLOGSRV_EXCEPTION_HANDLING</td> <td>eLOGSRV_POTENTIAL</td>
+</tr>
+<tr>
+	<td>eLOG_RESULT</td> <td> </td> <td> </td> <td> </td>
+</tr>
+<tr>
+	<td>eLOG_SYSERR</td> <td bgcolor=#a8a8a8>2</td> <td></td> <td bgcolor=#a8a8a8>2</td>
+</tr>
+<tr>
+	<td>eLOG_PROGERR</td> <td> </td> <td bgcolor=#00fff>1</td> <td></td>
+</tr>
+<tr>
+	<td>eLOG_WARNING</td> <td bgcolor=#a8a8a8>2</td><td></td> <td bgcolor=#a8a8a8>2</td>
+</tr>
+<tr>
+	<td>eLOG_NOTICE</td>  <td bgcolor=#a8a8a8>2</td> <td> </td> <td bgcolor=#a8a8a8>2</td>
+</tr>
+<tr>
+	<td>eLOG_INFO</td>    <td></td> <td bgcolor=#db9370>3</td> <tdbgcolor=#db9370>3</td>
+</tr>
+<tr>
+	<td>eLOG_DEBUG</td>   <td></td> <td bgcolor=#db9370>3</td> <td bgcolor=#db9370>3</td>
+</tr>
+</table>
+</p>
+<p>
+<li>[eLOG_PROGERR, eLOGSRV_EXCEPTION_HANDLING]
+<li>[eLOG_SYSERR|eLOG_WARNING|eLOG_NOTICE,eLOGSRV_LOG|eLOGSRV_POTENTIAL]
+<li>[eLOG_INFO|eLOG_DEBUG,eLOGSRV_EXCEPTION_HANDLING|eLOGSRV_POTENTIAL]
+</p>
+</body>
+</html>
