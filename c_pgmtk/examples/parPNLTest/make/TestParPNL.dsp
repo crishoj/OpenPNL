@@ -25,7 +25,7 @@ CFG=TestParPNL - Win32 Parallel Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "TestParPNL - Win32 Parallel Debug"
@@ -50,7 +50,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib pnld.lib /nologo /subsystem:console /incremental:no /debug /machine:I386 /out:"..\..\..\bin\TestParPNLd.exe" /pdbtype:sept /libpath:"..\..\..\lib" /libpath:"..\..\..\cxcore\lib"
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib pnld.lib /nologo /subsystem:console /incremental:no /debug /machine:I386 /out:"..\..\..\..\bin\TestParPNLd.exe" /pdbtype:sept /libpath:"..\..\..\..\lib" /libpath:"..\..\..\..\cxcore\lib"
 
@@ -70,13 +70,13 @@ LINK32=xilink6.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /I "..\include" /I "..\..\include" /I "..\..\src\include" /I "..\..\..\cxcore\cxcore\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # SUBTRACT BASE CPP /Fr
-# ADD CPP /nologo /MDd /w /W0 /GR /GX /O2 /I "..\include" /I "..\..\..\include" /I "..\..\..\src\include" /I "..\..\..\..\cxcore\cxcore\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "BUILD_MPI" /D "BUILD_OMP" /YX /FD /Qopenmp /c
+# ADD CPP /nologo /MD /w /W0 /GR /GX /O2 /I "..\include" /I "..\..\..\include" /I "..\..\..\src\include" /I "..\..\..\..\cxcore\cxcore\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "BUILD_MPI" /D "BUILD_OMP" /YX /FD /Qopenmp /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib pnl.lib /nologo /subsystem:console /machine:I386 /out:"..\..\..\bin\TestParPNL.exe" /libpath:"..\..\..\lib" /libpath:"..\..\..\cxcore\lib"
 # SUBTRACT BASE LINK32 /pdb:none
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib pnl.lib /nologo /subsystem:console /machine:I386 /out:"..\..\..\..\bin\TestParPNL.exe" /libpath:"..\..\..\..\lib" /libpath:"..\..\..\..\cxcore\lib"
