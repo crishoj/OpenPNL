@@ -492,42 +492,49 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
 	String nodeName;
 	String aValue;
 
-	net = new ProbabilisticNet;
+        if (model->GetModelType() == pnl::mtBNet)
+            net = new ProbabilisticNet;
+        else
+            if (model->GetModelType() == pnl::mtIDNet)
+                net = new ProbabilisticNet("idnet");
+            else
+	        ThrowUsingError("Unknown type of model", "LoadNet");
+
 	for(iNode = 0; iNode < model->GetNumberOfNodes(); ++iNode)
 	{
-	    nodeName = "Node";
-	    nodeName << iNode;
-	    aValue.resize(0);
-
-	    const pnl::CNodeType &nt = *model->GetNodeType(iNode);
-	    for(iValue = 0; iValue < nt.GetNodeSize(); ++iValue)
-	    {
-		if(iValue)
-		{
-		    aValue << ' ';
-		}
-		aValue << "State" << iValue;
-	    }
-   pnl::EIDNodeState ns = nt.GetNodeState();
-
-        TokArr *classificator;
-
-        if(!nt.IsDiscrete())
-        {
-            classificator = &continuous;
-        }
-        else // discrete
-        {
-            switch(ns)
+            nodeName = "Node";
+            nodeName << iNode;
+            aValue.resize(0);
+            
+            const pnl::CNodeType &nt = *model->GetNodeType(iNode);
+            for(iValue = 0; iValue < nt.GetNodeSize(); ++iValue)
             {
-            case pnl::nsChance:   classificator = &chance;    break;
-            case pnl::nsDecision: classificator = &decision;  break;
-            case pnl::nsValue:    classificator = &value;     break;
-            default: ThrowInternalError("Unknown node state", "LoadNet");break;
+                if(iValue)
+                {
+                    aValue << ' ';
+                }
+                aValue << "State" << iValue;
             }
-        }
-        net->AddNode(*classificator ^ nodeName, aValue);
-	
+            pnl::EIDNodeState ns = nt.GetNodeState();
+            
+            TokArr *classificator;
+            
+            if(!nt.IsDiscrete())
+            {
+                classificator = &continuous;
+            }
+            else // discrete
+            {
+                switch(ns)
+                {
+                case pnl::nsChance:   classificator = &chance;    break;
+                case pnl::nsDecision: classificator = &decision;  break;
+                case pnl::nsValue:    classificator = &value;     break;
+                default: ThrowInternalError("Unknown node state", "LoadNet");break;
+                }
+            }
+            net->AddNode(*classificator ^ nodeName, aValue);
+            
 //        net->AddNode((nt.IsDiscrete() ? discrete:continuous) ^ nodeName, aValue);
 	}
     }
