@@ -1,0 +1,53 @@
+clear()
+AddNode("continuous^x0", "dim1")
+AddNode("continuous^x", "dim1 dim2")
+AddNode("continuous^x2", "dim1 dim2 dim3")
+AddNode("continuous^y", "dim1 dim2")
+AddNode("continuous^z", "dim1")
+AddArc("x0 x x2", "y")
+AddArc("y", "z")
+SetGaussian("x0", "0.5", "1.0")
+SetGaussian("x", "0.5 1.5", "1.0 0.0 0.0 1.0")
+SetGaussian("x2", "0.5 1.5 2.5", "1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0")
+SetGaussian("y", "1.5 2.5", "1.0 0.0 0.0 1.0", "0.5 1.5 0.5 1.5 0.5 1.5 0.5 1.5 0.5 1.5 0.5 1.5")
+SetGaussian("z", "1.0", "1.5", "1.5 2.5")
+print("Means");
+GaussianMean("x0")
+GaussianMean("x")
+GaussianMean("x2")
+GaussianMean("y")
+GaussianMean("z")
+print("Covar");
+GaussianCovar("x0", "dim1")
+GaussianCovar("x", "dim1")
+GaussianCovar("x2", "dim1")
+GaussianCovar("y", "dim1")
+GaussianCovar("z", "dim1")
+print("created net...")
+GenerateEvidences(20)
+print("generated evidences...")
+SaveLearnBuf("evid.csv")
+print("saved evidences...")
+Learn()
+GaussianMean("y")
+GaussianCovar("y", "x")
+print("learned")
+ClearEvidHistory()
+Evid("x^dim2^0.4")
+//Evid("y^dim1^0.7")
+//print("after evid")
+SetProperty("Inference", "naive");
+print("MPE")
+MPE("x0");
+MPE("x");
+MPE("x2");
+MPE("y");
+MPE("z");
+print("JPD")
+JPD("x y")
+print("JPD is done")
+GaussianMean("y")
+GaussianCovar("y", "x")
+// run console
+console()
+print("bye")
