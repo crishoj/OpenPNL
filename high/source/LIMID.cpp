@@ -169,8 +169,10 @@ TokArr LIMID::GetExpectation()
     }
 */
     float resExp = infEngine->GetExpectation();
+    res << Tok(resExp);
+    Net().Token().SetContext(res);
 
-    return res << Tok(resExp);
+    return res;
 }
 
 TokArr LIMID::GetPolitics()
@@ -194,6 +196,8 @@ TokArr LIMID::GetPolitics()
         res << Net().ConvertMatrixToToken(mat);
     }
 
+    Net().Token().SetContext(res);
+
     return res;
 }
 
@@ -211,13 +215,6 @@ void LIMID::DoNotify(const Message &msg)
 	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
 	return;
     }
-}
-
-pnl::CMatrix<float> *LIMID::Matrix(int iNode) const
-{
-    pnl::CMatrix<float> *mat = Net().Distributions().Distribution(iNode)->Matrix(pnl::matTable);
-
-    return mat;
 }
 
 pnl::CIDNet *LIMID::Model()
@@ -253,67 +250,67 @@ TokArr LIMID::GetP(TokArr child, TokArr parents)
     int nchldComb = child.size();
     if( !nchldComb )
     {
-        ThrowUsingError("Must be at least one combination for a child node", fname);
+	ThrowUsingError("Must be at least one combination for a child node", fname);
     }
-    
+
     Vector<int> childNd, childVl;
     Vector<int> childNdInner;
     int i;
     Net().ExtractTokArr(child, &childNd, &childVl);
-    
+
     Net().Graph().IGraph( &childNd, &childNdInner);
-    
+
     // node for all child must be same (its may differ by combination only)
     for(i = childNd.size(); --i > 0; ++i)
     {
-        if(childNd[i] != childNd[0])
-        {
-            ThrowUsingError("Can't return probabilities for different nodes", fname);
-        }
+	if(childNd[i] != childNd[0])
+	{
+	    ThrowUsingError("Can't return probabilities for different nodes", fname);
+	}
     }
-    
+	
     if( !childVl.size())
     {
-        childVl.assign(nchldComb, -1);
+	childVl.assign(nchldComb, -1);
     }
-    
+
     Vector<int> parentNds, parentVls;
     Vector<int> parentNdsInner;
     int nparents = parents.size();
     if( nparents )
     {
-        Net().ExtractTokArr(parents, &parentNds, &parentVls);
-        Net().Graph().IGraph( &parentNds, &parentNdsInner);
-        if( parentVls.size() == 0 ||
-            std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
-        {
-            ThrowInternalError("undefindes values for given parent nodes", "P");
-        }
+	Net().ExtractTokArr(parents, &parentNds, &parentVls);
+	Net().Graph().IGraph( &parentNds, &parentNdsInner);
+	if( parentVls.size() == 0 ||
+	    std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
+	{
+	    ThrowInternalError("undefindes values for given parent nodes", "P");
+	}
     }
     else
     {
-        Net().Graph().Graph()->GetParents( childNdInner.front(), &parentNdsInner );
-        Net().Graph().IOuter( &parentNdsInner, &parentNds);
-        nparents = parentNds.size();
-        parentVls.assign(nparents, -1);
+	Net().Graph().Graph()->GetParents( childNdInner.front(), &parentNdsInner );
+	Net().Graph().IOuter( &parentNdsInner, &parentNds);
+	nparents = parentNds.size();
+	parentVls.assign(nparents, -1);
     }
-    
+
     parentNds.resize(nparents + 1);
     parentNdsInner.resize(nparents + 1);
     parentVls.resize(nparents + 1);
-    
+
     const pnl::CFactor * cpd = Model()->GetFactor(childNdInner.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matTable);
-    
+	
     TokArr result = "";
     for( i = 0; i < nchldComb; i++ )
     {
-        parentNds[nparents] = childNd.front();
-        parentNdsInner[nparents] = childNdInner.front();
-        parentVls[nparents] = childVl[i];
-        result << Net().CutReq( parentNds, parentVls, mat);
+	parentNds[nparents] = childNd.front();
+	parentNdsInner[nparents] = childNdInner.front();
+	parentVls[nparents] = childVl[i];
+	result << Net().CutReq( parentNds, parentVls, mat);
     }
-    
+
     Net().Token().SetContext(result);
     return result;
 }

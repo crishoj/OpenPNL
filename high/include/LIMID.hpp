@@ -69,7 +69,6 @@ public:
     ProbabilisticNet &Net() const { return *m_pLIMID; }
 
 private:
-    pnl::CMatrix<float> *Matrix(int iNode) const;
     pnl::CLIMIDInfEngine& Inference();
     pnl::CIDNet *Model();
     TokArr GetP(TokArr value, TokArr parents = TokArr());
