@@ -85,9 +85,11 @@ void BayesNet::SetP(TokArr value, TokArr prob, TokArr parentValue)
     Net().Distributions()->FillData(value, prob, parentValue);
 }
 
-void BayesNet::SetGaussian(TokArr var, TokArr mean, TokArr variance)
+void BayesNet::SetGaussian(TokArr var, TokArr mean, TokArr variance, TokArr weight)
 {
-    Net().Distributions()->FillData(var, mean, variance);
+    Net().Distributions()->FillData(var, mean, TokArr(), pnl::matMean);
+    Net().Distributions()->FillData(var, variance, TokArr(), pnl::matCovariance);
+    Net().Distributions()->FillData(var, weight, TokArr(), pnl::matWeights);
 }
 
 TokArr BayesNet::GaussianMean(TokArr vars)
