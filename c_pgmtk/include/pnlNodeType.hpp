@@ -19,6 +19,9 @@
 #include "pnlObject.hpp"
 #include "pnlException.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 typedef PNL_API enum
@@ -60,6 +63,21 @@ public:
 #else
     ;
 #endif
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CNodeType::m_TypeInfo;
+  }
+#endif
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 
 private:
     bool m_IsDiscrete;

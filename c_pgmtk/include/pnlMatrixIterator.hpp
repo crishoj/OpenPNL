@@ -23,6 +23,9 @@
 #include "pnlObject.hpp"
 #include "pnlException.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 template <class Type> class CMatrixIterator : public CPNLBase
 {
@@ -31,9 +34,24 @@ template <class Type> class CMatrixIterator : public CPNLBase
         inline const Type* GetCurrent() const;
         virtual void Iteration() = 0;
         virtual ~CMatrixIterator(){}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CMatrixIterator< int >::GetStaticTypeInfo();
+    }
+#endif
     protected:
         const Type* m_Current;
         CMatrixIterator(const Type* current);
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 };
 
 template <class Type>
@@ -52,14 +70,35 @@ inline const Type* CMatrixIterator<Type>::GetCurrent() const
     return m_Current;
 }
 
+#ifdef PNL_RTTI
+template <class Type> 
+const CPNLType CMatrixIterator<Type> ::m_TypeInfo = CPNLType("CMatrixIterator", &(CPNLBase::m_TypeInfo));
+
+#endif
+
 template <class Type> class CDenseMatrixIterator : public CMatrixIterator<Type>
 {
     public:
         static CDenseMatrixIterator<Type>* Create(const Type* first );
         void Iteration();
         ~CDenseMatrixIterator(){}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CDenseMatrixIterator< int >::GetStaticTypeInfo();
+    }
+#endif
     protected:
         CDenseMatrixIterator(const Type* first);
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
     private:
         Type* m_endOfData;
 };
@@ -85,6 +124,12 @@ inline void CDenseMatrixIterator<Type>::Iteration()
     m_Current++;
 }
 
+#ifdef PNL_RTTI
+template <class Type> 
+const CPNLType CDenseMatrixIterator<Type> ::m_TypeInfo = CPNLType("CDenseMatrixIterator", &(CMatrixIterator<Type>::m_TypeInfo));
+
+#endif
+
 template <class Type> class CSparseMatrixIterator : public CMatrixIterator<Type>
 {
 public:
@@ -93,8 +138,23 @@ public:
     inline int IsNodeHere() const;
     inline int* Index() const;
     ~CSparseMatrixIterator(){}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CSparseMatrixIterator< int >::GetStaticTypeInfo();
+    }
+#endif
 protected:
     CSparseMatrixIterator( CxSparseMat* matrix );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     CxSparseNode* m_currNode;
     CxSparseMatIterator m_cvSparseIter;
@@ -145,6 +205,12 @@ CSparseMatrixIterator<Type>::CSparseMatrixIterator( CxSparseMat* matrix)
     m_currNode = cxInitSparseMatIterator( m_CvMatrix, &m_cvSparseIter );    
     m_Current = (Type*)CX_NODE_VAL( matrix, m_currNode );
 }
+
+#ifdef PNL_RTTI
+template <class Type> 
+const CPNLType CSparseMatrixIterator<Type> ::m_TypeInfo = CPNLType("CSparseMatrixIterator", &(CMatrixIterator<Type>::m_TypeInfo));
+
+#endif
 
 PNL_END
 

@@ -24,6 +24,9 @@
 #include "pnlTypeDefs.hpp"
 #include "pnlNodeType.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class CFactor;
@@ -87,6 +90,16 @@ public:
 
     int  GetNumOfReferences();
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CModelDomain::m_TypeInfo;
+  }
+#endif
 protected:
     //model domain is based on CNodeTypes
     CModelDomain( const nodeTypeVector& variableTypes,
@@ -95,6 +108,10 @@ protected:
     //model domain with one node type for all nodes
     CModelDomain( int numVariables, const CNodeType& commonVariableType,
             CGraphicalModel* pCreaterOfMD = NULL);
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     // heap of pointers to all factors created for this model domain
     pConstFactorVector m_factorsHeap[c_MaxThreadNumber];
@@ -208,6 +225,13 @@ public:
     void ChangeNodeType(int NodeNumber, bool ToCont);
 
     virtual ~CModelDomain();
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return m_TypeInfo;
+  }
+#endif
 protected:
     //model domain is based on CNodeTypes
     CModelDomain( const nodeTypeVector& variableTypes,
@@ -216,6 +240,10 @@ protected:
     //model domain with one node type for all nodes
     CModelDomain( int numVariables, const CNodeType& commonVariableType,
             CGraphicalModel* pCreaterOfMD = NULL);
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     // heap of pointers to all factors created for this model domain
     pConstFactorVector m_factorsHeap;

@@ -18,6 +18,9 @@
 
 #include "pnlMNet.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 #ifdef SWIG
@@ -66,6 +69,16 @@ public:
 
     virtual ~CMRF2() {};
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CMRF2::m_TypeInfo;
+  }
+#endif
 protected:
 
     CMRF2( int numberOfCliques, const int *cliqueSizes, const int **cliques,
@@ -77,6 +90,9 @@ protected:
 
     CMRF2(const CMRF2& rMRF2);
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif   
 private:
 
 };

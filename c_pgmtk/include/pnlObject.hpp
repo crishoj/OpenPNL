@@ -20,15 +20,34 @@
 #include "pnlConfig.hpp"
 #endif
 
+// FORWARDS
+class CPNLType;
+
 PNL_BEGIN
 
 /* base class for all Tk objects */
 class PNL_API CPNLBase 
 {
 protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
+
     CPNLBase() {};
 public:
     virtual ~CPNLBase() {};
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CPNLBase::m_TypeInfo;
+    }
+#endif
 };
 
 PNL_END

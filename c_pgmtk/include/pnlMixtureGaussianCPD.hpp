@@ -23,6 +23,10 @@
 #include "pnlTypeDefs.hpp"
 //#include "pnlCondGaussianDistribFun.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class CCondGaussianDistribFun;
@@ -82,11 +86,25 @@ public:
     virtual void UpdateStatisticsML(CFactor *pPot);
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CMixtureGaussianCPD::m_TypeInfo;
+    }
+#endif
 protected:
     CMixtureGaussianCPD( const int *domain, int nNodes, CModelDomain* pMD,
 	const float* probabilities );
     CMixtureGaussianCPD( const CMixtureGaussianCPD& GauCPD );
     CMixtureGaussianCPD( const CMixtureGaussianCPD* pGauCPD );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     floatVector m_probabilities;
     floatVector m_learnProbabilities;

@@ -18,6 +18,9 @@
 
 #include "pnlMlStaticStructLearn.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 
@@ -36,6 +39,16 @@ public:
 						  intVector& vDescent,
 						  int nRestarts=1);
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CMlStaticStructLearnHC::m_TypeInfo;
+  }
+#endif
 protected:
 	CMlStaticStructLearnHC(CStaticGraphicalModel* pGrModel, 
 						  ELearningTypes LearnType, 
@@ -49,6 +62,9 @@ protected:
 	int					  m_nRestarts;
 	int					  m_nSteps;
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 	void LearnInOneStart(CDAG* InitDag, CDAG** LearnedDag, float* LearndScore);
 };

@@ -23,6 +23,9 @@
 #include "pnlInferenceEngine.hpp"
 #include "pnlNodeType.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CNaiveInfEngine : public CInfEngine
@@ -40,8 +43,23 @@ public:
 	virtual const CPotential* GetQueryJPD() const;
 	virtual const CEvidence* GetMPE() const;
 	~CNaiveInfEngine();
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CNaiveInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
 	CNaiveInfEngine( const CStaticGraphicalModel *pGraphicalModel );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 	intVector			m_excludeNodes;
 	//const CEvidence *	m_pEvidence;

@@ -21,6 +21,9 @@
 #include "pnlDynamicLearningEngine.hpp"
 #include "pnlDBN.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CMlDynamicStructLearn : public CDynamicLearningEngine
@@ -40,6 +43,16 @@ public:
 	void SetLearnPriorSlice(bool learnPriroSlice);
 	void SetMinProgress(float minProgress);
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CMlDynamicStructLearn::m_TypeInfo;
+  }
+#endif
 protected:
 	CMlDynamicStructLearn( CDBN* pGrModel, 
 						  ELearningTypes LearnType, 
@@ -63,6 +76,9 @@ protected:
 	pEvidencesVector	m_vEvidences;
 	pEvidencesVector	m_vEvidence0;
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 	void RearrangeEvidences();
 };

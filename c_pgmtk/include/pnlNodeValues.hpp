@@ -23,7 +23,9 @@
 #include "pnlTypeDefs.hpp"
 #include "pnlNodeType.hpp"
 
-
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 #ifdef SWIG
@@ -66,6 +68,17 @@ public:
     inline void MakeNodeHiddenBySerialNum( int serialNumber );
     inline void MakeNodeObservedBySerialNum( int serialNumber );
     virtual ~CNodeValues();
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CNodeValues::m_TypeInfo;
+  }
+#endif
 protected:
     CNodeValues ( int nNodes,const CNodeType * const*ObsNodeTypes,
 	const valueVector& pValues);	
@@ -79,6 +92,9 @@ protected:
     //vector of offsets in m_rawValues to value of i's node*/
     intVector m_isObsNow;
     //some nodes actually observed, some - potentially, here are the flags
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 };
 
 #ifndef SWIG

@@ -28,6 +28,9 @@
 #include "pnlSparseMatrix.hpp"
 #include "pnlStaticLearningEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 typedef PNL_API enum
@@ -65,7 +68,16 @@ public:
 	//used to re-learn from another initial DAG. nodes order and nodes types
 	//need to be the same as the original m_pGrModel. 
 
-	
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CMlStaticStructLearn::m_TypeInfo;
+  }
+#endif
 protected:
 	CMlStaticStructLearn(CStaticGraphicalModel *pGrModel, ELearningTypes LearnType, 
 						  EOptimizeTypes AlgorithmType, EScoreFunTypes ScoreType, int nMaxFanIn,
@@ -83,6 +95,9 @@ protected:
 	EScoreFunTypes	m_ScoreType;
 	EOptimizeTypes	m_Algorithm;
 	
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 	float ComputeFamilyScore(intVector vFamily);
 	CCPD* ComputeFactor(intVector vFamily, CGraphicalModel* pGrModel, CEvidence** pEvidences);

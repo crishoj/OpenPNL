@@ -18,6 +18,9 @@
 
 #include "pnlBNet.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 #ifdef SWIG
@@ -126,6 +129,16 @@ public:
 
     bool IsValid(std::string* descriptionOut = NULL) const; 
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CMNet::m_TypeInfo;
+  }
+#endif
 protected:
 
     /* constructor, which uses set of cliques for the model construction */
@@ -163,6 +176,9 @@ protected:
     /* constructs cliques from m_pGraph and stores in m_cliques */
     void ConstructCliquesFromInternalGraph();
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif   
 private:
 
     intVecVector m_clqsNumsForNds;

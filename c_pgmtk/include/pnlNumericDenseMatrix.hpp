@@ -21,6 +21,9 @@
 #include <float.h>
 #include <math.h>
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 template <class Type> class PNL_API CNumericDenseMatrix : 
             public iCNumericDenseMatrix<Type>
@@ -31,9 +34,22 @@ public:
     virtual CMatrix<Type>* CreateEmptyMatrix( int dim, const int *range,
      int Clamp, Type defaultVal = Type(0) ) const;
     ~CNumericDenseMatrix(){};
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CNumericDenseMatrix< int >::GetStaticTypeInfo();
+    }
+#endif
 protected:
     CNumericDenseMatrix(int dim, const int *range, const Type *data, int Clamp);
     CNumericDenseMatrix( const CNumericDenseMatrix<Type> & inputMat );
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 };
 
 #ifndef SWIG
@@ -96,10 +112,29 @@ public:
     static CNumericDenseMatrix<float>* Create( int dim, const int *range,
             const float *data, int Clamp = 0 );
     ~CNumericDenseMatrix(){};
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CNumericDenseMatrix< int >::GetStaticTypeInfo();
+    }
+#endif
 protected:
     CNumericDenseMatrix(int dim, const int *range, const float *data, int Clamp);
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 };
 
+#ifdef PNL_RTTI
+template <class Type>
+const CPNLType CNumericDenseMatrix< Type >::m_TypeInfo = CPNLType("CNumericDenseMatrix", &(iCNumericDenseMatrix< Type >::m_TypeInfo));
+
+#endif
 
 PNL_END
 
