@@ -137,6 +137,8 @@ public:
     
     bool IsAllNodesInClsObs(int NumCls, const CEvidence *pEvidence );
 
+	/* returns node type of the node with a number == nodeNumber */
+	inline const CNodeType* GetNodeType(int nodeNumber) const;
 protected:
     
 #ifdef PNL_OBSOLETE
@@ -591,6 +593,14 @@ inline void CJunctionTree::DumpNodeContents() const
 inline int CJunctionTree::GetNumberOfNodes() const
 {
     return m_nodeContents.size();
+}
+//////////////////////////////////////////////////////////////////////////
+
+inline const CNodeType* CJunctionTree::GetNodeType(int nodeNumber) const
+{
+    PNL_CHECK_RANGES( nodeNumber, 0, m_numberOfNodes - 1 );
+
+    return &(m_nodeTypes[m_nodeAssociation[nodeNumber]]);
 }
 //////////////////////////////////////////////////////////////////////////
 
