@@ -74,7 +74,7 @@ void BayesNet::AddArc(TokArr from, TokArr to)
 
 void BayesNet::DelArc(TokArr from, TokArr to)
 {
-    Net().AddArc(from, to);
+    Net().DelArc(from, to);
 }
 
 TokArr BayesNet::GetNeighbors(TokArr nodes)
