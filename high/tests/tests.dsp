@@ -107,6 +107,10 @@ SOURCE=.\TestMain.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\TestMRF.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\TestNumeration.cpp
 # End Source File
 # Begin Source File
@@ -117,6 +121,10 @@ SOURCE=.\TestsDBN.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\test_conf.hpp
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 
