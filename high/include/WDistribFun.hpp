@@ -26,6 +26,11 @@ public:
     int nNode() const { return m_aNode.size(); }
     bool getIndexAndValue(int *index, int *value, Tok &tok);
     const Vector<int> &nodeSizes() const { return m_aNodeSize; }
+    bool operator==(const DistribFunDesc &aDF) const
+    {
+	return m_aNode.size() == aDF.m_aNode.size() && m_aNode == aDF.m_aNode
+	    && m_aNodeSize == aDF.m_aNodeSize;
+    }
 
 private:
     Vector<TokIdNode*> m_aNode;
