@@ -463,6 +463,8 @@ void DBN::CurEvidToBuf()
     pnl::CEvidence *evid = NULL; 
     evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
     (m_AllEvidences[m_curSlice]).push_back(evid);
+	Net().ClearEvid();
+	Net().ClearEvidBuf();
 }
 
 // adds evidence to the buffer
@@ -633,7 +635,7 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 {
     WLex lex(filename, false/* write */, (mode == NetConst::eCSV) ? ',':'\t');
     int iEvid, iCol, i,j;
-    Vector<int> nUsingCol(Net().nNetNode(), 0);
+    Vector<int> nUsingCol(Net().nNetNode() / 2, 0);
     //    Vector<int> nSlices;
     int evNum = 0;
     const int *aEvidNode;
@@ -651,6 +653,7 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 	    {
 		nUsingCol[aEvidNode[iCol]]++;
 	    }
+	}
 	}
 
 	Vector<int> aiCSVCol;
@@ -747,7 +750,6 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 
 		lex.Eol();
 	    }
-	}
     }
 
     return evNum;
