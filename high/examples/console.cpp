@@ -155,7 +155,8 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 		    args[2] = ptr;
 		}
 		Print(args[2]);
-		break;
+                break;
+
 	    }
 	case -11:/* checkOrCreate */ CheckOrCreate(args[0].c_str(), args[1].c_str(), args[2].c_str());break;
 	case eAddNode:	    BNet().AddNode(args[0], args[1]); break;
@@ -168,9 +169,36 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eGetPTabular:  Print(BNet().GetPTabular(args[0], args[1]));break;
 	case eLearnStructure:	BNet().LearnStructure(0, 0); break;
         case eGaussianMean: Print(BNet().GetGaussianMean(args[0]));break;
-        case eGaussianCovar: Print(BNet().GetGaussianCovar(args[0], args[1]));break;
+        case eGaussianCovar: Print(BNet().GetGaussianCovar(args[0]));break;
 	case eSetProperty:  BNet().SetProperty(args[0].c_str(), args[1].c_str()); break;
-        case eSetPGaussian:  BNet().SetPGaussian(args[0], args[1], args[2], args[3]); break;
+        case eSetPGaussian:  
+            {
+                TokArr arg1;
+                TokArr arg2;
+                TokArr arg3;
+                TokArr arg4;
+                
+                if(args.size() > 0)
+                {
+                    arg1 = args[0];
+                    if(args.size() > 1)
+                    {
+                        arg2 = args[1];
+                        if(args.size() > 2)
+                        {
+                            arg3 = args[2];
+                            if(args.size() > 3)
+                            {
+                                arg4 = args[3];
+                            }
+                        }
+                    }
+                }
+                
+                BNet().SetPGaussian(arg1, arg2, arg3, arg4);
+                break;
+            }
+
 	case eGenerateEvidences:
 	    {
 		int nSample = atoi(args[0].c_str());

@@ -36,7 +36,7 @@ FuncDesc aFuncDesc[] =
 ,   "generateevidences", eGenerateEvidences, false, 0, 3, 2
 ,   "learnstructure", eLearnStructure,true,0, 0, 0
 ,   "getgaussianmean",   eGaussianMean,true,  1, 1, 0
-,   "getgaussiancovar",  eGaussianCovar,true, 1, 2, 0 
+,   "getgaussiancovar",  eGaussianCovar,true, 1, 1, 0 
 ,   "setpgaussian",   eSetPGaussian, true,  0, 4, 3
 ,   "setproperty",    eSetProperty, false, 0, 2, 0
 ,   "getjpd",            eJPD,	    true,  1, 1, 0 
