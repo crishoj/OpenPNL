@@ -1,4 +1,4 @@
-tar xjf conf.gcc.tbz 2>/dev/null
+tar xjf conf.tbz 2>/dev/null
 rm -f libtool
 sh ./configure
 echo "
