@@ -608,13 +608,11 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
     PNL_CHECK_FOR_ZERO(aValue.size());// empty aValue is prohibited
     Vector<int> aiNode, aiValue, aNodeFlag;
     Vector<int> aOffset; // offset for every node in vValue
-    pnl::intVector aiNodeEvidence;
     pnl::valueVector vValue;
     int j, i, nValue;
     int nValueIn = aValue.size();
     static const char fname[] = "CreateEvidence";
 
-    for(i = aNodeFlag.size(); --i >= 0; aNodeFlag[i] = i);// zero mapping
     ExtractTokArr(aValue, &aiNode, &aiValue, &Graph()->MapOuterToGraph());
     aNodeFlag.assign(nNetNode(), 0);
 
@@ -692,7 +690,7 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
 	}
     }
 
-    return pnl::CEvidence::Create(Model(), aiNodeEvidence, vValue);
+    return pnl::CEvidence::Create(Model(), aiNode, vValue);
 }
 
 void ProbabilisticNet::GetTokenByEvidence(TokArr *tEvidence, pnl::CEvidence *evidence)
