@@ -241,7 +241,7 @@ typedef pnlVector< potsPVector>         potsPVecVector;
 
 class CCPD;
 typedef pnlVector<const CCPD *>         pConstCPDVector;
-
+typedef pnlVector<CCPD*>				pCPDVector;
 
 class CGaussianCPD;
 typedef pnlVector<CGaussianCPD *>       pGaussianCPDVector;
