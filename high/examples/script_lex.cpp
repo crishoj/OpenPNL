@@ -267,18 +267,18 @@ void ListCommands()
     for(i = 0; aFuncDesc[i].name; ++i)
     {
 	len = strlen(aFuncDesc[i].name);
-	cout << aFuncDesc[i].name;
+	std::cout << aFuncDesc[i].name;
 
 	if(((i % 3) == 2) || !aFuncDesc[i + 1].name)
 	{
-	    cout << '\n';
+	    std::cout << '\n';
 	}
 	else
 	{
 	    while(len < (maxName + 1))
 	    {
 		len++;
-		cout << ' ';
+		std::cout << ' ';
 	    }
 	}
     }

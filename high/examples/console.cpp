@@ -380,7 +380,7 @@ void Scripting::Leave()
     m_aStdout.pop_back();
 }
 
-void Scripting::Print(Vector<String> &v)
+void Scripting::Print(const Vector<String> &v)
 {
     for(unsigned int i = 0; i < v.size(); ++i)
     {
@@ -388,12 +388,12 @@ void Scripting::Print(Vector<String> &v)
     }
 }
 
-void Scripting::Print(TokArr &v)
+void Scripting::Print(const TokArr &v)
 {
     fprintf(Stdout(), "%s\n", String(v).c_str());
 }
 
-void Scripting::Print(String &s)
+void Scripting::Print(const String &s)
 {
     fprintf(Stdout(), "%s\n", s.c_str());
 }

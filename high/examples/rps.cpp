@@ -3,6 +3,8 @@
 #include "console.hpp"
 #include "pnl_dll.hpp"
 
+using namespace std;
+
 static int sMode = 0;
 const int cShowPrediction = 1;
 const int cShowMatrix = 2;

@@ -31,9 +31,9 @@ protected:
     void Enter(const char *stdinName, const char *stdoutName);
     void Leave();
 
-    void Print(Vector<String> &v);
-    void Print(TokArr &v);
-    void Print(String &s);
+    void Print(const Vector<String> &v);
+    void Print(const TokArr &v);
+    void Print(const String &s);
     void PrintStripped(TokArr &v);
 
 private:
