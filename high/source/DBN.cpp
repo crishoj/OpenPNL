@@ -57,7 +57,16 @@ void DBN::AddNode(TokArr nodes, TokArr subnodes)
 {
     
     Net().AddNode(nodes, subnodes);
-    
+    if(IsFullDBN())
+	{
+		TopologicalSortDBN *pSort = new TopologicalSortDBN();
+		pSort->SetMapping(GetSlicesNodesCorrespInd());
+		Net().Graph()->SetSorter(pSort);
+	}
+	else
+	{
+		Net().Graph()->SetSorter(0);
+	}
 }
 
 void DBN::DelNode(TokArr nodes)

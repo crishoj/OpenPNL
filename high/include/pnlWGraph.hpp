@@ -31,7 +31,7 @@ public:
 	const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
 };
 
-class PNLHIGH_API TopologicalSortDBN
+class PNLHIGH_API TopologicalSortDBN: public TopologicalSort
 {
 public:
     TopologicalSortDBN() {}

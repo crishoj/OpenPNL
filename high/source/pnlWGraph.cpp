@@ -125,6 +125,9 @@ TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &a
 	if(!abValid[i])
 	{
 	    aNode[m_Map[i]] = -1;
+	}
+	else
+	{
 	    half++;
 	}
     }
@@ -140,7 +143,7 @@ TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &a
 	aNode[m_Map[half + i]] = 1;
 	aNodeSecSlice[m_Map[i]] = m_Map[i + half];
     }
-    for(i = 0; i < aNode.size();)
+    for(i = 0; i < half;)
     {
 	candidate = -1;
 	bChange = false;
