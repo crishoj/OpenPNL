@@ -234,6 +234,7 @@ void ProbabilisticNet::EditEvidence(TokArr values)
 {
     if(values.size())
     {
+	Token().Resolve(values);
 	m_EvidenceBoard.Set(values);
     }
 }
