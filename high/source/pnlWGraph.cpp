@@ -21,19 +21,23 @@ TopologicalSort::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aPar
     std::vector<int> aNode;
     int candidate;
     bool bChange;
-    int i, j;
+    int i, j, all;
     IIMap &result = *pResult;
 
     aNode.resize(abValid.size(), 0);
     result.assign(aNode.size(), -1);
-    for(i = 0; i < abValid.size(); ++i)
+    for(all = i = 0; i < abValid.size(); ++i)
     {
 	if(!abValid[i])
 	{
 	    aNode[i] = -1;
 	}
+	else
+	{
+	    ++all;
+	}
     }
-    for(i = 0; i < aNode.size();)
+    for(i = 0; i < all;)
     {
 	candidate = -1;
 	bChange = false;
