@@ -13,9 +13,19 @@
 //  Author(s):                                                             //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
+#include "pnlParConfig.hpp"
 #include "pnlConfig.hpp"
 #include "pnlRng.hpp"
 #include "pnlException.hpp"
+
+#ifdef PAR_OMP
+#include <omp.h>
+#define NUMBER_OF_HEAPS 256
+#define PAR_OMP_NUM_CURR_THREAD omp_get_thread_num()
+#else
+#define NUMBER_OF_HEAPS 1
+#define PAR_OMP_NUM_CURR_THREAD 0
+#endif
 
 //#define USE_VSL
 
@@ -139,27 +149,29 @@ public:
 };
 
 //global variable
-CRNG g_RNG;
+CRNG g_RNG[NUMBER_OF_HEAPS];
 
 void pnlSeed(int s)
 {
-    cxRandInit( &g_RNG.m_cxRandState, 0, 1, s, CX_RAND_UNI );
+    cxRandInit( &g_RNG[PAR_OMP_NUM_CURR_THREAD].m_cxRandState, 0, 1, s, CX_RAND_UNI );
 }
 
 //generate uniform integer distribution in the range [left,right]
 int pnlRand(int left, int right)
 {
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+    
     PNL_CHECK_LEFT_BORDER( right, left );
-    g_RNG.m_cxRandState.disttype = CX_RAND_UNI;
+    g_RNG[myid].m_cxRandState.disttype = CX_RAND_UNI;
     //set range
-    cxRandSetRange( &g_RNG.m_cxRandState, left, right, -1 );
+    cxRandSetRange( &g_RNG[myid].m_cxRandState, left, right, -1 );
 
     //create matrix wrapper for 1 floating point value
     float val = 0;
     CxMat mat = cxMat( 1, 1, CX_32FC1, &val );
 
     //generate value
-    cxRand( &g_RNG.m_cxRandState, &mat );
+    cxRand( &g_RNG[myid].m_cxRandState, &mat );
     double x1;
    
     double ip = modf(val, &x1);
@@ -169,18 +181,19 @@ int pnlRand(int left, int right)
 
 void pnlRand(int numElem, int* vec, int left, int right)
 {
+    int myid = PAR_OMP_NUM_CURR_THREAD;
    
     //set distribution type
-    g_RNG.m_cxRandState.disttype = CX_RAND_UNI;
+    g_RNG[myid].m_cxRandState.disttype = CX_RAND_UNI;
     //set range
-    cxRandSetRange( &g_RNG.m_cxRandState, left, right, -1 );
+    cxRandSetRange( &g_RNG[myid].m_cxRandState, left, right, -1 );
     
     //create matrix wrapper for 1 floating point value
     float *array = new float[numElem];
     CxMat mat = cxMat( 1, numElem, CX_32FC1, array );
     
     //generate value
-    cxRand( &g_RNG.m_cxRandState, &mat );
+    cxRand( &g_RNG[myid].m_cxRandState, &mat );
    
     double ip;
     double x1;
@@ -199,125 +212,141 @@ void pnlRand(int numElem, int* vec, int left, int right)
 //generate uniform distribution (single precision) on (0,1) range
 float pnlRand(float left, float right)
 {
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+
     //set distribution type
-    g_RNG.m_cxRandState.disttype = CX_RAND_UNI;
+    g_RNG[myid].m_cxRandState.disttype = CX_RAND_UNI;
     //set range
-    cxRandSetRange( &g_RNG.m_cxRandState, left, right, -1 );
+    cxRandSetRange( &g_RNG[myid].m_cxRandState, left, right, -1 );
 
     //create matrix wrapper for 1 floating point value
     float val = 0;
     CxMat mat = cxMat( 1, 1, CX_32FC1, &val );
 
     //generate value
-    cxRand( &g_RNG.m_cxRandState, &mat );
+    cxRand( &g_RNG[myid].m_cxRandState, &mat );
 
     return val;           
 }
 
 double pnlRand(double left, double right)
 {
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+    
     //set distribution type
-    g_RNG.m_cxRandState.disttype = CX_RAND_UNI;
+    g_RNG[myid].m_cxRandState.disttype = CX_RAND_UNI;
     //set range
-    cxRandSetRange( &g_RNG.m_cxRandState, left, right, -1 );
+    cxRandSetRange( &g_RNG[myid].m_cxRandState, left, right, -1 );
 
     //create matrix wrapper for 1 floating point value
     double val = 0;
     CxMat mat = cxMat( 1, 1, CX_64FC1, &val );
 
     //generate value
-    cxRand( &g_RNG.m_cxRandState, &mat );
+    cxRand( &g_RNG[myid].m_cxRandState, &mat );
 
     return val;            
 } 
            
 void pnlRand(int numElem, float* vec, float left, float right)
 {
-        //set distribution type
-    g_RNG.m_cxRandState.disttype = CX_RAND_UNI;
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+
+    //set distribution type
+    g_RNG[myid].m_cxRandState.disttype = CX_RAND_UNI;
     //set range
-    cxRandSetRange( &g_RNG.m_cxRandState, left, right, -1 );
+    cxRandSetRange( &g_RNG[myid].m_cxRandState, left, right, -1 );
 
     //create matrix wrapper for 1 floating point value
     CxMat mat = cxMat( 1, numElem, CX_32FC1, vec );
 
     //generate value
-    cxRand( &g_RNG.m_cxRandState, &mat );
+    cxRand( &g_RNG[myid].m_cxRandState, &mat );
 }
 
 void pnlRand(int numElem, double* vec, double left, double right)
 {
-        //set distribution type
-    g_RNG.m_cxRandState.disttype = CX_RAND_UNI;
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+    
+    //set distribution type
+    g_RNG[myid].m_cxRandState.disttype = CX_RAND_UNI;
     //set range
-    cxRandSetRange( &g_RNG.m_cxRandState, left, right, -1 );
+    cxRandSetRange( &g_RNG[myid].m_cxRandState, left, right, -1 );
 
     //create matrix wrapper for 1 floating point value
     CxMat mat = cxMat( 1, numElem, CX_64FC1, vec );
 
     //generate value
-    cxRand( &g_RNG.m_cxRandState, &mat );
+    cxRand( &g_RNG[myid].m_cxRandState, &mat );
 }
 
 float pnlRandNormal( float mean, float sigma )
 {
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+    
     //set distribution type
-    g_RNG.m_cxRandState.disttype = CX_RAND_NORMAL;
+    g_RNG[myid].m_cxRandState.disttype = CX_RAND_NORMAL;
     //set range
-    cxRandSetRange( &g_RNG.m_cxRandState, (float)sqrt(sigma), mean, -1 );
+    cxRandSetRange( &g_RNG[myid].m_cxRandState, (float)sqrt(sigma), mean, -1 );
 
     //create matrix wrapper for 1 floating point value
     float val = 0;
     CxMat mat = cxMat( 1, 1, CX_32FC1, &val );
 
     //generate value
-    cxRand( &g_RNG.m_cxRandState, &mat );
+    cxRand( &g_RNG[myid].m_cxRandState, &mat );
 
     return val;
 }
 
 double pnlRandNormal( double mean, double sigma )
 {
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+    
     //set distribution type
-    g_RNG.m_cxRandState.disttype = CX_RAND_NORMAL;
+    g_RNG[myid].m_cxRandState.disttype = CX_RAND_NORMAL;
     //set range
-    cxRandSetRange( &g_RNG.m_cxRandState, sqrt(sigma), mean, -1 );
+    cxRandSetRange( &g_RNG[myid].m_cxRandState, sqrt(sigma), mean, -1 );
 
     //create matrix wrapper for 1 floating point value
     double val = 0;
     CxMat mat = cxMat( 1, 1, CX_32FC1, &val );
 
     //generate value
-    cxRand( &g_RNG.m_cxRandState, &mat );
+    cxRand( &g_RNG[myid].m_cxRandState, &mat );
 
     return val;           
 }
 
 void pnlRandNormal( int numElem, float* vec, float mean, float sigma )
 {
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+    
     //set distribution type
-    g_RNG.m_cxRandState.disttype = CX_RAND_NORMAL;
+    g_RNG[myid].m_cxRandState.disttype = CX_RAND_NORMAL;
     //set range
-    cxRandSetRange( &g_RNG.m_cxRandState, (float)sqrt(sigma), mean, -1 );
+    cxRandSetRange( &g_RNG[myid].m_cxRandState, (float)sqrt(sigma), mean, -1 );
 
     //create matrix wrapper for 1 floating point value
     CxMat mat = cxMat( 1, numElem, CX_32FC1, vec );
 
     //generate value
-    cxRand( &g_RNG.m_cxRandState, &mat );
+    cxRand( &g_RNG[myid].m_cxRandState, &mat );
 }
 void pnlRandNormal( int numElem, double* vec, double mean, double sigma )
 {
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+    
     //set distribution type
-    g_RNG.m_cxRandState.disttype = CX_RAND_NORMAL;
+    g_RNG[myid].m_cxRandState.disttype = CX_RAND_NORMAL;
     //set range
-    cxRandSetRange( &g_RNG.m_cxRandState, sqrt(sigma), mean, -1 );
+    cxRandSetRange( &g_RNG[myid].m_cxRandState, sqrt(sigma), mean, -1 );
 
     //create matrix wrapper for 1 floating point value
     CxMat mat = cxMat( 1, numElem, CX_64FC1, vec );
 
     //generate value
-    cxRand( &g_RNG.m_cxRandState, &mat );
+    cxRand( &g_RNG[myid].m_cxRandState, &mat );
 }   
 
 PNL_END
@@ -327,12 +356,14 @@ PNL_BEGIN
 
 void pnlRandNormal(floatVector* vls, floatVector &mean, floatVector &sigma )
 {
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+    
     int nEl = mean.size();
     vls->resize(nEl);
     if( nEl > 1 )
     {
         floatVector normVls(nEl);
-        //vsRngGaussian( VSL_METHOD_SGAUSSIAN_BOXMULLER2, g_RNG.m_vslStream, nEl, &normVls.front(), 0, 1 );
+        //vsRngGaussian( VSL_METHOD_SGAUSSIAN_BOXMULLER2, g_RNG[myid].m_vslStream, nEl, &normVls.front(), 0, 1 );
         pnlRandNormal(nEl,&normVls.front(), 0, 1);
         
         CxMat matNormVls  = cxMat( nEl, 1, CX_32FC1, &normVls.front() ); 
@@ -369,7 +400,7 @@ void pnlRandNormal(floatVector* vls, floatVector &mean, floatVector &sigma )
     else
     {
         
-        //vsRngGaussian( VSL_METHOD_SGAUSSIAN_BOXMULLER2, g_RNG.m_vslStream, 1,
+        //vsRngGaussian( VSL_METHOD_SGAUSSIAN_BOXMULLER2, g_RNG[myid].m_vslStream, 1,
         //    &(vls->front()), mean.front(), sigma.front() );
         vls->front() = pnlRandNormal( mean.front(), sigma.front() );
     }
@@ -377,6 +408,8 @@ void pnlRandNormal(floatVector* vls, floatVector &mean, floatVector &sigma )
 
 void pnlRandNormal(doubleVector* vls, doubleVector &mean, doubleVector &sigma )
 {
+    int myid = PAR_OMP_NUM_CURR_THREAD;
+    
     int nEl = mean.size();
     vls->resize(nEl);
     if( nEl > 1 )
@@ -418,7 +451,7 @@ void pnlRandNormal(doubleVector* vls, doubleVector &mean, doubleVector &sigma )
     else
     {
         
-        //vsRngGaussian( VSL_METHOD_SGAUSSIAN_BOXMULLER2, g_RNG.m_vslStream, 1,
+        //vsRngGaussian( VSL_METHOD_SGAUSSIAN_BOXMULLER2, g_RNG[myid].m_vslStream, 1,
         //    &(vls->front()), mean.front(), sigma.front() );
         vls->front() = pnlRandNormal( mean.front(), sigma.front() );
     }

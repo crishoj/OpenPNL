@@ -16,6 +16,12 @@
 
 #include "CreateBNets.h"
 #include "LoadBNet.h"
+
+#ifdef _DEBUG
+#pragma comment(lib, "mpichd")
+#else
+#pragma comment(lib, "mpich")
+#endif
 #include "mpi.h"
 
 // ============================================================================
@@ -199,6 +205,7 @@ int RunTest(int argc, char* argv[])
   CBNet *pBNet = NULL, *pBNet1 = NULL;
   CInfEngine *pInfEng = NULL, *pParInfEng = NULL;
   CEMLearningEngine *pLearnEng = NULL, *pParLearnEng = NULL;
+  vector<CEvidence*> evidences;
 
   double start, finish, duration;
   int i;
@@ -228,7 +235,7 @@ int RunTest(int argc, char* argv[])
     pBNet = Create_BNet_Default(nnodes, max_number_of_states, num_indep_nodes,
       max_family_size, num_edges);
   else
-    pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(argv[1]));
+    pBNet = dynamic_cast<CBNet*>(LoadGrModelFromXML(argv[1], &evidences));
   if (pBNet == NULL)
   {
     printf("\n!!!Unexpected error!!!\n");
@@ -243,7 +250,7 @@ int RunTest(int argc, char* argv[])
       pBNet1 = Create_BNet_Default(nnodes, max_number_of_states, num_indep_nodes,
         max_family_size, num_edges);
     else
-      pBNet1 = dynamic_cast<CBNet*>(LoadGrModelFromXML(argv[1]));
+      pBNet1 = dynamic_cast<CBNet*>(LoadGrModelFromXML(argv[1], &evidences));
     if (pBNet1 == NULL)
     {
       printf("\n!!!Unexpected error!!!\n");
@@ -263,7 +270,7 @@ int RunTest(int argc, char* argv[])
     pInfEng = CPearlInfEngine::Create(pBNet);
     pParInfEng = CParPearlInfEngine::Create(pBNet);
   }
-/*  else
+  else
   if (strcmp(argv[2],"Gibbs") == 0)
   {
     pInfEng = CGibbsSamplingInfEngine::Create(pBNet);
@@ -275,7 +282,7 @@ int RunTest(int argc, char* argv[])
     pLearnEng = CEMLearningEngine::Create(pBNet);
     pParLearnEng = CParEMLearningEngine::Create(pBNet1);
   }
-*/  else
+  else
   {
     printf("\nUsage: .exe [random|Asia|fname] [JTree|Pearl|Gibbs|EMLearn] {num of iteration}\n");
     return 1;
@@ -384,12 +391,19 @@ int RunTest(int argc, char* argv[])
   }
   else
   {
-    const int numOfObsNds = 2;
-    const int obsNds[] = { 0, 3 };
-    valueVector obsNdsVals(2);
-    obsNdsVals[0].SetInt(1);
-    obsNdsVals[1].SetInt(0);
-    pEvidence = CEvidence::Create(pBNet, numOfObsNds, obsNds, obsNdsVals);
+    //if (evidences.empty())
+    {
+      const int numOfObsNds = 2;
+      const int obsNds[] = { 0, 3 };
+      valueVector obsNdsVals(2);
+      obsNdsVals[0].SetInt(1);
+      obsNdsVals[1].SetInt(0);
+      pEvidence = CEvidence::Create(pBNet, numOfObsNds, obsNds, obsNdsVals);
+    }
+    /*else
+    {
+      pEvidence = evidences.front();
+    }*/
   }
 
 // Run choosen inference engine 
@@ -450,18 +464,19 @@ int RunTest(int argc, char* argv[])
     else
     if (strcmp(argv[2],"Gibbs") == 0)
     {
-      //static_cast<CParGibbsInfEngine*>(pParInfEng)->EnterEvidence(pEvidence);
+      static_cast<CParGibbsSamplingInfEngine*>(pParInfEng)->EnterEvidence(pEvidence);
     }
     else
     if (strcmp(argv[2],"EMLearn") == 0)
     {
-      //((CParEMLearningEngine*)pParLearnEng)->ParLearnOMP();
+      //static_cast<CParEMLearningEngine*>(pParLearnEng)->Learn();
+      static_cast<CParEMLearningEngine*>(pParLearnEng)->LearnOMP();
     }
     TIME_E(start, finish, duration)
     ParTime[TestNum] = duration;
     MPI_PRINT(0) printf("done\n");
   #endif //PAR_PNL
-  
+
 // - comparing result section -------------------------------------------------
   #ifdef COMPARE_RESULTS
     MPI_PRINT(0)
@@ -488,17 +503,17 @@ int RunTest(int argc, char* argv[])
           printf("Factors comparing:  not OK\n");
       }
 
-/*
       if (strcmp(argv[2],"EMLearn") == 0)
       {
-        int flag = ((CParEMLearningEngine*)pParLearnEng)->
-          IsEqual(pLearnEng, 0.0001f, 1);
+          int flag = pnl::EqualResults(
+              dynamic_cast<CEMLearningEngine&>(*pLearnEng),
+              dynamic_cast<CEMLearningEngine&>(*pParLearnEng), 0.0001f);
         if (flag)
           printf("Factors comparing:  OK\n");
         else
           printf("Factors comparing:  not OK\n");
       }
-*/
+
     }
   #endif // COMPARE_RESULTS
 // - print result section -----------------------------------------------------
@@ -522,7 +537,7 @@ int RunTest(int argc, char* argv[])
             pMatrix->GetRawData(&length, &output);
             for (int j = 0; j < length; j++)
             {
-              printf("(%.3f)\t",output[j]);
+              printf("(%.5f) ",output[j]);
             }
             printf("\n");
           }
@@ -551,6 +566,7 @@ int RunTest(int argc, char* argv[])
     #endif
   
     #ifdef PAR_PNL
+      MPI_PRINT(0)
       if (strcmp(argv[2],"EMLearn") == 0)
       {
         printf("\nPAR_PNL %s learn engine results\n====================================\n\n", argv[2]);
@@ -565,7 +581,7 @@ int RunTest(int argc, char* argv[])
           pMatrix->GetRawData(&length, &output);
           for (int j = 0; j < length; j++)
           {
-            printf("(%.3f)\t", output[j]);
+            printf("(%.5f) ", output[j]);
           }
           printf("\n");
         }

@@ -335,6 +335,16 @@ SOURCE=..\src\pnlParConfig.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\pnlParEmLearningEngine.cpp
+# ADD CPP /Yu"pnlConfig.hpp"
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pnlParGibbsSamplingInferenceEngine.cpp
+# ADD CPP /Yu"pnlConfig.hpp"
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\pnlParJtreeInferenceEngine.cpp
 # ADD CPP /Yu"pnlConfig.hpp"
 # End Source File
@@ -871,6 +881,14 @@ SOURCE=..\include\ParPNLCRTDBG.H
 # Begin Source File
 
 SOURCE=..\include\pnlParConfig.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlParEmLearningEngine.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlParGibbsSamplingInferenceEngine.hpp
 # End Source File
 # Begin Source File
 

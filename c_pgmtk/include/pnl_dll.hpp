@@ -87,8 +87,8 @@
 #include "pnlParNewDelete.hpp"
 #include "pnlParPearlInferenceEngine.hpp"
 #include "pnlParJtreeInferenceEngine.hpp"
-//#include "pnlParGibbsSamplingInferenceEngine.hpp"
-//#include "pnlParEmLearningEngine.hpp"
+#include "pnlParGibbsSamplingInferenceEngine.hpp"
+#include "pnlParEmLearningEngine.hpp"
 
 #include "pnl2TPFInferenceEngine.hpp"
 #include "pnlLWSamplingInferenceEngine.hpp"

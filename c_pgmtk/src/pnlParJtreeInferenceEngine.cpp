@@ -21,6 +21,7 @@
 
 #ifdef PAR_PNL
 
+#include "pnlTabularDistribFun.hpp"
 #include "pnlTabularPotential.hpp"
 
 #ifdef PAR_OMP
@@ -1246,6 +1247,7 @@ void CParJtreeInfEngine::CollectEvidence()
     int CurSendedNode;
     int CurRecvingNode;
     int myrank = m_MyRank;
+    MPI_Request requests[2];
     
     MaxTag = GetMaxTagForCollectEvidence();
     
@@ -1260,15 +1262,12 @@ void CParJtreeInfEngine::CollectEvidence()
         // Receive all data that are arrived on the process
         do
         {
-            
             MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, CollectEv_comm, 
                 &flagRecvedMsg, &status);
             Tag = status.MPI_TAG;
             
             if ((flagRecvedMsg) && (Tag < MaxTag))
             {
-                int matDim;
-                const int *pMatRanges;
                 int dataLength;
                 const float *pDataForRecving;
                 
@@ -1277,11 +1276,6 @@ void CParJtreeInfEngine::CollectEvidence()
                 pGraph->GetNeighbors(CurRecvingNode, &numOfNbrs, &nbrs,
                     &nbrsTypes);
                 
-                MPI_Recv(&matDim, 1, MPI_INT, m_NodeProcesses[CurSendedNode],
-                    Tag, CollectEv_comm, &status);
-                pMatRanges = new int [matDim];
-                MPI_Recv((int*)pMatRanges, matDim, MPI_INT,
-                    m_NodeProcesses[CurSendedNode], Tag, CollectEv_comm, &status);
                 MPI_Recv(&dataLength, 1, MPI_INT,
                     m_NodeProcesses[CurSendedNode], Tag, CollectEv_comm, &status);
                 pDataForRecving = new float [dataLength];
@@ -1311,10 +1305,12 @@ void CParJtreeInfEngine::CollectEvidence()
                     if (m_pEvidence->IsNodeObserved(sepDomain[i]))
                         obsIndicesIn.push_back(i);
                     
-                    updateRatio = CTabularPotential::Create(sepDomain, pMD, 
-                        pDataForRecving, obsIndicesIn);
-                    m_UpdateRatios[CurSendedNode][0] = updateRatio;
-                    potSep->SetDistribFun(updateRatio->GetDistribFun());
+                updateRatio = CTabularPotential::Create(sepDomain, pMD, 
+                    pDataForRecving, obsIndicesIn);
+                m_UpdateRatios[CurSendedNode][0] = updateRatio;
+                potSep->SetDistribFun(updateRatio->GetDistribFun());
+
+                delete [] (float*)pDataForRecving;
             }
         }
         while (flagRecvedMsg); // end of receiving
@@ -1360,29 +1356,19 @@ void CParJtreeInfEngine::CollectEvidence()
             {
                 // send an UpdateRatio to another process
                 CNumericDenseMatrix<float> *matForSending;
-                int matDim;
-                const int *pMatRanges;
                 int dataLength;
                 const float *pDataForSending;
-                MPI_Request *requests=new MPI_Request[5];
                 
                 Tag = GetTagForSending(currNode, Parents[0]);
                 
                 matForSending = static_cast<CNumericDenseMatrix<float>*>
                     ((updateRatio->GetDistribFun())->GetMatrix(matTable));
-                matForSending->GetRanges(&matDim, &pMatRanges);
                 
                 matForSending->GetRawData(&dataLength, &pDataForSending);
-                MPI_Isend(&matDim, 1, MPI_INT, RankProcWithParentNode, Tag,
-                    CollectEv_comm, &(requests[1]));
-                MPI_Isend((int*)pMatRanges, matDim, MPI_INT, RankProcWithParentNode,
-                    Tag, CollectEv_comm, &(requests[2]));
                 MPI_Isend(&dataLength, 1, MPI_INT, RankProcWithParentNode, Tag,
-                    CollectEv_comm, &(requests[3]));
+                    CollectEv_comm, &(requests[0]));
                 MPI_Isend((float*)pDataForSending, dataLength, MPI_FLOAT,
-                    RankProcWithParentNode, Tag, CollectEv_comm, &(requests[4]));
-                
-                delete [] requests;
+                    RankProcWithParentNode, Tag, CollectEv_comm, &(requests[1]));
             }
             m_QueueNodes.pop();
         }
@@ -1403,11 +1389,11 @@ void CParJtreeInfEngine::CollectEvidence()
                         if (IsInActuallyObsNodes(sepDom[j]))
                             Num--;
                         
-                        potClq->Normalize();
-                        
-                        delete m_UpdateRatios[nbrs[i]].front();
-                        m_NodeConditions[currNode][i] = 2;
-                        --m_NodeConditions[currNode][m_NodeConditions[currNode].size() - 1];
+                    potClq->Normalize();
+                    
+                    delete m_UpdateRatios[nbrs[i]].front();
+                    m_NodeConditions[currNode][i] = 2;
+                    --m_NodeConditions[currNode][m_NodeConditions[currNode].size() - 1];
                 }
             }
             if (m_NodeConditions[currNode][m_NodeConditions[currNode].size() - 1] > 0)
@@ -1427,6 +1413,12 @@ void CParJtreeInfEngine::CollectEvidence()
 #ifdef PAR_MPI
 void CParJtreeInfEngine::DistributeEvidence()
 {
+    if (m_NodesOfProcess.empty())
+    {
+        m_lastOpDone = opsDistribute;
+        return;
+    }
+    
     BuildRoutes();
     
     m_IsPropagated.resize(m_NodesOfProcess.size());
@@ -1436,48 +1428,48 @@ void CParJtreeInfEngine::DistributeEvidence()
         else
             m_IsPropagated[i] = false;
         
-        if (m_NumberOfUsedProcesses > 1)
-            ProcessRoutes();
+    if (m_NumberOfUsedProcesses > 1)
+        ProcessRoutes();
+    
+    const CGraph *pGraph = GetJTree()->GetGraph();
+    const int numOfClqs = GetJTree()->GetNumberOfNodes();
+    const int *nbr, *nbrs_end;
+    boolVector nodesSentMessages(numOfClqs, false);
+    intQueue source;
+    
+    source.push(m_Roots[m_MyRank]);
+    while(!source.empty())
+    {
+        int sender = source.front();
+        int numOfNbrs;
+        const int *nbrs;
+        const ENeighborType *nbrsTypes;
         
-        const CGraph *pGraph = GetJTree()->GetGraph();
-        const int numOfClqs = GetJTree()->GetNumberOfNodes();
-        const int *nbr, *nbrs_end;
-        boolVector nodesSentMessages(numOfClqs, false);
-        intQueue source;
+        pGraph->GetNeighbors(sender, &numOfNbrs, &nbrs, &nbrsTypes);
         
-        source.push(m_Roots[m_MyRank]);
-        while(!source.empty())
+        for(nbr = nbrs, nbrs_end = nbrs + numOfNbrs; nbr != nbrs_end; ++nbr)
         {
-            int sender = source.front();
-            int numOfNbrs;
-            const int *nbrs;
-            const ENeighborType *nbrsTypes;
-            
-            pGraph->GetNeighbors(sender, &numOfNbrs, &nbrs, &nbrsTypes);
-            
-            for(nbr = nbrs, nbrs_end = nbrs + numOfNbrs; nbr != nbrs_end; ++nbr)
+            if(m_NodeProcesses[*nbr] == m_MyRank)
             {
-                if(m_NodeProcesses[*nbr] == m_MyRank)
+                // find number of neighbours in m_NodesOfProcess
+                int NumNbr = 0;
+                while(m_NodesOfProcess[NumNbr] != (*nbr))
+                    NumNbr++;
+                
+                if(!nodesSentMessages[*nbr])
                 {
-                    // find number of neighbours in m_NodesOfProcess
-                    int NumNbr = 0;
-                    while(m_NodesOfProcess[NumNbr] != (*nbr))
-                        NumNbr++;
-                    
-                    if(!nodesSentMessages[*nbr])
-                    {
-                        if(!m_IsPropagated[NumNbr])
-                            PropagateBetweenClqs(sender, *nbr, false);
-                        // need to save to the source queue, if its not a leaf node
-                        if(pGraph->GetNumberOfNeighbors(*nbr) > 1)
-                            source.push(*nbr);
-                    }
+                    if(!m_IsPropagated[NumNbr])
+                        PropagateBetweenClqs(sender, *nbr, false);
+                    // need to save to the source queue, if its not a leaf node
+                    if(pGraph->GetNumberOfNeighbors(*nbr) > 1)
+                        source.push(*nbr);
                 }
             }
-            nodesSentMessages[sender] = true;
-            source.pop();
         }
-        m_lastOpDone = opsDistribute;
+        nodesSentMessages[sender] = true;
+        source.pop();
+    }
+    m_lastOpDone = opsDistribute;
 }
 #endif // PAR_MPI
 // ----------------------------------------------------------------------------
@@ -1512,17 +1504,20 @@ void CParJtreeInfEngine::InitWeightArrays()
 #ifdef PAR_MPI
 void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
 {
+        
+    
     MPI_Group World_group, CollectF_group;
     MPI_Comm CollectF_comm;
-    int *Ranks, m_size;
+    int *Ranks, np;
     
-    MPI_Comm_size(MPI_COMM_WORLD,&m_size);
-    Ranks = new int[m_size];
-    for (int i = 0; i < m_size; i++)
+    MPI_Comm_size(MPI_COMM_WORLD,&np);
+    Ranks = new int[np];
+    for (int i = 0; i < np; i++)
         Ranks[i] = i;
     MPI_Comm_group (MPI_COMM_WORLD, &World_group);
-    MPI_Group_incl(World_group, m_size, Ranks, &CollectF_group);
+    MPI_Group_incl(World_group, np, Ranks, &CollectF_group);
     MPI_Comm_create(MPI_COMM_WORLD, CollectF_group, &CollectF_comm);
+    delete [] Ranks;
     
     if (m_NumberOfProcesses == 1)
         return;
@@ -1534,8 +1529,6 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
         int MsgsNum = m_NodesOfProcess.size();
         CPotential *potForSending; 
         CNumericDenseMatrix<float>* matForSending;
-        int matDim;
-        const int *pMatRanges;
         const float *pDataForSending;
         int dataLength;
         int maxTagInCollectEvidence = GetMaxTagForCollectEvidence();
@@ -1546,7 +1539,6 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
             potForSending = GetJTree()->GetNodePotential(m_NodesOfProcess[node]);
             matForSending = 
                 static_cast<CNumericDenseMatrix<float>*>((potForSending->GetDistribFun())->GetMatrix(matTable));
-            matForSending->GetRanges(&matDim, &pMatRanges);
             
             matForSending->GetRawData(&dataLength, &pDataForSending);
             
@@ -1554,9 +1546,6 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
             MPI_Send(&m_NodesOfProcess[node], 1, MPI_INT, MainProcNum, Tag,
                 CollectF_comm);
             // send matrix: dimension, ranges, data
-            MPI_Send(&matDim, 1, MPI_INT, MainProcNum, Tag, CollectF_comm);
-            MPI_Send((int*)pMatRanges, matDim, MPI_INT, MainProcNum, Tag,
-                CollectF_comm);
             MPI_Send(&dataLength, 1, MPI_INT, MainProcNum, Tag, CollectF_comm);
             MPI_Send((float*)pDataForSending, dataLength, MPI_FLOAT, MainProcNum,
                 Tag, CollectF_comm);
@@ -1571,32 +1560,35 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
         
         MPI_Status status;
         CPotential *potNode;
-        int node, matDim, dataLength;
-        int *matRanges;
+        int node, dataLength;
         float *data;
+        int numNdsInSepDom;
+        const int *sepDom;
+
         for(i = 0; i < m_NumberOfUsedProcesses; i++)
         {
             if (i != m_MyRank)
                 for (int j = 0; j < NumOfNodesInProcess[i]; j++)
                 {
                     MPI_Recv(&node, 1, MPI_INT, i, MPI_ANY_TAG, CollectF_comm, &status);
-                    MPI_Recv(&matDim, 1, MPI_INT, i, MPI_ANY_TAG, CollectF_comm,
-                        &status);
-                    matRanges = new int [matDim];
-                    MPI_Recv(matRanges, matDim, MPI_INT, i, MPI_ANY_TAG, CollectF_comm,
-                        &status);
                     MPI_Recv(&dataLength, 1, MPI_INT, i, MPI_ANY_TAG, CollectF_comm,
                         &status);
                     data = new float [dataLength];
                     MPI_Recv(data, dataLength, MPI_FLOAT, i, MPI_ANY_TAG, CollectF_comm,
                         &status);
                     potNode = GetJTree()->GetNodePotential(node);
-                    CNumericDenseMatrix<float> *RecvMatrix = 
-                        CNumericDenseMatrix<float>::Create(matDim, matRanges, data);
-                    CDistribFun *Distr;
-                    Distr = potNode->GetDistribFun();
-                    Distr->SetUnitValue(0);
-                    potNode->GetDistribFun()->AttachMatrix(RecvMatrix, matTable);
+            
+                    potNode->GetDomain(&numNdsInSepDom, &sepDom);
+                    const pConstNodeTypeVector *nt = potNode->GetDistribFun()->
+                        GetNodeTypesVector();
+
+                    CTabularDistribFun *df = CTabularDistribFun::Create(numNdsInSepDom,
+                        &nt->front(), data );
+
+                    potNode->SetDistribFun(df);
+
+                    delete df;
+                    delete [] data;
                 }
         }
     }
@@ -2074,15 +2066,15 @@ void CParJtreeInfEngine::GetChildren(int NumOfNode, intVector *Children)
         else
             Children->resize(numOfNbrs - 1);
         
-        int j = 0;
-        for (int i = 0;i < numOfNbrs; i++)
+    int j = 0;
+    for (int i = 0;i < numOfNbrs; i++)
+    {
+        if (m_NbrsTypes[NumOfNode][i] == ntChild)
         {
-            if (m_NbrsTypes[NumOfNode][i] == ntChild)
-            {
-                (*Children)[j] = nbrs[i];
-                j++;
-            }
+            (*Children)[j] = nbrs[i];
+            j++;
         }
+    }
 }
 #endif // PAR_MPI
 // ----------------------------------------------------------------------------
@@ -2292,7 +2284,8 @@ void CParJtreeInfEngine::DivideNodesWithMinimumDeviationSearch()
                 BuildWeightesOfNodes();
                 BuildWeightesOfSubTrees();
                 
-                if (m_UsedNodes.size() !=  NumberOfNodes) 
+                if (m_UsedNodes.size() !=  NumberOfNodes)
+                {
                     if (p != 0)
                     {
                         WThreshold = W / p;
@@ -2302,8 +2295,9 @@ void CParJtreeInfEngine::DivideNodesWithMinimumDeviationSearch()
                     {
                         PNL_THROW(CInternalError, "Number of processes in CParJtreeInfEngine::DivideNodes <=0 when node list is not empty")
                     }
-                    else 
-                        FunctionStillRunning = false;
+                }
+                else 
+                    FunctionStillRunning = false;
             } //while
         } //if (NumberOfNodes != 0)...
         else 
@@ -2394,16 +2388,16 @@ int CParJtreeInfEngine::GetTagForSending(int sourceNode, int sinkNode)
 #ifdef PAR_MPI
 void CParJtreeInfEngine::CollectCommCreate()
 {
-    int m_size;
+    int np;
     int *Ranks;
     int i;
     
-    MPI_Comm_size(MPI_COMM_WORLD, &m_size);
-    Ranks = new int[m_size];
-    for (i = 0; i < m_size; i++)
+    MPI_Comm_size(MPI_COMM_WORLD, &np);
+    Ranks = new int[np];
+    for (i = 0; i < np; i++)
         Ranks[i] = i;
     MPI_Comm_group (MPI_COMM_WORLD, &World_group);
-    MPI_Group_incl(World_group, m_size, Ranks, &CollectEv_group);
+    MPI_Group_incl(World_group, np, Ranks, &CollectEv_group);
     MPI_Comm_create(MPI_COMM_WORLD, CollectEv_group, &CollectEv_comm);
     
     delete [] Ranks;
@@ -2460,6 +2454,7 @@ void CParJtreeInfEngine::ProcessRoutes()
     CPotential *newPotSep, *updateRatio;
     int numNdsInSepDom;
     const int *sepDom;
+    int i, j;
     
     // find on which process main root is
     int NumProcOfMainRoot=0;
@@ -2470,7 +2465,7 @@ void CParJtreeInfEngine::ProcessRoutes()
     {
         int NumOfRoute = 0;
         
-        while (m_Roots[m_MyRank]!=m_Routes[NumOfRoute][0])
+        while (m_Roots[m_MyRank] != m_Routes[NumOfRoute][0])
         { 
             NumOfRoute++;
         }
@@ -2484,45 +2479,52 @@ void CParJtreeInfEngine::ProcessRoutes()
         }
         // receiving of update ratio
         MPI_Status status;
-        int matDim;
-        const int *pMatRanges;
         int dataLength;
         const float *pDataForRecving;
         
-        MPI_Recv(&matDim, 1, MPI_INT, NumOfSendProc, MPI_ANY_TAG, MPI_COMM_WORLD,
-            &status);
-        pMatRanges = new int [matDim];
-        MPI_Recv((int*)pMatRanges, matDim, MPI_INT, NumOfSendProc, MPI_ANY_TAG, 
-            MPI_COMM_WORLD, &status);
         MPI_Recv(&dataLength, 1, MPI_INT, NumOfSendProc, MPI_ANY_TAG, 
             MPI_COMM_WORLD, &status);
         pDataForRecving = new float [dataLength];
         MPI_Recv((float*)pDataForRecving, dataLength, MPI_FLOAT, NumOfSendProc,
             MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         
-        CNumericDenseMatrix<float> *RecvMatrix = 
-            CNumericDenseMatrix<float>::Create(matDim, pMatRanges, pDataForRecving);
-        CPotential *UpdateRatio = 
-            (CPotential*)(GetJTree()->GetSeparatorPotential(m_Routes[NumOfRoute][1],
-            m_Routes[NumOfRoute][0])->Clone());
+        CPotential *potSep = 
+            GetJTree()->GetSeparatorPotential(m_Routes[NumOfRoute][1], 
+            m_Routes[NumOfRoute][0]);
+        CModelDomain* pMD = potSep->GetModelDomain();
         
-        UpdateRatio -> GetDistribFun()->AttachMatrix(RecvMatrix, matTable);
+        int numNdsInSepDom;
+        const int *sepDom;
+        potSep->GetDomain(&numNdsInSepDom, &sepDom);
+        
+        intVector sepDomain(numNdsInSepDom);
+        sepDomain.assign(sepDom, sepDom + numNdsInSepDom);
+        
+        intVector obsIndicesIn;
+        obsIndicesIn.clear();
+        for (i = 0; i < sepDomain.size(); i++)
+            if (m_pEvidence->IsNodeObserved(sepDomain[i]))
+                obsIndicesIn.push_back(i);
+            
+        updateRatio = CTabularPotential::Create(sepDomain, pMD, 
+            pDataForRecving, obsIndicesIn);
+
         CPotential *potSink = GetJTree()->GetNodePotential(m_Routes[NumOfRoute][0]);
-        *potSink *= *UpdateRatio;
+        *potSink *= *updateRatio;
         potSink->Normalize();
-        delete UpdateRatio;
-        delete [] (int*)pMatRanges, (float*)pDataForRecving; 
+        delete updateRatio;
+        delete [] (float*)pDataForRecving; 
     }
     else
     {
         // nothing
     }
     // we are found the route
-    for (int i=0; i < m_NumberOfUsedProcesses - 1; i++)
+    for (i = 0; i < m_NumberOfUsedProcesses - 1; i++)
     {
         if (m_Routes[i][(m_Routes[i].size()) - 1] == m_Roots[m_MyRank])
         {
-            for (int j = (m_Routes[i].size()) - 1; j > 1; j-- )
+            for (j = (m_Routes[i].size()) - 1; j > 1; j-- )
             {
                 PropagateBetweenClqs(m_Routes[i][j], m_Routes[i][j-1], false);
                 int index = 0;
@@ -2543,19 +2545,13 @@ void CParJtreeInfEngine::ProcessRoutes()
                 NumOfRecvProc++;
             
             CNumericDenseMatrix<float> *matForSending;
-            int matDim;
-            const int *pMatRanges;	
             int dataLength;
             const float *pDataForSending;
             
             matForSending = static_cast<CNumericDenseMatrix<float>*>
                 ((updateRatio->GetDistribFun())->GetMatrix(matTable));
-            matForSending->GetRanges(&matDim, &pMatRanges);
             matForSending->GetRawData(&dataLength, &pDataForSending);
             
-            MPI_Send(&matDim, 1, MPI_INT, NumOfRecvProc, m_MyRank, MPI_COMM_WORLD);
-            MPI_Send((int*)pMatRanges, matDim, MPI_INT, NumOfRecvProc, m_MyRank,
-                MPI_COMM_WORLD);
             MPI_Send(&dataLength, 1, MPI_INT, NumOfRecvProc, m_MyRank,
                 MPI_COMM_WORLD);
             MPI_Send((float*)pDataForSending, dataLength, MPI_FLOAT, NumOfRecvProc,

@@ -17,9 +17,10 @@
 PNL_USING
 using namespace std;
 
-const string nameOfModel = "BNet_model";
+const string nameOfModel = "RandomGraphicalModel";
+const string nameOfEvidence = "my_ev";
 
-CGraphicalModel* LoadGrModelFromXML(const string& xmlname)
+CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<CEvidence*>* pEv)
 {
     CGraphicalModel* pGM = NULL;
     
@@ -35,6 +36,13 @@ CGraphicalModel* LoadGrModelFromXML(const string& xmlname)
         cout << "\nfile " << xmlname.c_str() << 
             "isn't containing an object with name: " << nameOfModel.c_str();
         return NULL;
+    }
+
+    if (pEv)
+    {
+        pEv->clear();
+        pEv->push_back(static_cast<CEvidence*>(
+            ContextLoad.Get(string(nameOfEvidence + "0").c_str())));
     }
     
     return pGM;

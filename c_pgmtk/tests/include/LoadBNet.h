@@ -20,7 +20,8 @@
 PNL_USING
 using namespace std;
 
-CGraphicalModel* LoadGrModelFromXML(const string& xmlname);
+CGraphicalModel* LoadGrModelFromXML(const string& xmlname, 
+    vector<CEvidence*>* pEv = NULL);
 int SaveGrModelAsXML(CGraphicalModel* pGM, const string& xmlname);
 
 #endif // __LOADBNET_H__
