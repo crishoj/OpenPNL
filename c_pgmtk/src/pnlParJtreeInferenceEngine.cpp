@@ -564,6 +564,13 @@ void CParJtreeInfEngine::DistributeEvidenceOMP()
                 }
             }
         } // for nbr
+        
+        if (numOfNbrs == 0)
+        {   // it means that junction tree consist of one root node
+            omp_set_lock(&count_lock);
+            IsEndPar = 1;
+            omp_unset_lock(&count_lock);            
+        }
 
         if (m_NodeConditions[sender][m_NodeConditions[sender].size() - 1] == 0)
         {
@@ -2034,13 +2041,15 @@ void CParJtreeInfEngine::InitWeightArrays()
 #ifdef PAR_MPI
 void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
 {
+    int i, j;
+
     MPI_Group World_group, CollectF_group;
     MPI_Comm CollectF_comm;
     int *Ranks, m_size;
     
     MPI_Comm_size(MPI_COMM_WORLD, &m_size);
     Ranks = new int[m_size];
-    for (int i = 0; i < m_size; i++)
+    for (i = 0; i < m_size; i++)
         Ranks[i] = i;
     MPI_Comm_group (MPI_COMM_WORLD, &World_group);
     MPI_Group_incl(World_group, m_size, Ranks, &CollectF_group);
@@ -2181,7 +2190,7 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
     {
         intVector NumOfNodesInProcess(m_NumberOfUsedProcesses, 0);
         int NumOfNds = m_NodeProcesses.size();
-        for(int i = 0; i < NumOfNds; i++)
+        for(i = 0; i < NumOfNds; i++)
             NumOfNodesInProcess[m_NodeProcesses[i]]++;
         
         MPI_Status status;
@@ -2192,7 +2201,7 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
         {
             if (i != m_MyRank)
 
-                for (int j = 0; j < NumOfNodesInProcess[i]; j++)
+                for (j = 0; j < NumOfNodesInProcess[i]; j++)
                 {
                     MPI_Recv(&node, 1, MPI_INT, i, MPI_ANY_TAG, CollectF_comm, &status);
 
