@@ -159,8 +159,8 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eAddArc:	    BNet().AddArc (args[0], args[1]); break;
 	case eLoadNet:	    BNet().LoadNet(args[0].c_str());  break;
 	case eSaveNet:	    BNet().SaveNet(args[0].c_str());  break;
-	case eLoadLearnBuf: BNet().LoadLearnBuf(args[0].c_str());  break;
-	case eSaveLearnBuf: BNet().SaveLearnBuf(args[0].c_str());  break;
+	case eLoadEvidBuf: BNet().LoadEvidBuf(args[0].c_str());  break;
+	case eSaveEvidBuf: BNet().SaveEvidBuf(args[0].c_str());  break;
 	case eSetP:	    BNet().SetP(args[0], args[1], args[2]); break;
 	case eP:	    Print(BNet().P(args[0], args[1]));break;
 	case eLearnStructure:BNet().LearnStructure(0, 0); break;
@@ -189,25 +189,11 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 		}
 		break;
 	    }
-	case eEvidence:
-	    {
-		TokArr arg1;
-		bool arg2 = false;
-
-		if(args.size() > 0)
-		{
-		    arg1 = args[0];
-		    if(args.size() > 1)
-		    {
-			arg2 = (atoi(args[1].c_str()) != 0);
-		    }
-		}
-
-		BNet().Evid(arg1, arg2);
-		break;
-	    }
+	case eEditEvidence: BNet().EditEvidence(args[0]); break;
 	case eClearEvid:    BNet().ClearEvid(); break;
-	case eClearEvidHistory:BNet().ClearEvidHistory(); break;
+	case eAddEvidToBuf:    BNet().AddEvidToBuf(args[0]); break;
+	case eClearEvidBuf: BNet().ClearEvidBuf(); break;
+	case eCurEvidToBuf: BNet().CurEvidToBuf(); break;
 	case eLearn:	    BNet().Learn(); break;
 	case eMPE:	    Print(BNet().MPE(args[0])); break;
 	case eJPD:	    Print(BNet().JPD(args[0])); break;

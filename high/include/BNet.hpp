@@ -49,7 +49,7 @@ public:
     
 #ifndef SEPARATE_FUNS_FOR_NEIG
     // possible values for 'id' are:
-    //   "parents", "children", "ancestors", "descedants" and so on
+    //   "parents", "children", "ancestors", "descendants" and so on
     TokArr Neighbours(const char *id = "parents", TokArr nodes = TokArr());
 #else
     TokArr Parents(TokArr nodes);
@@ -64,23 +64,25 @@ public:
     // get tabular probability
     TokArr P(TokArr value, TokArr parents = TokArr());
     
-    TokArr JPD(TokArr value );
     // set parameters for gaussian distribution
-    void SetGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
+    void SetGaussian(TokArr node, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
     
-    // setting evidence on the board (bPush == false) or to the history
-    void Evid(TokArr values = TokArr(), bool bPush = false);
-    
-    // stores given evidence to the history
-    void PushEvid(TokArr const values[], int nValue);
+    // setting evidence on the board
+    void EditEvidence(TokArr values);
     
     // clears current evidence
     void ClearEvid();
     
-    // clears evidence history
-    void ClearEvidHistory();
+    // stores current evidence to the buffer
+    void CurEvidToBuf();
+
+    // adds evidence to the buffer
+    void AddEvidToBuf(TokArr values);
     
-    // learns using current evidence and evidence history
+    // clears evidence history
+    void ClearEvidBuf();
+    
+    // learns using evidence history
     void Learn();
     void Learn(TokArr aValue[], int nValue);
     
@@ -94,14 +96,17 @@ public:
     // returns MPE for nodes using current evidence
     TokArr MPE(TokArr nodes = TokArr());
     
+    // returns JPD for nodes using current evidence
+    TokArr JPD(TokArr nodes);
+
     // get parameters of gaussian distribution
-    TokArr GaussianMean(TokArr vars);
+    TokArr GaussianMean(TokArr nodes);
     TokArr GaussianCovar(TokArr var, TokArr vars);
     
     void SaveNet(const char *filename);
-    int SaveLearnBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
+    int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
     void LoadNet(const char *filename);
-    int LoadLearnBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV, TokArr columns = TokArr());
+    int LoadEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV, TokArr columns = TokArr());
 
     // sets all distributions to uniform;
     // This function temporary here - I think it should be external function

@@ -39,13 +39,14 @@ public:
     TokArr NodeType(TokArr nodes);
     void AddArc(TokArr from, TokArr to);
     void DelArc(TokArr from, TokArr to);
-    void Evid(TokArr values = TokArr(), bool bPush = false);
-    void PushEvid(TokArr const values[], int nValue);
+    void EditEvidence(TokArr values);
     void ClearEvid();
-    void ClearEvidHistory();
+    void CurEvidToBuf();
+    void AddEvidToBuf(TokArr values);
+    void ClearEvidBuf();
 
-    int SaveLearnBuf(const char *filename, NetConst::ESavingType mode);
-    int LoadLearnBuf(const char *filename, NetConst::ESavingType mode, TokArr columns);
+    int SaveEvidBuf(const char *filename, NetConst::ESavingType mode);
+    int LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr columns);
     // other variants same as after SaveLearnBuf
 
     // save net. return true if successful saving

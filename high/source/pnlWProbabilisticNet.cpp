@@ -111,26 +111,11 @@ void ProbabilisticNet::DelArc(TokArr from, TokArr to)
     }
 }
 
-void ProbabilisticNet::Evid(TokArr values, bool bPush)
+void ProbabilisticNet::EditEvidence(TokArr values)
 {
     if(values.size())
     {
 	m_EvidenceBoard.Set(values);
-    }
-
-    if(bPush && !m_EvidenceBoard.IsEmpty())
-    {
-	// check for empty Board?
-	m_aEvidence.push_back(CreateEvidence(m_EvidenceBoard.GetBoard()));
-	m_EvidenceBoard.Clear();
-    }
-}
-
-void ProbabilisticNet::PushEvid(TokArr const values[], int nValue)
-{
-    for(int i = 0; i < nValue; ++i)
-    {
-	Evid(values[i], true);
     }
 }
 
@@ -139,7 +124,20 @@ void ProbabilisticNet::ClearEvid()
     m_EvidenceBoard.Clear();
 }
 
-void ProbabilisticNet::ClearEvidHistory()
+void ProbabilisticNet::CurEvidToBuf()
+{
+    m_aEvidence.push_back(CreateEvidence(m_EvidenceBoard.GetBoard()));
+}
+
+void ProbabilisticNet::AddEvidToBuf(TokArr values)
+{
+    if(values.size())
+    {
+	m_aEvidence.push_back(CreateEvidence(values));
+    }
+}
+
+void ProbabilisticNet::ClearEvidBuf()
 {
     // ? may be this wrong - we mustn't delete evidences
     for(int i = m_aEvidence.size(); --i >= 0; )
@@ -150,7 +148,7 @@ void ProbabilisticNet::ClearEvidHistory()
     m_aEvidence.resize(0);
 }
 
-int ProbabilisticNet::SaveLearnBuf(const char *filename, NetConst::ESavingType mode)
+int ProbabilisticNet::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 {
     WLex lex(filename, false/* write */, (mode == NetConst::eCSV) ? ',':'\t');
     int iEvid, iCol, i;
@@ -243,7 +241,7 @@ int ProbabilisticNet::SaveLearnBuf(const char *filename, NetConst::ESavingType m
     return m_aEvidence.size();
 }
 
-int ProbabilisticNet::LoadLearnBuf(const char *filename, NetConst::ESavingType mode, TokArr columns)
+int ProbabilisticNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr columns)
 {
     static const char funName[] = "LoadLearnBuf";
 
@@ -321,7 +319,7 @@ int ProbabilisticNet::LoadLearnBuf(const char *filename, NetConst::ESavingType m
 
 	if(evid.size() > 0)
 	{
-	    Evid(evid, true);
+	    AddEvidToBuf(evid);
 	    nEvid++;
 	}
     }

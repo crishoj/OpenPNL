@@ -85,12 +85,12 @@ void BayesNet::SetP(TokArr value, TokArr prob, TokArr parentValue)
     Net().Distributions()->FillData(value, prob, parentValue);
 }
 
-void BayesNet::SetGaussian(TokArr var, TokArr mean, TokArr variance, TokArr weight)
+void BayesNet::SetGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)
 {
-    Net().Distributions()->FillData(var, mean, TokArr(), pnl::matMean);
-    Net().Distributions()->FillData(var, variance, TokArr(), pnl::matCovariance);
+    Net().Distributions()->FillData(node, mean, TokArr(), pnl::matMean);
+    Net().Distributions()->FillData(node, variance, TokArr(), pnl::matCovariance);
     if (weight.size() != 0)
-        Net().Distributions()->FillData(var, weight, TokArr(), pnl::matWeights);
+        Net().Distributions()->FillData(node, weight, TokArr(), pnl::matWeights);
 }
 
 TokArr BayesNet::GaussianMean(TokArr vars)
@@ -257,24 +257,29 @@ TokArr BayesNet::JPD( TokArr nodes )
     return res;
 }
 
-void BayesNet::Evid(TokArr values, bool bPush)
+void BayesNet::EditEvidence(TokArr values)
 {
-    Net().Evid(values, bPush);
-}
-
-void BayesNet::PushEvid(TokArr const values[], int nValue)
-{
-    Net().PushEvid(values, nValue);
+    Net().EditEvidence(values);
 }
 
 void BayesNet::ClearEvid()
 {
     Net().ClearEvid();
 }
-
-void BayesNet::ClearEvidHistory()
+    
+void BayesNet::CurEvidToBuf()
 {
-    Net().ClearEvidHistory();
+    Net().CurEvidToBuf();
+}
+
+void BayesNet::AddEvidToBuf(TokArr values)
+{
+    Net().AddEvidToBuf(values);
+}
+
+void BayesNet::ClearEvidBuf()
+{
+    Net().ClearEvidBuf();
     m_nLearnedEvidence = 0;
 }
 
@@ -591,9 +596,9 @@ void BayesNet::SaveNet(const char *filename)
     // BayesNet haven't any specific data for now
 }
 
-int BayesNet::SaveLearnBuf(const char *filename, NetConst::ESavingType mode)
+int BayesNet::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 {
-    return Net().SaveLearnBuf(filename, mode);
+    return Net().SaveEvidBuf(filename, mode);
 }
 
 void BayesNet::LoadNet(const char *filename)
@@ -619,9 +624,9 @@ void BayesNet::LoadNet(const char *filename)
     // BayesNet haven't any specific data for now
 }
 
-int BayesNet::LoadLearnBuf(const char *filename, NetConst::ESavingType mode, TokArr columns)
+int BayesNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr columns)
 {
-    return Net().LoadLearnBuf(filename, mode, columns);
+    return Net().LoadEvidBuf(filename, mode, columns);
 }
 
 // whatNodes is array of tokens which specify the list of variables and optionally 
