@@ -623,7 +623,7 @@ void CJtreeInfEngine::PropagateBetweenClqs(int source, int sink, bool isCollect)
     }
     
     // check that nodes source and sink are discrete
-    if(isDense)
+    if(isDense && !m_bMaximize)
     {
         pnl::CNumericDenseMatrix< float > *sorceMatrix, *sepMatrix, *sinkMatrix;
         int *dims_to_keep, *dims_to_mul;
