@@ -299,7 +299,7 @@ private:
 
     // set necessary parameters for message sending via MPI
     void SetFarNeighbors(intVector* sinks, intVector* sources, 
-        intVector* messLengthSend, intVector* messLengthRecv, int &size, int Discrete_Continuous);
+        intVector* messLengthSend, intVector* messLengthRecv, int &size, int Discrete_Continuous,intVecVector *neighbNumbers);
 
     // divide nodes between processes if model is grille
     void DivideGrille();
