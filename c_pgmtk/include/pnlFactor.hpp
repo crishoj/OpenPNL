@@ -51,6 +51,7 @@ typedef PNL_API enum
 typedef PNL_API enum
 {   ftPotential
 ,   ftCPD
+,   ftIDPotential
 }  EFactorType;
 
 class CDistribFun;

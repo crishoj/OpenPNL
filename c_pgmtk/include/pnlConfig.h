@@ -11,6 +11,9 @@
 #pragma warning(disable : 4275) // non dll-interface class
 #pragma warning(disable : 4552) // operator has no effect
 #pragma warning(disable : 4512) // operator has no effect
+#pragma warning(disable : 4284) // return type for 'const_iterator::operator ->' is 'void *const * '
+                                // (ie; not a UDT or reference to a UDT.
+                                // Will produce errors if applied using infix notation)
 //temporary
 #pragma warning(disable : 4702) //unreachable code
 #pragma warning(disable : 4127) // conditional expression is constant
