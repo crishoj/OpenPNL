@@ -70,6 +70,8 @@ public:
         int UpdateCanonical = 1 ) const;
     virtual void MultiplyInSelfData( const int *pBigDomain, 
         const int *pSmallDomain, const CDistribFun *pOtherData );
+    virtual void SumInSelfData(const int *pBigDomain, 
+        const int *pSmallDomain, const CDistribFun *pOtherData);
     virtual void DivideInSelfData( const int *pBigDomain, 
         const int *pSmallDomain, const CDistribFun *pOtherData );
     virtual void SetStatistics( const CMatrix<float> *pMat, 

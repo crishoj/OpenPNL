@@ -110,6 +110,8 @@ public:
     const CDistribFun *pSmallData) ;*/
     virtual void MultiplyInSelfData( const int *pBigDomain, 
         const int *pSmallDomain, const CDistribFun *pOtherData );
+    virtual void SumInSelfData(const int *pBigDomain, 
+        const int *pSmallDomain, const CDistribFun *pOtherData);
     virtual void DivideInSelfData( const int *pBigDomain, 
         const int *pSmallDomain, const CDistribFun *pOtherData ) ;
         /*	virtual void DivideData( const int *pDomain1, const int *pDomain2,

@@ -234,6 +234,12 @@ typedef pnlVector< CDistribFun*>        distrPVector;
 template<class T> class C2DNumericDenseMatrix;
 typedef pnlVector<const C2DNumericDenseMatrix<float>*> p2DDenseMatrixVector;
 
+class CIDPotential;
+
+typedef pnlVector< CIDPotential* >      pIDPotentialVector;
+
+typedef pnlVector<pFactorVector>        pFactorVecVector;
+
 PNL_END
 
 #endif // __PNLTYPEDEFS_H__

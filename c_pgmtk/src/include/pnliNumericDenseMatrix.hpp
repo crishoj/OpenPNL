@@ -154,7 +154,11 @@ public:
     void _MultiplyInSelf2D_plain( const CMatrix<Type>* matToMult,
                                int numDimsToMult, const int* indicesToMultInSelf, int isUnifrom = 0,
                                const Type uniVal = Type(0) );*/
- 
+
+    void SumInSelf(const CMatrix<Type>* matToSum,
+      int numDimsToSum, const int* indicesToSumInSelf, int isUnifrom = 0,
+      const Type uniVal = Type(0));
+
 private:
 };
 
@@ -2979,6 +2983,107 @@ iCNumericDenseMatrix<Type>::iCNumericDenseMatrix(
                                const iCNumericDenseMatrix<Type> & inputMat )
                                :CDenseMatrix<Type>( inputMat )//, CMatrix<Type>(0)
 {
+}
+
+// ----------------------------------------------------------------------------
+template< typename  T >
+void pnl::iCNumericDenseMatrix< T >::SumInSelf(
+  pnl::CMatrix< T > const *mat, int num_dims_to_sum,
+  int const *dims_to_sum, int, T const)
+{
+  int big_num_dims;
+  int const *big_ranges;
+  T *big_bulk;
+  int big_bulk_size;
+
+  const T *dst_bulk;
+  int dst_bulk_size;
+  int safe_dst_num_dims;
+  int const *safe_dst_ranges;
+
+  EMatrixClass other_class = mat->GetMatrixClass();
+  if (other_class != mcNumericDense)
+  {
+    PNL_THROW(CInvalidOperation, "can't multiply dense in sparse");
+  }
+  
+  GetRanges(&big_num_dims, &big_ranges);
+  ((iCNumericDenseMatrix< T > *)mat)->
+    GetRanges(&safe_dst_num_dims, &safe_dst_ranges);
+  if (safe_dst_num_dims != num_dims_to_sum)
+  {
+    PNL_THROW(CInvalidOperation, 
+      "can multiply only by all dims of small matrix");
+  }
+  GetRawData(&big_bulk_size, (T const **)&big_bulk);
+  ((iCNumericDenseMatrix< T > *)mat)->GetRawData(&dst_bulk_size, &dst_bulk);
+
+  const int MAX_SIZE = 100;
+  int i, j;
+
+//  int dst_mult_count = big_bulk_size / dst_bulk_size;
+  int num_dims_unkeep_mult = big_num_dims - safe_dst_num_dims;
+
+  int keep_steps_mult[MAX_SIZE];
+  int step = 1;
+  for (i = safe_dst_num_dims - 1; i >=0; i--)
+  {
+    keep_steps_mult[i] = step;
+    step *= big_ranges[dims_to_sum[i]];
+  }
+
+  int dims_unkeep_mult[MAX_SIZE];
+  int pos = 0, loc;
+  for (i = 0; i < big_num_dims; i++)
+  {
+    loc = 0;
+    for (j = 0; j < safe_dst_num_dims; j++)
+      if (i == dims_to_sum[j])
+        loc = 1;
+    if (!loc)
+      dims_unkeep_mult[pos++] = i;
+  }
+
+  int smal_steps_mult[MAX_SIZE];
+  for (i = safe_dst_num_dims - 1; i >=0; i--)
+  {
+    smal_steps_mult[dims_to_sum[i]] = keep_steps_mult[i];
+  }
+  for (i = num_dims_unkeep_mult - 1; i >=0; i--)
+  {
+    smal_steps_mult[dims_unkeep_mult[i]] = 0;
+  }
+  int dbsteps_mult[MAX_SIZE];
+  for (i = big_num_dims - 1; i >=0; i--)
+  {
+    dbsteps_mult[i] = smal_steps_mult[i] * big_ranges[i];
+  }
+  for (i = 0; i < big_num_dims - 1; i++)
+  {
+    dbsteps_mult[i] = smal_steps_mult[i] - dbsteps_mult[i + 1];
+  }
+
+// --- Main Loop -------------------------------------------------------
+  int counts_mult[MAX_SIZE];
+  memset(counts_mult, 0, big_num_dims * sizeof(int));
+  int dst_pos = 0;
+  int p = big_num_dims - 1;
+  for (i = 0; i < big_bulk_size; i++)
+  {
+    while (counts_mult[p] == big_ranges[p])
+    {
+      counts_mult[p] = 0;
+      p--;
+      counts_mult[p]++;
+      dst_pos += dbsteps_mult[p];
+    }
+
+    big_bulk[i] += dst_bulk[dst_pos];
+
+    p = big_num_dims - 1;
+    counts_mult[p]++;
+    dst_pos += smal_steps_mult[p];
+  }
 }
 
 #endif //!defined(SWIG)

@@ -53,12 +53,13 @@ private:
 
 #ifdef _DEBUG
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4284)
+// has been commented - it is transfered to "config.h"
+//#ifdef _MSC_VER
+//#pragma warning(disable : 4284)
 // return type for 'const_iterator::operator ->' is 'void *const * '
 // (ie; not a UDT or reference to a UDT.
 // Will produce errors if applied using infix notation)
-#endif
+//#endif
 
     std::list<void *> m_refList;
 #else

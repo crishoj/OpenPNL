@@ -115,6 +115,10 @@ public:
     virtual void MultiplyInSelf( const CMatrix<Type>* matToMult,
         int numDimsToMult, const int* indicesToMultInSelf, int isUnifrom = 0,
         const Type uniVal = Type(0) );
+    //summarize matrix by dimensions
+    virtual void SumInSelf(const CMatrix<Type>* matToMult,
+        int numDimsToMult, const int* indicesToMultInSelf, int isUnifrom = 0,
+        const Type uniVal = Type(0));
     //divide matrices by dimensions
     virtual void DivideInSelf( const CMatrix<Type>* matToDiv,
         int numDimsToDiv, const int* indicesToDivInSelf );
@@ -217,6 +221,14 @@ Type pnl::CMatrix<Type>::SumAll(int byAbsValue) const
 {
     PNL_THROW( CInvalidOperation, "this operation is for numeric matrices only" );
     return Type(0);
+}
+
+template <class Type>
+void pnl::CMatrix<Type>::SumInSelf(const CMatrix<Type>* matToMult,
+  int numDimsToMult, const int* indicesToMultInSelf, int isUnifrom,
+  const Type uniVal)
+{
+  PNL_THROW(CInvalidOperation, "this operation is for numeric matrices only");
 }
 
 template <class Type>

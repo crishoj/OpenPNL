@@ -22,6 +22,7 @@ typedef enum  /* enum of allowed model types */
 {   mtMNet
 ,   mtMRF2
 ,   mtBNet
+,   mtIDNet
 ,   mtJTree
 ,   mtDBN
 ,   mtFactorGraph

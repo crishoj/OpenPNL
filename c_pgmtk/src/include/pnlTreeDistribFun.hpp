@@ -74,6 +74,8 @@ public:
         const CNodeType* const*allFullNodeTypes, int UpdateCanonical = 1 );
     virtual void MultiplyInSelfData( const int *pBigDomain, 
         const int *pSmallDomain, const CDistribFun *pOtherData );
+    virtual void SumInSelfData(const int *pBigDomain, 
+        const int *pSmallDomain, const CDistribFun *pOtherData);
     virtual void DivideInSelfData( const int *pBigDomain, 
         const int *pSmallDomain, const CDistribFun *pOtherData ) ;
     virtual CMatrix<float> *GetMatrix( EMatrixType mType, 

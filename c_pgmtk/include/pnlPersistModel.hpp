@@ -31,6 +31,15 @@ public:
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
 };
 
+class PNL_API CPersistIDNet: public CPersistence
+{
+public:
+    virtual const char *Signature() { return "IDNet"; }
+    virtual void Save(CPNLBase *pObj, CContextSave *pContext);
+    virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+};
+
 class PNL_API CPersistDBN: public CPersistence
 {
 public:
