@@ -253,7 +253,8 @@ FuncDesc aFuncDesc[] =
 ,   "learnstructure", eLearnStructure, true, 0, 0, 0
 ,   "gaussianmean", eGaussianMean,true, 1, 1, 0
 ,   "gaussiancovar", eGaussianCovar, true, 1, 2, 0 
-,   "setgaussian", eSetGaussian, false, 0, 3, 2
+,   "setgaussian",  eSetGaussian, false, 0, 4, 3
+,   "jpd",          eJPD,       true, 1, 1, 0 
 // build-in commands
 ,   "execute",	    -1,		false, 0, 1, 0
 ,   "clear",	    -2,		true,  0, 0, 0
@@ -462,7 +463,33 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eLearnStructure:BNet().LearnStructure(0, 0); break;
         case eGaussianMean: Print(BNet().GaussianMean(args[0]));break;
         case eGaussianCovar: Print(BNet().GaussianCovar(args[0], args[1]));break;
-        case eSetGaussian: BNet().SetGaussian(args[0], args[1], args[2]);break;
+        case eSetGaussian: 
+            {
+                TokArr arg1;
+                TokArr arg2;
+                TokArr arg3;
+                TokArr arg4;
+
+		if(args.size() > 0)
+		{
+		    arg1 = args[0];
+		    if(args.size() > 1)
+		    {
+			arg2 = args[1];
+        	        if(args.size() > 2)
+		        {
+			    arg3 = args[2];
+                            if(args.size() > 3)
+		            {
+			        arg4 = args[3];
+		            }
+		        }
+		    }
+		}
+
+                BNet().SetGaussian(arg1, arg2, arg3, arg4);
+                break;
+            }
 
 	case eGenerateEvidences:
 	    {
@@ -506,8 +533,8 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eClearEvidHistory:BNet().ClearEvidHistory(); break;
 	case eLearn:	    BNet().Learn(); break;
 	case eMPE:	    Print(BNet().MPE(args[0])); break;
+	case eJPD:	    Print(BNet().JPD(args[0])); break;
 	case eNodeType:
-//	case eSetGaussian:
 	default:
 	    cout << "Unrealized command: '" << fname << "'\n";
 	    return -2;
