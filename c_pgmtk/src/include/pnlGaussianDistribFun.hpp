@@ -76,6 +76,7 @@ public:
     inline int GetCanonicalFormFlag() const;
     inline int GetMomentFormFlag() const;
     void SetCoefficient( float  coeff, int isG = 1 );
+    void UpdateCanonicalCoefficient();
     
     int GetMultipliedDelta( const int **positions, const float **values, 
         const int **offsets ) const;
