@@ -19,7 +19,7 @@ namespace pnl
     class CGraph;
     class CBNet;
     class CInfEngine;
-    class CBayesLearningEngine;
+    class CStaticLearningEngine;
     class pnlString;
     template<typename Type> class CMatrix;
 }
@@ -130,6 +130,8 @@ private:
 
     pnl::CMatrix<float> *Matrix(int iNode) const;
     pnl::CInfEngine &Inference();
+    pnl::CStaticLearningEngine &Learning();
+
     void CreateModel();
     pnl::CBNet *Model();
 
@@ -138,7 +140,7 @@ private:
 
 private:// DATA members
     pnl::CInfEngine *m_Inference;// inference, if it exists
-    pnl::CBayesLearningEngine *m_Learning;   // learning, if it exists
+    pnl:: CStaticLearningEngine *m_Learning;   // learning, if it exists
     int m_nLearnedEvidence;
 
     ProbabilisticNet *m_pNet;

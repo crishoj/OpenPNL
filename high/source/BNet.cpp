@@ -29,7 +29,7 @@ BayesNet::BayesNet(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
 
     static const char *aLearning[] = 
     {
-	"BayesNet Learning"
+	"Bayes Learning", "EM Learning" 
     };
 
     m_pNet = new ProbabilisticNet();
@@ -281,25 +281,17 @@ void BayesNet::Learn()
 }
 
 void BayesNet::Learn(TokArr aSample[], int nSample)
-{
-    bool bFirst = false;
-
+{   
     if(m_nLearnedEvidence > Net().EvidenceBuf()->size())
     {
 	ThrowInternalError("inconsistent learning process", "Learn");
     }
-
+    
     if(m_nLearnedEvidence == Net().EvidenceBuf()->size())
     {
 	return;// is it error?
     }
-
-    if(!m_Learning)
-    {
-	m_Learning = pnl::CBayesLearningEngine::Create(Model());
-	bFirst = true;
-    }
-
+    
     if(nSample)
     {
 	for(int i = 0; i < nSample; ++i)
@@ -307,12 +299,14 @@ void BayesNet::Learn(TokArr aSample[], int nSample)
 	    Net().EvidenceBuf()->push_back(Net().CreateEvidence(aSample[i]));
 	}
     }
-
-    m_Learning->AppendData(Net().EvidenceBuf()->size() - m_nLearnedEvidence,
+    
+    Learning().AppendData(Net().EvidenceBuf()->size() - m_nLearnedEvidence,
 	&(*Net().EvidenceBuf())[m_nLearnedEvidence]);
     m_nLearnedEvidence = Net().EvidenceBuf()->size();
-    m_Learning->Learn();
+    Learning().Learn();
 }
+
+
 
 #if 0        
 BayesNet* BayesNet::LearnStructure(TokArr aSample[], int nSample)
@@ -740,6 +734,62 @@ pnl::CInfEngine &BayesNet::Inference()
     return *m_Inference;
 }
 
+pnl::CStaticLearningEngine &BayesNet::Learning()
+{
+    switch(PropertyAbbrev("Learning"))
+    {
+    case 'b': //Bayessian learning
+	if(m_Learning)
+	{
+	    pnl::CBayesLearningEngine *learnBayes;
+	    learnBayes = dynamic_cast<pnl::CBayesLearningEngine *>(m_Learning);
+	    if(!learnBayes)
+	    {		    
+		delete []m_Learning;
+		m_Learning = pnl::CBayesLearningEngine::Create(Model());
+	    }
+	}
+	else
+	{
+	    m_Learning = pnl::CBayesLearningEngine::Create(Model());
+	}
+	break; 
+    case 'e': //EM learning
+	if(m_Learning)
+	{
+	    pnl::CEMLearningEngine *learnEM;
+	    learnEM = dynamic_cast<pnl::CEMLearningEngine *>(m_Learning);
+	    if(!learnEM)
+	    {		    
+		delete []m_Learning;
+		m_Learning = pnl::CEMLearningEngine::Create(Model());
+	    }
+	}
+	else
+	{
+	    m_Learning = pnl::CEMLearningEngine::Create(Model());
+	}
+	break; 
+    default: // deafult learning algorithm
+       	if(m_Learning)
+	{
+	    pnl::CEMLearningEngine *learnEM;
+	    learnEM = dynamic_cast<pnl::CEMLearningEngine *>(m_Learning);
+	    if(!learnEM)
+	    {		    
+		delete []m_Learning;
+		m_Learning = pnl::CEMLearningEngine::Create(Model());
+	    }
+	}
+	else
+	{
+	    m_Learning = pnl::CEMLearningEngine::Create(Model());
+	}
+	break;
+    };
+    return *m_Learning;
+}
+
 pnl::CBNet *BayesNet::Model()
 {
     return static_cast<pnl::CBNet*>(Net().Model());
@@ -756,33 +806,59 @@ String BayesNet::Property(const char *name) const
 }
 
 const char BayesNet::PropertyAbbrev(const char *name) const
-{
-    String infName = Property("Inference");
-    pnl::pnlVector<char> infNameVec(infName.length());
-    for(int i = 0; i < infName.length(); ++i)
+{   
+    if(strcmp(name,"Infrernce"))
     {
-	infNameVec[i] = tolower(infName[i]);
+	String infName = Property("Inference");
+	pnl::pnlVector<char> infNameVec(infName.length());
+	for(int i = 0; i < infName.length(); ++i)
+	{
+	    infNameVec[i] = tolower(infName[i]);
+	}
+	char *pInfName = &infNameVec.front();
+	
+	if(strstr(pInfName, "gibbs"))
+	{
+	    return 'g';
+	}
+	if(strstr(pInfName, "pearl"))
+	{
+	    return 'p';
+	}
+	if(strstr(pInfName, "jtree"))
+	{
+	    return 'j';
+	}
+	if(strstr(pInfName, "naive"))
+	{
+	    return 'n';
+	}
+	else 
+	{
+	    return 0;
+	}
     }
-    char *pInfName = &infNameVec.front();
-    
-    if(strstr(pInfName, "gibbs"))
+    if(strcmp(name,"Learning"))
     {
-	return 'g';
-    }
-    if(strstr(pInfName, "pearl"))
-    {
-	return 'p';
-    }
-    if(strstr(pInfName, "jtree"))
-    {
-	return 'j';
-    }
-    if(strstr(pInfName, "naive"))
-    {
-	return 'n';
-    }
-    else 
-    {
-	return 0;
+	String learnName = Property("Learning");
+	pnl::pnlVector<char> learnNameVec(learnName.length());
+	for(int i = 0; i < learnName.length(); ++i)
+	{
+	    learnNameVec[i] = tolower(learnName[i]);
+	}
+	char *pLearnName = &learnNameVec.front();
+	
+	if(strstr(pLearnName, "em"))
+	{
+	    return 'e';
+	}
+	if(strstr(pLearnName, "bayes"))
+	{
+	    return 'b';
+	}
+	else 
+	{
+	    return 0;
+	}   	
     }
 }
