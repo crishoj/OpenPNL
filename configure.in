@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([pnl],[0.2.22],[])
+AC_INIT([pnl],[0.2.23],[])
 dnl AC_CONFIG_HEADER(c_pgmtk/src/include/config.h:c_pgmtk/src/include/config.in)
 
 dnl Set various version strings
 PNLMAJOR=0
 PNLMINOR=2
-PNLSUBMINOR=22
+PNLSUBMINOR=23
 INTERFACE_AGE=0
 BINARY_AGE=0
 DEBUG=
