@@ -98,10 +98,10 @@ CBNet* CreateSevenNodesNetForTests()
   variableAssociation[0] = 0;
   variableAssociation[1] = 0;
   variableAssociation[2] = 1;
-  variableAssociation[3] = 3;
+  variableAssociation[3] = 1;
   variableAssociation[4] = 1;
   variableAssociation[5] = 0;
-  variableAssociation[6] = 2;
+  variableAssociation[6] = 1;
 
   pMD = CModelDomain::Create( variableTypes, variableAssociation );
     
@@ -179,7 +179,7 @@ CBNet* CreateSevenNodesNetForTests()
   int parInd51[] = { 1 };
   pCPD5->AllocDistribution( &mean51, &cov51, 1.0f, NULL, parInd51 );
  
-  float mean52 = 0.0f;
+/*  float mean52 = 0.0f;
   float cov52 = 1.f;
   int parInd52[] = { 2 };
   pCPD5->AllocDistribution( &mean52, &cov52, 1.0f, NULL, parInd52 );
@@ -188,7 +188,7 @@ CBNet* CreateSevenNodesNetForTests()
   float cov53 = 1.f;
   int parInd53[] = { 3 };
   pCPD5->AllocDistribution( &mean53, &cov53, 1.0f, NULL, parInd53 );
-
+*/
   pBNet->AttachFactor(pCPD5);
 
   int nnodes6 = 3;
