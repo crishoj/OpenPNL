@@ -4,7 +4,44 @@
   ! Known bugs
 
 -----------------------------------------------------------------
-Build 24                                          -December -2004
+Build 25                                            28-March-2004
+-----------------------------------------------------------------
+
++ Implement interface (wrappers) of bayesian networks for 
+  discrete and continues cases in PNLHigh.
+
++ Implement interface (wrappers) of DBN in PNLHigh.
+
++ Implement interface (wrappers) of MRF in PNLHigh.
+
++ Implement interface (wrappers) of LIMID in PNLHigh.
+
++ Add some tests for High interface.
+
++ Add Reference Manual and User Guide of PNLHigh.
+
++ Implement interface (connection) for Genie (bayesian networks
+  only).
+
++ Implement interface for R system. See bin/PNLRPackage.zip and
+  R folder for documentation.
+
++ Implement diagnosis network and some algorithms for solving of 
+  diagnostic tasks 
+
++ Implement parallel versions (MPI and OpenMP) for Loopy Belief 
+  Propagation in continues case.
+
++ Implement parallel version (MPI) for EM Learning in continues 
+  case.
+
+! MPE methods in inference algorithms for discrete case may
+  return incorrect result.
+
+! DelArc and DelNode methods may work incorrectly in PNLHigh.
+
+-----------------------------------------------------------------
+Build 24                                         22-December-2004
 -----------------------------------------------------------------
 + PNLHigh is a new interface for our library. It is experimental
   for now. See high/readme.txt for more details
