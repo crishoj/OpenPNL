@@ -10,36 +10,33 @@ PNLW_BEGIN
 
 pnl::CGraphicalModel *LIMIDCallback::CreateModel(ProbabilisticNet &net)
 {
-    int nNode = net.nNetNode();
-    int i;
+    int i, iWNode;
     Vector<pnl::CNodeType> aNodeType;
     Vector<int> aNodeAssociation;
 
-    // create IDNet
-    aNodeAssociation.resize(nNode);
-    aNodeType.reserve(nNode > 16 ? 8:4);
-    for(i = 0; i < nNode; i++)
-    {
-	const pnl::CNodeType &nt = net.pnlNodeType(i);
+    // create BNet
+    GetNodeInfo(&aNodeType, &aNodeAssociation, net);
 
-	aNodeAssociation[i] = net.NodeAssociation(&aNodeType,
-	    nt.IsDiscrete(), nt.GetNodeSize(), nt.GetNodeState());
-    }
-
-    pnl::CIDNet *pIDNet = pnl::CIDNet::Create(nNode, aNodeType.size(), &aNodeType.front(),
-    &aNodeAssociation.front(), net.Graph()->Graph(true));
+    pnl::CIDNet *pIDNet = pnl::CIDNet::Create(aNodeAssociation.size(),
+	aNodeType.size(), &aNodeType.front(), &aNodeAssociation.front(),
+	net.Graph()->Graph(true));
 
     // attach parameters
-    for(i = 0; i < nNode; i++)
+    Vector<String> aNodeName(net.Graph()->Names());
+
+    for(i = 0; i < aNodeName.size(); i++)
     {
-	WDistribFun *pWDF = net.Distributions()->Distribution(i);
+	// it is index for wrapper node, pnl node index is 'i'
+	iWNode = net.Graph()->INode(aNodeName[i]);
+
+	WDistribFun *pWDF = net.Distributions()->Distribution(iWNode);
         PNL_CHECK_IS_NULL_POINTER(pWDF);
 
         pIDNet->AllocFactor(i);
 
         if (net.pnlNodeType(i).IsDiscrete())
         {
-            pnl::CDenseMatrix<float> *mat = dynamic_cast<WTabularDistribFun*>(pWDF)->Matrix(0);
+            pnl::CDenseMatrix<float> *mat = pWDF->Matrix(pnl::matTable);
             PNL_CHECK_IS_NULL_POINTER(mat);
 	
             pIDNet->GetFactor(i)->AttachMatrix(mat, pnl::matTable);

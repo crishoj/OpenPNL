@@ -11,9 +11,11 @@ PNLW_END
 
 namespace pnl
 {
+    class CNodeType;
     class CEvidence;
     class CGraphicalModel;
     class pEvidenceVector;
+    class CGraphicalModel;
 }
 
 PNLW_BEGIN
@@ -27,6 +29,13 @@ public:
 
     virtual void GenerateSamples(ProbabilisticNet &net,
 	pnl::pEvidencesVector *newSamples, int nSample, pnl::CEvidence *evid) = 0;
+
+    static bool GetNodeInfo(Vector<pnl::CNodeType> *paNodeType,
+	Vector<int> *paNodeAssociation,	const ProbabilisticNet &net);
+    static bool CommonAttachFactors(pnl::CGraphicalModel &model,
+	const ProbabilisticNet &net);
+    static int NodeAssociation(Vector<pnl::CNodeType> *paNodeType,
+	bool isDiscrete, int size, int nodeState = 0);
 };
 
 PNLW_END

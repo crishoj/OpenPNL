@@ -15,19 +15,10 @@ pnl::CGraphicalModel *MRFCallback::CreateModel(ProbabilisticNet &net)
     int nNode = net.nNetNode();
     int i;
     
-    // set nodes types 
-    pnl::nodeTypeVector aNodeType;
+    Vector<pnl::CNodeType> aNodeType;
     Vector<int> aNodeAssociation;
 
-    aNodeAssociation.resize(nNode);
-    aNodeType.reserve(nNode > 16 ? 8:4);
-    for(i = 0; i < nNode; i++)
-    {
-        const pnl::CNodeType &nt = net.pnlNodeType(i);
-
-	aNodeAssociation[i] = net.NodeAssociation(&aNodeType,
-	    nt.IsDiscrete(), nt.GetNodeSize());
-    }
+    GetNodeInfo(&aNodeType, &aNodeAssociation, net);
 
     // set cliques
     Vector<Vector<int> > cliques = net.Distributions()->Cliques().Cliques();
