@@ -613,6 +613,7 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
     int nValueIn = aValue.size();
     static const char fname[] = "CreateEvidence";
 
+    Graph()->Graph();
     ExtractTokArr(aValue, &aiNode, &aiValue, &Graph()->MapOuterToGraph());
     aNodeFlag.assign(nNetNode(), 0);
 
