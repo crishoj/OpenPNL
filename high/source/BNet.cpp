@@ -87,7 +87,19 @@ void BayesNet::SetP(TokArr value, TokArr prob, TokArr parentValue)
 
 void BayesNet::SetGaussian(TokArr var, TokArr mean, TokArr variance)
 {
+    Net().Distributions()->FillData(var, mean, variance);
+}
 
+TokArr BayesNet::GaussianMean(TokArr vars)
+{
+    TokArr result = "there is mean";
+    return result;
+}
+
+TokArr BayesNet::GaussianCovar(TokArr var, TokArr vars)
+{
+    TokArr result = "there is covariance";
+    return result;
 }
 
 TokArr BayesNet::P(TokArr child, TokArr parents)
