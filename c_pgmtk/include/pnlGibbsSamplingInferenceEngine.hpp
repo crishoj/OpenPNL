@@ -48,7 +48,12 @@ public:
     virtual const CEvidence* GetMPE() const;
     // destructor
     void UseDSeparation( bool isUsing);
-    
+
+    inline void SetNSamplesForSoftMax(int nSamples);
+    inline int GetNSamplesForSoftMax() {return m_NSamplesForSoftMax;};
+
+    inline void SetMaxNSamplesForSoftMax(int mNSamples);
+    inline int GetMaxNSamplesForSoftMax() {return m_MaxNSamplesForSoftMax;};
     
 protected:
     
@@ -78,6 +83,12 @@ private:
     pFactorVector           m_queryFactors;
     bool                    m_bUsingDSep;
 
+    //
+    int m_NSamplesForSoftMax;
+
+    //
+    int m_MaxNSamplesForSoftMax;
+
     pFactorVector m_SoftMaxGaussianFactors;
     intVecVector m_environment;       
 };
@@ -102,6 +113,19 @@ inline bool CGibbsSamplingInfEngine::GetSignOfUsingDSeparation() const
     return m_bUsingDSep;
 }
 
+inline void CGibbsSamplingInfEngine::SetNSamplesForSoftMax(int nSamples) 
+{
+  PNL_CHECK_LEFT_BORDER(nSamples, 1);
+
+  m_NSamplesForSoftMax = nSamples;
+}
+
+inline void CGibbsSamplingInfEngine::SetMaxNSamplesForSoftMax(int mNSamples) 
+{
+  PNL_CHECK_LEFT_BORDER(mNSamples, 1);
+
+  m_MaxNSamplesForSoftMax = mNSamples;
+}
 
 PNL_END
 
