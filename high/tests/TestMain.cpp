@@ -1,5 +1,11 @@
 #include "test_conf.hpp"
 
+//#define SKIP_TOKEN
+//#define SKIP_LIMID
+//#define SKIP_DBN
+//#define SKIP_MRF
+//#define SKIP_NUMERATION
+
 int main(char* argv[], int argc)
 {
     bool bTestOK = true;
@@ -45,7 +51,7 @@ int main(char* argv[], int argc)
     }
 
 #endif
-    #ifndef SKIP_DBN
+#ifndef SKIP_DBN
     int res = 0;
     
     res = testDBN();
@@ -70,6 +76,7 @@ int main(char* argv[], int argc)
     try 
     {
         TestForGetPTabular();
+	TestForSetInferenceProperties();
     }
     catch(pnl::CException e)
     {
