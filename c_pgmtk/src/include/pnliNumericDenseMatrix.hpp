@@ -172,11 +172,23 @@ public:
       return iCNumericDenseMatrix< int >::GetStaticTypeInfo();
     }
 #endif
+
+#if GCC_VERSION >= 30400
+    using CDenseMatrix<Type>::GetClampValue;
+#endif
+
 protected:
 
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
 #endif 
+
+#if GCC_VERSION >= 30400
+    using CDenseMatrix<Type>::m_Dim;
+    using CDenseMatrix<Type>::m_Range;
+    using CDenseMatrix<Type>::m_Table;
+#endif
+
 private:
 };
 

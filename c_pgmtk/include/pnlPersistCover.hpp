@@ -110,6 +110,11 @@ protected:
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
 #endif
+
+#if GCC_VERSION >= 30400
+    using CCover<Type>::m_Pointer;
+#endif
+
 };
 
 #ifdef PNL_RTTI

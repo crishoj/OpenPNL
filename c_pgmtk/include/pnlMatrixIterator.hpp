@@ -96,6 +96,10 @@ template <class Type> class CDenseMatrixIterator : public CMatrixIterator<Type>
     protected:
         CDenseMatrixIterator(const Type* first);
 
+#if GCC_VERSION >= 30400
+	using CMatrixIterator<Type>::m_Current;
+#endif
+
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
 #endif 
@@ -151,6 +155,10 @@ public:
 #endif
 protected:
     CSparseMatrixIterator( CxSparseMat* matrix );
+
+#if GCC_VERSION >= 30400
+    using CMatrixIterator<Type>::m_Current;
+#endif
 
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;

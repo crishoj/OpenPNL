@@ -114,6 +114,12 @@ public:
       return CDenseMatrix< int >::GetStaticTypeInfo();
     }
 #endif
+
+#if GCC_VERSION >= 30400
+    using CMatrix<Type>::GetClampValue;
+    using CMatrix<Type>::SetClamp;
+#endif
+
 protected:
     CDenseMatrix(int dim, const int *range, const Type *data, int Clamp);
     CDenseMatrix( const CDenseMatrix<Type> & inputMat );
@@ -1057,7 +1063,7 @@ void CDenseMatrix<Type>::Index( CMatrixIterator<Type>* current,
         }                                                                 \
     }
 
-#if 0
+#if 1
 PNL_API int margBlockize(int *aDim, int nDim, const int *aRange, int &blockSize,
 		 int desired, int limit);
 

@@ -47,6 +47,8 @@
 #define GCC_VERSION ( __GNUC__ * 10000 \
                       + __GNUC_MINOR__ * 100 \
                       + __GNUC_PATCHLEVEL__ )
+#else
+#define GCC_VERSION 0
 #endif // __GNUG__
 #endif // WIN32
 

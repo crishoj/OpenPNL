@@ -98,6 +98,13 @@ public:
       return iC2DNumericDenseMatrix< float >::GetStaticTypeInfo();
     }
 #endif
+
+#if GCC_VERSION >= 30400
+    using CDenseMatrix<Type>::GetClampValue;
+    using CDenseMatrix<Type>::GetRanges;
+    using CDenseMatrix<Type>::GetElementByIndexes;
+#endif
+
 protected:
     iC2DNumericDenseMatrix( int dim, const int *range, const Type *data,
                                                                 int Clamp);
@@ -106,6 +113,13 @@ protected:
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
 #endif 
+
+#if GCC_VERSION >= 30400
+    using CDenseMatrix<Type>::m_Dim;
+    using CDenseMatrix<Type>::m_Range;
+    using CDenseMatrix<Type>::m_Table;
+#endif
+
 };
 
 

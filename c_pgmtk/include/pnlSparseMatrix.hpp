@@ -101,6 +101,12 @@ public:
       return CSparseMatrix< int >::GetStaticTypeInfo();
     }
 #endif
+
+#if GCC_VERSION >= 30400
+    using CMatrix<Type>::GetClampValue;
+    using CMatrix<Type>::SetClamp;
+#endif
+
 protected:
     int ConvertToIndex() const;
     CSparseMatrix(int dim, const int *range, const Type defaultVal, int Clamp);

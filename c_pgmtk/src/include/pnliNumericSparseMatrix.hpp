@@ -105,7 +105,7 @@ public:
                                const int *sizesOfExpandDims, int numDimsToExpand ) const;
     inline void ClearData();
     inline void SetUnitData();
-    inline void SetUnitValuesOneByOne();
+    //inline void SetUnitValuesOneByOne();
 
 #ifdef PNL_RTTI
     virtual const CPNLType &GetTypeInfo() const
@@ -117,6 +117,12 @@ public:
       return iCNumericSparseMatrix< int >::GetStaticTypeInfo();
     }
 #endif
+
+#if GCC_VERSION >= 30400
+    using CSparseMatrix<Type>::GetClampValue;
+    using CSparseMatrix<Type>::GetDefaultValue;
+#endif
+
 protected:
     iCNumericSparseMatrix( int dim, const int *range, int Clamp );
     iCNumericSparseMatrix( const iCNumericSparseMatrix<Type> &inputMat );
@@ -125,6 +131,11 @@ protected:
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
 #endif 
+
+#if GCC_VERSION >= 30400
+    using CSparseMatrix<Type>::GetCxSparseMat;
+#endif
+
 private:
 };
 
@@ -772,12 +783,12 @@ inline void iCNumericSparseMatrix<Type>::SetUnitData()
 }
 
 
-
+/*
 template <class Type>
 inline void iCNumericSparseMatrix<Type>::SetUnitValuesOneByOne()
 {
     Type val = static_cast<float>(1);
-    
+
     int nlineBig = 1;
     //filling vector to convert from line index to multidimentional
     intVector pconvIndBig;
@@ -804,7 +815,7 @@ inline void iCNumericSparseMatrix<Type>::SetUnitValuesOneByOne()
     }
     return resMat;
 }
-
+*/
 
 template <class Type>
 iCNumericSparseMatrix<Type>::iCNumericSparseMatrix(int dim, const int *range,

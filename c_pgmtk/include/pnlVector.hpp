@@ -96,6 +96,10 @@ public:
     inline void resize( size_type, CVector< T > const & );
 
     inline void resize( size_type );
+    
+#if GCC_VERSION >= 30400
+    using CVector< CVector<T> >::get_allocator;
+#endif
 };
 
 #ifndef PNL_DENY_DLLIMPORT_TEMPLATE_DEFINITION
@@ -218,7 +222,7 @@ void CVecVector< T >::resize( size_type n )
     resize( n, CVector< T >( PNL_REBIND_FUSED_ALLOCATOR( get_allocator(), T ) ) );
 }
 
-#endif PNL_DENY_DLLIMPORT_TEMPLATE_DEFINITION
+#endif // PNL_DENY_DLLIMPORT_TEMPLATE_DEFINITION
 
 PNL_END
 
