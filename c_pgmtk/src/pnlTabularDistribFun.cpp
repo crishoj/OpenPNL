@@ -2206,9 +2206,9 @@ float CTabularDistribFun::CalculateBayesianScore()
     int dims;
     m_pPseudoCounts->GetRanges(&dims, &ranges);
         
-    int StateNumber = ranges[0]; //количество состояний вершины
+    int StateNumber = ranges[0]; //number of node states
 
-    int ConfigNum = 1; //количество конфигураций дискретных родителей
+    int ConfigNum = 1; //number of discrete parents configurations
     
     int i, j;
 
@@ -2231,7 +2231,7 @@ float CTabularDistribFun::CalculateBayesianScore()
     int length = 0;
     static_cast<CNumericDenseMatrix<float> *>(m_pPseudoCounts)->GetRawData(&length, &output);
         
-    //вычисляем произведение по количеству состояний вершины
+    //calculating the product by the number of node states
     if (ConfigNum == 1)
     {
         score = 1; 
@@ -2242,14 +2242,14 @@ float CTabularDistribFun::CalculateBayesianScore()
     {
         a = 0; b = 1;
         int counter;
-        //вычисление суммы в знаменателе
+        //calculating sum in denominator
         for (j=0, counter = i; j < ConfigNum; j++, counter += StateNumber)
         {
             a += int(output[counter]);
         }
         
-        //формирование массива для вычисления произведения 
-        //факториалов по количеству конфигураций
+        //forming the array to calculate 
+        //product of factorials by the number of configurations
         array = new int [a];
         int k, curr = 0;
         for (j=0, counter = i; j < ConfigNum; j++, counter += StateNumber)
