@@ -1,0 +1,6 @@
+p("PreviousCompTurn")
+p("PreviousCompTurn^Paper")
+p("CurrentHumanTurn^Rock", "PreviousCompTurn^Paper")
+p("CurrentHumanTurn^Paper", "PreviousHumanTurn^Rock")
+p("CurrentHumanTurn", "PreviousHumanTurn^Rock PreviousCompTurn^Paper")
+p("CurrentHumanTurn^Paper", "PreviousHumanTurn^Rock PreviousCompTurn^Paper")

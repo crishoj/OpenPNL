@@ -1,0 +1,114 @@
+				TOKENOLOGY
+
+Tokens and array of Tokens are basic datastructures of PNL wrapper.
+Token is designed to be simple yet expressively rich.  Tokens work
+in PNL framework and may be somehow biased towards such usage
+but nothing about Tokens is PNL specific; Tokens are quite general
+and can be of more widespread use.
+
+Notationally Token can be represented as a sequence of items
+separated by '^' character.  Each item may be either discrete identifier or
+floating point value.  Discrete identifiers include empty identifier and
+unsigned integers as particular cases.
+
+[Example]
+Tokens enclosed in quotes followed by their meanings:
+
+"value^paper"     -- 2 discrete identifiers: value, paper.
+"value^^paper"    -- 3 discrete identifiers: value, empty identifier, paper.
+"^value^paper"    -- 3 discrete identifiers: empty identifier, value, paper.
+""                -- 1 discrete identifier: empty identifier
+"^"               -- 2 discrete identifiers: empty identifier, empty identifier.
+"value^paper^5"   -- 3 discrete identifiers: value, paper, 5.
+"value^paper^+5"  -- 2 discrete identifiers and floating point value:
+                     value, paper, 5.0.
+"value^paper^+"   -- 2 discrete identifiers and floating point value:
+                     value, paper, undefined floating point value.
+"value^paper^.^5" -- 2 discrete identifiers, floating point value and 3rd dicrete
+                     identifier: value, paper, undefined floating point value, 5.
+[End of example]
+
+Items consisting of a single plus or minus sign, or a dot represent floating point
+undefined value.
+
+Implementation that uses Token machinery (PNL wrapper in our case ) shall maintain
+global dynamic tree of identifiers (GDTI later on).  The latter is the structure reflecting
+the problem domain.  Word "global" means that all users of Tokens (for example different
+bayes nets) share the same tree of identifiers.  They just use different subtrees.  Word "dynamic"
+refers to the possibility (and the fact) of that tree changing in runtime.
+
+Each node of GDTI matches one or more discrete identifiers.  The root of GDTI matches empty identifier.
+
+[Example]
+In case of PNL the tree may look like (and may not):
+
+                                       rock
+                                      /
+                         cur_hum_turn--paper
+                        /             \
+                       /               scsissors
+                      /
+                     /
+                    /                 /rock
+           node--cat-----prev_hum_turn-paper
+          /    \    \                 \scsissors
+  my_bnet/ \    \    \
+ /               \    \              /rock
+                  \    prev_comp_turn-paper
+                   \                 \scsissors
+                    num
+[End of example]
+
+Semantically Token can be thought of as a zero, one or more nodes of GDTI
+together with zero, one or more floating point numbers.
+
+[Example]
+Token "cur_hum_turn^paper^prev_hum_turn^rock^.666" should designate pair of nodes
+"my_bnet^node^cat^cur_hum_turn^paper" and "my_bnet^node^cat^prev_hum_turn^rock"
+together with floating point numeric payload 0.666.
+[End of example]
+
+Token can be stored in any intermediate form between two extremes.  First extreme is completely
+unresolved state.  In that state discrete identifiers are stored as they are without trying to resolve
+them into node(s) of GDTI.   Second extreme is completely resolved state, no discrete identifier
+is stored in that case, only completely resolved node(s) of GDTI.
+
+Subtleness, if any, about Tokens is concentrated in two basic operations with them.  The first is resolution
+with respect to context.  This operation tries to unambiguously resolve unresolved discrete identifiers
+into node(s) of GDTI.
+
+[Example]
+Token "paper" cannot be unambigously resolved in the context "my_bnet" because there are several nodes
+matching identifier "paper" in the subtree rooted at "my_bnet".
+
+Token "prev_hum_turn^paper" can be resolved in the context "my_bnet" into
+node "my_bnet^node^cat^prev_hum_turn^paper".
+
+Token "prev_hum_turn^paper^cur_hum_turn^rock" can be resolved in the context "my_bnet"
+into pair of nodes "my_bnet^node^cat^prev_hum_turn^paper" and "my_bnet^node^cat^cur_hum_turn^rock"
+
+Token "prev_hum_turn" can be resolved in the context "my_bnet" into node "my_bnet^node^cat^prev_hum_turn".
+
+Token "prev_hum_turn^cur_hum_turn" can be resolved in the context "my_bnet" into pair of nodes
+"my_bnet^node^cat^prev_hum_turn" and "my_bnet^node^cat^cur_hum_turn"
+[End of example]
+
+The second operation is comparison of Tokens.  Comparison is straightforward in case both Tokens are
+resolved (just compare nodes of GDTI).  Comparison is straightforward in case both Tokens have no way
+to be resolved (just compare them as strings).  Something more should be done if Tokens contain unresolved
+identifiers due to ambiguities.  For example one may try to compare resolved Token designating node
+"my_bnet^node^cat^prev_hum_turn^paper" with unresolved Token "paper".  The latter cannot be resolved
+due to ambiguities.  In such cases comparison logic tries its best to determine whether two Tokens
+can represent the same entity.
+
+[Example]
+Tok a = "my_bnet^node^cat^prev_hum_turn^paper";
+Tok b = "paper";
+Tok c = "my_bnet^node^cat^prev_comp_turn^paper";
+
+Comparisons (a == b) and (b == c) shall be positive.
+Comparison (a == c) shall be negative.
+
+We see that abovementioned comparison is inherently intransitive.  It should be treated with
+caution since some algorithms may rely on transitivity of operator ==.
+[End of example]

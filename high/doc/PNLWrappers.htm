@@ -1,0 +1,605 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<HTML><HEAD><TITLE>PNL Wrappers Reference</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=windows-1251"><LINK 
+href="style.css" type=text/css charset=ISO-8859-1 
+rel=STYLESHEET>
+<META content="MSHTML 6.00.2800.1400" name=GENERATOR></HEAD>
+<BODY>
+<H1>PNL high-level interface</H1>
+<HR>
+
+<P>
+<UL>
+  <LI><A 
+  href="#decl_Class_BayesNet">Class BayesNet</A> 
+  <UL>
+    <LI><A 
+    href="#decl_BayesNet">BayesNet</A> 
+
+    <LI><A 
+    href="#decl_AddNode">AddNode</A> 
+
+    <LI><A 
+    href="#decl_DelNode">DelNode</A> 
+
+    <LI><A 
+    href="#decl_NodeType">NodeType</A> 
+
+    <LI><A 
+    href="#decl_AddArc">AddArc</A> 
+
+    <LI><A 
+    href="#decl_DelArc">DelArc</A> 
+
+    <LI><A 
+    href="#decl_Neighbours">Neighbours</A> 
+
+    <LI><A 
+    href="#decl_Parents">Parents</A> 
+
+    <LI><A 
+    href="#decl_Children">Children</A> 
+
+    <LI><A 
+    href="#decl_Ancestors">Ancestors</A> 
+
+    <LI><A 
+    href="#decl_Descendants">Descendants</A> 
+
+    <LI><A 
+    href="#decl_SetP">SetP</A> 
+
+    <LI><A 
+    href="#decl_P">P</A> 
+
+    <LI><A 
+    href="#decl_SetGaussian">SetGaussian</A> 
+
+    <LI><A 
+    href="#decl_Evid">Evid</A> 
+
+    <LI><A 
+    href="#decl_PushEvid">PushEvid</A> 
+
+    <LI><A 
+    href="#decl_ClearEvid">ClearEvid</A> 
+
+    <LI><A 
+    href="#decl_ClearEvidHistory">ClearEvidHistory</A> 
+
+    <LI><A 
+    href="#decl_Learn">Learn</A> 
+
+    <LI><A 
+    href="#decl_MPE">MPE</A> 
+
+    <LI><A 
+    href="#decl_GaussianMean">GaussianMean</A> 
+
+    <LI><A 
+    href="#decl_GaussianCovar">GaussianCovar</A> 
+
+    <LI><A 
+    href="#decl_SaveNet">SaveNet</A> 
+
+    <LI><A 
+    href="#decl_SaveLearnBuf">SaveLearnBuf</A> 
+
+    <LI><A 
+    href="#decl_LoadNet">LoadNet</A> 
+
+    <LI><A 
+    href="#decl_LoadLearnBuf">LoadLearnBuf</A> 
+
+    <LI><A 
+    href="#decl_MakeUniformDistribution">MakeUniformDistribution</A> 
+
+    <LI><A 
+    href="#decl_GenerateEvidences">GenerateEvidences</A> 
+
+    </LI></UL>
+  </UL>
+
+<P></P>
+<HR>
+
+<H2><A name=decl_Class_BayesNet>Class BayesNet</A></H2>
+<HR>
+
+<P>Class BayesNet implements all functionality required for work with bayesian networks. 
+The following functional groups can be distinguished:
+<UL>
+    <LI>Network creation (addition/deletion of nodes and arcs)<BR>
+    <A href="#decl_AddNode">AddNode</A>,
+    <A href="#decl_DelNode">DelNode</A>,
+    <A href="#decl_AddArc">AddArc</A>,
+    <A href="#decl_DelArc">DelArc</A>.
+    </LI>
+    <LI>Setting/getting parameters</LI>
+    <LI>Learning parameters</LI>
+    <LI>Learning network structure (not implemented)</LI>
+    <LI>Inference in network</LI>
+    <LI>Data sampling (not implemented)</LI>
+    <LI>File I/O</LI>
+    <LI>more...</LI>
+</UL>
+</P>
+<HR>
+
+
+<H3><A name=decl_BayesNet>BayesNet</A></H3>
+<P class=Blurb>Constructor</P><PRE>BayesNet();
+</PRE>
+<P>
+<DL>
+</DL>
+<P></P>
+<P>BayesNet class has only default constructor.</P>
+<HR>
+
+<H3><A name=decl_AddNode>AddNode</A></H3>
+<P class=Blurb>Adds nodes</P><PRE>void AddNode(TokArr nodes, TokArr subnodes);</PRE>
+<P>
+<DL>
+  <DT>nodes
+  <DD>???. 
+  <DT>subnodes
+  <DD>???.
+</DD></DL>
+<P></P>
+<P>The function adds one or several nodes into the network.</P>
+<HR>
+
+<H3><A name=decl_DelNode>DelNode</A></H3>
+<P class=Blurb>Deletes nodes</P><PRE>void DelNode(TokArr nodes);
+</PRE>
+<P>
+<DL>
+  <DT>nodes
+  <DD>???. 
+  </DD></DL>
+<P></P>
+<P>The function deletes one or several nodes from network together with all adjacent edges. </P>
+<HR>
+
+<H3><A name=decl_NodeType>NodeType</A></H3>
+<P class=Blurb>Returns type of the given node</P><PRE>TokArr NodeType(TokArr nodes);
+</PRE>
+<P>
+<DL>
+  <DT>nodes
+  <DD>???. 
+</DD></DL>
+<P></P>
+<P>The function returns type (categoric or ??) of given node.</P>
+<HR>
+
+<H3><A name=decl_AddArc>AddArc</A></H3>
+<P class=Blurb>Adds arc</P><PRE>void AddArc(TokArr from, TokArr to);
+</PRE>
+<P>
+<DL>
+  <DT>from
+  <DD>??. 
+  <DT>to
+  <DD>??</DD></DL>
+<P></P>
+<P>The function adds one or several arcs to the network.</P>
+<HR>
+
+<H3><A name=decl_DelArc>DelArc</A></H3>
+<P class=Blurb>Deletes arcs</P><PRE>void DelArc(TokArr from, TokArr to);
+</PRE>
+<P>
+<DL>
+  <DT>from
+  <DD>??. 
+  <DT>to
+  <DD>??. 
+  </DD></DL>
+<P></P>
+<P>The function deletes one or several arcs from the network. 
+</P>
+<HR>
+
+<H3><A 
+name=decl_Neighbours>Neighbours</A></H3>
+<P class=Blurb>Returns list of neighbours for given node (nodes?) 
+</P><PRE>TokArr Neighbours(const char *id = "parents", TokArr nodes = TokArr());
+</PRE>
+<P>
+<DL>
+  <DT>id
+  <DD>??. 
+  <DT>nodes
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_Parents>Parents</A></H3>
+<P class=Blurb>Returns list of parents for given node (nodes?) 
+</P><PRE>TokArr Parents(TokArr nodes);
+</PRE>
+<P>
+<DL>
+  <DT>nodes
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_Children>Children</A></H3>
+<P class=Blurb>Returns list of children for given node (nodes?) 
+</P><PRE>TokArr Children(TokArr nodes);
+</PRE>
+<P>
+<DL>
+  <DT>id
+  <DD>??. 
+  <DT>nodes
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_Neighbours>Neighbours</A></H3>
+<P class=Blurb>Returns list of neighbours for given node (nodes?) 
+</P><PRE>TokArr Neighbours(const char *id = "parents", TokArr nodes = TokArr());
+</PRE>
+<P>
+<DL>
+  <DT>id
+  <DD>??. 
+  <DT>nodes
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_Ancestors>Ancestors</A></H3>
+<P class=Blurb>Returns list of ancestors for given node (nodes?) 
+</P><PRE>TokArr Ancestors(TokArr nodes);
+</PRE>
+<P>
+<DL>
+  <DT>id
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_Descendants>Descendants</A></H3>
+<P class=Blurb>Returns list of descendants for given node (nodes?) 
+</P><PRE>TokArr Descendants(TokArr nodes);
+</PRE>
+<P>
+<DL>
+  <DT>id
+  <DD>??. 
+  <DT>nodes
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetP>SetP</A></H3>
+<P class=Blurb>Assigns probability to ??? 
+</P><PRE>void SetP(TokArr value, TokArr prob, TokArr parentValue = TokArr());
+</PRE>
+<P>
+<DL>
+  <DT>value
+  <DD>??. 
+  <DT>prob
+  <DD>??.
+  <DT>parentValue
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function sets [conditional] probability .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_P>P</A></H3>
+<P class=Blurb>Returns probability of ... 
+</P><PRE>TokArr P(TokArr node, TokArr parents = TokArr());
+</PRE>
+<P>
+<DL>
+  <DT>node
+  <DD>??. 
+  <DT>parents
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_SetGaussian>SetGaussian</A></H3>
+<P class=Blurb>Sets parameters for gaussian distribution. 
+</P><PRE>void SetGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr());
+</PRE>
+<P>
+<DL>
+  <DT>var
+  <DD>??. 
+  <DT>mean
+  <DD>??. 
+  <DT>variance
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function set parameters for gaussian distribution. 
+</P>
+<HR>
+
+<H3><A 
+name=decl_Evid>Evid</A></H3>
+<P class=Blurb>Enter evidence 
+</P><PRE>void Evid(TokArr values = TokArr(), bool bPush = false);
+</PRE>
+<P>
+<DL>
+  <DT>values
+  <DD>??. 
+  <DT>bPush
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function sets evidence on the board (bPush == false) or to the history.... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_PushEvid>PushEvid</A></H3>
+<P class=Blurb>Adds evidence to buffer. 
+</P><PRE>void PushEvid(TokArr const values[], int nValue);
+</PRE>
+<P>
+<DL>
+  <DT>values
+  <DD>??. 
+  <DT>nValue
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_ClearEvid>ClearEvid</A></H3>
+<P class=Blurb>Returns probability of ... 
+</P><PRE>void ClearEvid();
+</PRE>
+<P>
+<DL>
+</DL>
+<P></P>
+<P>The function clears current evidence .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_ClearEvidHistory>ClearEvidHistory</A></H3>
+<P class=Blurb>Clears evidence buffer. 
+</P><PRE>void ClearEvidHistory();
+</PRE>
+<P>
+<DL>
+</DL>
+<P></P>
+<P>The function clears evidence buffer. 
+</P>
+<HR>
+
+<H3><A 
+name=decl_Learn>Learn</A></H3>
+<P class=Blurb>Learn network parameters. 
+</P><PRE>void Learn();
+</PRE>
+<P>
+<DL>
+</DL>
+
+<PRE>void Learn(TokArr aValue[], int nValue);
+</PRE>
+<P>
+<DL>
+  <DT>aValue
+  <DD>??. 
+  <DT>nValue
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_MPE>MPE</A></H3>
+<P class=Blurb>Returns MPE. 
+</P><PRE>TokArr MPE(TokArr nodes = TokArr());
+</PRE>
+<P>
+<DL>
+  <DT>nodes
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function returns most probable explanation (MPE) for specified nodes using current evidence. 
+</P>
+<HR>
+
+<H3><A 
+name=decl_GaussianMean>GaussianMean</A></H3>
+<P class=Blurb>Returns mean of gaussian distribution. 
+</P><PRE>TokArr GaussianMean(TokArr vars);
+</PRE>
+<P>
+<DL>
+  <DT>vars
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function returns mean of gaussian distribution. 
+</P>
+<HR>
+
+<H3><A 
+name=decl_GaussianCovar>GaussianCovar</A></H3>
+<P class=Blurb>???. 
+</P><PRE>TokArr GaussianCovar(TokArr var, TokArr vars);
+</PRE>
+<P>
+<DL>
+  <DT>var
+  <DD>??. 
+  <DT>vars
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_SaveNet>SaveNet</A></H3>
+<P class=Blurb>Saves network to file. 
+</P><PRE>void SaveNet(const char *filename);
+</PRE>
+<P>
+<DL>
+  <DT>filename
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function saves network to file with given name. 
+</P>
+<HR>
+
+<H3><A 
+name=decl_SaveLearnBuf>SaveLearnBuf</A></H3>
+<P class=Blurb>Saves buffer content. 
+</P><PRE>int SaveLearnBuf(const char *filename, ESavingType mode = eCSV);
+</PRE>
+<P>
+<DL>
+  <DT>filename
+  <DD>??. 
+  <DT>mode
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_LoadNet>LoadNet</A></H3>
+<P class=Blurb>Loads network from file. 
+</P><PRE>void LoadNet(const char *filename);
+</PRE>
+<P>
+<DL>
+  <DT>filename
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function loads network from file with given name. 
+</P>
+<HR>
+
+<H3><A 
+name=decl_LoadLearnBuf>LoadLearnBuf</A></H3>
+<P class=Blurb>Load buffer content from file. 
+</P><PRE>int LoadLearnBuf(const char *filename, ESavingType mode = eCSV);
+</PRE>
+<P>
+<DL>
+  <DT>filename
+  <DD>??. 
+  <DT>mode
+  <DD>??.</DD></DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_MakeUniformDistribution>MakeUniformDistribution</A></H3>
+<P class=Blurb>Sets uniform distribution on all nodes. 
+</P><PRE>void MakeUniformDistribution();
+</PRE>
+<P>
+<DL>
+  </DL>
+<P></P>
+<P>The function .... 
+</P>
+<HR>
+
+<H3><A 
+name=decl_GenerateEvidences>GenerateEvidences</A></H3>
+<P class=Blurb>Generate samples for the network. 
+</P><PRE>void GenerateEvidences( int nSamples, bool ignoreCurrEvid = false, TokArr whatNodes = "");
+</PRE>
+<P>
+<DL>
+  <DT>nSamples
+  <DD>Number of samples to generate. 
+  <DT>ignoreCurrEvid 
+  <DD>Flag of current evidence ignorance. If true - the current evidence will be ignored. Default value is false.  
+  <DT>whatNodes 
+  <DD>Array of names of variables to generate and portion of observed data. Default empty array means that all samples will be generated. </DD>
+</DL>
+<P></P>
+<P>The function generates the specified number of samples from joint probability distribution of the network.
+Samples may be generated using the current evidence (set by <A href="#decl_Evid">Evid</A> function)
+ or ignoring the current evidence. The function allows generating samples with specified portion of missing variables.
+If current evidence is taken into account (ignoreCurrEvid == true) then sampled values of nodes present in evidence
+will be equal to values of current evidence. 
+The sampled data can be generated so that there will be some portion of missing values - for every node user may specify the portion of 
+non-missing values in the generated array.  
+The newly generated samples will be added to internal buffer (learning buffer). To clear learning buffer use <A href="#decl_ClearEvidHistory">ClearEvidHistory</A>. 
+</P>
+
+
+<h4>Example of usage.</h4>
+Generate 100 samples for all network nodes ignoring current evidence: 
+<pre>
+    GenerateEvidences( 100, true);
+</pre>
+Generate 100 samples only for nodes "NodeA","NodeB" and "NodeC" using current evidence:
+<pre>
+    TokArr whatNodesToSample = TokArr("NodeA") & "NodeB" & "NodeC";
+    GenerateEvidences( 100, false, whatNodesToSample);
+</pre>
+Generate 100 samples only for nodes "NodeA","NodeB" and "NodeC" using current evidence. "NodeA" should contain 90% of observed values, "NodeB" and "NodeC" should contain 100% of observed data:
+<pre>
+    TokArr whatNodesToSample = Tok("NodeA")^0.9 & "NodeB" & Tok("NodeC")^1.0;
+    GenerateEvidences( 100, false, whatNodesToSample);
+</pre>
+
+Generate 100 samples for nodes "NodeA","NodeB" and "NodeC" using current evidence. All nodes should contain 90% of observed values:
+<pre>
+    TokArr whatNodesToSample = (Tok("NodeA") "NodeB" & Tok("NodeC") ) ^ 0.9;
+    GenerateEvidences( 100, false, whatNodesToSample);
+</pre>
+
+Generate 100 samples for all nodes using current evidence. All nodes should contain 90% of observed values:
+<pre>
+    TokArr whatNodesToSample = 0.9;
+    GenerateEvidences( 100, false, whatNodesToSample);
+</pre>
+<HR>
+
+
+<H2><A name=Class_...</A>Class_...</H2>
+<HR>
+
+</DIV></BODY></HTML>

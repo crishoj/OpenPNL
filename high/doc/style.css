@@ -1,0 +1,27 @@
+A.link {
+	COLOR: blue; TEXT-DECORATION: underline
+}
+A.visited {
+	COLOR: purple; TEXT-DECORATION: underline
+}
+A.active {
+	COLOR: red; TEXT-DECORATION: underline
+}
+H1 {
+	COLOR: #000000
+}
+H2 {
+	COLOR: #000000; BACKGROUND-COLOR: #6699ff
+}
+H3 {
+	MARGIN-BOTTOM: 0pt; COLOR: #0000f0; FONT-FAMILY: "Helvetica"
+}
+H4 {
+	MARGIN-BOTTOM: 0pt; COLOR: #0000f0; FONT-FAMILY: "Helvetica"
+}
+P.Blurb {
+	MARGIN-TOP: 0pt; FONT-WEIGHT: bold; FONT-SIZE: 80%; COLOR: #000000; FONT-STYLE: italic; FONT-FAMILY: "Helvetica"
+}
+DL DT {
+	FONT-SIZE: 80%; FONT-FAMILY: Monospace
+}
