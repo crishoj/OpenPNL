@@ -104,19 +104,17 @@ int MRF::GetNumberOfCliques() const
     return Net().Distributions()->Cliques().nClique();
 }
 
-void MRF::SetPTabular(TokArr aValue, TokArr prob)
+TokArr MRF::GetFullScale(TokArr aValue) const
 {
-    static const char fname[] = "SetPTabular";
-
+    static const char fname[] = "GetFullScale";
     int aValSize = aValue.size();
     Vector<int> tokNumbers(aValSize, 1);
     int i, j;
     TokIdNode *node;
-    Vector<int> aiNode(aValSize);
     int nVal = 1, nval, iNode;
     for(i = aValSize; --i; )
     {
-        node = m_pNet->Token()->Node(aValue[i]);
+        node = Net().Token()->Node(aValue[i]);
         if(node->tag == eTagValue)
         {
             tokNumbers[i - 1] = tokNumbers[i];
@@ -132,7 +130,7 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
             if(node->tag == eTagNetNode)
             {
                 iNode = Net().Graph()->INode(node->Name());
-                nval = m_pNet->Token()->nValue(iNode);
+                nval = Net().Token()->nValue(iNode);
                 tokNumbers[i - 1] = tokNumbers[i] * nval;
                 nVal *= nval;
             }
@@ -141,13 +139,12 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
                 ThrowUsingError("There is must be node", fname);
             }
         }
-        aiNode[i] = iNode;
     }
-    node = m_pNet->Token()->Node(aValue[0]);
+    node = Net().Token()->Node(aValue[0]);
     if(node->tag == eTagNetNode)
     {
         iNode = Net().Graph()->INode(node->Name());
-	nVal *= m_pNet->Token()->nValue(iNode);
+	nVal *= Net().Token()->nValue(iNode);
     }
     if(node->tag == eTagValue)
     {
@@ -156,28 +153,13 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
         {
             ThrowUsingError("There is must be node", fname);
         }
-        iNode = Net().Graph()->INode(node->Name());
-    }
-    aiNode[0] = iNode;
-    if(prob.size() != nVal)
-    {
-        ThrowUsingError("Number of probabilities is incorrect", fname);
-    }
-
-    if(Net().Distributions()->Cliques().iClique(aiNode) == -1)
-    {
-        // if clique does not exist then create it
-        if(!Net().Distributions()->Cliques().FormClique(aiNode))
-        {
-            ThrowUsingError("Nodes are subset of some clique or some clique is subset of nodes.", "SetClique");
-        }
     }
 
     int TokInd;
     Vector<Tok> aTok(nVal);
     for(i = 0; i < aValSize; i++)
     {
-        node = m_pNet->Token()->Node(aValue[i]);
+        node = Net().Token()->Node(aValue[i]);
         if(node->tag == eTagValue)
         {
             for(TokInd = 0; TokInd < nVal; TokInd++)
@@ -188,7 +170,7 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
         else
         {
             Vector<String> values;
-            m_pNet->Token()->GetValues(m_pNet->Graph()->INode(node->Name()), values);
+            Net().Token()->GetValues(Net().Graph()->INode(node->Name()), values);
 	    int flag = 1;
             for(TokInd = 0, j = 0; TokInd < nVal; TokInd++, flag++)
             {
@@ -205,13 +187,42 @@ void MRF::SetPTabular(TokArr aValue, TokArr prob)
             }
         }
     }
+
+    return TokArr(&aTok.front(), nVal);
+
+}
+
+void MRF::SetPTabular(TokArr aValue, TokArr prob)
+{
+    static const char fname[] = "SetPTabular";
+
+    TokArr aScaleValue = GetFullScale(aValue);
+
+    int nVal = aScaleValue.size();
+    Vector<int> NodeIndices = Net().Token()->aiNode(aScaleValue[0]);
+
+    if(prob.size() != nVal)
+    {
+        ThrowUsingError("Number of probabilities is incorrect", fname);
+    }
+
+    if(Net().Distributions()->Cliques().iClique(NodeIndices) == -1)
+    {
+        // if clique does not exist then create it
+        if(!Net().Distributions()->Cliques().FormClique(NodeIndices))
+        {
+            ThrowUsingError("Nodes are subset of some clique or some clique is subset of nodes.", fname);
+        }
+    }
+
+    int i;
     for(i = 0; i < nVal; i++)
     {
-       aTok[i] ^= prob[i];
-       cout << String(aTok[i])<< endl;
+       aScaleValue[i] ^= prob[i];
+       //cout << String(aScaleValue[i]) << endl;
     }
-    TokArr ta(&aTok.front(), nVal);
-    Net().Distributions()->FillDataNew(pnl::matTable, ta);
+
+    Net().Distributions()->FillDataNew(pnl::matTable, aScaleValue);
 }
 /*
 void MRF::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)
@@ -272,80 +283,11 @@ TokArr MRF::GetPTabular(TokArr aValue)
 {
     static const char fname[] = "GetPTabular";
 
-    int aValSize = aValue.size();
-    Vector<int> tokNumbers(aValSize, 1);
-    int i, j;
-    TokIdNode *node;
-    int nVal = 1, nval;
-    for(i = aValSize; --i; )
-    {
-        node = m_pNet->Token()->Node(aValue[i]);
-        if(node->tag == eTagValue)
-        {
-            tokNumbers[i - 1] = tokNumbers[i];
-            node = node->v_prev;
-            if(node->tag != eTagNetNode)
-            {
-                ThrowUsingError("There is must be node", fname);
-            }
-        }
-        else
-        {
-            if(node->tag == eTagNetNode)
-            {
-                nval = m_pNet->Token()->nValue(m_pNet->Graph()->INode(node->Name()));
-                tokNumbers[i - 1] = tokNumbers[i] * nval;
-                nVal *= nval;
-            }
-            else
-            {
-                ThrowUsingError("There is must be node", fname);
-            }
-        }
-    }
-    node = m_pNet->Token()->Node(aValue[0]);
-    if(node->tag == eTagNetNode)
-    {
-	nVal *= m_pNet->Token()->nValue(m_pNet->Graph()->INode(node->Name()));
-    }
+    TokArr aScaleValue = GetFullScale(aValue);
 
-    int TokInd;
-    Vector<Tok> aTok(nVal);
-    for(i = 0; i < aValSize; i++)
-    {
-        node = m_pNet->Token()->Node(aValue[i]);
-        if(node->tag == eTagValue)
-        {
-            for(TokInd = 0; TokInd < nVal; TokInd++)
-            {
-                aTok[TokInd] ^= aValue[i];
-            }
-        }
-        else
-        {
-            Vector<String> values;
-            m_pNet->Token()->GetValues(m_pNet->Graph()->INode(node->Name()), values);
-	    int flag = 1;
-            for(TokInd = 0, j = 0; TokInd < nVal; TokInd++, flag++)
-            {
-                aTok[TokInd] ^= (Tok(node->Name()) ^ values[j]);
-                if(flag == tokNumbers[i])
-                {
-                    j++;
-		    flag = 0;
-		    if(j == values.size())
-		    {
-			j = 0;
-		    }
-                }
-            }
-        }
-    }
+    Net().Distributions()->ExtractData(pnl::matTable, aScaleValue);
 
-    TokArr result(&aTok.front(), nVal);
-    Net().Distributions()->ExtractData(pnl::matTable, result);
-
-    return result;
+    return aScaleValue;
 }
 
 void MRF::SetInferenceProperties(TokArr &nodes)
@@ -478,7 +420,7 @@ TokArr MRF::GetJPD( TokArr nodes )
     }
     
     delete evid;
-    Net().Token()->Resolve(res);
+    Net().Token()->SetContext(res);
     return res;
 }
 
@@ -591,7 +533,7 @@ TokArr MRF::GetMPE(TokArr nodes)
 
     pnl::CInfEngine *infEngine = &Inference();
 
-	SetInferenceProperties(nodes);
+    SetInferenceProperties(nodes);
 
     infEngine->EnterEvidence(evid, 1);
 
@@ -637,7 +579,7 @@ TokArr MRF::GetMPE(TokArr nodes)
     }
 
     delete evid;
-    Net().Token()->Resolve(result);
+    Net().Token()->SetContext(result);
 
     return result;
 }
@@ -779,17 +721,17 @@ pnl::CInfEngine &MRF::Inference()
     default: //default inference algorithm
 	if(m_Inference)
 	{
-	    pnl::CPearlInfEngine *infPearl;
-	    infPearl = dynamic_cast<pnl::CPearlInfEngine *>(m_Inference);
-	    if(!infPearl)
+	    pnl::CJtreeInfEngine *infJtree;
+	    infJtree = dynamic_cast<pnl::CJtreeInfEngine *>(m_Inference);
+	    if(!infJtree)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CPearlInfEngine::Create(Model());
+		m_Inference = pnl::CJtreeInfEngine::Create(Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CPearlInfEngine::Create(Model());
+	    m_Inference = pnl::CJtreeInfEngine::Create(Model());
 	}
 	break;
     }

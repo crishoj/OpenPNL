@@ -133,6 +133,7 @@ private:
     void SetInferenceProperties(TokArr &nodes);
     void SetParamLearningProperties();
     const char PropertyAbbrev(const char *name) const;
+    TokArr GetFullScale(TokArr aValue) const;
 //    void RebindFrom(BayesNet *bnet);
 
 private:// DATA members

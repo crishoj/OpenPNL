@@ -110,6 +110,16 @@ void TokenCover::Resolve(TokArr &aTok) const
     for(int i = aTok.size(); --i >= 0; aTok[i].Resolve(Root()));
 }
 
+void TokenCover::SetContext(Tok &tok) const
+{
+    tok.FixContext(Root());
+}
+
+void TokenCover::SetContext(TokArr &aTok) const
+{
+    for(int i = aTok.size(); --i >= 0; aTok[i].FixContext(Root()));
+}
+
 bool TokenCover::CopyRecursive(TokIdNode *to, const TokIdNode *from)
 {
     TokIdNode *childFrom, *childTo;
@@ -498,6 +508,28 @@ int TokenCover::iNode(Tok &tok) const
     }
 
     return Index(node);
+}
+
+Vector<int> TokenCover::aiNode(Tok &tok) const
+{
+    Resolve(tok);
+    Vector<TokIdNode *> nodes = tok.Nodes();
+    Vector<int> indices;
+    int i;
+    for(i = 0; i < nodes.size(); i++)
+    {
+        if(nodes[i]->tag == eTagValue)
+        {
+            nodes[i] = nodes[i]->v_prev;
+        }
+        if(nodes[i]->tag != eTagNetNode)
+        {
+            ThrowInternalError("nodes[i] doesn't contain Bayesnode", "aiNode");
+        }
+        indices.push_back(Index(nodes[i]));
+    }
+
+    return indices;
 }
 
 void TokenCover::AddProperty(const char *name, const char **aValue, int nValue)

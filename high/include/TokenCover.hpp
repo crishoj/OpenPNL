@@ -33,6 +33,8 @@ public:
     TokIdNode *Root() const { return m_pRoot; }
     void Resolve(Tok &tok) const;
     void Resolve(TokArr &aTok) const;
+    void SetContext(Tok &tok) const;
+    void SetContext(TokArr &tok) const;
 
     int AddNode(String &nodeName);
     void AddNode(TokArr &nodes, TokArr &values);
@@ -56,7 +58,7 @@ public:
     int NodesClassification(TokArr &aValue) const;
 
     int iNode(Tok &tok) const;
-
+    Vector<int> aiNode(Tok &tok) const;
     // Properties support
     void AddProperty(const char *name, const char **aValue, int nValue);
     void GetPropertyVariants(const char *name, Vector<String> &aValue) const;
