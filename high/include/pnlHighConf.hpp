@@ -34,10 +34,14 @@ namespace NetConst
     } ESavingType;    
 };
 
-//#define INDEX(pTok) ((char*)pTok->data - (char*)0)
+#define PNLW_BEGIN namespace pnlw {
+#define PNLW_END }
+#define PNLW_USING using namespace pnlw;
 
 // FORWARDS
+PNLW_BEGIN
 struct TokArr;
+PNLW_END
 
 namespace pnl
 {
@@ -53,6 +57,8 @@ namespace pnl
 typedef pnl::pnlString String;
 //#pragma warning(pop)
 
+PNLW_BEGIN
+
 // print error and throw exception
 PNLHIGH_API void ThrowInternalError(const char *message, const char *func);
 // print error and throw exception (differs from previous by message)
@@ -65,5 +71,7 @@ extern PNLHIGH_API TokArr continuous;
 extern PNLHIGH_API TokArr chance;
 extern PNLHIGH_API TokArr decision;
 extern PNLHIGH_API TokArr value;
+
+PNLW_END
 
 #endif //__PNLHIGHCONFIG_HPP__

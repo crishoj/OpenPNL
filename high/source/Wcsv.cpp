@@ -1,6 +1,6 @@
 #include "Wcsv.hpp"
 
-
+PNLW_BEGIN
 
 WLex::WLex(const char *fname, bool bRead, char delim): m_Delimiter(delim),
 m_bEOF(false), m_bEOL(true), m_bRead(bRead)
@@ -108,3 +108,5 @@ bool WLex::IsSpecial(int ch) const
 {
     return IsDelimiter(ch) || IsEscape(ch) || ch == '\n';
 }
+
+PNLW_END

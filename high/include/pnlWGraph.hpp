@@ -6,8 +6,10 @@
 #include "WInner.hpp"
 
 // FORWARDS
+PNLW_BEGIN
 struct TokIdNode;
 class WDistribFun;
+PNLW_END
 
 namespace pnl
 {
@@ -15,6 +17,8 @@ namespace pnl
     class CGraph;
     class pnlString;
 }
+
+PNLW_BEGIN
 
 class PNLHIGH_API WGraph: public ModelEngine
 {
@@ -65,10 +69,35 @@ public:
     // But indices from pnl::CGraph or from Model differs from outer.
     // It is inner indices. Such indices must be translated before use.
     // Following functions perform translation between inner and outer views.
-    int IGraph(int iNode) { return m_IndicesOuterToGraph.at(iNode); }
-    int IOuter(int iGraph) { return m_IndicesGraphToOuter.at(iGraph); }
+    int IGraph(int iNode)
+    {
+	if(!m_IndicesGraphToOuter.size())
+	{
+	    Graph();// build graph
+	}
+
+	return m_IndicesOuterToGraph.at(iNode);
+    }
+
+    int IOuter(int iGraph)
+    {
+	if(!m_IndicesGraphToOuter.size())
+	{
+	    Graph();// build graph
+	}
+
+	return m_IndicesGraphToOuter.at(iGraph);
+    }
     void IndicesGraphToOuter(Vector<int> *outer, Vector<int> *iGraph);
-    IIMap &MapOuterToGraph() { return m_IndicesOuterToGraph; }
+    IIMap &MapOuterToGraph()
+    {
+	if(!m_IndicesGraphToOuter.size())
+	{
+	    Graph();// build graph
+	}
+
+	return m_IndicesOuterToGraph;
+    }
 
     // Return true if node index is valid
     bool IsValidINode(int iNode) const;
@@ -95,5 +124,7 @@ private:
     Vector<char> m_abValid;	// validity flag for nodes. This member mustn't be used
 				// in functions except {IsValidINode, AddNode, DelNode}
 };
+
+PNLW_END
 
 #endif //__PNLWGRAPH_HPP__

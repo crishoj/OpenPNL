@@ -12,6 +12,8 @@
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
+PNLW_BEGIN
+
 WGraph::WGraph(): m_pGraph(0), m_bTouched(false)
 {}
 
@@ -70,7 +72,7 @@ pnl::CGraph *WGraph::Graph(bool bForget)
 	    int candidate;
 	    bool bChange;
 
-	    aNode.resize(iNodeMax(), 0);
+	    aNode.resize(m_abValid.size(), 0);
 	    for(i = 0; i < m_abValid.size(); ++i)
 	    {
 		if(!m_abValid[i])
@@ -121,8 +123,6 @@ pnl::CGraph *WGraph::Graph(bool bForget)
 	    }
 	}
 #endif
-
-	PNL_CHECK_FOR_NON_ZERO(j - nodes);
 
 	for(i = nodes; --i >= 0;)
 	{
@@ -365,6 +365,11 @@ int WGraph::nChild(int iNode)
 
 void WGraph::IndicesGraphToOuter(Vector<int> *outer, Vector<int> *iGraph)
 {
+    if(!m_IndicesGraphToOuter.size())
+    {
+	Graph();
+    }
+
     register int i = iGraph->size();
     for(outer->resize(i); --i >= 0; (*outer)[i] = m_IndicesGraphToOuter[(*iGraph)[i]]);
 }
@@ -410,3 +415,5 @@ void WGraph::Reset(pnl::CGraph &graph)
 	Notify(eChangeParentNState, i);
     }
 }
+
+PNLW_END

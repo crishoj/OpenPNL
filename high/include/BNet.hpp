@@ -6,11 +6,13 @@
 #include "pnlTok.hpp"
 
 // FORWARDS
+PNLW_BEGIN
 class WGraph;
 class TokenCover;
 class WDistributions;
 class NetCallback;
 class ProbabilisticNet;
+PNLW_END
 
 namespace pnl
 {
@@ -24,6 +26,8 @@ namespace pnl
     class pnlString;
     template<typename Type> class CMatrix;
 }
+
+PNLW_BEGIN
 
 class PNLHIGH_API BayesNet
 {
@@ -152,5 +156,7 @@ private:// DATA members
 //             V |        V
 //            File      Learning
 //
+
+PNLW_END
 
 #endif //__BNET_HPP__

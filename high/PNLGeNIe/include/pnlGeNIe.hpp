@@ -1,11 +1,16 @@
 #ifndef __PNLGENIE_HPP__
 #define __PNLGENIE_HPP__
 
+#undef _DEBUG
+#undef DEBUG
 #include "windows.h"
 #include <vector>
 #include <string>
 #include "network.h"
 #include "constants.h"
+#include "xmlreader.h"
+
+#include "pnlXMLRead.hpp"
 
 typedef std::string StringGP;
 
@@ -270,6 +275,147 @@ private:
     std::vector<NetConst::NodeValueStatus> m_aNodeValueStatus;// nodevalue status for every node
     WEvidence *m_aEvidence;
     std::vector<bool> m_abEvidence;
+};
+
+class XMLContainer;
+
+class XmlReaderPNLH: public IXmlReader
+{
+public:
+    XmlReaderPNLH(): m_Container(0) {}
+    virtual ~XmlReaderPNLH() {}
+
+    virtual bool Parse(const char *filename, const IXmlBinding *root, IXmlErrorHandler *errorHandler);
+    virtual bool Parse(XMLContainer &container, const IXmlBinding *root, IXmlErrorHandler *errorHandler);
+    virtual void StopParse(const char* errorMessage);
+
+    virtual void GetCurrentPosition(int &line, int &column);
+
+    virtual const std::string& GetContent();
+    virtual void GetUnescapedContent(std::string &unescaped);
+    virtual void GetAttribute(const char *name, std::string &value);
+    virtual bool GetAttribute(const char *name, bool &value, bool defValue);
+    virtual bool GetAttribute(const char *name, int &value, int defValue);
+    virtual bool GetAttribute(const char *name, double &value, double defValue);
+
+    virtual IXmlBinding* CreateBinding(IXmlHandler *handler, const char *name, int validation);
+
+    virtual void Delete()
+    {
+	delete this;
+    }
+
+private:
+    XMLContainer *m_Container;
+};
+
+// This container filters output to underlying container.
+// It filters by 'elementName'.
+// The element with pointed name with all sub-elements is directed to 'output' container.
+class XMLContainerFilter: public pnl::CXMLContainer
+{
+public:
+    XMLContainerFilter(pnl::CXMLContainer *output, const char *elementName)
+	: m_CurrentLevel(0), m_LevelOn(-1), m_Output(output), m_ElementName(name)
+    {}
+    virtual ~XMLContainerFilter() {}
+
+    virtual void CreateNode(const pnl::pnlString &name)
+    {
+	m_CurrentLevel++;
+	if(IsOn())
+	{
+	    m_Output->CreateNode(name);
+	}
+	else if(name == m_ElementName)
+	{
+	    m_LevelOn = m_CurrentLevel;
+	    m_Output->CreateNode(name);
+	}
+    }
+    virtual void AddContent(const pnl::pnlString &addition)
+    {
+	if(IsOn())
+	{
+	    m_Output->AddContent(addition);
+	}
+    }
+    virtual void AddAttribute(const pnl::pnlString &attrName, const pnl::pnlString &attrValue)
+    {
+	if(IsOn())
+	{
+	    m_Output->AddAttribute(attrName, attrValue);
+	}
+    }
+    virtual void Close()
+    {
+	if(--m_CurrentLevel == m_LevelOn)
+	{
+	    m_LevelOn = -1;
+	}
+    }
+
+private:
+    bool IsOn() { return m_LevelOn >= 0; }
+
+private:
+    int m_CurrentLevel;
+    int m_LevelOn;
+    pnl::CXMLContainer *m_Output;
+    pnl::pnlString m_ElementName;
+};
+
+// Simple container which keeps XML file as tree
+class XMLContainer: public pnl::CXMLContainer
+{
+private:
+    struct Node
+    {
+	Node() {}
+
+	pnl::pnlString m_Name;
+	pnl::pnlString m_Content;
+	std::vector<pnl::pnlString> m_aAttribute;
+	std::vector<int> m_aiChild;
+    };
+
+public:
+    XMLContainer() {}
+    virtual ~XMLContainer() {}
+
+    virtual void CreateNode(const pnl::pnlString &name)
+    {
+	int iNode = m_aNode.size();
+	if(m_Stack.size())
+	{// add child to his parent's child list
+	    m_aNode[m_Stack.back()].m_aiChild.push_back(iNode);
+	}
+	m_Stack.push_back(iNode);
+	m_aNode.resize(iNode + 1);
+	m_aNode.back().m_Name = name;
+    }
+    virtual void AddContent(const pnl::pnlString &addition)
+    {
+	LastElement().m_Content.append(addition.c_str());
+    }
+    virtual void AddAttribute(const pnl::pnlString &attrName, const pnl::pnlString &attrValue)
+    {
+	LastElement().m_aAttribute.push_back(attrName);
+	LastElement().m_aAttribute.push_back(attrValue);
+    }
+    virtual void Close()
+    {
+	m_Stack.pop_back();
+    }
+
+private:
+    struct Node &LastElement()
+    {
+	return m_aNode.back();
+    }
+
+    pnl::pnlVector<struct Node> m_aNode;
+    pnl::pnlVector<int> m_Stack;
 };
 
 #endif

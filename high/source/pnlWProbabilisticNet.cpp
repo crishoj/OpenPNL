@@ -20,6 +20,8 @@
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
+PNLW_BEGIN
+
 static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, int size);
 
 // Tok identifies for discrete and continuous node types
@@ -461,10 +463,20 @@ int ProbabilisticNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mo
     return nEvid;
 }
 
+class Properties
+{
+public:
+    Properties(std::map<String, String> *pMap);
+
+private:
+
+};
+
 bool ProbabilisticNet::SaveNet(pnl::CContextPersistence *saver)
 {
     saver->Put(Model(), "Model");
     saver->Put(new pnl::CCover<ProbabilisticNet>(this), "NodeInfo", true);
+    saver->Put(new pnl::CCover<std::map<String, String> >(&m_aPropertyValue), "Properties", true);
 
     return true;
 }
@@ -1248,3 +1260,5 @@ int ProbabilisticNet::iNodeMax() const
 {
     return Graph()->iNodeMax();
 }
+
+PNLW_END

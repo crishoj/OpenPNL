@@ -14,6 +14,8 @@
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
+PNLW_BEGIN
+
 TokenCover::TokenCover(const char *rootName, WGraph *graph, bool bAutoNum): m_pGraph(graph)
 {
     CreateRoot(rootName, bAutoNum);
@@ -239,12 +241,11 @@ bool TokenCover::DelNode(Tok &nodeName)
 
     node->Kill();
 
-    if(m_pGraph && !m_pGraph->DelNode(m_pGraph->INode(name.c_str())))
-    {
-	return false;
-    }
+    MaskAddOrDelete(eDelNode, true);
+    bool result = m_pGraph && !m_pGraph->DelNode(m_pGraph->INode(name.c_str()));
+    MaskAddOrDelete(eDelNode, false);
 
-    return true;
+    return result;
 }
 
 int TokenCover::nValue(int iNode)
@@ -553,8 +554,11 @@ void TokenCover::DoNotify(int message, int iNode, ModelEngine *pObj)
 	}
 	break;
     case eDelNode:
+	return; // temporary stub - all nodes must be deleted via TokenCover interface
     default:
 	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
 	return;
     }
 }
+
+PNLW_END

@@ -1,18 +1,7 @@
 #include "XMLWriterPNLH.hpp"
-#include "BNet.hpp"
-#include "WDistribFun.hpp"
-#include "pnlLog.hpp"
 #undef _DEBUG
 #undef DEBUG
-#include "constants.h"
-#include "TokenCover.hpp"
-#include "pnlWGraph.hpp"
-#include "pnlWEvidence.hpp"
-#include "pnlWDistributions.hpp"
-#include "pnlWProbabilisticNet.hpp"
-
-#include "pnlGraph.hpp"
-
+#include "pnlConfig.hpp"
 #include "pnlContextPersistence.hpp"
 #include "pnlPersistence.hpp"
 #include "pnlXMLRead.hpp"

@@ -20,6 +20,8 @@
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
+PNLW_BEGIN
+
 BayesNet::BayesNet(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
 {
     static const char *aInference[] =
@@ -1097,3 +1099,5 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 
     return 0;
 }
+
+PNLW_END

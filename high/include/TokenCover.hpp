@@ -7,9 +7,11 @@
 #include "ModelEngine.hpp"
 
 // FORWARDS
+PNLW_BEGIN
 struct TokIdNode;
 class WGraph;
 class WDistribFun;
+PNLW_END
 
 namespace pnl
 {
@@ -18,6 +20,8 @@ namespace pnl
     class pnlString;
     class CNodeType;
 };
+
+PNLW_BEGIN
 
 class PNLHIGH_API TokenCover: public ModelEngine
 {
@@ -95,5 +99,7 @@ private:// DATA
 
     WGraph *m_pGraph;		// serve graph and naming
 };
+
+PNLW_END
 
 #endif //__TOKENCOVER_HPP__

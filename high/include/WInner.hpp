@@ -6,14 +6,18 @@
 #endif
 
 // FORWARDS
+PNLW_BEGIN
+
 struct TokIdNode;
 
 typedef enum
 {   eAddNode
+,   eDelNode
 ,   eLoadNet
 ,   eNodeType
 ,   eSaveNet
 ,   eAddArc
+,   eDelArc
 ,   eSetPTabular
 ,   eSetPGaussian
 ,   eGetPTabular
@@ -40,12 +44,12 @@ typedef enum
 };
 
 typedef enum
-{   eTagNet
-,   eTagService
-,   eTagNodeType
-,   eTagNetNode
-,   eTagValue
-,   eTagRootClassification
+{   eTagNet	// concrete net object (BayesNet, IDNet)
+,   eTagService // some service node
+,   eTagNodeType// node classificator (discrete, decision)
+,   eTagNetNode // concrete node of net
+,   eTagValue   // value for node (true, State0)
+,   eTagRootClassification // root now
 };
 
 typedef enum
@@ -60,5 +64,7 @@ TokIdNode *ancestorByTagValue(TokIdNode *node, int tag, int value);
 typedef Vector<int> IIMap;
 
 void PrintTokTree(const char *filename, TokIdNode *node);
+
+PNLW_END
 
 #endif // __WINNER_HPP__

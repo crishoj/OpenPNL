@@ -5,7 +5,9 @@
 #include "pnlHighConf.hpp"
 
 // FORWARDS
+PNLW_BEGIN
 class ProbabilisticNet;
+PNLW_END
 
 namespace pnl
 {
@@ -13,6 +15,8 @@ namespace pnl
     class CGraphicalModel;
     class pEvidenceVector;
 }
+
+PNLW_BEGIN
 
 class PNLHIGH_API NetCallback
 {
@@ -24,5 +28,7 @@ public:
     virtual void GenerateSamples(ProbabilisticNet &net,
 	pnl::pEvidencesVector *newSamples, int nSample, pnl::CEvidence *evid) = 0;
 };
+
+PNLW_END
 
 #endif //__NETCALLBACK_HPP__

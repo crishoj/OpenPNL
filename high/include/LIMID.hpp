@@ -6,11 +6,15 @@
 #include "pnlTok.hpp"
 
 // FORWARDS
+PNLW_BEGIN
 class WGraph;
 class TokenCover;
 class WDistributions;
 class NetCallback;
 class ProbabilisticNet;
+PNLW_END
+
+using namespace pnlw;
 
 namespace pnl
 {

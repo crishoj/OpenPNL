@@ -14,6 +14,8 @@
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
+PNLW_BEGIN
+
 void WEvidence::Clear()
 {
     m_EvidenceBoard = TokArr();
@@ -49,3 +51,5 @@ void WEvidence::Set(const TokArr &evidence)
 	}
     }
 }
+
+PNLW_END

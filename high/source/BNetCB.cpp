@@ -6,6 +6,8 @@
 
 #include "pnl_dll.hpp"
 
+PNLW_BEGIN
+
 static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, int size);
 
 static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, int size)
@@ -123,3 +125,4 @@ void BayesNetCallback::GenerateSamples(ProbabilisticNet &net,
 	nSample, evid);
 }
 
+PNLW_END

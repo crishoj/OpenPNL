@@ -160,7 +160,9 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	    }
 	case -11:/* checkOrCreate */ CheckOrCreate(args[0].c_str(), args[1].c_str(), args[2].c_str());break;
 	case eAddNode:	    BNet().AddNode(args[0], args[1]); break;
+	case eDelNode:	    BNet().DelNode(args[0]); break;
 	case eAddArc:	    BNet().AddArc (args[0], args[1]); break;
+	case eDelArc:	    BNet().DelArc (args[0], args[1]); break;
 	case eLoadNet:	    BNet().LoadNet(args[0].c_str());  break;
 	case eSaveNet:	    BNet().SaveNet(args[0].c_str());  break;
 	case eLoadEvidBuf:  BNet().LoadEvidBuf(args[0].c_str());  break;

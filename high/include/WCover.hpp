@@ -5,7 +5,7 @@
 #include "pnlHighConf.hpp"
 #endif
 
-// FORWARDS
+PNLW_BEGIN
 
 class PNLHIGH_API WCover
 {
@@ -15,5 +15,7 @@ public:
 protected:
     WCover() {}
 };
+
+PNLW_END
 
 #endif //__WCOVER_HPP__

@@ -4,8 +4,12 @@
 #include "pnlHigh.hpp"
 
 // FORWARDS
+namespace pnlw {
 class BayesNet;
 struct TokArr;
+};
+
+PNLW_USING
 
 namespace pnl
 {

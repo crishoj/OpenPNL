@@ -7,6 +7,8 @@
 
 // FORWARDS
 
+PNLW_BEGIN
+
 struct PNLHIGH_API WNodeInfo: public pnl::CPNLBase
 {
     WNodeInfo(const String &name, pnl::CNodeType nt);
@@ -35,5 +37,16 @@ public:
     virtual pnl::CPNLBase *Load(pnl::CContextLoad *pContext);
     virtual bool IsHandledType(pnl::CPNLBase *pObj) const;
 };
+
+class PNLHIGH_API PersistMapSS: public pnl::CPersistence
+{
+public:
+    virtual const char *Signature();
+    virtual void Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext);
+    virtual pnl::CPNLBase *Load(pnl::CContextLoad *pContext);
+    virtual bool IsHandledType(pnl::CPNLBase *pObj) const;
+};
+
+PNLW_END
 
 #endif //__PERSISTWNODEINFO_HPP__

@@ -5,7 +5,7 @@
 #include "pnl_dll.hpp"
 #include "pnlPersistence.hpp"
 
-// FORWARDS
+PNLW_BEGIN
 
 class PNLHIGH_API PersistWBNet: public pnl::CPersistence
 {
@@ -16,5 +16,7 @@ public:
     virtual void TraverseSubobject(pnl::CPNLBase *pObj, pnl::CContext *pContext);
     virtual bool IsHandledType(pnl::CPNLBase *pObj) const;
 };
+
+PNLW_END
 
 #endif //__PERSISTWBNET_HPP__

@@ -12,6 +12,8 @@ namespace pnl
 
 class XmlBindingPNL;
 
+PNLW_USING
+
 // This container filters output to underlying container.
 // It filters by 'elementName'.
 // The element with pointed name with all sub-elements is directed to 'output' container.

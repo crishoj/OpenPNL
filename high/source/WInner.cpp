@@ -8,7 +8,7 @@
 #pragma warning(default: 4251)
 #pragma warning(pop)
 
-using namespace pnl;
+PNLW_BEGIN
 
 TokIdNode* flatSearch(TokIdNode *parent, const char *name)
 {
@@ -92,3 +92,5 @@ void PrintTokTree(const char *filename, TokIdNode *node)
         fclose(fp);
     }
 }
+
+PNLW_END

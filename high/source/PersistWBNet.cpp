@@ -14,6 +14,8 @@
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
+PNLW_BEGIN
+
 const char *PersistWBNet::Signature()
 {
     return "ProbabilisticNet";
@@ -128,3 +130,5 @@ ExternalPersistenceUsing::~ExternalPersistenceUsing()
 }
 
 static ExternalPersistenceUsing objPersistenceUsing;
+
+PNLW_END

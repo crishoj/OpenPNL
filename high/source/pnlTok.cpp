@@ -4,7 +4,7 @@
 
 #include "pnlTok.hpp"
 
-using namespace pnl;
+PNLW_BEGIN
 
 TokIdNode *TokIdNode::root = new( TokIdNode )( "" );
 Vector< TokIdNode * > TokIdNode::cemetery;
@@ -60,14 +60,14 @@ void TokIdNode::Alias( TokId const &id )
     {
         if ( nd->Match( id ) )
         {
-            PNL_THROW( CBadArg, "attempt to make ambiguous alias, brothers cannot have matching aliases" );
+	    PNL_THROW( pnl::CBadArg, "attempt to make ambiguous alias, brothers cannot have matching aliases" );
         }
     }
     for ( nd = h_next; nd; nd = nd->h_next )
     {
         if ( nd->Match( id ) )
         {
-            PNL_THROW( CBadArg, "attempt to make ambiguous alias, brothers cannot have matching aliases" );
+            PNL_THROW( pnl::CBadArg, "attempt to make ambiguous alias, brothers cannot have matching aliases" );
         }
     }
     this->id.push_back( id );
@@ -99,7 +99,7 @@ void TokIdNode::Unalias( TokId const &id )
                         goto going_on;
                     }
                 }
-                PNL_THROW( CInternalError, "invariant failed: id must be in descendants multimap, but it is not" );
+                PNL_THROW( pnl::CInternalError, "invariant failed: id must be in descendants multimap, but it is not" );
 going_on:
                 ;
             }
@@ -125,7 +125,7 @@ void TokIdNode::Remove( bool no_cemetery )
                 if ( it == nd[1]->desc.end() )
                 {
                 oops:
-                    PNL_THROW( CInternalError, "invariant failed: id must be in descendants multimap, but it is not" );
+                    PNL_THROW( pnl::CInternalError, "invariant failed: id must be in descendants multimap, but it is not" );
                 }
 		for(itEnd = nd[1]->desc.upper_bound(nd[0]->id[i]);;)
                 {
@@ -152,7 +152,7 @@ void TokIdNode::Remove( bool no_cemetery )
     {
         if ( v_prev->v_next != this )
         {
-            PNL_THROW( CInternalError, "incorrect links in tree nodes" );
+            PNL_THROW( pnl::CInternalError, "incorrect links in tree nodes" );
         }
         v_prev->v_next = h_next;
     }
@@ -219,7 +219,7 @@ std::vector< std::pair< TokIdNode *, int > > TokIdNode::AmbigResolve( TokIdNode 
 
     if ( !context->IsInContext( subroot ) )
     {
-        PNL_THROW( CBadArg, "context must lie in subtree rooted at subroot" );
+        PNL_THROW( pnl::CBadArg, "context must lie in subtree rooted at subroot" );
     }
 
     if ( node == 0 && subroot->Match( arr[0] ) )
@@ -265,7 +265,7 @@ std::pair< TokIdNode *, int > TokIdNode::Resolve( TokIdNode const *node,
 
     if ( !hard_context->IsInContext( subroot ) )
     {
-        PNL_THROW( CBadArg, "hard_context must lie in subtree rooted at subroot" );
+        PNL_THROW( pnl::CBadArg, "hard_context must lie in subtree rooted at subroot" );
     }
 
     if ( !soft_context->IsInContext( hard_context ) )
@@ -303,7 +303,7 @@ std::pair< TokIdNode *, int > TokIdNode::Resolve( TokIdNode const *node,
 
     if ( !hard_context->IsInContext( subroot ) )
     {
-        PNL_THROW( CBadArg, "hard_context must lie in subtree rooted at subroot" );
+        PNL_THROW( pnl::CBadArg, "hard_context must lie in subtree rooted at subroot" );
     }
 
     if ( !soft_context->IsInContext( hard_context ) )
@@ -415,7 +415,7 @@ char const *Tok::Init( char const s[] )
         }
         if ( t - s >= 128 )
         {
-            PNL_THROW( CBadArg, "Too long identifier in token representation" );
+            PNL_THROW( pnl::CBadArg, "Too long identifier in token representation" );
         }
         memcpy( buf, s, t - s );
         buf[t - s] = 0;
@@ -743,7 +743,7 @@ void TokArr::Init( char const *s )
         }
         if ( !(isalnum( *s ) || strchr( "-^+.", *s )) )
         {
-            PNL_THROW( CBadArg, "alien symbol inside TokArr, one can use alphanumerics or + - . ^ & only" );
+            PNL_THROW( pnl::CBadArg, "alien symbol inside TokArr, one can use alphanumerics or + - . ^ & only" );
         }
         push_back( Tok::root );
         s = back().Init( s );
@@ -916,3 +916,5 @@ int main()
     return 0;
 }
 #endif
+
+PNLW_END

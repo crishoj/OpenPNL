@@ -7,6 +7,8 @@
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
 
+PNLW_BEGIN
+
 // WNodeInfo
 
 WNodeInfo::WNodeInfo(const String &name, pnl::CNodeType nt): m_Name(name), m_NodeType(nt)
@@ -126,3 +128,32 @@ bool PersistTokenArray::IsHandledType(pnl::CPNLBase *pObj) const
 {
     return dynamic_cast<pnl::CCover<TokArr>*>(pObj) != 0;
 }
+
+const char *PersistMapSS::Signature()
+{
+    return "NameValue_Pair";
+}
+
+void PersistMapSS::Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext)
+{
+    std::map<String, String>::iterator it, itEnd;
+    std::map<String, String> &map = *dynamic_cast<pnl::CCover<
+	std::map<String, String> >*>(pObj)->GetPointer();
+
+    for(it = map.begin(), itEnd = map.end(); it != itEnd; it++)
+    {
+	pContext->AddAttribute(it->first.c_str(), it->second.c_str());
+    }
+}
+
+pnl::CPNLBase *PersistMapSS::Load(pnl::CContextLoad *pContext)
+{
+    return 0;
+}
+
+bool PersistMapSS::IsHandledType(pnl::CPNLBase *pObj) const
+{
+    return dynamic_cast<pnl::CCover<std::map<String, String> >*>(pObj) != 0;
+}
+
+PNLW_END

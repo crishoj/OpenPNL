@@ -8,6 +8,8 @@
 
 using namespace pnl;
 
+PNLW_BEGIN
+
 static int nSubNodes(TokIdNode *node)
 {
     register int result = 0;
@@ -600,3 +602,5 @@ void WGaussianDistribFun::SetData(int matrixId, const float *probability, int nu
 
    m_pDistrib->AllocMatrix( probability, matType, numWeightMat);
 }
+
+PNLW_END

@@ -6,9 +6,7 @@
 #include "pnlTok.hpp"
 #include "WCover.hpp"
 
-// Tok identifies for discrete and continuous node types
-extern PNLHIGH_API TokArr discrete;
-extern PNLHIGH_API TokArr continuous;
+PNLW_BEGIN
 
 // FORWARDS
 class WDistribFun;
@@ -16,6 +14,8 @@ class WGraph;
 class TokenCover;
 class WDistributions;
 class NetCallback;
+
+PNLW_END
 
 namespace pnl
 {
@@ -28,6 +28,8 @@ namespace pnl
     class pnlString;
     template<typename Type> class CMatrix;
 }
+
+PNLW_BEGIN
 
 // Inner storage for evidence (before it will be transformed to PNL's Evidence)
 class PNLHIGH_API WEvidence
@@ -42,5 +44,7 @@ private:
     TokArr m_EvidenceBoard;
     std::map<TokIdNode *, int> m_VarMap;
 };
+
+PNLW_END
 
 #endif //__PNLWEVIDENCE_HPP__

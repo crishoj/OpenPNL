@@ -6,6 +6,9 @@
 
 #include "pnl_dll.hpp"
 
+PNLW_BEGIN
+
+#if !defined(REMOVE_DOUBLE_CODE)
 static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, int size);
 
 static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, int size)
@@ -24,6 +27,7 @@ static int nodeAssociation(Vector<pnl::CNodeType> *paNodeType, bool isDiscrete, 
 	
     return paNodeType->size() - 1;
 }
+#endif
 
 pnl::CGraphicalModel *DBNCallback::CreateModel(ProbabilisticNet &net)
 {
@@ -117,5 +121,4 @@ pnl::CGraphicalModel *DBNCallback::CreateModel(ProbabilisticNet &net)
 	
 }
 
-
-
+PNLW_END

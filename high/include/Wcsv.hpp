@@ -7,6 +7,8 @@
 
 // FORWARDS
 
+PNLW_BEGIN
+
 class WLex
 {
 public:
@@ -36,5 +38,7 @@ private:
     bool m_bEOL;
     bool m_bRead;
 };
+
+PNLW_END
 
 #endif //__WCSV_HPP__

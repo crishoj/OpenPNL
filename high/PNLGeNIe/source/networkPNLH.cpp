@@ -1139,6 +1139,4 @@ void NetworkPNL::MarkCallFunction(const char *name, bool bRealized, const char *
 	s << "Function '" << name << "' not yet implemented";
 	PNL_THROW(pnl::CNotImplemented, s.c_str());
     }
-
-    //m_pLogStream->Redirect("GeNIe_PNLModule.log");
 }

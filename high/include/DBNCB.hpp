@@ -5,6 +5,8 @@
 #include "pnlHighConf.hpp"
 #include "NetCallBack.hpp"
 
+PNLW_BEGIN
+
 class PNLHIGH_API DBNCallback: public NetCallback
 {
 public:
@@ -16,5 +18,7 @@ public:
       	pnl::pEvidencesVector *newSamples, int nSample, pnl::CEvidence *evid)  {}
      
 };
+
+PNLW_END
 
 #endif //__DBNCB_HPP__

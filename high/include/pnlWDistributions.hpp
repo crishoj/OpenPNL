@@ -5,10 +5,11 @@
 #include "ModelEngine.hpp"
 #include "pnlNodeType.hpp"
 
+PNLW_BEGIN
+
 // FORWARDS
 class WDistribFun;
 class TokenCover;
-
 
 class PNLHIGH_API WDistributions: public ModelEngine
 {
@@ -45,5 +46,7 @@ private:
     Vector<WDistribFun*> m_aDistribution;	// distribution for each node
     Vector<bool> m_abDiscrete;			// 'discrete' flag for each node
 };
+
+PNLW_END
 
 #endif //__PNLWDISTRIBUTIONS_HPP__

@@ -15,6 +15,8 @@ namespace pnl
     class CGaussianDistribFun;
 }
 
+PNLW_BEGIN
+
 class DistribFunDesc
 {
 public:
@@ -92,5 +94,7 @@ private:
     pnl::CGaussianDistribFun *m_pDistrib;
 
 };
+
+PNLW_END
 
 #endif //__WDISTRIBFUN_HPP__

@@ -1,5 +1,7 @@
 #include "ModelEngine.hpp"
 
+PNLW_BEGIN
+
 ModelEngine::~ModelEngine()
 {
     int i;
@@ -14,3 +16,5 @@ ModelEngine::~ModelEngine()
 	StopSpyTo(m_apSpyTo[i]);
     }
 }
+
+PNLW_END

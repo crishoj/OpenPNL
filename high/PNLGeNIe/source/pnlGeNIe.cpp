@@ -6,6 +6,8 @@
 #include "BNet.hpp"
 #include "WDistribFun.hpp"
 #include "pnlLog.hpp"
+#undef _DEBUG
+#undef DEBUG
 #include "constants.h"
 #include "TokenCover.hpp"
 #include "pnlWGraph.hpp"
@@ -36,9 +38,13 @@ INetworkPNL::INetworkPNL(): m_ErrorOutput(0), m_NetName("PNLBNet")
 
 bool INetworkPNL::Load(const char *filename, IXmlBinding *externalBinding)
 {
-    MarkCallFunction("Load");
+    MarkCallFunction("Load", true);
 
-    return false;
+    XmlReaderPNLH reader;
+    XMLContainer container;
+    XMLContainerFilter filter(&container, "genie");
+
+    return reader.Parse(container, externalBinding, 0);
 }
 
 #include "legacydsl.h"
@@ -439,13 +445,18 @@ void INetworkPNL::GetValue(int node, bool &valueValid, std::vector<int> &parents
 
     TokArr evid(m_aEvidence->GetBoard());
     parents.resize(0);
-    valueValid = true;
     values.resize(0);
     m_pWNet->ClearEvid();
-    if(evid.size())
+    if(evid.size() && m_pWNet->Net().nNetNode() > 1)
     {
 	m_pWNet->EditEvidence(evid);
     }
+    else
+    {
+	valueValid = false;
+	return;
+    }
+    valueValid = true;
     evid = m_pWNet->GetJPD(Graph()->NodeName(node));
     values.resize(len);
 
@@ -1198,4 +1209,133 @@ void XmlWriterPNL::PushAttribute(const char *name, double value)
     
     str << value;
     m_pRealWriter->PushAttribute(name, str.c_str());
+}
+
+class XmlBindingPNL: public IXmlBinding
+{
+public:
+    XmlBindingPNL(IXmlHandler *handler, const char *name, int validation):
+    m_Name(name), m_Handler(handler) {}
+
+    virtual ~XmlBindingPNL() {}
+
+    virtual void AddChild(const IXmlBinding *child, int occurences);
+    virtual void AddAttribute(const char *attributeName, bool required);
+    virtual void Delete();
+
+    pnl::pnlString Name() const { return m_Name; }
+    IXmlHandler *Handler() const { return m_Handler; }
+
+#ifndef NDEBUG
+    virtual void Dump(int indent, std::string &output) const;
+#endif
+
+    enum
+    {
+	ChildRequired = 1,
+	ChildMultiple = 2,
+	ZeroOrMore = ChildMultiple,
+	OneOrMore = ChildRequired | ChildMultiple,
+	ExactlyOne = ChildRequired,
+	ZeroOrOne = 0,
+    };
+
+    enum 
+    {
+	ValidateNone = 0,
+	ValidateAttributes = 1,
+	ValidateChildren = 2,
+	ValidateAll = ValidateAttributes | ValidateChildren,
+	ValidateInherit = 4,
+    };
+
+private:
+    pnl::pnlString m_Name;
+    IXmlHandler *m_Handler;
+    std::vector<const IXmlBinding*> m_Children;
+    std::vector<pnl::pnlString> m_aAttrName;
+};
+
+void XmlBindingPNL::AddChild(const IXmlBinding *child, int occurences)
+{
+    m_Children.push_back(child);
+}
+
+void XmlBindingPNL::AddAttribute(const char *attributeName, bool required)
+{
+    m_aAttrName.push_back(attributeName);
+}
+
+void XmlBindingPNL::Delete()
+{
+    delete this;
+}
+
+#ifndef NDEBUG
+void XmlBindingPNL::Dump(int indent, std::string &output) const
+{
+
+}
+#endif
+
+bool XmlReaderPNLH::Parse(const char *filename, const IXmlBinding *root, IXmlErrorHandler *errorHandler)
+{
+    return true;
+}
+
+bool XmlReaderPNLH::Parse(XMLContainer &container, const IXmlBinding *root,
+			  IXmlErrorHandler *errorHandler)
+{
+    const XmlBindingPNL *binding = dynamic_cast<const XmlBindingPNL*>(root);
+
+    if(!binding)
+    {
+	ThrowInternalError("Unknown Binding object type", "XmlReaderPNLH::Parse");
+    }
+    pnl::pnlString name = binding->Name();
+    m_Container = &container;
+
+
+    m_Container = 0;
+}
+
+void XmlReaderPNLH::StopParse(const char* errorMessage)
+{
+}
+
+void XmlReaderPNLH::GetCurrentPosition(int &line, int &column)
+{
+}
+
+const std::string& XmlReaderPNLH::GetContent()
+{
+    return std::string();
+}
+
+void XmlReaderPNLH::GetUnescapedContent(std::string &unescaped)
+{
+}
+
+void XmlReaderPNLH::GetAttribute(const char *name, std::string &value)
+{
+}
+
+bool XmlReaderPNLH::GetAttribute(const char *name, bool &value, bool defValue)
+{
+    return true;// xxx
+}
+
+bool XmlReaderPNLH::GetAttribute(const char *name, int &value, int defValue)
+{
+    return true;// xxx
+}
+
+bool XmlReaderPNLH::GetAttribute(const char *name, double &value, double defValue)
+{
+    return true;// xxx
+}
+
+IXmlBinding* XmlReaderPNLH::CreateBinding(IXmlHandler *handler, const char *name, int validation)
+{
+    return new XmlBindingPNL(handler, name, validation);
 }

@@ -18,12 +18,16 @@
 typedef std::string StringGP;
 
 // FORWARDS
+PNLW_BEGIN
 class BayesNet;
 class WGraph;
 class TokenCover;
 class WDistributions;
 class WEvidence;
 class ProbabilisticNet;
+PNLW_END
+
+PNLW_USING
 
 namespace pnl
 {

@@ -22,6 +22,8 @@
 #include "pnlConfig.hpp"
 #include "pnlException.hpp"
 
+PNLW_BEGIN
+
 struct PNLHIGH_API TokId
 {
     // internal logic relies on TokId::Match being transitive
@@ -1715,6 +1717,8 @@ PNLHIGH_API void TokArr::Resolve( Tok const &hard_context,
         (*this)[i].Resolve( hard_context, soft_context, subroot );
     }
 }
+
+PNLW_END
 
 #endif
 

@@ -8,12 +8,14 @@
 #include "WInner.hpp"
 
 // FORWARDS
+PNLW_BEGIN
 class WDistribFun;
 class WGraph;
 class TokenCover;
 class WDistributions;
 class WEvidence;
 class NetCallback;
+PNLW_END
 
 namespace pnl
 {
@@ -26,6 +28,8 @@ namespace pnl
     template<typename Type> class CMatrix;
     class CContextPersistence;
 }
+
+PNLW_BEGIN
 
 class PNLHIGH_API ProbabilisticNet: protected ModelEngine
 {
@@ -140,5 +144,7 @@ private:// DATA members
 
     NetCallback *m_pCallback;
 };
+
+PNLW_END
 
 #endif //__PNLWPROBABILISTICNET_HPP__

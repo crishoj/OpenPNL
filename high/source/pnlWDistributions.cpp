@@ -14,7 +14,9 @@
 #if defined(_MSC_VER)
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
-using namespace pnl;
+
+PNLW_BEGIN
+
 WDistributions::WDistributions(TokenCover *pToken): m_pToken(pToken)
 {
     SpyTo(m_pToken);
@@ -115,8 +117,7 @@ void WDistributions::GetNodeTypeInfo(bool *pbDiscrete, int *pSize, pnl::EIDNodeS
     {
 	    TokId = TokId->v_prev;
     }
-    *nodeState = ((CNodeType*)(TokId->data))->GetNodeState();
-
+    *nodeState = ((pnl::CNodeType*)(TokId->data))->GetNodeState();
 }
 
 void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
@@ -242,3 +243,5 @@ WGraph &WDistributions::Graph()
 {
     return *Token().Graph();
 }
+
+PNLW_END
