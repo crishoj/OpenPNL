@@ -16,6 +16,7 @@
 
 #include "pnlConfig.hpp"
 #include "pnlXMLRead.hpp"
+#include <fstream>
 
 PNL_USING
 
@@ -38,6 +39,20 @@ CXMLRead::GetToken(pnlString& str)
     if(ch == '>')
     {
 	m_bInsideTag = false;
+	str.resize(0);
+	return eTOKEN_TAG_END;
+    }
+    
+    if(ch == '/')
+    {
+	ch = Getch();
+	if(ch != '>')
+	{
+	    return eTOKEN_BAD;
+	}
+
+	m_bInsideTag = false;
+	str = "/";
 	return eTOKEN_TAG_END;
     }
     
@@ -178,4 +193,91 @@ int CXMLRead::Getch()
     Ungetch(-1);
 
     return -1;
+}
+
+CXMLWriterStd::CXMLWriterStd(): m_File(0), m_bDeleteFileOnExit(false)
+{
+}
+
+CXMLWriterStd::~CXMLWriterStd()
+{
+    if(m_bDeleteFileOnExit)
+    {
+	delete m_File;
+    }
+}
+
+bool CXMLWriterStd::OpenFile(const char * filename)
+{
+    m_File = new std::ofstream();
+    Stream().open(filename, ios_base::trunc|ios_base::out);
+    Stream() << "<?xml version=\"1.0\"?>\n\n<PNLObjects version=\"1.1\">\n";
+    m_bDeleteFileOnExit = true;
+
+    return Stream().good();
+}
+
+bool CXMLWriterStd::CloseFile()
+{
+    Stream() << "\n</PNLObjects>\n";
+    m_File->close();
+
+    return true;
+}
+
+void CXMLWriterStd::OpenElement(const char *name)
+{
+    Stream() << "<" << name;
+    WriteAttributes();
+    Stream() << ">\n";
+    m_bEmpty = true;
+}
+
+void CXMLWriterStd::WriteAttributes()
+{
+    for(int i = 0; i < m_aAttrName.size(); ++i)
+    {
+	Stream() << " " << m_aAttrName[i].c_str()
+	    << "=\"" << m_aAttrValue[i].c_str() << '"';
+    }
+
+    m_aAttrName.resize(0);
+    m_aAttrValue.resize(0);
+}
+
+void CXMLWriterStd::CloseElement(const char *name)
+{
+    Stream() << "</" << name << ">\n";
+    m_bEmpty = false;
+}
+
+void CXMLWriterStd::WriteElement(
+	const char * name,
+	const char * content,
+	bool escapeWhitespace)
+{
+    m_bEmpty = false;
+    if(content && content[0])
+    {
+	OpenElement(name);
+	Stream() << content;
+	CloseElement(name);
+    }
+    else
+    {
+	Stream() << "<" << name;
+	WriteAttributes();
+	Stream() << "/>\n"; 
+    }
+}
+
+void CXMLWriterStd::PushAttribute(const char *name, const char *value)
+{
+    m_aAttrName.push_back(name);
+    m_aAttrValue.push_back(value);
+}
+
+void CXMLWriterStd::WriteBody(const char *bodyText)
+{
+    Stream() << bodyText;
 }

@@ -25,14 +25,24 @@ PNL_USING
 extern CPersistenceZoo *GetZoo();
 
 CContextSaveXML::CContextSaveXML(const std::string &filename)
-: CContextSave(filename)
+: m_bDeleteWriter(true)
 {
-    m_File << "<?xml version=\"1.0\"?>\n\n<PNLObjects version=\"1.1\">\n";
+    m_pWriter = new CXMLWriterStd();
+    m_pWriter->OpenFile(filename.c_str());
+}
+
+CContextSaveXML::CContextSaveXML(CXMLWriter *writer): m_pWriter(writer),
+m_bDeleteWriter(false)
+{
 }
 
 CContextSaveXML::~CContextSaveXML()
 {
-    m_File << "\n</PNLObjects>\n";
+    if(m_bDeleteWriter)
+    {
+	m_pWriter->CloseFile();
+	delete m_pWriter;
+    }
 }
 
 bool CContextPersistence::SaveAsXML(const std::string &filename) const
@@ -67,6 +77,27 @@ bool CContextPersistence::SaveAsXML(const std::string &filename) const
     fprintf(stderr, "Saving: writing to disk %lf sec\n", tm.DurationLast());
     fprintf(stderr, "Saving: full time %lf sec\n", tm.Duration());
 #endif
+
+    return true;
+}
+
+bool CContextPersistence::SaveViaWriter(CXMLWriter *writer) const
+{
+    CContextSaveXML xml(writer);
+
+    xml.GetRootObjects(this);
+
+    CObjHandler *pHandler = new CObjInclusionEnumerator(GetZoo());
+
+    xml.SetObjectHandler(pHandler);
+    xml.BeginTraverse(true);// enumerate object with subobject
+    delete pHandler;
+
+    pHandler = new CObjSaver(GetZoo());
+    xml.SetObjectHandler(pHandler);
+    xml.BeginTraverse();
+    xml.SetObjectHandler(NULL);
+    delete pHandler;
 
     return true;
 }
@@ -171,22 +202,18 @@ void CContextSaveXML::BeforeInterior()
 {
     if(IsPlanned())
     {
-        pnlString buf;
         int i;
         
-        buf << '\n';
-        for(i = 0; i < m_Indices.size(); ++i, buf << ' ');
-
-        buf << "<" << m_aTag.back();
+        //for(i = 0; i < m_Indices.size(); ++i, buf << ' ');
         for(i = 0; i < m_aAttrName.size(); ++i)
         {
-            buf << " " << m_aAttrName[i].c_str() << "=\"" << m_aValue[i].c_str() << "\"";
+	    m_pWriter->PushAttribute(m_aAttrName[i].c_str(), m_aValue[i].c_str());
         }
-        
-        m_File << buf.c_str() << ">\n";
-        for(i = 0; i < m_Indices.size(); ++i, buf << ' ');
-
-        m_File << "    " << m_Text.c_str();
+	m_pWriter->OpenElement(m_aTag.back().c_str());
+	if(m_Text.length())
+	{
+	    m_pWriter->WriteBody(m_Text.c_str());
+	}
     }
     m_Text.resize(0);
     m_aAttrName.resize(0);
@@ -197,9 +224,7 @@ void CContextSaveXML::DoEndTraverseObject()
 {
     if(IsPlanned())
     {
-        m_File << '\n';
-        for(int i = 0; i < m_Indices.size(); ++i, m_File << ' ');
-        m_File << "</" << m_aTag.back().c_str() << '>';
+	m_pWriter->CloseElement(m_aTag.back().c_str());
     }
 }
 
@@ -212,10 +237,6 @@ CContextSave::PlanForWriting()
 
 CContextSave::~CContextSave()
 {
-    if(m_File)
-    {
-        m_File.close();
-    }
 }
 
 void
@@ -374,6 +395,10 @@ Error:      return false;
             {
                 goto Error;
             }
+	    if(arg1.length() && arg1[0] == '/')// tag without inserted tags or body
+	    {
+                stackOpened.pop_back();
+	    }
             break;
         }
     }

@@ -28,11 +28,15 @@
 
 PNL_BEGIN
 
+// FORWARDS
+class CXMLWriter;
+
 class PNL_API CContextPersistence: public CContext
 {
 public:
     CContextPersistence() {}
     bool SaveAsXML(const std::string &filename) const;
+    bool SaveViaWriter(CXMLWriter *writer) const;
     bool LoadXML(const std::string &filename);
 };
 
@@ -40,8 +44,7 @@ public:
 class CContextSave: public CContext
 {
 public:
-    CContextSave(const std::string &filename): m_File(filename.c_str()) {}
-
+    CContextSave() {}
     virtual void BeginTraverseObject(const pnlString &typeName, TreeEntry& rEntry);
     virtual void   EndTraverseObject(const pnlString &typeName, TreeEntry& rEntry);
     virtual void DoEndTraverseObject() = 0;
@@ -85,10 +88,7 @@ protected:
     pnlString m_Text;
     pnlVector<pnlString> m_aAttrName;
     pnlVector<pnlString> m_aValue;
-    std::ofstream m_File;
     bool m_bPlanned;
-
-    CContextSave() {}
 
 private:
     CContextSave(const CContextSave &) // deny copy-ctor
@@ -99,6 +99,7 @@ class CContextSaveXML: public CContextSave
 {
 public:
     CContextSaveXML(const std::string &filename);
+    CContextSaveXML(CXMLWriter *writer);
     virtual ~CContextSaveXML();
 
     virtual void BeginTraverseObject(const pnlString &typeName, TreeEntry& rEntry);
@@ -108,6 +109,9 @@ public:
 private:
     CContextSaveXML(const CContextSaveXML &) // deny copy-ctor
     {}
+
+    CXMLWriter *m_pWriter;
+    bool m_bDeleteWriter;
 };
 
 class CContextLoad: public CContext

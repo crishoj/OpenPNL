@@ -403,6 +403,10 @@ void CContext::Traverse(int iTree)
                 continue;
             }
         }
+	else if(!objTypeName.length()) // unknown object during loading
+	{
+	    continue;
+	}
 
         if(IsEnumeration())
         {
