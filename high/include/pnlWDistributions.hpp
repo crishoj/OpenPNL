@@ -67,7 +67,7 @@ private:
     TokenCover *m_pToken;			// token handler
     Vector<WDistribFun*> m_aDistribution;	// distribution for each node
     Vector<bool> m_abDiscrete;			// 'discrete' flag for each node
-
+    Vector<bool> m_abValid;			// validity flag for every distribution
     bool m_bMRF;				// is net MRF flag
     WCliques *m_pCliques;			// cliques for MRF
 };

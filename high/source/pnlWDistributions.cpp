@@ -55,7 +55,6 @@ void WDistributions::Setup(int iNode)
     {
 	m_aDistribution.resize(iNode + 1, 0);
 	m_abDiscrete.resize(iNode + 1, nodeClass == eNodeClassDiscrete );
-
     }
     delete m_aDistribution[iNode];
 
@@ -106,6 +105,7 @@ void WDistributions::SetupNew(int iDistribution)
     {
 	m_aDistribution.resize(iDistribution + 1, 0);
 	m_abDiscrete.resize(iDistribution + 1, true);
+	m_abValid.resize(iDistribution + 1, false);
     }
     else
     {
@@ -144,12 +144,17 @@ void WDistributions::SetupNew(int iDistribution)
     }
 
     m_aDistribution[iDistribution] = pDistribution;
+    m_abValid[iDistribution] = false;
 }
 
 void WDistributions::DropDistribution(int iNode)
 {
     delete m_aDistribution[iNode];
     m_aDistribution[iNode] = 0;
+    if(m_abValid.size() > iNode)
+    {
+	m_abValid[iNode] = false;
+    }
 }
 
 void WDistributions::Apply(int iNode)
@@ -158,6 +163,10 @@ void WDistributions::Apply(int iNode)
 
 void WDistributions::ApplyNew(int iDistribution)
 {
+    if(m_abValid.at(iDistribution))
+    {
+	return;
+    }
     WDistribFun *pDistribution = m_aDistribution[iDistribution];
 
     if(m_abDiscrete[iDistribution])
@@ -177,6 +186,7 @@ void WDistributions::ApplyNew(int iDistribution)
     {
 	pDistribution->SetDefaultDistribution();
     }
+    m_abValid[iDistribution] = true;
 }
 
 void
@@ -246,6 +256,7 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
         Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
     }
     else
+    {
         if (nodeClass == eNodeClassContinuous)
         {
             static_cast<WGaussianDistribFun*>(Distribution(iNode))->CreateDefaultDistribution();
@@ -280,6 +291,7 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
                 }
             }
         }
+    }
 }
 
 void WDistributions::FillData(TokArr &value, TokArr &probability,
@@ -402,11 +414,7 @@ void WDistributions::DoNotify(int message, int iNode, ModelEngine *pObj)
     switch(message)
     {
     case eDelNode:
-	if(m_aDistribution[iNode])
-	{
-	    delete m_aDistribution[iNode];
-	    m_aDistribution[iNode] = 0;
-	}
+	DropDistribution(iNode);
 	break;
     case eChangeParentNState:
     case eChangeNState:
