@@ -50,20 +50,20 @@ pnl::CGraphicalModel *BayesNetCallback::CreateModel(ProbabilisticNet &net)
     for(i = 0; i < nNode; i++)
     {
 	WDistribFun *pWDF = net.Distributions()->Distribution(i);
-//	PNL_CHECK_IS_NULL_POINTER(dynamic_cast<WTabularDistribFun*>(pWDF));
         PNL_CHECK_IS_NULL_POINTER(pWDF);
+
         pnlNet->AllocFactor(i);
+
         if (net.pnlNodeType(i).IsDiscrete())
         {
             pnl::CDenseMatrix<float> *mat = dynamic_cast<WTabularDistribFun*>(pWDF)->Matrix(0);
             PNL_CHECK_IS_NULL_POINTER(mat);
-//       	    pnlNet->AllocFactor(i);
-	    pnlNet->GetFactor(i)->AttachMatrix(mat, pnl::matTable);
+	
+            pnlNet->GetFactor(i)->AttachMatrix(mat, pnl::matTable);
 	    pnlNet->GetFactor(i)->AttachMatrix(mat->Copy(mat), pnl::matDirichlet);
         }
         else
         {
-//            pnlNet->AllocFactor(i);
             if (dynamic_cast<WGaussianDistribFun*>(pWDF)->IsDistributionSpecific() == 1)
             {
                 const pnl::pConstNodeTypeVector* ntVec = pnlNet->GetFactor(i)->GetDistribFun()
@@ -81,8 +81,12 @@ pnl::CGraphicalModel *BayesNetCallback::CreateModel(ProbabilisticNet &net)
             {
                 pnl::CDenseMatrix<float> *mean = 
                     dynamic_cast<WGaussianDistribFun*>(pWDF)->Matrix(1);
+                PNL_CHECK_IS_NULL_POINTER(mean);
+
                 pnl::CDenseMatrix<float> *cov = 
                     dynamic_cast<WGaussianDistribFun*>(pWDF)->Matrix(2);
+                PNL_CHECK_IS_NULL_POINTER(cov);
+
                 pnlNet->GetFactor(i)->AttachMatrix(mean, pnl::matMean);
                 pnlNet->GetFactor(i)->AttachMatrix(cov, pnl::matCovariance);
 
@@ -91,14 +95,13 @@ pnl::CGraphicalModel *BayesNetCallback::CreateModel(ProbabilisticNet &net)
                 {
                     pnl::CDenseMatrix<float> *weight = 
                         dynamic_cast<WGaussianDistribFun*>(pWDF)->Matrix(3);
+                    PNL_CHECK_IS_NULL_POINTER(weight);
+
                     pnlNet->GetFactor(i)->AttachMatrix(weight, pnl::matWeights, 0);
                 }
             }
-
         }
-
     }
-
     return pnlNet;
 }
 

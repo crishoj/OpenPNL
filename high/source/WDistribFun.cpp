@@ -356,7 +356,6 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
 	break;
     }
 
-/////????????????????????????
    m_pDistrib->AllocMatrix( &probability, matType, 0);
 //    m_pDistrib->GetMatrix(matType)->SetElementByIndexes(probability, &aIndex.front());
 }
