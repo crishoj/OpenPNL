@@ -19,6 +19,6 @@ TESTS = run_pnlcheck
 
 run_pnlcheck: tests_pnl_c
 	@echo "./tests_pnl_c -R FAIL -s $(top_builddir)/checkfails.sum -m -B" >$@; \
-	@chmod a+x $@
+	chmod a+x $@
 '
 ) >Makefile.am

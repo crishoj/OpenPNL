@@ -614,7 +614,7 @@ uninstall-am: uninstall-info-am
 
 run_pnlcheck: tests_pnl_c
 	@echo "./tests_pnl_c -R FAIL -s $(top_builddir)/checkfails.sum -m -B" >$@; \
-	@chmod a+x $@
+	chmod a+x $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
