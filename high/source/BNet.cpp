@@ -22,14 +22,14 @@
 
 BayesNet::BayesNet(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
 {
-    static const char *aInference[] = 
+    static const char *aInference[] =
     {
 	"Pearl Inference", "Jtree Inference", "Gibbs Inference", "Naive Inference"
     };
 
-    static const char *aLearning[] = 
+    static const char *aLearning[] =
     {
-	"Bayes Learning", "EM Learning" 
+	"Bayes Learning", "EM Learning"
     };
 
     m_pNet = new ProbabilisticNet();
@@ -111,7 +111,7 @@ void BayesNet::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr we
 TokArr BayesNet::GetGaussianMean(TokArr vars)
 {
     static const char fname[] = "GetGaussianMean";
-    
+
     if( !vars.size() )
     {
 	ThrowUsingError("Must be at least one combination for a child node", fname);
@@ -124,10 +124,10 @@ TokArr BayesNet::GetGaussianMean(TokArr vars)
     {
 	queryVls.assign(nnodes, -1);
     }
-    
+
     const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matMean);
-    
+
     return Net().ConvertMatrixToToken(mat);
 }
 
@@ -147,7 +147,7 @@ TokArr BayesNet::GetGaussianCovar(TokArr var)
     {
 	queryVls.assign(nnodes, -1);
     }
-    
+
     const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matCovariance);
 
@@ -157,7 +157,7 @@ TokArr BayesNet::GetGaussianCovar(TokArr var)
 TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
 {
     static const char fname[] = "GetPTabular";
-    
+
     int nchldComb = child.size();
     if( !nchldComb )
     {
@@ -181,13 +181,13 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
     {
 	childVl.assign(nchldComb, -1);
     }
-        
+
     Vector<int> parentNds, parentVls;
     int nparents = parents.size();
     if( nparents )
     {
 	Net().ExtractTokArr(parents, &parentNds, &parentVls);
-	if( parentVls.size() == 0 || 
+	if( parentVls.size() == 0 ||
 	    std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
 	{
 	    ThrowInternalError("undefindes values for given parent nodes", "P");
@@ -202,18 +202,18 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
 
     parentNds.resize(nparents + 1);
     parentVls.resize(nparents + 1);
-        
+
     const pnl::CFactor * cpd = Model()->GetFactor(childNd.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matTable);
-    
+
     TokArr result = "";
     for( i = 0; i < nchldComb; i++ )
     {
 	parentNds[nparents] = childNd.front();
 	parentVls[nparents] = childVl[i];
 	result << Net().CutReq( parentNds, parentVls, mat);
-    }    
-    
+    }
+
     return result;
 }
 
@@ -235,10 +235,10 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     {
 	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
     }
-    
+
     pnl::CInfEngine *infEngine = &Inference();
 
-    pnl::CGibbsSamplingInfEngine *infGibbs; 
+    pnl::CGibbsSamplingInfEngine *infGibbs;
     infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(infEngine);
     if(infGibbs != NULL)
     {
@@ -247,7 +247,7 @@ TokArr BayesNet::GetJPD( TokArr nodes )
 	queries[0].clear();
 
 	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
-	infGibbs->SetQueries( queries ); 
+	infGibbs->SetQueries( queries );
     }
 
     infEngine->EnterEvidence( evid );
@@ -259,7 +259,7 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     {
 	queryVls.assign(nnodes, -1);
     }
-  
+
     infEngine->MarginalNodes(&queryNds.front(), queryNds.size());
 
     const pnl::CPotential *pot = infEngine->GetQueryJPD();
@@ -296,6 +296,7 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     }
 
     delete evid;
+    Net().Token()->Resolve(res);
     return res;
 }
 
@@ -308,7 +309,7 @@ void BayesNet::ClearEvid()
 {
     Net().ClearEvid();
 }
-    
+
 void BayesNet::CurEvidToBuf()
 {
     Net().CurEvidToBuf();
@@ -326,17 +327,17 @@ void BayesNet::ClearEvidBuf()
 }
 
 void BayesNet::LearnParameters(TokArr aSample[], int nSample)
-{   
+{
     if(m_nLearnedEvidence > Net().EvidenceBuf()->size())
     {
 	ThrowInternalError("inconsistent learning process", "Learn");
     }
-    
+
     if(m_nLearnedEvidence == Net().EvidenceBuf()->size())
     {
 	return;// is it error?
     }
-    
+
     if(nSample)
     {
 	for(int i = 0; i < nSample; ++i)
@@ -344,7 +345,7 @@ void BayesNet::LearnParameters(TokArr aSample[], int nSample)
 	    Net().EvidenceBuf()->push_back(Net().CreateEvidence(aSample[i]));
 	}
     }
-    
+
     Learning().SetData(Net().EvidenceBuf()->size() - m_nLearnedEvidence,
 	&(*Net().EvidenceBuf())[m_nLearnedEvidence]);
     m_nLearnedEvidence = Net().EvidenceBuf()->size();
@@ -353,13 +354,13 @@ void BayesNet::LearnParameters(TokArr aSample[], int nSample)
 
 
 
-#if 0        
+#if 0
 BayesNet* BayesNet::LearnStructure(TokArr aSample[], int nSample)
 {
     intVector vAnc, vDesc;//bogus vectors
     CMlStaticStructLearnHC* pLearning = pnl::CMlStaticStructLearnHC::Create(m_Model,
         itStructLearnML, StructLearnHC, BIC, m_Model->GetNumberOfNodes(), vAnc, vDesc, 1/*one restart*/ );
-	
+
     if(nSample)
     {
 	    for(int i = 0; i < nSample; ++i)
@@ -372,36 +373,36 @@ BayesNet* BayesNet::LearnStructure(TokArr aSample[], int nSample)
     pLearning->Learn();
     const int* pRenaming = pLearning->GetResultRenaming();
     pLearning->CreateResultBNet(const_cast<CDAG*>(pLearning->GetResultDAG()));
-    
+
     CBNet* newNet = CBNet::Copy(pLearning->GetResultBNet());
 
     //now we will create new object of class BayesNet and construct it from scratch using newNet
     //and required information (node names) on current (this) network
     BayesNet* newBayesNet = new BayesNet;
 
-    //add nodes 
+    //add nodes
     int nnodes = newNet->GetNumberOfNodes();
     int* revren = new int[nnodes];
     for( int i = 0 ; i < nnodes; i++ )
     {
         revren[pRenaming[i]] = i;
-    }   
+    }
     TokArr NodeOrdering;
     for( i = 0 ; i < nnodes; i++ )
-    { 
+    {
         int idx = revren[i];
-        
+
         //get info about node being added
-        
+
         //get node name
-        Tok nodeName = NodeName(idx); 
+        Tok nodeName = NodeName(idx);
         //cout << nodeName << endl;
-        
-        //get node type 
+
+        //get node type
         Tok nodeType = NodeType( nodeName );
         //cout << nodeType << endl;
-        
-        //get node values 
+
+        //get node values
         Resolve(nodeName);
         TokArr values = nodeName.GetDescendants(eTagValue);
         //convert to single word representation
@@ -410,7 +411,7 @@ BayesNet* BayesNet::LearnStructure(TokArr aSample[], int nSample)
             values[i] = values[i].Name();
         }
         //cout << values << endl;
-        
+
         newBayesNet->AddNode( nodeType^nodeName, values );
         //concatenate
         NodeOrdering << nodeName;
@@ -421,18 +422,18 @@ BayesNet* BayesNet::LearnStructure(TokArr aSample[], int nSample)
     CGraph* graph = newNet->GetGraph();
     intVector children;
     for( i = 0 ; i < nnodes; i++ )
-    { 
+    {
         graph->GetChildren( i, &children );
-        
-    }    
-    
+
+    }
+
 
     //get edges of new graph and add them to new network
     CGraph* newGraph = newNet->GetGraph();
     //for( i = 0 ; i < newGraph->
 
     //newBayesNet->AddArc(
-              
+
     return newBayesNet;
 }
 #else
@@ -441,7 +442,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     pnl::intVector vAnc, vDesc;//bogus vectors
     pnl::CMlStaticStructLearnHC* pLearning = pnl::CMlStaticStructLearnHC::Create(Model(),
         pnl::itStructLearnML, pnl::StructLearnHC, pnl::BIC, Model()->GetNumberOfNodes(), vAnc, vDesc, 1/*one restart*/ );
-	
+
     if(nSample)
     {
 	for(int i = 0; i < nSample; ++i)
@@ -452,13 +453,13 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 
     pLearning->SetData(Net().EvidenceBuf()->size(), &Net().EvidenceBuf()->front() );
     pLearning->Learn();
-    
+
     const int* pRenaming = pLearning->GetResultRenaming();
     Vector<int> vRename(pRenaming, pRenaming + Model()->GetNumberOfNodes());
 
     pRenaming = &vRename.front();
     pLearning->CreateResultBNet(const_cast<pnl::CDAG*>(pLearning->GetResultDAG()));
-    
+
     pnl::CBNet* newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
 
     int i;
@@ -476,7 +477,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     //this would be good to have such function in PNL that checks this situation and reorder
     //new network to old ordering. So we would not have to do all below
 
-    //add nodes 
+    //add nodes
     int nnodes = newNet->GetNumberOfNodes();
 //    Net().Token()->RenameGraph(pRenaming);
 
@@ -492,7 +493,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     m_Inference = 0;
 
     //change domain in evidences
-    
+
     //change evidence on board
     //IT is in Token form, so do not need to change
 
@@ -528,7 +529,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
         } //end block of borrowed code
 
 	    pEv[i] = CEvidence::Create(m_pResultBNet, nnodes, &obsnodes.front(), new_data);
-	     
+
 
         CEvidence* newEv = CEvidence::Create(
 
@@ -555,11 +556,11 @@ TokArr BayesNet::GetMPE(TokArr nodes)
     {
 	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
     }
-    
+
 
     pnl::CInfEngine *infEngine = &Inference();
 
-    pnl::CGibbsSamplingInfEngine *infGibbs; 
+    pnl::CGibbsSamplingInfEngine *infGibbs;
     infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(infEngine);
     if(infGibbs != NULL)
     {
@@ -568,10 +569,10 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 	queries[0].clear();
 
 	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
-	infGibbs->SetQueries( queries ); 
+	infGibbs->SetQueries( queries );
     }
 
-/*    pnl::CGibbsSamplingInfEngine *infGibbs; 
+/*    pnl::CGibbsSamplingInfEngine *infGibbs;
     infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(&Inference());
     if(infGibbs != NULL)
     {
@@ -580,11 +581,11 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 	queries[0].clear();
 
 	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
-	infGibbs->SetQueries( queries ); 
+	infGibbs->SetQueries( queries );
     }
-*/    
+*/
     infEngine->EnterEvidence(evid, 1);
-    
+
     int nnodes = nodes.size();
     int i;
     Vector<int> queryNds;
@@ -627,6 +628,7 @@ TokArr BayesNet::GetMPE(TokArr nodes)
     }
 
     delete evid;
+    Net().Token()->Resolve(result);
 
     return result;
 }
@@ -681,17 +683,17 @@ int BayesNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokA
     return Net().LoadEvidBuf(filename, mode, columns);
 }
 
-// whatNodes is array of tokens which specify the list of variables and optionally 
+// whatNodes is array of tokens which specify the list of variables and optionally
 // the required portion of observed nodes
 // For example, if whatNodes = TokArr("Node1")
-//    
+//
 void BayesNet::GenerateEvidences( int nSample, bool ignoreCurrEvid, TokArr whatNodes )
 {
     Net().GenerateEvidences(nSample, ignoreCurrEvid, whatNodes);
 }
 
 void BayesNet::MaskEvidBuf(TokArr whatNodes)
-{   
+{
     Net().MaskEvidBuf(whatNodes);
 }
 
@@ -709,13 +711,13 @@ pnl::CInfEngine &BayesNet::Inference()
 {
     switch(PropertyAbbrev("Inference"))
     {
-    case 'j': //Junction tree inference 
+    case 'j': //Junction tree inference
 	if(m_Inference)
 	{
 	    pnl::CJtreeInfEngine *infJtree;
 	    infJtree = dynamic_cast<pnl::CJtreeInfEngine *>(m_Inference);
 	    if(!infJtree)
-	    {		    
+	    {
 		delete m_Inference;
 		m_Inference = pnl::CJtreeInfEngine::Create(Model());
 	    }
@@ -724,24 +726,24 @@ pnl::CInfEngine &BayesNet::Inference()
 	{
 	    m_Inference = pnl::CJtreeInfEngine::Create(Model());
 	}
-	break; 
+	break;
     case 'g': // Gibbs Sampling
 	if(m_Inference)
 	{
             delete m_Inference;
         }
 
-        m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model()); 
+        m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model());
         ((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetMaxTime( 10000 );
         ((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetBurnIn( 1000 );
-	break; 
+	break;
     case 'n': // Naive inference
 	if(m_Inference)
 	{
 	    pnl::CNaiveInfEngine *infNaive;
 	    infNaive = dynamic_cast<pnl::CNaiveInfEngine *>(m_Inference);
 	    if(!infNaive)
-	    {		    
+	    {
 		delete m_Inference;
 		m_Inference = pnl::CNaiveInfEngine::Create(Model());
 	    }
@@ -750,41 +752,41 @@ pnl::CInfEngine &BayesNet::Inference()
 	{
 	    m_Inference = pnl::CNaiveInfEngine::Create(Model());
 	}
-	break; 
+	break;
     case 'p': // Pearl inference
         if(m_Inference)
 	{
 	    pnl::CPearlInfEngine *infPearl;
 	    infPearl = dynamic_cast<pnl::CPearlInfEngine *>(m_Inference);
 	    if(!infPearl)
-	    {		    
+	    {
 		delete m_Inference;
-		m_Inference = pnl::CPearlInfEngine::Create(Model()); 
+		m_Inference = pnl::CPearlInfEngine::Create(Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CPearlInfEngine::Create(Model()); 
+	    m_Inference = pnl::CPearlInfEngine::Create(Model());
 	}
-	break; 
+	break;
     default: //default inference algorithm
 	if(m_Inference)
 	{
 	    pnl::CPearlInfEngine *infPearl;
 	    infPearl = dynamic_cast<pnl::CPearlInfEngine *>(m_Inference);
 	    if(!infPearl)
-	    {		    
+	    {
 		delete m_Inference;
-		m_Inference = pnl::CPearlInfEngine::Create(Model()); 
+		m_Inference = pnl::CPearlInfEngine::Create(Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CPearlInfEngine::Create(Model()); 
+	    m_Inference = pnl::CPearlInfEngine::Create(Model());
 	}
-	break; 
+	break;
     }
-    
+
     return *m_Inference;
 }
 
@@ -798,7 +800,7 @@ pnl::CStaticLearningEngine &BayesNet::Learning()
 	    pnl::CBayesLearningEngine *learnBayes;
 	    learnBayes = dynamic_cast<pnl::CBayesLearningEngine *>(m_Learning);
 	    if(!learnBayes)
-	    {		    
+	    {
 		delete m_Learning;
 		m_Learning = pnl::CBayesLearningEngine::Create(Model());
 	    }
@@ -807,14 +809,14 @@ pnl::CStaticLearningEngine &BayesNet::Learning()
 	{
 	    m_Learning = pnl::CBayesLearningEngine::Create(Model());
 	}
-	break; 
+	break;
     case 'e': //EM learning
 	if(m_Learning)
 	{
 	    pnl::CEMLearningEngine *learnEM;
 	    learnEM = dynamic_cast<pnl::CEMLearningEngine *>(m_Learning);
 	    if(!learnEM)
-	    {		    
+	    {
 		delete m_Learning;
 		m_Learning = pnl::CEMLearningEngine::Create(Model());
 	    }
@@ -823,14 +825,14 @@ pnl::CStaticLearningEngine &BayesNet::Learning()
 	{
 	    m_Learning = pnl::CEMLearningEngine::Create(Model());
 	}
-	break; 
+	break;
     default: // deafult learning algorithm
        	if(m_Learning)
 	{
 	    pnl::CEMLearningEngine *learnEM;
 	    learnEM = dynamic_cast<pnl::CEMLearningEngine *>(m_Learning);
 	    if(!learnEM)
-	    {		    
+	    {
 		delete m_Learning;
 		m_Learning = pnl::CEMLearningEngine::Create(Model());
 	    }
@@ -860,7 +862,7 @@ String BayesNet::GetProperty(const char *name) const
 }
 
 const char BayesNet::PropertyAbbrev(const char *name) const
-{   
+{
     if(!strcmp(name,"Inference"))
     {
 	String infName = GetProperty("Inference");
@@ -876,7 +878,7 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 	    infNameVec[i] = tolower(infName[i]);
 	}
 	char *pInfName = &infNameVec.front();
-	
+
 	if(strstr(pInfName, "gibbs"))
 	{
 	    return 'g';
@@ -893,7 +895,7 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 	{
 	    return 'n';
 	}
-	else 
+	else
 	{
 	    return 0;
 	}
@@ -913,7 +915,7 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 	    learnNameVec[i] = tolower(learnName[i]);
 	}
 	char *pLearnName = &learnNameVec.front();
-	
+
 	if(strstr(pLearnName, "em"))
 	{
 	    return 'e';
@@ -922,10 +924,10 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 	{
 	    return 'b';
 	}
-	else 
+	else
 	{
 	    return 0;
-	}   	
+	}
     }
 
     return 0;
