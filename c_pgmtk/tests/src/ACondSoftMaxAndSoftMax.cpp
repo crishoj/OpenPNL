@@ -139,19 +139,19 @@ CBNet* CreateSevenNodesNetForTests()
   CSoftMaxCPD *pCPD3 = CSoftMaxCPD::Create( domain3, nnodes3, pMD );
 
   int parInd30[] = { 0 };
-  float weight30[] = { 0.5f, 0.5f, 0.5f, 0.7f, 1.0f, -0.5f };
+  float weight30[] = { 0.5f, 1.5f, 0.5f, 0.7f, 1.0f, -0.5f };
   float offset30[] = { 0.3f, 0.5f, 0.7f};
 
   pCPD3->AllocDistribution( weight30, offset30, parInd30 );
   
   int parInd31[] = { 1 };
-  float weight31[] = { 0.5f, 0.5f, 0.5f, 0.7f, 0.5f, 0.7f};
+  float weight31[] = { 0.5f, 1.5f, 0.5f, 0.7f, 0.5f, 0.7f};
   float offset31[] = { 0.3f, 0.5f, 1.0f };
 
   pCPD3->AllocDistribution( weight31, offset31, parInd31 );
 
   int parInd32[] = { 2 };
-  float weight32[] = { 0.5f, 0.5f, 0.5f, 0.7f, 0.5f, 0.7f };
+  float weight32[] = { 0.5f, 1.5f, 0.5f, 0.7f, 0.5f, 0.7f };
   float offset32[] = { 0.3f, 0.5f, 1.0f };
 
   pCPD3->AllocDistribution( weight32, offset32, parInd32 );
@@ -197,7 +197,7 @@ CBNet* CreateSevenNodesNetForTests()
   CSoftMaxCPD *pCPD6 = CSoftMaxCPD::Create( domain6, nnodes6, pMD );
   int parInd60[] = { 0 };
   
-  float weight60[] = { 0.5f, 0.5f, 3.2f };
+  float weight60[] = { 0.5f, 1.5f, 3.2f };
   float offset60[] = { 0.7f, 0.3f, 0.1f };
   
   pCPD6->AllocDistribution( weight60, offset60, parInd60 );
