@@ -263,7 +263,13 @@ void CParPearlInfEngine::MarginalNodes(const int* query, int querySize,
     delete m_pEvidenceMPE;
   }
   
-  messageVector& rfCurBeliefs = GetCurBeliefs();
+  messageVector* tmpVec;
+  if (!AllContinuousNodes(GetModel()))
+    tmpVec = &GetCurBeliefs();
+  else
+    tmpVec = &CPearlInfEngine::GetCurBeliefs();
+  messageVector& rfCurBeliefs = *tmpVec;
+
   CModelDomain* pMD = m_pGraphicalModel->GetModelDomain();
   if (querySize == 1)
   {
@@ -1782,7 +1788,9 @@ void CParPearlInfEngine::CollectBeliefsOnProcessContMPI(int MainProcNum)
     
     for (node=0; node<NumberOfNodes; node++)
     {
-      if ((m_NodeProcesses[node] == m_MyRank)&&(rfCurBeliefs[node]->IsDistributionSpecific()!=1)&&(rfCurBeliefs[node]->IsDistributionSpecific()!=2))
+      if ((m_NodeProcesses[node] == m_MyRank) && 
+          (rfCurBeliefs[node]->IsDistributionSpecific() != 1) &&
+          (rfCurBeliefs[node]->IsDistributionSpecific() != 2))
       {
         dataLength += static_cast<C2DNumericDenseMatrix<float>*>(
           rfCurBeliefs[node]->GetMatrix(matMean))->GetRawDataLength();     
@@ -1799,7 +1807,7 @@ void CParPearlInfEngine::CollectBeliefsOnProcessContMPI(int MainProcNum)
     }
     else 
     {
-      int newdataLength = count*3 + dataLength+1;
+      int newdataLength = count * 3 + dataLength + 1;
       FMessage = newdataLength;
       
       pDataForSending = new float[newdataLength];
@@ -2807,11 +2815,15 @@ void CParPearlInfEngine::ParallelProtocol()
 
 // ----------------------------------------------------------------------------
 
-
-
-
-
 #ifdef PAR_MPI
+
+#define D_UNIFORM   1
+#define D_DELTA     2
+#define D_IN_MOMENT 8
+#define D_UNI_DELTA (D_UNIFORM | D_DELTA)
+#define D_CODE(__spec, __mom)           \
+    ( __spec | ((__mom) ? D_IN_MOMENT : 0) )
+
 void CParPearlInfEngine::ParallelProtocolContMPI()
 {
   if (GetMaxNumberOfIterations() == 0)
@@ -2820,7 +2832,6 @@ void CParPearlInfEngine::ParallelProtocolContMPI()
   }
   
   int i, j;
-  int i1;
   int converged = 0;
   int changed = 0;
   int iter = 0;
@@ -2830,155 +2841,167 @@ void CParPearlInfEngine::ParallelProtocolContMPI()
   int numOfNeighb;
   const int *neighbors;
   const ENeighborType *orientation;
-  intVector sources, sinks;
-  int NumOfMsgs;
-  intVector messLengthSend(m_NumberOfProcesses, 0);
-  intVector messLengthRecv(m_NumberOfProcesses, 0);
-  intVecVector neighbNumbers;
-  SetFarNeighbors(&sinks, &sources,&messLengthSend,&messLengthRecv, NumOfMsgs,1,&neighbNumbers);
+
   intVector& connNodes = GetConnectedNodes();
   intVector& areReallyObserved = GetSignsOfReallyObserved();
 
-  float **messData=new float*[m_NumberOfProcesses];
-  float **messDataRecv=new float*[m_NumberOfProcesses];
-  for (i1 = 0; i1 < m_NumberOfProcesses; i1++)
+  CGaussianDistribFun* msg;
+  int msg_spec;
+  bool msg_is_moment;
+  bool delta_in_canon;
+  int sendMsgLength;
+
+  int NumSelfNodes = m_NodesOfProcess.size();
+  intVector sources, sinks;
+  int NumOfMsgs;
+  intVector indexmess;
+  intVector sendMaxLength(m_NumberOfProcesses, 0);
+  intVector recvMaxLength(m_NumberOfProcesses, 0);
+  intVecVector neighbNumbers;
+  SetFarNeighbors(&sinks, &sources, &sendMaxLength, &recvMaxLength, NumOfMsgs, 1,
+    &neighbNumbers);
+  float **messData = new float*[m_NumberOfProcesses];
+  float **messDataRecv = new float*[m_NumberOfProcesses];
+  for (i = 0; i < m_NumberOfProcesses; i++)
   {
-    messData[i1] = new float[messLengthSend[i1]];
-    messDataRecv[i1] = new float[messLengthSend[i1]];
+    messData[i] = new float[sendMaxLength[i]];
+    messDataRecv[i] = new float[sendMaxLength[i]];
   }
 
   while ((!converged)&&(iter<GetMaxNumberOfIterations()))
   {
-    for (i1 = 0; i1 < m_NumberOfProcesses; i1++)
+    for (i = 0; i < m_NumberOfProcesses; i++)
     {
-      messData[i1][0]=0;
-    }  
-    int Count = m_NodesOfProcess.size();
-    int k = 0;
-    for(i = 0; i < Count; i++)
+      messData[i][0]=0;
+    }
+    for(i = 0; i < NumSelfNodes; i++)
     {
-      pGraph->GetNeighbors(m_NodesOfProcess[i], 
-        &numOfNeighb, &neighbors, &orientation);
+      pGraph->GetNeighbors(m_NodesOfProcess[i], &numOfNeighb, &neighbors, 
+        &orientation);
       for(j = 0; j < numOfNeighb; j++)
       {
-        newMessages[neighbors[j]][neighbNumbers[i][j]] = CPearlInfEngine::ComputeMessage(neighbors[j],
-        m_NodesOfProcess[i], 1 - orientation[j]);
-          
+        newMessages[neighbors[j]][neighbNumbers[i][j]] = 
+          CPearlInfEngine::ComputeMessage(neighbors[j], m_NodesOfProcess[i], 
+          1 - orientation[j]);
       }
     }
-    for(i = 0; i < Count ; i++)
+    for(i = 0; i < NumSelfNodes; i++)
     {
-        
-      pGraph->GetNeighbors(m_NodesOfProcess[i],&numOfNeighb, &neighbors, &orientation);
+      pGraph->GetNeighbors(m_NodesOfProcess[i],&numOfNeighb, &neighbors, 
+        &orientation);
       for(j = 0; j < numOfNeighb; j++)
       {
         delete GetMessagesFromNeighbors()[neighbors[j]][neighbNumbers[i][j]];
-        GetMessagesFromNeighbors()[neighbors[j]][neighbNumbers[i][j]] = newMessages[neighbors[j]][neighbNumbers[i][j]];                       
+        GetMessagesFromNeighbors()[neighbors[j]][neighbNumbers[i][j]] = 
+          newMessages[neighbors[j]][neighbNumbers[i][j]];
       }
     }
-    intVector indexmess(m_NumberOfProcesses,0);
-    intVector indexmess1(m_NumberOfProcesses,0);
-    for (i1 = 0; i1 < m_NumberOfProcesses; i1++)
-    {
-      indexmess[i1]++;
-    }
 
+    indexmess = intVector(m_NumberOfProcesses, 1);
+    msg = NULL;
     for (i = 0; i < NumOfMsgs; i++)
     {
-      // find the number of process to which we must send
-      if ((GetMessagesFromNeighbors()[sinks[i]][sources[i]]->IsDistributionSpecific() != 1)&& 
-          (GetMessagesFromNeighbors()[sinks[i]][sources[i]]->IsDistributionSpecific() != 2))
+      int dataLength;
+      const float *pDataForSending;
+      C2DNumericDenseMatrix<float> *matForSending;
+      
+      int NumOfProc = m_NodeProcesses[sinks[i]];
+      msg = static_cast<CGaussianDistribFun*>(GetMessagesFromNeighbors()[sinks[i]][sources[i]]);
+      msg_spec = msg->IsDistributionSpecific();
+      msg_is_moment = msg->GetMomentFormFlag();
+      delta_in_canon = (msg_spec == 2) && !msg_is_moment;
+
+      if (delta_in_canon)
       {
-        int NumOfProc = m_NodeProcesses[sinks[i]];
+        msg->UpdateMomentForm();
+        msg_is_moment = !msg_is_moment;
+      }
+
+      if (msg_spec == 1 || (msg_spec == 2 && msg_is_moment) || (msg_spec != 1 && msg_spec != 2))
+      {
         messData[NumOfProc][0]++;
        
-        int dataLength;
-        const float *pDataForSending;
-        C2DNumericDenseMatrix<float> *matForSending;
-      
-        messData[NumOfProc][indexmess[NumOfProc]]=(float)sinks[i]+0.3;
+        messData[NumOfProc][indexmess[NumOfProc]] = (float)sinks[i] + 0.3f;
         indexmess[NumOfProc]++;
-        messData[NumOfProc][indexmess[NumOfProc]]=(float)sources[i]+0.3;
-        indexmess[NumOfProc]++;       
+        messData[NumOfProc][indexmess[NumOfProc]] = (float)sources[i] + 0.3f;
+        indexmess[NumOfProc]++;
 
-        if (static_cast<CGaussianDistribFun *>(GetMessagesFromNeighbors()[sinks[i]][sources[i]])->GetMomentFormFlag()) 
+        messData[NumOfProc][indexmess[NumOfProc]] = (float)(D_CODE(msg_spec, msg_is_moment)) + 0.3f;
+        indexmess[NumOfProc]++;
+
+        if (msg_spec == 1) // uniform
         {
-
-          messData[NumOfProc][indexmess[NumOfProc]]=(float)1+0.3;
-          indexmess[NumOfProc]++;   
-
-          matForSending = static_cast<C2DNumericDenseMatrix<float>*>
-           (GetMessagesFromNeighbors()[sinks[i]][sources[i]]->GetMatrix(
-            matMean));
-        
-          matForSending->GetRawData(&dataLength, &pDataForSending);
-          messData[NumOfProc][indexmess[NumOfProc]]=(float)dataLength+0.3;
-          indexmess[NumOfProc]++;    
-
-          memcpy(messData[NumOfProc]+indexmess[NumOfProc],pDataForSending,dataLength*sizeof(float));
-          indexmess[NumOfProc] += dataLength;
-
-          matForSending = static_cast<C2DNumericDenseMatrix<float>*>
-           (GetMessagesFromNeighbors()[sinks[i]][sources[i]]->GetMatrix(
-             matCovariance));  
-          matForSending->GetRawData(&dataLength, &pDataForSending);
-       
-          memcpy(messData[NumOfProc]+indexmess[NumOfProc],pDataForSending,dataLength*sizeof(float));
-          indexmess[NumOfProc] += dataLength;
-       
-          messData[NumOfProc][indexmess[NumOfProc]] = (static_cast<CGaussianDistribFun*>
-              ((GetMessagesFromNeighbors()[sinks[i]][sources[i]]))->GetCoefficient(0));
-          indexmess[NumOfProc] += 1;
+          // that's all, we need to send only flag
+          continue;
         }
-        if (static_cast<CGaussianDistribFun *>(GetMessagesFromNeighbors()[sinks[i]][sources[i]])->GetCanonicalFormFlag()) 
+        if (msg_is_moment) // moment form
         {
-            messData[NumOfProc][indexmess[NumOfProc]]=(float)2+0.3;
-            indexmess[NumOfProc]++;   
+          matForSending = static_cast<C2DNumericDenseMatrix<float>*>(msg->GetMatrix(matMean));
+          matForSending->GetRawData(&dataLength, &pDataForSending);
+       
+          messData[NumOfProc][indexmess[NumOfProc]] = (float)dataLength + 0.3f;
+          indexmess[NumOfProc]++;
+          memcpy(messData[NumOfProc] + indexmess[NumOfProc], pDataForSending,
+            dataLength * sizeof(float));
+          indexmess[NumOfProc] += dataLength;
 
-            matForSending = static_cast<C2DNumericDenseMatrix<float>*>
-                (GetMessagesFromNeighbors()[sinks[i]][sources[i]]->GetMatrix(
-                matH));            
+          if (msg_spec != 2) // non delta 
+          {
+            matForSending = static_cast<C2DNumericDenseMatrix<float>*>(msg->GetMatrix(matCovariance));
             matForSending->GetRawData(&dataLength, &pDataForSending);
-            messData[NumOfProc][indexmess[NumOfProc]]=(float)dataLength+0.3;
-            indexmess[NumOfProc]++;    
-            
-            memcpy(messData[NumOfProc]+indexmess[NumOfProc],pDataForSending,dataLength*sizeof(float));
+   
+            memcpy(messData[NumOfProc] + indexmess[NumOfProc], pDataForSending,
+              dataLength * sizeof(float));
             indexmess[NumOfProc] += dataLength;
-            
-            matForSending = static_cast<C2DNumericDenseMatrix<float>*>
-                (GetMessagesFromNeighbors()[sinks[i]][sources[i]]->GetMatrix(
-                matK));  
-            matForSending->GetRawData(&dataLength, &pDataForSending);
-            
-            memcpy(messData[NumOfProc]+indexmess[NumOfProc],pDataForSending,dataLength*sizeof(float));
-            indexmess[NumOfProc] += dataLength;
-            
-            messData[NumOfProc][indexmess[NumOfProc]] = (static_cast<CGaussianDistribFun*>
-                ((GetMessagesFromNeighbors()[sinks[i]][sources[i]]))->GetCoefficient(1));
+       
+            messData[NumOfProc][indexmess[NumOfProc]] = msg->GetCoefficient(0);
             indexmess[NumOfProc] += 1;
+          }
         }
-      }
-    }
-    int messTest; 
-
-    for (i = 0; i <m_NumberOfProcesses; i++)
-    {
-      messTest=0;
-      if (( messData[i][0] == 0 )&&(m_MyRank != i)) MPI_Send(&messTest, 1, MPI_INT, i,m_MyRank, MPI_COMM_WORLD);
-      else 
-      {
-        if (m_MyRank != i)
+        else // canonical form
         {
-          messTest = 1;
-          MPI_Send(&messTest, 1, MPI_INT, i,m_MyRank, MPI_COMM_WORLD);
-          MPI_Send((float*)messData[i], messLengthSend[i], MPI_FLOAT, i,
-           m_MyRank, MPI_COMM_WORLD);
+          matForSending = static_cast<C2DNumericDenseMatrix<float>*>(msg->GetMatrix(matH));            
+          matForSending->GetRawData(&dataLength, &pDataForSending);
+            
+          messData[NumOfProc][indexmess[NumOfProc]]=(float)dataLength + 0.3f;
+          indexmess[NumOfProc]++;    
+          memcpy(messData[NumOfProc] + indexmess[NumOfProc], pDataForSending, 
+            dataLength * sizeof(float));
+          indexmess[NumOfProc] += dataLength;
+            
+          matForSending = static_cast<C2DNumericDenseMatrix<float>*>(msg->GetMatrix(matK));  
+          matForSending->GetRawData(&dataLength, &pDataForSending);
+            
+          memcpy(messData[NumOfProc] + indexmess[NumOfProc], pDataForSending,
+            dataLength * sizeof(float));
+          indexmess[NumOfProc] += dataLength;
+            
+          messData[NumOfProc][indexmess[NumOfProc]] = msg->GetCoefficient(1);
+          indexmess[NumOfProc] += 1;        
+        }
+      }
+
+      if (delta_in_canon)
+        msg->UpdateCanonicalForm();
+    }
+
+    for (i = 0; i < m_NumberOfProcesses; i++)
+    {
+      sendMsgLength = ((int)(messData[i][0]) == 0) ? 0 : indexmess[i];
+
+      if (m_MyRank != i)
+      {
+        MPI_Send(&sendMsgLength, 1, MPI_INT, i, m_MyRank, MPI_COMM_WORLD);
+        if (sendMsgLength)
+        {
+          MPI_Send((float*)messData[i], sendMsgLength, MPI_FLOAT, i,
+            m_MyRank, MPI_COMM_WORLD);        
         }
       }
     }
-    
+
     int NumOfProc_t = 0;
-    intVector recvmessTest(m_NumberOfProcesses,0);
+    intVector recvMsgLength(m_NumberOfProcesses, 0);
     for (i = 0; i < m_NumberOfProcesses; i++)
     {
       if (m_MyRank != i) 
@@ -2986,33 +3009,37 @@ void CParPearlInfEngine::ParallelProtocolContMPI()
         MPI_Status status;
         MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         NumOfProc_t = status.MPI_SOURCE;
-        MPI_Recv(&recvmessTest[NumOfProc_t],1, MPI_INT, NumOfProc_t, MPI_ANY_TAG,
-        MPI_COMM_WORLD, &status);
-        if (recvmessTest[NumOfProc_t]==1)  
-        {          
-          MPI_Recv((float*)messDataRecv[NumOfProc_t], 
-           messLengthRecv[NumOfProc_t], MPI_FLOAT, NumOfProc_t, MPI_ANY_TAG,
+        MPI_Recv(&recvMsgLength[NumOfProc_t], 1, MPI_INT, NumOfProc_t, MPI_ANY_TAG, 
           MPI_COMM_WORLD, &status);
+        if (recvMsgLength[NumOfProc_t])  
+        {          
+          MPI_Recv((float*)messDataRecv[NumOfProc_t], recvMsgLength[NumOfProc_t], 
+            MPI_FLOAT, NumOfProc_t, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         }
       }
     }
+ 
+    msg = NULL;
     for (int NumOfProc = 0; NumOfProc < m_NumberOfProcesses; NumOfProc++)
     {
-      if ((m_MyRank !=NumOfProc) &&(recvmessTest[NumOfProc]==1))
+      if ((m_MyRank != NumOfProc) && (recvMsgLength[NumOfProc] > 0))
       {
         int indexmess_new = 0;
         int CountMess = 0;  
 
-        CountMess =(int)messDataRecv[NumOfProc][indexmess_new];       
+        CountMess = (int)messDataRecv[NumOfProc][indexmess_new];       
         indexmess_new++;     
-        for(i1 = 0; i1 < CountMess; i1++) 
+        
+        for(i = 0; i < CountMess; i++) 
         {
           C2DNumericDenseMatrix<float> *matFor;
           int dataLength;
           float *pDataForRecvingM;
           float *pDataForRecvingC;
+          float Coeff;
           int sourceNode, sinkNode;
           int type;
+          bool isDelta, isUniform;
             
           sinkNode = (int)messDataRecv[NumOfProc][indexmess_new];
           indexmess_new++;
@@ -3020,92 +3047,130 @@ void CParPearlInfEngine::ParallelProtocolContMPI()
           indexmess_new++;
           type = (int)messDataRecv[NumOfProc][indexmess_new];
           indexmess_new++;
-          if (type==1) 
-          {
 
+          msg = static_cast<CGaussianDistribFun*>(GetMessagesFromNeighbors()[sinkNode][sourceNode]);
+          msg_is_moment = (type & D_IN_MOMENT) == D_IN_MOMENT;
+          isUniform = (type & D_UNI_DELTA) == D_UNIFORM;
+          isDelta = (type & D_UNI_DELTA) == D_DELTA;
+
+          if (isUniform) // uniform
+          {
+            msg->SetUnitValue(1);
+            continue;
+          }
+
+          if (msg_is_moment) // moment form
+          {
             dataLength = (int)messDataRecv[NumOfProc][indexmess_new];
             indexmess_new++;            
 
             pDataForRecvingM = new float[dataLength];
-            memcpy(pDataForRecvingM,messDataRecv[NumOfProc]+indexmess_new,dataLength*sizeof(float));
-           
+            memcpy(pDataForRecvingM, messDataRecv[NumOfProc] + indexmess_new, 
+              dataLength * sizeof(float));
             indexmess_new+=dataLength;
-            pDataForRecvingC = new float[dataLength*dataLength];
-            memcpy(pDataForRecvingC,messDataRecv[NumOfProc]+indexmess_new,dataLength*dataLength*sizeof(float));          
-            indexmess_new+=dataLength*dataLength;
-                        
-            float Coeff = messDataRecv[NumOfProc][indexmess_new];            
-            indexmess_new++;
-            
-            if (GetMessagesFromNeighbors()[sinkNode][sourceNode]->IsDistributionSpecific() == 1)
+
+            if (!isDelta) // not delta
             {
+              pDataForRecvingC = new float[dataLength * dataLength];
+              memcpy(pDataForRecvingC, messDataRecv[NumOfProc] + indexmess_new,
+                dataLength * dataLength * sizeof(float));          
+              indexmess_new+=dataLength * dataLength;
+                        
+              Coeff = messDataRecv[NumOfProc][indexmess_new];            
+              indexmess_new++;
+            }
+
+            if (isDelta) //delta
+            {
+              if (msg->IsDistributionSpecific() != 2)
+              {
+                int nnodes = msg->GetNumberOfNodes();
+                const pConstNodeTypeVector types(*msg->GetNodeTypesVector());
+                
+                delete GetMessagesFromNeighbors()[sinkNode][sourceNode];
+                GetMessagesFromNeighbors()[sinkNode][sourceNode] = 
+                  CGaussianDistribFun::CreateDeltaDistribution(nnodes, &types.front(), 
+                  pDataForRecvingM);
+              }
+              else
+              {
+                msg->AllocMatrix(pDataForRecvingM, matMean);
+              }
+            }
+            else
+            {
+              if (msg->IsDistributionSpecific() == 1)
+              {
+                msg->SetUnitValue(0);
+                msg->AllocMatrix(pDataForRecvingM, matMean);
+                msg->AllocMatrix(pDataForRecvingC, matCovariance);
+                msg->SetCoefficient(Coeff,0);
+              }
+              else if (msg->IsDistributionSpecific() == 2)
+              {
+              }
+              else
+              {
+                floatVector *vector;
+                
+                vector = (floatVector *)static_cast<C2DNumericDenseMatrix<float>*>
+                  (msg->GetMatrix(matMean))->GetVector();
+                memcpy(&vector->front(), pDataForRecvingM, dataLength * sizeof(float));
+             
+                vector = (floatVector *)static_cast<C2DNumericDenseMatrix<float>*>
+                  (msg->GetMatrix(matCovariance))->GetVector();
+                memcpy(&vector->front(), pDataForRecvingC, dataLength * dataLength * sizeof(float));
+                
+                msg->SetCoefficient(Coeff,0);
+              }
+            }
+
+            delete [] pDataForRecvingM;
+            if (!isDelta) // not delta
+              delete [] pDataForRecvingC;
+          }
+          else // canonical form
+          {
+            dataLength = (int)messDataRecv[NumOfProc][indexmess_new];
+            indexmess_new++;            
             
-              (GetMessagesFromNeighbors()[sinkNode][sourceNode]->SetUnitValue(0));
-              (GetMessagesFromNeighbors()[sinkNode][sourceNode]->AllocMatrix(pDataForRecvingM,
-                  matMean));
-              (GetMessagesFromNeighbors()[sinkNode][sourceNode]->AllocMatrix(pDataForRecvingC,
-                  matCovariance));
-              static_cast<CGaussianDistribFun*>(GetMessagesFromNeighbors()[sinkNode][sourceNode])->SetCoefficient(Coeff,0);
-            } 
-            else if (GetMessagesFromNeighbors()[sinkNode][sourceNode]->IsDistributionSpecific() != 2)
+            pDataForRecvingM = new float[dataLength];
+            memcpy(pDataForRecvingM, messDataRecv[NumOfProc] + indexmess_new,
+              dataLength * sizeof(float));
+            indexmess_new+=dataLength;
+
+            pDataForRecvingC = new float[dataLength * dataLength];
+            memcpy(pDataForRecvingC, messDataRecv[NumOfProc] + indexmess_new, 
+              dataLength * dataLength * sizeof(float));          
+            indexmess_new+=dataLength * dataLength;
+              
+            Coeff = messDataRecv[NumOfProc][indexmess_new];            
+            indexmess_new++;
+
+            if (msg->IsDistributionSpecific() == 1)
+            {
+              msg->SetUnitValue(0);
+              msg->AllocMatrix(pDataForRecvingM, matH);
+              msg->AllocMatrix(pDataForRecvingC, matK);
+              msg->SetCoefficient(Coeff,1);
+            }
+            else
             {
               floatVector *vector;
+              
               vector = (floatVector *)static_cast<C2DNumericDenseMatrix<float>*>
-              (GetMessagesFromNeighbors()[sinkNode][sourceNode]->GetMatrix(
-                matMean))->GetVector();
-           
-              memcpy(&vector->front(),pDataForRecvingM,dataLength*sizeof(float));
-             
+                (msg->GetMatrix(matH))->GetVector();
+              memcpy(&vector->front(), pDataForRecvingM, dataLength * sizeof(float));
+              
               vector = (floatVector *)static_cast<C2DNumericDenseMatrix<float>*>
-              (GetMessagesFromNeighbors()[sinkNode][sourceNode]->GetMatrix(
-                matCovariance))->GetVector();
-              memcpy(&vector->front(),pDataForRecvingC,dataLength*dataLength*sizeof(float));         
-              static_cast<CGaussianDistribFun*>(GetMessagesFromNeighbors()[sinkNode][sourceNode])->SetCoefficient(Coeff,0);
+                (msg->GetMatrix(matK))->GetVector();
+              memcpy(&vector->front(), pDataForRecvingC, dataLength * dataLength * sizeof(float));
+              
+              msg->SetCoefficient(Coeff,1);              
             }
+ 
             delete [] pDataForRecvingM;
             delete [] pDataForRecvingC;
-          }
-          if (type==2) 
-          {
-              dataLength = (int)messDataRecv[NumOfProc][indexmess_new];
-              indexmess_new++;            
-              pDataForRecvingM = new float[dataLength];
-              memcpy(pDataForRecvingM,messDataRecv[NumOfProc]+indexmess_new,dataLength*sizeof(float));
-              
-              indexmess_new+=dataLength;
-              pDataForRecvingC = new float[dataLength*dataLength];
-              memcpy(pDataForRecvingC,messDataRecv[NumOfProc]+indexmess_new,dataLength*dataLength*sizeof(float));          
-              indexmess_new+=dataLength*dataLength;
-              
-              float Coeff = messDataRecv[NumOfProc][indexmess_new];            
-              indexmess_new++;
-              
-              if (GetMessagesFromNeighbors()[sinkNode][sourceNode]->IsDistributionSpecific() == 1)
-              {   
-                  (GetMessagesFromNeighbors()[sinkNode][sourceNode]->SetUnitValue(0));
-                  (GetMessagesFromNeighbors()[sinkNode][sourceNode]->AllocMatrix(pDataForRecvingM,
-                      matH));
-                  (GetMessagesFromNeighbors()[sinkNode][sourceNode]->AllocMatrix(pDataForRecvingC,
-                      matK));
-                  static_cast<CGaussianDistribFun*>(GetMessagesFromNeighbors()[sinkNode][sourceNode])->SetCoefficient(Coeff,1);
-              } 
-              else if (GetMessagesFromNeighbors()[sinkNode][sourceNode]->IsDistributionSpecific() != 2)
-              {
-                  floatVector *vector;
-                  vector = (floatVector *)static_cast<C2DNumericDenseMatrix<float>*>
-                      (GetMessagesFromNeighbors()[sinkNode][sourceNode]->GetMatrix(
-                      matH))->GetVector();
-                  
-                  memcpy(&vector->front(),pDataForRecvingM,dataLength*sizeof(float));
-                  
-                  vector = (floatVector *)static_cast<C2DNumericDenseMatrix<float>*>
-                      (GetMessagesFromNeighbors()[sinkNode][sourceNode]->GetMatrix(
-                      matK))->GetVector();
-                  memcpy(&vector->front(),pDataForRecvingC,dataLength*dataLength*sizeof(float));         
-                  static_cast<CGaussianDistribFun*>(GetMessagesFromNeighbors()[sinkNode][sourceNode])->SetCoefficient(Coeff,1);
-              }
-              delete [] pDataForRecvingM;
-              delete [] pDataForRecvingC;
           }
         } //for
       }//if
@@ -3131,17 +3196,18 @@ void CParPearlInfEngine::ParallelProtocolContMPI()
 
   if (m_NumberOfProcesses!=1)
   { 
-    for (i1 = 0; i1 < m_NumberOfProcesses; i1++)
+    for (i = 0; i < m_NumberOfProcesses; i++)
     {
-      if (m_MyRank!=i1)
+      if (m_MyRank != i)
       {
-        delete [] messData[i1];
-        delete [] messDataRecv[i1];
+        delete [] messData[i];
+        delete [] messDataRecv[i];
       }
     }
   }
   delete [] messData;
   delete [] messDataRecv;
+
   m_IterationCounter = iter;
 }
 #endif // PAR_MPI
@@ -3235,7 +3301,8 @@ void CParPearlInfEngine::ParallelProtocolContOMP()
   const CGraph *pGraph = m_pGraphicalModel->GetGraph();
   intVector& connNodes = GetConnectedNodes();
   intVector& areReallyObserved = GetSignsOfReallyObserved();
-  int nAllMes = GetMessagesFromNeighbors().size();
+  messageVecVector &messages = GetMessagesFromNeighbors();
+  int nAllMes = messages.size();
   omp_lock_t change_lock;
   omp_init_lock(&change_lock);
   int Count = GetNumberOfNodesInModel();
@@ -3268,6 +3335,7 @@ void CParPearlInfEngine::ParallelProtocolContOMP()
         GetMessagesFromNeighbors()[i][j] =  newMessages[i][j];
       }
     }        
+
     changed = 0;
     #pragma omp parallel for schedule(dynamic) private(i)// reduction(+:changed)
     for (i = 0; i < Count; i++)

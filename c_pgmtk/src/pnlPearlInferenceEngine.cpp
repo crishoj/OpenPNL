@@ -1146,6 +1146,41 @@ bool pnl::EqualResults(CPearlInfEngine& eng1, CPearlInfEngine& eng2,
                         break;
                     }
 
+                    if (flag1 == 1) // uniform
+                    {
+                        continue;
+                    }
+                    
+                    if (flag1 == 2) // delta 
+                    {
+                        static_cast<CDenseMatrix<float>*>(d1->GetMatrix(matMean))->
+                            GetRawData(&sizeM1, &dataM1);
+                        
+                        static_cast<CDenseMatrix<float>*>(d2->GetMatrix(matMean))->
+                            GetRawData(&sizeM2, &dataM2);
+                        
+                        if (sizeM1 != sizeM2)
+                        {
+                            res = false;
+                            break;
+                        }
+                        else
+                            for (i = 0; i < sizeM1; i++)
+                            {
+                                printf("\n%.3f\t%.3f",dataM1[i],dataM2[i]);
+                                if (!IsEqualNumbers(dataM1[i], dataM2[i], epsilon))
+                                {
+                                    res = false;
+                                    break;
+                                }
+                            }
+                        if (!res)
+                            break;
+                        else
+                            continue;
+                        
+                    }
+
                     if (d1->GetCanonicalFormFlag())
                     {
                         static_cast<CDenseMatrix<float>*>(d1->GetMatrix(matH))->
@@ -1206,7 +1241,7 @@ bool pnl::EqualResults(CPearlInfEngine& eng1, CPearlInfEngine& eng2,
                             break;
                         }
                         else
-                            for (i = 0; i < sizeH1; i++)
+                            for (i = 0; i < sizeM1; i++)
                                 if (!IsEqualNumbers(dataM1[i], dataM2[i], epsilon))
                                 {
                                     res = false;
@@ -1219,7 +1254,7 @@ bool pnl::EqualResults(CPearlInfEngine& eng1, CPearlInfEngine& eng2,
                             break;
                         }
                         else
-                            for (i = 0; i < sizeH1; i++)
+                            for (i = 0; i < sizeC1; i++)
                                 if (!IsEqualNumbers(dataC1[i], dataC2[i], epsilon))
                                 {
                                     res = false;
