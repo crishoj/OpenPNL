@@ -1862,7 +1862,7 @@ void CCondGaussianDistribFun::ResetNodeTypes(pConstNodeTypeVector &nodeTypes)
         CDistribFun::ResetNodeTypes(nodeTypes);
 	
 	int ncontPar = m_contParentsIndex.size();
-	pConstNodeTypeVector ntCont(ncontPar + 1, NULL);
+	pConstNodeTypeVector ntCont(ncontPar + 1, (const CNodeType*)0);
 	int i;
 	for( i = 0 ; i < ncontPar; i++ )
 	{
@@ -1878,5 +1878,4 @@ void CCondGaussianDistribFun::ResetNodeTypes(pConstNodeTypeVector &nodeTypes)
 	    tempDistr->ResetNodeTypes( ntCont );
 	}
 	delete iter;
-	
 }

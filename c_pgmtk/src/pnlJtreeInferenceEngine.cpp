@@ -1122,10 +1122,10 @@ int CJtreeInfEngine::GetDataForMargAndMult(const int source, const int sink,
             if(sinkDistrFun->IsDistributionSpecific())
             {
                 sinkDistrFun->SetUnitValue(0);
-                floatVector *Vector = 
+                floatVector *aValue = 
                     (floatVector *)((CDenseMatrix<float>*)sinkDistrFun->
                     GetMatrix(matTable))->GetVector();
-                for (float *V = Vector->begin(); V != Vector->end(); *V = 1, V++);
+		aValue->assign(aValue->size(), 1.0f);
             }
             
             *sinkMatrix = static_cast<CNumericDenseMatrix<float>*>(sinkDistrFun->
