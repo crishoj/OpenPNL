@@ -49,6 +49,7 @@ protected:
     WGraph &Graph();
     bool IsDiscrete(int iNode) const;
     bool IsMRF() const { return m_bMRF; }
+    int iDistribution(const Vector<TokIdNode *> &nodes);
 
 private:
     TokenCover *m_pToken;			// token handler

@@ -318,18 +318,41 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
     }
 }
 
-void WDistributions::FillDataNew(pnl::EMatrixType matType, TokArr &matrix)
+int WDistributions::iDistribution(const Vector<TokIdNode *> &nodes)
 {
-    int iDistribution = -1;
     if(IsMRF())
     {
-	// determine iDistribution by Cliques
+        return m_pCliques->iClique(nodes);
     }
     else
     {
-	// determine iDistribution by node
+        return Graph().INode(nodes[nodes.size() - 1]->Name());
     }
-    pnl::CMatrix<float> *mat = Distribution(iDistribution)->Matrix(matType);
+}
+
+void WDistributions::FillDataNew(pnl::EMatrixType matType, TokArr &matrix)
+{
+    static const char fname[] = "FillDataNew";
+
+    int i;
+
+    Vector<TokIdNode *> nodes = Token().ExtractNodes(matrix[0]);
+
+    int iDistrib = iDistribution(nodes);
+
+    // check that all elements from the same matrix
+    for(i = 1; i < matrix.size(); i++)
+    {
+        nodes = Token().ExtractNodes(matrix[i]);
+
+        if(iDistrib != iDistribution(nodes))
+        {
+            ThrowUsingError("All elements of matrix must be for the same distribution", fname);
+        }
+    }
+
+    //ApplyNew(iDistribution);  //apply is done in Distribution(iDistribution) now ?????
+    Distribution(iDistrib)->FillDataNew(matType, matrix);
 }
 
 void WDistributions::DoNotify(int message, int iNode, ModelEngine *pObj)
