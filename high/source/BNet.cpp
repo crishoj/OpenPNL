@@ -38,6 +38,7 @@ BayesNet::BayesNet(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
 	sizeof(aInference)/sizeof(aInference[0]));
     m_pNet->Token()->AddProperty("Learning", aLearning,
 	sizeof(aLearning)/sizeof(aLearning[0]));
+
 }
 
 BayesNet::~BayesNet()
@@ -126,9 +127,25 @@ TokArr BayesNet::GetGaussianMean(TokArr vars)
     }
 
     const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
-    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matMean);
 
-    return Net().ConvertMatrixToToken(mat);
+    if (cpd->IsDistributionSpecific() == 1)         
+    {
+        TokArr res;
+        res << "uniform";
+        return res;
+    }
+    else
+        if (cpd->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
+        {
+            TokArr res;
+            res << "scalar";
+            return res;  
+        }
+        else
+        {
+            const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matMean);
+            return Net().ConvertMatrixToToken(mat);
+        }
 }
 
 TokArr BayesNet::GetGaussianCovar(TokArr var)
@@ -149,9 +166,32 @@ TokArr BayesNet::GetGaussianCovar(TokArr var)
     }
 
     const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
-    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matCovariance);
 
-    return Net().ConvertMatrixToToken(mat);
+    if (cpd->GetDistribFun()->IsDistributionSpecific() == 2) // delta
+    {
+        TokArr res;
+        res << "0";
+        return res;
+    }
+    else
+        if (cpd->GetDistribFun()->IsDistributionSpecific() == 1)
+        {
+            TokArr res;
+            res << "uniform";
+            return res;
+        }
+        else
+            if (cpd->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
+            {
+                TokArr res;
+                res << "scalar";
+                return res;
+            }
+            else
+            {
+                const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matCovariance);
+                return Net().ConvertMatrixToToken(mat);
+            }
 }
 
 TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
@@ -334,12 +374,12 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     }
     
     pnl::CInfEngine *infEngine = &Inference();
-    
+
     SetInferenceProperties(nodes);
     
     infEngine->EnterEvidence( evid );
     
-    int nnodes = nodes.size();
+   int nnodes = nodes.size();
     Vector<int> queryNds, queryVls;
     Net().ExtractTokArr(nodes, &queryNds, &queryVls);
     if(!queryVls.size())
@@ -352,6 +392,12 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     const pnl::CPotential *pot = infEngine->GetQueryJPD();
     
     TokArr res = "";
+    if (pot->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
+    {
+        // ?
+        res << "scalar";
+    }
+    else
     if (pot->GetDistribFun()->GetDistributionType() == pnl::dtTabular)
     {
         const pnl::CMatrix<float> *mat = pot->GetMatrix(pnl::matTable);
@@ -378,7 +424,7 @@ TokArr BayesNet::GetJPD( TokArr nodes )
         {
 	    // ?
             res << "uniform";
-            res << "distribution";
+//            res << "distribution";
         }
     }
     
@@ -833,6 +879,7 @@ pnl::CInfEngine &BayesNet::Inference()
 	{
 	    pnl::CJtreeInfEngine *infJtree;
 	    infJtree = dynamic_cast<pnl::CJtreeInfEngine *>(m_Inference);
+
 	    if(!infJtree)
 	    {
 		delete m_Inference;
@@ -857,6 +904,7 @@ pnl::CInfEngine &BayesNet::Inference()
 	{
 	    pnl::CNaiveInfEngine *infNaive;
 	    infNaive = dynamic_cast<pnl::CNaiveInfEngine *>(m_Inference);
+
 	    if(!infNaive)
 	    {
 		delete m_Inference;
@@ -873,6 +921,7 @@ pnl::CInfEngine &BayesNet::Inference()
 	{
 	    pnl::CPearlInfEngine *infPearl;
 	    infPearl = dynamic_cast<pnl::CPearlInfEngine *>(m_Inference);
+
 	    if(!infPearl)
 	    {
 		delete m_Inference;
@@ -889,6 +938,7 @@ pnl::CInfEngine &BayesNet::Inference()
 	{
 	    pnl::CPearlInfEngine *infPearl;
 	    infPearl = dynamic_cast<pnl::CPearlInfEngine *>(m_Inference);
+
 	    if(!infPearl)
 	    {
 		delete m_Inference;

@@ -18,6 +18,7 @@ namespace pnl
     class CEvidence;
     class CGraph;
     class CBNet;
+    class CLIMIDInfEngine;
     class CInfEngine;
     class CStaticLearningEngine;
     class pnlString;
