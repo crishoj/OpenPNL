@@ -1,0 +1,373 @@
+<?xml version="1.0"?>
+
+<PNLObjects version="1.1">
+
+ <Model TypeName="IDNet" NumberOfFactors="14">
+    
+  <Graph TypeName="Graph" SavingType="ByEdges" NumberOfNodes="14">
+    0:3_(c) 1_(c) 
+1:2_(c) 0_(p) 
+2:10_(c) 3_(c) 1_(p) 
+3:6_(c) 4_(c) 2_(p) 0_(p) 
+4:5_(c) 3_(p) 
+5:11_(c) 6_(c) 4_(p) 
+6:9_(c) 7_(c) 5_(p) 3_(p) 
+7:8_(c) 6_(p) 
+8:12_(c) 9_(c) 7_(p) 
+9:13_(c) 8_(p) 6_(p) 
+10:2_(p) 
+11:5_(p) 
+12:8_(p) 
+13:9_(p) 
+
+  </Graph>
+  <ModelDomain TypeName="ModelDomain">
+    
+   <VarAssociations TypeName="intVector">
+    [0 0 1 0 0 1 0 0 1 0 2 2 2 2 ]
+   </VarAssociations>
+   <NodeTypes TypeName="NodeTypeVector" NumberOfNodes="3">
+    1:2,1:2:1,1:1:2
+   </NodeTypes>
+  </ModelDomain>
+  <Factor0 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [0 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="1" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="1">
+    1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="1" Ranges="[2 ]" MatrixClass="NumericDense" IsClamped="0">
+    [0.900000 0.100000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor0>
+  <Factor1 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [0 1 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="2" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    1:2,1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 2 ]" MatrixClass="NumericDense" IsClamped="0">
+    [0.100000 0.900000 0.800000 0.200000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor1>
+  <Factor2 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [1 2 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="2" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    1:2,1:2:1
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 2 ]" MatrixClass="NumericDense" IsClamped="0">
+    [0.500000 0.500000 0.500000 0.500000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor2>
+  <Factor3 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [0 2 3 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="3" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="3">
+    1:2,1:2:1,1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="3" Ranges="[2 2 2 ]" MatrixClass="NumericDense" IsClamped="0">
+    [0.900000 0.100000 0.800000 0.200000 0.500000 0.500000 0.100000 0.900000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor3>
+  <Factor4 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [3 4 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="2" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    1:2,1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 2 ]" MatrixClass="NumericDense" IsClamped="0">
+    [0.100000 0.900000 0.800000 0.200000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor4>
+  <Factor5 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [4 5 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="2" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    1:2,1:2:1
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 2 ]" MatrixClass="NumericDense" IsClamped="0">
+    [0.500000 0.500000 0.500000 0.500000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor5>
+  <Factor6 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [3 5 6 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="3" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="3">
+    1:2,1:2:1,1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="3" Ranges="[2 2 2 ]" MatrixClass="NumericDense" IsClamped="0">
+    [0.900000 0.100000 0.800000 0.200000 0.500000 0.500000 0.100000 0.900000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor6>
+  <Factor7 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [6 7 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="2" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    1:2,1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 2 ]" MatrixClass="NumericDense" IsClamped="0">
+    [0.100000 0.900000 0.800000 0.200000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor7>
+  <Factor8 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [7 8 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="2" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    1:2,1:2:1
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 2 ]" MatrixClass="NumericDense" IsClamped="0">
+    [0.500000 0.500000 0.500000 0.500000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor8>
+  <Factor9 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [6 8 9 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="3" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="3">
+    1:2,1:2:1,1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="3" Ranges="[2 2 2 ]" MatrixClass="NumericDense" IsClamped="0">
+    [0.900000 0.100000 0.800000 0.200000 0.500000 0.500000 0.100000 0.900000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor9>
+  <Factor10 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [2 10 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="2" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    1:2:1,1:1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 1 ]" MatrixClass="NumericDense" IsClamped="0">
+    [-100.000000 0.000000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor10>
+  <Factor11 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [5 11 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="2" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    1:2:1,1:1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 1 ]" MatrixClass="NumericDense" IsClamped="0">
+    [-100.000000 0.000000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor11>
+  <Factor12 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [8 12 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="2" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    1:2:1,1:1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 1 ]" MatrixClass="NumericDense" IsClamped="0">
+    [-100.000000 0.000000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor12>
+  <Factor13 TypeName="Factor" FactorType="1" DistributionType="0">
+    
+   <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
+    
+   </ModelDomain>
+   <Domain TypeName="intVector">
+    [9 13 ]
+   </Domain>
+   <DistributionFunction TypeName="TabularDistribFun" NumberOfNodes="2" IsUnitFunction="0">
+    
+    <NodeTypes TypeName="PNodeTypeVector" NumberOfNodes="2">
+    1:2,1:1:2
+    </NodeTypes>
+    <MatTable TypeName="MatrixOfFloat" NumberOfDimensions="2" Ranges="[2 1 ]" MatrixClass="NumericDense" IsClamped="0">
+    [1000.000000 300.000000 ]
+    </MatTable>
+   </DistributionFunction>
+  </Factor13>
+ </Model>
+ <NodeInfo TypeName="ProbabilisticNet" ModelType="idnet" NumberOfNodes="14">
+    
+  <Node0 TypeName="WNode" NodeName="h1">
+    [False True]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+    
+   </NodeType>
+  </Node0>
+  <Node1 TypeName="WNode" NodeName="t1">
+    [False True]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+    
+   </NodeType>
+  </Node1>
+  <Node2 TypeName="WNode" NodeName="d1">
+    [False True]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1" NodeState="1">
+    
+   </NodeType>
+  </Node2>
+  <Node3 TypeName="WNode" NodeName="h2">
+    [False True]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+    
+   </NodeType>
+  </Node3>
+  <Node4 TypeName="WNode" NodeName="t2">
+    [False True]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+    
+   </NodeType>
+  </Node4>
+  <Node5 TypeName="WNode" NodeName="d2">
+    [False True]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1" NodeState="1">
+    
+   </NodeType>
+  </Node5>
+  <Node6 TypeName="WNode" NodeName="h3">
+    [False True]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+    
+   </NodeType>
+  </Node6>
+  <Node7 TypeName="WNode" NodeName="t3">
+    [False True]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+    
+   </NodeType>
+  </Node7>
+  <Node8 TypeName="WNode" NodeName="d3">
+    [False True]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1" NodeState="1">
+    
+   </NodeType>
+  </Node8>
+  <Node9 TypeName="WNode" NodeName="h4">
+    [False True]
+   <NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+    
+   </NodeType>
+  </Node9>
+  <Node10 TypeName="WNode" NodeName="u1">
+    [Cost]
+   <NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+    
+   </NodeType>
+  </Node10>
+  <Node11 TypeName="WNode" NodeName="u2">
+    [Cost]
+   <NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+    
+   </NodeType>
+  </Node11>
+  <Node12 TypeName="WNode" NodeName="u3">
+    [Cost]
+   <NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+    
+   </NodeType>
+  </Node12>
+  <Node13 TypeName="WNode" NodeName="u4">
+    [Cost]
+   <NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+    
+   </NodeType>
+  </Node13>
+ </NodeInfo>
+</PNLObjects>
