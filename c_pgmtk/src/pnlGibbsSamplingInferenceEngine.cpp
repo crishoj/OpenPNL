@@ -565,11 +565,14 @@ ConvertingFamilyToPot( int node, const CEvidence* pEv )
 
   //Has node got discrete child with more than 2 values
   bool bHasNodeGotDChldWMrThn2Vl = false;
-  
-  for (int ii = 0; ((ii < (m_environment[node].size()-1))&&(!bHasNodeGotDChldWMrThn2Vl)); ii++) {
-    int num = m_environment[node][ii];
-    if ((GetModel()->GetNodeType(num)->IsDiscrete())&&(GetModel()->GetNodeType(num)->GetNodeSize() > 2))
-      bHasNodeGotDChldWMrThn2Vl = true;
+
+  if( GetModel()->GetModelType() == mtBNet )
+  {
+      for (int ii = 0; ((ii < (m_environment[node].size()-1))&&(!bHasNodeGotDChldWMrThn2Vl)); ii++) {
+	int num = m_environment[node][ii];
+	if ((GetModel()->GetNodeType(num)->IsDiscrete())&&(GetModel()->GetNodeType(num)->GetNodeSize() > 2))
+	  bHasNodeGotDChldWMrThn2Vl = true;
+      };
   };
   
   int *obsNds = NULL;
@@ -577,35 +580,41 @@ ConvertingFamilyToPot( int node, const CEvidence* pEv )
   CEvidence *pSoftMaxEvidence = NULL; 
   int NNodes = m_pGraphicalModel->GetNumberOfNodes();
   
-  
-  if ((bHasNodeGotDChldWMrThn2Vl)&&(m_SoftMaxGaussianFactors[node] != NULL)) 
+
+  if( GetModel()->GetModelType() == mtBNet )
   {
-    obsVals.resize(NNodes);
-    obsNds = new int[NNodes];
+      if ((bHasNodeGotDChldWMrThn2Vl)&&(m_SoftMaxGaussianFactors[node] != NULL)) 
+      {
+	obsVals.resize(NNodes);
+	obsNds = new int[NNodes];
     
-    const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &node);
+	const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &node);
     
-    for (i = 0; i < NNodes; i++) 
-    {
-      const CNodeType *nt = m_pGraphicalModel->GetNodeType(i);
-      if (nt->IsDiscrete()) 
-        obsVals[i].SetInt(pEv->GetValue(i)->GetInt()); 
-      else 
-        obsVals[i].SetFlt(pEv->GetValue(i)->GetFlt()); 
+	for (i = 0; i < NNodes; i++) 
+	{
+	  const CNodeType *nt = m_pGraphicalModel->GetNodeType(i);
+	  if (nt->IsDiscrete()) 
+	    obsVals[i].SetInt(pEv->GetValue(i)->GetInt()); 
+	  else 
+	    obsVals[i].SetFlt(pEv->GetValue(i)->GetFlt()); 
       
-      obsNds[i] = i;
-    }
+	  obsNds[i] = i;
+	}
     
-    const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &node);
-  }
+	const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &node);
+      }
+  };
   
-  for( i = 0; i < m_environment[node].size(); i++ )
-  {            
-    int num = m_environment[node][i];
-    if ( (*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtTree)
-    {
-      isTreeNode = true;
-    };
+  if( GetModel()->GetModelType() == mtBNet )
+  {
+      for( i = 0; i < m_environment[node].size(); i++ )
+      {            
+	int num = m_environment[node][i];
+	if ( (*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtTree)
+	{
+	  isTreeNode = true;
+	};
+      };
   };
 
   if( (!IsAllNdsTab()) || (isTreeNode == true))
