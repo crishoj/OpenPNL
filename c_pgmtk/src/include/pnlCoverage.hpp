@@ -6,9 +6,9 @@
 //   or disclosed except in accordance with the terms of that agreement.   //
 //       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        //
 //                                                                         //
-//  File:      pnlImpDefs.hpp                                              //
+//  File:      pnlCoverage.hpp                                             //
 //                                                                         //
-//  Purpose:   some macros aimed at the ease of implementation             //
+//  Purpose:   needed to measure code/decision coverage                    //
 //                                                                         //
 //  Author(s): Denis Lagno                                                 //
 //                                                                         //
@@ -17,7 +17,7 @@
 #ifndef __PNLCOVERAGE_HPP__
 #define __PNLCOVERAGE_HPP__
 
-#if defined( PNL_I_WANNA_CODE_COVERAGE ) || defined( PNL_I_WANNA_DECISION_COVERAGE )
+#if defined( PNL_I_WANT_CODE_COVERAGE ) || defined( PNL_I_WANT_DECISION_COVERAGE )
 
 #include <iostream>
 #include <map>
@@ -157,7 +157,7 @@ extern PNL_API bool cc_gen_gadget( char const *file, int line, ccStat );
 #define PNL_IF2( COND ) \
     if ( pnl::cc_if_gadget( (COND), "CC_SPECIALUNIQMARK_GEN_MARK_IF_" __FILE__, __LINE__ ) )
 
-#if PNL_I_WANNA_DECISION_COVERAGE
+#if PNL_I_WANT_DECISION_COVERAGE
 #define if( COND ) PNL_IF2( COND )
 
 #else

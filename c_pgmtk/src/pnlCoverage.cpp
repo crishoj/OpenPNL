@@ -6,9 +6,9 @@
 //   or disclosed except in accordance with the terms of that agreement.   //
 //       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        //
 //                                                                         //
-//  File:      pnlFakePtr.cpp                                              //
+//  File:      pnlCoverage.cpp                                             //
 //                                                                         //
-//  Purpose:   implementation of fake pointers and dummies                 //
+//  Purpose:   needed to measure code/decision coverage                    //
 //                                                                         //
 //  Author(s):                                                             //
 //                                                                         //
@@ -23,7 +23,7 @@
 #include <unistd.h>
 #endif
 
-#if defined( PNL_I_WANNA_CODE_COVERAGE ) || defined( PNL_I_WANNA_DECISION_COVERAGE )
+#if defined( PNL_I_WANT_CODE_COVERAGE ) || defined( PNL_I_WANT_DECISION_COVERAGE )
 
 PNL_BEGIN
 

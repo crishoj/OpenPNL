@@ -1,3 +1,4 @@
+#define PNL_I_WANT_CODE_COVERAGE
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 //                INTEL CORPORATION PROPRIETARY INFORMATION                //
@@ -42,7 +43,7 @@
 
 #define PNL_OBSOLETE
 
-#ifdef PNL_I_WANNA_CODE_COVERAGE
+#ifdef PNL_I_WANT_CODE_COVERAGE
 #include "pnlCoverage.hpp"
 #endif
 
