@@ -1086,7 +1086,7 @@ void CJunctionTree::InitNodePotsFromBNet( const CBNet* pBNet,
             }
         }
         
-        pPot->Dump();
+        //pPot->Dump();
         
         //CPotential* pShrPot = pPot->ShrinkObservedNodes( pEvidence );
         //delete pPot ;
