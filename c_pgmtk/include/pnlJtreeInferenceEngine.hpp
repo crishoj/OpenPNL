@@ -194,6 +194,7 @@ protected:
     inline intVector& GetActuallyObservedNodes();
 
     inline void SetNormalizeCoefficient(float val);
+    inline float GetNormalizeCoefficient();
 
     void ShrinkJTreeCliques(int domSize, int* Domain);     
 	CPotential* MergeCliques(int domSize, int* Domain);
@@ -338,6 +339,11 @@ CJtreeInfEngine::GetActuallyObservedNodes()
 inline void CJtreeInfEngine::SetNormalizeCoefficient(float val)
 {
     m_norm = val;
+}
+
+inline float CJtreeInfEngine::GetNormalizeCoefficient()
+{
+    return m_norm;
 }
 
 #endif // SWIG
