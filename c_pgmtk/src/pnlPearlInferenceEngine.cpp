@@ -1041,24 +1041,210 @@ messageVector& CPearlInfEngine::GetCurBeliefs()
 }
 /////////////////////////////////////////////////////////////////////////////
 
+bool CPearlInfEngine::AllContinuousNodes( const CStaticGraphicalModel *pGrModel) const
+{
+    PNL_CHECK_IS_NULL_POINTER( pGrModel )
+    int nnodes = GetNumberOfNodesInModel();
+    int i;
+    for (i = 0; i < nnodes; ++i)
+    {
+        PNL_CHECK_IS_NULL_POINTER( pGrModel->GetFactor(i) )
+    }
+    
+    bool res = true;
+    for (i = 0; i < nnodes; ++i)
+    {
+        if (pGrModel->GetFactor(i)->GetDistributionType() != dtGaussian)
+            res = false;
+    }
+    
+    return res;
+}
+/////////////////////////////////////////////////////////////////////////////
+
 #ifdef PAR_RESULTS_RELIABILITY
+bool IsEqualNumbers(float Num1, float Num2, float Diff)
+{
+    int exponent1 = 0;
+    int sign1 = 1, sign2 = 1;
+    if (Num1<0.0f)
+        sign1 = 0;
+    
+    if (Num2<0.0f)
+        sign2 = 0;
+
+    if (sign1 != sign2)
+        return false;
+
+    if ((fabs(Num1)<1.0f)&&(fabs(Num2)<1.0f)) // numbers < 1
+        if ( fabs(Num1-Num2) > Diff)
+            return false;
+        else
+            return true;
+
+    // number > 1
+    while (fabs(Num1)>1.0f)
+    {
+        Num1 = Num1/10.0f;
+        exponent1 ++;
+    }
+
+    int exponent2 = 0;
+    while (fabs(Num2)>1.0f)
+    {
+        Num2 = Num2/10.0f;
+        exponent2 ++;
+    }
+    if (exponent1 != exponent2)
+        return false;
+    else
+        if ( fabs(Num1-Num2) > Diff)
+            return false;
+        else
+            return true;
+}
+
 bool pnl::EqualResults(CPearlInfEngine& eng1, CPearlInfEngine& eng2,
     float epsilon)
 {
+    int i, j;
     bool res = true;
     messageVector& firstBels = eng1.GetCurBeliefs();
-    messageVector& secBels   = eng2.GetCurBeliefs();
+    
+    if (eng1.AllContinuousNodes(eng2.GetModel()))
+    {
+        messageVector& secBels = eng2.CPearlInfEngine::GetCurBeliefs();
+        if (firstBels.size() != secBels.size())
+            res = false;
+        else
+        {
+            CGaussianDistribFun* d1;
+            CGaussianDistribFun* d2;
+            for (j = 0; j < firstBels.size(); j++)
+            {
+                d1 = static_cast<CGaussianDistribFun*>(firstBels[j]);
+                d2 = static_cast<CGaussianDistribFun*>(secBels[j]);
+                if (!d1->IsEqual(d2, epsilon))
+                {
+                    const float *dataH1, *dataK1;
+                    int sizeH1, sizeK1;
+                    
+                    const float *dataH2, *dataK2;
+                    int sizeH2, sizeK2;
+                    
+                    const float *dataM1, *dataC1;
+                    int sizeM1, sizeC1;
+                    
+                    const float *dataM2, *dataC2;
+                    int sizeM2, sizeC2;
+                    
+                    int flag1 = d1->IsDistributionSpecific();
+                    int flag2 = d2->IsDistributionSpecific();
+                    if (flag1 != flag2)
+                    {
+                        res = false;
+                        break;
+                    }
 
-    if (firstBels.size() != secBels.size())
-        res = false;
+                    if (d1->GetCanonicalFormFlag())
+                    {
+                        static_cast<CDenseMatrix<float>*>(d1->GetMatrix(matH))->
+                            GetRawData(&sizeH1, &dataH1);
+                        static_cast<CDenseMatrix<float>*>(d1->GetMatrix(matK))->
+                            GetRawData(&sizeK1, &dataK1);
+                        
+                        static_cast<CDenseMatrix<float>*>(d2->GetMatrix(matH))->
+                            GetRawData(&sizeH2, &dataH2);
+                        static_cast<CDenseMatrix<float>*>(d2->GetMatrix(matK))->
+                            GetRawData(&sizeK2, &dataK2);
+                        
+                        if (sizeH1 != sizeH2)
+                        {
+                            res = false;
+                            break;
+                        }
+                        else
+                            for (i = 0; i < sizeH1; i++)
+                                if (!IsEqualNumbers(dataH1[i], dataH2[i], epsilon))
+                                {
+                                    res = false;
+                                    break;
+                                }
+                        if (!res)
+                            break;
+                            
+                        if (sizeK1 != sizeK2)
+                        {
+                            res = false;
+                            break;
+                        }
+                        else
+                            for (i = 0; i < sizeK1; i++)
+                                if (!IsEqualNumbers(dataK1[i], dataK2[i], epsilon))
+                                {
+                                    res = false;
+                                    break;
+                                }
+                        if (!res)
+                            break;
+                    }
+                    if (d1->GetMomentFormFlag())
+                    {
+                        static_cast<CDenseMatrix<float>*>(d1->GetMatrix(matMean))->
+                            GetRawData(&sizeM1, &dataM1);
+                        static_cast<CDenseMatrix<float>*>(d1->GetMatrix(matCovariance))->
+                            GetRawData(&sizeC1, &dataC1);
+                        
+                        static_cast<CDenseMatrix<float>*>(d2->GetMatrix(matMean))->
+                            GetRawData(&sizeM2, &dataM2);
+                        static_cast<CDenseMatrix<float>*>(d2->GetMatrix(matCovariance))->
+                            GetRawData(&sizeC2, &dataC2);
+                        
+                        if (sizeM1 != sizeM2)
+                        {
+                            res = false;
+                            break;
+                        }
+                        else
+                            for (i = 0; i < sizeH1; i++)
+                                if (!IsEqualNumbers(dataM1[i], dataM2[i], epsilon))
+                                {
+                                    res = false;
+                                    break;
+                                }
+                                
+                        if (sizeC1 != sizeC2)
+                        {
+                            res = false;
+                            break;
+                        }
+                        else
+                            for (i = 0; i < sizeH1; i++)
+                                if (!IsEqualNumbers(dataC1[i], dataC2[i], epsilon))
+                                {
+                                    res = false;
+                                    break;
+                                }
+                    }
+                }
+            }
+        }
+    }
     else
     {
-        for (int i = 0; i < firstBels.size(); i++)
-            if (!firstBels[i]->IsEqual(secBels[i], epsilon))
-            {
-                res = false;
-            }
+        messageVector& secBels = eng2.GetCurBeliefs();
+        if (firstBels.size() != secBels.size())
+            res = false;
+        else
+        {
+            for (int i = 0; i < firstBels.size(); i++)
+                if (!firstBels[i]->IsEqual(secBels[i], epsilon))
+                {
+                    res = false;
+                }
+        }
     }
+
     return res;
 }
 #endif // PAR_RESULTS_RELIABILITY

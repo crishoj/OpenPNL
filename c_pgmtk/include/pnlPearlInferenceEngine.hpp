@@ -63,6 +63,8 @@ public:
     static bool             IsInputModelValid(const CStaticGraphicalModel*
                                               pGrModel);
 
+    bool AllContinuousNodes( const CStaticGraphicalModel *pGrModel) const;
+
     //set max number of iterations for parallel protocol
     inline void       SetMaxNumberOfIterations(int maxNumOfIters);
 

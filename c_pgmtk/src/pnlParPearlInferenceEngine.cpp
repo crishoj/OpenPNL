@@ -443,7 +443,7 @@ void CParPearlInfEngine::EnterEvidence(const CEvidence *evidence, int maximize,
   m_bMaximize = maximize ? 1 : 0;
   // clear all the previous data
   ClearMessagesStorage();
-  if (!AllCountinuesNodes(GetModel()))
+  if (!AllContinuousNodes(GetModel()))
   {
     // init new data
     InitEngine(evidence);
@@ -2808,17 +2808,6 @@ void CParPearlInfEngine::ParallelProtocol()
 // ----------------------------------------------------------------------------
 
 
-bool CParPearlInfEngine :: AllCountinuesNodes( const CStaticGraphicalModel *pGrModel) const
-{
-  int i = 0;  
-  do  
-  {
-    if ((pGrModel->GetFactor(i)->GetDistributionType()) != dtGaussian) 
-    return false;
-    i++;
-  } while (i < GetNumberOfNodesInModel());
-  return true;
-}
 
 
 
