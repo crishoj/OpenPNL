@@ -205,6 +205,7 @@ TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &a
 WGraph::WGraph(): m_pGraph(0), m_bTouched(false), m_pSort(0)
 {}
 
+#if 0
 WGraph::WGraph(const WGraph &g): m_iNodeMap(g.m_iNodeMap),
     m_aNode(g.m_aNode), m_aParent(g.m_aParent),
     m_aUnusedIndex(g.m_aUnusedIndex), m_pGraph(0),
@@ -213,6 +214,7 @@ WGraph::WGraph(const WGraph &g): m_iNodeMap(g.m_iNodeMap),
     m_IndicesOuterToGraph(g.m_IndicesOuterToGraph)
 {
 }
+#endif
 
 pnl::CGraph *WGraph::Graph(bool bForget)
 {
@@ -275,6 +277,7 @@ pnl::CGraph *WGraph::Graph(bool bForget)
     }
 
     pnl::CGraph *pGraph = m_pGraph;
+    pGraph->Dump();
 
     if(bForget)
     {
@@ -490,7 +493,7 @@ int WGraph::nChild(int iNode)
 
 void WGraph::IndicesGraphToOuter(Vector<int> *outer, Vector<int> *iGraph)
 {
-    if(!m_IndicesGraphToOuter.size())
+    if(m_bTouched)
     {
 	Graph();
     }
@@ -509,6 +512,11 @@ void WGraph::Reset(pnl::CGraph &graph)
     if(graph.GetNumberOfNodes() != nNode())
     {
 	ThrowUsingError("Graph have different number of vertices", "Graph::Reset");
+    }
+
+    if(m_bTouched)
+    {
+	Graph();// build graph
     }
 
     bool bUseMap = (m_IndicesGraphToOuter.size() == nNode()) && (m_IndicesOuterToGraph.size() == nNode());
@@ -546,7 +554,12 @@ void WGraph::IGraph(const Vector<int> *iNodes, Vector<int> *iGraph)
     if ((iNodes != NULL)||(iGraph != NULL))
     {
 	ThrowUsingError("NULL pointers", "WGraph::IGraph");
-    };
+    }
+
+    if(m_bTouched)
+    {
+	Graph();// build graph
+    }
 
     int size = iNodes->size();
     int node = 0;
@@ -554,7 +567,7 @@ void WGraph::IGraph(const Vector<int> *iNodes, Vector<int> *iGraph)
     for (node = 0; node < size; node++)
     {
 	(*iGraph)[node] = m_IndicesOuterToGraph.at((*iNodes)[node]);
-    };
+    }
 }
 
 void WGraph::IOuter(const Vector<int> *iGraph, Vector<int> *iNodes)
@@ -562,7 +575,12 @@ void WGraph::IOuter(const Vector<int> *iGraph, Vector<int> *iNodes)
     if ((iNodes != NULL)||(iGraph != NULL))
     {
 	ThrowUsingError("NULL pointers", "WGraph::IGraph");
-    };
+    }
+
+    if(m_bTouched)
+    {
+	Graph();// build graph
+    }
 
     int size = iGraph->size();
     int node = 0;
@@ -570,7 +588,7 @@ void WGraph::IOuter(const Vector<int> *iGraph, Vector<int> *iNodes)
     for (node = 0; node < size; node++)
     {
 	(*iNodes)[node] = m_IndicesGraphToOuter.at((*iGraph)[node]);
-    };
+    }
 }
 
 PNLW_END

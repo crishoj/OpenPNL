@@ -47,7 +47,7 @@ class PNLHIGH_API WGraph: public ModelEngine
 {
 public:
     WGraph();
-    WGraph(const WGraph &g);
+//    WGraph(const WGraph &g);
 
     int nNode() const		// return number of nodes in graph
     { return m_aNode.size() - m_aUnusedIndex.size(); }
@@ -94,7 +94,7 @@ public:
     // Following functions perform translation between inner and outer views.
     int IGraph(int iNode)
     {
-	if(!m_IndicesGraphToOuter.size())
+	if(m_bTouched)
 	{
 	    Graph();// build graph
 	}
@@ -106,7 +106,7 @@ public:
 
     int IOuter(int iGraph)
     {
-	if(!m_IndicesGraphToOuter.size())
+	if(m_bTouched)
 	{
 	    Graph();// build graph
 	}
@@ -119,7 +119,7 @@ public:
     void IndicesGraphToOuter(Vector<int> *outer, Vector<int> *iGraph);
     IIMap &MapOuterToGraph()
     {
-	if(!m_IndicesGraphToOuter.size())
+	if(m_bTouched)
 	{
 	    Graph();// build graph
 	}

@@ -124,7 +124,7 @@ TokArr BayesNet::GetGaussianMean(TokArr node)
     }
 
     Vector<int> queryNds, queryVls;
-    Net().ExtractTokArr(node, &queryNds, &queryVls);
+    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph()->MapOuterToGraph());
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
@@ -165,7 +165,7 @@ TokArr BayesNet::GetGaussianCovar(TokArr node)
     }
 
     Vector<int> queryNds, queryVls;
-    Net().ExtractTokArr(node, &queryNds, &queryVls);
+    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph()->MapOuterToGraph());
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
@@ -218,15 +218,15 @@ TokArr BayesNet::GetGaussianWeights(TokArr node, TokArr parent)
     }
 
     Vector<int> queryNdsOuter, queryVls;
-    Net().ExtractTokArr(node, &queryNdsOuter, &queryVls);
+    Net().ExtractTokArr(node, &queryNdsOuter, &queryVls, &Net().Graph()->MapOuterToGraph());
 
     Vector<int> parentsOuter;
-    Net().ExtractTokArr(parent, &parentsOuter, &queryVls);
+    Net().ExtractTokArr(parent, &parentsOuter, &queryVls, &Net().Graph()->MapOuterToGraph());
     
-    int NodeOuter = queryNdsOuter[0], NodeInner = Net().Graph()->IGraph(queryNdsOuter[0]);
-    int ParentOuter = parentsOuter[0], ParentInner = Net().Graph()->IGraph(parentsOuter[0]);
+    int iNode = queryNdsOuter[0];
+    int iParent = parentsOuter[0];
 
-    const pnl::CFactor * cpd = Model()->GetFactor(NodeInner);
+    const pnl::CFactor * cpd = Model()->GetFactor(iNode);
 
     if (cpd->GetDistribFun()->IsDistributionSpecific() == 2) // delta
     {
@@ -248,7 +248,7 @@ TokArr BayesNet::GetGaussianWeights(TokArr node, TokArr parent)
 
 	for (int i = 0; (i < Domain.size())&&(WeightsIndex == -1); i++)
 	{
-	    if (Domain[i] == ParentInner)
+	    if (Domain[i] == iParent)
 	    {
 		WeightsIndex = i;
 	    }
