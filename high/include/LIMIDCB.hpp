@@ -2,7 +2,9 @@
 #define __LIMIDCB_HPP__
 
 #include <string>
+#ifndef __PNLHIGHCONF_HPP__
 #include "pnlHighConf.hpp"
+#endif
 #include "NetCallBack.hpp"
 
 PNLW_BEGIN

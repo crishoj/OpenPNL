@@ -450,7 +450,7 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     }
     else
     {
-	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
+	evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
     }
 
     SetInferenceProperties(nodes);
@@ -580,17 +580,20 @@ void BayesNet::LearnParameters(TokArr aSample[], int nSample)
     }
 
     int i;
+
     if(nSample)
     {
 	for(i = 0; i < nSample; ++i)
 	{
-	    Net().EvidenceBuf()->push_back(Net().CreateEvidence(aSample[i]));
+	    AddEvidToBuf(aSample[i]);
 	}
     }
 
-    Learning().SetData(Net().EvidenceBuf()->size() - m_nLearnedEvidence,
-	&(*Net().EvidenceBuf())[m_nLearnedEvidence]);
+    pnl::pEvidencesVector aEvidence;
+
+    Net().TranslateBufToEvidences(&aEvidence, m_nLearnedEvidence);
     m_nLearnedEvidence = Net().EvidenceBuf()->size();
+    Learning().SetData(aEvidence.size(), &aEvidence.front());
 
     SetParamLearningProperties();
     Learning().Learn();
@@ -601,6 +604,7 @@ void BayesNet::LearnParameters(TokArr aSample[], int nSample)
 	    Net().Distributions().ResetDistribution(i, *Net().Model().GetFactor(Net().Graph().IGraph(i)));
 	}
     }
+    DropEvidences(aEvidence);
 }
 
 void BayesNet::LearnStructure(TokArr aSample[], int nSample)
@@ -615,11 +619,14 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     {
 	for(int i = 0; i < nSample; ++i)
 	{
-	    Net().EvidenceBuf()->push_back(Net().CreateEvidence(aSample[i]));
+	    AddEvidToBuf(aSample[i]);
 	}
     }
 
-    pLearning->SetData(Net().EvidenceBuf()->size(), &Net().EvidenceBuf()->front() );
+    pnl::pEvidencesVector aEvidence;
+
+    Net().TranslateBufToEvidences(&aEvidence, m_nLearnedEvidence);
+    pLearning->SetData(aEvidence.size(), &aEvidence.front());
     pLearning->Learn();
 
 #if 0
@@ -670,6 +677,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
         pnl::CNodeValues* nv = oldEv;
     }
 #endif
+    DropEvidences(aEvidence);
 }
 
 TokArr BayesNet::GetMPE(TokArr nodes)
@@ -687,7 +695,7 @@ TokArr BayesNet::GetMPE(TokArr nodes)
     }
     else
     {
-	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
+	evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
     }
 
     SetInferenceProperties(nodes);
@@ -1093,7 +1101,7 @@ float BayesNet::GetCurEvidenceLogLik()
     }
     else
     {
-	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
+	evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
     }
     float logLik = Model()->ComputeLogLik(evid);
 
@@ -1110,14 +1118,17 @@ float BayesNet::GetCurEvidenceLogLik()
 TokArr BayesNet::GetEvidBufLogLik()
 {
     TokArr result;
+    pnl::pEvidencesVector evBuf;
 
-    Vector<pnl::CEvidence *> evBuf = *Net().EvidenceBuf();
+    Net().TranslateBufToEvidences(&evBuf, 0);
     for(int i = 0; i < evBuf.size(); i++)
     {
 	result.push_back(Model()->ComputeLogLik(evBuf[i]));
+	delete evBuf[i];
     }
 
     Net().Token().SetContext(result);
+
     return result;
 }
 

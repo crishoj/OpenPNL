@@ -87,14 +87,13 @@ void DBN::DelNode(TokArr nodes)
 	priorNodes.push_back(prStr);
 	fsliceNodes.push_back(slStr);
     }
-    const char *s = prStr.c_str();
     if(IsDBNContainNode(fsliceNodes))
     {
 	Net().DelNode(fsliceNodes);
     }
     if(IsDBNContainNode(priorNodes))
     {
-	 Net().DelNode(priorNodes);
+	Net().DelNode(priorNodes);
     }   
 }
 
@@ -322,7 +321,7 @@ TokArr DBN::GetJPD( TokArr nodes)
     }
     else
     {
-    evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
+    evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
     }
     */
     pnl::CEvidence **pEvid;
@@ -461,11 +460,10 @@ void DBN::EditEvidence(TokArr values)
 
 void DBN::CurEvidToBuf()
 {
-    pnl::CEvidence *evid = NULL; 
-    evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
-    (m_AllEvidences[m_curSlice]).push_back(evid);
-	Net().ClearEvid();
-	Net().ClearEvidBuf();
+    pnl::CEvidence *evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
+    m_AllEvidences[m_curSlice].push_back(evid);
+    Net().ClearEvid();
+    Net().ClearEvidBuf();
 }
 
 // adds evidence to the buffer
@@ -876,7 +874,7 @@ int DBN::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr co
 	    Net().ClearEvid();
 	    EditEvidence(evid);
 	    pnl::CEvidence *evid = NULL; 
-	    evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
+	    evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
 	    (m_AllEvidences[nslice]).push_back(evid);
 	    nEvid++;
 	}

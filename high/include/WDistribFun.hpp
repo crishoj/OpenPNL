@@ -4,8 +4,9 @@
 #ifndef __PNLHIGHCONF_HPP__
 #include "pnlHighConf.hpp"
 #endif
-
-#include "pnlTok.hpp"
+#ifndef __TOKENS_HPP__
+#include "Tokens.hpp"
+#endif
 
 // FORWARDS
 namespace pnl

@@ -1,6 +1,6 @@
 #define NEW_TOKENS
 #ifdef NEW_TOKENS
-#include "Tokens.hpp"
+#error switch to new tokens!
 #else
 
 #ifndef __PNLTOK_HPP__

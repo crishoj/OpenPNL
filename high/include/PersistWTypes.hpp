@@ -1,7 +1,9 @@
 #ifndef __PERSISTWTYPES_HPP__
 #define __PERSISTWTYPES_HPP__
 
+#ifndef __PNLHIGHCONF_HPP__
 #include "pnlHighConf.hpp"
+#endif
 #include "pnlPersistence.hpp"
 
 // FORWARDS

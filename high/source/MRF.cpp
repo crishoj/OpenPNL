@@ -369,7 +369,7 @@ TokArr MRF::GetJPD( TokArr nodes )
     }
     else
     {
-	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
+	evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
     }
     
     pnl::CInfEngine *infEngine = &Inference();
@@ -495,12 +495,14 @@ void MRF::LearnParameters(TokArr aSample[], int nSample)
     {
 	for(i = 0; i < nSample; ++i)
 	{
-	    Net().EvidenceBuf()->push_back(Net().CreateEvidence(aSample[i]));
+	    AddEvidToBuf(aSample[i]);
 	}
     }
 
-    Learning().SetData(Net().EvidenceBuf()->size() - m_nLearnedEvidence,
-	&(*Net().EvidenceBuf())[m_nLearnedEvidence]);
+    pnl::pEvidencesVector aEvidence;
+
+    Net().TranslateBufToEvidences(&aEvidence, m_nLearnedEvidence);
+    Learning().SetData(aEvidence.size(), &aEvidence.front());
     m_nLearnedEvidence = Net().EvidenceBuf()->size();
 
     SetParamLearningProperties();
@@ -512,6 +514,7 @@ void MRF::LearnParameters(TokArr aSample[], int nSample)
 	    Net().Distributions().ResetDistribution(i, *Net().Model().GetFactor(Net().Graph().IGraph(i)));
 	}
     }
+    DropEvidences(aEvidence);
 }
 
 TokArr MRF::GetMPE(TokArr nodes)
@@ -529,7 +532,7 @@ TokArr MRF::GetMPE(TokArr nodes)
     }
     else
     {
-	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
+	evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
     }
 
 

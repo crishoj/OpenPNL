@@ -1,6 +1,6 @@
+#include "Tokens.hpp"
 #include "WCliques.hpp"
 #include "pnlWGraph.hpp"
-#include "pnlTok.hpp"
 
 PNLW_BEGIN
 
@@ -17,6 +17,10 @@ void DumpMap(WCliques::Map *HashTable)
 WCliques::WCliques(WGraph *graph): m_pGraph(graph)
 {
     SpyTo(graph);
+}
+
+WCliques::~WCliques()
+{
 }
 
 // check if nodes make subclique or if some clique is subset of nodes

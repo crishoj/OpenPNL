@@ -1,7 +1,9 @@
 #ifndef __PNLWGRAPH_HPP__
 #define __PNLWGRAPH_HPP__
 
+#ifndef __PNLHIGHCONFIG_HPP__
 #include "pnlHighConf.hpp"
+#endif
 #include "ModelEngine.hpp"
 #include "WInner.hpp"
 

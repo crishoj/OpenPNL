@@ -10,7 +10,8 @@
 #pragma warning(disable : 4786) // The identifier string exceeded the maximum allowable length and was truncated
 //#pragma warning(disable : 4275) // non dll-interface class
 #pragma warning(disable : 4552) // operator has no effect
-#pragma warning(disable : 4512) // operator has no effect
+#pragma warning(disable : 4251) // class 'xx' needs to have dll-interface to be used by clients of class 'yy'
+#pragma warning(disable : 4512)
 //temporary
 //#pragma warning(disable : 4702) //unreachable code
 #pragma warning(disable : 4127) // conditional expression is constant
@@ -35,7 +36,7 @@ namespace NetConst
 };
 
 #define PNLW_BEGIN namespace pnlw {
-#define PNLW_END }
+#define PNLW_END };
 #define PNLW_USING using namespace pnlw;
 
 // FORWARDS

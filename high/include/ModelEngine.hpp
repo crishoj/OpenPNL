@@ -2,7 +2,9 @@
 #define __MODELENGINE_HPP__
 
 #include <map>
+#ifndef __PNLHIGHCONFIG_HPP__
 #include "pnlHighConf.hpp"
+#endif
 
 PNLW_BEGIN
 

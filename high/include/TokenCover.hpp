@@ -2,8 +2,12 @@
 #define __TOKENCOVER_HPP__
 
 #include <map>
+#ifndef __PNLHIGHCONFIG_HPP__
 #include "pnlHighConf.hpp"
-#include "pnlTok.hpp"
+#endif
+#ifndef __TOKENS_HPP__
+#include "Tokens.hpp"
+#endif
 #include "ModelEngine.hpp"
 
 // FORWARDS

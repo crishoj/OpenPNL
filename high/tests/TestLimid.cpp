@@ -428,7 +428,7 @@ void DelNodes()
        PNL_THROW(pnl::CAlgorithmicException, "Error get");
     }
 
-    net->DelNode("uuu2");
+//    net->DelNode("uuu2");
 
     TokArr exp;
     exp = net->GetExpectation();
@@ -438,7 +438,7 @@ void DelNodes()
     politics = net->GetPolitics();
     cout << politics << "\n";
 
-    net->AddNode(value^"uuu2", aIncome);
+/*    net->AddNode(value^"uuu2", aIncome);
     net->AddArc("ddd1", "uuu2");
     net->DelArc("hhh2", "ddd2");
 
@@ -449,7 +449,7 @@ void DelNodes()
     TokArr politics1;
     politics1 = net->GetPolitics();
     cout << politics1<< "\n";
-
+*/
 
     delete net;
     cout << "DelNodes is completed successfully" << endl;

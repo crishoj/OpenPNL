@@ -51,16 +51,21 @@ void TestGaussianModelCreate()
         PNL_THROW(pnl::CAlgorithmicException, "Setting or getting gaussian parameters is wrong");
     }
 
-    net->AddNode("NodeD", "dim1");
+    net->AddNode(continuous ^ "NodeD", "dim1");// trvs - previous version - discrete node
     net->AddArc("NodeC", "NodeD");
-    net->AddArc("NodeD", "NodeA");
+    net->AddArc("NodeD", "NodeB");// trvs - previous version: net->AddArc("NodeD", "NodeA");
 
     net->SetPGaussian("NodeB", "0.12", "3.0", "0.21 0.9");
 
     if( net->GetGaussianMean("NodeB")[0].FltValue() != 0.12f ||
-        net->GetGaussianCovar("NodeB")[0].FltValue() != 3.0f ||
-        net->GetGaussianWeights("NodeB", "NodeA")[0].FltValue() != 0.21f ||
-        net->GetGaussianWeights("NodeB", "NodeD")[0].FltValue() != 0.9f )
+        net->GetGaussianCovar("NodeB")[0].FltValue() != 3.0f)
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting gaussian parameters is wrong");
+    }
+    float ba = net->GetGaussianWeights("NodeB", "NodeA")[0].FltValue();
+    float bd = net->GetGaussianWeights("NodeB", "NodeD")[0].FltValue();
+    
+    if((ba != 0.21f || bd != 0.9f) && (ba != 0.9f || bd != 0.21f))
     {
         PNL_THROW(pnl::CAlgorithmicException, "Setting or getting gaussian parameters is wrong");
     }

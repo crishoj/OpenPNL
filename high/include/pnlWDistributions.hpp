@@ -1,7 +1,9 @@
 #ifndef __PNLWDISTRIBUTIONS_HPP__
 #define __PNLWDISTRIBUTIONS_HPP__
 
+#ifndef __PNLHIGHCONFIG_HPP__
 #include "pnlHighConf.hpp"
+#endif
 #include "ModelEngine.hpp"
 #include "pnlNodeType.hpp"
 

@@ -1,4 +1,3 @@
-#include "pnlTok.hpp"
 #include "pnlWGraph.hpp"
 #include "TokenCover.hpp"
 
@@ -422,7 +421,6 @@ void TokenCover::SetGraph(WGraph *graph, bool bStableNamesNotIndices)
 Vector<TokIdNode*> TokenCover::ExtractNodes(TokArr &aValue) const
 {
     Vector<TokIdNode*> result;
-    int j;
     for(int i = 0; i < aValue.size(); ++i)
     {
 	int j = TokIdNode::root->desc.count(aValue[i].Name());

@@ -2,8 +2,12 @@
 #define __BNET_HPP__
 
 #include <string>
+#ifndef __PNLHIGHCONF_HPP__
 #include "pnlHighConf.hpp"
-#include "pnlTok.hpp"
+#endif
+#ifndef __TOKENS_HPP__
+#include "Tokens.hpp"
+#endif
 #include "ModelEngine.hpp"
 
 // FORWARDS

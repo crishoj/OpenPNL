@@ -1,10 +1,10 @@
+#ifdef OLD_TOKENS
+
 #pragma warning(push, 2)
 #include <queue>
 #pragma warning(pop)
 
 #include "pnlTok.hpp"
-
-#ifndef NEW_TOKENS
 
 PNLW_BEGIN
 

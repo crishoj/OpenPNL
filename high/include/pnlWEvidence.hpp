@@ -2,8 +2,12 @@
 #define __PNLWEVIDENCE_HPP__
 
 #include <string>
+#ifndef __PNLHIGHCONFIG_HPP__
 #include "pnlHighConf.hpp"
-#include "pnlTok.hpp"
+#endif
+#ifndef __TOKENS_HPP__
+#include "Tokens.hpp"
+#endif
 #include "WCover.hpp"
 
 PNLW_BEGIN
@@ -37,12 +41,17 @@ class PNLHIGH_API WEvidence
 public:
     void Clear();
     void Set(const TokArr &evidence);
-    TokArr GetBoard() const { return m_EvidenceBoard; }
+    TokArr Get() const;
     bool IsEmpty() const { return m_EvidenceBoard.size() == 0; }
+
+    bool IsHidden(Tok &tok) const;
+    void SetVisibility(Tok &tok, bool bVisible);
+    bool IsNodeHere(Tok &tok) const;
 
 private:
     TokArr m_EvidenceBoard;
     std::map<TokIdNode *, int> m_VarMap;
+    Vector<char> m_abHidden;
 };
 
 PNLW_END

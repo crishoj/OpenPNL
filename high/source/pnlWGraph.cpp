@@ -1,4 +1,4 @@
-#include "pnlTok.hpp"
+#include "Tokens.hpp"
 #include "pnlWGraph.hpp"
 #pragma warning(push, 2)
 #pragma warning(disable: 4251)
@@ -419,7 +419,7 @@ Vector<String> WGraph::NodeNames(Vector<int> &aIndex) const
 Vector<String> WGraph::Names(Vector<int> *paIndex) const
 {
     Vector<String> result;
-    int i, j;
+    int i;
 
     result.reserve(nNode());
     if(paIndex)
@@ -531,7 +531,6 @@ void WGraph::Reset(pnl::CGraph &graph)
 
     int iInner, i;
     Vector<int> aParent;
-    int nParent;
     for(i = 0; i < nNode(); ++i)
     {
 	iInner = bUseMap ? m_IndicesGraphToOuter[i] : i;

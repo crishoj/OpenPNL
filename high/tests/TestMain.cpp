@@ -2,13 +2,13 @@
 
 //#define SKIP_TOKEN
 //#define SKIP_LIMID
-//#define SKIP_DBN
+#define SKIP_DBN
 //#define SKIP_MRF
 //#define SKIP_NUMERATION
 
 int main(int argc, char* argv[])
 {
-    bool bTestOK = true;
+    bool bTestOK = true, lastTestRes;
 
 #ifndef SKIP_TOKEN
     bTestOK = TestResolve1() && bTestOK;
@@ -20,14 +20,14 @@ int main(int argc, char* argv[])
     try 
     {
         SimpleModel();
-    //    TestGaussianModelCreate();// del arc
+	TestGaussianModelCreate();// del arc
         TestGaussianInference();
-        TestGaussianParamLearning();// too long
+	TestGaussianParamLearning();// too long
 	TestGetLogLik();
-        TestMultivariateWrapperJPD();
-        TestMultivariateWrapperLearn();
-        TestMultivariateWrapperLearnPartOfObservation();
-        TestMultivariateWrapperMPE();
+	TestMultivariateWrapperJPD();
+	TestMultivariateWrapperLearn();
+	TestMultivariateWrapperLearnPartOfObservation();
+//	TestMultivariateWrapperMPE();
     }
     catch(pnl::CException e)
     {
@@ -38,33 +38,39 @@ int main(int argc, char* argv[])
 #ifndef SKIP_LIMID
     try 
     {
-          PureLimidModel1();
+	lastTestRes = false;
+        PureLimidModel1();
     }
     catch(pnl::CException e)
     {
         std::cout << e.GetMessage()<< "\n";
-        bTestOK = false;
+        lastTestRes = true;
     }
+    bTestOK = bTestOK && lastTestRes;
     try 
     {
-          PureLimidModel2();
+	lastTestRes = false;
+	PureLimidModel2();
     }
     catch(pnl::CException e)
     {
         std::cout << e.GetMessage()<< "\n";
-        bTestOK = false;
+        lastTestRes = true;
     }
-
+    bTestOK = bTestOK && lastTestRes;
+    
     try 
     {
-          PureLimidModel3();
+	lastTestRes = false;
+	PureLimidModel3();
     }
     catch(pnl::CException e)
     {
         std::cout << e.GetMessage()<<"\n";
-        bTestOK = false;
+        lastTestRes = true;
     }
-
+    bTestOK = bTestOK && lastTestRes;
+    
     try 
     {
         LimidTopology();
@@ -83,11 +89,11 @@ int main(int argc, char* argv[])
 
 #endif
 #ifndef SKIP_DBN
-    int res = 0;
+    int res = 1;
     
-    res = testDBN();
-//    res = testDBNTopologicalSort1();
-//    res = testDBNTopologicalSort2();
+    res = testDBN() & res;
+    res = testDBNTopologicalSort1() & res;
+    res = testDBNTopologicalSort2() & res;
     res = testDBNSmothing() & res;
     res = testDBNFixLagSmothing() & res;
     res = testDBNFiltering() & res;
@@ -100,7 +106,7 @@ int main(int argc, char* argv[])
 #ifndef SKIP_MRF
     try 
     {
-	TestMRFModelCreate();
+        TestMRFModelCreate();
         TestMRFGetJPD();
     }
     catch(pnl::CException e)

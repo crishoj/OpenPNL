@@ -2,7 +2,7 @@
 #include "WInner.hpp"
 #include "pnl_dll.hpp"
 #include "pnlString.hpp"
-#include "pnlTok.hpp"
+#include "Tokens.hpp"
 #include "BNet.hpp"
 #include "TokenCover.hpp"
 
@@ -571,7 +571,6 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
 
     //In continuous case aIndex means an index in vectors mean or cov or weights
 
-    EMatrixType matType;
     int Index[2];
     CMatrix<float> * pMatrix;
     switch (matrixId)
@@ -615,9 +614,7 @@ float WGaussianDistribFun::GetAValue(int matrixId, Vector<int> &aIndex)
 
     //In continuous case aIndex means an index in vectors mean or cov or weights
 
-    EMatrixType matType;
     int Index[2];
-    CMatrix<float> * pMatrix;
     switch (matrixId)
     {
     case matMean:

@@ -249,7 +249,6 @@ std::pair<TokIdNode *, int> TokIdNode::ResolveOne(const ResolveContext &resConte
     Map::const_iterator it, itEnd;
     const Map &desc = resContext.m_Context->desc;
     std::pair<TokIdNode *, int> tmpRes, result(const_cast<TokIdNode*>(resContext.m_Context), 0);
-    bool bError = false;
 
     it = desc.find(*resContext.m_Unres);
     if(it == desc.end())
@@ -708,7 +707,7 @@ char const *Tok::Init(char const s[])
 
 void Tok::Unresolve(TokIdNode const *subroot)
 {
-    int i, j;
+    int i;
 
     for(i = node.size(); --i >= 0;)
     {
@@ -848,7 +847,7 @@ TokArr Tok::PropagateFload(Tok const &tok)
     {
         return retval;
     }
-    if(tok.IsUnresolved())
+    if(!tok.IsResolved())
     {
         return tok;
     }
@@ -980,11 +979,6 @@ bool Tok::operator==(Tok const &rhs) const
 bool Tok::operator!=(Tok const &rhs) const
 {
     return !(*this == rhs);
-}
-
-bool Tok::IsNil() const
-{
-    return node.empty() && unres.empty() && fload.empty();
 }
 
 void Tok::Cat(Tok const &rhs)

@@ -1,6 +1,9 @@
 #ifndef __WCLIQUES_HPP__
 #define __WCLIQUES_HPP__
 
+#ifndef __PNLHIGHCONF_HPP__
+#include "pnlHighConf.hpp"
+#endif
 #include "ModelEngine.hpp"
 
 PNLW_BEGIN
@@ -15,6 +18,7 @@ public:
     typedef std::multimap<int, int> Map;
 
     WCliques(WGraph *graph);
+    virtual ~WCliques();
     bool FormClique(const Vector<int> &aIndex);
     bool DestroyClique(const Vector<int> &aIndex);
     Vector<int> ClqNumbersForNode(int iNode);

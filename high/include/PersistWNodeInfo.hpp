@@ -1,8 +1,12 @@
 #ifndef __PERSISTWNODEINFO_HPP__
 #define __PERSISTWNODEINFO_HPP__
 
+#ifndef __PNLHIGHCONF_HPP__
 #include "pnlHighConf.hpp"
-#include "pnlTok.hpp"
+#endif
+#ifndef __TOKENS_HPP__
+#include "Tokens.hpp"
+#endif
 #include "pnl_dll.hpp"
 
 // FORWARDS

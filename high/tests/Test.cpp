@@ -57,19 +57,13 @@ bool TestResolve1()
 
     Tok tok;
     tok.Resolve(TokIdNode::root);
-    if (tok.IsNil()) 
-    {
-	std::cout << "Is nil" << "\n";
-    }
-    else
-    {
-	bError = true;
-    }
-    if (tok.IsUnresolved()) 
+    if (!tok.IsResolved()) 
     {
 	std::cout << "Is unresolved" << "\n";
 	bError = true;
     }
+
+    cout << "TestResolve1\n";
 
     return bError == false;
 }
@@ -95,30 +89,30 @@ bool TestResolve2()
     Tok tok("discrete^PreviousHumanTurn");
     tok.Resolve(TokIdNode::root);
 
-    if (!((tok.node.size()==1)&&(!tok.IsUnresolved()))) return false;
+    if (!((tok.node.size()==1) && tok.IsResolved())) return false;
 
     //try to reinit toket with the same value
     tok.Init("discrete^PreviousHumanTurn");
     tok.Resolve(TokIdNode::root);
 
-    if (!((tok.node.size()==1)&&(!tok.IsUnresolved()))) return false;
+    if (!((tok.node.size()==1)&& tok.IsResolved())) return false;
 
     //
     tok.Init("discrete^PreviousCompTurn");
     tok.Resolve(TokIdNode::root);
-    if (!((tok.node.size()==1)&&(!tok.IsUnresolved()))) return false;
+    if (!((tok.node.size()==1)&& tok.IsResolved())) return false;
 
     tok.Init("discrete^CurrentHumanTurn");
     tok.Resolve(TokIdNode::root);
-    if (!((tok.node.size()==1)&&(!tok.IsUnresolved()))) return false;
+    if (!((tok.node.size()==1)&& tok.IsResolved())) return false;
 
     tok.Init("discrete2^PreviousHumanTurn2");
     tok.Resolve(TokIdNode::root);
-    if (!((tok.node.size()==0)&&(tok.IsUnresolved()))) return false;
+    if (!((tok.node.size()==0) && !tok.IsResolved())) return false;
 
     tok.Init("discrete^PreviousHumanTurn2");
     tok.Resolve(TokIdNode::root);
-    if (!((tok.node.size()==1)&&(tok.IsUnresolved()))) return false;
+    if (!((tok.node.size()==1) && !tok.IsResolved())) return false;
 
     return true;
 }
@@ -143,7 +137,7 @@ bool TestResolve3()
 
     Tok tok("Paper");
     tok.Resolve(TokIdNode::root);
-    if (!((tok.node.size() == 0) && tok.IsUnresolved())) return false;
+    if (!((tok.node.size() == 0) && !tok.IsResolved())) return false;
 
     return true;
 }
@@ -174,7 +168,7 @@ bool TestResolve4()
     std::cout << tok.node.size() << "\n";
     //std::cout << tok.unres[2].front() << "\n";
 
-    if (!((tok.node.size()==2)&&(!tok.IsUnresolved()))) return false;
+    if (!((tok.node.size()==2)&& tok.IsResolved())) return false;
 
     return true;
 }
@@ -202,7 +196,7 @@ bool TestResolve4_5()
 
     //std::cout << tok.unres[2].front().id << "\n";
 
-    if (!((tok.node.size()==2)&&(!tok.IsUnresolved()))) return false;
+    if (!((tok.node.size()==2)&& tok.IsResolved())) return false;
 
     return true;
 }
@@ -237,7 +231,7 @@ void TestAlias()
     tok.Init("CurrentHumanTurn^Paper");
     tok.Resolve(TokIdNode::root);
 
-    if (!((tok.node.size()==1)&&(!tok.IsUnresolved())))
+    if (!((tok.node.size()==1)&& tok.IsResolved()))
     {
 	PNL_THROW(pnl::CAlgorithmicException, "Can't resolve CurrentHumanTurn^Paper node");
     }
@@ -247,7 +241,7 @@ void TestAlias()
     tok.Init("CurrentHumanTurn^Paper2");
     tok.Resolve(TokIdNode::root);
 
-    if (!((tok.node.size()==1)&&(!tok.IsUnresolved())))
+    if (!((tok.node.size()==1)&& tok.IsResolved()))
     {
 	PNL_THROW(pnl::CAlgorithmicException, "Can't resolve CurrentHumanTurn^Paper2 node");
     }
@@ -255,7 +249,7 @@ void TestAlias()
     tok.Init("CurrentHumanTurn^Paper3");
     tok.Resolve(TokIdNode::root);
 
-    if (!tok.IsUnresolved())
+    if (tok.IsResolved())
     {
 	PNL_THROW(pnl::CAlgorithmicException, "CurrentHumanTurn^Paper3 is resolved but must be not");
     }
@@ -263,7 +257,7 @@ void TestAlias()
     tok.Init("CurrentHumanTurn^Paper");
     tok.Resolve(TokIdNode::root);
 
-    if (!((tok.node.size()==1)&&(!tok.IsUnresolved())))
+    if (!((tok.node.size()==1)&& tok.IsResolved()))
     {
 	PNL_THROW(pnl::CAlgorithmicException, "Can't resolve CurrentHumanTurn^Paper node");
     }

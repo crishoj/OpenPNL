@@ -1,7 +1,9 @@
 #ifndef __PERSISTPROBNET_HPP__
 #define __PERSISTPROBNET_HPP__
 
+#ifndef __PNLHIGHCONF_HPP__
 #include "pnlHighConf.hpp"
+#endif
 
 #include "pnlObject.hpp"
 #include "pnlPersistence.hpp"

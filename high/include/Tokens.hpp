@@ -1,7 +1,9 @@
 #ifndef __TOKENS_HPP__
 #define __TOKENS_HPP__
 
+#ifndef __PNLHIGHCONFIG_HPP__
 #include "pnlHighConf.hpp"
+#endif
 
 #include <limits>
 #include <algorithm>
@@ -245,8 +247,6 @@ public:
     F FltValue(int) const;
     float FltValue() const;
     int IntValue() const;
-    bool IsNil() const;
-    bool IsUnresolved() const { return !m_bResolved; }
     bool IsResolved() const { return m_bResolved; }
     const TokIdNode *FixContext(const TokIdNode *context)
     {
