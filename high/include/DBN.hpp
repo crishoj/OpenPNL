@@ -111,8 +111,10 @@ public:
 	// unrolls current dbn
     BayesNet* Unroll();
 
-	// checking net model for dbn creation 
-	bool IsFullDBN();
+    // checking net model for dbn creation 
+    bool IsFullDBN();
+
+    bool IsDBNContainNode(TokArr node);
 
     // returns MPE for nodes using current evidence
     TokArr GetMPE(TokArr nodes = TokArr());

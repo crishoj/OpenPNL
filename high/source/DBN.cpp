@@ -84,12 +84,17 @@ void DBN::DelNode(TokArr nodes)
 		prStr<<"-0";
 		slStr<<"-1";
         priorNodes.push_back(prStr);
-		fsliceNodes.push_back(slStr);
+	fsliceNodes.push_back(slStr);
     }
     const char *s = prStr.c_str();
-    Net().DelNode(fsliceNodes);
-    Net().DelNode(priorNodes);
-    
+    if(IsDBNContainNode(fsliceNodes))
+    {
+	Net().DelNode(fsliceNodes);
+    }
+    if(IsDBNContainNode(priorNodes))
+    {
+	 Net().DelNode(priorNodes);
+    }   
 }
 
 
@@ -1352,7 +1357,7 @@ bool DBN::IsFullDBN()
 	int numberOfNodes;
 	String NodeNameS1;
 	pnl::intVector indexes;
-    Vector<String> names;
+        Vector<String> names;
 	
 	j = 0;
 	names = Net().Graph()->Names();
@@ -1374,6 +1379,27 @@ bool DBN::IsFullDBN()
 		}
 	}
 	return true;
+}
+
+bool DBN::IsDBNContainNode(TokArr node)
+{
+    
+    int i;
+    int numberOfNodes;   
+    Vector<String> names;
+
+    String nodeName = String(node);
+    names = Net().Graph()->Names();
+    numberOfNodes = names.size();
+    
+    for(i = 0; i < numberOfNodes; i++)
+    {
+	if(names[i] == nodeName)
+	{
+	    return true;
+	}
+    }
+    return false;
 }
 
 PNLW_END
