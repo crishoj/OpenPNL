@@ -22,6 +22,7 @@
 #include "pnlPersistCover.hpp"
 #include "pnlGraph.hpp"
 #include "pnlDBN.hpp"
+#include "pnlIDNet.hpp"
 #include "pnlMRF2.hpp"
 #include "pnlNodeValues.hpp"
 #include "pnlEvidence.hpp"
@@ -101,6 +102,10 @@ static const char *GetClassName(CPNLBase *pObj)
 	if(dynamic_cast<CDBN*>(pObj) != 0)
 	{
 	    return "DBN";
+	}
+	else if(dynamic_cast<CIDNet*>(pObj) != 0)
+	{
+	    return "IDNet";
 	}
 	else if(dynamic_cast<CBNet*>(pObj) != 0)
 	{

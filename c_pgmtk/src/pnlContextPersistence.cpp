@@ -27,7 +27,8 @@ extern CPersistenceZoo *GetZoo();
 CContextSaveXML::CContextSaveXML(const std::string &filename)
 : CContextSave(filename)
 {
-    m_File << "<?xml version=\"1.0\"?>\n\n<PNLObjects version=\"1.0\">\n";
+//    m_File << "<?xml version=\"1.0\"?>\n\n<PNLObjects version=\"1.0\">\n";
+    m_File << "<?xml version=\"1.0\"?>\n\n<PNLObjects version=\"1.1\" target=\"ParPNL\">\n";
 }
 
 CContextSaveXML::~CContextSaveXML()
@@ -182,13 +183,13 @@ CContextLoad::RecursiveCopying(int iaaEntryTxt)
     m_Tree[iTree].reserve(m_aaEntryTxt[iaaEntryTxt].size());
     for(i = 0; i < m_aaEntryTxt[iaaEntryTxt].size(); ++i)
     {
-	j = (m_aaEntryTxt[iaaEntryTxt][i].m_iChildren == -1) ? -1:int(m_Tree.size());
-	m_Tree[iTree].push_back(TreeEntry(m_aaEntryTxt[iaaEntryTxt][i].m_Name,
-	    j, &m_aaEntryTxt[iaaEntryTxt][i]));
-	if(j >= 0)
-	{
-	    RecursiveCopying(m_aaEntryTxt[iaaEntryTxt][i].m_iChildren);
-	}
+      j = (m_aaEntryTxt[iaaEntryTxt][i].m_iChildren == -1) ? -1:int(m_Tree.size());
+      m_Tree[iTree].push_back(TreeEntry(m_aaEntryTxt[iaaEntryTxt][i].m_Name,
+        j, &m_aaEntryTxt[iaaEntryTxt][i]));
+      if(j >= 0)
+      {
+        RecursiveCopying(m_aaEntryTxt[iaaEntryTxt][i].m_iChildren);
+      }
     }
 }
 

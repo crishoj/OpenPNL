@@ -28,12 +28,13 @@ CPersistNodeTypeVector::Save(CPNLBase *pObj, CContextSave *pContext)
 
     for(int i = 0; i < paNodeType->size(); ++i)
     {
-	buf << paNodeType[0][i].IsDiscrete() << ":"
-	    << paNodeType[0][i].GetNodeSize();
-	if(i < paNodeType->size() - 1)
-	{
-	    buf << ',';
-	}
+      buf << paNodeType[0][i].IsDiscrete() << ":"
+        << paNodeType[0][i].GetNodeSize() << ":"
+        << paNodeType[0][i].GetNodeState();
+      if(i < paNodeType->size() - 1)
+      {
+        buf << ',';
+      }
     }
 
     pContext->AddAttribute("NumberOfNodes", int(paNodeType->size()));
@@ -48,6 +49,7 @@ CPersistNodeTypeVector::Load(CContextLoad *pContext)
     int nNode;
     int nodeSize;
     bool bDiscrete;
+    int nodeState;
     char ch;
     
     pContext->GetText(text);
@@ -58,13 +60,16 @@ CPersistNodeTypeVector::Load(CContextLoad *pContext)
     paNodeType->reserve(nNode);
     for(int i = 0; i < nNode; ++i)
     {
-	buf >> bDiscrete;
-	buf >> ch;
-	ASSERT(ch == ':');
-	buf >> nodeSize;
-	paNodeType->push_back(CNodeType(bDiscrete, nodeSize));
-	buf >> ch;
-	ASSERT(ch == ',');
+      buf >> bDiscrete;
+      buf >> ch;
+      ASSERT(ch == ':');
+      buf >> nodeSize;
+      buf >> ch;
+      ASSERT(ch == ':');
+      buf >> nodeState;
+      paNodeType->push_back(CNodeType(bDiscrete, nodeSize, (EIDNodeState)nodeState));
+      buf >> ch;
+      ASSERT(ch == ',');
     }
 
     return new CCover<nodeTypeVector>(paNodeType);
@@ -78,12 +83,13 @@ CPersistPNodeTypeVector::Save(CPNLBase *pObj, CContextSave *pContext)
 
     for(int i = 0; i < paPNodeType->size(); ++i)
     {
-	buf << paPNodeType[0][i]->IsDiscrete() << ":"
-	    << paPNodeType[0][i]->GetNodeSize();
-	if(i < paPNodeType->size() - 1)
-	{
-	    buf << ',';
-	}
+      buf << paPNodeType[0][i]->IsDiscrete() << ":"
+        << paPNodeType[0][i]->GetNodeSize() << ":"
+        << paPNodeType[0][i]->GetNodeState();
+      if(i < paPNodeType->size() - 1)
+      {
+        buf << ',';
+      }
     }
 
     pContext->AddAttribute("NumberOfNodes", int(paPNodeType->size()));
@@ -98,6 +104,7 @@ CPersistPNodeTypeVector::Load(CContextLoad *pContext)
     int nNode;
     int nodeSize;
     bool bDiscrete;
+    int nodeState;
     char ch;
     
     pContext->GetText(text);
@@ -108,13 +115,16 @@ CPersistPNodeTypeVector::Load(CContextLoad *pContext)
     paPNodeType->reserve(nNode);
     for(int i = 0; i < nNode; ++i)
     {
-	buf >> bDiscrete;
-	buf >> ch;
-	ASSERT(ch == ':');
-	buf >> nodeSize;
-	paPNodeType->push_back(new CNodeType(bDiscrete, nodeSize));
-	buf >> ch;
-	ASSERT(ch == ',');
+      buf >> bDiscrete;
+      buf >> ch;
+      ASSERT(ch == ':');
+      buf >> nodeSize;
+      buf >> ch;
+      ASSERT(ch == ':');
+      buf >> nodeState;
+      paPNodeType->push_back(new CNodeType(bDiscrete, nodeSize, (EIDNodeState)nodeState));
+      buf >> ch;
+      ASSERT(ch == ',');
     }
 
     return new CCover<pNodeTypeVector>(paPNodeType);

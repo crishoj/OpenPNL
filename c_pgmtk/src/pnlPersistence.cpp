@@ -50,27 +50,28 @@ CPersistenceZoo *GetZoo()
     if(!persistenceZooHolder.m_pZoo)
     {
         CPersistenceZoo *pZoo = persistenceZooHolder.m_pZoo
-	    = new CPersistenceZoo;
-	pZoo->Register(new CGraphPersistence());
-	pZoo->Register(new CPersistNodeType());
-	pZoo->Register(new CPersistNodeValues());
-	pZoo->Register(new CPersistNumericVector<int>("int"));
-	pZoo->Register(new CPersistNumericVector<float>("float"));
-	pZoo->Register(new CPersistNumericVecVector<int>("int"));
-	pZoo->Register(new CPersistGaussianDistribFun());
-	pZoo->Register(new CPersistTabularDistribFun());
-	pZoo->Register(new CPersistCondGaussianDistribFun());
-	pZoo->Register(new CPersistScalarDistribFun());
-	pZoo->Register(new CPersistModelDomain());
-	pZoo->Register(new CPersistBNet());
-	pZoo->Register(new CPersistMNet());
-	pZoo->Register(new CPersistMRF2());
-	pZoo->Register(new CPersistFactor());
-	pZoo->Register(new CPersistNodeTypeVector());
-	pZoo->Register(new CPersistPNodeTypeVector());
-	pZoo->Register(new CPersistMatrixFlt());
-	pZoo->Register(new CPersistMatrixDistribFun());
-	pZoo->Register(new CPersistEvidence());
+          = new CPersistenceZoo;
+        pZoo->Register(new CGraphPersistence());
+        pZoo->Register(new CPersistNodeType());
+        pZoo->Register(new CPersistNodeValues());
+        pZoo->Register(new CPersistNumericVector<int>("int"));
+        pZoo->Register(new CPersistNumericVector<float>("float"));
+        pZoo->Register(new CPersistNumericVecVector<int>("int"));
+        pZoo->Register(new CPersistGaussianDistribFun());
+        pZoo->Register(new CPersistTabularDistribFun());
+        pZoo->Register(new CPersistCondGaussianDistribFun());
+        pZoo->Register(new CPersistScalarDistribFun());
+        pZoo->Register(new CPersistModelDomain());
+        pZoo->Register(new CPersistBNet());
+        pZoo->Register(new CPersistIDNet());
+        pZoo->Register(new CPersistMNet());
+        pZoo->Register(new CPersistMRF2());
+        pZoo->Register(new CPersistFactor());
+        pZoo->Register(new CPersistNodeTypeVector());
+        pZoo->Register(new CPersistPNodeTypeVector());
+        pZoo->Register(new CPersistMatrixFlt());
+        pZoo->Register(new CPersistMatrixDistribFun());
+        pZoo->Register(new CPersistEvidence());
     }
 
     return persistenceZooHolder.m_pZoo;

@@ -488,6 +488,12 @@ int CTreeDistribFun::IsEqual( const CDistribFun * dataToCompare,
 }
 
 
+void CTreeDistribFun::SumInSelfData(const int * /*pBigDomain*/,
+  const int * /*pSmallDomain*/, const CDistribFun * /*pOtherData*/)
+{
+  PNL_THROW(CNotImplemented, "haven't for CTreeDistribFun now");
+}
+
 void CTreeDistribFun::MultiplyInSelfData(const int * /* pBigDomain */, 
 					  const int * /* pSmallDomain */,
 					  const CDistribFun * /* pOtherData */)

@@ -35,6 +35,7 @@ CPersistNodeType::Save(CPNLBase *pObj, CContextSave *pContext)
 
     pContext->AddAttribute("NodeSize", pNodeType->GetNodeSize());
     pContext->AddAttribute("IsDiscrete", pNodeType->IsDiscrete());
+    pContext->AddAttribute("NodeState", (int)pNodeType->GetNodeState());
 }
 
 CPNLBase *
@@ -42,11 +43,13 @@ CPersistNodeType::Load(CContextLoad *pContext)
 {
     int nodeSize;
     bool bDiscrete;
+    int nodeState;
     
     pContext->GetAttribute(&nodeSize, "NodeSize");
     pContext->GetAttribute(&bDiscrete, "IsDiscrete");
+    pContext->GetAttribute(&nodeState, "NodeState");
 
-    return new CNodeType(bDiscrete, nodeSize);
+    return new CNodeType(bDiscrete, nodeSize, (EIDNodeState)nodeState);
 }
 
 void

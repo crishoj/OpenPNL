@@ -20,6 +20,7 @@
 #include "pnlPersistModel.hpp"
 #include "pnlPersistCover.hpp"
 #include "pnlBNet.hpp"
+#include "pnlIDNet.hpp"
 #include "pnlMRF2.hpp"
 #include "pnlDBN.hpp"
 
@@ -28,10 +29,13 @@ PNL_USING
 static void
 TraverseSubobjectOfGrModel(CGraphicalModel *pObj, CContext *pContext)
 {
+  if (dynamic_cast<CIDNet*>(pObj) == 0)
+  {
     if(!pObj->IsValid())
     {
-	PNL_THROW(CInvalidOperation, "Model is invalid")
+      PNL_THROW(CInvalidOperation, "Model is invalid")
     }
+  }
 
     pContext->Put(pObj->GetModelDomain(), "ModelDomain");
 
@@ -100,6 +104,34 @@ CPersistBNet::Load(CContextLoad *pContext)
     return pModel;
 }
 
+// IDNet
+
+void
+CPersistIDNet::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
+{
+    CIDNet *pModel = dynamic_cast<CIDNet*>(pObj);
+
+    pContext->Put(pModel->GetGraph(), "Graph");
+    TraverseSubobjectOfGrModel(pModel, pContext);
+}
+
+void
+CPersistIDNet::Save(CPNLBase *pObj, CContextSave *pContext)
+{
+    SaveGrModel(dynamic_cast<CIDNet*>(pObj), pContext);
+}
+
+CPNLBase *
+CPersistIDNet::Load(CContextLoad *pContext)
+{
+    CGraph *pGraph = static_cast<CGraph *>(pContext->Get("Graph"));
+    CModelDomain *pMD = static_cast<CModelDomain *>(pContext->Get("ModelDomain"));
+
+    CGraphicalModel *pModel = CIDNet::Create(pGraph, pMD);
+    LoadForGrModel(pModel, pContext);
+
+    return pModel;
+}
 
 // DBN
 

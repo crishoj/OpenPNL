@@ -170,62 +170,68 @@ CTabularCPD::CTabularCPD( const CTabularCPD* pTabCPD)
 
 bool CTabularCPD::IsValid(std::string* description) const
 {
-    if( !m_CorrespDistribFun )
+  if( !m_CorrespDistribFun )
+  {
+    if( description )
     {
-        if( description )
-        {
-            std::stringstream st;
-            st<<"The factor haven't distribution function."<<std::endl;
-            description->insert(description->begin(), st.str().begin(),
-                st.str().end());
-        }
-        return 0;
+      std::stringstream st;
+      st<<"The factor haven't distribution function."<<std::endl;
+      description->insert(description->begin(), st.str().begin(),
+        st.str().end());
     }
-    if( m_Domain.empty() )
+    return 0;
+  }
+  if( m_Domain.empty() )
+  {
+    if( description )
     {
-        if( description )
-        {
-            std::stringstream st;
-            st<<"The factor haven't domain."<<std::endl;
-            std::string s = st.str();
-	    description->insert( description->begin(), s.begin(), s.end() );
-        }
-        return 0;
+      std::stringstream st;
+      st<<"The factor haven't domain."<<std::endl;
+      std::string s = st.str();
+      description->insert( description->begin(), s.begin(), s.end() );
     }
-    if( m_CorrespDistribFun->IsValid(description) )
+    return 0;
+  }
+  if( m_CorrespDistribFun->IsValid(description) )
+  {
+    if( m_CorrespDistribFun->IsDistributionSpecific() == 1 )
     {
-        if( m_CorrespDistribFun->IsDistributionSpecific() == 1 )
-        {
-            return 1;
-        }
-        if( static_cast<CTabularDistribFun*>(
-            m_CorrespDistribFun)->IsMatrixNormalizedForCPD() )
-        {
-            return 1;
-        }
-        else
-        {
-            if(description)
-            {
-                std::stringstream st;
-                st<<"The factor have matrix that doesn't normalized for CPD form."<<std::endl;
-                std::string s = st.str();
-	        description->insert( description->begin(), s.begin(), s.end() );
-            }
-            return 0;
-        }
+      return 1;
     }
-    else
+    int nnodes = m_CorrespDistribFun->GetNumberOfNodes();
+    const pConstNodeTypeVector* nodeTypes = 
+      m_CorrespDistribFun->GetNodeTypesVector();
+    if ((*nodeTypes)[nnodes - 1]->GetNodeState() != nsValue)
     {
+      if( static_cast<CTabularDistribFun*>(
+        m_CorrespDistribFun)->IsMatrixNormalizedForCPD() )
+      {
+        return 1;
+      }
+      else
+      {
         if(description)
         {
-            std::stringstream st;
-            st<<"The factor have invalid distribution function."<<std::endl;
-            std::string s = st.str();
-	    description->insert( description->begin(), s.begin(), s.end() );
+          std::stringstream st;
+          st<<"The factor have matrix that doesn't normalized for CPD form."<<std::endl;
+          std::string s = st.str();
+          description->insert( description->begin(), s.begin(), s.end() );
         }
         return 0;
+      }
     }
+  }
+  else
+  {
+    if(description)
+    {
+      std::stringstream st;
+      st<<"The factor have invalid distribution function."<<std::endl;
+      std::string s = st.str();
+      description->insert( description->begin(), s.begin(), s.end() );
+    }
+    return 0;
+  }
 }
 
 void CTabularCPD :: NormalizeCPD()

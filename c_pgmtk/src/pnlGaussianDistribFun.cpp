@@ -2428,6 +2428,12 @@ int CGaussianDistribFun::IsEqual( const CDistribFun *dataToCompare,
     return ret;
 }
 
+void CGaussianDistribFun::SumInSelfData(const int *pBigDomain,
+  const int *pSmallDomain, const CDistribFun *pOtherData)
+{
+  PNL_THROW(CNotImplemented, "haven't for CGaussianDistribFun now ");
+}
+
 void CGaussianDistribFun::MultiplyInSelfData( const int *pBigDomain, 
 					     const int *pSmallDomain, const CDistribFun *pOtherData )
 {

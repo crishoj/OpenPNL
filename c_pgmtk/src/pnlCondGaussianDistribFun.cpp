@@ -664,6 +664,12 @@ void CCondGaussianDistribFun::MultiplyInSelfData( const int *pBigDomain,
     PNL_THROW( CNotImplemented, "haven't conditional Gaussian potentials" );
 }
 
+void CCondGaussianDistribFun::SumInSelfData(const int *pBigDomain,
+  const int *pSmallDomain, const CDistribFun *pOtherData)
+{
+  PNL_THROW(CNotImplemented, "haven't conditional Gaussian potentials");
+}
+
 void CCondGaussianDistribFun::DivideInSelfData( const int *pBigDomain,
                                                const int *pSmallDomain, const CDistribFun *pOtherData )
 {

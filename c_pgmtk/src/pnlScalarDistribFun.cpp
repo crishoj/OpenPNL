@@ -288,6 +288,13 @@ CDistribFun* CScalarDistribFun::ExpandScalarData( EDistributionType dtRequested,
     }
     return resDistr;
 }
+
+void CScalarDistribFun::SumInSelfData(const int *pBigDomain,
+  const int *pSmallDomain, const CDistribFun *pOtherData)
+{
+  PNL_THROW(CNotImplemented, "haven't for CScalarDistribFun now");
+}
+
 void CScalarDistribFun::MultiplyInSelfData( const int *pBigDomain, 
                                             const int *pSmallDomain, const CDistribFun *pOtherData )
 {

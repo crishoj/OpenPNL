@@ -22,6 +22,7 @@
 #include "pnlMixtureGaussianCPD.hpp"
 #include "pnlCPD.hpp"
 #include "pnlInferenceEngine.hpp"
+#include "pnlIDNet.hpp"
 #include <sstream>
 
 PNL_USING
@@ -46,10 +47,10 @@ CJunctionTree* CJunctionTree::Create( const CStaticGraphicalModel *pGrModel,
     const EModelTypes modelType = pGrModel->GetModelType();
     
     if( ( modelType != mtBNet ) &&  ( modelType != mtMNet )
-        && ( modelType != mtMRF2 ) )
+        && ( modelType != mtMRF2 ) && ( modelType != mtIDNet ))
     {
         PNL_THROW( CInconsistentType,
-            " can construct JTree from either MNet, BNet or MRF2 " );
+            " can construct JTree from either MNet, BNet , MRF2 or IDNet" );
     }
     
     if( numOfSubGrToConnect || subGrToConnectSizes || subGrToConnect )
@@ -86,10 +87,10 @@ CJunctionTree* CJunctionTree::Create( const CStaticGraphicalModel* pGrModel,
     const EModelTypes modelType = pGrModel->GetModelType();
     
     if( ( modelType != mtBNet ) &&  ( modelType != mtMNet )
-        && ( modelType != mtMRF2 ) )
+        && ( modelType != mtMRF2 ) && ( modelType != mtIDNet ))
     {
         PNL_THROW( CInconsistentType,
-            " can construct JTree from either MNet, BNet or MRF2 " );
+            " can construct JTree from either MNet, BNet, MRF2 or IDNet"  );
     }
     // bad-args check end
     
@@ -121,7 +122,8 @@ void CJunctionTree::Release(CJunctionTree** pJTree)
     delete *pJTree;
 
     *pJTree = NULL;
-}*/
+}
+*/
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -133,7 +135,8 @@ CJunctionTree::CJunctionTree( const CStaticGraphicalModel *pGrModel,
                               : m_factAssignToClq(
                               pGrModel->GetNumberOfFactors(), 0 ),
                               m_pMoralGraph(
-                              pGrModel->GetModelType() == mtBNet ?
+                              ((pGrModel->GetModelType() == mtBNet)
+                              ||(pGrModel->GetModelType() == mtIDNet)) ?
                               CGraph::MoralizeGraph(pGrModel->GetGraph())
                               : CGraph::Copy(pGrModel->GetGraph())),
                               m_bChargeInitialized(false),
@@ -152,7 +155,8 @@ CJunctionTree::CJunctionTree( const CStaticGraphicalModel* pGrModel,
                               : m_factAssignToClq(
                               pGrModel->GetNumberOfFactors(), 0 ),
                               m_pMoralGraph(
-                              pGrModel->GetModelType() == mtBNet ?
+                              ((pGrModel->GetModelType() == mtBNet)
+                              ||(pGrModel->GetModelType() == mtIDNet)) ?
                               CGraph::MoralizeGraph(pGrModel->GetGraph())
                               : CGraph::Copy(pGrModel->GetGraph())),
                               m_bChargeInitialized(false),
