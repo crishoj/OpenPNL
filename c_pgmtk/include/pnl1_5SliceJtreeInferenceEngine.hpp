@@ -26,6 +26,9 @@
     #include "pnlParJtreeInferenceEngine.hpp"
 #endif
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 
 PNL_BEGIN
 
@@ -57,7 +60,16 @@ public:
 	virtual const CEvidence* GetMPE();
 	virtual const CPotential* GetQueryMPE();
 
-	
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return C1_5SliceJtreeInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
     C1_5SliceJtreeInfEngine(const CDynamicGraphicalModel *pGraphicalModel );
    /*
@@ -67,7 +79,9 @@ protected:
     
     void FindNonObsSubset( const intVector &subset, const CEvidence *evidence, intVector *nonObsSubset, intVector *indices);
     
-    
+#ifdef PNL_RTTI
+  static const CPNLType m_TypeInfo;
+#endif      
 private:
     
 #ifdef PAR_OMP

@@ -7,6 +7,9 @@
 
 #include "pnlObject.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 #define BITWISEMATRIX_BYTESIZE (8 * sizeof(unsigned char))
@@ -20,6 +23,10 @@ private:
 	bool	CreateMatrix(int nWidth, int nHeight);
 protected:
 	C2DBitwiseMatrix();
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 public:
 	void	ZeroOneRow(int nRow);
 	bool	AddOneRowWithAnother(int nSourceRow, int nDestinationRow);
@@ -30,7 +37,17 @@ public:
 	static	C2DBitwiseMatrix* Create(int nWidth, int nHeight);
 	void	operator =(const C2DBitwiseMatrix &SrcMatrix);
 	virtual ~C2DBitwiseMatrix();
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
 
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return C2DBitwiseMatrix::m_TypeInfo;
+  }
+#endif
 };
 
 PNL_END

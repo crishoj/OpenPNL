@@ -21,6 +21,10 @@
 #include "pnl2TBNInferenceEngine.hpp"
 #include "pnlBNet.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API C1_5SliceInfEngine : public C2TBNInfEngine
@@ -49,6 +53,16 @@ public:
 	virtual const CPotential* GetQueryJPD() = 0;
     virtual const CEvidence* GetMPE() = 0;
     
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return C1_5SliceInfEngine::m_TypeInfo;
+    }
+#endif
 protected:
     
     
@@ -66,10 +80,9 @@ protected:
     inline void GetQueryNodes( intVector * queryNds ) const;
     inline void SetQueryNodes(int nnodes, const int * nds);
 
-    
-    
-    
-    
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif     
 private:
     intVector m_VectorIntNodesPriorSlice;
     intVector m_VectorIntNodesISlice;
