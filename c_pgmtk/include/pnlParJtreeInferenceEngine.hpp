@@ -66,6 +66,7 @@ public:
         int maximize = 0, int sumOnMixtureNode = 1);
 
     void CollectEvidenceOMP();
+    void CollectEvidenceOMP_gau();
 
     void DistributeEvidenceOMP();
 
@@ -276,6 +277,9 @@ private:
         CNumericDenseMatrix<float> *sepMatrix, 
         CNumericDenseMatrix<float> *sinkMatrix, int *dims_to_mul, 
         int num_dims_to_mul, bool isCollect);
+
+    // init queue for CollectEvidence
+    void InitQueueNodesOMP();
     // ____________________________________________________________
 #endif // PAR_OMP
 
