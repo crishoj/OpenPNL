@@ -57,6 +57,8 @@ int main(char* argv[], int argc)
     int res = 0;
     
     res = testDBN();
+//	res = testDBNTopologicalSort1();
+	res = testDBNTopologicalSort2();
     res = testDBNSmothing() & res;
     res = testDBNFixLagSmothing() & res;
     res = testDBNFiltering() & res;

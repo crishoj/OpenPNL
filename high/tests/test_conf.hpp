@@ -20,6 +20,8 @@ void SimpleModel();
 int testMRF();
 
 int testDBN();
+int testDBNTopologicalSort1();
+int testDBNTopologicalSort2();
 int testDBNSmothing();
 int testDBNFixLagSmothing();
 int testDBNFiltering();
