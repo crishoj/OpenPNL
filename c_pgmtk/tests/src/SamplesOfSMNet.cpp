@@ -734,7 +734,7 @@ void GenerateSoftMaxEvidence(CStaticGraphicalModel *pBNet, float StartVal,
       int valInt = rand() % NumOfNodeVal[i];
 
 #ifdef SM_TEST
-  printf("%3d", valInt);
+  printf("%3d\t", valInt);
 #endif
 
       (vls)[i].SetInt(valInt);
@@ -754,6 +754,7 @@ void GenerateSoftMaxEvidence(CStaticGraphicalModel *pBNet, float StartVal,
 #ifdef SM_TEST
   printf("\n");
 #endif
+  delete [] NumOfNodeVal;
 }
 // ----------------------------------------------------------------------------
 
@@ -800,7 +801,7 @@ void GenerateEvidence(CStaticGraphicalModel *pBNet, float StartVal,
   for (i = 0; i < nObsNds; i++)
   {
     nodeTypes = pBNet->GetNodeType(i);
-    NumOfNodeVal[obsNds[i]] = nodeTypes->GetNodeSize();
+    NumOfNodeVal[i] = nodeTypes->GetNodeSize();
   }
 
   vls.resize(nObsNds);
