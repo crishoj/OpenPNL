@@ -22,7 +22,9 @@ const char *PersistWBNet::Signature()
 void PersistWBNet::Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext)
 {
     ProbabilisticNet *net = static_cast<pnl::CCover<ProbabilisticNet>*>(pObj)->GetPointer();
+    String modelType = net->Token()->Root()->v_prev->Name();
 
+    pContext->AddAttribute("ModelType", modelType.c_str());
     pContext->AddAttribute("NumberOfNodes", net->nNetNode());
 }
 
@@ -31,7 +33,14 @@ pnl::CPNLBase *PersistWBNet::Load(pnl::CContextLoad *pContext)
     int nNode = -1;
     int i;
     WNodeInfo* pNodeInfo;
-    ProbabilisticNet *net = new ProbabilisticNet;
+    String modelType;
+    
+    pContext->GetAttribute(modelType, "ModelType");
+    if(!modelType.length())
+    {
+        modelType = "bnet";
+    }
+    ProbabilisticNet *net = new ProbabilisticNet(modelType.c_str());
     
     pContext->GetAttribute(&nNode, "NumberOfNodes");
     for(i = 0; i < nNode; ++i)
@@ -41,8 +50,25 @@ pnl::CPNLBase *PersistWBNet::Load(pnl::CContextLoad *pContext)
 	name << i;
 
 	pNodeInfo = static_cast<WNodeInfo*>(pContext->Get(name.c_str()));
-	net->AddNode((pNodeInfo->m_NodeType.IsDiscrete() ? discrete:continuous)
-	    ^ pNodeInfo->m_Name, pNodeInfo->m_aValue);
+        pnl::EIDNodeState ns = pNodeInfo->m_NodeType.GetNodeState();
+
+        TokArr *classificator;
+
+        if(!pNodeInfo->m_NodeType.IsDiscrete())
+        {
+            classificator = &continuous;
+        }
+        else // discrete
+        {
+            switch(ns)
+            {
+            case pnl::nsChance:   classificator = &chance;    break;
+            case pnl::nsDecision: classificator = &decision;  break;
+            case pnl::nsValue:    classificator = &value;     break;
+            default: ThrowInternalError("Unknown node state", "LoadNet");break;
+            }
+        }
+        net->AddNode(*classificator ^ pNodeInfo->m_Name, pNodeInfo->m_aValue);
     }
 
     return new pnl::CCover<ProbabilisticNet>(net);
