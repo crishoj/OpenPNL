@@ -102,6 +102,8 @@ public:
 	return m_IndicesOuterToGraph.at(iNode);
     }
 
+    void IGraph(const Vector<int> *iNodes, Vector<int> *iGraph);
+
     int IOuter(int iGraph)
     {
 	if(!m_IndicesGraphToOuter.size())
@@ -111,6 +113,9 @@ public:
 
 	return m_IndicesGraphToOuter.at(iGraph);
     }
+
+    void IOuter(const Vector<int> *iGraph, Vector<int> *iNodes);
+
     void IndicesGraphToOuter(Vector<int> *outer, Vector<int> *iGraph);
     IIMap &MapOuterToGraph()
     {

@@ -534,4 +534,36 @@ void WGraph::Reset(pnl::CGraph &graph)
     }
 }
 
+void WGraph::IGraph(const Vector<int> *iNodes, Vector<int> *iGraph)
+{
+    if ((iNodes != NULL)||(iGraph != NULL))
+    {
+	ThrowUsingError("NULL pointers", "WGraph::IGraph");
+    };
+
+    int size = iNodes->size();
+    int node = 0;
+    iGraph->resize(size);
+    for (node = 0; node < size; node++)
+    {
+	(*iGraph)[node] = m_IndicesOuterToGraph.at((*iNodes)[node]);
+    };
+}
+
+void WGraph::IOuter(const Vector<int> *iGraph, Vector<int> *iNodes)
+{
+    if ((iNodes != NULL)||(iGraph != NULL))
+    {
+	ThrowUsingError("NULL pointers", "WGraph::IGraph");
+    };
+
+    int size = iGraph->size();
+    int node = 0;
+    iNodes->resize(size);
+    for (node = 0; node < size; node++)
+    {
+	(*iNodes)[node] = m_IndicesGraphToOuter.at((*iGraph)[node]);
+    };
+}
+
 PNLW_END
