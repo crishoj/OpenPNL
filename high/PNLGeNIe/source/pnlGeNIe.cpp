@@ -452,7 +452,8 @@ void INetworkPNL::GetValue(int node, bool &valueValid, std::vector<int> &parents
     Vector<int> aiNode, aiValue;
 
     String xx, x;
-    for(int i = 0; i < evid.size(); ++i)
+    int i;
+    for(i = 0; i < evid.size(); ++i)
     {
 	Vector< std::deque< TokId > > unres = evid[i].unres;
 
@@ -470,7 +471,7 @@ void INetworkPNL::GetValue(int node, bool &valueValid, std::vector<int> &parents
 
     //    Token()->Resolve(evid);
     Net().ExtractTokArr(evid, &aiNode, &aiValue);
-    for(int i = evid.size(); --i >= 0;)
+    for(i = evid.size(); --i >= 0;)
     {
 	if(aiValue[0] >= len || aiValue[0] < 0)
 	{
