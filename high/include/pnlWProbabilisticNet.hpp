@@ -107,28 +107,21 @@ public:// Bayes node name (or TokIdNode) <-> index
     static int GetInt(TokIdNode *node);
 
 public:
-    pnl::CNodeType pnlNodeType(int i);
+    pnl::CNodeType pnlNodeType(int i) const;
     void Accumulate(TokArr *pResult, Vector<int> &aIndex,
 	pnl::CMatrix<float> *mat, String &prtName, int prtValue) const;
     void SplitNodesByObservityFlag(Vector<int> *aiObserved, Vector<int> *aiUnobserved);
     TokArr CutReq( Vector<int>& queryNds, Vector<int>& queryVls, 
 			const pnl::CMatrix<float> * mat ) const;
 
-    void SetTopologicalOrder(const int *renaming, pnl::CGraph *pnlGraph);
-
-    static int NodeAssociation(Vector<pnl::CNodeType> *paNodeType,
-	bool isDiscrete, int size, int nodeState = 0);
+//    void SetTopologicalOrder(const int *renaming, pnl::CGraph *pnlGraph);
 
 public:// inlines for access to object fields
     WGraph *Graph() const { return m_pGraph; }
     TokenCover *Token() const { return m_pTokenCov; }
     WDistributions *Distributions() const { return m_paDistribution; }
     pnl::CGraphicalModel *Model();
-    void SetModel(pnl::CGraphicalModel* pModel);
     Tok ConvertMatrixToToken(const pnl::CMatrix<float> *mat);
-
-private:
-    int iNodeMax() const;
 
 private:// DATA members
     // Tree for bnet:

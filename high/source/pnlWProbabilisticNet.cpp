@@ -834,7 +834,6 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
     int nValueIn = aValue.size();
     static const char fname[] = "CreateEvidence";
 
-    Graph()->Graph();
     ExtractTokArr(const_cast<TokArr &>(aValue), &aiNode, &aiValue, &Graph()->MapOuterToGraph());
 
     Vector<TokIdNode*> apNode = Token()->ExtractNodes(const_cast<TokArr &>(aValue));
@@ -844,16 +843,13 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
     {
         if (!(static_cast<pnl::CNodeType*>(apNode[i]->v_prev->data)->IsDiscrete()))
         {
-//            int size = static_cast<pnl::CNodeType*>(apNode[i]->v_prev->data)->GetNodeSize();
-          int size = Token()->nValue(aiNode[i]);
+	    int size = Token()->nValue(aiNode[i]);
             if (size == 1)
             {
                 aiValue[i] = GetInt(apNode[i]->v_next);
             }
         }
-            
     }
-   
 
     aNodeFlag.assign(nNetNode(), 0);
 
@@ -1262,7 +1258,7 @@ int ProbabilisticNet::GetInt(TokIdNode *node)
     return TokenCover::Index(node);
 }
 
-pnl::CNodeType ProbabilisticNet::pnlNodeType(int i)
+pnl::CNodeType ProbabilisticNet::pnlNodeType(int i) const
 {
     return m_paDistribution->NodeType(i);
 }
@@ -1380,9 +1376,12 @@ TokArr ProbabilisticNet::CutReq( Vector<int>& queryNds, Vector<int>& queryVls,
 	delete resMat;
     }
 
+    Token()->SetContext(result);
+
     return result;
 }
 
+#if 0
 // assume that this function is called seldom. It isn't optimal.
 void ProbabilisticNet::SetTopologicalOrder(const int *renaming, pnl::CGraph *pnlGraph)
 {
@@ -1410,26 +1409,7 @@ void ProbabilisticNet::SetTopologicalOrder(const int *renaming, pnl::CGraph *pnl
     }
     delete oldGraph;
 }
-
-int ProbabilisticNet::NodeAssociation(Vector<pnl::CNodeType> *paNodeType,
-				      bool isDiscrete,
-				      int size,
-				      int nodeState)
-{
-    pnl::CNodeType nt(isDiscrete ? 1:0, size, pnl::EIDNodeState(nodeState));
-
-    for(int i = paNodeType->size(); --i >= 0;)
-    {
-	if((*paNodeType)[i] == nt)
-	{
-	    return i;
-	}
-    }
-
-    paNodeType->push_back(nt);
-
-    return paNodeType->size() - 1;
-}
+#endif
 
 pnl::CGraphicalModel *ProbabilisticNet::Model()
 {
@@ -1439,17 +1419,6 @@ pnl::CGraphicalModel *ProbabilisticNet::Model()
     }
 
     return m_Model;
-}
-
-
-void ProbabilisticNet::SetModel(pnl::CGraphicalModel* pModel)
-{
-    m_Model = pModel;
-}
-
-int ProbabilisticNet::iNodeMax() const
-{
-    return Graph()->iNodeMax();
 }
 
 PNLW_END
