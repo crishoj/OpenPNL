@@ -85,7 +85,7 @@ public:
     void CreateDistribution();
     void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
     void CreateDefaultDistribution();
-
+    int IsDistributionSpecific();
 private:
     pnl::CGaussianDistribFun *m_pDistrib;
 
