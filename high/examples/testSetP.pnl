@@ -1,0 +1,16 @@
+clear()
+AddNode("categoric^x", "Fals true")
+AddNode("categoric^y", "Fals true")
+AddNode("categoric^z", "Fals true")
+AddArc("x", "y")
+AddArc("y", "z")
+print("created net...")
+SetP("x^Fals", "0.3")
+SetP("x^true", "0.7")
+
+p("x")
+p("y")
+p("z")
+// run console
+console()
+print("bye")
