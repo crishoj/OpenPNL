@@ -1452,25 +1452,30 @@ void CParJtreeInfEngine::EnterEvidence(const CEvidence *pEvidence,
         BalanceTree();
     
     CollectCommCreate();
-    
+
     CollectEvidence();
-    
     DistributeEvidence();
     
-    for (i = 0; i < m_NodesOfProcess.size(); i++)
+    for(i = 0; i < m_CollectRanks.size(); i++)
+        CollectFactorsOnProcess(m_CollectRanks[i]);
+
+    for( i = 0; i < m_CollectRanks.size(); i++)
     {
-        CPotential *Pot = GetJTree()->GetNodePotential(m_NodesOfProcess[i]);
-        EDistributionType dt = Pot->GetDistribFun()->GetDistributionType();
-        if(dt == dtGaussian)
-        {
-            static_cast<CGaussianDistribFun*>(Pot->GetDistribFun())->
-                UpdateCanonicalCoefficient();
+	if (m_MyRank == m_CollectRanks[i])
+	{
+    	    for (j = 0; j < m_NodesOfProcess.size(); j++)
+	    {
+	        CPotential *Pot = GetJTree()->GetNodePotential(m_NodesOfProcess[j]);
+	        EDistributionType dt = Pot->GetDistribFun()->GetDistributionType();
+	        if(dt == dtGaussian)
+    		{
+		    static_cast<CGaussianDistribFun*>(Pot->GetDistribFun())->
+		        UpdateCanonicalCoefficient();
+		}
+            }
         }
     }
-    
-    for( i = 0; i < m_CollectRanks.size(); i++)
-        CollectFactorsOnProcess(m_CollectRanks[i]);
-    
+	
     for( i = 0; i < m_CollectRanks.size(); i++)
     {
         if (m_MyRank == m_CollectRanks[i])
@@ -1491,7 +1496,6 @@ void CParJtreeInfEngine::EnterEvidence(const CEvidence *pEvidence,
             }
         }
     }
-    
 }
 #endif // PAR_MPI
 // ----------------------------------------------------------------------------
