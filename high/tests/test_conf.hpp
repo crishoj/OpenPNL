@@ -39,4 +39,7 @@ void TestMultivariateWrapperJPD();
 void TestMultivariateWrapperLearn();
 void TestMultivariateWrapperLearnPartOfObservation();
 void TestMultivariateWrapperMPE();
-bool testExtractTokArr();
+bool testExtractTok();
+void TestGaussianModelCreate();
+void TestGaussianInference();
+void TestGaussianParamLearning();

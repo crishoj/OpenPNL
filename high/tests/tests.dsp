@@ -88,57 +88,26 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=.\Test.cpp
-
-!IF  "$(CFG)" == "tests - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "tests - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\TestCommon.cpp
+# End Source File
+# Begin Source File
 
-!IF  "$(CFG)" == "tests - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "tests - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=.\TestGaussianBNet.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\TestLimid.cpp
-
-!IF  "$(CFG)" == "tests - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "tests - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\TestMain.cpp
-
-!IF  "$(CFG)" == "tests - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "tests - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\TestsDBN.cpp
-
-!IF  "$(CFG)" == "tests - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "tests - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "Header Files"

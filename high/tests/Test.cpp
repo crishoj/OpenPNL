@@ -1046,7 +1046,7 @@ void TestMultivariateWrapperMPE()
     }
 }
 
-bool testExtractTokArr()
+bool testExtractTok()
 {
     BayesNet net;
     TokArr aChoice = "value0 value1 value2";// possible values for nodes
@@ -1067,9 +1067,22 @@ bool testExtractTokArr()
     Vector<TokIdNode *> nodes = values.Nodes();
     for(int i = 0; i < nodes.size(); i++)
     {
-        cout << net.Net().Graph()->INode(nodes[i]->Name()) << "  ";
+	if(nodes[i]->tag == eTagValue)
+	{
+	    nodes[i] = nodes[i]->v_prev;
+	}
+	if(nodes[i]->tag != eTagNetNode)
+	{
+	    PNL_THROW(pnl::CAlgorithmicException, "There is must be node", "ExtractNodes");
+	}
     }
-    cout << endl;
+    if(net.Net().Graph()->INode(nodes[0]->Name()) != 0 ||
+        net.Net().Graph()->INode(nodes[1]->Name()) != 2 || 
+        net.Net().Graph()->INode(nodes[2]->Name()) != 3)
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Extracted node isn't right");
+    }
+    cout << "testExtractTok is completed successfully" << endl;
 
     return true;
 }

@@ -10,9 +10,12 @@ int main(char* argv[], int argc)
     bTestOK = TestResolve3() && bTestOK;
     bTestOK = TestResolve4() && bTestOK;
     bTestOK = TestResolve4_5() && bTestOK;
-    bTestOK = testExtractTokArr() && bTestOK;
+    bTestOK = testExtractTok() && bTestOK;
     try 
     {
+        //TestGaussianModelCreate();
+        TestGaussianInference();
+        TestGaussianParamLearning();
 	TestMultivariateWrapperJPD();
 	TestMultivariateWrapperLearn();
 	TestMultivariateWrapperLearnPartOfObservation();
@@ -50,7 +53,7 @@ int main(char* argv[], int argc)
 
     if(bTestOK)
     {
-	std::cout << "All tests completed successfully" << "\n";
+	std::cout << "All tests are completed successfully" << "\n";
     }
 
     return 0;
