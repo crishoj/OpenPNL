@@ -40,13 +40,130 @@ bool INetworkPNL::Load(const char *filename, IXmlBinding *externalBinding)
     return false;
 }
 
+#include "legacydsl.h"
+#include "pnlContextPersistence.hpp"
+#include "pnlPersistence.hpp"
+
+// Persistence
+
+class GeNIeModelInfo: public pnl::CPNLBase
+{
+public:
+    GeNIeModelInfo(LegacyDslFileInfo *pInfo): m_pInfo(pInfo) {}
+    LegacyDslFileInfo *m_pInfo;
+};
+
 bool INetworkPNL::Save(const char *filename, IXmlWriterExtension *externalExtension,
 		       const LegacyDslFileInfo *gnet)
 {
-    MarkCallFunction("Save");
+    MarkCallFunction("Save", true);
+    pnl::CContextPersistence saver;
+
+    if(!m_pWNet->Net().SaveNet(&saver))
+    {
+	ThrowInternalError("Can't save file", "Save");
+    }
+
+    saver.Put(new GeNIeModelInfo(const_cast<LegacyDslFileInfo *>(gnet)),
+	"GeNIeModelInfo", true);
+    if(!saver.SaveAsXML(filename))
+    {
+	ThrowInternalError("Can't save file", "Save");
+    }
+
     return false;
 }
 
+class PersistGeNIeModelInfo: public pnl::CPersistence
+{
+public:
+    virtual const char *Signature();
+    virtual void Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext);
+    virtual pnl::CPNLBase *Load(pnl::CContextLoad *pContext);
+    virtual void TraverseSubobject(pnl::CPNLBase *pObj, pnl::CContext *pContext);
+    virtual bool IsHandledType(pnl::CPNLBase *pObj) const;
+};
+
+#if defined(_MSC_VER)
+#pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
+#endif
+
+const char *PersistGeNIeModelInfo::Signature()
+{
+    return "GeNIeModelInfo";
+}
+
+void PersistGeNIeModelInfo::Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext)
+{
+    LegacyDslFileInfo *info = static_cast<GeNIeModelInfo*>(pObj)->m_pInfo;
+
+    pContext->AddAttribute("Name", info->name.c_str());
+    pContext->AddAttribute("Description", info->description.c_str());
+    pContext->AddAttribute("SpecNameFmt", info->specNameFmt);
+    pContext->AddAttribute("NumberOfNodes",	int(info->nodes.size()));
+    pContext->AddAttribute("NumberOfSubmodels", int(info->submodels.size()));
+    pContext->AddAttribute("NumberOfTextboxes", int(info->textboxes.size()));
+}
+
+static void LoadAttr(std::string *result, pnl::CContextLoad &context, const char *name)
+{
+    pnl::pnlString str;
+
+    context.GetAttribute(str, name);
+    result->assign(str.c_str(), str.c_str() + str.length());
+}
+
+pnl::CPNLBase *PersistGeNIeModelInfo::Load(pnl::CContextLoad *pContext)
+{
+    LegacyDslFileInfo *info = new LegacyDslFileInfo;
+    GeNIeModelInfo *pInfo = new GeNIeModelInfo(info);
+    pnl::pnlString str;
+    int nNodes, nSubmodels, nTextboxes;
+    
+    pContext->AutoDelete(pInfo);
+    pContext->GetAttribute(&nNodes,	"NumberOfNodes");
+    pContext->GetAttribute(&nSubmodels, "NumberOfSubmodels");
+    pContext->GetAttribute(&nTextboxes, "NumberOfTextboxes");
+    LoadAttr(&info->name, *pContext, "Name");
+    LoadAttr(&info->description, *pContext, "Description");
+    pContext->GetAttribute(&info->specNameFmt, "SpecNameFmt");
+
+    return pInfo;
+}
+
+void PersistGeNIeModelInfo::TraverseSubobject(pnl::CPNLBase *pObj, pnl::CContext *pContext)
+{
+}
+
+bool PersistGeNIeModelInfo::IsHandledType(pnl::CPNLBase *pObj) const
+{
+    return dynamic_cast<GeNIeModelInfo*>(pObj) != 0;
+}
+
+// this class holds saver/loader for high-level API objects
+// We must register loader/saver for type before we save or load it.
+// This class registers all such savers/loaders in constructor
+class ExternalPersistenceUsing
+{
+public:
+    ExternalPersistenceUsing();
+    ~ExternalPersistenceUsing();
+
+private:
+    PersistGeNIeModelInfo m_BayesNetPersistence;
+};
+
+ExternalPersistenceUsing::ExternalPersistenceUsing()
+{
+}
+
+ExternalPersistenceUsing::~ExternalPersistenceUsing()
+{
+}
+
+static ExternalPersistenceUsing objPersistenceUsing;
+
+// Persistence
 
 bool INetworkPNL::UpdateBeliefs()
 {
@@ -376,7 +493,7 @@ void INetworkPNL::GetValue(int node, bool &valueValid, std::vector<int> &parents
     m_pWNet->ClearEvid();
     if(evid.size())
     {
-	m_pWNet->Evid(evid);
+	m_pWNet->EditEvidence(evid);
     }
     evid = m_pWNet->JPD(Graph()->NodeName(node));
     values.resize(len);

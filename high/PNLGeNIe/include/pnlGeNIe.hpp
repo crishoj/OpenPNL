@@ -1,8 +1,7 @@
 #ifndef __PNLGENIE_HPP__
 #define __PNLGENIE_HPP__
 
-typedef int UUID;
-
+#include "windows.h"
 #include <vector>
 #include <string>
 #include "network.h"
