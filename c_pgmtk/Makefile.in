@@ -166,8 +166,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-SUBDIRS = src examples tests
-EXTRA_DIST = make
+SUBDIRS = src include examples tests
 all: all-recursive
 
 .SUFFIXES:
