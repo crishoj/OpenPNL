@@ -864,6 +864,12 @@ const char BayesNet::PropertyAbbrev(const char *name) const
     if(!strcmp(name,"Inference"))
     {
 	String infName = GetProperty("Inference");
+
+	if(!infName.length())
+	{
+	    return 0;// default value
+	}
+
 	pnl::pnlVector<char> infNameVec(infName.length());
 	for(int i = 0; i < infName.length(); ++i)
 	{
@@ -895,6 +901,12 @@ const char BayesNet::PropertyAbbrev(const char *name) const
     if(!strcmp(name,"Learning"))
     {
 	String learnName = GetProperty("Learning");
+
+	if(!learnName.length())
+	{
+	    return 0;// default value
+	}
+
 	pnl::pnlVector<char> learnNameVec(learnName.length());
 	for(int i = 0; i < learnName.length(); ++i)
 	{
