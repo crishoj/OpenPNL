@@ -51,8 +51,8 @@ PROGRAMS = $(bin_PROGRAMS)
 am_parPNLTest_OBJECTS = parPNLTest.$(OBJEXT) LoadBNet.$(OBJEXT) \
 	CreateBNets.$(OBJEXT)
 parPNLTest_OBJECTS = $(am_parPNLTest_OBJECTS)
-am__DEPENDENCIES_1 = $(PNLD)/src/libpnl.la \
-	$(top_srcdir)/cxcore/cxcore/src/libcxcore.a
+am__DEPENDENCIES_1 = $(PNLBUILDD)/src/libpnl.la \
+	$(top_builddir)/cxcore/cxcore/src/libcxcore.a
 parPNLTest_DEPENDENCIES = $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I. -I$(srcdir)
 depcomp =
@@ -184,9 +184,10 @@ target_os = @target_os@
 target_vendor = @target_vendor@
 AM_CPPFLAGS = -x c++ $(DEBUG)
 PNLD = $(top_srcdir)/c_pgmtk
-PNL_LIBS = $(PNLD)/src/libpnl.la $(top_srcdir)/cxcore/cxcore/src/libcxcore.a
+PNLBUILDD = $(top_builddir)/c_pgmtk
+PNL_LIBS = $(PNLBUILDD)/src/libpnl.la $(top_builddir)/cxcore/cxcore/src/libcxcore.a
 PNL_INCL = -I$(top_srcdir)/cxcore/cxcore/include -I$(PNLD)/include -I$(PNLD)/src/include/cart -I$(PNLD)/src/include
-INCLUDES = $(PNL_INCL) -I../include
+INCLUDES = $(PNL_INCL) -I$(srcdir)/../include
 parPNLTest_SOURCES = parPNLTest.cpp LoadBNet.cpp CreateBNets.cpp
 parPNLTest_LDADD = $(PNL_LIBS)
 all: all-am
