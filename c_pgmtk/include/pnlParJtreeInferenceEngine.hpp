@@ -41,6 +41,8 @@ public:
         *pGraphicalModelIn, const intVecVector& 
         SubgrToConnectIn = intVecVector());
 
+    static CParJtreeInfEngine* Copy(const CParJtreeInfEngine *pJTreeInfEngIn);
+
 #ifdef PNL_OBSOLETE
     static CParJtreeInfEngine* Create(const CStaticGraphicalModel
         *pGraphicalModelIn, int numOfSubGrToConnect,
@@ -93,6 +95,8 @@ protected:
         CJunctionTree *pJTree);
 
     CParJtreeInfEngine(const CJtreeInfEngine& rJTreeInfEngine);
+
+    CParJtreeInfEngine(const CParJtreeInfEngine& rParJTreeInfEngine);
 
 #ifdef PAR_OMP
     virtual void PropagateBetweenClqsOMP(int source, int sink,
