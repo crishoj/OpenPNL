@@ -200,6 +200,7 @@ int main()
     }
     delete pDBN;
     delete pArHMM;
+    delete pLearn;
 
     return 0;
 }

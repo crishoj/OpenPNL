@@ -152,10 +152,14 @@ CBNet *C1_5SliceInfEngine::Create1_5SliceBNet()
         domain.push_back(node);
 
         int num = nnodesPerSlice - numberOfInterfaceNodes + node;
+       /*
         pFactor = CFactor::
-	    CopyWithNewDomain(GrModel()->GetFactor( num ), domain, p1_5SliceGrModel->GetModelDomain());
-	p1_5SliceGrModel->AttachFactor(pFactor );
-
+       	    CopyWithNewDomain(GrModel()->GetFactor( num ), domain, p1_5SliceGrModel->GetModelDomain());
+       	p1_5SliceGrModel->AttachFactor(pFactor );
+       */
+	p1_5SliceGrModel->AllocFactor(node);
+	p1_5SliceGrModel->GetFactor(node)->TieDistribFun(GrModel()->GetFactor(num));
+       
     }
 
     return p1_5SliceGrModel;

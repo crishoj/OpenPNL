@@ -46,6 +46,7 @@ SetData( int NumberOfTimeSeries, int *NumberOfSlices,
     m_FlagsIsAllObserved.assign(NumberOfTimeSeries, 1);
     m_VecPVecPEvidences.resize(NumberOfTimeSeries);
     const CEvidence *pEv;
+    
     for(int i = 0; i < NumberOfTimeSeries; i++)
     {
 	
@@ -56,17 +57,19 @@ SetData( int NumberOfTimeSeries, int *NumberOfSlices,
 	for(int j = 0; j < NumberOfSlices[i]; j++)
 	{
 	    pEv = (pEvidences[i])[j];
-            PNL_CHECK_IS_NULL_POINTER(pEv);
-            if(IsInfNeed(pEv))
-            {
-                m_FlagsIsAllObserved[i] = 0;
-            }
+	    PNL_CHECK_IS_NULL_POINTER(pEv);
+	    if(IsInfNeed(pEv))
+	    {
+		m_FlagsIsAllObserved[i] = 0;
+	    }
 	    (*pVecPEv)[j] = pEv;
 	    
 	}
 	m_VecPVecPEvidences[i] = pVecPEv;
 	m_numberOfAllEvISlice += (pVecPEv->size()-1);
     }
+    
+    
     m_numberOfAllEv0Slice += NumberOfTimeSeries;
     
 }

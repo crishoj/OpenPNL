@@ -25,6 +25,7 @@
 #include "pnlDynamicLearningEngine.hpp"
 #include "pnlBKInferenceEngine.hpp"
 #include "pnlTabularPotential.hpp"
+#include "pnl1_5SliceJtreeInferenceEngine.hpp"
 
 
 PNL_USING
@@ -72,6 +73,7 @@ Create(CDBN *pDBN, CDynamicInfEngine *pInfEng)
 	    PNL_THROW(CBadArg, "inference engine");
 	}
     }
+    
     
     return (new CEMLearningEngineDBN( pDBN, itDBNParamLearnEm, pInfEng ));
     
@@ -135,10 +137,13 @@ void CEMLearningEngineDBN::Learn()
     
     do
     {
+	/*
 	if(m_pInfEngine)
-	{
-	    delete (m_pInfEngine);
-	}
+		{
+		    delete (m_pInfEngine);
+		}
+	*/
+	
 	if(iteration)
 	{
 	    for(int node = 0; node < 2*nParamPerSlice; node++)

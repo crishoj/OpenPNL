@@ -267,14 +267,19 @@ CStaticGraphicalModel *CDBN::CreatePriorSliceGrModel() const
     int node;
     for ( node = 0; node < m_nnodesPerSlice; node++ )
     {
+        /*
         domain.clear();
-        pPriorSliceGraph->GetParents(node, &domain);
-        domain.push_back(node);
-
-        pFactor = CFactor::
-            CopyWithNewDomain( GrModel()->GetFactor(node), domain, pPriorSliceGrModel->GetModelDomain() );
-
-	pPriorSliceGrModel->AttachFactor( pFactor );
+                pPriorSliceGraph->GetParents(node, &domain);
+                domain.push_back(node);
+        
+                pFactor = CFactor::
+                    CopyWithNewDomain( GrModel()->GetFactor(node), domain, pPriorSliceGrModel->GetModelDomain() );
+        
+        	pPriorSliceGrModel->AttachFactor( pFactor );
+	*/
+	pPriorSliceGrModel->AllocFactor(node);
+	pPriorSliceGrModel->GetFactor(node)->TieDistribFun(GrModel()->GetFactor(node));
+       
     }
     delete []FinalNodeAssociations;
     return (pPriorSliceGrModel);
