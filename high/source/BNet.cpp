@@ -683,7 +683,7 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 
     pnl::CInfEngine *infEngine = &Inference();
 
-	SetInferenceProperties(nodes);
+    SetInferenceProperties(nodes);
 
     infEngine->EnterEvidence(evid, 1);
 
@@ -715,17 +715,27 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 
     for(i = 0; i < nnodes; ++i)
     {
-	pnl::Value v = *mpe->GetValue(queryNds[i]);
+	const pnl::Value *v = mpe->GetValue(queryNds[i]);
 
-	if((v.IsDiscrete() != 0) != Net().pnlNodeType(queryNds[i]).IsDiscrete())
+	if((v->IsDiscrete() != 0) != Net().pnlNodeType(queryNds[i]).IsDiscrete())
 	{
 	    ThrowInternalError("Non-discrete value for discrete variable", "MPE");
 	}
 
         if (Net().pnlNodeType(queryNds[i]).IsDiscrete())
-            result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v.GetInt()));
+            result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v->GetInt()));
         else
-    	    result.push_back(v.GetFlt());
+	{
+	    int size = Net().pnlNodeType(queryNds[i]).GetNodeSize();
+	    std::vector< float > NodeValues(size);
+
+	    for (int i = 0; i < size; i++)
+	    {
+		NodeValues[i] = v[i].GetFlt();
+	    };
+
+    	    result.push_back(Tok(NodeValues));
+	};
     }
 
     delete evid;
