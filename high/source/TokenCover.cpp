@@ -23,6 +23,21 @@ TokenCover::TokenCover(const char *rootName, WGraph *graph, bool bAutoNum): m_pG
     (m_pDiscrete  = m_aNode->Add("discrete")) ->tag = eTagNodeType;
     (m_pContinuous = m_aNode->Add("continuous"))->tag = eTagNodeType;
     m_pDefault = m_pDiscrete;
+
+    m_pChance = m_pDiscrete->Add("chance");	
+    m_pDecision = m_pDiscrete->Add("decision");		
+    m_pValue = m_pDiscrete->Add("value");	
+    
+    m_pChance->tag = eTagNodeType;
+    m_pDecision->tag = eTagNodeType;
+    m_pValue->tag = eTagNodeType;
+
+    m_pChance->data = (void *)(new pnl::CNodeType(1, 2));
+    m_pDecision->data = (void *)(new pnl::CNodeType(1, 2, pnl::nsDecision));
+    m_pValue->data =  (void *)(new pnl::CNodeType(1, 1, pnl::nsValue));
+
+    m_pDiscrete->data = (void *)(new pnl::CNodeType(1, 2));
+    m_pContinuous->data = (void *)( new pnl::CNodeType(0, 1));
     SpyTo(m_pGraph);
 }
 
@@ -142,6 +157,16 @@ int TokenCover::AddNode(Tok &node, TokArr &aValue)
 {
     TokIdNode *parentNode = m_pRoot;
     String nodeName = node.Name();
+/*    std::deque<TokId> &aUnr = node.Unresolved(parentNode);
+    pnl::pnlString str;
+    
+    str << node.Node()->Name() << "#" << node.Node()->tag << ":";
+    for(int i = 0; i < aUnr.size(); ++i)
+    {
+        str << aUnr[i] << " ";
+    }
+    PrintTokTree("toktree.txt", TokIdNode::root);
+*/
     if(node.Unresolved(parentNode).size() != 1)
     {
         pnl::pnlString str;
@@ -399,6 +424,7 @@ int TokenCover::NodesClassification(TokArr &aValue) const
     int result = 0;
     int i;
     TokIdNode *node;
+    bool IsDiscrete;
 
     for(i = 0; i < aValue.size(); ++i)
     {
@@ -412,18 +438,14 @@ int TokenCover::NodesClassification(TokArr &aValue) const
 	    result |= eNodeClassUnknown;
 	    continue;
 	}
-	if(node == m_pDiscrete)
-	{
-	    result |= eNodeClassDiscrete;
-	}
-	else if(node == m_pContinuous)
-	{
-	    result |= eNodeClassContinuous;
-	}
-	else
-	{
-	    ThrowInternalError("Non-consistent node classification", "NodesClassification");
-	}
+        void *tmp = node->data;
+        IsDiscrete = ((pnl::CNodeType*)tmp)->IsDiscrete();
+        
+        if (IsDiscrete == 1)
+            result |= eNodeClassDiscrete;
+        else
+            result |= eNodeClassContinuous;
+
     }
 
     return result;
