@@ -29,6 +29,10 @@ PNL Wrappers: User Guide
       <LI><A href="#SpecProbDiscr">Specifying the probabilities</A> 
       <LI><A href="#AddObservDiscr">Adding observations</A> 
       <LI><A href="#LearnDiscr">Learning the network</A> 
+      <UL>
+          <LI><A href="#ParamLearnDiscr">Parameters learning</A> 
+          <LI><A href="#StructLearnDiscr">Structural learning</A> 
+      </UL>
       <LI><A href="#MPEandJPDDiscr">Getting MPE and JPD</A> 
       <LI><A href="#HintsDiscr">Hints</A> 
       <UL>
@@ -56,7 +60,8 @@ PNL Wrappers: User Guide
           <LI><A href="#ExampleMultiGau">An example</A> 
       </UL>
   </UL>
-  </UL>
+  <LI><A href="#Limitations">Limitations</A> 
+</UL>
   </h4>
 
 <P></P>
@@ -302,7 +307,11 @@ Current evidence is used to get JPD and MPE, evidence buffer is used for learnin
 To carry out learning process evidences from evidence buffer are used. 
 <br>
 It is possible to specify probability distributions on the net nodes with the help of learning. This setting of probabilities is named parameters learning. We can find out not only probability distributions, but also the net structure, i.e. structure of net edges. This process is named structural learning.
-<br>
+</p>
+<hr>
+
+<h3><a name="ParamLearnDiscr">Parameters learning</a></h3>
+<p>
 If we are going to specify probability distributions for network nodes, then we will call LearnParameters method after filling the evidence buffer to learn the network:
 <p>
 <pre>
@@ -334,6 +343,23 @@ net.SetProperty("Learning", "em");
 net.LearnParameters();
 </pre>
 </p>
+For EM Learning number of iterations of algorithm work and precision that algorithm runs up to must be specified. 
+Default number of iterations is 5 and default precision is 0.001. 
+These parameters can be changed with SetProperty method. Corresponding properties names are 
+"EMMaxNumberOfIterations" and "EMTolerance". For example:
+<p>
+<pre>
+net.SetProperty("EMMaxNumberOfIterations", "10")
+net.SetProperty("EMTolerance", "1e-4")
+net.SetProperty("Learning", "em");
+net.LearnParameters();
+</pre>
+</p>
+</p>
+<hr>
+
+<h3><a name="StructLearnDiscr">Structural learning</a></h3>
+<p>
 If we are going to find not only distributions, but also the network structure, we will call LearnStructure method:
 <p>
 <pre>
@@ -402,6 +428,34 @@ TokArr WetGrassMPE = net.GetMPE("WetGrass");
 net.SetProperty("Inference", "gibbs");
 TokArr WetGrassMPE = net.GetMPE("WetGrass Sprinkler");
 </pre>
+</p>
+Pearl Inference and Gibbs Sampling Inference have some parameters.<br>
+For Pearl Inference number of iterations of algorithm and precision that algorithm runs up to must be specified. 
+Default number of iterations is equal to number of nodes in net and default precision is 1e-6. 
+These parameters can be changed with SetProperty method. Corresponding properties names are 
+"PearlMaxNumberOfIterations" and "PearlTolerance". For example:
+<p>
+<pre>
+net.SetProperty("PearlMaxNumberOfIterations", "10");
+net.SetProperty("PearlTolerance", "1e-5");
+net.SetProperty("Inference", "pearl");
+TokArr WetGrassJPD = net.GetJPD("WetGrass");
+</pre>
+</p>
+For Gibbs Sampling Inference number of iterations must be specified. Corresponding property name is "GibbsNumberOfIterations".
+Default number of iterations is 600. Gibbs Sampling Inference generate evidences (samples) during work. Number of first 
+itearation that use samples processing results of the previous iteration can be specified with property "GibbsThresholdIteration"
+(default value is 10). Number of streams that generate independent samples can be specified with property "GibbsNumberOfStreams"
+(1 stream by default). For example:
+<p>
+<pre>
+net.SetProperty("GibbsNumberOfIterations", "1000");
+net.SetProperty("GibbsThresholdIteration", "20");
+net.SetProperty("GibbsNumberOfStreams", "2");
+net.SetProperty("Inference", "gibbs");
+TokArr WetGrassMPE = net.GetMPE("WetGrass Sprinkler");
+</pre>
+</p>
 </p>
 <hr>
 
@@ -737,4 +791,30 @@ net.EditEvidence("x^dim1^-15.0");
 net.EditEvidence("x^dim2^5.0 z^dim1^15.67");
 net.GetJPD("y z");
 </pre>
+<hr>
+<h1><a name="Limitations">Limitations</a></h1>
+
+<hr>
+<P>
+Here we are going to discuss some limitations of work with Bayesian nets. 
+<UL>
+    <LI>Limitations of string nodes names:
+    <ul>
+        <li>Name cannot contain characters '_', '^' and space character.
+        <li>The first character cannot be number.
+        <li>Names are case sensitive.
+    </ul>
+    <LI>Limitations of saving in file:
+    <ul>
+        <li>It is possible to save Bayes net to file if its graph is connected and it has more than one node only.
+        <li>If we save empty evidence buffer to file result file is empty. But loading evidence buffer from empty file is impossible.
+    </ul>
+    <LI>Current limitations that are planed to be removed:
+    <ul>
+        <li>Names of nodes may be only strings but cannot be integer numbers.
+        <li>Now nodes and edges must be added to net in such order that graph is topological sorted. That means that parents are added to graph before their children.
+        <li>Operation of nodes deleting may work incorrectly now.
+    </ul>
+</UL>
+<p>
 <hr>
