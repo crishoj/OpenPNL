@@ -890,9 +890,9 @@ void ProbabilisticNet::Accumulate(TokArr *pResult, Vector<int> &aIndex,
 
 Tok ProbabilisticNet::ConvertMatrixToToken(const pnl::CMatrix<float> *mat)
 {
-    pnl::CDenseMatrix<float> *dMean = mat->ConvertToDense();
-    const pnl::floatVector *meanVec = dMean->GetVector();
-    std::vector<float> matr(meanVec->begin(), meanVec->end());
+    pnl::CDenseMatrix<float> *dMat = mat->ConvertToDense();
+    const pnl::floatVector *matVec = dMat->GetVector();
+    std::vector<float> matr(matVec->begin(), matVec->end());
 
 //    Tok meanTok = Tok(matr);
     return Tok(matr);
