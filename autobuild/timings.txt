@@ -2711,3 +2711,27 @@ Footer_begin
   Elapsed_Time,268.0
 Footer_end
 ==
+09/11/04 20:20:02	w2k_vc6	failed	not_demanded	testComputeLikelihood
+Header_begin
+  Processor,Pentium
+  OS,WindowsNT v5.0 build 2195
+  Start_Date,
+  Start_Time,Sun Sep 12 00:49:31 2004
+Header_end
+Data_begin
+  Flavour,Function,Value,Units,Comments,Param1,Param2,Param3,Param4
+  d,testPerformanceJTreeInf,1.408000e-004,4.757309e-004,3.579545e+004,
+ time of inference procedure creation,
+ everage time of inference doing,
+ CPU Freq,
+  d,timeBKInfEngine,2.838908e-003,4.843912e-003,3.579545e+004,
+ JTree inference creation ,
+ average time for entering evidence ,
+ CPU frequency ,
+Data_end
+Footer_begin
+  End_Date,
+  End_Time,Sun Sep 12 00:53:48 2004
+  Elapsed_Time,257.0
+Footer_end
+==
