@@ -319,3 +319,7 @@ pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType) const
 	return pMatrix->ConvertToDense();
     }
 }
+
+void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float probability)
+{
+}
