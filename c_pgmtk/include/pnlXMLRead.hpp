@@ -67,6 +67,19 @@ private:
     int m_Ungetch;
 };
 
+// pure virtual class
+class PNL_API CXMLContainer
+{
+public:
+    virtual void CreateNode(const pnlString &name) = 0;
+    virtual void AddContent(const pnlString &addition) = 0;
+    virtual void AddAttribute(const pnlString &attrName, const pnlString &attrValue) = 0;
+    virtual void Close() = 0;
+
+protected:
+    virtual ~CXMLContainer() {}
+};
+
 class PNL_API CXMLWriter
 {
 public:
