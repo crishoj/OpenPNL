@@ -7,7 +7,7 @@
 
 // FORWARDS
 PNLW_BEGIN
-struct TokIdNode;
+class TokIdNode;
 class WDistribFun;
 PNLW_END
 
@@ -19,6 +19,22 @@ namespace pnl
 }
 
 PNLW_BEGIN
+
+class PNLHIGH_API TopologicalSort
+{
+public:
+    TopologicalSort() {}
+    virtual ~TopologicalSort() {}
+    virtual bool GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
+    bool GetOrder(IIMap *pDirect, IIMap *pReverse, const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
+};
+
+class PNLHIGH_API TopologicalSortDBN
+{
+public:
+    TopologicalSortDBN() {}
+    virtual bool GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aParent, const Vector<char> &abValid);
+};
 
 class PNLHIGH_API WGraph: public ModelEngine
 {

@@ -14,6 +14,155 @@
 
 PNLW_BEGIN
 
+bool
+TopologicalSort::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aParent,
+				const Vector<char> &abValid)
+{
+    std::vector<int> aNode;
+    int candidate;
+    bool bChange;
+    int i, j;
+    IIMap &result = *pResult;
+
+    aNode.resize(abValid.size(), 0);
+    result.assign(aNode.size(), -1);
+    for(i = 0; i < abValid.size(); ++i)
+    {
+	if(!abValid[i])
+	{
+	    aNode[i] = -1;
+	}
+    }
+    for(i = 0; i < aNode.size();)
+    {
+	candidate = -1;
+	bChange = false;
+	// walk thru all nodes and add nodes without non-marked parent
+	// to topological order vector
+	for(j = 0; j < aNode.size(); ++j)
+	{
+	    if(aNode[j] < 0)
+	    {
+		continue;
+	    }
+
+	    register int k;
+
+	    candidate = j;
+	    for(k = aParent[j].size(); --k >= 0 && aNode[aParent[j][k]] == -1;);
+	    if(k < 0)
+	    {
+		result[i++] = j;
+		aNode[j] = -1;
+		bChange = true;
+	    }
+	}
+
+	if(!bChange)
+	{
+	    if(candidate >= 0)
+	    {
+		result[i++] = candidate;
+		aNode[j] = -1;
+	    }
+	    else
+	    {
+		ThrowInternalError("incorrect algo of topological sort",
+		    "TopologicalSort::GetOrderDirect");
+	    }
+	}
+    }
+
+    return true;
+}
+
+bool
+TopologicalSort::GetOrder(IIMap *pDirect, IIMap *pReverse,
+			  const Vector<Vector<int> > &aParent,
+			  const Vector<char> &abValid)
+{
+    bool result = GetOrderDirect(pDirect, aParent, abValid);
+
+    if(!result)
+    {
+	return false;
+    }
+    //for(int i = 0; i < 
+    return false;
+}
+
+bool
+TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aParent,
+				   const Vector<char> &abValid)
+{
+    std::vector<int> aNode;
+    int candidate;
+    bool bChange;
+    int i, j, half;
+    IIMap &result = *pResult;
+    Vector<int>::const_iterator it, itEnd;
+
+    aNode.resize(abValid.size(), 0);
+    result.assign(aNode.size(), -1);
+    half = 0;
+    for(i = 0; i < abValid.size(); ++i)
+    {
+	if(!abValid[i])
+	{
+	    aNode[i] = -1;
+	    half++;
+	}
+    }
+    half >>= 1;
+    for(i = 0; i < aNode.size();)
+    {
+	candidate = -1;
+	bChange = false;
+	// walk thru all nodes and add nodes without non-marked parent
+	// to topological order vector
+	for(j = 0; j < aNode.size()/2; ++j)
+	{
+	    if(aNode[j] < 0)
+	    {
+		continue;
+	    }
+
+	    candidate = j;
+	    it = aParent[j].begin();
+	    itEnd = aParent[j].end();
+	    for(; it != itEnd && aNode[*it] == -1;);
+	    if(it != itEnd)
+	    {
+		continue;
+	    }
+	    it = aParent[j + half].begin();
+	    itEnd = aParent[j + half].end();
+	    for(k = aParent[j + half].size(); --k >= 0 && aNode[aParent[j][k]] == -1;)
+	    {
+		if;
+	    result[i++] = j;
+	    aNode[j] = -1;
+	    bChange = true;
+	}
+
+	if(!bChange)
+	{
+	    if(candidate >= 0)
+	    {
+		result[i++] = candidate;
+		aNode[j] = -1;
+	    }
+	    else
+	    {
+		ThrowInternalError("incorrect algo of topological sort",
+		    "TopologicalSort::GetOrderDirect");
+	    }
+	}
+    }
+
+    return true;
+}
+
 WGraph::WGraph(): m_pGraph(0), m_bTouched(false)
 {}
 
