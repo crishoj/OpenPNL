@@ -10,9 +10,10 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
-//#define BUILD_OMP
+#define BUILD_OMP
 #define BUILD_MPI
 #include "pnl_dll.hpp"
+
 #include "CreateBNets.h"
 #include "LoadBNet.h"
 #include "mpi.h"
@@ -20,7 +21,7 @@
 // ============================================================================
 // macros creation
 #define INTEL_PNL // let to use intel classes
-#define PAR_PNL   // let to use parallel classes
+//#define PAR_PNL   // let to use parallel classes
 
 #if defined(INTEL_PNL) && defined(PAR_PNL) && defined(_DEBUG)
   #define COMPARE_RESULTS
