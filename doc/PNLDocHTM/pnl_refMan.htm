@@ -670,6 +670,7 @@ PNL: Reference Manual
 <li><a href="#decl_pnlEstimate">Estimate</a>
 <li><a href="#decl_pnlGetNeff">GetNeff</a>
 </ul>
+</ul>
 <!--<li><a href="#decl_pnlLearning_Engines">Learning Engines</a>-->
 <li><a href="#decl_pnlClassCLearningEngine">Class CLearningEngine</a>
 <ul>
@@ -7646,7 +7647,7 @@ void pnlRand(int <EM CLASS="CodeItalic">numElem</EM>, double* <EM CLASS="CodeIta
 <dt>vec<dd>  Pointer to the array of random numbers to be generated. The array should be allocated externally and should contain not less than <EM CLASS="CodeItalic">numElem</EM> elements.
 </dl></p><p>
 This function generates random numbers distributed uniformly over a specified numerical interval. <EM CLASS="CodeReg">
-pnlRand</EM> is a set of overloaded functions for generating uniformly distributed random numbers, both integer and floating point. In case of integer generation the function generates numbers on the interval <EM CLASS="CodeItalic">[left</EM>,<EM CLASS="CodeItalic">right]</EM> with boundaries of the interval included. In case of floating point generation the function generates numbers on the interval<EM CLASS="CodeItalic"> (left</EM>,<EM CLASS="CodeItalic">right)</EM> with boundaries of the interval excluded.
+pnlRand</EM> is a set of overloaded functions for generating uniformly distributed random numbers, both integer and floating point. In case of integer generation the function generates numbers on the interval <EM CLASS="CodeItalic">[left</EM>,<EM CLASS="CodeItalic">right]</EM> with boundaries of the interval included. In case of floating point generation the function generates numbers on the interval<EM CLASS="CodeItalic"> [left</EM>,<EM CLASS="CodeItalic">right)</EM> with left boundary of the interval included and right boundary excluded.
 </p>
 
 

@@ -205,7 +205,7 @@ PNLM: Reference Manual
 <li><a href="#decl_pnlmClass_CFactor">Class CFactor</a>
 <ul>
 <li><a href="#decl_pnlmAttachMatrix">AttachMatrix</a>
-<li><a href="#decl_pnlmfactorType = GetFactorType( factor );">factorType = GetFactorType( factor );</a>
+<li><a href="#decl_pnlmGetFactorType">GetFactorType</a>
 <li><a href="#decl_pnlmGetDistributionType">GetDistributionType</a>
 <li><a href="#decl_pnlmGetDomain">GetDomain</a>
 <li><a href="#decl_pnlmGetDomainSize">GetDomainSize</a>
@@ -1009,12 +1009,14 @@ internal use only in older versions of the d-connection related methods.
 
 
 <hr><h2><a name="decl_pnlmNodeTypes">Node Types</a></h2>
+
+
 <hr><h3><a name="decl_pnlmClassCNodeType">Class CNodeType</a></h3>
 
 <img align=center src="fig/nodetypes.gif">
 
-<p class="Blurb"><p> </p>
-<pre>Class CNodeType provides node types for the model. By default model nodes are
+<p>
+Class CNodeType provides node types for the model. By default model nodes are
 binary and discrete.
 </p>
 
@@ -1307,7 +1309,7 @@ and perform inference with them.
 </p>
 
 <p>
-Class <tt>CNodeValues<tt> is a superclass for  <a href="#decl_pnlmClass_CEvidence">CEvidence</a>. It stores information
+Class <tt>CNodeValues</tt> is a superclass for  <a href="#decl_pnlmClass_CEvidence">CEvidence</a>. It stores information
 on observed values of certain variables with no indication of varaible numbers
 in the graphical model.
 </p>
@@ -2531,16 +2533,19 @@ The function <a href="#decl_pnlmAttachMatrix">AttachMatrix</a> enters data into 
 factor.
 </p>
 
-GetFactorType
-Returns factor type.
 
-<hr><h4><a name="decl_pnlmfactorType = GetFactorType( factor );">factorType = GetFactorType( factor );</a></h4>
-<p class="Blurb">Arguments</p>
-<pre>factor Class object.
+
+
+<hr><h4><a name="decl_pnlmGetFactorType">GetFactorType</a></h4>
+<p class="Blurb">Returns factor type.</p>
+<pre>
+factorType = GetFactorType( factor )
+</pre><p><dl>
+<dt>factor<dd>Class object.
 <dt>factorType<dd>Type of factor.
 </dl></p><p>
-The function <a href="#decl_pnlmfactorType = GetFactorType( factor );">factorType = GetFactorType( factor );</a> returns the type of an input factor. It may be either ptFactor or
-ptCPD .
+The function <a href="#decl_pnlmGetFactorType">GetFactorType</a> returns the type of an input factor. It may be either ptFactor or
+ptCPD.
 </p>
 
 <hr><h4><a name="decl_pnlmGetDistributionType">GetDistributionType</a></h4>
@@ -4398,7 +4403,7 @@ nodes belong to the same cluster the inference is exact.
 
 <h3><a name="decl_pnlmClass_CLearningEngine">Class CLearningEngine</a></h3>
 
-<img align=center src="fig/learn.gif">
+
 
 <hr><h4><a name="decl_pnlmLearn">Learn</a></h4>
 <p class="Blurb">Performs learning.</p>
@@ -4437,7 +4442,6 @@ Arguments
 
 <h3><a name="decl_pnlmClass_CStaticLearningEngine">Class CStaticLearningEngine</a></h3>
 
-<img align=center src="fig/stlearn.gif">
 
 <hr><h4><a name="decl_pnlmSetData">SetData</a></h4>
 <p class="Blurb">Sets statistical data for learning.</p>
@@ -4475,7 +4479,6 @@ Arguments
 
 <h3><a name="decl_pnlmClass_CEMLearningEnginee">Class CEMLearningEngine</a></h3>
 
-<img align=center src="fig/emlearn.gif">
 
 <p>
 Class CEMLearningEngine is used in the learning of Bayesian networks with
@@ -4525,7 +4528,7 @@ previous step does not exceed a certain set value.
 
 <h3><a name="decl_pnlmClass_CBayesLearningEngine">Class CBayesLearningEngine</a></h3>
 
-<img align=center src="fig/bayeslearn.gif">
+
 
 <p>
 Class CBayesLearningEngine is used for training BNet objects, where parameters
@@ -4557,7 +4560,6 @@ only.
 
 <h3><a name="decl_pnlmClass_CBICLearningEngine">Class CBICLearningEngine</a></h3>
 
-<img align=center src="fig/biclearn.gif">
 
 <p>
 Class CBICLearningEngine is used for learning a Bayesian network with discrete
@@ -4603,7 +4605,6 @@ source graphical model.
 
 <h3><a name="decl_pnlmClass_CDynamicLearningEngine">Class CDynamicLearningEngine</a></h3>
 
-<img align=center src="fig/dynlearn.gif">
 
 <p>
 CDynamicLearningEngine is a superclass for all classes that implement learning
@@ -4637,7 +4638,7 @@ Arguments
 
 <h3><a name="decl_pnlmClass_CEMLearningEngineDBN">Class CEMLearningEngineDBN</a></h3>
 
-<img align=center src="fig/emlearndbn.gif">
+
 <p>
 Class CEMLearningEngineDBN is used in the learning of Dynamic Bayesian Networks.
 The learning is based on Expectation Maximization (EM) algorithm.
