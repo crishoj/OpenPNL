@@ -77,7 +77,7 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
     }
 
     // argument checking
-    if((value.size() != probability.size() || value.size() == 0)&&(matrixId == matTable))
+    if((value.size() != probability.size() || value.size() == 0)/*&&(matrixId == matTable)*/)
     {
 	ThrowUsingError("The number of values must be equals to number of probabilities", fname);
     }
@@ -246,13 +246,13 @@ WGaussianDistribFun::WGaussianDistribFun():WDistribFun(), m_pDistrib(0) {}
 WGaussianDistribFun::~WGaussianDistribFun()
 {
     if (m_pDistrib != 0) 
-    {   
-	
-        /*for (node = 0; node < NumberOfNodes; node++)
-    {
-	delete nodeTypes[node];
-    }*/
-
+    { 
+            const pnl::pConstNodeTypeVector *ntVec = m_pDistrib->GetNodeTypesVector();
+            int NumberOfNodes = ntVec->size();
+            for (int node = 0; node < NumberOfNodes; node++)
+            {
+                delete const_cast<CNodeType*>((*ntVec)[node]);
+            }
         delete m_pDistrib;
 	m_pDistrib = 0;
     };
@@ -281,12 +281,6 @@ void WGaussianDistribFun::CreateDistribution()
     }
 
     m_pDistrib = CGaussianDistribFun::CreateUnitFunctionDistribution(NumberOfNodes, nodeTypes);
-
-    for (node = 0; node < NumberOfNodes; node++)
-    {
-	delete nodeTypes[node];
-    }
-
     delete nodeTypes;
 }
 
@@ -372,7 +366,6 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
     }
 
    m_pDistrib->AllocMatrix( &probability, matType, 0);
-//    m_pDistrib->GetMatrix(matType)->SetElementByIndexes(probability, &aIndex.front());
 }
 
 void WGaussianDistribFun::CreateDefaultDistribution()
@@ -428,13 +421,8 @@ void WGaussianDistribFun::CreateDefaultDistribution()
     m_pDistrib = CGaussianDistribFun::CreateInMomentForm(false, NumberOfNodes, nodeTypes, 
         dataMean, dataCov, (const float **)dataWeight);
 
-/*    for (node = 0; node < NumberOfNodes; node++)
-    {
-	delete nodeTypes[node];
-    }
-*/
-
     delete nodeTypes;
+
     delete dataMean;
     delete dataCov;
     for (node = 0; node < NumberOfNodes; node++)
