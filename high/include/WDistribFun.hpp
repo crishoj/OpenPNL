@@ -40,7 +40,7 @@ public:
     void FillData(int matrixType, int index, double probability, int *parents = 0, int nParents = 0);
     void Setup(TokIdNode *node, Vector<TokIdNode*> &aParent);
     virtual void DoSetup() = 0;
-    virtual pnl::CDenseMatrix<float> *Matrix(int maxtixType) const = 0;
+    virtual pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1) const = 0;
 
 protected:
     WDistribFun();
@@ -63,7 +63,7 @@ public:
 
     virtual Vector<int> Dimensions(int matrixType);
     virtual void SetAValue(int matrixType, Vector<int> &aIndex, float probability);
-    virtual pnl::CDenseMatrix<float> *Matrix(int matrixType) const
+    virtual pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1) const
     {
 	return m_pMatrix;
     }
@@ -81,12 +81,12 @@ public:
     Vector<int> Dimensions(int matrixType);
     void FillData(int matrixType, TokArr value, TokArr probability, TokArr parentValue = TokArr());
     void DoSetup();
-    pnl::CDenseMatrix<float> *Matrix(int maxtixType) const;
+    pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1) const;
     void CreateDistribution();
     void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
     void CreateDefaultDistribution();
     int IsDistributionSpecific();
-    void SetData(int matrixId, const float *probability);
+    void SetData(int matrixId, const float *probability, int numWeightMat = -1);
 
 private:
     pnl::CGaussianDistribFun *m_pDistrib;
