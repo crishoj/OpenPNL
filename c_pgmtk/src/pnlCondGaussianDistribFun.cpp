@@ -709,6 +709,7 @@ void CCondGaussianDistribFun::ClearStatisticalData()
     m_numEvidencesLearned->ClearData();
 }
 
+/*
 void
 CCondGaussianDistribFun::UpdateStatisticsEM(const CDistribFun* infData,
                                             const CEvidence *pEvidence,
@@ -750,8 +751,11 @@ CCondGaussianDistribFun::UpdateStatisticsEM(const CDistribFun* infData,
         int discrPos = m_discrParentsIndex[i];
         if( tabDims[discrPos] != m_NodeTypes[discrPos]->GetNodeSize() )
         {
-            PNL_THROW( CInconsistentSize,
+            if( ! (tabDims[discrPos] == 1 && pEvidence->IsNodeObserved(domain[discrPos]) ) )
+	    {
+		PNL_THROW( CInconsistentSize,
                 "ranges in input distributon must corresponds discrete part of domain" );
+	    }
         }
     }
     CMatrixIterator<float>* iter = tabMat->InitIterator();
@@ -779,6 +783,90 @@ CCondGaussianDistribFun::UpdateStatisticsEM(const CDistribFun* infData,
     }
     
     delete iter;
+}*/
+
+void
+CCondGaussianDistribFun::UpdateStatisticsEM(const CDistribFun* infData,
+                                            const CEvidence *pEvidence,
+                                            float weightingCoeff, const int* domain)
+{
+    //need to add processing tabular inference data,
+    //it can be only tabular by now (all gaussian nodes in condGau CPD observed
+    if( infData->GetDistributionType() != dtTabular )
+    {
+        PNL_THROW( CNotImplemented,
+            "now we can learn only all gaussian observed at mixed distribution" );
+    }
+    int i;
+    const CTabularDistribFun* tabDistr = static_cast<
+        const CTabularDistribFun*>(infData);
+    //create domain corresponding the continuous part of domain
+    intVector contDomain;
+    int contSize = m_contParentsIndex.size();
+    contDomain.resize( contSize + 1 );
+    for( i = 0; i < contSize; i++ )
+    {
+        contDomain[i] = domain[m_contParentsIndex[i]];
+    }
+    contDomain[contSize] = domain[m_NumberOfNodes - 1];
+ 
+    int discSize  = m_discrParentsIndex.size();
+    intVector vls(0, 0);
+    intVector obsInd(0, 0);
+    intVector dnt(discSize, 0);
+    for( i = 0; i < discSize; i++ )
+    {
+        
+	if( pEvidence->IsNodeObserved(domain[m_discrParentsIndex[i]])  )
+	{
+	    vls.push_back(pEvidence->GetValue(domain[m_discrParentsIndex[i]])->GetInt());
+	    obsInd.push_back(i);
+	}
+	dnt[i] = m_NodeTypes[m_discrParentsIndex[i]]->GetNodeSize();
+    }
+    
+
+    
+    CMatrix<float> *tabMat = NULL;
+    if( obsInd.size() )
+    {
+        tabMat = tabDistr->GetMatrix(matTable)->ExpandDims( &obsInd.front(), 
+	&vls.front(), &dnt.front(), obsInd.size());
+    }
+    else
+    {
+	tabMat = tabDistr->GetMatrix(matTable);
+    }
+    
+    CMatrixIterator<float>* iter = tabMat->InitIterator();
+    intVector index;
+    intVector tabIndex;
+    tabIndex.resize( discSize );
+    for( iter; tabMat->IsValueHere( iter ); tabMat->Next(iter) )
+    {
+        tabMat->Index( iter, &index );
+        float valAdd = *(tabMat->Value( iter ));
+        //create index of discrete parents indices
+        for( i = 0; i < discSize; i++ )
+        {
+            tabIndex[i] = index[m_discrParentsIndex[i]];
+        }
+        //learn corresp Gaussian distribution with weight coefficient
+        CGaussianDistribFun* curLearn = m_distribution->GetElementByIndexes(
+            &tabIndex.front() );
+        curLearn->UpdateStatisticsML( &pEvidence, 1, &contDomain.front(), valAdd );
+        //add weight coefficient to general number of evidences learned
+        float valLearned = m_numEvidencesLearned->GetElementByIndexes(
+            &tabIndex.front() );
+        valLearned += valAdd;
+        m_numEvidencesLearned->SetElementByIndexes( valLearned, &tabIndex.front() );
+    }
+    
+    delete iter;
+    if( obsInd.size() )
+    {
+	delete tabMat;
+    }
 }
 
 void CCondGaussianDistribFun::SetStatistics( const CMatrix<float> *pMat, 

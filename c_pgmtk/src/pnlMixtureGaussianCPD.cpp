@@ -456,7 +456,7 @@ float CMixtureGaussianCPD::GetCoefficient( const int* discrComb  )
                  ->GetCoefficient( forCanonical, discrComb );
 }
 
-/*
+#if 0
 void CMixtureGaussianCPD::UpdateStatisticsEM( const CPotential *pMargPot,
                                             const CEvidence *pEvidence )
 {
@@ -541,8 +541,9 @@ void CMixtureGaussianCPD::UpdateStatisticsEM( const CPotential *pMargPot,
     delete denseMat;
     delete iter;
 }
-*/
+#endif
 
+#if 1
 void CMixtureGaussianCPD::UpdateStatisticsEM( const CPotential *pMargPot,
                                             const CEvidence *pEvidence )
 {
@@ -619,14 +620,9 @@ void CMixtureGaussianCPD::UpdateStatisticsEM( const CPotential *pMargPot,
     
    
     //////////////////////////////////////////////////////////////////////////
-    intVector obsPos;
-    pMargPot->GetObsPositions(&obsPos);
-
     
-    {
 	m_CorrespDistribFun->UpdateStatisticsEM( pMargPot->GetDistribFun(), pEvidence, 1.0f,
 	    &m_Domain.front() );
-    }
     
     //////////////////////////////////////////////////////////////////////////
     
@@ -634,7 +630,7 @@ void CMixtureGaussianCPD::UpdateStatisticsEM( const CPotential *pMargPot,
     delete shrMat;
 }
 
-
+#endif
 float CMixtureGaussianCPD::ProcessingStatisticalData( int numberOfEvidences)
 {
     //need to normalize it
