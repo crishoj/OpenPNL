@@ -133,6 +133,12 @@ private:
     // return parents of choosen node
     void GetParents(int NumOfNode, intVector *Parents);
 
+    // init some data structures for CollectEvidence
+    void InitNodeConditionsAndUpdateRatios();
+
+    // get type of jtree (all cliques are tabular, gaussian or scalar)
+    EDistributionType GetJTreeType();
+
 #ifdef PAR_MPI
     intVector m_NodeProcesses;          // number of process for each clique
     intVector m_NodesOfProcess;         // numbers of cliques of this process
@@ -165,9 +171,6 @@ private:
     // init queue for CollectEvidence
     void InitQueueNodes();
 
-    // init some data structures for CollectEvidence
-    void InitNodeConditionsAndUpdateRatios();
-
     // collect parallel EnterEvidence results on choosen (m_CollectRanks)
     // processes
     void CollectFactorsOnProcess(int MainProcNum);
@@ -187,9 +190,6 @@ private:
     void GetNextNodeInList(const list <int> *pNodesList,
         list <int>::const_iterator *pNodesListIterator, int *pCurrentRoot,
         int *pPrevCurrentRoot);
-
-    // get type of jtree (all cliques are tabular, gaussian or scalar)
-    EDistributionType GetJTreeType();
 
     // get weight of a subtree 
     double GetSubTreeWeight(int nodenum);

@@ -305,7 +305,6 @@ void CParJtreeInfEngine::InitQueueNodes()
 #endif // PAR_MPI
 // ----------------------------------------------------------------------------
 
-#ifdef PAR_MPI
 void CParJtreeInfEngine::InitNodeConditionsAndUpdateRatios()
 {
     const int numOfNds = GetOriginalJTree()->GetNumberOfNodes();
@@ -340,7 +339,6 @@ void CParJtreeInfEngine::InitNodeConditionsAndUpdateRatios()
             *ItNode = numOfNbrs;
     }
 }
-#endif //PAR_MPI
 // ----------------------------------------------------------------------------
 
 void CParJtreeInfEngine::GetParents(int NumOfNode, intVector* Parents)
@@ -388,22 +386,22 @@ void CParJtreeInfEngine::EnterEvidenceOMP(const CEvidence *pEvidence,
     PNL_CHECK_IS_NULL_POINTER(pEvidence);
     PNL_CHECK_RANGES( maximize, 0, 2 );
 
-	if( pEvidence->GetModelDomain() != m_pGraphicalModel->GetModelDomain() )
-	{
-		PNL_THROW( CInvalidOperation, 
-			"evidence and the Graphical Model must be on one Model Domain" );
-	}
-	// bad-args check end
-
-    CJunctionTree *jtree = GetJTree();
-    int nNodes = jtree->GetNumberOfNodes();
-    int i;
-	
-	if (GetModel()->GetModelType() == mtBNet)
+    if( pEvidence->GetModelDomain() != m_pGraphicalModel->GetModelDomain() )
     {
-		ShrinkObservedOMP( pEvidence, maximize, sumOnMixtureNode );
-		EDistributionType isJtDiscr = GetJTreeType();
+        PNL_THROW( CInvalidOperation, 
+            "evidence and the Graphical Model must be on one Model Domain" );
+    }
+    // bad-args check end
 
+    int i;
+
+    if (GetModel()->GetModelType() == mtBNet)
+    {
+        ShrinkObservedOMP( pEvidence, maximize, sumOnMixtureNode );
+        CJunctionTree *jtree = GetJTree();
+        int nNodes = jtree->GetNumberOfNodes();
+        EDistributionType isJtDiscr = GetJTreeType();
+        
         if (isJtDiscr == dtTabular)
         {
             CollectEvidenceOMP();
@@ -415,36 +413,36 @@ void CParJtreeInfEngine::EnterEvidenceOMP(const CEvidence *pEvidence,
             }
             else // dtScalar
                 return;
-		
-		DistributeEvidenceOMP();
+
+            DistributeEvidenceOMP();
 
         #pragma omp parallel for schedule(dynamic) private(i)
-		for (i = 0; i < nNodes; i++)
-		{
-			CDistribFun *df = jtree->GetNodePotential(i)->GetDistribFun();
-			EDistributionType dt = df->GetDistributionType();
-			if(dt == dtGaussian)
-			{
-				static_cast<CGaussianDistribFun*>(df)->UpdateCanonicalCoefficient();
-			}
-		}
-		
-		bool allDiscrObs = pEvidence->IsAllDiscreteNodesObs(GetModel());
-		if (allDiscrObs)
-		{
-			for (i = 0; i < GetModel()->GetNumberOfNodes(); i++)
-			{
-				if (GetModel()->GetFactor(i)->GetDistributionType() == dtSoftMax)
-				{
-					GetModel()->GetModelDomain()->ChangeNodeType(i, 0);
-				}
-			}
-		}
-	}
-	else
-	{
-	    PNL_THROW(CNotImplemented, "for BNets only");
-	}
+        for (i = 0; i < nNodes; i++)
+        {
+            CDistribFun *df = jtree->GetNodePotential(i)->GetDistribFun();
+            EDistributionType dt = df->GetDistributionType();
+            if(dt == dtGaussian)
+            {
+                static_cast<CGaussianDistribFun*>(df)->UpdateCanonicalCoefficient();
+            }
+        }
+        
+        bool allDiscrObs = pEvidence->IsAllDiscreteNodesObs(GetModel());
+        if (allDiscrObs)
+        {
+            for (i = 0; i < GetModel()->GetNumberOfNodes(); i++)
+            {
+                if (GetModel()->GetFactor(i)->GetDistributionType() == dtSoftMax)
+                {
+                    GetModel()->GetModelDomain()->ChangeNodeType(i, 0);
+                }
+            }
+        }
+    }
+    else
+    {
+        PNL_THROW(CNotImplemented, "for BNets only");
+    }
 
 }
 #endif // PAR_OMP
@@ -695,7 +693,7 @@ void CParJtreeInfEngine::CollectEvidenceOMP_gau()
     int j;
     
     SetNormalizeCoefficient(1.0f);
-	RebuildTreeFromRoot();
+    RebuildTreeFromRoot();
 
     const int NumVertex = GetOriginalJTree()->GetNumberOfNodes();
     omp_lock_t queue_lock, *parents_lock;
@@ -738,10 +736,10 @@ void CParJtreeInfEngine::CollectEvidenceOMP_gau()
             
             ValueOfSummator=m_NodeConditions[currNode].begin()[m_NodeConditions[currNode].size()-1]; 
             if (ValueOfSummator==0)
-            {	
+            {
                 if (currNode != GetJTreeRootNode())
                 {
-                    GetParents(currNode,&Parents);	
+                    GetParents(currNode,&Parents);
                     
                     omp_set_lock(&parents_lock[Parents.begin()[0]]);
                     
@@ -1396,13 +1394,13 @@ void CParJtreeInfEngine::DoPropagateOMP(
             *(big_bulk + i_ind) *= reciprocalSum;
         }
 
-		if(!threadNum)
-		{   
-			if(isCollect)
-			{
-				SetNormalizeCoefficient(GetNormalizeCoefficient() * sum);
-			}
-		}
+        if(!threadNum)
+        {   
+            if(isCollect)
+            {
+                SetNormalizeCoefficient(GetNormalizeCoefficient() * sum);
+            }
+        }
     }// end of parallel section
 
     delete [] offsets;
@@ -1417,13 +1415,13 @@ void CParJtreeInfEngine::InitQueueNodesOMP()
     intVector::const_iterator sourceIt, source_end;
     intVecVector::const_iterator layerIt = GetCollectSequence().begin(),
         collSeq_end = GetCollectSequence().end();
-	
+
     for(; layerIt != collSeq_end; ++layerIt)
     {
         for(sourceIt = layerIt->begin(), source_end = layerIt->end();
         sourceIt != source_end; ++sourceIt)
         {
-			m_QueueNodes.push(*sourceIt);
+            m_QueueNodes.push(*sourceIt);
         }
     }
 }
@@ -1539,7 +1537,7 @@ void CParJtreeInfEngine::CollectEvidence()
 
                 const float *dataH, *dataK;
                 int sizeH, sizeK;
-				float g;
+                float g;
                 const float *dataMean, *dataCov;
                 int sizeMean, sizeCov;
                 float normCoeff;
@@ -1562,7 +1560,7 @@ void CParJtreeInfEngine::CollectEvidence()
 
                 if (Pot->GetDistributionType() == dtGaussian)
                 {
-					float *Sizes = new float[3];
+                    float *Sizes = new float[3];
                     float *Data;
                     // gaussian distribution in canonical form
                     if (static_cast<CGaussianDistribFun *>(Pot->GetDistribFun())->
@@ -1585,7 +1583,7 @@ void CParJtreeInfEngine::CollectEvidence()
                         
                         memcpy((void*)dataH, Data, sizeH*sizeof(float));
                         memcpy((void*)dataK, Data + sizeH, sizeK*sizeof(float));
-						
+
                         delete [] Data;
                         
                     }// if canonical form
@@ -1624,8 +1622,8 @@ void CParJtreeInfEngine::CollectEvidence()
                     GetJTree()->GetSeparatorPotential(CurSendedNode, CurRecvingNode);
                 CModelDomain* pMD=potSep->GetModelDomain();
                 potSep->GetDomain(&numNdsInSepDom, &sepDom);
-				
-				intVector sepDomain(numNdsInSepDom);
+
+                intVector sepDomain(numNdsInSepDom);
                 sepDomain.assign(sepDom, sepDom + numNdsInSepDom);
                 
                 intVector obsIndicesIn;
@@ -2104,17 +2102,17 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
                     sizeH = sizeK = 0;
                     g = 0;
 
-                    sizes = new int[3];
-                    sizes[0] = sizes[1] = sizes[2] = 0;
+                    sizes = new float[3];
+                    sizes[0] = sizes[1] = sizes[2] = 0.0f;
 
-                    MPI_Send((float*)sizes, 3, MPI_FLOAT, MainProcNum,
+                    MPI_Send(sizes, 3, MPI_FLOAT, MainProcNum,
                         Tag, CollectF_comm);
                     
                     MPI_Send((float*)dataK, sizeK, MPI_FLOAT, MainProcNum,
                         Tag, CollectF_comm);
 
                      delete [] sizes;
-                }	
+                }
                 else
                     if (static_cast<CGaussianDistribFun *>(df)->
                         GetCanonicalFormFlag())
@@ -2127,9 +2125,9 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
                         
                         g = static_cast<CGaussianDistribFun *>(df)->GetCoefficient(1);
                         
-                        sizes = new int[3];
-                        sizes[0] = sizeH;
-                        sizes[1] = sizeK;
+                        sizes = new float[3];
+                        sizes[0] = (float)sizeH;
+                        sizes[1] = (float)sizeK;
                         sizes[2] = g;
                         int DataSize = sizeH + sizeK;                        
                         float *Data = new float [DataSize];
@@ -2242,12 +2240,12 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
                             ->GetCanonicalFormFlag())
                         {
 
-                            sizes = new int[3];
-                            MPI_Recv((float*)sizes, 3, MPI_FLOAT, i, MPI_ANY_TAG, CollectF_comm, 
+                            sizes = new float[3];
+                            MPI_Recv(sizes, 3, MPI_FLOAT, i, MPI_ANY_TAG, CollectF_comm, 
                                 &status);
                             
-                            sizeH = sizes[0];
-                            sizeK = sizes[1];
+                            sizeH = (int)(sizes[0]);
+                            sizeK = (int)(sizes[1]);
                             g = sizes[2];
                             
                             dataH = new float[sizeH];
@@ -2288,7 +2286,7 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
                                 
                                 dataMean = new float[sizeMean];
                                 
-                                MPI_Recv((float*)dataMean, sizeMean, MPI_FLOAT,	i, MPI_ANY_TAG, 
+                                MPI_Recv((float*)dataMean, sizeMean, MPI_FLOAT, i, MPI_ANY_TAG, 
                                     CollectF_comm, &status);
                                 
                                 MPI_Recv(&sizeCov, 1, MPI_INT, i, MPI_ANY_TAG, CollectF_comm, 
@@ -2316,7 +2314,7 @@ void CParJtreeInfEngine::CollectFactorsOnProcess(int MainProcNum)
                 }// for (j = 0...
         }// for (i = 0;...
     }// else
-	delete [] Ranks;
+    delete [] Ranks;
 }
 
 #endif // PAR_MPI
@@ -3225,14 +3223,14 @@ void CParJtreeInfEngine::ProcessRoutes()
     CPotential *newPotSep, *updateRatio;
     int numNdsInSepDom;
     const int *sepDom;
-	int i, j;
-	MPI_Status status;
+    int i, j;
+    MPI_Status status;
 
     // find on which process main root is
     int NumProcOfMainRoot = 0;
     while (m_Roots[NumProcOfMainRoot] != GetJTreeRootNode())
         NumProcOfMainRoot++;
-   	
+
     if (m_MyRank >= m_NumberOfUsedProcesses)
     {
         return;
@@ -3255,26 +3253,26 @@ void CParJtreeInfEngine::ProcessRoutes()
             NumOfSendProc++;
         }
         // receiving of update ratio
-		CPotential *UpdateRatio;
-		CPotential *Pot = 
-			GetJTree()->GetSeparatorPotential(m_Routes[NumOfRoute][1], m_Routes[NumOfRoute][0]);
+        CPotential *UpdateRatio;
+        CPotential *Pot = 
+            GetJTree()->GetSeparatorPotential(m_Routes[NumOfRoute][1], m_Routes[NumOfRoute][0]);
         
         CPotential *PotCls = GetJTree()->GetNodePotential(m_Routes[NumOfRoute][1]);
         EDistributionType dtCls = PotCls->GetDistributionType();
 
-		CModelDomain* pMD = Pot->GetModelDomain();
-		Pot->GetDomain(&numNdsInSepDom, &sepDom);
-		
-		intVector sepDomain(numNdsInSepDom);
-		sepDomain.assign(sepDom, sepDom + numNdsInSepDom);
-		
-		intVector obsIndicesIn;
-		int count = sepDomain.size();
-		
-		obsIndicesIn.clear();
-		for (i = 0; i < count; i++)
-			if (m_pEvidence->IsNodeObserved(sepDomain[i]))
-				obsIndicesIn.push_back(i);
+        CModelDomain* pMD = Pot->GetModelDomain();
+        Pot->GetDomain(&numNdsInSepDom, &sepDom);
+        
+        intVector sepDomain(numNdsInSepDom);
+        sepDomain.assign(sepDom, sepDom + numNdsInSepDom);
+        
+        intVector obsIndicesIn;
+        int count = sepDomain.size();
+        
+        obsIndicesIn.clear();
+        for (i = 0; i < count; i++)
+            if (m_pEvidence->IsNodeObserved(sepDomain[i]))
+                obsIndicesIn.push_back(i);
 
         EDistributionType dt = Pot->GetDistribFun()->GetDistributionType();
        
@@ -3289,16 +3287,16 @@ void CParJtreeInfEngine::ProcessRoutes()
         int sizeMean, sizeCov;
         float normCoeff;
 
-		if ( dtCls == dtTabular)
-		{
+        if ( dtCls == dtTabular)
+        {
             MPI_Recv(&dataLength, 1, MPI_INT, NumOfSendProc, MPI_ANY_TAG, 
-				MPI_COMM_WORLD, &status);
-			pDataForRecving = new float [dataLength];
-			MPI_Recv((float*)pDataForRecving, dataLength, MPI_FLOAT, NumOfSendProc,
-				MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+                MPI_COMM_WORLD, &status);
+            pDataForRecving = new float [dataLength];
+            MPI_Recv((float*)pDataForRecving, dataLength, MPI_FLOAT, NumOfSendProc,
+                MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         }
-		else
-		{
+        else
+        {
             if (dtCls == dtGaussian)
             {
                 float *Sizes = new float [3];
@@ -3308,7 +3306,7 @@ void CParJtreeInfEngine::ProcessRoutes()
                 if (static_cast<CGaussianDistribFun *>(Pot->GetDistribFun())
                     ->GetCanonicalFormFlag())
                 {
-					
+
                     MPI_Recv((float*)Sizes, 3, MPI_FLOAT, NumOfSendProc, MPI_ANY_TAG, 
                         MPI_COMM_WORLD, &status);
                     sizeH = (int)Sizes[0];
@@ -3341,7 +3339,7 @@ void CParJtreeInfEngine::ProcessRoutes()
                     
                     dataMean = new float[sizeMean];
                     
-                    MPI_Recv((float*)dataMean, sizeMean, MPI_FLOAT,	NumOfSendProc, 
+                    MPI_Recv((float*)dataMean, sizeMean, MPI_FLOAT, NumOfSendProc, 
                         MPI_ANY_TAG, MPI_COMM_WORLD, &status);
                     
                     MPI_Recv(&sizeCov, 1, MPI_INT,
@@ -3393,9 +3391,9 @@ void CParJtreeInfEngine::ProcessRoutes()
                     }
                 }
         CPotential *potSink = GetJTree()->GetNodePotential(m_Routes[NumOfRoute][0]);
-		*potSink *= *UpdateRatio;
+        *potSink *= *UpdateRatio;
         potSink->Normalize();
-		delete UpdateRatio;
+        delete UpdateRatio;
     }
     else
     {
@@ -3423,13 +3421,13 @@ void CParJtreeInfEngine::ProcessRoutes()
             updateRatio = newPotSep->Divide(potSep);
             potSep->SetDistribFun(newPotSep->GetDistribFun());
             
-			int size = updateRatio->GetDomainSize();
+            int size = updateRatio->GetDomainSize();
             int NumOfRecvProc=0;
             while (m_Roots[NumOfRecvProc] != m_Routes[i][0])
                 NumOfRecvProc++;
 
             if (potClq->GetDistributionType() == dtTabular)
-			{
+            {
                 int dataLength;
                 const float *pDataForSending;
 
@@ -3455,10 +3453,10 @@ void CParJtreeInfEngine::ProcessRoutes()
                     MPI_Send((float*)pDataForSending, dataLength, MPI_FLOAT, 
                         NumOfRecvProc, m_MyRank, MPI_COMM_WORLD);
                 }
-			}
-			else
-			{
-				if (potClq->GetDistributionType() == dtGaussian)
+            }
+            else
+            {
+                if (potClq->GetDistributionType() == dtGaussian)
                 {
                     const float *dataH, *dataK;
                     int sizeH, sizeK;
@@ -3484,7 +3482,7 @@ void CParJtreeInfEngine::ProcessRoutes()
                         MPI_Send((float*)dataK, sizeK, MPI_FLOAT, NumOfRecvProc, 
                             m_MyRank, MPI_COMM_WORLD);
                     } // if dtScalar
-                    else	// gaussian distribution in canonical form
+                    else    // gaussian distribution in canonical form
                     if (updateRatio->GetDistribFun()->IsDistributionSpecific() == 1)
                     {
                         dataH = NULL;
@@ -3534,32 +3532,32 @@ void CParJtreeInfEngine::ProcessRoutes()
                         else  // gaussian distribution in moment form
                             // branch is not tested
                         if (static_cast<CGaussianDistribFun *>(updateRatio->GetDistribFun())->
-							GetMomentFormFlag())
+                            GetMomentFormFlag())
                         {
-							const float *dataMean, *dataCov;
+                            const float *dataMean, *dataCov;
                             int sizeMean, sizeCov;
                             float normCoeff;
 
                             static_cast<CDenseMatrix<float>*>(updateRatio->GetMatrix(matMean))->
                                 GetRawData(&sizeMean, &dataMean);
-							
+
                             static_cast<CDenseMatrix<float>*>(updateRatio->GetMatrix(matCovariance))->
                                 GetRawData(&sizeCov, &dataCov);
-							
+
                             normCoeff = static_cast<CGaussianDistribFun *>(updateRatio->
                                 GetDistribFun())->GetCoefficient(0);
 
                             MPI_Send(&sizeMean, 1, MPI_INT, NumOfRecvProc, m_MyRank,
                                 MPI_COMM_WORLD);
-							
+
                             MPI_Send((float*)dataMean, sizeMean, MPI_FLOAT, NumOfRecvProc,
                                 m_MyRank, MPI_COMM_WORLD);
-							
+
                             MPI_Send(&sizeCov, 1, MPI_INT, NumOfRecvProc, m_MyRank,
                                 MPI_COMM_WORLD);
-							
+
                             MPI_Send((float*)dataCov, sizeCov, MPI_FLOAT, NumOfRecvProc, 
-								m_MyRank, MPI_COMM_WORLD);
+                                m_MyRank, MPI_COMM_WORLD);
                         }
                     }
                 delete [] Sizes;
