@@ -1848,3 +1848,27 @@ void CCondGaussianDistribFun::GetNormExp(doubleVector &expOrders, floatVector *n
     
         
 }
+
+
+void CCondGaussianDistribFun::ResetNodeTypes(pConstNodeTypeVector &nodeTypes)
+{
+        CDistribFun::ResetNodeTypes(nodeTypes);
+	
+	int ncontNds = m_contParentsIndex.size();
+	pConstNodeTypeVector ntCont(ncontNds, NULL);
+	int i;
+	for( i = 0 ; i < ncontNds; i++ )
+	{
+	    ntCont[i] = nodeTypes[m_contParentsIndex[i]];
+	}
+	CMatrix<CGaussianDistribFun*>* distribf = static_cast<CCondGaussianDistribFun*>(this)
+	    ->GetMatrixWithDistribution();
+	CMatrixIterator<CGaussianDistribFun*>* iter = distribf->InitIterator();
+	for( iter; distribf->IsValueHere( iter ); distribf->Next(iter) )
+	{
+	    CGaussianDistribFun* tempDistr = *(distribf->Value( iter ));
+	    tempDistr->ResetNodeTypes( ntCont );
+	}
+	delete iter;
+	
+}

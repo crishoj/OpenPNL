@@ -115,7 +115,7 @@ public:
     
     virtual int IsSparse() const = 0;
     virtual int IsDense() const = 0;
-    inline void ResetNodeTypes( pConstNodeTypeVector &nodeTypes );
+    virtual void ResetNodeTypes( pConstNodeTypeVector &nodeTypes );
     virtual void Dump() const = 0;
     inline void SetUnitValue(int unitValue);
     inline bool GetMatricesValidityFlag() const;

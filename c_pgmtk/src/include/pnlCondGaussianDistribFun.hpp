@@ -167,7 +167,9 @@ public:
     inline CDenseMatrix<float>* GetMatrixNumEvidences();
     virtual ~CCondGaussianDistribFun();
 
-	virtual int GetNumberOfFreeParameters() const;
+    virtual int GetNumberOfFreeParameters() const;
+    virtual void ResetNodeTypes(pConstNodeTypeVector &nodeTypes);
+
 
 protected:
     CCondGaussianDistribFun( int isFactor, int nNodes,
