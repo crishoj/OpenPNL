@@ -22,8 +22,6 @@ int main(int argc, char* argv[])
         //TestGaussianModelCreate();
         //TestGaussianInference();
         //TestGaussianParamLearning();
-        //TestMRFModelCreate();
-        //TestMRFGetJPD();
 	//TestMultivariateWrapperJPD();
 	//TestMultivariateWrapperLearn();
 	//TestMultivariateWrapperLearnPartOfObservation();
@@ -78,6 +76,18 @@ int main(int argc, char* argv[])
     res = testDBNSaveLoad() & res;
 
     bTestOK = bTestOK && (res != 0);
+#endif
+#ifndef SKIP_MRF
+    try 
+    {
+        TestMRFModelCreate();
+        TestMRFGetJPD();
+    }
+    catch(pnl::CException e)
+    {
+	std::cout << e.GetMessage();
+	bTestOK = false;
+    }
 #endif
 
 #ifndef SKIP_NUMERATION
