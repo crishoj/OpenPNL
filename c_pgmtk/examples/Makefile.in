@@ -13,6 +13,7 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
+
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -50,6 +51,9 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-recursive installcheck-recursive installdirs-recursive \
 	pdf-recursive ps-recursive uninstall-info-recursive \
 	uninstall-recursive
+am__installdirs = $(DESTDIR)$(pnlexamplesdir)
+nobase_pnlexamplesDATA_INSTALL = $(install_sh_DATA)
+DATA = $(nobase_pnlexamples_DATA)
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = $(SUBDIRS)
@@ -166,9 +170,46 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-SUBDIRS = linux_test use_matrix testSL Data ex_inf_learn_dbn \
-        gibbs inf_learn_bnet learn_param mixture_gaussian_bnet trial \
-        parPNLTest testLIMID testSoftMax
+SUBDIRS = Data ex_inf_learn_dbn ex_param gibbs inf_learn_bnet learn_param \
+          linux_test mixture_gaussian_bnet parPNLTest testLIMID testSL \
+          testSoftMax trial use_matrix
+
+pnlexamplesdir = $(prefix)/examples
+nobase_pnlexamples_DATA = \
+     Data/alarm.dat     \
+     Data/cases     \
+     Data/casesArHMM     \
+     Data/casesForWS     \
+     Data/cases_gaussian     \
+     Data/casesTab     \
+     Data/kjaerulff.dat     \
+     Data/samplesFoWS     \
+     ex_inf_learn_dbn/src/inf_learn_dbn.cpp     \
+     ex_param/Src/pEvidence.cpp     \
+     ex_param/Src/pParameterForMNet.cpp     \
+     gibbs/Src/gibbs.cpp     \
+     inf_learn_bnet/Src/inf_learn_bnet.cpp     \
+     learn_param/src/learn_param.cpp     \
+     linux_test/test_run.cpp     \
+     mixture_gaussian_bnet/Src/mixture_gaussian_bnet.cpp     \
+     parPNLTest/include/CreateBNets.h     \
+     parPNLTest/include/LoadBNet.h     \
+     parPNLTest/src/CreateBNets.cpp     \
+     parPNLTest/src/LoadBNet.cpp     \
+     parPNLTest/src/parPNLTest.cpp     \
+     testLIMID/include/LoadIDNet.h     \
+     testLIMID/include/SamplesOfIDNet.h     \
+     testLIMID/src/LoadIDNet.cpp     \
+     testLIMID/src/SamplesOfIDNet.cpp     \
+     testLIMID/src/TestLIMID.cpp     \
+     testSL/testSEM.cpp     \
+     testSL/testSL.cpp     \
+     testSL/testSL_DBN.cpp     \
+     testSoftMax/include/SamplesOfSMNet.h     \
+     testSoftMax/src/SamplesOfSMNet.cpp     \
+     testSoftMax/src/TestSoftMax.cpp     \
+     trial/Src/classes_view.cpp     \
+     use_matrix/src/umatrix2.cpp
 
 all: all-recursive
 
@@ -212,6 +253,31 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
+install-nobase_pnlexamplesDATA: $(nobase_pnlexamples_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkdir_p) $(DESTDIR)$(pnlexamplesdir)
+	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
+	list='$(nobase_pnlexamples_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  case $$p in \
+	    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+	    *) f=$$p;; \
+	  esac; \
+	  echo " $(nobase_pnlexamplesDATA_INSTALL) $$d$$p $(DESTDIR)$(pnlexamplesdir)/$$f"; \
+	  $(nobase_pnlexamplesDATA_INSTALL) $$d$$p $(DESTDIR)$(pnlexamplesdir)/$$f; \
+	done
+
+uninstall-nobase_pnlexamplesDATA:
+	@$(NORMAL_UNINSTALL)
+	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
+	list='$(nobase_pnlexamples_DATA)'; for p in $$list; do \
+	  case $$p in \
+	    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+	    *) f=$$p;; \
+	  esac; \
+	  echo " rm -f $(DESTDIR)$(pnlexamplesdir)/$$f"; \
+	  rm -f $(DESTDIR)$(pnlexamplesdir)/$$f; \
+	done
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -371,9 +437,10 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-recursive
-all-am: Makefile
+all-am: Makefile $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
+	$(mkdir_p) $(DESTDIR)$(pnlexamplesdir)
 install: install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
@@ -417,7 +484,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am:
+install-data-am: install-nobase_pnlexamplesDATA
 
 install-exec-am:
 
@@ -443,7 +510,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-info-am uninstall-nobase_pnlexamplesDATA
 
 uninstall-info: uninstall-info-recursive
 
@@ -453,12 +520,13 @@ uninstall-info: uninstall-info-recursive
 	distclean-recursive distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic maintainer-clean-recursive \
-	mostlyclean mostlyclean-generic mostlyclean-libtool \
-	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-info-am
+	install-info-am install-man install-nobase_pnlexamplesDATA \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-generic \
+	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am uninstall-info-am \
+	uninstall-nobase_pnlexamplesDATA
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
