@@ -620,7 +620,7 @@ void CIDPotential::UpdateStatisticsML(const CEvidence* const* pEvidencesIn,
 }
 // ----------------------------------------------------------------------------
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CIDPotential::UpdateStatisticsML(CFactor *pPot)
 {
   PNL_THROW(CNotImplemented, 

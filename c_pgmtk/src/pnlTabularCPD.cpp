@@ -526,7 +526,7 @@ GetLogLik( const CEvidence* pEv, const CPotential* pShrInfRes ) const
     return logLik;
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CTabularCPD::UpdateStatisticsML(CFactor *pPot)
 {
     //Проверка на правильность pPot

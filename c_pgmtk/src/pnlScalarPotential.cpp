@@ -128,7 +128,7 @@ CPotential(pScalarPotential)
     
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CScalarPotential::UpdateStatisticsML(CFactor *pPot)
 {
     PNL_THROW(CNotImplemented, 

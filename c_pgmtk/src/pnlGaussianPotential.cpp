@@ -430,18 +430,18 @@ GenerateSample( CEvidence* evidence, int maximize ) const
 {
     
     PNL_CHECK_IS_NULL_POINTER( evidence );
-
+	
     int typeSpec = IsDistributionSpecific();
     bool dDeltaFunction = false;
     switch(typeSpec)
     {
     case 2:
-	dDeltaFunction = true;
-    	break;
+		dDeltaFunction = true;
+		break;
     case 0:
-    	break;
+		break;
     default:
-	PNL_THROW(CAlgorithmicException, "bad distribution for sampling")
+		PNL_THROW(CAlgorithmicException, "bad distribution for sampling")
     }
     
     
@@ -534,21 +534,21 @@ GenerateSample( CEvidence* evidence, int maximize ) const
             if( sz > 1)
             {
                 doubleVector::iterator dataIt;
-		doubleVector doubleMean;
-		doubleMean.resize(sz);
-		doubleVector doubleCov;
-		doubleCov.resize(sz*sz);
-		
-		for( i = 0; i < sz; i++ )
-		{
-		    doubleMean[i] = meanData[i];
-		}
-		for( i = 0; i < sz*sz; i++ )
-		{
-		    doubleCov[i] = covData[i];
-		}
-		
-		doubleVector rndVls;
+				doubleVector doubleMean;
+				doubleMean.resize(sz);
+				doubleVector doubleCov;
+				doubleCov.resize(sz*sz);
+				
+				for( i = 0; i < sz; i++ )
+				{
+					doubleMean[i] = meanData[i];
+				}
+				for( i = 0; i < sz*sz; i++ )
+				{
+					doubleCov[i] = covData[i];
+				}
+				
+				doubleVector rndVls;
                 pnlRandNormal( &rndVls, doubleMean, doubleCov );
                 
                 dataIt = rndVls.begin();
@@ -637,7 +637,7 @@ CPotential* CGaussianPotential::ConvertStatisticToPot(int numOfSamples) const
     for( i = 0 ; i < numOfVls; i++ )
     {
         for(j = i; j < numOfVls; j++)
-        {
+        { 
             indexes[0] = i;
             indexes[1] = j;
             value = pLearnMatrixCov->GetElementByIndexes(indexes)/numOfSamples;
@@ -765,10 +765,10 @@ float CGaussianPotential::GetLogLik( const CEvidence* pEv, const CPotential* pSh
     }
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CGaussianPotential::UpdateStatisticsML(CFactor *pPot)
 {
-    //Проверка на правильность pPot
+    //Is pPot correct?
     if (pPot->GetDistributionType() != dtGaussian)
         PNL_THROW(CInconsistentType, 
         "Can not use function CGaussianPotential::UpdateStatisticsML with wrong distribution type");

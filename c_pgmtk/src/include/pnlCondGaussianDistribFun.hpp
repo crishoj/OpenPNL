@@ -176,7 +176,7 @@ public:
     virtual void ResetNodeTypes(pConstNodeTypeVector &nodeTypes);
 
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
     virtual void UpdateStatisticsML(CDistribFun *pPot);
 #endif
 

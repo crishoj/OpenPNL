@@ -60,7 +60,7 @@ public:
 
 	~CScalarPotential(){}
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
     virtual void UpdateStatisticsML(CFactor *pPot);
 #endif
 

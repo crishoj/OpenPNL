@@ -851,7 +851,7 @@ float CMixtureGaussianCPD::GetLogLik( const CEvidence* pEv, const CPotential* pS
     return logLik;
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CMixtureGaussianCPD::UpdateStatisticsML(CFactor *pPot)
 {
     PNL_THROW(CNotImplemented, 

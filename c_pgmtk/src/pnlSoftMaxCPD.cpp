@@ -256,6 +256,7 @@ void CSoftMaxCPD::GenerateSample(CEvidence* evidence, int maximize) const
 	}
 
   pTabPot = ConvertWithEvidenceToTabularPotential(evidence);
+
   pTabPot->GenerateSample(evidence);
 
   delete pTabPot;
@@ -614,7 +615,7 @@ int CSoftMaxCPD::GetSoftMaxSize() const
 }
 //-----------------------------------------------------------------------------
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CSoftMaxCPD::UpdateStatisticsML(CFactor *pPot)
 {
     PNL_THROW(CNotImplemented,

@@ -123,7 +123,7 @@ public:
 
     ~CScalarDistribFun(){}
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
     void UpdateStatisticsML(CDistribFun *pDF);
 #endif
 

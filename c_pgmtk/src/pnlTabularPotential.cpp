@@ -609,10 +609,10 @@ GetLogLik( const CEvidence* pEv, const CPotential* pShrInfRes ) const
     }
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CTabularPotential::UpdateStatisticsML(CFactor *pPot)
 {
-    //Проверка на правильность pPot
+    //Is pPot correct?
     if (pPot->GetDistributionType() != dtTabular)
         PNL_THROW(CInconsistentType, 
         "Can not use function CTabularPotential::UpdateStatisticsML with wrong distribution type");

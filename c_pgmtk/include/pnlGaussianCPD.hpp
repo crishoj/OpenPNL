@@ -81,7 +81,7 @@ public:
     virtual void UpdateStatisticsML(const CEvidence* const* pEvidencesIn, int EvidenceNumber);
 #endif
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
     virtual void UpdateStatisticsML(CFactor *pPot);
 #endif
 

@@ -2251,7 +2251,7 @@ CNumericDenseMatrix<float>* CSoftMaxDistribFun:: GetProbMatrix(const CEvidence *
   return NewMatrix;
 };
 //-----------------------------------------------------------------------------
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CSoftMaxDistribFun::UpdateStatisticsML(CDistribFun *pPot)
 {
     PNL_THROW(CNotImplemented,

@@ -114,7 +114,7 @@ public:
         int EvidenceNumber);
 #endif
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
   virtual void UpdateStatisticsML(CFactor *pPot);
 #endif
 

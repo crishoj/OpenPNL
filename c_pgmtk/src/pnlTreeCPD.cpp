@@ -178,7 +178,7 @@ void CTreeCPD :: NormalizeCPD()
 {
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CTreeCPD::UpdateStatisticsML(CFactor *pPot)
 {
     PNL_THROW(CNotImplemented, 

@@ -134,7 +134,7 @@ public:
     int GetAdjectives( const CEvidence* pEv, float &expect, float &varian) const;
 	virtual int GetNumberOfFreeParameters() const;
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
     void UpdateStatisticsML(CDistribFun *pDF);
 #endif
 

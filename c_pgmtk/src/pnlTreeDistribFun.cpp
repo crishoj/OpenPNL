@@ -690,7 +690,7 @@ int CTreeDistribFun::GetNumberOfFreeParameters() const
     return m_pCART->num_nodes;	
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CTreeDistribFun::UpdateStatisticsML(CDistribFun *pPot)
 {
     PNL_THROW(CNotImplemented, 

@@ -2598,7 +2598,7 @@ void CTabularDistribFun::SetCheckNegative(bool val)
   m_bCheckNegative = val;
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CTabularDistribFun::UpdateStatisticsML(CDistribFun *pDF)
 {
     if (pDF->GetDistributionType()!=dtTabular)

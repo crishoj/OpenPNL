@@ -178,7 +178,7 @@ public:
   void MaximumLikelihood(float **Observation, int NumberOfObservations, 
     float Accuracy, float step = 0.1);
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
   virtual void UpdateStatisticsML(CDistribFun *pPot);
 #endif
 

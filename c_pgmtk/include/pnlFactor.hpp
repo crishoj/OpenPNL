@@ -179,7 +179,7 @@ public:
     inline int AreThereAnyObsPositions() const;
     ~CFactor();
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
     virtual void UpdateStatisticsML(CFactor *pPot) = 0;
 #endif
 

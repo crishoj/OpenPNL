@@ -7185,7 +7185,7 @@ C2DNumericDenseMatrix<float> * CGaussianDistribFun::FormCov(intVector& nsVec, fl
     
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CGaussianDistribFun::UpdateStatisticsML(CDistribFun *pDF)
 {
     if (pDF->GetDistributionType() != dtGaussian)

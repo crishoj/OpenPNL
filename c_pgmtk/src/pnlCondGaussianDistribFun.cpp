@@ -1939,7 +1939,7 @@ void CCondGaussianDistribFun::GetNormExp(doubleVector &expOrders, floatVector *n
         
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CCondGaussianDistribFun::UpdateStatisticsML(CDistribFun *pPot)
 {
     PNL_THROW(CNotImplemented, 

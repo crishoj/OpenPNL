@@ -156,7 +156,7 @@ public:
 
     void SetCheckNegative(bool val);
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
     void UpdateStatisticsML(CDistribFun *pDF);
 #endif
 

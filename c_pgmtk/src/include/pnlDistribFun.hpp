@@ -129,7 +129,7 @@ public:
 
     ~CDistribFun(){}
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
     virtual void UpdateStatisticsML(CDistribFun *pDF) = 0;
 #endif
 

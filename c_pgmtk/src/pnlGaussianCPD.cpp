@@ -987,7 +987,7 @@ float CGaussianCPD::GetLogLik( const CEvidence* pEv, const CPotential* pShrInfRe
     }
 }
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
 void CGaussianCPD::UpdateStatisticsML(CFactor *pPot)
 {
     PNL_THROW(CNotImplemented, 

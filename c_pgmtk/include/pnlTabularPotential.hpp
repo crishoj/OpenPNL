@@ -79,7 +79,7 @@ public:
 
 	~CTabularPotential(){}
 
-#ifdef PAR_OMP
+#ifdef PAR_PNL
     void UpdateStatisticsML(CFactor *pPot);
 #endif
 
