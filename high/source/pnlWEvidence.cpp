@@ -34,10 +34,31 @@ void WEvidence::Set(const TokArr &evidence)
 	    node = node->v_prev;
 	}
 */
-	if(/*(node->tag != eTagNetNode)&&(*/node->tag != eTagValue)
-	{
-	    ThrowUsingError("Wrong name for node of Bayes Net", "SetEvidence");
-	}
+
+        bool isd = static_cast<pnl::CNodeType*>((node->tag == eTagNetNode)?
+            (node->v_prev->data):
+            (node->v_prev->v_prev->data))->IsDiscrete();
+
+        if (!isd)
+        {
+            if(node->tag == eTagNetNode)
+            {
+                int size = static_cast<pnl::CNodeType*>(node->v_prev->data)->GetNodeSize();
+                if (size == 1)
+                {
+                    node = node->v_next;
+                }
+                else
+                ThrowUsingError("You should set name of dimension in multivariate case", "Set");
+            }
+        }
+        else
+        {
+            if(node->tag != eTagValue)
+            {
+                ThrowUsingError("Wrong name for node of Bayes Net", "Set");
+            }
+        }
 	std::map<TokIdNode*, int>::iterator location = m_VarMap.find(node);
 	if(location == m_VarMap.end())
 	{

@@ -52,7 +52,7 @@ void ProbabilisticNet::AddNode(TokArr nodes, TokArr subnodes)
 {
     for(unsigned int i = 0; i < nodes.size(); ++i)
     {
-	Token()->AddNode(nodes[i], subnodes);
+        Token()->AddNode(nodes[i], subnodes);
     }
 }
 
@@ -842,6 +842,25 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
 
     Graph()->Graph();
     ExtractTokArr(const_cast<TokArr &>(aValue), &aiNode, &aiValue, &Graph()->MapOuterToGraph());
+
+    Vector<TokIdNode*> apNode = Token()->ExtractNodes(const_cast<TokArr &>(aValue));
+
+    aiValue.resize(apNode.size());
+    for (i = 0; i< apNode.size(); i++ )
+    {
+        if (!(static_cast<pnl::CNodeType*>(apNode[i]->v_prev->data)->IsDiscrete()))
+        {
+//            int size = static_cast<pnl::CNodeType*>(apNode[i]->v_prev->data)->GetNodeSize();
+          int size = Token()->nValue(aiNode[i]);
+            if (size == 1)
+            {
+                aiValue[i] = GetInt(apNode[i]->v_next);
+            }
+        }
+            
+    }
+   
+
     aNodeFlag.assign(nNetNode(), 0);
 
     // mark nodes for evidence (aNodeFlag)

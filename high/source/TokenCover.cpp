@@ -151,6 +151,7 @@ void TokenCover::AddNode(TokArr &nodes, TokArr &values)
 
     for(i = 0; i < nodes.size(); i++)
     {
+
 	AddNode(nodes[i], values);
     }
 }
@@ -159,7 +160,8 @@ int TokenCover::AddNode(Tok &node, TokArr &aValue)
 {
     TokIdNode *parentNode = m_pRoot;
     String nodeName = node.Name();
-/*    std::deque<TokId> &aUnr = node.Unresolved(parentNode);
+
+    std::deque<TokId> &aUnr = node.Unresolved(parentNode);
     pnl::pnlString str;
     
     str << node.Node()->Name() << "#" << node.Node()->tag << ":";
@@ -167,8 +169,9 @@ int TokenCover::AddNode(Tok &node, TokArr &aValue)
     {
         str << aUnr[i] << " ";
     }
-    PrintTokTree("toktree.txt", TokIdNode::root);
-*/
+///    PrintTokTree("toktree.txt", TokIdNode::root);
+
+
     if(node.Unresolved(parentNode).size() != 1)
     {
         pnl::pnlString str;
@@ -186,10 +189,17 @@ int TokenCover::AddNode(Tok &node, TokArr &aValue)
 	parentNode = node.Node(parentNode);
     }
 
+
     // add Bayes vertex
     TokIdNode *tokNode = parentNode->Add(nodeName);
     tokNode->tag = eTagNetNode;
     TokIdNode *pValue;
+
+    if (tokNode->v_prev == m_pContinuous)
+    {
+       if (aValue.size() == 0)     
+           aValue << "dim1";
+    }
 
     for(int j = 0; j < aValue.size(); ++j)
     { // add vertex's values (or dimension names)

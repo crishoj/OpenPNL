@@ -31,9 +31,9 @@
 </Graph>
 <ModelDomain TypeName="ModelDomain">
 <VarAssociations TypeName="intVector">
-[0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 ]</VarAssociations>
-<NodeTypes TypeName="NodeTypeVector" NumberOfNodes="25">
-1:2:1,1:2:1,1:3,1:2,1:3,1:3,1:2:1,1:2,1:2,1:2:1,1:1:2,1:2,1:3,1:3,1:1:2,1:3,1:1:2,1:2:1,1:3,1:1:2,1:3,1:1:2,1:1:2,1:1:2,1:1:2</NodeTypes>
+[0 0 1 2 1 1 0 2 2 0 3 2 1 1 3 1 3 0 1 3 1 3 3 3 3 ]</VarAssociations>
+<NodeTypes TypeName="NodeTypeVector" NumberOfNodes="4">
+1:2:1,1:3,1:2,1:1:2</NodeTypes>
 </ModelDomain>
 <Factor0 TypeName="Factor" FactorType="1" DistributionType="0">
 <ModelDomain TypeName="ModelDomain" DuplicatedObject="@Model/ModelDomain">
@@ -336,5 +336,107 @@
 </DistributionFunction>
 </Factor24>
 </Model>
+<NodeInfo TypeName="ProbabilisticNet" ModelType="idnet" NumberOfNodes="25">
+<Node0 TypeName="WNode" NodeName="Node0">
+[State0 State1]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1" NodeState="1">
+</NodeType>
+</Node0>
+<Node1 TypeName="WNode" NodeName="Node1">
+[State0 State1]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1" NodeState="1">
+</NodeType>
+</Node1>
+<Node2 TypeName="WNode" NodeName="Node2">
+[State0 State1 State2]<NodeType TypeName="NodeType" NodeSize="3" IsDiscrete="1">
+</NodeType>
+</Node2>
+<Node3 TypeName="WNode" NodeName="Node3">
+[State0 State1]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+</NodeType>
+</Node3>
+<Node4 TypeName="WNode" NodeName="Node4">
+[State0 State1 State2]<NodeType TypeName="NodeType" NodeSize="3" IsDiscrete="1">
+</NodeType>
+</Node4>
+<Node5 TypeName="WNode" NodeName="Node5">
+[State0 State1 State2]<NodeType TypeName="NodeType" NodeSize="3" IsDiscrete="1">
+</NodeType>
+</Node5>
+<Node6 TypeName="WNode" NodeName="Node6">
+[State0 State1]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1" NodeState="1">
+</NodeType>
+</Node6>
+<Node7 TypeName="WNode" NodeName="Node7">
+[State0 State1]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+</NodeType>
+</Node7>
+<Node8 TypeName="WNode" NodeName="Node8">
+[State0 State1]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+</NodeType>
+</Node8>
+<Node9 TypeName="WNode" NodeName="Node9">
+[State0 State1]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1" NodeState="1">
+</NodeType>
+</Node9>
+<Node10 TypeName="WNode" NodeName="Node10">
+[State0]<NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+</NodeType>
+</Node10>
+<Node11 TypeName="WNode" NodeName="Node11">
+[State0 State1]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1">
+</NodeType>
+</Node11>
+<Node12 TypeName="WNode" NodeName="Node12">
+[State0 State1 State2]<NodeType TypeName="NodeType" NodeSize="3" IsDiscrete="1">
+</NodeType>
+</Node12>
+<Node13 TypeName="WNode" NodeName="Node13">
+[State0 State1 State2]<NodeType TypeName="NodeType" NodeSize="3" IsDiscrete="1">
+</NodeType>
+</Node13>
+<Node14 TypeName="WNode" NodeName="Node14">
+[State0]<NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+</NodeType>
+</Node14>
+<Node15 TypeName="WNode" NodeName="Node15">
+[State0 State1 State2]<NodeType TypeName="NodeType" NodeSize="3" IsDiscrete="1">
+</NodeType>
+</Node15>
+<Node16 TypeName="WNode" NodeName="Node16">
+[State0]<NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+</NodeType>
+</Node16>
+<Node17 TypeName="WNode" NodeName="Node17">
+[State0 State1]<NodeType TypeName="NodeType" NodeSize="2" IsDiscrete="1" NodeState="1">
+</NodeType>
+</Node17>
+<Node18 TypeName="WNode" NodeName="Node18">
+[State0 State1 State2]<NodeType TypeName="NodeType" NodeSize="3" IsDiscrete="1">
+</NodeType>
+</Node18>
+<Node19 TypeName="WNode" NodeName="Node19">
+[State0]<NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+</NodeType>
+</Node19>
+<Node20 TypeName="WNode" NodeName="Node20">
+[State0 State1 State2]<NodeType TypeName="NodeType" NodeSize="3" IsDiscrete="1">
+</NodeType>
+</Node20>
+<Node21 TypeName="WNode" NodeName="Node21">
+[State0]<NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+</NodeType>
+</Node21>
+<Node22 TypeName="WNode" NodeName="Node22">
+[State0]<NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+</NodeType>
+</Node22>
+<Node23 TypeName="WNode" NodeName="Node23">
+[State0]<NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+</NodeType>
+</Node23>
+<Node24 TypeName="WNode" NodeName="Node24">
+[State0]<NodeType TypeName="NodeType" NodeSize="1" IsDiscrete="1" NodeState="2">
+</NodeType>
+</Node24>
+</NodeInfo>
 
 </PNLObjects>
