@@ -187,7 +187,8 @@ It is LIMID class that is used for working with LImited Memory Influence Diagram
         <br>etc.
 </UL>
 <p> With the help of the LIMID class methods, the user can specify and retrieve parameters of LIMID.&nbsp; 
-The LIMID inference algorithm allows user to get only pure politics. 
+The LIMID inference algorithm allows user to get only pure politics.  A pure policy for decision node d prescribes an alternative in the set of all possible values for each possible configuration of its parents.
+</p>
 <!--webbot bot="PurpleText" PREVIEW="Denver: What does &quot;pure politics&quot; mean??" --> At the moment inference for LIMIDs 
 is implemented only for discrete nodes.<p>
 
@@ -324,7 +325,7 @@ net.SetPTabular("Sprinkler^false", "0.5", "Cloudy^false");
 </p>
 Note that two different versions of SetPTabular exist, one with two arguments 
 (when a node has no parents) and one with three arguments (when a node has 
-parents). This third argument specifies the parents' state configuration, the probability value is defined for the indicated state and indicated parents' configuration. 
+parents). This third argument specifies the parents' state configuration, the probability value is defined for the indicated state and indicated parents' configuration. The order of parents nodes in this list doesn't matter.
 Again, this function can be called in batch form:
 <p>
 <!--webbot bot="PurpleText" PREVIEW="Denver: We should provide an example of how to set a CPD when a node has multiple parents!  I assume the third argument would then become a list such as &quot;Sprinkler^false Rain^true&quot;.  Is this correct, and does the order of the parents in this list matter?  An example would eliminate these questions." --></p>
@@ -332,9 +333,15 @@ Again, this function can be called in batch form:
 <pre>
 net.SetPTabular("Sprinkler^true Sprinkler^false", "0.1 0.9", "Cloudy^true");
 net.SetPTabular("Sprinkler^true Sprinkler^false", "0.5 0.5", "Cloudy^false");
+
+net.SetPTabular("WetGrass^true WetGrass^false", "0.99 0.01", "Rain^true Sprinkler^true ");
+net.SetPTabular("WetGrass^true WetGrass^false", "0.9 0.1", "Sprinkler^true Rain^false");
+net.SetPTabular("WetGrass^true WetGrass^false", "0.9 0.1", "Sprinkler^false Rain^true");
+net.SetPTabular("WetGrass^true WetGrass^false", "0.0 1.0", "Sprinkler^false Rain^false");
 </pre>
 </p>
-To get the probability distribution of the node we must call the GetPTabular method:
+
+<p>To get the probability distribution of the node we must call the GetPTabular method:
 <p>
 <pre>
 TokArr PCloudy = net.GetPTabular("Cloudy");
