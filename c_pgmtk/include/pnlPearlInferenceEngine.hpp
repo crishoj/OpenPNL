@@ -25,6 +25,9 @@
 #include "pnlNodeType.hpp"
 #include "pnlGraph.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 
 PNL_BEGIN
 
@@ -91,6 +94,16 @@ public:
 
     ~CPearlInfEngine();
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CPearlInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
 
     int                 m_IterationCounter;
@@ -148,6 +161,9 @@ protected:
 
     inline messageVecVector&    GetMessagesFromNeighbors();
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 
     const int           m_numOfNdsInModel;

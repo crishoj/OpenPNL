@@ -24,6 +24,9 @@
 #include "pnlPotential.hpp"
 //#include "TabularData.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 #ifdef SWIG
 %rename(CreateUnitF) CTabularPotential::CreateUnitFunctionDistribution( const intVector& , CModelDomain* , int , const intVector& ); 
@@ -80,11 +83,25 @@ public:
     void UpdateStatisticsML(CFactor *pPot);
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CTabularPotential::m_TypeInfo;
+    }
+#endif
 protected:
 	CTabularPotential( const int *domain, int nNodes, CModelDomain* pMD,
         const intVector& obsIndicesIn = intVector() );
 	CTabularPotential( const CTabularPotential &pTabPotential );
     CTabularPotential( const CTabularPotential* pTabPot );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
 };
 

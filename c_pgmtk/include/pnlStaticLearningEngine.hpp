@@ -23,6 +23,9 @@
 #include "pnlEvidence.hpp"
 #include "pnlInferenceEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CStaticLearningEngine : public CLearningEngine
@@ -44,7 +47,17 @@ public:
     void SetTerminationToleranceIPF(float precision = 0.01);
     virtual inline CStaticGraphicalModel* GetStaticModel() const;
     inline int GetNumEv() const;
-    
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CStaticLearningEngine::m_TypeInfo;
+  }
+#endif
 protected:
     CStaticLearningEngine(CStaticGraphicalModel *pGrModel, ELearningTypes LearnType);
     
@@ -54,7 +67,9 @@ protected:
     int m_maxIterIPF;
     float m_precisionIPF;
 	
-
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
 };
 

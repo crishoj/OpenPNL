@@ -23,6 +23,10 @@
 #include "pnlTypeDefs.hpp"
 #include "pnlGraph.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API CTreeCPD : public CCPD
@@ -56,10 +60,25 @@ public:
     virtual void UpdateStatisticsML(CFactor *pPot);
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CTreeCPD::m_TypeInfo;
+    }
+#endif
+
 protected:
     CTreeCPD( const int *domain, int nNodes, CModelDomain* pMD );
     CTreeCPD( const CTreeCPD& TreeCPD );
     CTreeCPD( const CTreeCPD* pTreeCPD );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     
 };

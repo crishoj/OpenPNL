@@ -27,6 +27,9 @@
 #include "pnlMixtureGaussianCPD.hpp"
 #include "pnlStaticLearningEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CStaticStructLearnSEM : public CStaticLearningEngine
@@ -44,6 +47,16 @@ public:
 	void SetMinProgress(float minPorgress);
 	void SetMaxLoop(int maxLoop);
 	
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CStaticStructLearnSEM::m_TypeInfo;
+  }
+#endif
 protected:
 	CStaticStructLearnSEM(CBNet *pBNet, 
 						  ELearningTypes LearnType, 
@@ -67,7 +80,10 @@ protected:
 	CBNet*		m_pCurrBNet;
 
 	pEvidencesVector  m_vCurrEvidences;
-	
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 	void CreateNeighborCPDs(CBNet* pBNet, pCPDVector* vNeighborCPDs, EDGEOPVECTOR* vValidMoves, intVector* MoveCorrespCPD);
 	CCPD* CreateRandomCPD(int nfamily, const int* family, CBNet* pBNet);

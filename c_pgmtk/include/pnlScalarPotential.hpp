@@ -24,6 +24,9 @@
 #include "pnlPotential.hpp"
 //#include "ScalarData.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CScalarPotential : public CPotential  
@@ -61,11 +64,25 @@ public:
     virtual void UpdateStatisticsML(CFactor *pPot);
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CScalarPotential::m_TypeInfo;
+    }
+#endif
 protected:
 	CScalarPotential( const int *domain, int nNodes, CModelDomain* pMD,
         const intVector& obsIndicesIn = intVector());
 	CScalarPotential( const CScalarPotential &pScalarPotential );
     CScalarPotential( const CScalarPotential* pScalarPotential );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
 };
 

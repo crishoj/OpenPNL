@@ -26,6 +26,9 @@
 
 #include "pnlEmLearningEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 #ifdef PAR_RESULTS_RELIABILITY
@@ -53,11 +56,24 @@ public:
     void LearnOMP();
 #endif
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CParEMLearningEngine::m_TypeInfo;
+  }
+#endif
 protected:
 
     CParEMLearningEngine(CStaticGraphicalModel *pGrModel, CInfEngine *pInfEng,
         ELearningTypes LearnType);
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 };
 
 PNL_END

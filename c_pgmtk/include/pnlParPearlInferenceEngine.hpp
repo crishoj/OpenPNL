@@ -26,6 +26,9 @@
 #include "pnlPearlInferenceEngine.hpp"
 #include <set>
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CParPearlInfEngine : public CPearlInfEngine
@@ -55,6 +58,16 @@ public:
     
     void SetIsMRF2Grille(bool Val);
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CParPearlInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
 
     CParPearlInfEngine(const CStaticGraphicalModel *pGraphicalModel);
@@ -109,6 +122,9 @@ protected:
     // normalize matrix of message
     void NormalizeDataInMessage(CDistribFun* Data);
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 
     messageVector m_productPi;           // facient pi of messages for each node

@@ -23,6 +23,9 @@
 #include "pnlNodeType.hpp"
 #include "pnlException.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 #ifdef SWIG
@@ -99,6 +102,16 @@ public:
 
 	virtual ~CStaticGraphicalModel();
 	
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CStaticGraphicalModel::m_TypeInfo;
+  }
+#endif
 protected:
 	
 	CStaticGraphicalModel( CGraph *pGraph, CModelDomain* pMD );
@@ -131,6 +144,9 @@ protected:
 	// domain (vector<int>) is a key and index (int) is the value 
 	intVector m_paramInds;
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
 
 };

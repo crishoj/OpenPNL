@@ -23,6 +23,10 @@
 #include "pnlNodeType.hpp"
 #include "pnlGraph.hpp"
 #include "pnlFGSumMaxInferenceEngine.hpp"
+
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 
@@ -70,6 +74,16 @@ public:
     ~CSpecPearlInfEngine();
 
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CSpecPearlInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
 
     CSpecPearlInfEngine( const CStaticGraphicalModel *pGraphicalModel );
@@ -101,6 +115,9 @@ protected:
     
     void           TreeProtocol();
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 
     const int           m_numOfNdsInModel;

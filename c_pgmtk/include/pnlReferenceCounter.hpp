@@ -24,7 +24,9 @@
 #include "pnlException.hpp"
 #include <assert.h>
 
-
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CReferenceCounter : public CPNLBase 
@@ -38,12 +40,25 @@ public:
 
     inline int  GetNumOfReferences() const;
     
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CReferenceCounter::m_TypeInfo;
+  }
+#endif
 protected:
 
     CReferenceCounter();  
     
     ~CReferenceCounter(); 
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 
     // no need to copy CRefrenceCounter.

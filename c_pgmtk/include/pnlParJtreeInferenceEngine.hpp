@@ -30,6 +30,9 @@
 #include <mpi.h>
 #endif
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CParJtreeInfEngine : public CJtreeInfEngine
@@ -84,6 +87,16 @@ public:
     void SetCollectRanks(int Count, int *pCollectRanks);
 #endif // PAR_MPI
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CParJtreeInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
 
     // ctors
@@ -103,6 +116,9 @@ protected:
         bool isCollect);
 #endif // PAR_OMP
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 
     intQueue              m_QueueNodes;     // queue for cliques

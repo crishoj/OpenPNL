@@ -20,6 +20,10 @@
 
 #include "pnlInferenceEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API CSamplingInfEngine : public CInfEngine
@@ -52,6 +56,17 @@ public:
     
     virtual ~CSamplingInfEngine();
     virtual void Continue( int dt );
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CSamplingInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
     
     CSamplingInfEngine( const CStaticGraphicalModel *pGraphicalModel );
@@ -89,8 +104,9 @@ protected:
     void SetSamplingNdsFlags(boolVector &flags);
     void GetSamplingNdsFlags(boolVector* flags) const;
 
-
-    
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif     
 private:
     
     intVector m_ndsForSampling;

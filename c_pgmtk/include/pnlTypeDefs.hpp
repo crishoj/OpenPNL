@@ -261,55 +261,6 @@ typedef pnlVector< CIDPotential* >      pIDPotentialVector;
 
 typedef pnlVector<pFactorVector>        pFactorVecVector;
 
-#ifdef PNL_RTTI
-//This is the main class for RTTI in PNL
-//It does not support multiple inheritance
-class CPNLType
-{
-public:
-  CPNLType(const pnlString &TypeName, const CPNLType *const Parent = NULL):
-     m_TypeName(TypeName),
-     m_pParent(Parent)
-  {}
-
-  bool operator==(const CPNLType &OtherType) const
-  {
-    return (&OtherType == this);
-  }
-
-  bool IsDerived(const CPNLType &ParentType) const
-  {
-    if (ParentType == *this) 
-    {
-      return true;
-    }
-    else 
-    {
-      if (this->m_pParent != NULL)
-      {
-        return this->m_pParent->IsDerived(ParentType);
-      }
-      else
-      {
-        return false;
-      }
-    }
-
-    return false;
-  }
-
-  pnlString GetTypeName() const
-  {
-    return m_TypeName;
-  }
-  
-protected:
-private:
-  const pnlString m_TypeName;
-  const CPNLType *const m_pParent;
-};
-#endif //PNL_RTTI
-
 PNL_END
 
 #endif // __PNLTYPEDEFS_H__

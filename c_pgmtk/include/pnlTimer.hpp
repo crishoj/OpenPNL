@@ -5,6 +5,10 @@
 #include <sstream>
 #include <time.h>
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 #define PNL_TIMERLOG_LEVEL_AND_SERVICE  pnl::eLOG_ALL, pnl::eLOGSRV_ALL
 
 #define DEFAULT_HEADER                  " empty header "
@@ -54,11 +58,26 @@ public:
     
     inline void                SaveNextNTimerResults(int numOfResToSave) const;
     
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CTimerAndLogWriter::m_TypeInfo;
+  }
+#endif
+
 protected:
     
     CTimerAndLogWriter();
     
     ~CTimerAndLogWriter();
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 
 protected:
 

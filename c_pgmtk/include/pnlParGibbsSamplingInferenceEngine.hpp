@@ -27,6 +27,9 @@
 
 #include "pnlGibbsSamplingInferenceEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif
 PNL_BEGIN
 
 class PNL_API CParGibbsSamplingInfEngine : public CGibbsSamplingInfEngine
@@ -43,6 +46,16 @@ public:
     void EnterEvidence( const CEvidence *pEvidenceIn, int maximize = 0, 
         int sumOnMixtureNode = 1 );
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CParGibbsSamplingInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
 
     CParGibbsSamplingInfEngine(const CStaticGraphicalModel 
@@ -56,6 +69,9 @@ protected:
 
     void CreateQueryFactors();
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 
     int m_MyRank;                       // process number

@@ -24,6 +24,11 @@
 #include "pnlCPD.hpp"
 #include "pnlTypeDefs.hpp"
 #include "pnlBNet.hpp"
+
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API CSoftMaxCPD : public CCPD
@@ -113,6 +118,16 @@ public:
   virtual void UpdateStatisticsML(CFactor *pPot);
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CSoftMaxCPD::m_TypeInfo;
+    }
+#endif
 protected:
     CSoftMaxCPD(const int *domain, int nNodes, CModelDomain* pMD);
     
@@ -120,6 +135,9 @@ protected:
     
     CSoftMaxCPD(const CSoftMaxCPD* pSMCPD);
     
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     EMaximizingMethod m_MaximizingMethod;
     //defines Method, which is used for Likelihood Maximizing

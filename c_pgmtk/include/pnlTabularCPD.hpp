@@ -21,6 +21,9 @@
 #include "pnlParConfig.hpp"
 #include "pnlCPD.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 #ifdef SWIG
@@ -75,10 +78,24 @@ public:
     virtual void UpdateStatisticsML(CFactor *pPot);
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CTabularCPD::m_TypeInfo;
+    }
+#endif
 protected:
     CTabularCPD( const int *domain, int nNodes, CModelDomain* pMD );
     CTabularCPD( const CTabularCPD& TabCPD );
     CTabularCPD( const CTabularCPD* pTabCPD );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
 };
 

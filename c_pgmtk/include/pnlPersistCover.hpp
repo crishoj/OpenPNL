@@ -23,15 +23,35 @@
 #include "pnlContextPersistence.hpp"
 #include "pnlPersistArray.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class CCoverGen: public CPNLBase
 {
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
+
 public:
     CCoverGen() {}
     virtual CPNLBase *GetBaseObj() const = 0;
     virtual int nObject() const { return 1; }
     virtual ~CCoverGen() { }
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CCoverGen::m_TypeInfo;
+  }
+#endif
 };
 
 template<typename Type> class CCover: public CCoverGen
@@ -42,9 +62,29 @@ public:
     { return reinterpret_cast<CPNLBase*>(GetPointer()); }
     virtual Type *GetPointer() const { return m_Pointer; }
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CCover<int>::GetStaticTypeInfo();
+    }
+#endif
+
 protected:
     Type *m_Pointer;
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 };
+
+#ifdef PNL_RTTI
+template< typename T > 
+const CPNLType CCover< T >::m_TypeInfo = CPNLType("CCover", &(CCoverGen::m_TypeInfo));
+#endif
 
 template<typename Type> class CCoverDel: public CCover<Type>
 {
@@ -52,9 +92,30 @@ public:
     CCoverDel(Type *ptr): CCover<Type>(ptr) { }
     virtual ~CCoverDel()
     {
-	delete m_Pointer;
+    	delete m_Pointer;
     }
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CCoverDel<int>::GetStaticTypeInfo();
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 };
+
+#ifdef PNL_RTTI
+template<typename T > 
+const CPNLType CCoverDel< T >::m_TypeInfo = CPNLType("CCoverDel", &(CCover< T >::m_TypeInfo));
+#endif
 
 class CPersistNodeTypeVector: public CPersistence
 {

@@ -23,6 +23,9 @@
 #include "pnlImpDefs.hpp"
 #include "pnlDenseMatrix.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 template <class Type> class CSparseMatrix : public /*virtual*/ CMatrix<Type>
@@ -88,7 +91,16 @@ public:
     virtual void Index( CMatrixIterator<Type>* current, intVector* index ) const;
     inline void SetDefaultVal( Type defVal );
 
-    
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CSparseMatrix< int >::GetStaticTypeInfo();
+    }
+#endif
 protected:
     int ConvertToIndex() const;
     CSparseMatrix(int dim, const int *range, const Type defaultVal, int Clamp);
@@ -96,6 +108,10 @@ protected:
     CSparseMatrix( CxSparseMat* p_sparse, Type defaultVal );
     inline CxSparseMat* GetCxSparseMat();
     inline const CxSparseMat* GetCxSparseMat() const;
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     CxSparseMat* m_pCvSparseMat;
     Type m_defaultVal;
@@ -696,6 +712,12 @@ void CSparseMatrix<Type>::Index( CMatrixIterator<Type>*current, intVector* index
     int numDims = GetNumberDims();
     index->assign( idx, idx+numDims );
 }
+
+#endif
+
+#ifdef PNL_RTTI
+template< typename T >
+const CPNLType CSparseMatrix< T >::m_TypeInfo = CPNLType("CSparseMatrix", &(CMatrix< T >::m_TypeInfo));
 
 #endif
 

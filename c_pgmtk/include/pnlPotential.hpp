@@ -24,6 +24,10 @@
 
 //#include "pnlJPD.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 PNL_API CPotential* pnlMultiply(CPotential* Pot1, CPotential* Pot2, CModelDomain* pMD);
@@ -84,12 +88,26 @@ public:
 #endif
     static void SetDump(const char *fileName);
     
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CPotential::m_TypeInfo;
+    }
+#endif
 protected:
     CPotential( EDistributionType dt,
         EFactorType pt,	const int *domain, int nNodes, CModelDomain* pMD,
         const intVector& obsIndicesIn = intVector() );	
     CPotential( EDistributionType dt, EFactorType ft, CModelDomain* pMD );
     CPotential( const CPotential* potential );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     
 };
