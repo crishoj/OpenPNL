@@ -34,7 +34,9 @@ protected:
 
 private:
     int hash(const Vector<int> &aIndex) const;	// hash function that maps set of 
-						//nodes numbers to integer number
+						// nodes numbers to integer number
+    bool IsSubClique(const Vector<int> &aiNode);    // check if nodes make subclique 
+                                                    // or if some clique is subset of nodes
 private:// DATA members
     WGraph *m_pGraph;			// Stores names of nodes and graph without eages
     Vector<Vector<int> > m_aCliques;	// vector of cliques

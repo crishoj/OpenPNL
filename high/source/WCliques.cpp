@@ -19,6 +19,29 @@ WCliques::WCliques(WGraph *graph): m_pGraph(graph)
     SpyTo(graph);
 }
 
+// check if nodes make subclique or if some clique is subset of nodes
+// nodes indices must be sorted 
+bool WCliques::IsSubClique(const Vector<int> &aiNode)
+{
+    int i, j;
+    for(i = 0; i < m_aCliques.size(); i++)
+    {
+        int maxSize = aiNode.size() < m_aCliques[i].size() ? aiNode.size() : m_aCliques[i].size();
+        for(j = 0; j < maxSize; j++)
+        {
+            if(aiNode[j] != m_aCliques[i][j])
+            {
+                break;
+            }
+        }
+        if(j == maxSize)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool WCliques::FormClique(const Vector<int> &aIndex)
 {
     int i;
@@ -29,9 +52,17 @@ bool WCliques::FormClique(const Vector<int> &aIndex)
 	    return false;
 	}
     }
+    Vector<int> tmp_vec_clique(aIndex.begin(), aIndex.end());
+    std::sort(tmp_vec_clique.begin(), tmp_vec_clique.end());
 
-    m_aCliques.push_back(aIndex);
-    m_HashTable.insert(std::make_pair(hash(aIndex), m_aCliques.size() - 1));
+    if(IsSubClique(tmp_vec_clique))
+    {
+        return false;
+        //ThrowUsingError("Nodes can not be clique. Nodes are subset of some existing clique or some clique is subset of nodes.", "FormClique");
+    }
+
+    m_aCliques.push_back(tmp_vec_clique);
+    m_HashTable.insert(std::make_pair(hash(tmp_vec_clique), m_aCliques.size() - 1));
     Notify(eInit, m_aCliques.size() - 1);
     return true;
 }
@@ -95,7 +126,6 @@ Vector<int> WCliques::ClqNumbersForNode(int iNode)
     if(!m_pGraph->IsValidINode(iNode))
     {
 	pnl::pnlString str;
-	
 	str << '\'' << iNode << "' is not a node";
 	ThrowUsingError(str.c_str(), "ClqNumbersForNode");
     }
