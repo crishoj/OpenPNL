@@ -443,7 +443,7 @@ void CParPearlInfEngine::EnterEvidence(const CEvidence *evidence, int maximize,
   m_bMaximize = maximize ? 1 : 0;
   // clear all the previous data
   ClearMessagesStorage();
-  if (AllCountinuesNodes(GetModel()) == true)
+  if (!AllCountinuesNodes(GetModel()))
   {
     // init new data
     InitEngine(evidence);
@@ -478,7 +478,7 @@ void CParPearlInfEngine::EnterEvidenceOMP(const CEvidence *evidence,
 {
   PNL_CHECK_IS_NULL_POINTER(evidence);
   m_bMaximize = maximize ? 1 : 0;
-  if (AllCountinuesNodes(GetModel()) == true)
+  if (!AllCountinuesNodes(GetModel()))
   {
     // clear all the previous data
     ClearMessagesStorage();
@@ -1881,7 +1881,7 @@ void CParPearlInfEngine::CollectBeliefsOnProcessContMPI(int MainProcNum)
             GetMatrix(matMean))->GetRanges(&matDim, &pMatRanges);
           
             C2DNumericDenseMatrix<float> *RecvMatrix = 
-            C2DNumericDenseMatrix<float>::Create(matDim, pMatRanges, 
+            C2DNumericDenseMatrix<float>::Create(pMatRanges, 
             pDataForReceiving + lastUsedIndex);
           
             rfCurBeliefs[node] -> AttachMatrix(RecvMatrix, matMean);
@@ -1892,7 +1892,7 @@ void CParPearlInfEngine::CollectBeliefsOnProcessContMPI(int MainProcNum)
               GetMatrix(matCovariance))->GetRanges(&matDim, &pMatRanges);
           
             C2DNumericDenseMatrix<float> *RecvMatrix1 = 
-                C2DNumericDenseMatrix<float>::Create(matDim, pMatRanges, 
+                C2DNumericDenseMatrix<float>::Create(pMatRanges, 
             pDataForReceiving + lastUsedIndex);
           
             rfCurBeliefs[node] -> AttachMatrix(RecvMatrix1, matCovariance);
@@ -2811,11 +2811,11 @@ bool CParPearlInfEngine :: AllCountinuesNodes( const CStaticGraphicalModel *pGrM
   int i = 0;  
   do  
   {
-    if ((pGrModel->GetNumberOfNodeTypes(i)) != (dtGaussian)) 
-    return true;
+    if ((pGrModel->GetFactor(i)->GetDistributionType()) != dtGaussian) 
+    return false;
     i++;
   } while (i < GetNumberOfNodesInModel());
-  return false;
+  return true;
 }
 
 
@@ -3023,13 +3023,13 @@ void CParPearlInfEngine::ParallelProtocolContMPI()
           else if (GetMessagesFromNeighbors()[sinkNode][sourceNode]->IsDistributionSpecific() != 2)
           {
             floatVector *vector;
-            vector = static_cast<C2DNumericDenseMatrix<float>*>
+            vector = (floatVector *)static_cast<C2DNumericDenseMatrix<float>*>
             (GetMessagesFromNeighbors()[sinkNode][sourceNode]->GetMatrix(
               matMean))->GetVector();
            
             memcpy(&vector->front(),pDataForRecvingM,dataLength*sizeof(float));
              
-            vector = static_cast<C2DNumericDenseMatrix<float>*>
+            vector = (floatVector *)static_cast<C2DNumericDenseMatrix<float>*>
             (GetMessagesFromNeighbors()[sinkNode][sourceNode]->GetMatrix(
               matCovariance))->GetVector();
               memcpy(&vector->front(),pDataForRecvingC,dataLength*dataLength*sizeof(float));         
