@@ -30,9 +30,13 @@ int main(char* argv[], int argc)
 #ifndef SKIP_LIMID
     try 
     {
-	//            TestPigs();
-	//            OilTest();
-	testRandom();
+//        LimidTopology();
+        DelNodes();
+        TestPigs();
+	OilTest();
+	testRandom1();
+        testRandom2();
+	testRandom3();
     }
     catch(pnl::CException e)
     {
@@ -41,13 +45,24 @@ int main(char* argv[], int argc)
     }
 
 #endif
-#ifndef SKIP_DBN
+    #ifndef SKIP_DBN
     int res = 0;
+    
+    res = testDBN();
     res = testDBNSmothing() & res;
     res = testDBNFixLagSmothing() & res;
     res = testDBNFiltering() & res;
     res = testDBNMPE() & res;
-    res = testDBNLearning() & res;
+    res = testDBNLearning() & res; 
+    res = testDBNSaveLoad() & res;
+
+    bTestOK = bTestOK && (res != 0);
+#endif
+
+#ifndef SKIP_MRF
+    res = 0;    
+    res = testMRF();
+
     bTestOK = bTestOK && (res != 0);
 #endif
 #ifndef SKIP_NUMERATION

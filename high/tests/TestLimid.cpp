@@ -57,8 +57,10 @@ void OilTest()
 
     TokArr exp;
     exp = net->GetExpectation();
-    cout << exp;
-    cout <<"\n";
+    if ( exp[0].FltValue() - 20000.0019 > 1e-3f)
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Expectation is wrong");
+    }
 
     TokArr politics;
     politics = net->GetPolitics();
@@ -66,6 +68,7 @@ void OilTest()
     cout <<"\n";
 
     delete net;
+    cout << "LIMID OIL is completed successfully" << endl;
 }
 
 void TestPigs()
@@ -173,8 +176,10 @@ void TestPigs()
 */
     TokArr exp;
     exp = net->GetExpectation();
-    cout << exp;
-    cout <<"\n";
+    if ( exp[0].FltValue() - 726.812073 > 1e-3f)
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Expectation is wrong");
+    }
 
     TokArr politics;
     politics = net->GetPolitics();
@@ -182,54 +187,311 @@ void TestPigs()
     cout <<"\n";
 
     delete net;
+    cout << "LIMID PIGS is completed successfully" << endl;
 }
 
-void testRandom()
+void testRandom1()
 {
     // wrapper works
     int i;
     LIMID *net;
     net = new LIMID();
 
-//    net->LoadNet("random15.xml");
-    net->LoadNet("random20.xml");
-//    net->LoadNet("random25.xml");
+    net->LoadNet("random15.xml");
     
     TokArr exp;
     exp = net->GetExpectation();
-    cout << exp;
-    cout <<"\n";
 
     TokArr politics;
     politics = net->GetPolitics();
-    cout << politics;
-    cout <<"\n";
+    delete net;
+
+    pnl::CIDNet *pIDNet = dynamic_cast<pnl::CIDNet*>(LoadGrModelFromXML("random15.xml", NULL));
+    pnl::CLIMIDInfEngine *pInfEng = NULL;
+    pInfEng = pnl::CLIMIDInfEngine::Create(pIDNet);
+  
+    pInfEng->DoInference();
+    
+    pnl::pFactorVector *Vec = pInfEng->GetPolitics();
+    float res = pInfEng->GetExpectation();
+    
+    if (exp[0].FltValue() != res)
+    {
+       PNL_THROW(pnl::CAlgorithmicException, "Expectation is wrong");
+    }
+    
+    if (Vec->size() != politics.size())
+    {
+           PNL_THROW(pnl::CAlgorithmicException, "Number of politics is wrong");
+    }
+
+    for (i = 0; i < Vec->size(); i++)
+    {
+        pnl::CMatrix<float> *mat = (*Vec)[i]->GetDistribFun()->GetMatrix(pnl::matTable);
+        pnl::CDenseMatrix<float> *dMat = mat->ConvertToDense();
+        const pnl::floatVector *matVec = dMat->GetVector();
+        for (int j = 0; j< matVec->size(); j++ )
+        {
+           if ((*matVec)[j] != politics[i].fload[j].fl) 
+           {
+                PNL_THROW(pnl::CAlgorithmicException, "politics are wrong");
+           };
+        }
+        
+    }
+    pnl::CLIMIDInfEngine::Release(&pInfEng);
+    delete pIDNet;
+    cout << "LIMID testRandom1 is completed successfully" << endl;
+
+}
+void testRandom2()
+{
+    // wrapper works
+    int i;
+    LIMID *net;
+    net = new LIMID();
+
+    net->LoadNet("random20.xml");
+    
+    TokArr exp;
+    exp = net->GetExpectation();
+
+    TokArr politics;
+    politics = net->GetPolitics();
     delete net;
 
     // PNL works
 
-//    pnl::CIDNet *pIDNet = dynamic_cast<pnl::CIDNet*>(LoadGrModelFromXML("random15.xml", NULL));
     pnl::CIDNet *pIDNet = dynamic_cast<pnl::CIDNet*>(LoadGrModelFromXML("random20.xml", NULL));
-//    pnl::CIDNet *pIDNet = dynamic_cast<pnl::CIDNet*>(LoadGrModelFromXML("random25.xml", NULL));
     
     pnl::CLIMIDInfEngine *pInfEng = NULL;
     pInfEng = pnl::CLIMIDInfEngine::Create(pIDNet);
   
-/*    for (int i =0; i<pIDNet->GetGraph()->GetNumberOfNodes(); i++ )
-      pIDNet->GetFactor(i)->GetDistribFun()->Dump();
-*/
     pInfEng->DoInference();
     
     pnl::pFactorVector *Vec = pInfEng->GetPolitics();
-    printf("\n=====================\nPolitics are:\n");
-    for ( i = 0; i < Vec->size(); i++)
-    {
-        (*Vec)[i]->GetDistribFun()->Dump();
-    }
     float res = pInfEng->GetExpectation();
-    printf("\nExpectation is %.3f", res);
+
+    if (exp[0].FltValue() != res)
+    {
+       PNL_THROW(pnl::CAlgorithmicException, "Expectation is wrong");
+    }
     
+    if (Vec->size() != politics.size())
+    {
+           PNL_THROW(pnl::CAlgorithmicException, "Number of politics is wrong");
+    }
+
+    for (i = 0; i < Vec->size(); i++)
+    {
+        pnl::CMatrix<float> *mat = (*Vec)[i]->GetDistribFun()->GetMatrix(pnl::matTable);
+        pnl::CDenseMatrix<float> *dMat = mat->ConvertToDense();
+        const pnl::floatVector *matVec = dMat->GetVector();
+        for (int j = 0; j< matVec->size(); j++ )
+        {
+           if ((*matVec)[j] != politics[i].fload[j].fl) 
+           {
+                PNL_THROW(pnl::CAlgorithmicException, "politics are wrong");
+           };
+        }
+        
+    }
+ 
     pnl::CLIMIDInfEngine::Release(&pInfEng);
     delete pIDNet;
+    cout << "LIMID testRandom2 is completed successfully" << endl;
 
+}
+void testRandom3()
+{
+    // wrapper works
+    int i;
+    LIMID *net;
+    net = new LIMID();
+
+    net->LoadNet("random25.xml");
+    
+    TokArr exp;
+    exp = net->GetExpectation();
+
+    TokArr politics;
+    politics = net->GetPolitics();
+    delete net;
+
+    // PNL works
+
+    pnl::CIDNet *pIDNet = dynamic_cast<pnl::CIDNet*>(LoadGrModelFromXML("random25.xml", NULL));
+    
+    pnl::CLIMIDInfEngine *pInfEng = NULL;
+    pInfEng = pnl::CLIMIDInfEngine::Create(pIDNet);
+  
+    pInfEng->DoInference();
+    
+    pnl::pFactorVector *Vec = pInfEng->GetPolitics();
+    float res = pInfEng->GetExpectation();
+
+    if (exp[0].FltValue() != res)
+    {
+       PNL_THROW(pnl::CAlgorithmicException, "Expectation is wrong");
+    }
+    
+    if (Vec->size() != politics.size())
+    {
+           PNL_THROW(pnl::CAlgorithmicException, "Number of politics is wrong");
+    }
+
+    for (i = 0; i < Vec->size(); i++)
+    {
+        pnl::CMatrix<float> *mat = (*Vec)[i]->GetDistribFun()->GetMatrix(pnl::matTable);
+        pnl::CDenseMatrix<float> *dMat = mat->ConvertToDense();
+        const pnl::floatVector *matVec = dMat->GetVector();
+        for (int j = 0; j< matVec->size(); j++ )
+        {
+           if ((*matVec)[j] != politics[i].fload[j].fl) 
+           {
+                PNL_THROW(pnl::CAlgorithmicException, "politics are wrong");
+           };
+        }
+    }
+     
+    pnl::CLIMIDInfEngine::Release(&pInfEng);
+    delete pIDNet;
+    
+    cout << "LIMID testRandom3 is completed successfully" << endl;
+}
+
+
+void DelNodes()
+{
+    LIMID *net;
+
+    net = new LIMID();
+    TokArr aChoice = "False True";// possible values for nodes
+    TokArr aCh = "False True MayBe";// possible values for nodes
+    
+    TokArr aIncome = "Cost";// possible values for nodes   
+
+    net->AddNode(chance ^"h1", aCh);
+    net->AddNode(decision^"d1", aChoice);
+    net->AddNode(chance ^ "h2", aCh);
+    net->AddNode(decision^"d2", aChoice);
+
+    net->AddNode(value^"u1", aIncome);
+    net->AddNode(value^"u2", aIncome);
+
+    net->AddArc("h1", "h2");
+    net->AddArc("h1", "u1");
+    net->AddArc("d1", "u2");
+    net->AddArc("d1", "h2");
+    net->AddArc("d2", "u1");
+    net->AddArc("h2", "d2");
+
+    net->SetPChance("h1^False h1^True h1^MayBe", "0.5 0.3 0.2");
+
+    net->SetPDecision("d1^False d1^True", "0.5 0.5");
+
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.1 0.3 0.6", "h1^False d1^False");
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^False d1^True");
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.3 0.4 0.3", "h1^True d1^False");
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^True d1^True");
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.5 0.4 0.1", "h1^MayBe d1^False");
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^MayBe d1^True");
+    
+    net->SetPDecision("d2^False d2^True", "0.5 0.5", "h2^False");
+    net->SetPDecision("d2^False d2^True", "0.5 0.5", "h2^True");
+    net->SetPDecision("d2^False d2^True", "0.5 0.5", "h2^MayBe");
+ 
+    net->SetValueCost("u1^Cost", "-70000.0", "h1^False d2^False");
+    net->SetValueCost("u1^Cost", "0.0", "h1^False d2^True");
+    net->SetValueCost("u1^Cost", "50000.0", "h1^True d2^False");
+    net->SetValueCost("u1^Cost", "0.0", "h1^True d2^True");
+    net->SetValueCost("u1^Cost", "200000.0", "h1^MayBe d2^False");
+    net->SetValueCost("u1^Cost", "0.0", "h1^MayBe d2^True");
+
+    net->SetValueCost("u2^Cost", "-10000.0", "d1^False");
+    net->SetValueCost("u2^Cost", "0.0", "d1^True");
+
+    TokArr h2 = net->GetPChance("h2");
+    TokArr d2 = net->GetPDecision("d2");
+    TokArr u2 = net->GetValueCost("u2");
+
+    if ((h2[0].FltValue() != 0.1f)||(h2[1].FltValue() != 0.3f) || (h2[2].FltValue() != 0.6f) )
+    {
+       PNL_THROW(pnl::CAlgorithmicException, "Error get");
+    }
+    if ((d2[0].FltValue() != 0.5f)||(d2[1].FltValue() != 0.5f) )
+    {
+       PNL_THROW(pnl::CAlgorithmicException, "Error get");
+    }
+    if ((u2[0].FltValue() != -10000.0f)||(u2[1].FltValue() != 0.0f)  )
+    {
+       PNL_THROW(pnl::CAlgorithmicException, "Error get");
+    }
+
+    net->DelNode("u2");
+
+    TokArr exp;
+    exp = net->GetExpectation();
+    cout << exp<< "\n";
+
+    TokArr politics;
+    politics = net->GetPolitics();
+    cout << politics << "\n";
+
+    net->AddNode(value^"u2", aIncome);
+    net->AddArc("d1", "u2");
+    net->DelArc("h2", "d2");
+
+    TokArr exp1;
+    exp1 = net->GetExpectation();
+    cout << exp1<< "\n";
+
+    TokArr politics1;
+    politics1 = net->GetPolitics();
+    cout << politics1<< "\n";
+
+
+    delete net;
+    cout << "DelNodes is completed successfully" << endl;
+}
+
+void LimidTopology()
+{
+    LIMID *net;
+
+    net = new LIMID();
+    TokArr aChoice = "False True";// possible values for nodes
+    TokArr aCh = "False True MayBe";// possible values for nodes
+    
+    TokArr aIncome = "Cost";// possible values for nodes   
+
+    net->AddNode(decision^"d1", aChoice);
+    net->AddNode(value^"u1", aIncome);
+    net->AddArc("d1", "u1");
+
+    net->AddNode(chance ^"h1", aCh);
+    net->AddNode(chance ^ "h2", aCh);
+    net->AddArc("h1", "h2");
+ 
+    net->AddArc("h2", "d1");
+
+    net->SetPChance("h1^False h1^True h1^MayBe", "0.1 0.3 0.6");
+
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.333333 0.333333 0.333333", "h1^False");
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.3 0.4 0.3", "h1^True");
+    net->SetPChance("h2^False h2^True h2^MayBe", "0.5 0.4 0.1", "h1^MayBe");
+
+    net->SetPDecision("d1^False d1^True", "0.5 0.5", "h2^False");
+    net->SetPDecision("d1^False d1^True", "0.5 0.5", "h2^True");
+    net->SetPDecision("d1^False d1^True", "0.5 0.5", "h2^MayBe");
+
+    net->SetValueCost("u1^Cost", "-10000.0", "d1^False");
+    net->SetValueCost("u1^Cost", "0.0", "d1^True");
+
+    TokArr exp;
+    exp = net->GetExpectation();
+    cout << exp<< "\n";
+
+    delete net;
+    cout << "Test LimidTopology is completed successfully" << endl;
 }

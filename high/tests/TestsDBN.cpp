@@ -2,6 +2,7 @@
 #include "DBN.hpp"   
 
 PNLW_USING
+//#define PRINT_RESULT
 
 int testDBNSmothing()
 // this test provides smoothing with DBN
@@ -41,7 +42,10 @@ int testDBNSmothing()
 	pDBN->SetProperty("Inference","Smoothing");
 	// getting request 
 	TokArr  tmpJPD = pDBN->GetJPD("Street-3 House-3");
+
+#ifdef PRINT_RESULT
 	printf("%s",String(tmpJPD).c_str());
+#endif
 	// free memory
 	delete pDBN;
 	return result;
@@ -85,7 +89,9 @@ int testDBNFixLagSmothing()
 	pDBN->SetProperty("Inference","fix");
 	// getting request 
 	TokArr  tmpJPD = pDBN->GetJPD("Street-0 House-0");
+#ifdef PRINT_RESULT
 	printf("%s",String(tmpJPD).c_str());
+#endif
 	// free memory
 	delete pDBN;
 	return result;
@@ -128,7 +134,9 @@ int testDBNFiltering()
 	pDBN->SetProperty("Inference","filt");
 	// getting request 
 	TokArr  tmpJPD = pDBN->GetJPD("Street-0 Flat-0");
+#ifdef PRINT_RESULT
 	printf("%s",String(tmpJPD).c_str());
+#endif
 	// free memory
 	delete pDBN;
 	return result;
@@ -173,7 +181,9 @@ int testDBNMPE()
 	pDBN->SetProperty("Inference","viter");
 	// getting request 
 	TokArr  tmpMPE = pDBN->GetMPE("Street-1 Flat-1");
+#ifdef PRINT_RESULT
 	printf("%s",String(tmpMPE).c_str());
+#endif
 	// free memory
 	delete pDBN;
 	return result;
@@ -204,8 +214,10 @@ int testDBNLearning()
 	// setting number of slices
 	pDBN->SetNumSlices(4);
 	//evidences generation
-//	pDBN->GenerateEvidences("4 6 5 6");
-        pDBN->LoadEvidBuf("evidences.csv");
+	pDBN->GenerateEvidences("4 6 5 6");
+
+        pDBN->SaveEvidBuf("evidences1.csv");
+        pDBN->LoadEvidBuf("evidences1.csv");
 	// learning execution
 	pDBN->LearnParameters();
 	// free memory
@@ -277,10 +289,6 @@ int testDBN()
 	// setting number of slices
 
     pDBN->SetNumSlices(2);
-        /*SetPTabular("Burglary^true Burglary^false", "0.001 0.999")
-SetPTabular("Earthquake^true Earthquake^false", "0.002 0.998")
-SetPTabular("Alarm^true", "0.95", "Burglary^true Earthquake^true")
-*/
     pDBN->SetPTabular("Street-0^True Street-0^False Street-0^MayBe", "0.3 0.5 0.2");
     pDBN->SetPTabular("House-0^True House-0^False House-0^MayBe", "0.3 0.2 0.5", "Street-0^True"); 
     pDBN->SetPTabular("House-0^True House-0^False House-0^MayBe", "0.3 0.2 0.5", "Street-0^False"); 
@@ -303,80 +311,70 @@ SetPTabular("Alarm^true", "0.95", "Burglary^true Earthquake^true")
     pDBN->SetPTabular("Flat-1^True Flat-1^False Flat-1^MayBe", "0.5 0.3 0.2", "Street-1^MayBe"); 
 
     TokArr st0 = pDBN->GetPTabular("Street-0");
-    printf("%s\n",String(st0).c_str());
-
     TokArr h0 = pDBN->GetPTabular("House-0");
-    printf("%s\n",String(h0).c_str());
-
     TokArr f0 = pDBN->GetPTabular("Flat-0");
-    printf("%s\n",String(f0).c_str());
-
     TokArr st1 = pDBN->GetPTabular("Street-1");
-    printf("%s\n",String(st1).c_str());
-
     TokArr h1 = pDBN->GetPTabular("House-1");
-    printf("%s\n",String(h1).c_str());
-    
     TokArr f1 = pDBN->GetPTabular("Flat-1");
+
+#ifdef PRINT_RESULT
+    printf("%s\n",String(st0).c_str());
+    printf("%s\n",String(h0).c_str());
+    printf("%s\n",String(f0).c_str());
+    printf("%s\n",String(st1).c_str());
+    printf("%s\n",String(h1).c_str());
     printf("%s\n",String(f1).c_str());
-
-    printf("\nParents\n");
+#endif
     TokArr st0p = pDBN->GetParents("Street-0");
-    printf("%s\n",String(st0p).c_str());
-
     TokArr h0p = pDBN->GetParents("House-0");
-    printf("%s\n",String(h0p).c_str());
-
     TokArr f0p = pDBN->GetParents("Flat-0");
-    printf("%s\n",String(f0p).c_str());
-
     TokArr st1p = pDBN->GetParents("Street-1");
-    printf("%s\n",String(st1p).c_str());
-
     TokArr h1p = pDBN->GetParents("House-1");
-    printf("%s\n",String(h1p).c_str());
-
     TokArr f1p = pDBN->GetParents("Flat-1");
+
+#ifdef PRINT_RESULT
+    printf("\nParents\n");
+    printf("%s\n",String(st0p).c_str());
+    printf("%s\n",String(h0p).c_str());
+    printf("%s\n",String(f0p).c_str());
+    printf("%s\n",String(st1p).c_str());
+    printf("%s\n",String(h1p).c_str());
     printf("%s\n",String(f1p).c_str());
-
-    printf("\nChildren\n");
+#endif
     TokArr st0c = pDBN->GetChildren("Street-0");
-    printf("%s\n",String(st0c).c_str());
-
     TokArr h0c = pDBN->GetChildren("House-0");
-    printf("%s\n",String(h0c).c_str());
-    
     TokArr f0c = pDBN->GetChildren("Flat-0");
-    printf("%s\n",String(f0c).c_str());
-    
     TokArr st1c = pDBN->GetChildren("Street-1");
-    printf("%s\n",String(st1c).c_str());
-    
     TokArr h1c = pDBN->GetChildren("House-1");
-    printf("%s\n",String(h1c).c_str());
-    
     TokArr f1c = pDBN->GetChildren("Flat-1");
+
+#ifdef PRINT_RESULT
+    printf("\nChildren\n");
+    printf("%s\n",String(st0c).c_str());
+    printf("%s\n",String(h0c).c_str());
+    printf("%s\n",String(f0c).c_str());
+    printf("%s\n",String(st1c).c_str());
+    printf("%s\n",String(h1c).c_str());
     printf("%s\n",String(f1c).c_str());
+#endif    
     
-    printf("\nNeighbors\n");
     TokArr st0n = pDBN->GetNeighbors("Street-0");
-    printf("%s\n",String(st0n).c_str());
-
     TokArr h0n = pDBN->GetNeighbors("House-0");
-    printf("%s\n",String(h0n).c_str());
-
-    TokArr f0n = pDBN->GetNeighbors("Flat-0");
-    printf("%s\n",String(f0n).c_str());
-    
+    TokArr f0n = pDBN->GetNeighbors("Flat-0");    
     TokArr st1n = pDBN->GetNeighbors("Street-1");
-    printf("%s\n",String(st1n).c_str());
-
     TokArr h1n = pDBN->GetNeighbors("House-1");
-    printf("%s\n",String(h1n).c_str());
-
     TokArr f1n = pDBN->GetNeighbors("Flat-1");
+
+#ifdef PRINT_RESULT        
+    printf("\nNeighbors\n");
+    printf("%s\n",String(st0n).c_str());
+    printf("%s\n",String(h0n).c_str());
+    printf("%s\n",String(f0n).c_str());
+    printf("%s\n",String(st1n).c_str());
+    printf("%s\n",String(h1n).c_str());
     printf("%s\n",String(f1n).c_str());
-    
+#endif
+
     // free memory
     delete pDBN;
     return result;

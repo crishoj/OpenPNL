@@ -3,9 +3,9 @@
 #include "pnlHigh.hpp"
 #include "pnlTok.hpp"
 
-#define SKIP_DBN
-#define SKIP_LIMID
-//#define SKIP_TOKEN
+//#define SKIP_DBN
+//#define SKIP_LIMID
+#define SKIP_TOKEN
 
 // FORWARDS
 namespace pnl
@@ -16,15 +16,24 @@ namespace pnl
 PNLW_USING
 
 std::ostream &operator<<(std::ostream &str, TokArr &ta);
+int testMRF();
+
+int testDBN();
 int testDBNSmothing();
 int testDBNFixLagSmothing();
 int testDBNFiltering();
 int testDBNMPE();
 int testDBNLearning();
+int testDBNSaveLoad();
+
 pnl::CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<pnl::CEvidence*>* pEv);
+void LimidTopology();
+void DelNodes();
 void OilTest();
 void TestPigs();
-void testRandom();
+void testRandom1();
+void testRandom2();
+void testRandom3();
 bool TestResolve1();
 bool TestResolve2();
 bool TestResolve3();
