@@ -1,0 +1,183 @@
+#include "WCliques.hpp"
+#include "pnlWGraph.hpp"
+
+PNLW_BEGIN
+
+void DumpMap(Map *HashTable)
+{
+    cout << endl;
+    Map::iterator it;
+    for(it = HashTable->begin(); it != HashTable->end(); it++)
+    {
+        cout << it->first << "  " << it->second << endl;
+    }
+}
+
+WCliques::WCliques(WGraph *graph): m_pGraph(graph)
+{
+    SpyTo(graph);
+}
+
+bool WCliques::FormClique(const Vector<int> &aIndex)
+{
+    int i;
+    for (i = 0; i < aIndex.size(); i++)
+    {
+	if(!(m_pGraph->IsValidINode(aIndex[i])))
+	{
+	    return false;
+	}
+    }
+
+    m_aCliques.push_back(aIndex);
+    m_HashTable.insert(std::make_pair(hash(aIndex), m_aCliques.size() - 1));
+    Notify(eInit, m_aCliques.size() - 1);
+    return true;
+}
+bool WCliques::DestroyClique(const Vector<int> &aIndex)
+{
+    int i;
+    int hashIndex = hash(aIndex);
+    Map::iterator it, itEnd;
+    it = m_HashTable.find(hashIndex);
+    if(it == m_HashTable.end())
+    {
+	return false;
+    }
+    itEnd = m_HashTable.upper_bound(hashIndex);
+    for(; it != itEnd; it++)
+    {
+	int iClq = it->second;
+	if(aIndex.size() != m_aCliques[iClq].size())
+	{
+	    continue;
+	}
+	bool isThisClique = true;
+	for(i = 0; i < aIndex.size(); i++)
+	{
+	    if(std::find(m_aCliques[iClq].begin(), m_aCliques[iClq].end(), 
+		aIndex[i]) == m_aCliques[iClq].end())
+	    {
+		isThisClique = false;
+		break;
+	    }
+	}
+        if(isThisClique)
+        {
+            if(iClq < m_aCliques.size() - 1)
+            {
+                m_aCliques[iClq] = m_aCliques[m_aCliques.size() - 1];
+                // number of last clique is changed, we must change it in hash table too
+                int indHash = hash(m_aCliques[iClq]);
+                Map::iterator it1, itEnd1;
+                it1 = m_HashTable.find(indHash);
+                itEnd1 = m_HashTable.upper_bound(indHash);
+                for(; it1 != itEnd1; it1++)
+                {
+                    if(it1->second == m_aCliques.size())
+                    {
+                        it1->second == iClq;
+                        break;
+                    }
+                }
+            }
+            m_aCliques.resize(m_aCliques.size() - 1);
+            m_HashTable.erase(it); // delete row of this clique from hash table
+            return true;
+        }
+    }
+    return false;
+}
+
+Vector<int> WCliques::ClqNumbersForNode(int iNode)
+{
+    if(!m_pGraph->IsValidINode(iNode))
+    {
+	pnl::pnlString str;
+	
+	str << '\'' << iNode << "' is not a node";
+	ThrowUsingError(str.c_str(), "ClqNumbersForNode");
+    }
+    Vector<int> clqs;
+    int i;
+    for(i = 0; i < m_aCliques.size(); i++)
+    {
+	if(std::find(m_aCliques[i].begin(), m_aCliques[i].end(), iNode) 
+	    != m_aCliques[i].end())
+	{
+	    clqs.push_back(i);
+	}
+    }
+    return clqs;
+}
+
+int WCliques::iClique(const Vector<int> &aIndex) const
+{
+    int i;
+    int hashIndex = hash(aIndex);
+    Map::const_iterator it, itEnd;
+    it = m_HashTable.find(hashIndex);
+    if(it == m_HashTable.end())
+    {
+	return -1;
+    }
+    itEnd = m_HashTable.upper_bound(hashIndex);
+    for(; it != itEnd; it++)
+    {
+	int cliqueNum = it->second;
+	if(aIndex.size() != m_aCliques[cliqueNum].size())
+	{
+	    continue;
+	}
+	bool isThisClique = true;
+	for(i = 0; i < aIndex.size(); i++)
+	{
+	    if(std::find(m_aCliques[cliqueNum].begin(), m_aCliques[cliqueNum].end(), 
+		aIndex[i]) == m_aCliques[cliqueNum].end())
+	    {
+		isThisClique = false;
+		break;
+	    }
+	}
+	if(isThisClique)
+	{
+	    return cliqueNum;
+	}
+    }
+    return -1;
+}
+
+int WCliques::hash(const Vector<int> &aIndex) const
+{
+    int i;
+    int res = 0;
+    for(i = 0; i < aIndex.size(); i++)
+    {
+	res += aIndex[i] * aIndex[i] + 1000;
+    }
+    return res;
+}
+
+void WCliques::DoNotify(int message, int iNode, ModelEngine *pObj)
+{
+    switch(message)
+    {
+    case eDelNode:
+        {
+            Vector<int> clqs = ClqNumbersForNode(iNode);
+            int i, iClq;
+            for(i = 0; i < clqs.size(); i++)
+            {
+                iClq = clqs[i];
+                DestroyClique(m_aCliques[iClq]);
+                Notify(eDelNode, iClq);
+            }
+            break;
+        }
+    default:
+        ThrowInternalError("Unhandled message arrive" ,"DoNotify");
+        return;
+    }
+}
+
+PNLW_END
