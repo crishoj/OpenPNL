@@ -66,8 +66,8 @@ void DBN::DelNode(TokArr nodes)
 	prStr = tmpStr;
 	slStr = tmpStr;
 	const char *s = prStr.c_str();
-	prStr.append("-0",2);
-	slStr.append("-1",2);
+	prStr<<"-0";
+	slStr<<"-1";
         priorNodes.push_back(prStr);
 	fsliceNodes.push_back(slStr);
     }
@@ -278,16 +278,14 @@ TokArr DBN::GetJPD( TokArr nodes)
 	    if(GetSliceNum(tmpStr) == nSlice )
 	    {
 		tmpStr = GetShortName(tmpStr);
-		tmpStr.append("-1",2);
-		pTok = new Tok(tmpStr);
-		NewQue.push_back(*pTok);
+		tmpStr<<"-1";
+		NewQue.push_back(tmpStr);
 	    }
 	    else
 	    {
 		tmpStr = GetShortName(tmpStr);
-		tmpStr.append("-0",2);
-		pTok = new Tok(tmpStr);
-		NewQue.push_back(*pTok);
+		tmpStr<<"-0";
+		NewQue.push_back(tmpStr);
 	    };
 	}
 	else
@@ -347,9 +345,7 @@ TokArr DBN::GetJPD( TokArr nodes)
 void DBN::EditEvidence(TokArr values)
 {
     TokArr NewQue;
-    String tmpStr,tmpName,tmp;
-    TokIdNode *node;
-    Tok *pTok;  
+    String tmpStr,tmpName;
     int i;
     int nSlice = GetSliceNum(GetNodeName(values[0]));
     for(i = 0; i < values.size(); i++)
@@ -365,12 +361,9 @@ void DBN::EditEvidence(TokArr values)
 	else
 	{
 	    tmpStr = GetShortName(tmpName);
-	    tmpStr.append("-1",2);
-	    tmpStr.append("^",1);
-	    tmp = GetValue(values[i]);
-            tmpStr.append(tmp.c_str(),tmp.length());
-	    pTok = new Tok(tmpStr);
-	    NewQue.push_back(*pTok);
+	    tmpStr << "-1^";
+            tmpStr << GetValue(values[i]);
+	    NewQue.push_back(tmpStr);
 	};
     };    
     Net().EditEvidence(NewQue); 
@@ -483,16 +476,14 @@ TokArr DBN::GetMPE(TokArr nodes)
 	    if(GetSliceNum(tmpStr) == nSlice + 1 )
 	    {
 		tmpStr = GetShortName(tmpStr);
-		tmpStr.append("-1",2);
-		pTok = new Tok(tmpStr);
-		NewQue.push_back(*pTok);
+		tmpStr<<"-1";
+		NewQue.push_back(tmpStr);
 	    }
 	    else
 	    {
 		tmpStr = GetShortName(tmpStr);
-		tmpStr.append("-0",2);
-		pTok = new Tok(tmpStr);
-		NewQue.push_back(*pTok); 
+		tmpStr<<"-0";
+		NewQue.push_back(tmpStr); 
 	    };
 	}
 	else
@@ -814,7 +805,7 @@ TokArr DBN::ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice)
 			if(GetSliceNum(tmpVal) == 0)
 			{
 			    tmpVal = GetShortName(tmpVal);
-			    tmpVal.append("-",1);
+			    tmpVal<<"-";
 			    char c[2];  
 			    itoa(nSlice - 1,c,2);
 			    tmpVal.append(c,strlen(c));
@@ -822,7 +813,7 @@ TokArr DBN::ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice)
 			else
 			{
 			    tmpVal = GetShortName(tmpVal);
-			    tmpVal.append("-",1);
+			    tmpVal<<"-";
 			    char c[2];  
 			    itoa(nSlice,c,10);
 			    tmpVal.append(c,strlen(c));
@@ -831,7 +822,7 @@ TokArr DBN::ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice)
 		    }
 		    
 		    tmpS.append(tmpVal.c_str(),tmpVal.length());
-		    tmpS.append("^",1);
+		    tmpS<<"^";
 		    tmpVal.resize(0);
 		}
 	    }
@@ -865,7 +856,6 @@ TokArr DBN::GetParents(TokArr nodes)
 {
     TokArr NewQue, tmpParents, nodesParents;
     String tmpStr;
-    Tok *pTok;
     int i;
     
     tmpStr = nodes[nodes.size() - 1].Name();
@@ -877,9 +867,8 @@ TokArr DBN::GetParents(TokArr nodes)
 	if(nSlice != 0)
 	{	    
 		tmpStr = GetShortName(tmpStr);
-		tmpStr.append("-1",2);
-		pTok = new Tok(tmpStr);
-		NewQue.push_back(*pTok);
+		tmpStr<<"-1";
+		NewQue.push_back(tmpStr);
 	}
 	else
 	{
@@ -897,22 +886,20 @@ TokArr DBN::GetParents(TokArr nodes)
 	    if(GetSliceNum(tmpStr) == 1)
 	    {
 		tmpStr = GetShortName(tmpStr);
-		tmpStr.append("-",1);
+		tmpStr<<"-";
 		char c[2];  
 	        itoa(nSlice,c,10);
 		tmpStr.append(c,strlen(c));
-		pTok = new Tok(tmpStr);
-		nodesParents.push_back(*pTok);
+		nodesParents.push_back(tmpStr);
 	    }
 	    else
 	    {
 		tmpStr = GetShortName(tmpStr);
-                tmpStr.append("-",1);
+                tmpStr<<"-";
 		char c[2];  
 	        itoa(nSlice - 1,c,10);
 		tmpStr.append(c,strlen(c));
-		pTok = new Tok(tmpStr);
-		nodesParents.push_back(*pTok);
+		nodesParents.push_back(tmpStr);
 	    };
 	}
 	else
@@ -940,13 +927,13 @@ TokArr DBN::GetChildren(TokArr nodes)
 	if(nSlice != 0)
 	{	    
 		tmpStr = GetShortName(tmpStr);
-		tmpStr.append("-0",2);
+		tmpStr<<"-0";
 		const char *s = tmpStr.c_str();
 
 		NewQue1.push_back(tmpStr);
 
 		tmpStr.resize(tmpStr.length() - 2);
-		tmpStr.append("-0",2);
+		tmpStr<<"-0";
 		NewQue2.push_back(tmpStr);
 		
 	}
@@ -965,12 +952,11 @@ TokArr DBN::GetChildren(TokArr nodes)
 	if(GetSliceNum(tmpStr) == 1)
 	{
 	    tmpStr = GetShortName(tmpStr);
-	    tmpStr.append("-",1);
+	    tmpStr<<"-";
 	    char c[2];  
 	    itoa(nSlice,c,10);
 	    tmpStr.append(c,strlen(c));
-	    pTok = new Tok(tmpStr);
-	    nodesChildren.push_back(*pTok);
+	    nodesChildren.push_back(tmpStr);
 	}	    
     }
     for(i = 0; i < tmpChildren2.size(); i++)
@@ -981,12 +967,11 @@ TokArr DBN::GetChildren(TokArr nodes)
 	if(GetSliceNum(tmpStr) == 1)
 	{
 	    tmpStr = GetShortName(tmpStr);
-	    tmpStr.append("-",1);
+	    tmpStr<<"-";
 	    char c[2];  
 	    itoa(nSlice + 1,c,10);
 	    tmpStr.append(c,strlen(c));
-	    pTok = new Tok(tmpStr);
-	    nodesChildren.push_back(*pTok);
+	    nodesChildren.push_back(tmpStr);
 	}
 	}
 	else

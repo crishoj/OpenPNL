@@ -719,7 +719,7 @@ String ProbabilisticNet::GetProperty(const char *name) const
 
 void ProbabilisticNet::Reset(const pnl::CGraphicalModel &model)
 {
-    if(nNetNode() != model.GetNumberOfNodes())
+    if(nNetNode() != model.GetGraph()->GetNumberOfNodes())
     {
 	ThrowInternalError("Reset by model with different number of nodes isn't yet implemented", "Reset");
     }
