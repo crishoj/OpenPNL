@@ -56,8 +56,12 @@ public:
     WCliques &Cliques() const { return *m_pCliques; }
 
 protected:
-    virtual void DoNotify(int message, int iNode, ModelEngine *pObj);
-    virtual int InterestedIn() const { return eDelNode|eChangeNState|eChangeParentNState|eInit; }
+    virtual void DoNotify(const Message &msg);
+    virtual int InterestedIn() const
+    {
+	return Message::eDelNode | Message::eChangeNState
+	| Message::eChangeParentNState | Message::eInit;
+    }
     TokenCover &Token() const { return *m_pToken; }
     WGraph &Graph() const;
     bool IsDiscrete(int iNode) const;

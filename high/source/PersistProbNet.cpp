@@ -24,7 +24,7 @@ const char *PersistProbabilisticNet::Signature()
 void PersistProbabilisticNet::Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext)
 {
     ProbabilisticNet *net = static_cast<pnl::CCover<ProbabilisticNet>*>(pObj)->GetPointer();
-    String modelType = net->Token()->Root()->v_prev->Name();
+    String modelType = net->Token().Root()->v_prev->Name();
 
     pContext->AddAttribute("ModelType", modelType.c_str());
     pContext->AddAttribute("NumberOfNodes", net->nNetNode());
@@ -89,7 +89,7 @@ void PersistProbabilisticNet::TraverseSubobject(pnl::CPNLBase *pObj, pnl::CConte
 	WNodeInfo *nodeInfo = new WNodeInfo(net->NodeName(i), net->pnlNodeType(i));
 
 	name << i;
-	net->Token()->GetValues(i, aValue);
+	net->Token().GetValues(i, aValue);
 	nodeInfo->m_aValue << aValue[0];
 	for(j = 1 ; j < aValue.size(); ++j)
 	{

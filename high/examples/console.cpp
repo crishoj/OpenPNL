@@ -135,7 +135,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	    for(;m_apBnet.size() > 1;Leave());
 	    Enter(new BayesNet, true);
 	    break;
-	case -4:/* ListNodes */ Print(BNet().Net().Graph()->Names()); break;
+	case -4:/* ListNodes */ Print(BNet().Net().Graph().Names()); break;
 	case -5:/* Exit */ return -1;
 	case -6:	ListCommands(args[0]); break;
 	case -7:/* print */ Print(args); break;

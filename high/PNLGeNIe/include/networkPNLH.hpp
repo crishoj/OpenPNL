@@ -271,9 +271,9 @@ protected:
     void MarkCallFunction(const char *name, bool bRealized = false, const char *args = 0);
     void SetValues(int iNode, const std::vector<std::string> &aId);
     ProbabilisticNet &Net() const;
-    WGraph *Graph() const;
-    TokenCover *Token() const;
-    WDistributions *Distributions() const;
+    WGraph &Graph() const;
+    TokenCover &Token() const;
+    WDistributions &Distributions() const;
 
 private:
     IErrorOutput *m_ErrorOutput;		// INetwork requires implycitly this pointer

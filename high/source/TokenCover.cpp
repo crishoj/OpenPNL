@@ -310,7 +310,7 @@ void TokenCover::SetValues(TokIdNode *node, const Vector<String> &aValue, int iN
 	pValue = node->Add(aValue[j]);
 	TuneNodeValue(pValue, j);
     }
-    Notify(eChangeNState, iNode);
+    Notify(Message::eChangeNState, iNode);
 }
 
 void TokenCover::SetValue(int iNode, int iValue, String &value)
@@ -591,45 +591,43 @@ Tok TokenCover::TokByNodeValue(int iNode, int iValue)
 
 // non-public functions
 
-void TokenCover::DoNotify(int message, int iNode, ModelEngine *pObj)
+void TokenCover::DoNotify(const Message &msg)
 {
-    switch(message)
+    switch(msg.MessageId())
     {
-    case eChangeName:
+    case Message::eChangeName:
 	{
 	    PNL_CHECK_IS_NULL_POINTER(m_pGraph);
-	    Tok tokNode(iNode);
+	    Tok tokNode(msg.IntArg());
 	    Tok::Matcher matcher(eTagNetNode);
 
 	    tokNode.Resolve(m_aNode, &matcher);
 	    
 	    TokIdNode *node = tokNode.Node();
-	    String name = m_pGraph->NodeName(iNode);
+	    String name = m_pGraph->NodeName(msg.IntArg());
 	    String oldName = node->Name();
 
 	    node->Alias(name);
 	    node->Unalias(oldName);
 	    if(!(node->Name() == name))
 	    {
-		node->Unalias(iNode);
-		node->Alias(iNode);
+		node->Unalias(msg.IntArg());
+		node->Alias(msg.IntArg());
 	    }
 	    if(!(node->Name() == name))
 	    {
 		ThrowInternalError("can't rename node with token", "Notify::eChangeName");
-		node->Unalias(iNode);
-		node->Alias(iNode);
 	    }
 	}
 	break;
-    case eDelNode:
+    case Message::eDelNode:
 	{// if user deletes node via WGraph
-	    TokIdNode *node = Node(iNode);
+	    TokIdNode *node = Node(msg.IntArg());
 	    if(!node)
 	    {
 		break;
 	    }
-	    if(pObj != m_pGraph)
+	    if(&msg.Sender() != m_pGraph)
 	    {
 		ThrowInternalError("Unexpected source of DelNode message",
 		    "TokenCover::Notify");

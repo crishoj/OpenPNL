@@ -63,9 +63,10 @@ bool WCliques::FormClique(const Vector<int> &aIndex)
 
     m_aCliques.push_back(tmp_vec_clique);
     m_HashTable.insert(std::make_pair(hash(tmp_vec_clique), m_aCliques.size() - 1));
-    Notify(eInit, m_aCliques.size() - 1);
+    Notify(Message::eInit, m_aCliques.size() - 1);
     return true;
 }
+
 bool WCliques::DestroyClique(const Vector<int> &aIndex)
 {
     int i;
@@ -203,19 +204,19 @@ int WCliques::hash(const Vector<int> &aIndex) const
     return res;
 }
 
-void WCliques::DoNotify(int message, int iNode, ModelEngine *pObj)
+void WCliques::DoNotify(const Message &msg)
 {
-    switch(message)
+    switch(msg.MessageId())
     {
     case eDelNode:
         {
-            Vector<int> clqs = ClqNumbersForNode(iNode);
+	    Vector<int> clqs = ClqNumbersForNode(msg.IntArg());
             int i, iClq;
             for(i = 0; i < clqs.size(); i++)
             {
                 iClq = clqs[i];
                 DestroyClique(m_aCliques[iClq]);
-                Notify(eDelNode, iClq);
+		Notify(Message::eDelNode, iClq);
             }
             break;
         }

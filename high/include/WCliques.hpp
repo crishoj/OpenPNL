@@ -29,8 +29,8 @@ public:// inlines for access to object fields
     WGraph *Graph() const { return m_pGraph; }
 
 protected:
-    virtual void DoNotify(int message, int iNode, ModelEngine *pObj);
-    virtual int InterestedIn() const { return eDelNode; }
+    virtual void DoNotify(const Message &msg);
+    virtual int InterestedIn() const { return Message::eDelNode; }
 
 private:
     int hash(const Vector<int> &aIndex) const;	// hash function that maps set of 

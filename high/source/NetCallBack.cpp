@@ -15,7 +15,7 @@ NetCallback::GetNodeInfo(Vector<pnl::CNodeType> *paNodeType,
 			 const ProbabilisticNet &net)
 {
     int i;
-    Vector<String> aNodeName(net.Graph()->Names());
+    Vector<String> aNodeName(net.Graph().Names());
 
     // create BNet
     paNodeAssociation->resize(aNodeName.size());
@@ -23,7 +23,7 @@ NetCallback::GetNodeInfo(Vector<pnl::CNodeType> *paNodeType,
 
     for(i = 0; i < aNodeName.size(); i++)
     {
-	const pnl::CNodeType &nt = net.pnlNodeType(net.Graph()->INode(aNodeName[i]));
+	const pnl::CNodeType &nt = net.pnlNodeType(net.Graph().INode(aNodeName[i]));
 
 	(*paNodeAssociation)[i] = NodeAssociation(paNodeType,
 	    nt.IsDiscrete(), nt.GetNodeSize(), nt.GetNodeState());
@@ -37,15 +37,15 @@ NetCallback::CommonAttachFactors(pnl::CGraphicalModel &pnlModel,
 	const ProbabilisticNet &net)
 {
     int i, iWNode;
-    Vector<String> aNodeName(net.Graph()->Names());
+    Vector<String> aNodeName(net.Graph().Names());
 
     // attach parameters for every nodes
     for(i = 0; i < aNodeName.size(); i++)
     {
 	// it is index for wrapper node, pnl node index is 'i'
-	iWNode = net.Graph()->IOuter(net.Graph()->INode(aNodeName[i]));
+	iWNode = net.Graph().IOuter(net.Graph().INode(aNodeName[i]));
 
-	WDistribFun *pWDF = net.Distributions()->Distribution(iWNode);
+	WDistribFun *pWDF = net.Distributions().Distribution(iWNode);
         PNL_CHECK_IS_NULL_POINTER(pWDF);
 
         pnlModel.AllocFactor(i);

@@ -72,8 +72,8 @@ public:
     Tok TokByNodeValue(int iNode, int iValue);
 
 protected:
-    virtual void DoNotify(int message, int iNode, ModelEngine *pObj);
-    virtual int InterestedIn() const { return eDelNode|eChangeName; }
+    virtual void DoNotify(const Message &msg);
+    virtual int InterestedIn() const { return Message::eDelNode | Message::eChangeName; }
 
 private:// FUNCTIONS
     void CreateRoot(const char *rootName, bool bAutoNum = false);

@@ -76,7 +76,7 @@ void WDistributions::Setup(int iNode)
 
     Vector<int> aParent;
     
-    Token().Graph()->GetParents(&aParent, iNode);
+    Graph().GetParents(&aParent, iNode);
     Vector<TokIdNode*> parTokId = Token().Nodes(aParent);
     m_aDistribution[iNode]->Setup(Token().Node(iNode), parTokId);
     TokIdNode *tok = Token().Node(iNode);
@@ -192,7 +192,7 @@ WDistributions::GetNodeTypeInfo(bool *pbDiscrete, int *pSize,
 {
     if(iNode >= m_abDiscrete.size())
     {
-	if(!Token().Graph()->IsValidINode(iNode))
+	if(!Graph().IsValidINode(iNode))
 	{
 	    ThrowUsingError("Requested info for non-existant node", "GetNodeTypeInfo");
 	}
@@ -407,25 +407,25 @@ void WDistributions::ExtractData(pnl::EMatrixType matType, TokArr &matrix)
     Distribution(iDistrib)->ExtractData(matType, matrix);
 }
 
-void WDistributions::DoNotify(int message, int iNode, ModelEngine *pObj)
+void WDistributions::DoNotify(const Message &msg)
 {
-    switch(message)
+    switch(msg.MessageId())
     {
-    case eDelNode:
-	DropDistribution(iNode);
+    case Message::eDelNode:
+	DropDistribution(msg.IntArg());
 	break;
-    case eChangeParentNState:
-    case eChangeNState:
-    case eInit:
+    case Message::eChangeParentNState:
+    case Message::eChangeNState:
+    case Message::eInit:
 	if(IsMRF())
 	{
-	    SetupNew(iNode);
-	    ApplyNew(iNode);
+	    SetupNew(msg.IntArg());
+	    ApplyNew(msg.IntArg());
 	}
 	else
 	{
-	    Setup(iNode);
-	    Apply(iNode);
+	    Setup(msg.IntArg());
+	    Apply(msg.IntArg());
 	}
 	break;
     default:

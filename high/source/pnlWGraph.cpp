@@ -307,7 +307,7 @@ int WGraph::AddNode(String &nodeName)
     m_aNode[iNode] = nodeName;
     m_iNodeMap[nodeName] = iNode;
     m_abValid[iNode] = 1;
-    Notify(eInit, iNode);
+    Notify(Message::eInit, iNode);
 
     return iNode;
 }
@@ -332,7 +332,7 @@ bool WGraph::DelNode(int iNode)
 	    if(aParent[j] == iNode)
 	    {
 		aParent.erase(aParent.begin() + j);
-		Notify(eChangeParentNState, i);
+		Notify(Message::eChangeParentNState, i);
 		break;
 	    }
 	}
@@ -351,7 +351,7 @@ bool WGraph::AddArc(int from, int to)
     m_aParent[to].push_back(from);
 
     m_bTouched = true;
-    Notify(eChangeParentNState, to);
+    Notify(Message::eChangeParentNState, to);
     return true;
 }
 
@@ -373,7 +373,7 @@ bool WGraph::DelArc(int from, int to)
     v.pop_back();
 
     m_bTouched = true;
-    Notify(eChangeParentNState, to);
+    Notify(Message::eChangeParentNState, to);
     return true;
 }
 
@@ -450,7 +450,7 @@ bool WGraph::SetNodeName(int iNode, String &name)
 	m_iNodeMap.erase(NodeName(iNode));
 	m_iNodeMap[name] = iNode;
 	m_aNode[iNode] = name;
-	Notify(eChangeName, iNode);
+	Notify(Message::eChangeName, iNode);
 	return true;
     }
     return false;
@@ -545,7 +545,7 @@ void WGraph::Reset(pnl::CGraph &graph)
     }
     for(i = 0; i < nNode(); ++i)
     {
-	Notify(eChangeParentNState, i);
+	Notify(Message::eChangeParentNState, i);
     }
 }
 

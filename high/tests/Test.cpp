@@ -1073,12 +1073,12 @@ bool testExtractTok()
 	}
 	if(nodes[i]->tag != eTagNetNode)
 	{
-	    PNL_THROW(pnl::CAlgorithmicException, "There is must be node", "ExtractNodes");
+	    ThrowUsingError("There is must be node", "testExtractTok");
 	}
     }
-    if(net.Net().Graph()->INode(nodes[0]->Name()) != 0 ||
-        net.Net().Graph()->INode(nodes[1]->Name()) != 2 || 
-        net.Net().Graph()->INode(nodes[2]->Name()) != 3)
+    if(net.Net().Graph().INode(nodes[0]->Name()) != 0 ||
+        net.Net().Graph().INode(nodes[1]->Name()) != 2 || 
+        net.Net().Graph().INode(nodes[2]->Name()) != 3)
     {
         PNL_THROW(pnl::CAlgorithmicException, "Extracted node isn't right");
     }

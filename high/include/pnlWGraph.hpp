@@ -142,7 +142,7 @@ public:
 
 protected:
     typedef std::map<String, int> MapSI;
-    virtual void DoNotify(int message, int iNode, ModelEngine *pObj) {}
+    virtual void DoNotify(const Message &) {}
     virtual int InterestedIn() const { return 0; /* nothing intrested in */ }
 
 private:

@@ -145,7 +145,7 @@ bool NetworkPNL::Load(const char *filename, IXmlBinding *externalBinding)
 		    propertyNodes->Get(aName[i].c_str(), true));
 		name.resize(0);
 		name.append(aName[i].c_str(), aName[i].length() - 9);// remove ".property"
-		j = m_pWNet->Net().Graph()->INode(name);
+		j = m_pWNet->Net().Graph().INode(name);
 		if(j < 0 || j >= nNode)
 		{
 		    continue;
@@ -183,13 +183,13 @@ bool NetworkPNL::Save(const char *filename, IXmlWriterExtension *externalExtensi
     propertyGroup.Put(new pnl::CCover<PropertyRealMap >(&m_NetProperty),
 	"NetProperty", true);
 
-    Vector<String> aNodeName = Graph()->Names();
+    Vector<String> aNodeName = Graph().Names();
     String name;
     int i, j;
 
     for(i = 0; i < aNodeName.size(); ++i)
     {
-	j = Graph()->INode(aNodeName[i]);
+	j = Graph().INode(aNodeName[i]);
 	if(!m_aNodeProperty[j].size())
 	{
 	    continue;
@@ -400,7 +400,7 @@ void NetworkPNL::GetNodes(std::vector<int> &nodes)
 {
     MarkCallFunction("GetNodes", true);
     Vector<int> aNode;
-    Graph()->Names(&aNode);
+    Graph().Names(&aNode);
     nodes.assign(aNode.begin(), aNode.end());
 }
 
@@ -417,7 +417,7 @@ int NetworkPNL::AddNode(int nodeType, const char *nodeId)
         MarkCallFunction("AddNode with unsupported node type", true);
 	return -1;
     }
-    int result = Token()->AddNode(String(nodeId));
+    int result = Token().AddNode(String(nodeId));
 
     if(result >= m_aNodeProperty.size())
     {
@@ -425,7 +425,7 @@ int NetworkPNL::AddNode(int nodeType, const char *nodeId)
 	m_aNodeValueStatus.resize(result + 1);
 	m_abEvidence.resize(result + 1, false);
     }
-    Distributions()->Setup(result);
+    Distributions().Setup(result);
     m_aNodeValueStatus[result] = NetConst::NotUpdated;
     return result;
 }
@@ -433,18 +433,18 @@ int NetworkPNL::AddNode(int nodeType, const char *nodeId)
 void NetworkPNL::DeleteNode(int node)
 {
     MarkCallFunction("DeleteNode", true);
-    Distributions()->DropDistribution(node);
+    Distributions().DropDistribution(node);
     m_aNodeProperty[node].clear();
-    Token()->DelNode(node);
+    Token().DelNode(node);
 }
 
 bool NetworkPNL::AddArc(int nodeFrom, int nodeTo)
 {
     MarkCallFunction("AddArc", true);
-    Graph()->AddArc(nodeFrom, nodeTo);
+    Graph().AddArc(nodeFrom, nodeTo);
     std::vector<int> parents;
     GetParents(nodeTo, parents);
-    Distributions()->Setup(nodeTo);
+    Distributions().Setup(nodeTo);
     m_aNodeValueStatus[nodeTo] = NetConst::NotUpdated;
     return true;
 }
@@ -452,8 +452,8 @@ bool NetworkPNL::AddArc(int nodeFrom, int nodeTo)
 void NetworkPNL::DeleteArc(int nodeFrom, int nodeTo)
 {
     MarkCallFunction("DeleteArc", true);
-    Graph()->DelArc(nodeFrom, nodeTo);
-    Distributions()->Setup(nodeTo);
+    Graph().DelArc(nodeFrom, nodeTo);
+    Distributions().Setup(nodeTo);
     m_aNodeValueStatus[nodeTo] = NetConst::NotUpdated;
 }
 
@@ -461,25 +461,25 @@ void NetworkPNL::GetParents(int node, std::vector<int> &parents)
 {
     MarkCallFunction("GetParents", true);
     pnl::intVector pnlParents;
-    Graph()->GetParents(&pnlParents, node);
+    Graph().GetParents(&pnlParents, node);
     parents.assign(pnlParents.begin(), pnlParents.end());
 }
 
 int NetworkPNL::GetParentCount(int node)
 {
     MarkCallFunction("GetParentCount", true);
-    return Graph()->nParent(node);
+    return Graph().nParent(node);
 }
 
 int NetworkPNL::FindParent(int node, int parentNode)
 {
     MarkCallFunction("FindParent", true);
     pnl::intVector pnlParents;
-    pnl::CGraph *pnlGraph = Graph()->Graph();
-    pnlGraph->GetParents(Graph()->IGraph(node), &pnlParents);
+    pnl::CGraph *pnlGraph = Graph().Graph();
+    pnlGraph->GetParents(Graph().IGraph(node), &pnlParents);
     pnlParents[0] = pnlParents[parentNode];
     pnlParents.resize(1);
-    Graph()->IndicesGraphToOuter(&pnlParents, &pnlParents);
+    Graph().IndicesGraphToOuter(&pnlParents, &pnlParents);
     return pnlParents[0];
 }
 
@@ -488,25 +488,25 @@ void NetworkPNL::GetChildren(int node, std::vector<int> &children)
     MarkCallFunction("GetChildren", true);
     pnl::intVector pnlChildren;
 
-    Graph()->GetChildren(&pnlChildren, node);
+    Graph().GetChildren(&pnlChildren, node);
     children.assign(pnlChildren.begin(), pnlChildren.end());
 }
 
 int NetworkPNL::GetChildrenCount(int node)
 {
     MarkCallFunction("GetChildrenCount", true);
-    return Graph()->nChild(node);
+    return Graph().nChild(node);
 }
 
 int NetworkPNL::FindChild(int node, int childNode)
 {
     MarkCallFunction("FindChild");
     pnl::intVector pnlChildren;
-    pnl::CGraph *pnlGraph = Graph()->Graph();
-    pnlGraph->GetChildren(Graph()->IGraph(node), &pnlChildren);
+    pnl::CGraph *pnlGraph = Graph().Graph();
+    pnlGraph->GetChildren(Graph().IGraph(node), &pnlChildren);
     pnlChildren[0] = pnlChildren[childNode];
     pnlChildren.resize(1);
-    Graph()->IndicesGraphToOuter(&pnlChildren, &pnlChildren);
+    Graph().IndicesGraphToOuter(&pnlChildren, &pnlChildren);
     return pnlChildren[0];
 }
 
@@ -515,7 +515,7 @@ int NetworkPNL::GetOutcomeCount(int node)
     MarkCallFunction("GetOutcomeCount", true, (String() << "node #" << node).c_str());
     
     Vector<String> aValue;
-    Token()->GetValues(node, aValue);
+    Token().GetValues(node, aValue);
     MarkCallFunction("GetOutcomeCount", true, (String() << "size " << int(aValue.size())).c_str());
     return aValue.size();
 }
@@ -523,21 +523,21 @@ int NetworkPNL::GetOutcomeCount(int node)
 const char* NetworkPNL::GetOutcomeId(int node, int outcomeIndex)
 {
     MarkCallFunction("GetOutcomeId", true);
-    m_Bad.assign(Token()->Value(node, outcomeIndex).c_str());
+    m_Bad.assign(Token().Value(node, outcomeIndex).c_str());
     return m_Bad.c_str();// may bring to inconsistent state if pointer will saved!!
 }
 
 const char* NetworkPNL::GetOutcomeLabel(int node, int outcomeIndex)
 {
     MarkCallFunction("GetOutcomeLabel unfin x", true);
-    m_Bad.assign(Token()->Value(node, outcomeIndex).c_str());
+    m_Bad.assign(Token().Value(node, outcomeIndex).c_str());
     return m_Bad.c_str();// may bring to inconsistent state if pointer will saved!!
 }
 
 void NetworkPNL::GetDefinition(int node, std::vector<double> &definition)
 {
     MarkCallFunction("GetDefinition unfin x", true);
-    WDistribFun *pDF = Distributions()->Distribution(node);
+    WDistribFun *pDF = Distributions().Distribution(node);
     pnl::CDenseMatrix<float> *mat = pDF->Matrix(pnl::matTable);
     const float *pVal;
     int len;
@@ -568,7 +568,7 @@ void NetworkPNL::GetValue(int node, bool &valueValid, std::vector<int> &parents,
 	return;
     }
     valueValid = true;
-    evid = m_pWNet->GetJPD(Graph()->NodeName(node));
+    evid = m_pWNet->GetJPD(Graph().NodeName(node));
     values.resize(len);
 
     Vector<int> aiNode, aiValue;
@@ -578,7 +578,7 @@ void NetworkPNL::GetValue(int node, bool &valueValid, std::vector<int> &parents,
 
     x = String(evid);
 
-    //    Token()->Resolve(evid);
+    //    Token().Resolve(evid);
     Net().ExtractTokArr(evid, &aiNode, &aiValue);
     for(i = evid.size(); --i >= 0;)
     {
@@ -642,7 +642,7 @@ int NetworkPNL::GetNodeType(int node)
 bool NetworkPNL::IsIdUnique(const char *nodeId, int nodeToIgnore)
 {
     MarkCallFunction("IsIdUnique", true, (String() << nodeId).c_str());
-    Vector<String> aName(Graph()->Names());
+    Vector<String> aName(Graph().Names());
     String name(nodeId);
 
     for(int i = aName.size(); --i >= 0;)
@@ -658,13 +658,13 @@ bool NetworkPNL::IsIdUnique(const char *nodeId, int nodeToIgnore)
 int NetworkPNL::FindNode(const char * id)
 {
     MarkCallFunction("FindNode", true, id);
-    return Graph()->INode(id);
+    return Graph().INode(id);
 }
 
 const char* NetworkPNL::GetNodeId(int node)
 {
     MarkCallFunction("GetNodeId", true);
-    return Graph()->NodeName(node).c_str();
+    return Graph().NodeName(node).c_str();
 }
 
 bool NetworkPNL::IsTarget(int node)
@@ -739,7 +739,7 @@ bool NetworkPNL::SetNodeId(int node, const char *id)
 
     newId << " - new name for node #" << node;
     MarkCallFunction("SetNodeId", true, newId.c_str());
-    return Graph()->SetNodeName(node, String(id));
+    return Graph().SetNodeName(node, String(id));
 }
 
 void NetworkPNL::SetNodeType(int node, int type)
@@ -760,7 +760,7 @@ void NetworkPNL::DeleteOutcome(int node, int outcomeIndex)
 void NetworkPNL::SetDefinition(int node, const std::vector<double> & definition)
 {
     MarkCallFunction("SetDefinition unfin x", true);
-    WDistribFun *pD = Distributions()->Distribution(node);
+    WDistribFun *pD = Distributions().Distribution(node);
     pnl::CDenseMatrix<float> *m = static_cast<pnl::CDenseMatrix<float> *>(pD->Matrix(pnl::matTable));
     Vector<float> def;
     int i = definition.size();
@@ -780,7 +780,7 @@ void NetworkPNL::SetDefinition(int node, const std::vector<double> & definition)
 bool NetworkPNL::SetOutcomeId(int node, int outcomeIndex, const char *id)
 {
     MarkCallFunction("SetOutcomeId unchecked unfin x", true);
-    Token()->SetValue(node, outcomeIndex, String(id));
+    Token().SetValue(node, outcomeIndex, String(id));
     return true;
 }
 
@@ -806,7 +806,7 @@ void NetworkPNL::SetEvidence(int node, int outcomeIndex)
 {
     MarkCallFunction("SetEvidence", true, (String() << "Node #" << node).c_str());
 
-    m_aEvidence->Set(Tok(Graph()->NodeName(node)) ^ outcomeIndex);
+    m_aEvidence->Set(Tok(Graph().NodeName(node)) ^ outcomeIndex);
     m_abEvidence[node] = true;
     m_aNodeValueStatus[node] = NetConst::Updated;
 }
@@ -1020,18 +1020,18 @@ void NetworkPNL::SetValues(int iNode, const std::vector<std::string> &aId)
     {
         aIdNew[i] = aId[i];
     }
-    Token()->GetValues(iNode, aIdOld);
-    Token()->SetValues(iNode, aIdNew);
+    Token().GetValues(iNode, aIdOld);
+    Token().SetValues(iNode, aIdNew);
     m_aNodeValueStatus[iNode] = NetConst::NotUpdated;
     if(aIdOld.size() != aIdNew.size())
     {
-	Distributions()->Setup(iNode);
+	Distributions().Setup(iNode);
 	std::vector<int> aChild;
 	GetChildren(iNode, aChild);
 
 	for(i = aChild.size(); --i >= 0;)
 	{
-	    Distributions()->Setup(aChild[i]);
+	    Distributions().Setup(aChild[i]);
 	}
     }
 }
@@ -1041,17 +1041,17 @@ ProbabilisticNet &NetworkPNL::Net() const
     return m_pWNet->Net();
 }
 
-WGraph *NetworkPNL::Graph() const
+WGraph &NetworkPNL::Graph() const
 {
     return Net().Graph();
 }
 
-TokenCover *NetworkPNL::Token() const
+TokenCover &NetworkPNL::Token() const
 {
     return Net().Token();
 }
 
-WDistributions *NetworkPNL::Distributions() const
+WDistributions &NetworkPNL::Distributions() const
 {
     return Net().Distributions();
 }
