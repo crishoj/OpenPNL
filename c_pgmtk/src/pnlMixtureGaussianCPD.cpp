@@ -456,6 +456,7 @@ float CMixtureGaussianCPD::GetCoefficient( const int* discrComb  )
                  ->GetCoefficient( forCanonical, discrComb );
 }
 
+/*
 void CMixtureGaussianCPD::UpdateStatisticsEM( const CPotential *pMargPot,
                                             const CEvidence *pEvidence )
 {
@@ -540,6 +541,99 @@ void CMixtureGaussianCPD::UpdateStatisticsEM( const CPotential *pMargPot,
     delete denseMat;
     delete iter;
 }
+*/
+
+void CMixtureGaussianCPD::UpdateStatisticsEM( const CPotential *pMargPot,
+                                            const CEvidence *pEvidence )
+{
+    PNL_CHECK_IS_NULL_POINTER(pMargPot);
+    const CDistribFun *pMargData = pMargPot->GetDistribFun();
+    if( !pMargData )
+    {
+	PNL_THROW( CNULLPointer, "pMargData" );
+    }
+    //we can work up tabular data with all Gaussian nodes observed
+    EDistributionType dt = pMargData->GetDistributionType();
+    if( dt != dtTabular )
+    {
+        PNL_THROW( CNotImplemented,
+            "we can learn only data with all Gaussian nodes observed" );
+    }
+    const CMatrix<float>* mat = pMargData->GetMatrix(matTable);
+    intVector discrIndices;
+    intVector contIndices;
+    CCondGaussianDistribFun* correspDistr =
+        static_cast<CCondGaussianDistribFun*>(m_CorrespDistribFun);
+    correspDistr->GetDiscreteParentsIndices(&discrIndices);
+    correspDistr->GetContinuousParentsIndices(&contIndices);
+    int discSize = discrIndices.size();
+    int mixNodePos = discSize - 1;
+    CMatrix<float>* shrMat = mat->ReduceOp( &discrIndices[mixNodePos],
+        1, 0 );
+    
+    int mClass = shrMat->GetMatrixClass();
+    if(!(( mClass == mcSparse )||(mClass == mcNumericSparse)))
+    {
+        CDenseMatrix<float>* denseMat = static_cast<CDenseMatrix<float>*>(shrMat);
+	const floatVector* vec = denseMat->GetVector();
+	int sizeLearned = vec->size();
+	int sizeProbHere = m_learnProbabilities.size();
+	if( sizeLearned != sizeProbHere )
+	{
+	    PNL_THROW( CInconsistentSize, "sizes of learned matrices should corresponds" )
+	}
+	
+	int i;
+	for( i = 0; i < sizeProbHere; i++ )
+	{
+	    m_learnProbabilities[i] += (*vec)[i];
+	}
+    }
+    else
+    {
+	int dim;
+	const int* ranges;
+	shrMat->GetRanges( &dim, &ranges );
+	
+	CMatrixIterator<float>* iter = shrMat->InitIterator();
+	
+	intVector index;
+	int offset;
+	for( iter; shrMat->IsValueHere( iter ); shrMat->Next(iter) )
+	{
+	    
+	    index.clear();
+	    shrMat->Index( iter, &index ); 
+	    float valAdd = *(shrMat->Value( iter ));
+	    offset = 0;
+	    int i;
+	    for( i = 0; i < dim; i++)
+	    {
+		offset = offset * ranges[i] + index[i];
+	    }
+	    m_learnProbabilities[offset] += valAdd;
+	}
+	
+	
+    }
+    
+   
+    //////////////////////////////////////////////////////////////////////////
+    intVector obsPos;
+    pMargPot->GetObsPositions(&obsPos);
+
+    
+    {
+	m_CorrespDistribFun->UpdateStatisticsEM( pMargPot->GetDistribFun(), pEvidence, 1.0f,
+	    &m_Domain.front() );
+    }
+    
+    //////////////////////////////////////////////////////////////////////////
+    
+    
+    delete shrMat;
+}
+
 
 float CMixtureGaussianCPD::ProcessingStatisticalData( int numberOfEvidences)
 {
