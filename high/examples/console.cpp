@@ -251,6 +251,9 @@ FuncDesc aFuncDesc[] =
 ,   "mpe",	    eMPE,	true,  1, 1, 1
 ,   "generateevidences", eGenerateEvidences, false, 0, 3, 2
 ,   "learnstructure", eLearnStructure, true, 0, 0, 0
+,   "gaussianmean", eGaussianMean,true, 1, 1, 0
+,   "gaussiancovar", eGaussianCovar, true, 1, 2, 0 
+,   "setgaussian", eSetGaussian, false, 0, 3, 2
 // build-in commands
 ,   "execute",	    -1,		false, 0, 1, 0
 ,   "clear",	    -2,		true,  0, 0, 0
@@ -457,6 +460,10 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eSetP:	    BNet().SetP(args[0], args[1], args[2]); break;
 	case eP:	    Print(BNet().P(args[0], args[1]));break;
 	case eLearnStructure:BNet().LearnStructure(0, 0); break;
+        case eGaussianMean: Print(BNet().GaussianMean(args[0]));break;
+        case eGaussianCovar: Print(BNet().GaussianCovar(args[0], args[1]));break;
+        case eSetGaussian: BNet().SetGaussian(args[0], args[1], args[2]);break;
+
 	case eGenerateEvidences:
 	    {
 		int nSample = atoi(args[0].c_str());
@@ -500,7 +507,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eLearn:	    BNet().Learn(); break;
 	case eMPE:	    Print(BNet().MPE(args[0])); break;
 	case eNodeType:
-	case eSetGaussian:
+//	case eSetGaussian:
 	default:
 	    cout << "Unrealized command: '" << fname << "'\n";
 	    return -2;
