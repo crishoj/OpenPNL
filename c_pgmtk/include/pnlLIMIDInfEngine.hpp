@@ -25,6 +25,9 @@
 #include "pnlIDTabularPotential.hpp"
 #include "pnlTypeDefs.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CLIMIDInfEngine : public CPNLBase
@@ -51,6 +54,16 @@ public:
   // Get number of iterations
   int GetIterNum();
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CLIMIDInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
 
   CLIMIDInfEngine(const CStaticGraphicalModel *pOldGM, 
@@ -112,6 +125,9 @@ protected:
 
   void InitMailBoxes();
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
   int          m_JTreeRootNode;   // root of junction tree
   intVecVector m_collectSequence; // layers of junction tree

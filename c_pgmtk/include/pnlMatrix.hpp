@@ -22,6 +22,9 @@
 #include "pnlTypeDefs.hpp"
 #include "pnlMatrixIterator.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 typedef PNL_API enum 
@@ -138,10 +141,24 @@ public:
     virtual int IsValueHere( CMatrixIterator<Type>* current ) const = 0;
     virtual void Index( CMatrixIterator<Type>* current, intVector* index ) const = 0;
 
-
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CMatrix< int >::GetStaticTypeInfo();
+    }
+#endif
 protected:
     CMatrix( int Clamped );
     CMatrix();
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
+
 private:
     int m_bClamped;
     //If we can't change this Matrix during learning m_bClamped = 1
@@ -237,6 +254,12 @@ pnl::CMatrix<Type>::CMatrix( )
     m_bClamped = 0;
     
 }
+
+#endif
+
+#ifdef PNL_RTTI
+template <class Type>
+const CPNLType CMatrix<Type>::m_TypeInfo = CPNLType("CMatrix", &(CReferenceCounter::m_TypeInfo));
 
 #endif
 

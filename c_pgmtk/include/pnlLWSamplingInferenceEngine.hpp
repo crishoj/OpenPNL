@@ -22,6 +22,9 @@
 
 #include "pnlInferenceEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CLWSamplingInfEngine : public CInfEngine  
@@ -51,10 +54,23 @@ public:
      // destructor
     virtual ~CLWSamplingInfEngine();
    
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CLWSamplingInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
     CLWSamplingInfEngine( const CStaticGraphicalModel *pGraphicalModel, int particleCount= 300  );
 	void NormalizeWeight();
       
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 	int						m_particleCount;      // particle(sample) count
 	floatVector             m_particleWeight;     // particle weights

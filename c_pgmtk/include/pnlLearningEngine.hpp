@@ -21,6 +21,10 @@
 #include "pnlObject.hpp"
 #include "pnlGraphicalModel.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 typedef PNL_API enum
@@ -47,6 +51,16 @@ public:
     void ClearStatisticData();
     virtual void GetCriterionValue( floatVector *critValuesOut ) const;
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CLearningEngine::m_TypeInfo;
+  }
+#endif
 protected:
     CLearningEngine( CGraphicalModel *pGrModel, ELearningTypes learnType );
     bool IsInfNeed( const CEvidence * pEvidences );
@@ -55,6 +69,10 @@ protected:
     CGraphicalModel *m_pGrModel;
     ELearningTypes m_LearnType;
     floatVector m_critValue;
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 };
 
 

@@ -22,6 +22,9 @@
 #include "pnlLog.hpp"
 #include "pnlLogDriver.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 
@@ -139,6 +142,17 @@ public:
 
 	/* returns node type of the node with a number == nodeNumber */
 	inline const CNodeType* GetNodeType(int nodeNumber) const;
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CJunctionTree::m_TypeInfo;
+  }
+#endif
 protected:
     
 #ifdef PNL_OBSOLETE
@@ -213,7 +227,10 @@ protected:
     /* initializes potentials for separators of the junction tree */
     void InitSeparatorsPots( const CStaticGraphicalModel *pGraphicalModel,
                              const CEvidence *pEvidence );
-    
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif    
 private:
     
     // the triangulated graph, which is necessary to find all cliques

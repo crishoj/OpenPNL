@@ -23,6 +23,10 @@
 #include "pnlDistribFun.hpp"
 #include "pnlGaussianDistribFun.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 #ifdef PAR_RESULTS_RELIABILITY
@@ -148,6 +152,16 @@ public:
     ;
 #endif
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CJtreeInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
     
     typedef enum
@@ -200,6 +214,9 @@ protected:
 	CPotential* MergeCliques(int domSize, int* Domain);
 
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     
     CPotential *m_pPotMPE;
