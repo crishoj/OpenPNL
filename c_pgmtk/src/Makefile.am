@@ -1,3 +1,5 @@
+SUBDIRS = include
+
 LIBS = -ldl -lm
 
 include $(top_srcdir)/Makefile.incl
