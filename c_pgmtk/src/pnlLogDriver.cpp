@@ -224,6 +224,8 @@ void LogDrvStream::WriteString(const char* pStr, int strLen)
             (*m_pStream) << *pStr;
         }
     }
+
+    m_pStream->flush();
 }
 
 void LogDrvSystem::Configure(EConfCmd, int /* level = eLOG_ALL */,

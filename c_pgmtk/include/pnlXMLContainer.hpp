@@ -6,36 +6,32 @@
 //   or disclosed except in accordance with the terms of that agreement.   //
 //       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        //
 //                                                                         //
-//  File:      pnlContextPersistence.hpp                                   //
+//  File:      pnlXMLContainer.hpp                                         //
 //                                                                         //
-//  Purpose:   Persistence contexts                                        //
+//  Purpose:   This class keeps parsed XML document                        //
 //                                                                         //
 //  Author(s):                                                             //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+#ifndef __PNLXMLCONTAINER_HPP__
+#define __PNLXMLCONTAINER_HPP__
 
-#ifndef __PNLCONTEXTPERSISTENCE_HPP__
-#define __PNLCONTEXTPERSISTENCE_HPP__
-
-#ifndef __PNLCONTEXT_HPP__
-#include "pnlContext.hpp"
-#endif
+#include "pnlString.hpp"
 
 PNL_BEGIN
 
-// FORWARDS
-class CXMLWriter;
-class CXMLContainer;
-
-class PNL_API CContextPersistence: public CContext
+// pure virtual class
+class PNL_API CXMLContainer
 {
 public:
-    CContextPersistence() {}
-    bool SaveAsXML(const std::string &filename) const;
-    bool SaveViaWriter(CXMLWriter *writer) const;
-    bool LoadXML(const std::string &filename);
-    bool LoadXMLToContainer(CXMLContainer *container, const std::string &filename);
+    virtual void CreateNode(const pnlString &name) = 0;
+    virtual void AddContent(const pnlString &addition) = 0;
+    virtual void AddAttribute(const pnlString &attrName, const pnlString &attrValue) = 0;
+    virtual void Close() = 0;
+
+protected:
+    virtual ~CXMLContainer() {}
 };
 
 PNL_END

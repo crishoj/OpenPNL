@@ -34,7 +34,6 @@ class CObjHandler;
 
 #ifndef ASSERT
 #define ASSERT(A)     if( (A) != true ) { PNL_THROW( CBadArg, #A " must be true"); }
-
 #endif
 
 class PNL_API CContext
@@ -186,8 +185,13 @@ protected: // FUNCTIONS
         return m_Indices.back()();
     }
 
+    const TreeEntry& Current() const
+    {
+        return m_Indices.back()();
+    }
+
     virtual void GetObjWithObjTypeName(CPNLBase **ppObj,
-        pnlString *pObjTypeName, const TreeEntry &rEntry)
+        pnlString *pObjTypeName, const TreeEntry &rEntry) const
     {
 	if(rEntry.m_pObject)
 	{

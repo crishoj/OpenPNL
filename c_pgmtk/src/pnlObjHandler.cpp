@@ -18,6 +18,8 @@
 #include "pnlObjHandler.hpp"
 #include "pnlPersistence.hpp"
 #include "pnlContextPersistence.hpp"
+#include "pnlContextLoad.hpp"
+#include "pnlContextSave.hpp"
 #include "pnlString.hpp"
 
 PNL_USING

@@ -19,12 +19,17 @@
 #include <sstream>
 #include "pnlContext.hpp"
 #include "pnlContextPersistence.hpp"
+#include "pnlContextLoad.hpp"
+#include "pnlContextSave.hpp"
+#include "pnlGroup.hpp"
 #include "pnlPersistCover.hpp"
 #include "pnlPersistTypes.hpp"
 #include "pnlNodeType.hpp"
 #include "pnlNodeValues.hpp"
 #include "pnlEvidence.hpp"
 #include "pnlDistribFun.hpp"
+
+#include "pnlXMLRead.hpp"
 
 PNL_BEGIN
 
@@ -131,11 +136,6 @@ CPersistEvidence::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
 
     pContext->Put(const_cast<CModelDomain*>(pEvidence->GetModelDomain()), "ModelDomain");
     pContext->Put(new CCoverDel<intVector>(pV), "ObservedNodes", true);
-}
-
-void CPersistEvidence::Save(CPNLBase *pObj, CContextSave *pContext)
-{
-    CPersistNodeValues::Save(pObj, pContext);
 }
 
 CPNLBase *CPersistEvidence::Load(CContextLoad *pContext)
@@ -505,6 +505,44 @@ CPNLBase *CPersistValueVector::Load(CContextLoad *pContext)
 bool CPersistValueVector::IsHandledType(CPNLBase *pObj) const
 {
     return dynamic_cast<CCover<valueVector>*>(pObj) != 0;
+}
+
+// saving/loading for grouping object
+void CPersistGroup::Save(CPNLBase *pObj, CContextSave *pContext)
+{
+}
+
+CPNLBase *CPersistGroup::Load(CContextLoad *pContext)
+{
+    pnlVector<pnlString> aChild;
+    int i;
+    CGroupObj *group = new CGroupObj;
+
+    pContext->GetChildrenNames(&aChild);
+    for(i = 0; i < aChild.size(); ++i)
+    {
+	group->Put(pContext->Get(aChild[i].c_str()), aChild[i].c_str(), false);
+    }
+
+    return group;
+}
+
+void CPersistGroup::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
+{
+    CGroupObj *group = dynamic_cast<CGroupObj*>(pObj);
+    int i;
+    pnlVector<pnlString> aChild;
+
+    group->GetChildrenNames(&aChild);
+    for(i = 0; i < aChild.size(); ++i)
+    {
+	pContext->Put(group->Get(aChild[i].c_str(), false), aChild[i].c_str(), false);
+    }
+}
+
+bool CPersistGroup::IsHandledType(CPNLBase *pObj) const
+{
+    return dynamic_cast<CGroupObj*>(pObj) != 0;
 }
 
 PNL_END

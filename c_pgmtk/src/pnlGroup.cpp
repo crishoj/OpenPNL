@@ -6,38 +6,36 @@
 //   or disclosed except in accordance with the terms of that agreement.   //
 //       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        //
 //                                                                         //
-//  File:      pnlContextPersistence.hpp                                   //
+//  File:      pnlGroup.cpp                                                //
 //                                                                         //
-//  Purpose:   Persistence contexts                                        //
+//  Purpose:   Grouping object. Designed for persistence                   //
 //                                                                         //
 //  Author(s):                                                             //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+#include "pnlConfig.hpp"
+#include "pnlGroup.hpp"
 
-#ifndef __PNLCONTEXTPERSISTENCE_HPP__
-#define __PNLCONTEXTPERSISTENCE_HPP__
+PNL_USING
 
-#ifndef __PNLCONTEXT_HPP__
-#include "pnlContext.hpp"
-#endif
-
-PNL_BEGIN
-
-// FORWARDS
-class CXMLWriter;
-class CXMLContainer;
-
-class PNL_API CContextPersistence: public CContext
+void CGroupObj::Put(CPNLBase *pObj, const char *name, bool bAutoDelete)
 {
-public:
-    CContextPersistence() {}
-    bool SaveAsXML(const std::string &filename) const;
-    bool SaveViaWriter(CXMLWriter *writer) const;
-    bool LoadXML(const std::string &filename);
-    bool LoadXMLToContainer(CXMLContainer *container, const std::string &filename);
-};
+    m_aName.push_back(name);
+    m_aObject.push_back(pObj);
+    m_abDelete.push_back(bAutoDelete);
+}
 
-PNL_END
-
-#endif // include guard
+CPNLBase *CGroupObj::Get(const char *name, bool bAutoDelete)
+{
+    pnlString sName(name);
+    for(int i = m_aName.size(); --i >= 0 && m_aName[i] != sName;);
+    {
+	if(sName == m_aName[i])
+	{
+	    m_abDelete[i] = bAutoDelete;
+	    return m_aObject[i];
+	}
+    }
+    return 0;
+}

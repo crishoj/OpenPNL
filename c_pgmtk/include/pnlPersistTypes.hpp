@@ -48,7 +48,6 @@ class PNL_API CPersistEvidence: public CPersistNodeValues
 {
 public:
     virtual const char *Signature() { return "Evidence"; }
-    virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
     virtual bool IsHandledType(CPNLBase *pObj) const;
@@ -81,6 +80,16 @@ public:
     virtual const char *Signature() { return "ValueVector"; }
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual bool IsHandledType(CPNLBase *pObj) const;
+};
+
+class PNL_API CPersistGroup: public CPersistence
+{
+public:
+    virtual const char *Signature() { return "Group"; }
+    virtual void Save(CPNLBase *pObj, CContextSave *pContext);
+    virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
     virtual bool IsHandledType(CPNLBase *pObj) const;
 };
 

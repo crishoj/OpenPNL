@@ -19,6 +19,8 @@
 #include <sstream>
 #include "pnlContext.hpp"
 #include "pnlContextPersistence.hpp"
+#include "pnlContextLoad.hpp"
+#include "pnlContextSave.hpp"
 #include "pnlPersistGraph.hpp"
 #include "pnlGraph.hpp"
 

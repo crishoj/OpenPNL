@@ -6,36 +6,38 @@
 //   or disclosed except in accordance with the terms of that agreement.   //
 //       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        //
 //                                                                         //
-//  File:      pnlContextPersistence.hpp                                   //
+//  File:      pnlGroup.hpp                                                //
 //                                                                         //
-//  Purpose:   Persistence contexts                                        //
+//  Purpose:   Grouping object. Designed for persistence                   //
 //                                                                         //
 //  Author(s):                                                             //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+#ifndef __PNLGROUP_HPP__
+#define __PNLGROUP_HPP__
 
-#ifndef __PNLCONTEXTPERSISTENCE_HPP__
-#define __PNLCONTEXTPERSISTENCE_HPP__
-
-#ifndef __PNLCONTEXT_HPP__
-#include "pnlContext.hpp"
-#endif
+#include "pnlString.hpp"
 
 PNL_BEGIN
 
-// FORWARDS
-class CXMLWriter;
-class CXMLContainer;
-
-class PNL_API CContextPersistence: public CContext
+// grouping class
+class PNL_API CGroupObj: public CPNLBase
 {
 public:
-    CContextPersistence() {}
-    bool SaveAsXML(const std::string &filename) const;
-    bool SaveViaWriter(CXMLWriter *writer) const;
-    bool LoadXML(const std::string &filename);
-    bool LoadXMLToContainer(CXMLContainer *container, const std::string &filename);
+    CGroupObj()  { m_aName.reserve(4); m_aObject.reserve(4); m_abDelete.reserve(4); }
+    ~CGroupObj() { for(int i = m_abDelete.size(); --i >= 0;) if(m_abDelete[i]) delete m_aObject[i]; }
+    void Put(CPNLBase *pObj, const char *name, bool bAutoDelete = true);
+    CPNLBase *Get(const char *name, bool bAutoDelete = true);
+    void GetChildrenNames(pnlVector<pnlString> *paChild)
+    {
+	*paChild = m_aName;
+    }
+
+private:
+    pnlVector<pnlString> m_aName;
+    pnlVector<CPNLBase*> m_aObject;
+    pnlVector<char>	 m_abDelete;
 };
 
 PNL_END

@@ -85,8 +85,7 @@ CPersistenceZoo *GetZoo()
 {
     if(!persistenceZooHolder.m_pZoo)
     {
-        CPersistenceZoo *pZoo = persistenceZooHolder.m_pZoo
-            = new CPersistenceZoo;
+        persistenceZooHolder.m_pZoo = new CPersistenceZoo;
         new CGraphPersistence();
         new CPersistNodeType();
         new CPersistNodeValues();
@@ -112,6 +111,7 @@ CPersistenceZoo *GetZoo()
         new CPersistMatrixFlt();
         new CPersistMatrixDistribFun();
         new CPersistEvidence();
+	new CPersistGroup();
     }
 
     return persistenceZooHolder.m_pZoo;

@@ -21,6 +21,8 @@
 #include <sstream>
 #include "pnlPersistence.hpp"
 #include "pnlContextPersistence.hpp"
+#include "pnlContextLoad.hpp"
+#include "pnlContextSave.hpp"
 #include "pnlPersistArray.hpp"
 
 #ifdef PNL_RTTI
