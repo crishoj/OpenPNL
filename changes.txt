@@ -9,6 +9,39 @@ Build 24                                          -December -2004
 + PNLHigh is a new interface for our library. It is experimental
   for now. See high/readme.txt for more details
 
++ Add support of continuous networks in parallel version of 
+  algorithms: JTree, Gibbs.
+
++ Add Structure learning for bayessian networks in fully observed
+  case.
+
++ Implement Structure Learning by predictive assessment.
+
++ Implement Bayessian approach to Structure learning in discrete 
+  and fully observed case only.
+
++ Implement Wishart priors for parameters of Gaussian 
+  distribution.
+
++ Add a branch with marginalization in canonical form to 
+  marginalize methods (use in JTree).
+
++ Add decision tree distribution. Implement inference on 
+  networks with decision tree nodes.
+
++ Add examples of usage for parallel algorithms in HTML 
+  documentation.
+
+* Add compilation of parallel versions of algorithms:
+  Jtree and Gibbs:   discrete and continuous cases
+  Pearl and EMLearn: discrete case only.
+
+* Fixed bug in potential multiply function for Structure 
+  learning algorithm.
+
+* Fixed bug in CGaussianDistribFun::IsEqual() function (returned 
+  false for two equal unit distributions).
+
 -----------------------------------------------------------------
 Build 23                                        18-September-2004
 -----------------------------------------------------------------
