@@ -2104,10 +2104,10 @@ void CParPearlInfEngine::CPD_to_pi(int nodeNumber,
   CDistribFun *const*allPiMessages, int *multParentIndices, int numMultNodes,
   int posOfExceptNode, int maximizeFlag)
 {
-  PNL_CHECK_IS_NULL_POINTER(allPiMessages);
   PNL_CHECK_LEFT_BORDER(numMultNodes, 0);
   if (numMultNodes > 0)
   {
+    PNL_CHECK_IS_NULL_POINTER(allPiMessages);
     PNL_CHECK_IS_NULL_POINTER(multParentIndices);
   }
   int i;
