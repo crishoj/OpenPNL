@@ -1444,9 +1444,11 @@ void CJunctionTree::InitNodePotsFromBNetOMP( const CBNet* pBNet,
 
     for(i = leftBound; i < rightBound; ++i, ++ndContIt)
     {
-        pConstNodeTypeVector nodeTypes;
+        //pConstNodeTypeVector nodeTypes;
+        pnlVector<const CNodeType*> nodeTypes;
+        //pConstCPDVector assignedFactors;
+        pnlVector<const CCPD*> assignedFactors;
 
-        pConstCPDVector assignedFactors;
 
         // finding out if the unit function is to be sparse or not
         bool bDenseUnitFunction = true;
@@ -1454,7 +1456,8 @@ void CJunctionTree::InitNodePotsFromBNetOMP( const CBNet* pBNet,
         intVector::iterator potsAssIt = std::find(factAssToClq_begin, 
             factAssToClq_end, i);
 
-        intVector summarizeNodes;
+        //intVector summarizeNodes;
+        pnlVector<int> summarizeNodes;
 
         while(potsAssIt != factAssToClq_end)
         {
@@ -1481,7 +1484,8 @@ void CJunctionTree::InitNodePotsFromBNetOMP( const CBNet* pBNet,
 
         intVector::const_iterator clqIt   = ndContIt->begin(),
             clq_end = ndContIt->end();
-        intVector obsPositionsInDom;
+        //intVector obsPositionsInDom;
+        pnlVector<int> obsPositionsInDom;
 
         for(; clqIt != clq_end; ++clqIt)
         {
@@ -1508,15 +1512,15 @@ void CJunctionTree::InitNodePotsFromBNetOMP( const CBNet* pBNet,
         
         // creating the unit function itself
         CPotential *pPot = NULL;
-        const CNodeType nT = m_nodeTypes[m_nodeAssociation[i]];
-        if((nT.IsDiscrete()) && (nT.GetNodeSize() == 0))
+        const CNodeType* nT = &m_nodeTypes[m_nodeAssociation[i]];
+        if((nT->IsDiscrete()) && (nT->GetNodeSize() == 0))
         {
             pPot = CScalarPotential::Create( &ndContIt->front(),
                 ndContIt->size(), m_pMD, obsPositionsInDom );
         }
         else
         {
-            if(nT.IsDiscrete())
+            if(nT->IsDiscrete())
             {
                 pPot = CTabularPotential::CreateUnitFunctionDistribution(
                     &ndContIt->front(), ndContIt->size(), m_pMD, bDenseUnitFunction, 

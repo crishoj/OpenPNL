@@ -19,7 +19,7 @@
 #include "pnlConfig.hpp"
 #include "pnlParNewDelete.hpp"
 
-#ifdef PAR_OMP
+#ifdef PAR_USE_OMP_ALLOCATOR
 
 #include <windows.h>
 #include <omp.h>
@@ -102,6 +102,6 @@ void operator delete (void *pPointer)
         HeapFree(HeapsArray[myheap], 0, reinterpret_cast<void*>(pCharPointer));
 }
 
-#endif // PAR_OMP
+#endif // PAR_USE_OMP_ALLOCATOR
 
 // end of file ----------------------------------------------------------------

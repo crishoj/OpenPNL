@@ -298,12 +298,16 @@ void CParEMLearningEngine::LearnOMP()
         itsML[delta] = 0;
     };
 
+    int start_ev, end_ev;
     do
     {
         iteration++;
 
+        start_ev = GetNumberProcEv();
+        end_ev = GetNumEv();
+
 #pragma omp parallel for schedule(dynamic) private(ev)
-        for (ev = GetNumberProcEv(); ev < GetNumEv() ; ev++)
+        for (ev = start_ev; ev < end_ev ; ev++)
         {  
             CFactor *parameter = NULL;
             int DomainNodes_new; 
@@ -368,7 +372,7 @@ void CParEMLearningEngine::LearnOMP()
             itsML[0] = itsML[0] || itsML[delta];
         };
 
-        //Объединение факторов
+        //to join factors
 #pragma omp parallel for private(factor) default(shared)
         for (factor = 0; factor < numberOfParameters; factor++)
         {

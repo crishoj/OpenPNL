@@ -1,9 +1,12 @@
 #ifndef __PNLPARCONFIG_HPP__
 #define __PNLPARCONFIG_HPP__
 
+#ifndef WIN32
+// for linux
+#define BUILD_OMP
+//#define BUILD_MPI
+#endif
 
-// BUILD_OMP && BUILD_MPI must to be defined as project's option 
-// when pnl compiles and in test module when compile test module
 #ifdef BUILD_OMP
 #define PAR_OMP
 #else
@@ -20,23 +23,17 @@
 #undef PAR_OMP
 #endif*/
 
-#if !defined(WIN32)
-#undef PAR_OMP
-#undef PAR_MPI
-// parallel addition of PNL is supporting only Windows platform yet 
-#endif // WIN32
-
 #if defined(PAR_OMP) || defined(PAR_MPI)
 #define PAR_PNL
 #else
 #undef PAR_PNL
 #endif
 
-#if defined(PAR_OMP) && defined(_DEBUG)
+#if defined(PAR_OMP) && defined(_DEBUG) && defined(WIN32)
 #include "ParPNLCRTDBG.h"
 #endif
 
-#if defined(PAR_MPI)
+#if defined(PAR_MPI) && defined(WIN32)
 #ifdef _DEBUG
 #pragma comment(lib,"mpichd.lib")
 #else
@@ -44,7 +41,11 @@
 #endif
 #endif
 
-#if defined(PAR_PNL) && defined(_DEBUG)
+#if defined(PAR_OMP) && defined(WIN32)
+#define PAR_USE_OMP_ALLOCATOR
+#endif
+
+#if defined(PAR_PNL)
 #define PAR_RESULTS_RELIABILITY
 #endif
 

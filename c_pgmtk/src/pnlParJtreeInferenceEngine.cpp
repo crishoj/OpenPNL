@@ -459,7 +459,8 @@ void CParJtreeInfEngine::DistributeEvidenceOMP()
 #pragma omp parallel
 {
     const int *nbr, *nbrs_end;
-    intVector Parents(0);
+    //intVector Parents(0);
+    pnlVector<int>* Parents = new pnlVector<int>;
 
     while (/*(!source.empty()) || */(IsEndPar == 0))
     {
@@ -479,11 +480,11 @@ void CParJtreeInfEngine::DistributeEvidenceOMP()
         const ENeighborType *nbrsTypes;
 
         pGraph->GetNeighbors(sender, &numOfNbrs, &nbrs, &nbrsTypes);
-        GetParents(sender,&Parents);
+        GetParents(sender,Parents);
 
         for (nbr = nbrs, nbrs_end = nbrs + numOfNbrs; nbr != nbrs_end; ++nbr)
         {
-            if (*nbr != Parents[0])
+            if (*nbr != (*Parents)[0])
             {
                 int posNode = 0;
                 omp_set_lock(&find_zero_lock);
@@ -533,6 +534,8 @@ void CParJtreeInfEngine::DistributeEvidenceOMP()
             omp_unset_lock(&queue_lock);
         }
     } // while
+
+    delete Parents;
 } // end of parallel section
 
     omp_destroy_lock(&queue_lock);
@@ -751,8 +754,9 @@ int CParJtreeInfEngine::GetDataForMargAndMultOMP(const int source,
     num_dims_to_keep = numNdsInSepDom;
     *dims_to_keep = new int [num_dims_to_keep];
 
+    int i;
     int* pEquivPos;
-    for (int i = 0; i < numNdsInSepDom; i++)
+    for (i = 0; i < numNdsInSepDom; i++)
     {
         pEquivPos = (int*)std::find(sourceDom, sourceDom +
             numNdsInSourceDom, sepDom[i]);
@@ -811,7 +815,7 @@ int CParJtreeInfEngine::GetDataForMargAndMultOMP(const int source,
             num_dims_to_mul = numNdsInSepDom;
             *dims_to_mul = new int [num_dims_to_mul];
 
-            for (int i = 0; i < numNdsInSepDom; i++)
+            for (i = 0; i < numNdsInSepDom; i++)
             {
                 location = 
                     std::find(sinkDom, sinkDom + numNdsInSinkDom,

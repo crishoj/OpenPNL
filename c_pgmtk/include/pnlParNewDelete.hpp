@@ -18,9 +18,9 @@
 
 #include "pnlParConfig.hpp"
 
-#ifdef PAR_OMP
+#ifdef PAR_USE_OMP_ALLOCATOR
 
 void *operator new(size_t Size);
 void operator delete (void *pPointer);
 
-#endif // PAR_OMP
+#endif // PAR_USE_OMP_ALLOCATOR
