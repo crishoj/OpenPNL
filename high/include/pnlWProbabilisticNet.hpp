@@ -112,6 +112,8 @@ public:// inlines for access to object fields
     pnl::CGraphicalModel *Model();
     void SetModel(pnl::CGraphicalModel* pModel);
 
+    Tok ConvertMatrixToToken(const pnl::CMatrix<float> *mat);
+
 private:// DATA members
     // Tree for bnet:
     //

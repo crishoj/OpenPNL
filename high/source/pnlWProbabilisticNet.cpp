@@ -224,7 +224,7 @@ int ProbabilisticNet::SaveLearnBuf(const char *filename, NetConst::ESavingType m
 		    else
 		    {
 			str << v[j].GetFlt();
-			ThrowInternalError("Not yes realized", "SaveLearnBuf");
+//			ThrowInternalError("Not yes realized", "SaveLearnBuf");
 		    }
 		    
 		    lex.PutValue(String(str.c_str()));
@@ -680,7 +680,8 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(TokArr &aValue)
 	}
 	else
 	{
-	    ThrowInternalError("Not implemented", fname);
+	    vValue.push_back(pnl::Value(aValue[i].FltValue(0).fl));
+//            ThrowInternalError("Not implemented", fname);
 	}
     }
 
@@ -886,6 +887,17 @@ void ProbabilisticNet::Accumulate(TokArr *pResult, Vector<int> &aIndex,
 
     (*pResult) << (Tok(prtName) ^ valName ^ val);
 }
+
+Tok ProbabilisticNet::ConvertMatrixToToken(const pnl::CMatrix<float> *mat)
+{
+    pnl::CDenseMatrix<float> *dMean = mat->ConvertToDense();
+    const pnl::floatVector *meanVec = dMean->GetVector();
+    std::vector<float> matr(meanVec->begin(), meanVec->end());
+
+//    Tok meanTok = Tok(matr);
+    return Tok(matr);
+}
+
 
 void ProbabilisticNet::SplitNodesByObservityFlag(Vector<int> *aiObserved, Vector<int> *aiUnobserved)
 {
