@@ -697,7 +697,7 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 	// write evidences one by one
 	for(j = 0; j < GetNumSlices(); j++)
 	{
-	    for(iEvid = 0; iEvid < m_AllEvidences[i].size(); ++iEvid)
+	    for(iEvid = 0; iEvid < m_AllEvidences[j].size(); ++iEvid)
 	    {
 		aEvidNode = m_AllEvidences[j][iEvid]->GetAllObsNodes();
 		nEvidNode = m_AllEvidences[j][iEvid]->GetNumberObsNodes();
@@ -789,6 +789,8 @@ int DBN::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr co
     int nslice;
     String colName, sliceHeader,numSlice;
     
+//	ClearEvid();
+
     lex.GetValue(&sliceHeader);
 	
     for(nColInUse = nCol = 0; nCol == 0 || !lex.IsEol(); ++nCol)
@@ -867,6 +869,7 @@ int DBN::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr co
 	if(evid.size() > 0)
 	{
 	    //AddEvidToBuf(evid);
+		Net().ClearEvidBuf();
 	    Net().ClearEvid();
 	    EditEvidence(evid);
 	    pnl::CEvidence *evid = NULL; 
@@ -1189,7 +1192,6 @@ TokArr DBN::GetChildren(TokArr nodes)
 	{	    
 	    tmpStr = GetShortName(tmpStr);
 	    tmpStr<<"-1";
-	    const char *s = tmpStr.c_str();
 
 	    NewQue1.push_back(tmpStr);
 
