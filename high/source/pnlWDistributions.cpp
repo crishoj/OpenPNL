@@ -26,7 +26,7 @@ WDistributions::WDistributions(TokenCover *pToken): m_pToken(pToken), m_bMRF(fal
 
 WDistributions::~WDistributions()
 {
-    if(m_bMRF)
+    if(IsMRF())
     {
 	delete m_pCliques;
     }
@@ -121,6 +121,7 @@ void WDistributions::SetupNew(int iDistribution)
     if(iDistribution >= m_aDistribution.size())
     {
 	m_aDistribution.resize(iDistribution + 1, 0);
+	m_abDiscrete.resize(iDistribution + 1, true);
     }
     else
     {
@@ -132,12 +133,14 @@ void WDistributions::SetupNew(int iDistribution)
     if (nodeClass == eNodeClassDiscrete )
     {
 	m_aDistribution[iDistribution] = new WTabularDistribFun();
+	m_abDiscrete[iDistribution] = true;
     }
     else
     {
 	if (nodeClass == eNodeClassContinuous)
 	{
 	    m_aDistribution[iDistribution] = new WGaussianDistribFun();
+	    m_abDiscrete[iDistribution] = false;
 	}
 	else
 	{
@@ -152,11 +155,14 @@ void WDistributions::SetupNew(int iDistribution)
     else
     {
 	m_pToken->Graph()->GetParents(&domain, iDistribution);
+	domain.push_back(iDistribution);
     }
 
-    Vector<TokIdNode*> parTokId = m_pToken->Nodes(domain);
-    m_aDistribution[iDistribution]->Setup(m_pToken->Node(iDistribution), parTokId);
-    TokIdNode *tok = m_pToken->Node(iDistribution);
+    Vector<TokIdNode*> parentTokIds = m_pToken->Nodes(domain);
+    TokIdNode *node = parentTokIds.back();
+
+    parentTokIds.pop_back();
+    m_aDistribution[iDistribution]->Setup(node, parentTokIds);
     if (nodeClass == eNodeClassDiscrete )
     {
 	if (NodeType(iDistribution).GetNodeState() != pnl::nsValue)

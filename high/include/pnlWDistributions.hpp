@@ -40,6 +40,7 @@ public:
     void FillDataNew(pnl::EMatrixType matType, TokArr &matrix);
 
     void SetMRF(bool mrfFlag /* = true */);
+    bool IsMRF() const { return m_bMRF; }
     WCliques *Cliques() { return m_pCliques; }
 
 protected:
@@ -48,7 +49,6 @@ protected:
     TokenCover &Token() { return *m_pToken; }
     WGraph &Graph();
     bool IsDiscrete(int iNode) const;
-    bool IsMRF() const { return m_bMRF; }
     int iDistribution(const Vector<TokIdNode *> &nodes);
 
 private:
