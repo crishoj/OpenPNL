@@ -1765,6 +1765,7 @@ void CParPearlInfEngine::CollectBeliefsOnProcessContMPI(int MainProcNum)
   if (m_NumberOfUsedProcesses == 1)
     return;
   
+  int node;
   messageVector& rfCurBeliefs = CPearlInfEngine::GetCurBeliefs();
   if (m_MyRank != MainProcNum)
   {
@@ -1774,7 +1775,7 @@ void CParPearlInfEngine::CollectBeliefsOnProcessContMPI(int MainProcNum)
   
     int NumberOfNodes = GetNumberOfNodes();
     int *flags=new int[NumberOfNodes];
-    for(int node = 0; node < NumberOfNodes; node++)
+    for(node = 0; node < NumberOfNodes; node++)
       flags[node]=0;
     int count = 0;
     
@@ -2829,6 +2830,7 @@ void CParPearlInfEngine::ParallelProtocolContMPI()
   }
   
   int i, j;
+  int i1;
   int converged = 0;
   int changed = 0;
   int iter = 0;
@@ -2847,7 +2849,7 @@ void CParPearlInfEngine::ParallelProtocolContMPI()
   intVector& areReallyObserved = GetSignsOfReallyObserved();
 
   float **messData=new float*[m_NumberOfProcesses];
-  for (int i1 = 0; i1 < m_NumberOfProcesses; i1++)
+  for (i1 = 0; i1 < m_NumberOfProcesses; i1++)
   {
     messData[i1] = new float[messLengthSend[i1]];
   }
