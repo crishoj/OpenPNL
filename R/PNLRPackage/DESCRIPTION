@@ -1,0 +1,11 @@
+Package: PNLPackage
+Version: 0.1-1
+Date: 2005-01-27
+Title: My first collection of functions
+Author: Anna A. Labutina <anuta@incub.ru>.
+Maintainer: Anna A. Labutina <anuta@incub.ru>
+Depends: R (>= 1.8.0), nlme
+Suggests: MASS
+Description: A short (one paragraph) description of what
+License: GPL version 2 or newer
+URL: http://www.r-project.org
