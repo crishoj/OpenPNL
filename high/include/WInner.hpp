@@ -41,6 +41,7 @@ typedef enum
 ,   eLoadLearnBuf
 ,   ePushEvid
 ,   eGenerateEvidences
+,   eLearnStructure
 };
 
 typedef enum

@@ -13,7 +13,7 @@ const int cShowMatrix = 2;
 static const char *round(int *best, int *result, int human, int computer)
 {
     static const char *saResult[] = { "Draw", "Lose", "Win" };
-    
+
     if(result)
     {
 	*result = ((human + 3) - computer) % 3;
@@ -22,7 +22,7 @@ static const char *round(int *best, int *result, int human, int computer)
     {
 	*best = (human + 1) % 3;
     }
-    
+
     return saResult[((human + 3) - computer) % 3];
 }
 
@@ -63,34 +63,34 @@ int ReadHumanResponse()
     while(true)
     {
 	char buf[40];
-	
+
 	if(fgets(buf, sizeof(buf), stdin) != buf)
 	{
 	    return -1;
 	}
-	
+
 	char *ptr = buf;
 	int len = strlen(buf);
 	int i;
-	
+
 	// Skip trailing and leading spaces
 	while(isspace(*ptr))
 	{
 	    len--;
 	    ptr++;
 	}
-	
+
 	while(isspace(ptr[len - 1]))
 	{
 	    len--;
 	}
-	
+
 	ptr[len] = 0;
 	for(i = 0; i < len; ++i)
 	{
 	    ptr[i] = char(tolower(ptr[i]));
-	}	    
-	
+	}
+
 	if(len > 3 && isalpha(*ptr))
 	{
 	    // read 'Rock', 'Paper' or 'Scissors'
@@ -110,19 +110,19 @@ int ReadHumanResponse()
 	    reportExpectedResponse();
 	    continue;
 	}
-	
+
 	if(isdigit(*ptr))
 	{
 	    return atoi(ptr);
 	}
-	
+
 	switch(*ptr)
 	{
 	case 'r': return 0;
 	case 'p': return 1;
 	case 's': return 2;
 	case 'e': return -1;
-	case 'm': 
+	case 'm':
 	    switch(ptr[1])
 	    {
 	    case 'm': sMode ^= cShowMatrix; break;
@@ -142,13 +142,13 @@ int ReadHumanResponse()
 int scenario()
 {
     // create model
-    
+
     // prepare types
     BayesNet net;
    // BayesNet net2;
-    
+
     TokArr aChoice = "False True";// possible values for nodes
-    
+
     // build Graph
     // add nodes to net
     net.AddNode(categoric ^ "Predictor", aChoice);
@@ -157,18 +157,12 @@ int scenario()
 
     net.AddArc("Predictor", "Response");
     net.AddArc("Predictor","Response2");
-    
+
     // initial with uniform distribution
     net.MakeUniformDistribution();
 
 //    net.SetP("Predictor^True", Tok(0.3f) );
 //    net.SetP("Predictor^False", Tok(0.7f) );
-
-
-    
-    
-    
-
 
   //  net2.AddNode(categoric ^ "Predictor", aChoice);
   //  net2.AddNode(categoric ^ "Response", aChoice);
@@ -196,28 +190,28 @@ int scenario()
     //cout << aa0.fload[0].fl << " " << aa0.fload[0].IsUndef() << endl;
     //cout << whatNodes <<endl;
 
-//    net.GenerateEvidences( 100, true);//, whatNodes ); 
+//    net.GenerateEvidences( 100, true);//, whatNodes );
 
-   
+
 //    net.SaveLearnBuf("classif.csv");
 //    net.LoadLearnBuf("classif.csv");
-    
+
 
     BayesNet net2;
 
     net2.AddNode(categoric ^ "Response", aChoice);
     net2.AddNode(categoric ^ "Response2", aChoice);
     net2.AddNode(categoric ^ "Predictor", aChoice);
-   
+
     net2.MakeUniformDistribution();
 
     net.Evid(ev, true);
- 
-    
+
+
     //net2.LoadLearnBuf("classif.csv");
     //net2.LearnStructure(0,0);
     //net2.SaveLearnBuf("classif2.csv");
-   
+
     //net2.SaveNet("network.xml");
 
 
@@ -227,22 +221,22 @@ int scenario()
 int rpsMain2()
 {
     // create model
-    
+
     // prepare types
     BayesNet net;
     int outcomes[3] = {0,1,2};
     TokArr aChoice = TokArr(outcomes,3);// possible values for nodes
     int score[3];
-    
+
     score[0] = score[1] = score[2] = 0;
-    
+
     // build Graph
     // add nodes to net
 //    net.AddNode(categoric ^ "PreviousCompTurn PreviousHumanTurn CurrentHumanTurn", aChoice);
     net.AddNode(categoric ^ "PreviousCompTurn", aChoice);
     net.AddNode(categoric ^ "PreviousHumanTurn", aChoice);
     net.AddNode(categoric ^ "CurrentHumanTurn", aChoice);
-    
+
     // add arcs to create following Bayes net:
     //
     //  PreviousCompTurn    PreviousHumanTurn
@@ -253,10 +247,10 @@ int rpsMain2()
     net.AddArc("PreviousHumanTurn", "CurrentHumanTurn");
     // next commented command makes the same
     // net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
-    
+
     // initial with uniform distribution
     net.MakeUniformDistribution();
-    
+
     bool bSkipInitialLearning = false;
     // initial learning from file
     try
@@ -277,14 +271,14 @@ int rpsMain2()
 	net.Learn();
 	net.ClearEvidHistory();
     }
-    
+
     // Values for pseudo-values of previous game
     // I'll remove these pseudo-values a bit later
     // We drop learning buffer so create pseudo-values of previous game
     Tok humanResponse(1);
     Tok computerTurn(2);
     TokArr evidence;
-    
+
     for(;;)
     {// every cycle iteration is a game round
 	// fill evidence with data from previous game
@@ -298,18 +292,18 @@ int rpsMain2()
 	{
 	    cout << "Data for prediction " << evidence << "\n";
 	}
-	
+
 	net.Evid(evidence);
-	TokArr prediction = net.MPE();	    
-	
+	TokArr prediction = net.MPE("CurrentHumanTurn");
+
 	if(sMode & cShowPrediction)
 	{
 	    cout << "prediction = " << prediction << "\n";
 	}
-	
+
 	round(&computer, 0, prediction[0].IntValue(), 0);
 	// variable 'computer' contains best answer for predicted human turn now
-	
+
 	// read real human turn
 	int human = ReadHumanResponse();
 
@@ -342,10 +336,10 @@ int rpsMain2()
         net.Evid(evidence, true);
         net.Learn();
     }
-    
+
     cout << "Computer score: " << score[2] << " WINs, " << score[0] << " DRAWs and " << score[1] << " LOSEs\n";
     net.SaveLearnBuf("rps.csv");
-    
+
     return 0;
 }
 
@@ -353,7 +347,7 @@ int rpsMain2()
 int rpsMain()
 {
     // create model
-    
+
     // prepare types
 #if 0
     Scripting scr;
@@ -366,21 +360,22 @@ int rpsMain()
 	fclose(fp);
 	fprintf(stderr, "\nEnd of script\n");
     }
+    return 0;
 #endif
 
     BayesNet net;
     TokArr aChoice = "Rock Paper Scissors";// possible values for nodes
     int score[3];
-    
+
     score[0] = score[1] = score[2] = 0;
-    
+
     // build Graph
     // add nodes to net
 //    net.AddNode(categoric ^ "PreviousCompTurn PreviousHumanTurn CurrentHumanTurn", aChoice);
     net.AddNode(categoric ^ "PreviousCompTurn", aChoice);
     net.AddNode(categoric ^ "PreviousHumanTurn", aChoice);
     net.AddNode(categoric ^ "CurrentHumanTurn", aChoice);
-    
+
     // add arcs to create following Bayes net:
     //
     //  PreviousCompTurn    PreviousHumanTurn
@@ -391,10 +386,10 @@ int rpsMain()
     net.AddArc("PreviousHumanTurn", "CurrentHumanTurn");
     // next commented command makes the same
     // net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
-    
+
     // initial with uniform distribution
     net.MakeUniformDistribution();
-    
+
     bool bSkipInitialLearning = false;
     // initial learning from file
     try
@@ -416,29 +411,13 @@ int rpsMain()
 	net.ClearEvidHistory();
     }
 
-#if 0
-    Scripting scr;
-    FILE *fp = fopen("rpsCreate.pnl", "r");
-    if(fp)
-    {
-	fprintf(stderr, "\nExecution of script from rpsCreate.pnl:\n\n");
-	scr.Execute(fp, &net);
-	fclose(fp);
-	fprintf(stderr, "\nEnd of script\n");
-    }
-    else
-    {
-	scr.Execute(stdin, &net);
-    }
-#endif
-
     // Values for pseudo-values of previous game
     // I'll remove these pseudo-values a bit later
     // We drop learning buffer so create pseudo-values of previous game
     Tok humanResponse("Rock");
     Tok computerTurn("Scissors");
     TokArr evidence;
-    
+
     for(;;)
     {// every cycle iteration is a game round
 	// fill evidence with data from previous game
@@ -452,18 +431,18 @@ int rpsMain()
 	{
 	    cout << "Data for prediction " << evidence << "\n";
 	}
-	
+
 	net.Evid(evidence);
-	TokArr prediction = net.MPE();	    
-	
+	TokArr prediction = net.MPE("CurrentHumanTurn");
+
 	if(sMode & cShowPrediction)
 	{
 	    cout << "prediction = " << prediction << "\n";
 	}
-	
+
 	round(&computer, 0, prediction[0].IntValue(), 0);
 	// variable 'computer' contains best answer for predicted human turn now
-	
+
 	// read real human turn
 	int human = ReadHumanResponse();
 
@@ -497,11 +476,11 @@ int rpsMain()
         net.Evid(evidence, true);
         net.Learn();
     }
-    
+
     cout << "Computer score: " << score[2] << " WINs, "
 	<< score[0] << " DRAWs and " << score[1] << " LOSEs\n";
     net.SaveLearnBuf("rps.csv");
-    
+
     return 0;
 }
 
@@ -511,8 +490,8 @@ int main()
 
     try
     {
-//    result = rpsMain();
-    result = scenario();
+	result = rpsMain();
+//    result = scenario();
     }
 
     catch(pnl::CException &ex)

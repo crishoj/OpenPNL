@@ -117,9 +117,7 @@ PNLHIGH_API TokId::operator String() const
         return id;
     }
     
-    std::ostringstream s;
-    s << int_id;
-    return s.str();
+    return String() << int_id;
 }
 
 struct PNLHIGH_API TokIdNode

@@ -248,6 +248,8 @@ FuncDesc aFuncDesc[] =
 ,   "clearevidhistory", eClearEvidHistory, true, 0, 0, 0
 ,   "learn",	    eLearn,	true,  0, 0, 0
 ,   "mpe",	    eMPE,	true,  1, 1, 1
+,   "generateevidences", eGenerateEvidences, false, 3, 0, 2
+,   "learnstructure", eLearnStructure, true, 0, 0, 0
 // build-in commands
 ,   "execute",	    -1,		false, 0, 1, 0
 ,   "clear",	    -2,		true,  0, 0, 0
@@ -260,10 +262,6 @@ FuncDesc aFuncDesc[] =
 ,   "console",	    -9,		true,  0, 0, 0
 ,   0, 0, 0, 0, 0, 0
 };
-#if 0
-,   eNodeType
-,   eSetGaussian
-#endif
 
 FuncDesc* FunctionInfo(pnl::pnlString &fname);
 
@@ -451,6 +449,28 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eP:	    Print(BNet().P(args[0], args[1]));break;
 	case eMakeUniformDistribution:
 			    BNet().MakeUniformDistribution(); break;
+	case eLearnStructure:BNet().LearnStructure(0, 0); break;
+	case eGenerateEvidences:
+	    {
+		int nSample = atoi(args[0].c_str());
+		bool bIgnoreCurEvid = false;
+		TokArr whatNodes;
+
+		if(args.size() > 1)
+		{
+		    bIgnoreCurEvid = atoi(args[1].c_str());
+		    if(args.size() > 2)
+		    {
+			whatNodes = args[2];
+		    }
+		}
+
+		if(nSample)
+		{
+		    BNet().GenerateEvidences(nSample, bIgnoreCurEvid, whatNodes);
+		}
+		break;
+	    }
 	case eEvidence:
 	    {
 		TokArr arg1;
