@@ -103,6 +103,14 @@ SOURCE=..\source\BNetCB.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\source\DBN.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\DBNCB.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\source\ModelEngine.cpp
 # End Source File
 # Begin Source File
@@ -164,6 +172,14 @@ SOURCE=..\include\BNet.hpp
 # Begin Source File
 
 SOURCE=..\include\BNetCB.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\DBN.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\DBNCB.hpp
 # End Source File
 # Begin Source File
 
