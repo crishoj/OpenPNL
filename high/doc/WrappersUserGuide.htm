@@ -36,7 +36,7 @@ PNL Wrappers: User Guide
       <LI><A href="#MPEandJPDDiscr">Getting MPE and JPD</A> 
       <LI><A href="#HintsDiscr">Hints</A> 
       <UL>
-          <LI><A href="#Operation1Discr">“^” operation</A> 
+          <LI><A href="#Operation1Discr">"^" operation</A> 
           <LI><A href="#Operation2Discr">[ ] operation</A> 
           <LI><A href="#StrAndFltMethodsDiscr">String and FltValue methods</A> 
       </UL>
@@ -61,6 +61,20 @@ PNL Wrappers: User Guide
       </UL>
   </UL>
   <LI><A href="#Limitations">Limitations</A> 
+  <LI><A href="#LIMID">LImited Memory Influence Diagrams</A> 
+  <UL>  
+      <LI><A href="#CreateLIMID">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesLIMID">Adding nodes</A> 
+          <LI><A href="#AddEdgesLIMID">Adding edges</A> 
+      </UL>
+      <LI><A href="#SpecProbLIMID">Specifying the probabilities</A> 
+
+      <LI><A href="#Utility">Getting expected utility</A> 
+      <LI><A href="#Politics">Getting pure politics</A> 
+      <LI><A href="#SaveLIMID">Saving LIMID into the file</A> 
+      <LI><A href="#LoadLIMID">Loading LIMID from the file</A> 
+  </UL>
 </UL>
   </h4>
 
@@ -71,7 +85,8 @@ PNL Wrappers: User Guide
 <hr>
 <P>
 This manual describes usage of PNL with the help of wrappers.
-It is BayesNet  class, that is used for working with Bayesian networks in wrappers. 
+<p>
+It is BayesNet class, that is used for working with Bayesian networks in wrappers. 
 It is main class, all the operations are made by it. This class allows user 
 <UL>
     <LI>to create new Bayesian network,</LI>
@@ -88,10 +103,25 @@ and inference processes can be carried out with the help of different PNL algori
 convenient for user to use default algorithm, he can specify definite algorithm that he want to use 
 to solve his task.
 <p>
+
+
+It is LIMID class that is used for working with LImited Memory Influence Diagram (LIMID) in wrappers. This class allows user 
+<UL>
+	<LI>to create new LIMID,</LI>
+	<LI>to specify probability distributions and utility function on the net nodes,</LI>
+	<LI>to get expected utility,</LI>
+	<LI>to get pure politics,</LI>
+	<LI>to save LIMID as files and to load it from files, </LI>
+        <br>etc.
+</UL>
+<p> With the help of LIMID class methods user specifies parameters of LIMID and demands desired results. Required algorithms are called automatically (we don't have to call them explicitly).  
+LIMID inference algorithm allows user to get only pure politics. At the moment inference algorithm for LIMIDs with discrete probability distributions on the nodes is realized. 
+<p>
+
 <hr>
 
 <h1><a name="DiscreteNet">Bayesian networks with discrete nodes</a></h1>
-We are going to analyze Bayesian network functioning by the well-known example of “water-sprinkler”. 
+We are going to analyze Bayesian network functioning by the well-known example of "water-sprinkler". 
 <br>The graph structure of the model and the parameters are all shown in Figure 1:
 </P>
 <hr>
@@ -188,7 +218,7 @@ net.SetPTabular("Sprinkler^true", "0.5", "Cloudy^false");
 net.SetPTabular("Sprinkler^false", "0.5", "Cloudy^false");
 </pre>
 </p>
-For the conditional distribution one new argument was added. This argument specifies the parents state configuration, the probability value is defined for the indicated state and indicated parent’s configuration. The probabilities for the same parents configuration can be defined by the one call of SetPTabular method:
+For the conditional distribution one new argument was added. This argument specifies the parents state configuration, the probability value is defined for the indicated state and indicated parent's configuration. The probabilities for the same parents configuration can be defined by the one call of SetPTabular method:
 <p>
 <pre>
 net.SetPTabular("Sprinkler^true Sprinkler^false", "0.1 0.9", "Cloudy^true");
@@ -465,9 +495,9 @@ Now we are going to discuss some additional possibilities of parameters definiti
 </p>
 <hr>
 
-<h3><a name="Operation1Discr">“^” operation</a></h3>
+<h3><a name="Operation1Discr">"^" operation</a></h3>
 <p>
-If we use operation “^”, we can make parameters definition shorter. 
+If we use operation "^", we can make parameters definition shorter. 
 <br>
 The following three pieces of code are equal:
 </p>
@@ -499,7 +529,7 @@ net.AddNode(discrete^"Cloudy Sprinkler Rain WetGrass", "true false");
 </tr>
 </table>
 <p>
-When we compare pieces (1) and (2), we can see that “^” operation carries out Cartesian product of two TokArr objects.
+When we compare pieces (1) and (2), we can see that "^" operation carries out Cartesian product of two TokArr objects.
 <br>
 It is possible to use (3) variant, because there is global variables of  TokArr type for all types of nodes. These variables specify the node types: 
 <p>
@@ -523,7 +553,7 @@ Tok node2 = nodes[2];
 Tok node3 = nodes[3];
 </pre>
 </p>
-Tok class object can be converted into string. For example, the result of conversion of node0 into string ( node0.String() )  is “Cloudy”.
+Tok class object can be converted into string. For example, the result of conversion of node0 into string ( node0.String() )  is "Cloudy".
 </p>
 <hr>
 
@@ -558,7 +588,7 @@ probabTrueF and probabFalseF variables will contain 0.6 and 0.4 values correspon
 <h1><a name="Gaussian">Bayesian networks with continuous nodes</a></h1>
 
 <P>
-We will show the operations with Bayesian network, which consists of continuous nodes, by the example of Satnam Alag’s PhD thesis, USB ME dept 1996 p. 48.
+We will show the operations with Bayesian network, which consists of continuous nodes, by the example of Satnam Alag's PhD thesis, USB ME dept 1996 p. 48.
 <br>The graph structure of the model and the parameters are all shown in Figure 2:
 </p>
 <hr>
@@ -616,7 +646,7 @@ Adding new edges is similar to the discrete case.
 <p>
 Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. If we know probability distributions on some of the network nodes, we can specify them with SetPGaussian method for the continuous nodes.
 <br>
-Let’s set distributions on the nodes x0 and x1.
+Let's set distributions on the nodes x0 and x1.
 <p>
 <pre>
 net.SetPGaussian("x0", "1.0", "4.0")
@@ -706,7 +736,7 @@ TokArr X3MPE = net.GetMPE("x3");
 Every continuous node in Bayesian network can be multivariate. We have discussed only one-dimensional case above.
 </p>
 <p>
-Multivariate Gaussian variable is a set of one-dimensional variables which are connected via covariation matrix. Value of multivariate is a vector of values of one – dimensional variables. The number of variables in the set is the number of dimensions of multivariate.
+Multivariate Gaussian variable is a set of one-dimensional variables which are connected via covariation matrix. Value of multivariate is a vector of values of one-dimensional variables. The number of variables in the set is the number of dimensions of multivariate.
 </p>
 <p>
 If multivariate Gaussian node without parents has n dimensions, then it is characterized by vector of averages of distribution E which has n elements and by squarte matrix (n*n) of covariations C. The element (i,j) of the matrix C is equal to
@@ -720,7 +750,7 @@ where M is a function for calculating average of distribution. If multivariate n
 
 <h3><a name="CreateNetMultiGau">Creating the net</a></h3>
 <p>
-The only difference between multivariate and one – dimensional case in creating the network is how we add new nodes to the network. You should list names for each dimension of multivariate. For example, if you want to add a continuous node x which has 3 dimensions you should write the command
+The only difference between multivariate and one-dimensional case in creating the network is how we add new nodes to the network. You should list names for each dimension of multivariate. For example, if you want to add a continuous node x which has 3 dimensions you should write the command
 </p>
 <pre>
 net.AddNode("continuous^x", "First Second Third");
@@ -732,7 +762,7 @@ The second parameter in the command is a list of names of dimensions.
 
 <h3><a name="SpecProbMultiGau">Specifying the probabilities</a></h3>
 <p>
-Specifying the probabilities is the same process as in the one – dimensional case. The only difference between them is specifying matrixes. Matrixes are specified by sequential row-wise specifying all elements separated by space gaps.
+Specifying the probabilities is the same process as in the one-dimensional case. The only difference between them is specifying matrixes. Matrixes are specified by sequential row-wise specifying all elements separated by space gaps.
 </p>
 <p>
 For example the matrix
@@ -816,5 +846,222 @@ Here we are going to discuss some limitations of work with Bayesian nets.
         <li>Operation of nodes deleting may work incorrectly now.
     </ul>
 </UL>
+<p>
+<hr>
+
+<h1><a name="LIMID">LImited Memory Influence Diagrams</a></h1>
+We are going to analyze LIMID functionality by the well-known example of "PIGS" (Steffen L. Lauritzen, Dennis Nilsson Representing and Solving Decision Problems with Limited Information, 2001). <br>The graph structure of the model is shown in Figure 3:
+</P>
+<hr>
+<h4><a name="figWaterSprinkler">Figure 3. Model "Pigs"</a></h4>
+<img align=center src="pigs.gif">
+<hr>
+
+<h2><a name="CreateLIMID">Creating the net</a></h2>
+<p>
+The first step of operating LIMID is it's creation. No other actions can be carried out, while there is no LIMID.
+<br>
+To start LIMID building we must create LIMID class object: 
+<p>
+<pre>LIMID net;</pre>
+</p>
+Now network is empty. We have to add nodes and edges.
+</p>
+<hr>
+
+<h3><a name="AddNodesLIMID">Adding nodes</a></h3>
+<p>
+Method AddNode is used to add new node to the LIMID.
+<br>
+Every node has one of the following types: chance, decision or value.
+<p>
+<pre>
+net.AddNode(chance^"h1", "true false");
+net.AddNode(chance^"t1", "true false");
+net.AddNode(decision^"d1", "true false");
+net.AddNode(chance^"h2", "true false");
+net.AddNode(chance^"t2", "true false");
+net.AddNode(decision^"d2", "true false");
+net.AddNode(chance^"h3", "true false");
+net.AddNode(chance^"t3", "true false");
+net.AddNode(decision^"d3", "true false");
+net.AddNode(chance^"h4", "true false");
+net.AddNode(value^"u1", "cost");
+net.AddNode(value^"u2", "cost");
+net.AddNode(value^"u3", "cost");
+net.AddNode(value^"u4", "cost");
+</pre>
+</p>
+The first argument of this method is type and name of the new node, second argument is the corresponding variate values list, and values are separated by the space.
+<br>It is possible to leave "chance" definition while adding chance node. For example:
+<p>
+<pre>
+net.AddNode("h1", "true false");
+</pre>
+</p>
+<hr>
+
+<h3><a name="AddEdgesLIMID">Adding edges</a></h3>
+<p>
+AddArc method is used to add a new arc to the network:
+<p>
+<pre>
+net.AddArc("h1", "h2");
+net.AddArc("h1", "t1");
+net.AddArc("h2", "t2");
+net.AddArc("t1", "d1");
+net.AddArc("t2", "d2");
+net.AddArc("d1", "h2");
+net.AddArc("h3", "t3");
+net.AddArc("t3", "d3");
+net.AddArc("d2", "h3");
+net.AddArc("h2", "h3");
+net.AddArc("h3", "h4");
+net.AddArc("d3", "h4");
+net.AddArc("d1", "u1");
+net.AddArc("d2", "u2");
+net.AddArc("d3", "u3");
+net.AddArc("h4", "u4");
+</pre>
+</p>
+We can indicate several nodes as the beginning and end of the arc. In this case every node from the beginning list will be connected with every node from the end list. In our example ten calls of AddArc method are enough:
+<p>
+<pre>
+net.AddArc("h1", "h2 t1");
+net.AddArc("h2", "h3 t2");
+net.AddArc("t1", "d1");
+net.AddArc("t2", "d2");
+net.AddArc("d1", "h2 u1");
+net.AddArc("h3", "h4 t3");
+net.AddArc("t3", "d3");
+net.AddArc("d2", "h3 u2");
+net.AddArc("d3", "h4 u3");
+net.AddArc("h4", "u4");
+</pre>
+</p>
+<hr>
+
+<h2><a name="SpecProbLIMID">Specifying the probabilities</a></h2>
+<p>
+Now we can specify the probabilities on the nodes. Default probability distribution for chance and decision nodes is uniform. Default utility function for value nodes is zero. 
+<br>If we know probability distributions on some of the LIMID nodes, we can specify them with the SetPChance, SetPDecision or SetValueCost methods. 
+SetPChance method allows to set probability distributions on the chance nodes. SetPDecision method allows to set distribution on the decision nodes. To set the utility function on the value nodes one can use SetValueCost method.
+<br>In our example nodes h1, t1, h2, t2, h3, t3, h4 are chance nodes. Let's set the probability distribution on them with the help of SetPChance function.
+<p>
+<pre>
+net.SetPChance("h1^False h1^True", "0.9 0.1");
+net.SetPChance("t1^False t1^True", "0.1 0.9", "h1^False");
+net.SetPChance("t1^False t1^True", "0.8 0.2", "h1^True");
+net.SetPChance("h2^False h2^True", "0.9 0.1", "h1^False d1^False");
+net.SetPChance("h2^False h2^True", "0.8 0.2", "h1^False d1^True");
+net.SetPChance("h2^False h2^True", "0.5 0.5", "h1^True d1^False");
+net.SetPChance("h2^False h2^True", "0.1 0.9", "h1^True d1^True");
+net.SetPChance("t2^False t2^True", "0.1 0.9", "h2^False");
+net.SetPChance("t2^False t2^True", "0.8 0.2", "h2^True");
+net.SetPChance("h3^False h3^True", "0.9 0.1", "h2^False d2^False");
+net.SetPChance("h3^False h3^True", "0.5 0.5", "h2^False d2^True");
+net.SetPChance("h3^False h3^True", "0.8 0.2", "h2^True d2^False");
+net.SetPChance("h3^False h3^True", "0.1 0.9", "h2^True d2^True");
+net.SetPChance("t3^False t3^True", "0.1 0.9", "h3^False");
+net.SetPChance("t3^False t3^True", "0.8 0.2", "h3^True");
+net.SetPChance("h4^False h4^True", "0.9 0.1", "h3^False d3^False");
+net.SetPChance("h4^False h4^True", "0.8 0.2", "h3^False d3^True");
+net.SetPChance("h4^False h4^True", "0.5 0.5", "h3^True d3^False");
+net.SetPChance("h4^False h4^True", "0.1 0.9", "h3^True d3^True");
+</pre>
+</p>
+d1, d2, d3 are decision nodes, we are going to set theirs distribution using  SetPDecision function.
+<p>
+<pre>
+net.SetPDecision("d1^False d1^True", "0.5 0.5", "t1^False");
+net.SetPDecision("d1^False d1^True", "0.5 0.5", "t1^True");
+net.SetPDecision("d2^False d2^True", "0.5 0.5", "t2^False");
+net.SetPDecision("d2^False d2^True", "0.5 0.5", "t2^True");
+net.SetPDecision("d3^False d3^True", "0.5 0.5", "t3^False");
+net.SetPDecision("d3^False d3^True", "0.5 0.5", "t3^True");
+</pre>
+</p>
+u1, u2, u3, u4 are value nodes. All value nodes have only one state. The number of parent's configurations determines number of values of value nodes. Let's define the utility with the help of SetValueCost method.
+<p>
+<pre>
+net.SetValueCost("u1^Cost", "-100.0", "d1^False");
+net.SetValueCost("u1^Cost", "0.0", "d1^True");
+net.SetValueCost("u2^Cost", "-100.0", "d2^False");
+net.SetValueCost("u2^Cost", "0.0", "d2^True");
+net.SetValueCost("u3^Cost", "-100.0", "d3^False");
+net.SetValueCost("u3^Cost", "0.0", "d3^True");
+net.SetValueCost("u4^Cost", "1000.0", "h4^False");
+net.SetValueCost("u4^Cost", "300.0", "h4^True");
+</pre>
+</p>
+It is necessary to use GetPChance function to get the result probability distributions of the chance nodes:
+<p>
+<pre>
+TokArr Pt1 = net.GetPChance("t1");
+</pre>
+</p>
+One has to use GetPDecision method to get the distributions for the decision node:
+<p>
+<pre>
+TokArr Pd1 = net.GetPDecision("d1");
+</pre>
+</p>
+It is necessary to use GetValueCost method to get the result utility function of the value node: 
+<p>
+<pre>
+TokArr Pu1 = net.GetValueCost("u1");
+</pre>
+</p>
+
+<hr>
+
+<h2><a name="Utility">Getting expected utility</a></h2>
+<p>
+If LIMID and probability distributions have been already defined, we can get expected utility.
+You can use GetExpectation() method to get expected utility: 
+<p>
+<pre>
+TokArr exp = net.GetExpectation();
+</pre>
+</p>
+To calculate expected utility LIMID inference algorithm is launched.
+<p>
+<hr>
+
+<h2><a name="Politics">Getting pure politics</a></h2>
+<p>
+If LIMID and probability distributions have been already defined, we can get pure politics.
+You can use GetPolitics() method to get pure politics:  
+<p>
+<pre>
+TokArr politics = net.GetPolitics();
+</pre>
+</p>
+To calculate pure politics LIMID inference algorithm is launched.
+<p>
+<hr>
+
+<h2><a name="SaveLIMID">Saving LIMID into the file</a></h2>
+<p>
+It is possible to save the LIMID, which has already been created, into the file of xml format. To do this user has to call the SaveNet function.  
+<p>
+<pre>
+Net.SaveNet("pigs.xml");
+</pre>
+</p>
+The argument of this method is the file name, where LIMID will be stored.
+<p>
+<hr>
+
+<h2><a name="LoadLIMID">Loading LIMID from the file</a></h2>
+<p>
+It is necessary to use LoadNet method to load the LIMID from the xml file. 
+<p>
+<pre>
+IDNet pigsFromFile;
+pigsFromFile.LoadNet("pigs.xml");
+</pre>
+</p>
+pigs.xml - name of the file, where the desired LIMID is stored.
 <p>
 <hr>
