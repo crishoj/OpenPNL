@@ -161,7 +161,7 @@ bool CStaticStructLearnSEM::LearnOneStep()
 	decompsition.clear();
 
 	ConvertToCurrEvidences(m_pCurrBNet);
-	pEMLearn->SetData(m_numberOfAllEvidences, m_vCurrEvidences.begin());
+	pEMLearn->SetData(m_numberOfAllEvidences, &m_vCurrEvidences.front());
 	
 	pEMLearn->SetMaxIterEM(m_IterEM);
 
@@ -330,8 +330,8 @@ bool CStaticStructLearnSEM::LearnOneStep()
 	}
 	nodeTypeVector vpnt;
 	m_pCurrBNet->GetNodeTypes(&vpnt);
-	CBNet* pBNet = CBNet::Create(m_nNodes, vpnt.size(), vpnt.begin(), 
-		           newNodeAsso.begin(), static_cast<CGraph*>(iDAG));
+	CBNet* pBNet = CBNet::Create(m_nNodes, vpnt.size(), &vpnt.front(), 
+		           &newNodeAsso.front(), static_cast<CGraph*>(iDAG));
 	CModelDomain* pMDnew = pBNet->GetModelDomain();
 	pBNet->AllocFactors();
 	intVector domainNew, domainOld;
@@ -431,7 +431,7 @@ void CStaticStructLearnSEM::CreateNeighborCPDs(CBNet* pBNet,
 	vValidMoves->clear();
 	vNeighborCPDs->clear();
 	RevCorrespDel->clear();
-	pDAG->GetAllValidMove(vValidMoves, vMixture.begin(), vMixture.size(), m_nMaxFanIn, 
+	pDAG->GetAllValidMove(vValidMoves, &vMixture.front(), vMixture.size(), m_nMaxFanIn, 
 		                  &vDiscrete, &vContinuous, &vDescent, &vAncestor );
 	int nMoves = vValidMoves->size();
 	intVector domain;
@@ -452,7 +452,7 @@ void CStaticStructLearnSEM::CreateNeighborCPDs(CBNet* pBNet,
 			position = std::find(domain.begin(), domain.end(), start)
 					       - domain.begin();
 			domain.erase(domain.begin()+position);
-			vNeighborCPDs->push_back(CreateRandomCPD(domain.size(), domain.begin(), pBNet));
+			vNeighborCPDs->push_back(CreateRandomCPD(domain.size(), &domain.front(), pBNet));
 			break;
 
 		case DAG_ADD :
@@ -461,7 +461,7 @@ void CStaticStructLearnSEM::CreateNeighborCPDs(CBNet* pBNet,
 			factor = pBNet->GetFactor(end);
 			factor->GetDomain(&domain);
 			domain.insert(domain.begin(), start);
-			vNeighborCPDs->push_back(CreateRandomCPD(domain.size(), domain.begin(), pBNet));
+			vNeighborCPDs->push_back(CreateRandomCPD(domain.size(), &domain.front(), pBNet));
 			break;
 
 		case DAG_REV :
@@ -470,7 +470,7 @@ void CStaticStructLearnSEM::CreateNeighborCPDs(CBNet* pBNet,
 			factor = pBNet->GetFactor(end);
 			factor->GetDomain(&domain);
 			domain.insert(domain.begin(), start);
-			vNeighborCPDs->push_back(CreateRandomCPD(domain.size(), domain.begin(), pBNet));
+			vNeighborCPDs->push_back(CreateRandomCPD(domain.size(), &domain.front(), pBNet));
 			break;
 		}
 	}
@@ -519,7 +519,7 @@ CCPD* CStaticStructLearnSEM::CreateRandomCPD(int nfamily, const int* family, CBN
 		{
 			floatVector data;
 			static_cast<CMixtureGaussianCPD*>(factor)->GetProbabilities(&data);
-			pCPD = CMixtureGaussianCPD::Create(family, nfamily, pMD, data.begin());
+			pCPD = CMixtureGaussianCPD::Create(family, nfamily, pMD, &data.front());
 			static_cast<CCondGaussianDistribFun*>(pCPD->GetDistribFun()) -> CreateDefaultMatrices(1);
 			return pCPD;
 		}

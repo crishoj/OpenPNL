@@ -55,7 +55,7 @@ CPotential* pnlMultiply( CPotential* Pot1, CPotential* Pot2, CModelDomain* pMD )
 	intVector Obsnodes1, Obsnodes2, Obsnodes;
 	Pot1->GetDomain(&Domain1);
 	Pot2->GetDomain(&Domain2);
-	bigDomain = pnlSetUnion(Domain2.size(), Domain2.begin(), Domain1.size(), Domain1.begin());
+	bigDomain = pnlSetUnion(Domain2.size(), &Domain2.front(), Domain1.size(), &Domain1.front());
 
 	Pot1->GetObsPositions(&Obspos1);
 	Pot2->GetObsPositions(&Obspos2);
@@ -67,7 +67,7 @@ CPotential* pnlMultiply( CPotential* Pot1, CPotential* Pot2, CModelDomain* pMD )
 	{
 		Obsnodes2.push_back(Domain2[Obspos2[i]]);
 	}
-	Obsnodes = pnlSetUnion(Obsnodes1.size(), Obsnodes1.begin(), Obsnodes2.size(), Obsnodes2.begin());
+	Obsnodes = pnlSetUnion(Obsnodes1.size(), &Obsnodes1.front(), Obsnodes2.size(), &Obsnodes2.front());
 	bigSize = bigDomain.size();
 	for(i=0; i<Obsnodes.size(); i++)
 	{
@@ -78,10 +78,10 @@ CPotential* pnlMultiply( CPotential* Pot1, CPotential* Pot2, CModelDomain* pMD )
 	CPotential* bigPotential;
 	if(dt == dtTabular || dt == dtScalar)
 		bigPotential = CTabularPotential::CreateUnitFunctionDistribution(
-				bigDomain.begin(), bigDomain.size(), pMD, 1, Obspos);
+				&bigDomain.front(), bigDomain.size(), pMD, 1, Obspos);
 	else
 		bigPotential = CGaussianPotential::CreateUnitFunctionDistribution(
-				bigDomain.begin(), bigDomain.size(), pMD, 1, Obspos);
+				&bigDomain.front(), bigDomain.size(), pMD, 1, Obspos);
 
 	*bigPotential *= *Pot1;
 	*bigPotential *= *Pot2;

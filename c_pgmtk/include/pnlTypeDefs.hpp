@@ -146,7 +146,8 @@ public:
     typedef typename ParentType::allocator_type allocator_type;
     typedef typename ParentType::size_type size_type;
 
-    explicit pnlVector(const Allocator& Al = Allocator())
+    pnlVector() {}
+    explicit pnlVector(const Allocator& Al)
         : ParentType(Al) {}
 
     explicit pnlVector( size_type N, const Type& V = Type(),
@@ -159,18 +160,20 @@ public:
 #ifndef PNL_VC6
     template< typename InputIterator >
     pnlVector( InputIterator first, InputIterator last, const Allocator &ator = Allocator() )
-        : std::vector< Type, Allocator >( first, last, ator ) {}
+        : std::vector< Type, Allocator >( first, last, ator )
+    {}
 #else
     pnlVector( const_iterator F, const_iterator L, const allocator_type &Al = Allocator() )
-        : std::vector<Type, Allocator>( F, L, Al ) {}
+        : std::vector<Type, Allocator>( F, L, Al )
+    {}
 #endif
-      bool lexicographical_compare(iterator First1, iterator Last1,
-      iterator First2, iterator Last2)
-  {
-      return lexicographical_compare(
-    (const unsigned char *)First1, (const unsigned char *)Last1,
-    (const unsigned char *)First2, (const unsigned char *)Last2);
-  }
+    bool lexicographical_compare(iterator First1, iterator Last1,
+	iterator First2, iterator Last2)
+    {
+	return lexicographical_compare(
+	    (const unsigned char *)First1, (const unsigned char *)Last1,
+	    (const unsigned char *)First2, (const unsigned char *)Last2);
+    }
 
     MyType &operator=( const MyType &X )
     {

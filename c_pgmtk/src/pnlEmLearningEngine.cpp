@@ -800,8 +800,8 @@ float CEMLearningEngine::UpdateModel()
   return loglik;
 }
 
-const float* CEMLearningEngine::GetFamilyLogLik()const
+const float* CEMLearningEngine::GetFamilyLogLik() const
 {
-	return m_vFamilyLogLik.begin();
+    return &m_vFamilyLogLik.front();
 }
 
