@@ -48,7 +48,7 @@ pnl::CGraph *WGraph::Graph(bool bForget)
 	    for(i = nodes; --i >= 0;)
 	    {
 		nbrsList[i].reserve(nodes/2);
-		nbrsTypesList[i].resize(nodes/2);
+		nbrsTypesList[i].reserve(nodes/2);
 	    }
 	}
 	
