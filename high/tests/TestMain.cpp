@@ -99,8 +99,8 @@ int main(int argc, char* argv[])
 #ifndef SKIP_MRF
     try 
     {
-    //    TestMRFModelCreate();
-    //    TestMRFGetJPD();
+	TestMRFModelCreate();
+        TestMRFGetJPD();
     }
     catch(pnl::CException e)
     {
