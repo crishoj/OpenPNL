@@ -322,4 +322,27 @@ pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType) const
 
 void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float probability)
 {
+    static const char fname[] = "SetAValue";
+
+    if(!m_pDistrib)
+    {
+	CreateDistribution();
+    }
+
+    EMatrixType matType;
+    switch (matrixId)
+    {
+    case matMean:
+    case matCovariance:
+    case matWeights:
+    case matH:
+    case matK:
+	matType = static_cast<EMatrixType>(matrixId);
+	break;
+    default:
+	ThrowUsingError("Unsupported type of matrix in gaussian distribution", fname);
+	break;
+    }
+
+    m_pDistrib->GetMatrix(matType)->SetElementByIndexes(probability, &aIndex.front());
 }
