@@ -22,7 +22,8 @@ The following functional groups can be distinguished:
     </LI>
     <LI>Setting/getting parameters<BR>
     <A href="#decl_SetPTabular">SetPTabular</A>,
-    <A href="#decl_GetPTabular">GetPTabular</A>,
+    <A href="#decl_GetPTabularString">GetPTabularString</A>,
+    <A href="#decl_GetPTabularFloat">GetPTabularFloat</A>,
     <A href="#decl_SetPGaussian">SetPGaussian</A>,
     <A href="#decl_GetGaussianMean">GetGaussianMean</A> ,
     <A href="#decl_GetGaussianCovar">GetGaussianCovar</A>,
@@ -45,7 +46,8 @@ The following functional groups can be distinguished:
     <A href="#decl_LearnStructure">LearnStructure</A>
     </LI>
     <LI>Inference in network<BR>
-    <A href="#decl_GetJPD">GetJPD</A>,
+    <A href="#decl_GetJPDString">GetJPDString</A>,
+    <A href="#decl_GetJPDFloat">GetJPDFloat</A>,
     <A href="#decl_GetMPE">GetMPE</A>
     </LI>
     <LI>Data sampling<BR>
@@ -156,7 +158,7 @@ GetNodeType(BayesNet, nodes)
 <H5>Arguments</H5>
 <DL>
   <DT>nodes
-  <DD>String. Array of nodes whose type is interesting. 
+  <DD>String. Array of nodes,&nbsp; whose type we are interesting in. 
 </DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function returns array of types (discrete or continuous) of given nodes.
@@ -263,7 +265,7 @@ GetNeighbours(BayesNet, nodes)
 <H5>Arguments</H5>
 <DL>
   <DT>nodes
-  <DD>One or several nodes whose neighbours are need. Nodes are separated with
+  <DD>String. One or several nodes whose neighbours are need. Nodes are separated with
     the space.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function returns list of neighbours for given node or some nodes. If neighbours of several nodes are demanded then neighbors of every node are in the result.
@@ -294,7 +296,7 @@ GetParents(BayesNet, nodes)
 <H5>Arguments</H5>
 <DL>
   <DT>nodes
-  <DD>One or several nodes whose parents are need.</DD></DL>
+  <DD>String. One or several nodes whose parents are need.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function returns list of parents for given node or some nodes. If parents of several nodes are demanded then parents of every node are in the result.
 </p>
@@ -326,7 +328,7 @@ GetChildren(BayesNet, nodes)
 <H5>Arguments</H5>
 <DL>
   <DT>nodes
-  <DD>One or several nodes whose children are need.</DD></DL>
+  <DD>String. One or several nodes whose children are need.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function returns list of children for given node or some nodes.
 </p>
@@ -357,11 +359,11 @@ SetPTabular(BayesNet, value, prob, parentValue)
 <H5>Arguments</H5>
 <DL>
   <DT>value
-  <DD>Array of node values for wich probabilities are set. 
+  <DD>String. Array of node values for wich probabilities are set. 
   <DT>prob
-  <DD>Array of values of probabilities.
+  <DD>Either String or Float Vector. Array of values of probabilities.
   <DT>parentValue
-  <DD>Array of values of discrete parents of the node.</DD></DL>
+  <DD>String. Array of values of discrete parents of the node.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function sets [conditional] probability for one or several values of the discrete node 
 [for given values of parents]. Sizes of values array and probabilities array must be the same. While distribution 
@@ -381,27 +383,32 @@ Let's node "NodeB" can take on values "true" and "false" too and has only one pa
 probabilities of "NodeB" is conditional. It is necessary to call SetPTabular method for each configuration of 
 parents values:  
 </p>
+<p class="example">probB1 &lt;- c(0.99, 0.01)
+</P>
+<p class="example">probB2 &lt;- c(0.4, 0.6)
+</P>
 <p class="example">
-SetPTabular(net, "NodeB^true NodeB^false", "0.99 0.01", "NodeA^true")<br>
-SetPTabular(net, "NodeB^true NodeB^false", "0.4 0.6", "NodeA^false")
+SetPTabular(net, &quot;NodeB^true NodeB^false&quot;, probB1, &quot;NodeA^true&quot;)<br>
+SetPTabular(net, &quot;NodeB^true NodeB^false&quot;, probB2, &quot;NodeA^false&quot;)
 </P>
 <HR>
 
 <H3><A 
-name=decl_GetPTabular>GetPTabular</A></H3>
-<P class=Blurb>Returns probability of discrete node 
+name=decl_GetPTabularString>GetPTabularString</A></H3>
+<P class=Blurb>Returns probability of discrete node as one string 
 </P>
 <font class="interface">
-GetPTabular(BayesNet, node, parents)
+GetPTabularString(BayesNet, node, parents)
 </font>
 <H5>Arguments</H5>
 <DL>
   <DT>node
-  <DD>Name of node or array of node values whose probabilities are needed. 
+  <DD>String. Name of node or array of node values whose probabilities are needed. 
   <DT>parents
-  <DD>Values of parents of the node.</DD></DL>
+  <DD>String. Values of parents of the node.</DD></DL>
 <H5>Discussion</H5>
-<p class="description">The function returns probability of discrete node. If values of parents are given then probabilities only 
+<p class="description">The function returns probability of discrete node as
+string. If values of parents are given then probabilities only 
 for these parents configuration will be returned. If concrete values of node are given in array node then
 only probabilities of these values will be returned. 
 </p>
@@ -413,10 +420,10 @@ Let's consider getting of probabilities for node "NodeB" from example for SetPTa
 probabilites are available:
 </p>
 <p class="example">
-PNodeB &lt;- GetPTabular(net, &quot;NodeB&quot;)<br>
-PNodeBTrue &lt;- GetPTabular(net, &quot;NodeB^true&quot;)<br>
-PNodeBNodeATrue &lt;- GetPTabular(net, &quot;NodeB&quot;, &quot;NodeA^true&quot;)<br>
-PNodeBTrueNodeAFalse &lt;- GetPTabular(&quot;NodeB^true&quot;, &quot;NodeA^false&quot;)
+PNodeB &lt;- GetPTabularString(net, &quot;NodeB&quot;)<br>
+PNodeBTrue &lt;- GetPTabularString(net, &quot;NodeB^true&quot;)<br>
+PNodeBNodeATrue &lt;- GetPTabularString(net, &quot;NodeB&quot;, &quot;NodeA^true&quot;)<br>
+PNodeBTrueNodeAFalse &lt;- GetPTabularString(&quot;NodeB^true&quot;, &quot;NodeA^false&quot;)
 </P>
 <p class="description">
 Results of these calls:
@@ -443,6 +450,62 @@ Results of these calls:
 <HR>
 
 <H3><A 
+name=decl_GetPTabularFloat>GetPTabularFloat</A></H3>
+<P class=Blurb>Returns probability of discrete node as float vector 
+</P>
+<font class="interface">
+GetPTabularFloat(BayesNet, node, parents)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>node
+  <DD>String. Name of node or array of node values whose probabilities are needed. 
+  <DT>parents
+  <DD>String. Values of parents of the node.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns probability of discrete node as
+float vector. If values of parents are given then probabilities only 
+for these parents configuration will be returned. If concrete values of node are given in array node then
+only probabilities of these values will be returned. 
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Let's consider getting of probabilities for node "NodeB" from example for SetPTabular method. Some variants to get "NodeB"
+probabilites are available:
+</p>
+<p class="example">
+PNodeB &lt;- GetPTabularFloat(net, &quot;NodeB&quot;)<br>
+PNodeBTrue &lt;- GetPTabularFloat(net, &quot;NodeB^true&quot;)<br>
+PNodeBNodeATrue &lt;- GetPTabularFloat(net, &quot;NodeB&quot;, &quot;NodeA^true&quot;)<br>
+PNodeBTrueNodeAFalse &lt;- GetPTabularFloat(&quot;NodeB^true&quot;, &quot;NodeA^false&quot;)
+</P>
+<p class="description">
+Results of these calls:
+</p>
+<p class="example">
+<table>
+<tr>
+  <td>PNodeB</td>
+  <td>0.99&nbsp; 0.01&nbsp; 0.4&nbsp; 0.6</td>
+</tr>
+<tr>
+  <td>PNodeBTrue</td>
+  <td>0.99&nbsp; 0.4</td>
+</tr>
+<tr>
+  <td>PNodeBNodeATrue</td>
+  <td>0.99&nbsp; 0.01</td>
+</tr>
+<tr>
+  <td>PNodeBTrueNodeAFalse</td>
+  <td>0.4</td>
+</tr>
+</table>
+<HR>
+
+<H3><A 
 name=decl_SetPGaussian>SetPGaussian</A></H3>
 <P class=Blurb>Sets parameters for gaussian variate. 
 </P>
@@ -454,11 +517,11 @@ SetPGaussian(BayesNet, var, mean, variance, weight)
   <DT>var
   <DD>String. Name of node which probability is setted. 
   <DT>mean
-  <DD>String. Vector of means. 
+  <DD>Either String or Float Vector. Vector of means. 
   <DT>variance
-  <DD>String. Matrix of variance (for one-dimensional variate it is only one number).
+  <DD>Either String or Float Vector. Matrix of variance (for one-dimensional variate it is only one number).
   <DT>weight
-  <DD>String. Matrixes of weights. This parameter is needed only when the node has parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case" </DD></DL>
+  <DD>Either String or Float Vector. Matrixes of weights. This parameter is needed only when the node has parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case" </DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function sets parameters for gaussian variate. 
 </p>
@@ -475,13 +538,22 @@ SetPGaussian(net, "x0", "1.0", "4.0")
 Let's set gaussian distribution for one - dimentional node with two parents.
 </p>
 <p class="example">
-SetPGaussian(net, "x2", "0.0", "2.0", "1.0 2.0")
+weightsX2 &lt;- c(1.0, 2.0)
+</P>
+<p class="example">
+SetPGaussian(net, "x2", "0.0", "2.0", weightsX2)
 </P>
 <p class="description">
 Let's set gaussian distribution for two - dimensional node without parents.
 </p>
 <p class="example">
-SetPGaussian(net, "x0", "1.0 2.5", "4.0 0.1 0.1 4.0")
+X0mean &lt;- c(1.0, 2.5)
+</p>
+<p class="example">
+X0variance &lt;- c(4.0, 0.1, 0.1, 4.0)
+</p>
+<p class="example">
+SetPGaussian(net, "x0", X0mean, X0variance)
 </p>
 <p class="description">
 Let's set gaussian distribution for two - dimentional node with three two - dimensional parents. Three matrixes of weights are:
@@ -678,7 +750,7 @@ MaskEvidBuf(BayesNet, whatNodes)
 <H5>Arguments</H5>
 <DL>
   <DT>whatNodes
-  <DD>Array of nodes.</DD></DL>
+  <DD>String. Array of nodes.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function hides nodes of current learning buffer with given probability. The function applies for all existing 
 values (hidden and observed), i.e. observed may become hidden and vice versa. By default this function 
@@ -771,16 +843,16 @@ TokArr pearlMPENodeA = GetMPE(net, "NodeA NodeB")
 <HR>
 
 <H3><A 
-name=decl_GetJPD>GetJPD</A></H3>
-<P class=Blurb>Returns JPD 
+name=decl_GetJPDString>GetJPDString</A></H3>
+<P class=Blurb>Returns JPD as string 
 </P>
 <font class="interface">
-GetJPD(BayesNet, nodes)
+GetJPDString(BayesNet, nodes)
 </font>
 <H5>Arguments</H5>
 <DL>
   <DT>nodes
-  <DD>Array of nodes from one family.</DD></DL>
+  <DD>String. Array of nodes from one family.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function returns joint probability distribution (JPD) for specified nodes using current evidence. The inference algorithm
 may be set to property "Inference" with method <A href="#decl_SetProperty">SetProperty()</A>. By default Pearl inference is used. Besides Gibbs sampling,
@@ -795,14 +867,50 @@ Get JPD for node "NodeA" with Junction Tree inference:
 </p>
 <p class="example">
 SetProperty(net, "Inference", "jtree")<br>
-TokArr jtreeJPDNodeA = GetJPD(net, "NodeA")
+jtreeJPDNodeAStr = GetJPDString(net, "NodeA")
 </P>
 <p class="description">
 Get JPD for nodes "NodeA" and "NodeB" with Pearl inference (nodes "NodeA" and "NodeB" must be from the same family):
 </p>
 <p class="example">
 SetProperty(net, "Inference", "pearl")<br>
-TokArr pearlJPDNodeA = GetJPD(net, "NodeA NodeB")
+pearlJPDNodeAStr = GetJPDString(net, "NodeA NodeB")
+</P>
+<HR>
+
+<H3><A 
+name=decl_GetJPDFloat>GetJPDFloat</A></H3>
+<P class=Blurb>Returns JPD as float vector 
+</P>
+<font class="interface">
+GetJPDFloat(BayesNet, nodes)
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>nodes
+  <DD>String. Array of nodes from one family.</DD></DL>
+<H5>Discussion</H5>
+<p class="description">The function returns joint probability distribution (JPD) for specified nodes using current evidence. The inference algorithm
+may be set to property "Inference" with method <A href="#decl_SetProperty">SetProperty()</A>. By default Pearl inference is used. Besides Gibbs sampling,
+Junction Tree inference and Naive inference are available. Corresponding property "Inference" values are "pearl", "gibbs",
+"jtree", "naive".
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Get JPD for node "NodeA" with Junction Tree inference:
+</p>
+<p class="example">
+SetProperty(net, "Inference", "jtree")<br>
+jtreeJPDNodeAFlt = GetJPDFloat(net, "NodeA")
+</P>
+<p class="description">
+Get JPD for nodes "NodeA" and "NodeB" with Pearl inference (nodes "NodeA" and "NodeB" must be from the same family):
+</p>
+<p class="example">
+SetProperty(net, &quot;Inference&quot;, &quot;pearl&quot;)<br>
+pearlJPDNodeAFlt = GetJPDFloat(net, "NodeA NodeB")
 </P>
 <HR>
 
@@ -816,7 +924,7 @@ SetProperty(BayesNet, name, value)
 <H5>Arguments</H5>
 <DL>
   <DT>name
-  <DD>Name of property. 
+  <DD>String. Name of property. 
   <DT>value
   <DD>Value of property.</DD></DL>
 <H5>Discussion</H5>
@@ -948,7 +1056,8 @@ GetGaussianMean(BayesNet, nodes)
   <DT>nodes
   <DD>String. Name of node whose mean is needed</DD></DL>
 <H5>Discussion</H5>
-<p class="description">The function returns mean of gaussian distribution. 
+<p class="description">The function returns mean of gaussian distribution as
+float vector. 
 </p>
 <H5>
 Example of usage
@@ -972,7 +1081,8 @@ GetGaussianCovar(BayesNet, nodes)
   <DD>String. Name of node whose variance are needed. 
 </DL>
 <H5>Discussion</H5>
-<p class="description">The function returns variance of gaussian distribution. 
+<p class="description">The function returns variance of gaussian distribution as
+float vector. 
 </p>
 <H5>
 Example of usage
@@ -997,7 +1107,8 @@ GetGaussianWeights(BayesNet, nodes, parent)
   <DD>String. A parent of node which weights we are interested in. 
 </DL>
 <H5>Discussion</H5>
-<p class="description">The function returns weights of parent of specified node . 
+<p class="description">The function returns weights of parent of specified node
+as float vector. 
 </p>
 <H5>
 Example of usage
@@ -1018,7 +1129,7 @@ SaveNet(BayesNet, filename)
 <H5>Arguments</H5>
 <DL>
   <DT>filename
-  <DD>File name.</DD></DL>
+  <DD>String. File name.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">
 The function saves network to file of "xml" format with given name. Net structure and nodes distributions 
@@ -1071,7 +1182,7 @@ LoadNet(BayesNet, filename)
 <H5>Arguments</H5>
 <DL>
   <DT>filename
-  <DD>File name.</DD></DL>
+  <DD>String. File name.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function loads network from file with given name. 
 </p>
@@ -1098,9 +1209,9 @@ LoadEvidBuf(BayesNet, filename, columns)
 <H5>Arguments</H5>
 <DL>
   <DT>filename
-  <DD>File name. 
+  <DD>String. File name. 
   <DT>columns
-  <DD>Names of nodes.</DD></DL>
+  <DD>String. Names of nodes.</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function loads evidence buffer content from file. Buffer is cleared before loading. We can load evidences created in
 another net with another node names but with the same values of nodes. For this we must set new node names in evidences 
@@ -1151,30 +1262,30 @@ Example of usage
 Generate 100 samples for all network nodes ignoring current evidence: 
 </p>
 <p class="example">
-GenerateEvidences( 100, true)
+GenerateEvidences(net,&nbsp; 100, true)
 </P>
 <p class="description">
 Generate 100 samples only for nodes "NodeA","NodeB" and "NodeC" using current evidence:
 </p>
-<p class="example">GenerateEvidences(100, false, &quot;NodeA NodeB NodeC&quot;)
+<p class="example">GenerateEvidences(net, 100, false, &quot;NodeA NodeB NodeC&quot;)
 </P>
 <p class="description">
 Generate 100 samples only for nodes "NodeA","NodeB" and "NodeC" using current evidence. "NodeA" should contain 90% of observed values, "NodeB" and "NodeC" should contain 100% of observed data:
 </p>
 <p class="example">
-    GenerateEvidences( 100, false, &quot;NodeA^0.9 NodeB^1.0 NodeC^1.0&quot;)
+    GenerateEvidences(net, 100, false, &quot;NodeA^0.9 NodeB^1.0 NodeC^1.0&quot;)
 </P>
 <p class="description">
 Generate 100 samples for nodes "NodeA","NodeB" and "NodeC" using current evidence. All nodes should contain 90% of observed values:
 </p>
 <p class="example">
-    GenerateEvidences( 100, false, &quot;NodeA^0.9 NodeB^0.9 NodeC^0.9 &quot;)
+    GenerateEvidences(net, 100, false, &quot;NodeA^0.9 NodeB^0.9 NodeC^0.9 &quot;)
 </P>
 <p class="description">
 Generate 100 samples for all nodes using current evidence. All nodes should contain 90% of observed values:
 </p>
 <p class="example">
-    GenerateEvidences( 100, false, whatNodesToSample, &quot;0.9&quot;)
+    GenerateEvidences(net, 100, false, whatNodesToSample, &quot;0.9&quot;)
 </P>
 
 <HR>

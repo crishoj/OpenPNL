@@ -197,17 +197,16 @@ extern "C"
 
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
-        String temp;
-        const char * result;
         int flag = 0;
 
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
+        TokArr ResTok;
+
         try
         {
-            temp = pBNets[NetNum]->GetNodeType(arg);
-            result = temp.c_str();
+            ResTok = pBNets[NetNum]->GetNodeType(arg);
         }
         catch (pnl::CException &E)
         {
@@ -220,11 +219,18 @@ extern "C"
             flag = 1;
         }
 
-        PROTECT(res = allocVector(STRSXP, 1));
         if (flag == 1)
+        {
+            PROTECT(res = allocVector(STRSXP, 1));
             SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
         else
-            SET_STRING_ELT(res, 0, mkChar(result));
+        {
+            int size = ResTok.size();
+            PROTECT(res = allocVector(STRSXP, size));
+            for (int i=0; i<size; i++)
+                SET_STRING_ELT(res, i, mkChar(String(ResTok[i]).c_str()));
+        }
 
         UNPROTECT(3);
         return (res);
@@ -306,8 +312,6 @@ extern "C"
     SEXP pnlGetNeighbors(SEXP net, SEXP nodes)
     {
         SEXP res;
-        String temp;
-        const char * result = "";
         int flag = 0;
 
         PROTECT(net = AS_INTEGER(net));
@@ -316,10 +320,12 @@ extern "C"
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
+        TokArr ResTok;
+        
         try
         {
-            temp = pBNets[NetNum]->GetNeighbors(arg);
-            result = temp.c_str();
+            ResTok = pBNets[NetNum]->GetNeighbors(arg);
+            //result = temp.c_str();
         }
         catch (pnl::CException &E)
         {
@@ -332,11 +338,18 @@ extern "C"
             flag = 1;
         }
 
-        PROTECT(res = allocVector(STRSXP, 1));
         if (flag == 1)
+        {
+            PROTECT(res = allocVector(STRSXP, 1));
             SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
         else
-            SET_STRING_ELT(res, 0, mkChar(result));
+        {
+            int size = ResTok.size();
+            PROTECT(res = allocVector(STRSXP, size));
+            for (int i=0; i<size; i++)
+                SET_STRING_ELT(res, i, mkChar(String(ResTok[i]).c_str()));
+        }
         UNPROTECT(3);
         return (res);
     }
@@ -344,8 +357,6 @@ extern "C"
     SEXP pnlGetParents(SEXP net, SEXP nodes)
     {
         SEXP res;
-        String temp;
-        const char * result = "";
         int flag = 0;
 
         PROTECT(net = AS_INTEGER(net));
@@ -354,10 +365,11 @@ extern "C"
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
+        TokArr ResTok;
+        
         try
         {
-            temp = pBNets[NetNum]->GetParents(arg);
-            result = temp.c_str();
+            ResTok = pBNets[NetNum]->GetParents(arg);
         }
         catch (pnl::CException &E)
         {
@@ -370,11 +382,18 @@ extern "C"
             flag = 1;
         }
 
-        PROTECT(res = allocVector(STRSXP, 1));
         if (flag == 1)
+        {
+            PROTECT(res = allocVector(STRSXP, 1));
             SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
         else
-            SET_STRING_ELT(res, 0, mkChar(result));
+        {
+            int size = ResTok.size();
+            PROTECT(res = allocVector(STRSXP, size));
+            for (int i=0; i<size; i++)
+                SET_STRING_ELT(res, i, mkChar(String(ResTok[i]).c_str()));
+        }
         UNPROTECT(3);
         return (res);
     }
@@ -382,8 +401,6 @@ extern "C"
     SEXP pnlGetChildren(SEXP net, SEXP nodes)
     {
         SEXP res;
-        const char * result = "";
-        String temp;
         int flag = 0;
 
         PROTECT(net = AS_INTEGER(net));
@@ -392,10 +409,11 @@ extern "C"
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
+        TokArr ResTok;
+        
         try
         {
-            temp = pBNets[NetNum]->GetParents(arg);
-            result = temp.c_str();
+            ResTok = pBNets[NetNum]->GetChildren(arg);
         }
         catch (pnl::CException &E)
         {
@@ -408,11 +426,18 @@ extern "C"
             flag = 1;
         }
 
-        PROTECT(res = allocVector(STRSXP, 1));
         if (flag == 1)
+        {
+            PROTECT(res = allocVector(STRSXP, 1));
             SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
         else
-            SET_STRING_ELT(res, 0, mkChar(result));
+        {
+            int size = ResTok.size();
+            PROTECT(res = allocVector(STRSXP, size));
+            for (int i=0; i<size; i++)
+                SET_STRING_ELT(res, i, mkChar(String(ResTok[i]).c_str()));
+        }
         UNPROTECT(3);
         return (res);
     }

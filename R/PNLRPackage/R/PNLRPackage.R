@@ -81,7 +81,7 @@ GetNeighbors.pnlBNet <- function(x, nodes) .Call("pnlGetNeighbors", x, nodes)
 GetParents <- function(x, nodes) UseMethod("GetParents", x)
 GetParents.pnlBNet <- function(x, nodes) .Call("pnlGetParents", x, nodes)
 
-GetChildreh <- function(x, nodes) UseMethod("GetChildren", x)
+GetChildren <- function(x, nodes) UseMethod("GetChildren", x)
 GetChildren.pnlBNet <- function(x, nodes) .Call("pnlGetChildren", x, nodes)
 
 SetPTabular <- function(x, value, probability, ParentValue) UseMethod("SetPTabular", x)
