@@ -20,6 +20,9 @@
 
 #include "pnlStaticLearningEngine.hpp" 
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 #ifdef SWIG
 %rename(IsModelValid) CBICLearningEngineIsInputModelValid(const CStaticGraphicalModel *);
@@ -35,7 +38,16 @@ public:
 	const CStaticGraphicalModel *GetGraphicalModel() const;
 	inline void GetOrder(intVector* reordering) const;
 
-	
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CBICLearningEngine::m_TypeInfo;
+  }
+#endif
 protected:
 	CBICLearningEngine(CStaticGraphicalModel *pGrModel, ELearningTypes LearnType);
 	int DimOfModel(const CStaticGraphicalModel *pModel);
@@ -43,7 +55,9 @@ protected:
 		int nNodes, int linearNumber);
 	inline int Alpha_i(int nNodes, int line);
 	
-
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 	intVector m_resultRenaming;
 	CStaticGraphicalModel *m_pResultGrModel;

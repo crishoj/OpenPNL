@@ -21,6 +21,9 @@
 #include "pnlSparseMatrix.hpp"
 #include "pnlFakePtr.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 template <class Type> class CDenseMatrix : public /*virtual*/ CMatrix<Type>
@@ -100,6 +103,17 @@ public:
     virtual const Type* Value(CMatrixIterator<Type>* current) const;
     virtual int IsValueHere( CMatrixIterator<Type>* current ) const;
     virtual void Index( CMatrixIterator<Type>* current, intVector* index ) const;
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CDenseMatrix< int >::GetStaticTypeInfo();
+    }
+#endif
 protected:
     CDenseMatrix(int dim, const int *range, const Type *data, int Clamp);
     CDenseMatrix( const CDenseMatrix<Type> & inputMat );
@@ -109,6 +123,10 @@ protected:
     intVector m_Range;
     //array of node ranges (nodes which are discribed by this Matrix)
     pnlVector <Type> m_Table;
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
 };
 
@@ -1281,6 +1299,12 @@ loop:
 
     return output;
 }
+
+#endif
+
+#ifdef PNL_RTTI
+template< typename T >
+const CPNLType CDenseMatrix< T >::m_TypeInfo = CPNLType("CDenseMatrix", &(CMatrix< T >::m_TypeInfo));
 
 #endif
 

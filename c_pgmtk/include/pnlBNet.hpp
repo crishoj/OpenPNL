@@ -18,6 +18,9 @@
 
 #include "pnlStaticGraphicalModel.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 #ifdef SWIG
@@ -97,6 +100,16 @@ public:
     void GetContinuousParents(int nodeNum, intVector *contParents) const;
     void GetDiscreteParents(int nodeNum, intVector *discParents) const;
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CBNet::m_TypeInfo;
+  }
+#endif
 protected:
     
     CBNet( CGraph *pGraph, CModelDomain* pMD );
@@ -109,6 +122,9 @@ protected:
 
     int IfDomainExists( int numberOfNodesInDomain, const int *domain) const;
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     
 };

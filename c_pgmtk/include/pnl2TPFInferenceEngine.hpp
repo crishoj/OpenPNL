@@ -26,6 +26,10 @@
 #include "pnlLog.hpp"
 #include "pnlLogDriver.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API C2TPFInfEngine : public C2TBNInfEngine
@@ -67,6 +71,16 @@ public:
 	//Backward step for fixed-lag smoothing procedure
 	void BackwardFixLag();                  // not use
 	
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return C2TPFInfEngine::m_TypeInfo;
+  }
+#endif
 protected:	
 	C2TPFInfEngine(const CDynamicGraphicalModel *pGrModelIn, int nParticleCount = 400); // create a 2TPFInfEngine
 	CEvidence* Sub2Find(int *index = NULL);                                             // select a particle from proposal distribution Q          
@@ -94,6 +108,10 @@ protected:
 	bool					m_bInitalized;       // initialize particles or not
 	bool					m_bNormalized;       // normailzed particles' weights or not
 	int                     m_LowThreshold;      // number of the smallest effective particles
+
+#ifdef PNL_RTTI
+  static const CPNLType m_TypeInfo;
+#endif     
 };
 
 

@@ -8,6 +8,9 @@
 #include "pnlGraph.hpp"
 #include "pnl2DBitwiseMatrix.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 #define _PNL_DEBUG_
 typedef pnlVector< void* > POINTVECTOR;
@@ -74,6 +77,17 @@ public:
 	void DumpMatrix();
 #endif
 	//Construct Functions
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CDAG::m_TypeInfo;
+  }
+#endif
 protected:
 	CDAG( int numOfNds, const int* numOfNbrs, const int *const *nbrsList,
 		    const ENeighborType *const *nbrsTypes );
@@ -82,6 +96,9 @@ protected:
 	CDAG(const CGraph& rGraph);
 //	CDAG(const CGraph& rDag);
 	
+#ifdef PNL_RTTI
+  static const CPNLType m_TypeInfo;
+#endif
 public:
 	int GetEdgeDirect(int startNode, int endNode);
 	CDAG* TopologicalCreateDAG(intVector& vNodesMap);// vNodesMap[i] = original node number in original dag

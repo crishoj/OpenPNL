@@ -27,6 +27,9 @@
 #include "pnlStaticGraphicalModel.hpp"
 #include "pnlGraphicalModel.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 
@@ -105,6 +108,16 @@ public:
 	
     bool IsValid(std::string* descriptionOut = NULL) const;
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CDynamicGraphicalModel::m_TypeInfo;
+    }
+#endif
 protected:
 
     // constructor of the Dynamic Graphical Model object
@@ -114,6 +127,9 @@ protected:
     const CStaticGraphicalModel *GrModel() const { return m_pGrModel; }
     int m_nnodesPerSlice;
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     void FindInterfaceNodes();
     CStaticGraphicalModel *m_pGrModel;

@@ -25,6 +25,9 @@
 #include "pnlNodeType.hpp"
 #include "pnlException.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CDBN : public CDynamicGraphicalModel
@@ -39,9 +42,23 @@ public:
     virtual CStaticGraphicalModel *CreatePriorSliceGrModel() const;
     void GenerateSamples( pEvidencesVecVector* evidencesOut, const intVector& nSlices ) const;
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CDBN::m_TypeInfo;
+  }
+#endif
 protected:
     /* constructor of the Dynamic Graphical Model object */
     CDBN( EModelTypes modelType, CStaticGraphicalModel *pGrModel);
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 };
 
 PNL_END

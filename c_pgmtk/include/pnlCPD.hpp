@@ -22,6 +22,10 @@
 #include "pnlPotential.hpp"
 #include "pnlFactor.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 class PNL_API CCPD : public CFactor  
@@ -45,11 +49,26 @@ public:
     virtual void UpdateStatisticsML(const CEvidence* const* pEvidencesIn, 
         int EvidenceNumber) = 0;
 #endif
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CCPD::m_TypeInfo;
+    }
+#endif
 protected:
     CCPD( EDistributionType dt,
         EFactorType pt, const int *domain, int nNodes, CModelDomain* pMD );
     CCPD( EDistributionType dt, EFactorType ft, CModelDomain* pMD );
     CCPD( const CCPD* cpd );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
 };
 

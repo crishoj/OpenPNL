@@ -20,6 +20,9 @@
 
 #include "pnlStaticLearningEngine.hpp" 
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
                      
 //currently CBayesLearningEngine can work only 
@@ -43,11 +46,25 @@ public:
     //run learning engine
 	void Learn();
 	
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CBayesLearningEngine::m_TypeInfo;
+  }
+#endif
 protected:
 	int m_numberOfLearnedEvidences;
 
     //hidden constructor
     CBayesLearningEngine( CStaticGraphicalModel *pGrModel );
+
+#ifdef PNL_RTTI
+  static const CPNLType m_TypeInfo;
+#endif 
 };
 
 PNL_END

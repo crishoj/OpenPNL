@@ -22,7 +22,9 @@
 #include "pnlJunctionTree.hpp"
 #include "pnlJtreeInferenceEngine.hpp"
 
-
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 #ifdef SWIG
@@ -68,6 +70,16 @@ public:
     virtual const CPotential* GetQueryJPD();
     virtual const CEvidence* GetMPE();
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CBKInfEngine::m_TypeInfo;
+    }
+#endif
 protected:
     
     CBKInfEngine(const CDynamicGraphicalModel *pGraphicalModel, intVecVector clusters );
@@ -90,7 +102,9 @@ protected:
     CEvidence* CreateCurrentEvidence(const CEvidence* pEvIn, 
         const CEvidence* pEvPast = NULL);
 
-  
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif     
    
 private:
     
