@@ -16,6 +16,7 @@ namespace pnl
     class CPNLBase;
     class CGraph;
     class pnlString;
+    class CNodeType;
 };
 
 class PNLHIGH_API TokenCover: public ModelEngine
@@ -48,6 +49,7 @@ public:
 
     Vector<TokIdNode*> ExtractNodes(TokArr &aValue) const;
     int NodesClassification(TokArr &aValue) const;
+
     int iNode(Tok &tok) const;
 
     // Properties support
@@ -86,6 +88,11 @@ private:// DATA
     TokIdNode *m_pContinuous;	// pointer to parent node for all continuous nodes
     TokIdNode *m_pDefault;	// pointer to default node
     TokIdNode *m_pProperties;	// pointer to properties namespace
+
+    TokIdNode *m_pChance;	
+    TokIdNode *m_pDecision;	
+    TokIdNode *m_pValue;	
+
     WGraph *m_pGraph;		// serve graph and naming
 };
 
