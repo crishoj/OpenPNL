@@ -15,7 +15,9 @@
 /////////////////////////////////////////////////////////////////////////////
 #include "pnlConfig.hpp"
 #include "pnlReferenceCounter.hpp"
-
+#ifdef PAR_OMP
+#include <omp.h>
+#endif
 
 PNL_USING
 
@@ -26,10 +28,16 @@ CReferenceCounter::CReferenceCounter() : m_refCounter(0)
 }
 
 #else // NDEBUG
-
+#ifdef PAR_OMP
 inline int CReferenceCounter::GetNumOfReferences() const
 {
-    return m_refList.size();
+
+	omp_set_lock(&m_release_lock);
+	int size = m_refList.size();
+	omp_unset_lock(&m_release_lock);
+
+    return size;
+
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -37,6 +45,66 @@ inline void CReferenceCounter::AddRef(void* pObject)
 {
     PNL_CHECK_IS_NULL_POINTER(pObject);
     
+    omp_set_lock(&m_release_lock);
+    m_refList.push_back(pObject);
+    omp_unset_lock(&m_release_lock);
+}
+//////////////////////////////////////////////////////////////////////////
+
+inline void CReferenceCounter::Release(void* pObject)
+{
+    PNL_CHECK_IS_NULL_POINTER(pObject);
+    
+    omp_set_lock(&m_release_lock);
+    std::list<void*>::iterator location = std::find( m_refList.begin(),
+        m_refList.end(), pObject );
+    
+    assert( location != m_refList.end() );
+       
+    while( location != m_refList.end() )
+    {
+        location = std::find( m_refList.erase(location), m_refList.end(),
+            pObject );
+    }
+    
+    if( m_refList.empty() )
+    {
+	omp_unset_lock(&m_release_lock);
+        delete this;
+    }
+    else
+    {
+        omp_unset_lock(&m_release_lock);
+    };
+}
+//////////////////////////////////////////////////////////////////////////
+
+CReferenceCounter::CReferenceCounter()
+{
+    omp_init_lock(&m_release_lock);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+CReferenceCounter::~CReferenceCounter()
+{
+    omp_destroy_lock(&m_release_lock);
+}
+
+#else  // PAR_OMP
+
+inline int CReferenceCounter::GetNumOfReferences() const
+{
+	int size = m_refList.size();
+
+	return size;
+}
+//////////////////////////////////////////////////////////////////////////
+
+inline void CReferenceCounter::AddRef(void* pObject)
+{
+    PNL_CHECK_IS_NULL_POINTER(pObject);
+   
     m_refList.push_back(pObject);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -49,7 +117,7 @@ inline void CReferenceCounter::Release(void* pObject)
         m_refList.end(), pObject );
     
     assert( location != m_refList.end() );
-    
+       
     while( location != m_refList.end() )
     {
         location = std::find( m_refList.erase(location), m_refList.end(),
@@ -59,7 +127,7 @@ inline void CReferenceCounter::Release(void* pObject)
     if( m_refList.empty() )
     {
         delete this;
-    }
+    };
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -67,11 +135,14 @@ CReferenceCounter::CReferenceCounter()
 {
 }
 
-#endif // NDEBUG
+//////////////////////////////////////////////////////////////////////////
 
 CReferenceCounter::~CReferenceCounter()
 {
 }
+#endif // PAR_OMP
+
+#endif // NDEBUG
 
 #ifdef PNL_RTTI
 const CPNLType CReferenceCounter::m_TypeInfo = CPNLType("CReferenceCounter", &(CPNLBase::m_TypeInfo));

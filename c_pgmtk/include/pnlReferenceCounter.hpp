@@ -27,6 +27,13 @@
 #ifdef PNL_RTTI
 #include "pnlpnlType.hpp"
 #endif 
+
+#include "pnlParConfig.hpp"
+
+#ifdef PAR_OMP
+#include "omp.h"
+#endif
+
 PNL_BEGIN
 
 class PNL_API CReferenceCounter : public CPNLBase 
@@ -77,6 +84,12 @@ private:
 //#endif
 
     std::list<void *> m_refList;
+
+#ifdef PAR_OMP
+	//This lock is used only in degug version of the project 
+	omp_lock_t m_release_lock;
+#endif
+
 #else
 
     int               m_refCounter;
