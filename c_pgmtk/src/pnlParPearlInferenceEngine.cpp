@@ -1752,7 +1752,7 @@ void CParPearlInfEngine::InitEngine(const CEvidence* pEvidence)
   }
   
   m_modelDt = pnlDetermineDistributionType(numOfNdsInModel,
-    NumReallyObs, ReallyObsNodes.begin(), &nodeTypes.front());
+    NumReallyObs, &ReallyObsNodes.front(), &nodeTypes.front());
   
   int numOfParams;
   CFactor ** param;
@@ -1795,7 +1795,7 @@ void CParPearlInfEngine::InitEngine(const CEvidence* pEvidence)
         {
           m_factorDistrib[i] = CTabularDistribFun::Create(
             paramData->GetNumberOfNodes(), 
-            paramData->GetNodeTypesVector()->begin(),NULL);
+            &paramData->GetNodeTypesVector()->front(),NULL);
           m_factorDistrib[i]->AttachMatrix(paramData->GetMatrix(matTable)->
             Clone(), matTable);
         }
@@ -1822,7 +1822,7 @@ void CParPearlInfEngine::InitEngine(const CEvidence* pEvidence)
           
           pFactorVector paramVec(0);
           m_pGraphicalModel->GetFactors(2, nodes, &paramVec);
-          params = paramVec.begin();
+          params = &paramVec.front();
           
           message paramData = params[0]->GetDistribFun();
           
@@ -1840,7 +1840,7 @@ void CParPearlInfEngine::InitEngine(const CEvidence* pEvidence)
           {
             m_factorCliqueDistrib[neighbors[j]][k] = 
               CTabularDistribFun::Create(paramData->GetNumberOfNodes(),
-              paramData->GetNodeTypesVector()->begin(),NULL);
+              &paramData->GetNodeTypesVector()->front(),NULL);
             m_factorCliqueDistrib[neighbors[j]][k]->AttachMatrix(paramData->
               GetMatrix(matTable)->Clone(), matTable);
           }
@@ -1851,7 +1851,7 @@ void CParPearlInfEngine::InitEngine(const CEvidence* pEvidence)
   }
   
   EDistributionType dtWithoutEv = pnlDetermineDistributionType(
-    numOfNdsInModel, 0, ReallyObsNodes.begin(), &nodeTypes.front());
+    numOfNdsInModel, 0, &ReallyObsNodes.front(), &nodeTypes.front());
   
   intVector& connNodes = GetConnectedNodes();
 
@@ -2048,7 +2048,7 @@ void CParPearlInfEngine::ComputeMessage(int destination, int source)
 
       pFactorVector paramVec(0);
       m_pGraphicalModel->GetFactors(2, nodes, &paramVec);
-      params = paramVec.begin();
+      params = &paramVec.front();
       numOfParams = paramVec.size();
 
       message paramMes = params[0]->GetDistribFun();
@@ -2127,7 +2127,7 @@ void CParPearlInfEngine::CPD_to_pi(int nodeNumber,
   }
   for (i = 0; i < numMultNodes; i++)
   {
-    MultiplyOnMessage(m_factorDistrib[nodeNumber], domNumbers.begin(), 
+    MultiplyOnMessage(m_factorDistrib[nodeNumber], &domNumbers.front(), 
       multParentIndices+i, allPiMessages[multParentIndices[i]]);
   }
   std::vector< int, CFusedAllocator< int > > keepedNodes = 
@@ -2137,7 +2137,7 @@ void CParPearlInfEngine::CPD_to_pi(int nodeNumber,
     keepedNodes.push_back(posOfExceptNode);
   }
   MarginalizeDataInMessage(m_productPi[nodeNumber],
-    m_factorDistrib[nodeNumber], keepedNodes.begin(), keepedNodes.size(),
+    m_factorDistrib[nodeNumber], &keepedNodes.front(), keepedNodes.size(),
     maximizeFlag);
 }
 // ----------------------------------------------------------------------------
@@ -2168,7 +2168,7 @@ void CParPearlInfEngine::ComputeProductPi(int nodeNumber, int except)
   
   pFactorVector paramVec(0);
   m_pGraphicalModel->GetFactors(1, &nodes, &paramVec);
-  param = paramVec.begin();
+  param = &paramVec.front();
   numOfParams = paramVec.size();
   
   if (!numOfParams)
@@ -2234,7 +2234,7 @@ void CParPearlInfEngine::ComputeProductPi(int nodeNumber, int except)
       }
     }
   }
-  CPD_to_pi(nodeNumber, parentMessages.begin(), parentIndices.begin(), 
+  CPD_to_pi(nodeNumber, &parentMessages.front(), &parentIndices.front(), 
     parentIndices.size(), keepNode, m_bMaximize);
 }
 // ----------------------------------------------------------------------------
@@ -2314,7 +2314,7 @@ void CParPearlInfEngine::ComputeProductLambda(int nodeNumber, message lambda,
   pFactorVector paramVec(0);
 
   m_pGraphicalModel->GetFactors(1, &nodes, &paramVec);
-  param = paramVec.begin();
+  param = &paramVec.front();
   numOfParams = paramVec.size();
   
   if (!numOfParams)
@@ -2382,7 +2382,7 @@ void CParPearlInfEngine::ComputeProductLambda(int nodeNumber, message lambda,
   {
     keepNode = -1;
   }
-  CPD_to_lambda(nodeNumber, parentMessages.begin(), parentIndices.begin(), 
+  CPD_to_lambda(nodeNumber, &parentMessages.front(), &parentIndices.front(), 
     parentIndices.size(), res, keepNode, m_bMaximize);
 }
 // ----------------------------------------------------------------------------
