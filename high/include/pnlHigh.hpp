@@ -1,6 +1,7 @@
 #include "pnlHighConf.hpp"
 
 #include "BNet.hpp"
+#include "LIMID.hpp"
 
 // FORWARDS
 class WDistribFun;

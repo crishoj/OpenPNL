@@ -62,4 +62,8 @@ PNLHIGH_API void ThrowUsingError(const char *message, const char *func);
 extern PNLHIGH_API TokArr discrete;
 extern PNLHIGH_API TokArr continuous;
 
+extern PNLHIGH_API TokArr chance;
+extern PNLHIGH_API TokArr decision;
+extern PNLHIGH_API TokArr value;
+
 #endif //__PNLHIGHCONFIG_HPP__
