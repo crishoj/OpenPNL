@@ -1105,6 +1105,17 @@ CDistribFun *CSoftMaxDistribFun::ConvertCPDDistribFunToPotential(floatVector Mea
   C2DNumericDenseMatrix<float> *newMatWeightsTrans = newMatWeights->Transpose();
   m_pMatrixK = pnlMultiply( newMatWeights, newMatWeightsTrans, 0 );
   
+  for (i = 0; i < ranges[0]; i++)
+  {
+    for (j = 0; j < ranges[1]; j++)
+    {
+      multiindex[0] = i;
+      multiindex[1] = j;
+      value = m_pMatrixK->GetElementByIndexes(multiindex);
+      m_pMatrixK->SetElementByIndexes( -2*lambda*value, multiindex);
+    }
+  }
+
   const floatVector *kvec = NULL;
   kvec = m_pMatrixK->GetVector();
   floatVector vecK = floatVector((*kvec).size());
