@@ -69,9 +69,9 @@ pnl::CGraphicalModel *LIMIDCallback::CreateModel(ProbabilisticNet &net)
         }
     }
 
-    for (i =0; i<nNode; i++ )
+/*    for (i =0; i<nNode; i++ )
       pIDNet->GetFactor(i)->GetDistribFun()->Dump();
-
+*/
     return pIDNet;
 }
 

@@ -38,16 +38,10 @@ public:
     void AddArc(TokArr from, TokArr to);
     void DelArc(TokArr from, TokArr to);
     
-    // set tabular probability
-    void SetPTabular(TokArr value, TokArr prob, TokArr parentValue = TokArr());
-
     void SetPChance(TokArr value, TokArr prob, TokArr parentValue = TokArr());
     void SetPDecision(TokArr value, TokArr prob, TokArr parentValue = TokArr());
     void SetValueCost(TokArr value, TokArr prob, TokArr parentValue = TokArr());
 
-    // get tabular probability
-    TokArr GetPTabular(TokArr value, TokArr parents = TokArr());
-    
     TokArr GetPChance(TokArr value, TokArr parents = TokArr());
     TokArr GetPDecision(TokArr value, TokArr parents = TokArr());
     TokArr GetValueCost(TokArr value, TokArr parents = TokArr());
@@ -70,6 +64,7 @@ private:
     pnl::CMatrix<float> *Matrix(int iNode) const;
     pnl::CLIMIDInfEngine& Inference();
     pnl::CIDNet *Model();
+    TokArr GetP(TokArr value, TokArr parents = TokArr());
 
 private:// DATA members
 
