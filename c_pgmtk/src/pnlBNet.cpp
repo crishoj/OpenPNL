@@ -186,7 +186,7 @@ bool CBNet::IsValid( std::string* description ) const
         ret = 0;
         return ret;
     }
-    //if we haven't allocated factors - shoud type about it
+    //if we haven't allocated factors - should type about it
     if( !m_pParams )
     {
         if(description)
