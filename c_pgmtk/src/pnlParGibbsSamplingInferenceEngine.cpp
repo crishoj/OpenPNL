@@ -199,7 +199,7 @@ void CParGibbsSamplingInfEngine::MarginalNodes(const int *queryIn, int querySz,
 
             //need to recv Final Distribution
             CPotential *deltaPot = CTabularPotential::Create(Domain, pMD,
-                FinalDistrib.begin(), obsIndicesIn);
+                &FinalDistrib.front(), obsIndicesIn);
 
             delete ShrinkPot;
 
@@ -371,21 +371,21 @@ Sampling( int statTime, int endTime )
                     pCurrentEvidence->ToggleNodeStateBySerialNumber(1, 
                         &(ndsSampleIsNeed[i]));
                 }
-                
-                if (t > BurnIn)
+            }
+            if (t > BurnIn)
+            {
+                pnlVector<CFactor*>* queryFactors = GetQueryFactors();
+                //pFactorVector queryFactors;
+                //GetQueryFactors( &queryFactors );
+                int ii;
+                int queryFactorsSize =
+                    ((float)(queryFactors->size())) / (m_NumberOfThreads);
+                for( ii = 0; ii < queryFactorsSize; ii++ )
                 {
-                    pFactorVector queryFactors;
-                    GetQueryFactors( &queryFactors );
-                    int ii;
-                    int queryFactorsSize =
-                        ((float)(queryFactors.size())) / (m_NumberOfThreads);
-                    for( ii = 0; ii < queryFactorsSize; ii++ )
-                    {
-                        was_updated[ii + myid * queryFactorsSize] = true;
-                        queryFactors[ii + myid * queryFactorsSize]->
-                            UpdateStatisticsML(&pCurrentEvidence, 1);
-                    }
-                };
+                    was_updated[ii + myid * queryFactorsSize] = true;
+                    (*queryFactors)[ii + myid * queryFactorsSize]->
+                        UpdateStatisticsML(&pCurrentEvidence, 1);
+                }
             }
         }
     }
