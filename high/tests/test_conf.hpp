@@ -58,3 +58,5 @@ void TestGaussianInference();
 void TestGaussianParamLearning();
 void TestForGetPTabular();
 void TestForSetInferenceProperties();
+void TestMRFGetJPD();
+void TestMRFModelCreate();

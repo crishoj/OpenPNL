@@ -1,37 +1,309 @@
-#include "pnlHigh.hpp"
-#include "MRF.hpp"   
+#include "test_conf.hpp"
+#include "pnlException.hpp"
+#include "pnl_dll.hpp"
 
 PNLW_USING
+using namespace std;
 
-
-int testMRF()
+MRF *VerySimpleMRFModel()
 {
-    int result = -1;
+//    node0 -- node1
+//      |        |    
+//    node2 -- node3
+
     // MRF creation
-    MRF net; 
+    MRF *pMRF; 
+    pMRF = new MRF();
+    // nodes creation 
+    pMRF->AddNode(discrete ^ "node0 node3 node1 node2", "value0 value1"); 
 
-    net.AddNode("discrete^X", "true false"); 
-    net.AddNode("discrete^Y", "true false");
-    net.AddNode("discrete^Z", "true false");
-    net.AddNode("discrete^W", "true false");
+    // set cliques and distributions on them
+    pMRF->SetPTabular("node0 node1", "0.18 0.23 0.35 0.24");
+    pMRF->SetPTabular("node1 node3", "0.06 0.42 0.14 0.38");
+    pMRF->SetPTabular("node3 node2", "0.15 0.33 0.41 0.11");
+    pMRF->SetPTabular("node2 node0", "0.16 0.37 0.19 0.28");
 
-    net.SetClique("X Y");
-    net.SetClique("Y Z");
-    net.SetClique("Z W");
-    net.SetClique("X W");
+    return pMRF;
+}
 
-    net.SetPTabular("X^true Y^true", "0.1");
-    net.SetPTabular("X^true Y^false", "0.3"); 
-    net.SetPTabular("X^false Y^true", "0.25");
-    net.SetPTabular("X^false Y^false", "0.35"); 
+MRF *SimpleMRFModel()
+{
+//    node0 -- node1
+//      |   /    |    
+//    node2 -- node3
 
-    TokArr XY = net.GetPTabular("X Y");
-    TokArr XtrueY = net.GetPTabular("X^true Y");
-    TokArr XtrueYfalse = net.GetPTabular("X^true Y^false");
+    // MRF creation
+    MRF *pMRF; 
+    pMRF = new MRF();
+    // nodes creation 
+    pMRF->AddNode(discrete ^ "node0 node3", "Value0 Value1 Value2"); 
+    pMRF->AddNode(discrete ^ "node2 node1", "value0 value1"); 
 
-    printf("%s\n",String(XY).c_str());
-    printf("%s\n",String(XtrueY).c_str());
-    printf("%s\n",String(XtrueYfalse).c_str());
+    // set cliques and distributions on them
+    pMRF->SetPTabular("node0 node1 node2", "0.05 0.1 0.08 0.2 0.09 0.04 0.07 0.11 0.03 0.01 0.16 0.06");
+    pMRF->SetPTabular("node1 node3 node2", "0.06 0.02 0.12 0.105 0.035 0.03 0.19 0.02 0.01 0.18 0.03 0.11");
 
-    return result;
-} 
+    return pMRF;
+}
+
+MRF *GridMRFModel()
+{
+//    node0 -- node1 -- node2
+//      |        |        |
+//    node3 -- node4 -- node5
+//      |        |        |
+//    node6 -- node7 -- node8
+    // node values
+    TokArr aChoice = "value0 value1";// possible values for nodes
+    // MRF creation
+    MRF *pMRF; 
+    pMRF = new MRF();
+    // nodes creation 
+    pMRF->AddNode(discrete ^ "node0 node1 node2 node3 node4 node5 node6 node7 node8", aChoice); 
+   
+    pMRF->SetClique("node0 node1"); 
+    pMRF->SetPTabular("node0 node1", "0.3 0.39 0.1 0.21");
+    pMRF->SetPTabular("node1 node2", "0.26 0.34 0.24 0.16");
+    pMRF->SetPTabular("node0 node3", "0.29 0.26 0.14 0.31");
+    pMRF->SetPTabular("node1 node4", "0.45 0.04 0.33 0.18");
+    pMRF->SetPTabular("node2 node5", "0.17 0.3 0.3 0.23");
+    pMRF->SetPTabular("node3 node4", "0.4 0.06 0.34 0.2");
+    pMRF->SetPTabular("node4 node5", "0.23 0.4 0.15 0.22");
+    pMRF->SetPTabular("node6 node3", "0.34 0.24 0.33 0.09");
+    pMRF->SetPTabular("node4 node7", "0.34 0.29 0.17 0.2");
+    pMRF->SetPTabular("node5 node8", "0.14 0.31 0.14 0.41");
+    pMRF->SetPTabular("node6 node7", "0.15 0.34 0.01 0.5");
+    pMRF->SetPTabular("node7 node8", "0.14 0.46 0.21 0.19");
+
+    return pMRF;
+}
+
+MRF *MRFModel()
+{
+    // Node6--Node5--Node0--Node1 
+    //     \   |  \ /  |   /  |
+    //       \ |  / \  | /    |
+    //        Node4--Node3--Node2
+
+    MRF *net;
+    net = new MRF();
+
+    net->AddNode(discrete^"Node0 Node2 Node4 Node6", "value0 value2 value3");
+    net->AddNode(discrete^"Node1 Node3 Node5", "value0 value2 value3 value 4");
+
+    net->SetClique("Node1 Node2 Node3");
+    net->SetClique("Node0 Node1 Node3");
+
+    // ...
+    return net;
+}
+
+void TestMRFModelCreate()
+{
+    MRF *net = SimpleMRFModel();
+
+    TokArr P = net->GetPTabular("node2 node0^Value1 node1");
+    //cout << String(P) << endl;
+    if( P[0].FltValue() != 0.09f ||
+        P[1].FltValue() != 0.07f ||
+        P[2].FltValue() != 0.04f ||
+        P[3].FltValue() != 0.11f )
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting of tabular parameters for MRF is wrong");
+    }
+
+    P = net->GetPTabular("node1^value0 node0 node2");
+    //cout << String(P) << endl;
+    if( P[0].FltValue() != 0.05f ||
+        P[1].FltValue() != 0.1f ||
+        P[2].FltValue() != 0.09f ||
+        P[3].FltValue() != 0.04f ||
+        P[4].FltValue() != 0.03f ||
+        P[5].FltValue() != 0.01f )
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting of tabular parameters for MRF is wrong");
+    }
+
+    P = net->GetPTabular("node2^value0 node1^value1 node3^Value2");
+    //cout << String(P) << endl;
+    if( P[0].FltValue() != 0.03f )
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting of tabular parameters for MRF is wrong");
+    }
+
+    net->DestroyClique("node3 node2 node1");
+    net->SetPTabular("node3^Value2 node1", "0.08 0.13");
+    net->SetPTabular("node3^Value0 node1", "0.09 0.23");
+    net->SetPTabular("node3^Value1 node1", "0.14 0.33");
+
+    P = net->GetPTabular("node1^value1 node3^Value0");
+    if( P[0].FltValue() != 0.23f )
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting of tabular parameters for MRF is wrong");
+    }
+
+    net->DelNode("node2");
+    net->SetClique("node0 node1");
+    net->AddNode("node4", "value0 value1 value2 value3");
+    net->SetClique("node1 node4");
+    net->SetPTabular("node0 node1", "0.21 0.28 0.13 0.23 0.11 0.04");
+
+    P = net->GetPTabular("node1 node0");
+    if( P[0].FltValue() != 0.21f ||
+        P[1].FltValue() != 0.13f ||
+        P[2].FltValue() != 0.11f ||
+        P[3].FltValue() != 0.28f ||
+        P[4].FltValue() != 0.23f ||
+        P[5].FltValue() != 0.04f )
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting of tabular parameters for MRF is wrong");
+    }
+/*
+    P = net->GetPTabular("node1 node3");
+    cout << String(P) << endl;
+    if( P[0].FltValue() != 0.09f ||
+        P[1].FltValue() != 0.14f ||
+        P[2].FltValue() != 0.08f ||
+        P[3].FltValue() != 0.23f ||
+        P[4].FltValue() != 0.33f ||
+        P[5].FltValue() != 0.13f )
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting of tabular parameters for MRF is wrong");
+    }
+
+    float defaultProb = 1.0f / 8.0f;
+    P = net->GetPTabular("node1 node4");
+    for(int i = 0; i < 8; i++)
+    {
+        if( P[i].FltValue() != defaultProb )
+        {
+        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting of tabular parameters for MRF is wrong");
+        }
+    }*/
+
+    MRF *netGrid = GridMRFModel();
+    P = netGrid->GetPTabular("node7 node6");
+    cout << String(P) << endl;
+    if( P[0].FltValue() != 0.15f ||
+        P[1].FltValue() != 0.01f ||
+        P[2].FltValue() != 0.34f ||
+        P[3].FltValue() != 0.5f )
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Setting or getting of tabular parameters for MRF is wrong");
+    }
+
+    cout << "TestMRFModelCreate is completed successfully" << endl;
+}
+
+bool bTokArrEqual(TokArr first, TokArr second, float eps)
+{
+    if(first.size() != second.size())
+    {
+        return false;
+    }
+    int i;
+    for(i = 0; i < first.size(); i++)
+    {
+        if(first[i].FltValue() - second[i].FltValue() > eps)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void TestMRFGetJPD()
+{
+    MRF *net = GridMRFModel();
+
+    float eps1 = 1e-6f;
+    float eps2 = 1e-3f;
+    int nNode = net->GetNumberOfNodes();
+    int i;
+    TokArr jJPD, nJPD, pJPD, gJPD;
+
+    char nodeName[5];
+    strcpy(nodeName, "node");
+    for(i = 0; i < nNode; i++)
+    {
+        itoa(i, nodeName + 4, 10);
+        
+        net->SetProperty("Inference", "jtree");
+        jJPD = net->GetJPD(nodeName);
+        net->SetProperty("Inference", "naive");
+        nJPD = net->GetJPD(nodeName);
+        
+        if(!bTokArrEqual(jJPD, nJPD, eps1))
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Results of JTree and Naive inferences are diferent");
+        }
+        
+        net->SetProperty("Inference", "pearl");
+        pJPD = net->GetJPD(nodeName);
+        
+        if(!bTokArrEqual(pJPD, nJPD, eps2))
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Results of Pearl and Naive inferences are diferent");
+        }
+        
+        net->SetProperty("Inference", "gibbs");
+        gJPD = net->GetJPD(nodeName);
+        
+        if(!bTokArrEqual(gJPD, nJPD, eps2))
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Results of Gibbs and Naive inferences are diferent");
+        }
+    }
+
+    net->EditEvidence("node0^value1 node2^value0 node8^value1 node5^value0");
+    for(i = 0; i < nNode; i++)
+    {
+        itoa(i, nodeName + 4, 10);
+        
+        net->SetProperty("Inference", "jtree");
+        jJPD = net->GetJPD(nodeName);
+        net->SetProperty("Inference", "naive");
+        nJPD = net->GetJPD(nodeName);
+        
+        if(!bTokArrEqual(jJPD, nJPD, eps1))
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Results of JTree and Naive inferences are diferent");
+        }
+        
+        net->SetProperty("Inference", "pearl");
+        pJPD = net->GetJPD(nodeName);
+        
+        if(!bTokArrEqual(pJPD, nJPD, eps2))
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Results of Pearl and Naive inferences are diferent");
+        }
+        
+        //net->SetProperty("Inference", "gibbs");
+        //gJPD = net->GetJPD(nodeName);
+        
+        //if(!bTokArrEqual(gJPD, nJPD, eps2))
+        //{
+            //PNL_THROW(pnl::CAlgorithmicException, "Results of Gibbs and Naive inferences are diferent");
+        //}
+    }
+    net->SetProperty("Inference", "jtree");
+    jJPD = net->GetJPD("node7 node6");
+    net->SetProperty("Inference", "naive");
+    nJPD = net->GetJPD("node7 node6");
+    
+    if(!bTokArrEqual(jJPD, nJPD, eps1))
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Results of JTree and Naive inferences are diferent");
+    }
+    
+    net->SetProperty("Inference", "pearl");
+    pJPD = net->GetJPD("node7 node6");
+    
+    cout << String(nJPD) << endl;
+    cout << String(pJPD) << endl;
+    if(!bTokArrEqual(pJPD, nJPD, eps2))
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "Results of Pearl and Naive inferences are diferent");
+    }
+    cout << "TestMRFModelCreate is completed successfully" << endl;
+}
