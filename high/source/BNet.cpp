@@ -1134,6 +1134,11 @@ float BayesNet::GetEMLearningCriterionValue()
     const float * score;
     learnEng->GetCriterionValue(&nsteps, &score);
 
+    if(nsteps < 1)
+    {
+	ThrowInternalError("Learning was not done yet", "GetEMLearningCriterionValue");
+    }
+
     return score[0];
 }
 
