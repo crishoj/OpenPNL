@@ -204,6 +204,65 @@ TokArr BayesNet::GetGaussianCovar(TokArr var)
     }
 }
 
+TokArr BayesNet::GetGaussianWeights(TokArr nodes, TokArr parent)
+{
+    static const char fname[] = "GetGaussianWeight";
+
+    if( (!nodes.size())||(!parent.size()) )
+    {
+	ThrowUsingError("Node and parent variables must be specified", fname);
+    };
+
+    Vector<int> queryNdsOuter, queryVls;
+    Net().ExtractTokArr(nodes, &queryNdsOuter, &queryVls);
+
+    Vector<int> parentsOuter;
+    Net().ExtractTokArr(parent, &parentsOuter, &queryVls);
+    
+    int NodeOuter = queryNdsOuter[0], NodeInner = Net().Graph()->IGraph(queryNdsOuter[0]);
+    int ParentOuter = parentsOuter[0], ParentInner = Net().Graph()->IGraph(parentsOuter[0]);
+
+    const pnl::CFactor * cpd = Model()->GetFactor(NodeInner);
+
+    if (cpd->GetDistribFun()->IsDistributionSpecific() == 2) // delta
+    {
+        TokArr res;
+        res << "0";
+        return res;
+    }
+    else
+        if (cpd->GetDistribFun()->IsDistributionSpecific() == 1)
+        {
+            TokArr res;
+            res << "uniform";
+            return res;
+        }
+        else
+            {
+		pnl::intVector Domain;
+		cpd->GetDomain(&Domain);
+		int WeightsIndex = -1;
+
+		for (int i = 0; (i < Domain.size())&&(WeightsIndex == -1); i++)
+		{
+		    if (Domain[i] == ParentInner)
+		    {
+			WeightsIndex = i;
+		    };
+		};
+
+		if (WeightsIndex != -1)
+		{
+		    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matWeights, WeightsIndex);
+		    return Net().ConvertMatrixToToken(mat);
+		}
+		else
+		{
+		    ThrowUsingError("Wrong parameters in function", fname);
+		};
+            }
+}
+
 TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
 {
     static const char fname[] = "GetPTabular";
