@@ -741,7 +741,7 @@ void TokArr::Init( char const *s )
                 push_back( "" );
             }
         }
-        if ( !isalnum( *s ) && strchr( "^+-.", *s ) )
+        if ( !(isalnum( *s ) || strchr( "-^+.", *s )) )
         {
             PNL_THROW( CBadArg, "alien symbol inside TokArr, one can use alphanumerics or + - . ^ & only" );
         }
