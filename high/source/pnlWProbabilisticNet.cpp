@@ -5,6 +5,7 @@
 #include "pnlWProbabilisticNet.hpp"
 #include "TokenCover.hpp"
 #include "WDistribFun.hpp"
+#include "WCliques.hpp"
 #pragma warning(push, 2)
 #pragma warning(disable: 4251)
 // class X needs to have dll-interface to be used by clients of class Y
@@ -512,13 +513,28 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
 	String nodeName;
 	String aValue;
 
-        if (model->GetModelType() == pnl::mtBNet)
-            net = new ProbabilisticNet;
-        else
-            if (model->GetModelType() == pnl::mtIDNet)
-                net = new ProbabilisticNet("idnet");
-            else
-	        ThrowUsingError("Unknown type of model", "LoadNet");
+	const char *modelName;
+        switch(model->GetModelType())
+	{
+	case pnl::mtBNet:
+	    modelName = "bnet";
+	    break;
+	case pnl::mtIDNet:
+	    modelName = "idnet";
+	    break;
+	case pnl::mtMNet:
+	case pnl::mtMRF2:
+	    modelName = "mrf";
+	    break;
+	default:
+            ThrowUsingError("Unknown type of model", "LoadNet");
+	}
+	net = new ProbabilisticNet(modelName);
+
+	if(model->GetModelType() == pnl::mtMNet || model->GetModelType() == pnl::mtMRF2)
+	{
+	    net->Distributions()->SetMRF(true);
+	}
 
 	for(iNode = 0; iNode < model->GetNumberOfNodes(); ++iNode)
 	{
@@ -569,6 +585,11 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
 	    coverProperties = static_cast<pnl::CCover<SSMap>*>(loader->Get("Properties"));
 	}
 	net = pCovNet->GetPointer();
+	if(model->GetModelType() == pnl::mtMNet || model->GetModelType() == pnl::mtMRF2)
+	{
+	    net->Distributions()->SetMRF(true);
+	}
+
 	if(coverProperties)
 	{
 	    net->m_aPropertyValue = *coverProperties->GetPointer();
@@ -787,7 +808,21 @@ void ProbabilisticNet::Reset(const pnl::CGraphicalModel &model)
 
     int i;
 
-    for(i = 0; i < nNetNode(); ++i)
+    int nNode = nNetNode();
+
+    if(model.GetModelType() == pnl::mtMNet || model.GetModelType() == pnl::mtMRF2)
+    {
+	const pnl::CMNet *mrfModel = static_cast<const pnl::CMNet *>(&model);
+	nNode = mrfModel->GetNumberOfCliques();
+	Vector<int> clique;
+	for(i = 0; i < nNode; i++)
+	{
+	    mrfModel->GetClique(i, &clique);
+	    Distributions()->Cliques().FormClique(clique);
+	}
+    }
+
+    for(i = 0; i < nNode; ++i)
     {
 	Distributions()->ResetDistribution(i, *model.GetFactor(i));
     }

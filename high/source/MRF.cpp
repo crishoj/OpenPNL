@@ -96,10 +96,87 @@ TokArr MRF::GetNeighbors(TokArr nodes)
     return Net().GetNeighbors(nodes);
 }
 
-// It is inner DistribFun
-void MRF::SetPTabular(TokArr value, TokArr prob)
+void MRF::SetPTabular(TokArr aValue, TokArr prob)
 {
-//    Net().Distributions()->FillData(value, prob, parentValue);
+    static const char fname[] = "SetPTabular";
+    int aValSize = aValue.size();
+    Vector<int> tokNumbers(aValSize, 1);
+    int i, j;
+    TokIdNode *node;
+    int nVal = 1, nval;
+    for(i = aValSize; --i; )
+    {
+        node = m_pNet->Token()->Node(aValue[i]);
+        if(node->tag == eTagValue)
+        {
+            tokNumbers[i - 1] = tokNumbers[i];
+            node = node->v_prev;
+            if(node->tag != eTagNetNode)
+            {
+                ThrowUsingError("There is must be node", fname);
+            }
+        }
+        else
+        {
+            if(node->tag == eTagNetNode)
+            {
+                nval = m_pNet->Token()->nValue(m_pNet->Graph()->INode(node->Name()));
+                tokNumbers[i - 1] = tokNumbers[i] * nval;
+                nVal *= nval;
+            }
+            else
+            {
+                ThrowUsingError("There is must be node", fname);
+            }
+        }
+    }
+    node = m_pNet->Token()->Node(aValue[0]);
+    if(node->tag == eTagNetNode)
+    {
+	nVal *= m_pNet->Token()->nValue(m_pNet->Graph()->INode(node->Name()));
+    }
+    if(prob.size() != nVal)
+    {
+        ThrowUsingError("Number of probabilities is incorrect", fname);
+    }
+
+    int TokInd;
+    Vector<Tok> aTok(nVal);
+    for(i = 0; i < aValSize; i++)
+    {
+        node = m_pNet->Token()->Node(aValue[i]);
+        if(node->tag == eTagValue)
+        {
+            for(TokInd = 0; TokInd < nVal; TokInd++)
+            {
+                aTok[TokInd] ^= aValue[i];
+            }
+        }
+        else
+        {
+            Vector<String> values;
+            m_pNet->Token()->GetValues(m_pNet->Graph()->INode(node->Name()), values);
+	    int flag = 1;
+            for(TokInd = 0, j = 0; TokInd < nVal; TokInd++, flag++)
+            {
+                aTok[TokInd] ^= (Tok(node->Name()) ^ values[j]);
+                if(flag == tokNumbers[i])
+                {
+                    j++;
+		    flag = 0;
+		    if(j == values.size())
+		    {
+			j = 0;
+		    }
+                }
+            }
+        }
+    }
+    for(i = 0; i < nVal; i++)
+    {
+       aTok[i] ^= prob[i];
+    }
+    Net().Distributions()->FillDataNew(pnl::matTable, TokArr(&aTok.front(), nVal));
 }
 /*
 void MRF::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)
