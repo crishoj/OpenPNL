@@ -19,7 +19,9 @@ include_HEADERS =      \
      pnlConfig.h     \
      pnlConfig.hpp     \
      pnlContext.hpp     \
+     pnlContextLoad.hpp     \
      pnlContextPersistence.hpp     \
+     pnlContextSave.hpp     \
      pnlDAG.hpp     \
      pnlDBN.hpp     \
      pnlDenseMatrix.hpp     \
@@ -44,6 +46,7 @@ include_HEADERS =      \
      pnlGibbsWithAnnealingInferenceEngine.hpp     \
      pnlGraph.hpp     \
      pnlGraphicalModel.hpp     \
+     pnlGroup.hpp     \
      pnlIDNet.hpp     \
      pnlIDPotential.hpp     \
      pnlIDTabularPotential.hpp     \
@@ -112,6 +115,8 @@ include_HEADERS =      \
      pnlTreeCPD.hpp     \
      pnlTypeDefs.hpp     \
      pnlVector.hpp     \
+     pnlXMLContainer.hpp     \
      pnlXMLRead.hpp     \
+     pnlXMLWrite.hpp     \
      pnl_dll.hpp     \
      pnlpnlType.hpp
