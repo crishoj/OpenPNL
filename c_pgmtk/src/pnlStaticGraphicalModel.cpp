@@ -15,6 +15,7 @@
 /////////////////////////////////////////////////////////////////////////////
 #include "pnlConfig.hpp"
 #include "pnlStaticGraphicalModel.hpp"
+#include "pnlSoftMaxCPD.hpp"
 #include "pnlTabularCPD.hpp"
 #include "pnlTabularPotential.hpp"
 #include "pnlGaussianCPD.hpp"
@@ -143,6 +144,12 @@ int CStaticGraphicalModel::_AllocFactor( int domainNodes,
             case dtTree :
                 {
                     pFactor = CTreeCPD::Create( domain,
+                        numberOfNodesInDomain, m_pMD );
+                    break;
+                }
+            case dtSoftMax : case dtCondSoftMax:
+                {
+                    pFactor = CSoftMaxCPD::Create( domain,
                         numberOfNodesInDomain, m_pMD );
                     break;
                 }
