@@ -472,7 +472,6 @@ CPersistCondSoftMaxDistribFun::Load(CContextLoad *pContext)
     
     CMatrix<CSoftMaxDistribFun*> *mat = static_cast<CMatrix<CSoftMaxDistribFun*>*>(
         pContext->Get("DistributionMatrix"));
-    bool isDense(mat->GetMatrixClass() == mcDense);
 
     pDF = CCondSoftMaxDistribFun::Create(nNode, ppNodeType);
 
