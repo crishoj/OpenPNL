@@ -1481,9 +1481,14 @@ void CJtreeInfEngine::DoPropagate(pnl::CNumericDenseMatrix<float> *sourceMatrix,
 
     float reciprocalSum = 1 / sum;
 
+	if(isCollect)
+	{
+		m_norm *= sum;
+	}
+
     for (i = 0; i < sink_bulk_size; i++)
     {
-	*(sink_bulk + i) *= reciprocalSum;
+	   *(sink_bulk + i) *= reciprocalSum;
     }
 
     delete [] offsets;

@@ -1244,6 +1244,14 @@ void CParJtreeInfEngine::DoPropagateOMP(
         {
             *(big_bulk + i_ind) *= reciprocalSum;
         }
+
+		if(!threadNum)
+		{
+			if(isCollect)
+			{
+				m_norm *= sum;
+			}
+		}
     }// end of parallel section
 
     delete [] offsets;
