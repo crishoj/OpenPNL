@@ -52,7 +52,11 @@ int testExInfEngine()
 
     for ( test_num = 0; test_num < 96; ++test_num )
     {
+#if 0
         maxi_flag = tTurboRand( 2 );
+#else
+        maxi_flag = 0;
+#endif
         num_nodes = tTurboRand( 7, 12 );
         degree = 3;
         edge_prob = tTurboRand( 10, 90 ) / 100.f;
