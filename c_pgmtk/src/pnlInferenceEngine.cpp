@@ -114,7 +114,24 @@ pnlDetermineDistributionType( int nAllNodes, int numberObsNodes,
             }
             else
             {
-                myDT = dtCondGaussian;
+                if (pAllNodesTypes[nAllNodes-1]->IsDiscrete() && 
+                    allContinious == (int(isHiddenDiscrete.size())-1))
+                {
+                    myDT = dtSoftMax;
+                }
+                else
+                {
+                    if (pAllNodesTypes[nAllNodes-1]->IsDiscrete() && 
+                    allContinious != int(isHiddenDiscrete.size()))
+                    {
+                        myDT = dtCondSoftMax;
+                    }
+                    else
+                    {
+                        myDT = dtCondGaussian;
+
+                    }
+                }
             }
         }
     }
