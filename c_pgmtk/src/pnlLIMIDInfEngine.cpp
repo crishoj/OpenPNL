@@ -736,8 +736,8 @@ void CLIMIDInfEngine::Collect()
       dynamic_cast <CIDPotential*> (m_RetractPotential->Clone());
 
 // !!!
-    if (m_Paths[NumOfPath].size() == 0)
-      return;
+//    if (m_Paths[NumOfPath].size() == 0)
+//      return;
 // !!!
 
     pGraph->GetNeighbors((m_Roots)[NumOfRoot], &numOfNbrs, &nbrs, &nbrsTypes);
