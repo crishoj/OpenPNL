@@ -25,7 +25,7 @@ CFG=trs - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "trs - Win32 Release"
@@ -40,9 +40,9 @@ RSC=rc.exe
 # PROP Output_Dir "../../temp/trs/Release"
 # PROP Intermediate_Dir "../../temp/trs/Release"
 # PROP Target_Dir ""
-F90=df.exe
-LINK32=link.exe
 MTL=midl.exe
+LINK32=link.exe
+F90=df.exe
 # ADD BASE CPP /nologo /MD /W4 /GX /O2 /I "..\Include" /I "..\..\_Trs\Include" /D "NDEBUG" /D "_CVL_PX" /D "_WINDOWS" /D "WIN32" /D "IPL_WINDOWS" /YX /FD /c
 # ADD CPP /nologo /MD /W4 /GX /O2 /I "..\Include" /I "..\..\..\IppiCVLib\Include" /D "NDEBUG" /D "_CVL_PX" /D "_WINDOWS" /D "WIN32" /D "IPL_WINDOWS" /FD /c
 # SUBTRACT CPP /YX
@@ -51,7 +51,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\Lib\trspX.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\trs.lib"
 
@@ -67,18 +67,18 @@ LIB32=xilink6.exe -lib
 # PROP Output_Dir "../../temp/trs/Debug"
 # PROP Intermediate_Dir "../../temp/trs/Debug"
 # PROP Target_Dir ""
-F90=df.exe
-LINK32=link.exe
 MTL=midl.exe
+LINK32=link.exe
+F90=df.exe
 # ADD BASE CPP /nologo /MDd /W4 /GX /ZI /Od /I "..\Include" /I "..\..\_Trs\Include" /D "_DEBUG" /D "_CVL_DEBUG" /D "_CVL_PX" /D "_WINDOWS" /D "WIN32" /D "IPL_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MDd /W4 /GX /ZI /Od /I "..\Include" /I "..\..\..\IppiCVLib\Include" /D "_DEBUG" /D "_CVL_DEBUG" /D "_CVL_PX" /D "_WINDOWS" /D "WIN32" /D "IPL_WINDOWS" /FR /FD /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\Include" /I "..\..\..\IppiCVLib\Include" /D "_DEBUG" /D "_CVL_DEBUG" /D "_CVL_PX" /D "_WINDOWS" /D "WIN32" /D "IPL_WINDOWS" /FD /c
+# SUBTRACT CPP /Fr /YX
 # ADD BASE RSC /l 0x419
 # ADD RSC /l 0x419
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\Lib\trspXd.lib"
 # ADD LIB32 /nologo /out:"..\..\lib\trsd.lib"
 

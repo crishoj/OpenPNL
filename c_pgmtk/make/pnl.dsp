@@ -46,7 +46,7 @@ LINK32=link.exe
 F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\src\include" /I "..\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W4 /Gm /GX /ZI /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "PNL_STATIC" /D "WIN32" /FD /GZ /c
+# ADD CPP /nologo /W4 /Gm /GR /GX /Zi /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "PNL_STATIC" /D "WIN32" /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 RSC=rc.exe
 # ADD BASE RSC /l 0x419 /d "_DEBUG"
@@ -75,7 +75,7 @@ LINK32=link.exe
 F90=df.exe
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /GX /Od /I "..\src\include" /I "..\include" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W4 /GX /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "PNL_STATIC" /D "WIN32" /FD /c
+# ADD CPP /nologo /W4 /GR /GX /Zi /Od /I "..\src\include" /I "..\include" /I "..\..\cxcore\cxcore\include" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "PNL_STATIC" /D "WIN32" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 RSC=rc.exe
 # ADD BASE RSC /l 0x419 /d "NDEBUG"
@@ -115,7 +115,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:windows /dll /debug /machine:I386 /nodefaultlib:"libcmt.lib" /nodefaultlib:"msvcrt.lib" /out:"..\..\bin\pnld.dll" /implib:"..\..\lib\pnld.lib" /pdbtype:sept /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /nodefaultlib:"libcmt.lib" /nodefaultlib:"msvcrt.lib" /out:"..\..\bin\pnld.dll" /implib:"..\..\lib\pnld.lib" /pdbtype:sept /libpath:"..\lib" /libpath:"..\..\cxcore\lib"
 # SUBTRACT LINK32 /pdb:none /nodefaultlib
 
 !ELSEIF  "$(CFG)" == "pnl - Win32 Release"
@@ -671,10 +671,6 @@ SOURCE=..\include\pnlContextPersistence.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\pnlExInferenceEngine.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\include\pnlObjHandler.hpp
 # End Source File
 # Begin Source File
@@ -901,6 +897,10 @@ SOURCE=..\include\pnlExampleModels.hpp
 # Begin Source File
 
 SOURCE=..\INCLUDE\pnlException.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\pnlExInferenceEngine.hpp
 # End Source File
 # Begin Source File
 

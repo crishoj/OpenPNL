@@ -38,8 +38,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\_temp\cxcore_Rls"
-# PROP Intermediate_Dir "..\..\_temp\cxcore_Rls"
+# PROP Output_Dir "..\..\..\temp\cxcore\Release"
+# PROP Intermediate_Dir "..\..\..\temp\cxcore\Release"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 LIB32=link.exe -lib
@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\bin\cxcore.dll" /implib:"../../lib/cxcore.lib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\..\bin\cxcore.dll" /implib:"../../lib/cxcore.lib"
 # SUBTRACT LINK32 /profile /map
 
 !ELSEIF  "$(CFG)" == "cxcore - Win32 Debug"
@@ -66,8 +66,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\..\_temp\cxcore_Dbg"
-# PROP Intermediate_Dir "..\..\_temp\cxcore_Dbg"
+# PROP Output_Dir "..\..\..\temp\cxcore\Debug"
+# PROP Intermediate_Dir "..\..\..\temp\cxcore\Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 LIB32=link.exe -lib
@@ -82,7 +82,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\bin\cxcored.dll" /implib:"../../lib/cxcored.lib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"..\..\..\bin\cxcored.dll" /implib:"../../lib/cxcored.lib"
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
