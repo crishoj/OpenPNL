@@ -156,21 +156,9 @@ int scenario()
 
     // build Graph
     // add nodes to net
-    net.AddNode(categoric ^ "Predictor", aChoice);
-    net.AddNode(categoric ^ "Response", aChoice);
-    net.AddNode(categoric ^ "Response2", aChoice);
+    net.AddNode(categoric ^ "Predictor Response Response2", aChoice);
 
-    net.AddArc("Predictor", "Response");
-    net.AddArc("Predictor","Response2");
-
-    // initial with uniform distribution
-
-//    net.SetP("Predictor^True", Tok(0.3f) );
-//    net.SetP("Predictor^False", Tok(0.7f) );
-
-  //  net2.AddNode(categoric ^ "Predictor", aChoice);
-  //  net2.AddNode(categoric ^ "Response", aChoice);
-  //  net2.AddArc("Predictor", "Response");
+    net.AddArc("Predictor", "Response Response2");
 
     TokArr ev = (Tok("Predictor")^"True") & (Tok("Response")^"True") & (Tok("Response2")^"True");
 //    cout << ev;
@@ -180,7 +168,7 @@ int scenario()
    // net.Evid(Tok("Response")^"True", true);
    // net.Evid(Tok("Response")^"True", true);
 
-//    pnlSeed(time(0));
+    pnl::pnlSeed(time(0));
     //Scripting scr;
     //scr.Execute(stdin, &net);
 
@@ -200,7 +188,6 @@ int scenario()
 //    net.SaveLearnBuf("classif.csv");
 //    net.LoadLearnBuf("classif.csv");
 
-
     BayesNet net2;
 
     net2.AddNode(categoric ^ "Response", aChoice);
@@ -209,13 +196,11 @@ int scenario()
 
     net.Evid(ev, true);
 
-
     //net2.LoadLearnBuf("classif.csv");
     //net2.LearnStructure(0,0);
     //net2.SaveLearnBuf("classif2.csv");
 
     //net2.SaveNet("network.xml");
-
 
     return 0;
 }
@@ -348,20 +333,6 @@ int rpsMain()
     // create model
 
     // prepare types
-#if 0
-    Scripting scr;
-    FILE *fp = fopen("rpsCreate.pnl", "r");
-
-    if(fp)
-    {
-	fprintf(stderr, "\nExecution of script from rpsCreate.pnl:\n\n");
-	scr.Execute(fp);
-	fclose(fp);
-	fprintf(stderr, "\nEnd of script\n");
-    }
-    return 0;
-#endif
-
     BayesNet net;
     TokArr aChoice = "Rock Paper Scissors";// possible values for nodes
     int score[3];
