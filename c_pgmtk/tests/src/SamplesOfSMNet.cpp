@@ -134,9 +134,10 @@ float * GenerateFloatArray(int NumVal, float StartVal, float FinishVal)
 {
   float *vls = new float[NumVal];
 
+  float val;
   for (int i = 0; i < NumVal; i++)
   {
-    float val = pnlRand(StartVal, FinishVal);
+    val = pnlRand(StartVal, FinishVal);
     (vls)[i] = val; 
   }
 
@@ -198,8 +199,8 @@ CBNet* CreateGaussianExample(void)
     
   pCPD = CGaussianCPD::Create( domain1, 2, pMD );
   
-	const float *pData = weightNode1;
-	pCPD->AllocDistribution( &meanNode1, &covNode1, 0.5f, &pData );
+  const float *pData = weightNode1;
+  pCPD->AllocDistribution( &meanNode1, &covNode1, 0.5f, &pData );
   pBNet->AttachFactor(pCPD);
 
   float meanNode2 = 1.0f ;
@@ -786,6 +787,7 @@ void SetRandomEvidences(CBNet* pBNet, CEMLearningEngine *pLearnEng,
   }
 
   pLearnEng->SetData(NumOfEvidences, m_pEv);
+  delete [] m_pEv;
 }
 // ----------------------------------------------------------------------------
 
@@ -830,6 +832,7 @@ void GenerateEvidence(CStaticGraphicalModel *pBNet, float StartVal,
   printf("\n");
 #endif
 
+  delete [] NumOfNodeVal;
 }
 // ----------------------------------------------------------------------------
 
@@ -853,6 +856,7 @@ void SetRandEvidences(CBNet* pBNet, CEMLearningEngine *pLearnEng,
   }
 
   pLearnEng->SetData(NumOfEvidences, m_pEv);
+  delete [] m_pEv;
 }
 
 CBNet* CreateFourNodeExample(void)
