@@ -201,17 +201,6 @@ bool WGraph::DelArc(const char *from, const char *to)
     return DelArc(INode(from), INode(to));
 }
 
-bool WGraph::IsValidINode(int iNode) const
-{
-    return iNode >= 0 && iNode < m_aNode.size() && m_abValid[iNode] != 0;
-}
-
-void WGraph::IndicesGraphToOuter(Vector<int> *outer, Vector<int> *iGraph)
-{
-    register int i = iGraph->size();
-    for(outer->resize(i); --i >= 0; (*outer)[i] = m_IndicesGraphToOuter[(*iGraph)[i]]);
-}
-
 int WGraph::INode(String &name) const
 {
     MapSI::const_iterator it = m_iNodeMap.find(name);
@@ -221,19 +210,6 @@ int WGraph::INode(String &name) const
 String& WGraph::NodeName(int iNode)
 {
     return IsValidINode(iNode) ? m_aNode[iNode]:m_Bad;
-}
-
-bool WGraph::SetNodeName(int iNode, String &name)
-{
-    if(IsValidINode(iNode))
-    {
-	m_iNodeMap.erase(NodeName(iNode));
-	m_iNodeMap[name] = iNode;
-	m_aNode[iNode] = name;
-	Notify(eChangeName, iNode);
-	return true;
-    }
-    return false;
 }
 
 Vector<String> WGraph::NodeNames(Vector<int> &aIndex) const
@@ -281,6 +257,19 @@ Vector<String> WGraph::Names(Vector<int> *paIndex) const
     return result;
 }
 
+bool WGraph::SetNodeName(int iNode, String &name)
+{
+    if(IsValidINode(iNode))
+    {
+	m_iNodeMap.erase(NodeName(iNode));
+	m_iNodeMap[name] = iNode;
+	m_aNode[iNode] = name;
+	Notify(eChangeName, iNode);
+	return true;
+    }
+    return false;
+}
+
 void WGraph::GetParents(Vector<int> *parents, int iNode) const
 {
     if(IsValidINode(iNode))
@@ -314,6 +303,17 @@ int WGraph::nChild(int iNode)
     }
     pnl::CGraph *graph = Graph();
     return graph->GetNumberOfChildren(IGraph(iNode));
+}
+
+void WGraph::IndicesGraphToOuter(Vector<int> *outer, Vector<int> *iGraph)
+{
+    register int i = iGraph->size();
+    for(outer->resize(i); --i >= 0; (*outer)[i] = m_IndicesGraphToOuter[(*iGraph)[i]]);
+}
+
+bool WGraph::IsValidINode(int iNode) const
+{
+    return iNode >= 0 && iNode < m_aNode.size() && m_abValid[iNode] != 0;
 }
 
 void WGraph::Reset(pnl::CGraph &graph)

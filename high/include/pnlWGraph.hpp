@@ -23,7 +23,14 @@ public:
 
     int nNode() const		// return number of nodes in graph
     { return m_aNode.size() - m_aUnusedIndex.size(); }
+
+    // Return pointer to pnl::CGraph. Construct it if need.
+    // If bForget is true - caller is responsible for deleting graph.
+    // If bForget is false - pointer to graph is saved inside object and may
+    // be deleted during further call of function
     pnl::CGraph *Graph(bool bForget = false);
+
+    // Following group of functions constructs graph
     int AddNode(String &nodeName);
     bool DelNode(int iNode);	// Assume that this operation is exotic
     bool AddArc(int from, int to);
@@ -31,24 +38,36 @@ public:
     bool DelArc(int from, int to);
     bool DelArc(const char *from, const char *to);
 
+    // translation: name of node => index
     int INode(String &name) const;
     int INode(const char *name) const { return INode(String(name)); }
     
+    // translation: name of node <= index
     String& NodeName(int iNode);
-    bool SetNodeName(int iNode, String &name);
     Vector<String> NodeNames(Vector<int> &aIndex) const;
     Vector<String> Names(Vector<int> *paIndex = 0) const;
 
+    // set new name for node 'iNode'
+    bool SetNodeName(int iNode, String &name);
+
+    // get information about parents or children for some node
     void GetParents(Vector<int> *parents, int iNode) const;
     int nParent(int iNode) const;
     void GetChildren(Vector<int> *children, int iNode);
     int nChild(int iNode);
 
+    // Graph has inner and outer node numbers.
+    // Any index - outer, if there isn't explicit note.
+    // But indices from pnl::CGraph or from Model differs from outer.
+    // It is inner indices. Such indices must be translated before use.
+    // Following functions perform translation between inner and outer views.
     int IGraph(int iNode) { return m_IndicesOuterToGraph.at(iNode); }
     void IndicesGraphToOuter(Vector<int> *outer, Vector<int> *iGraph);
 
+    // Return true if node index is valid
     bool IsValidINode(int iNode) const;
 
+    // Reset graph information (neighbours for each node) from the graph
     void Reset(pnl::CGraph &graph);
 
 protected:
@@ -65,9 +84,10 @@ private:
     pnl::CGraph *m_pGraph;	// graph representing current state (if exists)
     bool m_bTouched;		// if true and graph exists, then graph must be re-created
     String m_Bad;		// used as NULL (error may be checked somehow else)
-    Vector<int> m_IndicesGraphToOuter;
-    Vector<int> m_IndicesOuterToGraph;
-    Vector<char> m_abValid;
+    Vector<int> m_IndicesGraphToOuter;// map from inner to outer indices
+    Vector<int> m_IndicesOuterToGraph;// map from outer to inner indices
+    Vector<char> m_abValid;	// validity flag for nodes. This member mustn't be used
+				// in functions except {IsValidINode, AddNode, DelNode}
 };
 
 #endif //__PNLWGRAPH_HPP__
