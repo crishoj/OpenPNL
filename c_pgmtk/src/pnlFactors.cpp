@@ -21,6 +21,7 @@
 #include "pnlGaussianPotential.hpp"
 #include "pnlMixtureGaussianCPD.hpp"
 #include "pnlScalarPotential.hpp"
+#include "pnlSoftMaxCPD.hpp"
 
 PNL_USING
 
@@ -125,6 +126,14 @@ CFactors::CFactors(const CFactors& rFactors)
                             static_cast<CMixtureGaussianCPD *>(*factIt));
                         break;
                     }
+
+                    case dtSoftMax:
+                    {
+                        *cpFactIt = CSoftMaxCPD::Copy(
+                            static_cast<CSoftMaxCPD *>(*factIt));
+                        break;
+                    }
+
                     default:
                     {
                         PNL_THROW( CNotImplemented,
