@@ -810,6 +810,95 @@ void CTabularDistribFun :: MarginalizeData( const CDistribFun *pOldData,
     AttachMatrix(matRes, matTable);
 }
 
+void CTabularDistribFun::SumInSelfData(const int *pBigDomain,
+  const int *pSmallDomain, const CDistribFun *pOtherData)
+{
+  PNL_CHECK_IS_NULL_POINTER(pBigDomain);
+  PNL_CHECK_IS_NULL_POINTER(pSmallDomain);
+  PNL_CHECK_IS_NULL_POINTER(pOtherData);
+  
+  if (!IsValid() || !pOtherData->IsValid())
+  {
+    PNL_THROW(CInvalidOperation, "multiply invalid data");
+  }
+  EDistributionType dtOther = pOtherData->GetDistributionType();
+  if ((dtOther != dtTabular) && (dtOther != dtScalar))
+  {
+    PNL_THROW(CInvalidOperation, "we can multiply only tabulars")
+  }
+  
+  int smIsUnit = pOtherData->IsDistributionSpecific();
+  //check if small distribution is Unit function or scalar - do nothing
+  if ((dtOther == dtScalar) || (smIsUnit == 1))
+  {
+    return;
+  }
+
+  int smallNumNodes = pOtherData->GetNumberOfNodes();
+  
+  int location;
+  int uniFlag = 0;
+  float uniVal = 0.0f;
+  if (m_bUnitFunctionDistribution)
+  {
+    int smallNumNodes = pOtherData->GetNumberOfNodes();
+    if (m_NumberOfNodes == smallNumNodes)
+    {
+      // we need to copy small distribFun in self
+      // check the order of nodes in domain before and reduce if its need
+      // find order of small in big and rearrange dims
+      intVector orderOfSmallInBig;
+      orderOfSmallInBig.assign(smallNumNodes, 0);
+      for (int i = 0; i < smallNumNodes; i++)
+      {
+        location = std::find(pSmallDomain, 
+          pSmallDomain + m_NumberOfNodes, pBigDomain[i]) - pSmallDomain;
+        if (location < m_NumberOfNodes)
+        {
+          orderOfSmallInBig[i] = location;
+        }
+      }
+      m_bUnitFunctionDistribution = 0;
+      m_pMatrix = pOtherData->GetMatrix(matTable)->ReduceOp(
+        &orderOfSmallInBig.front(), m_NumberOfNodes, 0, NULL, m_pMatrix);
+
+      return;
+    }
+    else
+    {
+      m_bUnitFunctionDistribution = 0;
+      m_pMatrix->SetUnitData();
+      uniFlag = 1;
+      uniVal = 1.0f;
+    }
+  }
+  intVector orderOfBigInSmall;
+  orderOfBigInSmall.assign( smallNumNodes, 0);
+  if ((smallNumNodes == 1) && (m_NumberOfNodes == 2))
+  {
+    if (pBigDomain[0] == pSmallDomain[0])
+    {
+      orderOfBigInSmall[0] = 0;
+    }
+    else
+    {
+      //we suppose the domain are corresponds - the check is at CPotential level
+      orderOfBigInSmall[0] = 1;
+    }
+  }
+  for (int i = 0; i < smallNumNodes; i++)
+  {
+    location = std::find(pBigDomain, 
+      pBigDomain + m_NumberOfNodes, pSmallDomain[i] ) - pBigDomain;
+    if (location < m_NumberOfNodes)
+    {
+      orderOfBigInSmall[i] = location;
+    }
+  }
+  CMatrix<float> *pSmallMatrix = pOtherData->GetMatrix(matTable);
+  m_pMatrix->SumInSelf(pSmallMatrix, orderOfBigInSmall.size(), 
+    &orderOfBigInSmall.front(), uniFlag, uniVal);
+}
 
 void CTabularDistribFun::MultiplyInSelfData( const int *pBigDomain, 
                                              const int *pSmallDomain, const CDistribFun *pOtherData )
