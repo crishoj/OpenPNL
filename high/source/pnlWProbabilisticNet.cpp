@@ -485,8 +485,9 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
     {
 	loader->AutoDelete(model);
     }
+
     if(!pCovNet)
-    {
+    {// Loading of PNL's model
 	int iNode, iValue;
 	String nodeName;
 	String aValue;
@@ -507,8 +508,27 @@ ProbabilisticNet* ProbabilisticNet::LoadNet(pnl::CContextPersistence *loader)
 		}
 		aValue << "State" << iValue;
 	    }
+   pnl::EIDNodeState ns = nt.GetNodeState();
 
-	    net->AddNode((nt.IsDiscrete() ? discrete:continuous) ^ nodeName, aValue);
+        TokArr *classificator;
+
+        if(!nt.IsDiscrete())
+        {
+            classificator = &continuous;
+        }
+        else // discrete
+        {
+            switch(ns)
+            {
+            case pnl::nsChance:   classificator = &chance;    break;
+            case pnl::nsDecision: classificator = &decision;  break;
+            case pnl::nsValue:    classificator = &value;     break;
+            default: ThrowInternalError("Unknown node state", "LoadNet");break;
+            }
+        }
+        net->AddNode(*classificator ^ nodeName, aValue);
+	
+//        net->AddNode((nt.IsDiscrete() ? discrete:continuous) ^ nodeName, aValue);
 	}
     }
     else
@@ -1207,7 +1227,7 @@ pnl::CGraphicalModel *ProbabilisticNet::Model()
     {
 	m_Model = m_pCallback->CreateModel(*this);
     }
-
+ 
     return m_Model;
 }
 
