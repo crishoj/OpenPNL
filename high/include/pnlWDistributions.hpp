@@ -23,11 +23,22 @@ public:
     virtual void ApplyNew(int iNode);
     WDistribFun *Distribution(int iNode)
     {
-	if(!m_aDistribution[iNode])
+	if(IsMRF())
 	{
-	    Setup(iNode);
+	    if(!m_aDistribution[iNode])
+	    {
+		SetupNew(iNode);
+	    }
+	    ApplyNew(iNode);
 	}
-	Apply(iNode);
+	else
+	{
+	    if(!m_aDistribution[iNode])
+	    {
+		Setup(iNode);
+	    }
+	    Apply(iNode);
+	}
 	return m_aDistribution[iNode];
     }
     void DropDistribution(int iNode);
