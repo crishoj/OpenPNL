@@ -3,10 +3,10 @@
 
 PNLW_BEGIN
 
-void DumpMap(Map *HashTable)
+void DumpMap(WCliques::Map *HashTable)
 {
     cout << endl;
-    Map::iterator it;
+    WCliques::Map::iterator it;
     for(it = HashTable->begin(); it != HashTable->end(); it++)
     {
         cout << it->first << "  " << it->second << endl;

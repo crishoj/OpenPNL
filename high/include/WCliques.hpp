@@ -8,17 +8,19 @@ PNLW_BEGIN
 // FORWARDS
 class WGraph;
 
-typedef std::multimap<int, int> Map;
-
 class PNLHIGH_API WCliques: public ModelEngine
 {
 public:
+    typedef std::multimap<int, int> Map;
+
     WCliques(WGraph *graph);
     bool FormClique(const Vector<int> &aIndex);
     bool DestroyClique(const Vector<int> &aIndex);
     Vector<int> ClqNumbersForNode(int iNode);
     int nClique() const { return m_aCliques.size(); }
     Vector<Vector<int> > Cliques() const { return m_aCliques; }
+    void GetClique(int iClique, Vector<int> *pClique) const
+    { *pClique = m_aCliques[iClique]; }
 
 public:// inlines for access to object fields
     WGraph *Graph() const { return m_pGraph; }
