@@ -20,10 +20,6 @@
 
 #include "pnlDynamicInferenceEngine.hpp"
 
-#ifdef PNL_RTTI
-#include "pnlpnlType.hpp"
-#endif 
-
 PNL_BEGIN
 
 class PNL_API C2TBNInfEngine : public CDynamicInfEngine
@@ -43,27 +39,13 @@ public:
 	const CPotential* GetQueryJPD()=0;
 	const CEvidence* GetMPE() = 0;
 	void Filtering(int time);
+	void Prediction(int time);
 	void Smoothing();
 	void FixLagSmoothing(int time);
     virtual void FindMPE();
 
-#ifdef PNL_RTTI
-    virtual const CPNLType &GetTypeInfo() const
-    {
-      return GetStaticTypeInfo();
-    }
-    static const CPNLType &GetStaticTypeInfo()
-    {
-      return C2TBNInfEngine::m_TypeInfo;
-    }
-#endif
-
 protected:
 	C2TBNInfEngine( const CDynamicGraphicalModel *pGraphicalModel );
-
-#ifdef PNL_RTTI
-    static const CPNLType m_TypeInfo;
-#endif
 };
 
 PNL_END

@@ -652,6 +652,16 @@ for( slice = 1; slice &lt; nTimeSlices; slice++ )
     std::cout&lt;&lt;" Query slice "&lt;&lt;slice&lt;&lt;std::endl;
     pQueryJPD-&gt;Dump();
 }
+//create prediction procedure (it is used only after filtering)
+int delta = 2;
+pInfEng-&gt;DefineProcedure( ptPrediction );
+pInfEng->Prediction(delta);
+
+pInfEng->MarginalNodes( query, querySize, nTimeSlices + delta);
+pQueryJPD = pInfEng->GetQueryJPD();
+std::cout<<" Query slice "<<(slice + delta)<<std::endl;
+pQueryJPD->Dump();
+ 
 //Create fixed-lag smoothing (online)
 int lag = 2;
 pInfEng-&gt;DefineProcedure( ptFixLagSmoothing, lag );

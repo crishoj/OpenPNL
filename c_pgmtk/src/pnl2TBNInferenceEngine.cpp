@@ -27,6 +27,7 @@ CDynamicInfEngine(  pGraphicalModel )
 	
 }
 
+
 C2TBNInfEngine::~C2TBNInfEngine()
 {
 }
@@ -46,6 +47,38 @@ void C2TBNInfEngine::Filtering(int time)
 	}
 	BackwardT();
 }
+
+void C2TBNInfEngine::Prediction(int time)
+{
+	if (time > 0)
+	{
+		const intVector n(0);
+		const valueVector v(0);
+		int i;
+		int startTime = m_CurrentTime;
+		for(i = startTime + 1; i <= startTime + time; i++)
+		{
+			CEvidence *clEvid = CEvidence::Create(GrModel()->GetModelDomain(),n,v);
+			if(time == 0)
+			{
+				ForwardFirst(clEvid);
+			}
+			else
+			{
+				Forward(clEvid);
+			}
+			BackwardT();
+			delete clEvid;
+		}
+	}
+	else
+	{
+		PNL_THROW
+            (COutOfRange, 
+            "prediction time must be more than 0")	
+	}
+}
+
 void C2TBNInfEngine::Smoothing()
 {
 	CRing<CEvidence *>::iterator evIter = m_CRingpEv.begin();
@@ -117,8 +150,3 @@ void C2TBNInfEngine::FixLagSmoothing(int time)
     }
     
 }
-
-#ifdef PNL_RTTI
-const CPNLType C2TBNInfEngine::m_TypeInfo = CPNLType("C2TBNInfEngine", &(CDynamicInfEngine::m_TypeInfo));
-
-#endif

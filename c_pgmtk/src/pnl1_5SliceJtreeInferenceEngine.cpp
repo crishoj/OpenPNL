@@ -44,27 +44,15 @@ C1_5SliceJtreeInfEngine(const CDynamicGraphicalModel *pGraphicalModel):
 
     
     const int *subgrToConnect[] = { &GetIntNdsPriorSlice()->front() };
-#ifdef PAR_OMP
     if( nIntNds > 1)
     {
-        m_pPriorSliceJtreeInf = CParJtreeInfEngine::Create( GetPriorSliceBNet(),
-        	1, &nIntNds, subgrToConnect );
+	m_pPriorSliceJtreeInf = CJtreeInfEngine::Create( GetPriorSliceBNet(),
+	1, &nIntNds, subgrToConnect );
     }
     else
     {
-	    m_pPriorSliceJtreeInf = CParJtreeInfEngine::Create( GetPriorSliceBNet() );
+	m_pPriorSliceJtreeInf = CJtreeInfEngine::Create( GetPriorSliceBNet() );
     }
-#else
-    if( nIntNds > 1)
-    {
-        m_pPriorSliceJtreeInf = CJtreeInfEngine::Create( GetPriorSliceBNet(),
-        	1, &nIntNds, subgrToConnect );
-    }
-    else
-    {
-	    m_pPriorSliceJtreeInf = CJtreeInfEngine::Create( GetPriorSliceBNet() );
-    }
-#endif
 
     int numOfCliques;
     const int* cliques;
@@ -81,19 +69,6 @@ C1_5SliceJtreeInfEngine(const CDynamicGraphicalModel *pGraphicalModel):
     intVector SubGrToConnectSizes;
     SubGrToConnectSizes.assign( numOfSubGrToConect, nIntNds );
 
-#ifdef PAR_OMP    
-    if( nIntNds > 1)
-    {
-	m_p1_5SliceJtreeInf = CParJtreeInfEngine::
-	    Create( Get1_5SliceBNet(), numOfSubGrToConect,
-	    &SubGrToConnectSizes.front(), &SubGrToConnect.front());
-    }
-    else
-    {
-	m_p1_5SliceJtreeInf = CParJtreeInfEngine::
-	    Create( Get1_5SliceBNet() );
-    }
-#else
     if( nIntNds > 1)
     {
 	m_p1_5SliceJtreeInf = CJtreeInfEngine::
@@ -105,7 +80,6 @@ C1_5SliceJtreeInfEngine(const CDynamicGraphicalModel *pGraphicalModel):
 	m_p1_5SliceJtreeInf = CJtreeInfEngine::
 	    Create( Get1_5SliceBNet() );
     }
-#endif
 
     PNL_CHECK_IF_MEMORY_ALLOCATED(m_p1_5SliceJtreeInf);
 
@@ -128,11 +102,7 @@ C1_5SliceJtreeInfEngine::~C1_5SliceJtreeInfEngine()
 
     if( m_CRingJtreeInf.size() )
     {
-#ifdef PAR_OMP 
-	CRing<CParJtreeInfEngine *>::iterator beginIter = m_CRingJtreeInf.begin();
-#else
 	CRing<CJtreeInfEngine *>::iterator beginIter = m_CRingJtreeInf.begin();
-#endif
 
 	m_JTreeInfIter = beginIter;
 
@@ -239,6 +209,14 @@ DefineProcedure( EProcedureTypes procedureType, int lag )
 	    break;
 	}
 
+	case ptPrediction:
+	{
+	    PNL_CHECK_FOR_NON_ZERO( lag );
+	    m_Lag = 0;
+	    m_ProcedureType = ptPrediction;
+	    break;
+	}
+
     case ptFixLagSmoothing:
 	{
 	    PNL_CHECK_LEFT_BORDER( lag, 0 );
@@ -275,6 +253,7 @@ DefineProcedure( EProcedureTypes procedureType, int lag )
 
 }
 
+
 void C1_5SliceJtreeInfEngine::ForwardFirst(const CEvidence *pEvidence, int maximize )
 {
     //////////////////////////////////////////////////////////////////////////
@@ -288,15 +267,9 @@ void C1_5SliceJtreeInfEngine::ForwardFirst(const CEvidence *pEvidence, int maxim
 	PNL_THROW(CAlgorithmicException, "it must be initial step")
     }
 
-#ifdef PAR_OMP
-    (*m_JTreeInfIter) = CParJtreeInfEngine::Copy(m_pPriorSliceJtreeInf);
-    (*m_JTreeInfIter)->ShrinkObservedOMP( pEvidence, maximize );
-    (*m_JTreeInfIter)->CollectEvidenceOMP();
-#else
     (*m_JTreeInfIter) = CJtreeInfEngine::Copy(m_pPriorSliceJtreeInf);
     (*m_JTreeInfIter)->ShrinkObserved( pEvidence, maximize );
     (*m_JTreeInfIter)->CollectEvidence();
-#endif
 
 
     ///////////////////////////////////////////////////////////////////////
@@ -368,51 +341,27 @@ void C1_5SliceJtreeInfEngine::Forward(const CEvidence *pEvidence, int maximize )
     //create jtree inference using obtained jtree and do collect
     //////////////////////////////////////////////////////////////////////////
 
-#ifdef PAR_OMP 
     if( *m_JTreeInfIter )
     {
-    	if( (*m_JTreeInfIter)->GetModel()->GetNumberOfNodes() == GetPriorSliceBNet()->GetNumberOfNodes() )
-	    {
-	        //CJtreeInfEngine::Release(&(*m_JTreeInfIter));
-             delete (*m_JTreeInfIter);
-	        (*m_JTreeInfIter) = NULL;
-	        (*m_JTreeInfIter) = CParJtreeInfEngine::Copy(m_p1_5SliceJtreeInf);
-	        (*m_JTreeInfIter)->ShrinkObservedOMP( pEvidence, maximize );
-	    }
-	    else
-	    {
-
-	        (*m_JTreeInfIter)->ShrinkObservedOMP( pEvidence, maximize );
-	    }
-    }
-    else
-    {
-	    (*m_JTreeInfIter) = CParJtreeInfEngine::Copy(m_p1_5SliceJtreeInf);
-	    (*m_JTreeInfIter)->ShrinkObservedOMP( pEvidence, maximize );
-    }
-#else
-    if( *m_JTreeInfIter )
-    {
-    	if( (*m_JTreeInfIter)->GetModel()->GetNumberOfNodes() == GetPriorSliceBNet()->GetNumberOfNodes() )
-	    {
-	        //CJtreeInfEngine::Release(&(*m_JTreeInfIter));
-             delete (*m_JTreeInfIter);
-	        (*m_JTreeInfIter) = NULL;
-	        (*m_JTreeInfIter) = CJtreeInfEngine::Copy(m_p1_5SliceJtreeInf);
-	        (*m_JTreeInfIter)->ShrinkObserved( pEvidence, maximize );
-	    }
-	    else
-	    {
-
-	        (*m_JTreeInfIter)->ShrinkObserved( pEvidence, maximize );
-	    }
-    }
-    else
-    {
+	if( (*m_JTreeInfIter)->GetModel()->GetNumberOfNodes() == GetPriorSliceBNet()->GetNumberOfNodes() )
+	{
+	    //CJtreeInfEngine::Release(&(*m_JTreeInfIter));
+            delete (*m_JTreeInfIter);
+	    (*m_JTreeInfIter) = NULL;
 	    (*m_JTreeInfIter) = CJtreeInfEngine::Copy(m_p1_5SliceJtreeInf);
 	    (*m_JTreeInfIter)->ShrinkObserved( pEvidence, maximize );
+	}
+	else
+	{
+
+	    (*m_JTreeInfIter)->ShrinkObserved( pEvidence, maximize );
+	}
     }
-#endif
+    else
+    {
+	(*m_JTreeInfIter) = CJtreeInfEngine::Copy(m_p1_5SliceJtreeInf);
+	(*m_JTreeInfIter)->ShrinkObserved( pEvidence, maximize );
+    }
 
 
     if( *m_DistrOnSepIter )
@@ -422,11 +371,7 @@ void C1_5SliceJtreeInfEngine::Forward(const CEvidence *pEvidence, int maximize )
 	(*m_JTreeInfIter)->MultJTreeNodePotByDistribFun( m_interfaceClique,
 	    &domain.front(), (*m_DistrOnSepIter)->GetDistribFun() );
     }
-#ifdef PAR_OMP
-    (*m_JTreeInfIter)->CollectEvidenceOMP();
-#else
     (*m_JTreeInfIter)->CollectEvidence();
-#endif
 
     m_CurrentTime++;
 
@@ -478,11 +423,7 @@ void C1_5SliceJtreeInfEngine::BackwardT()
     //////////////////////////////////////////////////////////////////////////
     // first backward step after last forward step
     //////////////////////////////////////////////////////////////////////////
-#ifdef PAR_OMP
-    (*m_JTreeInfIter)->DistributeEvidenceOMP();
-#else
     (*m_JTreeInfIter)->DistributeEvidence();
-#endif
 }
 
 
@@ -497,23 +438,13 @@ void C1_5SliceJtreeInfEngine::BackwardFixLag()
     {
 	int currentTimeTmp = m_CurrentTime;
 
-#ifdef PAR_OMP
-    CRing<CParJtreeInfEngine *>::iterator m_JTreeInfIterTmp = m_JTreeInfIter;
-	CRing<CPotential *>::iterator m_DistrOnSepIterTmp = m_DistrOnSepIter;
-
-	CRing<CParJtreeInfEngine*> pCRingJtreeInfTmp;
-	pCRingJtreeInfTmp.assign( 2,NULL );
-	CRing<CParJtreeInfEngine *>::iterator JtreeInfTmpIter = pCRingJtreeInfTmp.begin();
-	*JtreeInfTmpIter = CParJtreeInfEngine::Copy( *m_JTreeInfIter );
-#else
-    CRing<CJtreeInfEngine *>::iterator m_JTreeInfIterTmp = m_JTreeInfIter;
+	CRing<CJtreeInfEngine *>::iterator m_JTreeInfIterTmp = m_JTreeInfIter;
 	CRing<CPotential *>::iterator m_DistrOnSepIterTmp = m_DistrOnSepIter;
 
 	CRing<CJtreeInfEngine*> pCRingJtreeInfTmp;
 	pCRingJtreeInfTmp.assign( 2,NULL );
 	CRing<CJtreeInfEngine *>::iterator JtreeInfTmpIter = pCRingJtreeInfTmp.begin();
 	*JtreeInfTmpIter = CJtreeInfEngine::Copy( *m_JTreeInfIter );
-#endif
 
 	CPotential *pPotTmp = NULL;
 	BackwardT();
@@ -523,11 +454,7 @@ void C1_5SliceJtreeInfEngine::BackwardFixLag()
 	    if( t < m_Lag - 1 )
 	    {
 		JtreeInfTmpIter++;
-#ifdef PAR_OMP
-        *JtreeInfTmpIter = CParJtreeInfEngine::Copy(*(m_JTreeInfIter-1));
-#else
-        *JtreeInfTmpIter = CJtreeInfEngine::Copy(*(m_JTreeInfIter-1));
-#endif
+		*JtreeInfTmpIter = CJtreeInfEngine::Copy(*(m_JTreeInfIter-1));
 		JtreeInfTmpIter++;
 	    }
 
@@ -663,11 +590,7 @@ void C1_5SliceJtreeInfEngine::Backward( int maximize )
     }
     /////////////////////////////////////////////////////////////////////////
     // do distribute evidence for current jtree
-#ifdef PAR_OMP
-    (*m_JTreeInfIter)->DistributeEvidenceOMP();
-#else
     (*m_JTreeInfIter)->DistributeEvidence();
-#endif
 }
 
 
@@ -675,7 +598,8 @@ const CPotential* C1_5SliceJtreeInfEngine::GetQueryJPD()
 {
     if( m_ProcedureType != ptFiltering &&
 	m_ProcedureType != ptSmoothing &&
-	m_ProcedureType != ptFixLagSmoothing )
+	m_ProcedureType != ptFixLagSmoothing &&
+	m_ProcedureType != ptPrediction )
     {
 	PNL_THROW( CInvalidOperation,
 	    " you have not been computing the Query JPD ");
@@ -759,6 +683,7 @@ MarginalNodes( const int *query, int querySize, int slice, int notExpandJPD )
     switch( m_ProcedureType )
     {
     case ptFiltering:
+	case ptPrediction:
 	{
 	    m_QuerrySlice = 0;
 	    FindFinalQuery( queryVec, m_CurrentTime - 1, &finalQuery);
@@ -985,9 +910,3 @@ FindNonObsSubset(const intVector &subset, const CEvidence *evidence,
 	}
     }
 }
-
-
-#ifdef PNL_RTTI
-const CPNLType C1_5SliceJtreeInfEngine::m_TypeInfo = CPNLType("C1_5SliceJtreeInfEngine", &(C1_5SliceInfEngine::m_TypeInfo));
-
-#endif
