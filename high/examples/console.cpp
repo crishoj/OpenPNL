@@ -254,6 +254,7 @@ FuncDesc aFuncDesc[] =
 ,   "gaussianmean", eGaussianMean,true, 1, 1, 0
 ,   "gaussiancovar", eGaussianCovar, true, 1, 2, 0 
 ,   "setgaussian",  eSetGaussian, false, 0, 4, 3
+,   "setproperty", eSetProperty, false, 0, 2, 0
 ,   "jpd",          eJPD,       true, 1, 1, 0 
 // build-in commands
 ,   "execute",	    -1,		false, 0, 1, 0
@@ -463,6 +464,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eLearnStructure:BNet().LearnStructure(0, 0); break;
         case eGaussianMean: Print(BNet().GaussianMean(args[0]));break;
         case eGaussianCovar: Print(BNet().GaussianCovar(args[0], args[1]));break;
+	case eSetProperty:  BNet().SetProperty(args[0].c_str(), args[1].c_str()); break;
         case eSetGaussian: 
             {
                 TokArr arg1;

@@ -45,6 +45,7 @@ typedef enum
 ,   eLearnStructure
 ,   eGaussianMean
 ,   eGaussianCovar
+,   eSetProperty
 };
 
 typedef enum
