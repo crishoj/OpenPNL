@@ -101,6 +101,7 @@ CPersistenceZoo *GetZoo()
         new CPersistCondSoftMaxDistribFun();
         new CPersistScalarDistribFun();
         new CPersistModelDomain();
+        new CPersistDBN();
         new CPersistBNet();
         new CPersistIDNet();
         new CPersistMNet();
