@@ -4,6 +4,9 @@
 #include <string>
 #include "pnlHighConf.hpp"
 #include "pnlTok.hpp"
+#include "Wcsv.hpp"
+#include "BNet.hpp"
+
 
 // FORWARDS
 PNLW_BEGIN
@@ -104,6 +107,8 @@ public:
     
     // learn using evidences buffer
     void LearnParameters();
+
+    BayesNet* Unroll();
 
     // returns MPE for nodes using current evidence
     TokArr GetMPE(TokArr nodes = TokArr());

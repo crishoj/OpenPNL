@@ -381,11 +381,13 @@ TokArr DBN::GetJPD( TokArr nodes)
             res << "distribution";
         }
     }
-    if (nSlice <= 1)  
+    /*
+	if (nSlice <= 1)  
     {
 	Net().Token()->Resolve(res);
     }
-    res = ConvertBNetQueToDBNQue(res,nSlice); 
+     */
+	res = ConvertBNetQueToDBNQue(res,nSlice);
     return res;	
 }
 
@@ -578,10 +580,12 @@ TokArr DBN::GetMPE(TokArr nodes)
         else
 	    result.push_back(v.GetFlt());
     }
-    if (nSlice <= 1)  
+    /*
+	if (nSlice <= 1)  
     {
 	Net().Token()->Resolve(result);
     }
+	*/
     result = ConvertBNetQueToDBNQue(result,nSlice);
     return result;
 }
@@ -1247,6 +1251,41 @@ TokArr DBN::GetChildren(TokArr nodes)
 	}
     }
     return nodesChildren;
+}
+
+BayesNet* DBN::Unroll()
+{
+    int nNodes = Model()->GetNumberOfNodes();
+    int i,j,k;
+    String tmpName, newName,fullName;
+
+    BayesNet* pNet;
+    pNet = new BayesNet();
+    Vector<String> values;
+    for(i = 0; i < GetNumSlices(); i++)
+    {
+	for(j = 0; j < nNodes; j++)
+	{
+	    tmpName = Net().Graph()->NodeName(j);
+	    newName = GetShortName(tmpName);
+	    newName<<"-";
+	    fullName = Net().GetNodeType(tmpName); 
+	    char c[2];  
+	    itoa(i,c,10);
+	    newName.append(c,strlen(c));
+	    fullName<<"^";
+	    fullName.append(newName.c_str(),newName.length());
+	    Net().Token()->GetValues(j,values);
+		TokArr nodeValues;
+	    for(k = 0; k < values.size(); k++)
+	    {
+	    nodeValues<<values[k];
+	    }
+	    pNet->AddNode(fullName,nodeValues);
+	}
+    }
+    pNet->Net().SetModel(Model()->UnrollDynamicModel(GetNumSlices()));
+    return pNet;
 }
 
 PNLW_END

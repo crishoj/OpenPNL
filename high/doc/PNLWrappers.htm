@@ -205,7 +205,10 @@ rel=STYLESHEET>
     href="#decl_SetPTabular_DBN">SetPTabular</A> 
 
     <LI><A 
-    href="#decl_SetNumSlices_DBN">SetNumSlices</A> 	
+    href="#decl_SetNumSlices_DBN">SetNumSlices</A> 
+
+    <LI><A 
+     href="#decl_Unroll_DBN">Unroll</A> 	
 
     </LI></UL>
   </UL>
@@ -1459,7 +1462,7 @@ The following functional groups can be distinguished:
     <A href="#decl_SetProperty_DBN">SetProperty</A>,
     <A href="#decl_GetProperty_DBN">GetProperty</A>
     <A href="#decl_SetNumSlices_DBN">SetNumSlices</A>
-    <A href="#decl_GetNumSlices_DBN">GetNumSlices</A>  		
+    <A href="#decl_Unroll_DBN">Unroll</A>   		
     
     <LI>Learning parameters<BR>
     <A href="#decl_LearnParameters_DBN">LearnParameters</A>
@@ -2282,6 +2285,28 @@ Example of usage
 </H5>
 <p class="example">
 TokArr CovarNodeA0 = dbn.GetGaussianCovar("NodeA-0");
+</P>
+<HR>
+
+<H3><A 
+name=decl_Unroll_DBN>Unroll</A></H3>
+<P class=Blurb>Unrolls current Dynamic Bayessian Network
+</P>
+<font class="interface">
+BayesNet* Unroll();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function unrolls current DBN. 
+</font>
+<H5>
+Example of usage
+</H5>
+<p class="description">
+Unrolling DBN :
+</p>
+<p class="example">
+BayesNet *pnet;<br> 
+pnet = dbn.Unroll();
 </P>
 <HR>
 

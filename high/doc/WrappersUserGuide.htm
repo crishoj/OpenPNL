@@ -850,6 +850,7 @@ net.editEvidence("x^First^0.4 x^Second^0.6 y^Third^-17.34");
 <p>
 In the example we create the network shown below:
 </p>
+<h4><a name="Formula3">Figure 3.</a></h4>
 <img align=center src="Formula3.gif">
 <p>
 where x0 and z is one-dimensional variable, x has two dimensions, and x2 and y have 3 dimensions.
@@ -901,10 +902,10 @@ Here we are going to discuss some limitations of work with Bayesian nets.
 
 <h1><a name="DiscreteDBN">Dynamic Bayesian Networks with discrete nodes</a></h1>
 We are going to analyze Dynamic Bayesian Network functioning by following example. 
-<br>The graph structure of the model  is shown in Figure 1:
+<br>The graph structure of the model  is shown in Figure 4:
 </P>
 <hr>
-<h4><a name="Street-House-Flat">Figure1. Street - House - Flat model</a></h4>
+<h4><a name="Street-House-Flat">Figure 4. Street - House - Flat model</a></h4>
 <img align=center src="DBN.gif">
 <p>
 All nodes are discrete and can take on two values: true or false.
@@ -927,9 +928,9 @@ Now network is empty. We have to add nodes and edges.
 
 <h3><a name="AddNodesDiscrDBN">Adding nodes</a></h3>
 <p>
-Users has to create 0 and 1 slice topology and connect slices for DBN creation. (see Figure 2.)
+Users has to create 0 and 1 slice topology and connect slices for DBN creation. (see Figure 5.)
 <hr>
-<h4><a name="Street-House-Flat">Figure2. 0 and 1 slices of Street - House - Flat model</a></h4>
+<h4><a name="Street-House-Flat">Figure 5. 0 and 1 slices of Street - House - Flat model</a></h4>
 <img align=center src="2slicesOfDBN.gif">
 <p>Method AddNode is used to add new node to the network:
 <p>
@@ -1223,7 +1224,7 @@ TokArr Street0House0MPE = dbn.GetJPD("Street-0 House-0");
 Consider the Dynamic Bayesian Network.
 </p>
 <hr>
-<h4><a name="DBN1">Figure 1. Simple model with continuous nodes</a></h4>
+<h4><a name="DBN1">Figure 6. Simple model with continuous nodes</a></h4>
 <img  src="DBN.gif">
 <p>All nodes are continuous and have only one dimension.
 </p>
@@ -1380,10 +1381,10 @@ TokArr House0MPE = dbn.GetMPE("House-0");
 <hr>
 
 <h1><a name="LIMID">LImited Memory Influence Diagrams</a></h1>
-We are going to analyze LIMID functionality by the well-known example of "PIGS" (Steffen L. Lauritzen, Dennis Nilsson Representing and Solving Decision Problems with Limited Information, 2001). <br>The graph structure of the model is shown in Figure 3:
+We are going to analyze LIMID functionality by the well-known example of "PIGS" (Steffen L. Lauritzen, Dennis Nilsson Representing and Solving Decision Problems with Limited Information, 2001). <br>The graph structure of the model is shown in Figure 7:
 </P>
 <hr>
-<h4><a name="figWaterSprinkler">Figure 3. Model "Pigs"</a></h4>
+<h4><a name="figWaterSprinkler">Figure 7. Model "Pigs"</a></h4>
 <img align=center src="pigs.gif">
 <hr>
 
