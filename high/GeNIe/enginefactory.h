@@ -8,6 +8,7 @@
 // extern "C" __declspec(dllexport) IEngineFactory* __cdecl GetFactory();
 
 class INetwork;
+class ILearning;
 class IStructureMatrix;
 class IMechLibrary;
 class IXmlReader;
@@ -17,6 +18,7 @@ class IEngineFactory
 {
 public:
 	virtual INetwork* CreateNetwork() = 0;
+	virtual ILearning* CreateLearning() = 0;
 	virtual IStructureMatrix* CreateStructureMatrix() = 0;
 	virtual IMechLibrary* CreateMechLibrary() = 0;
 	virtual IXmlReader* CreateXmlReader() = 0;

@@ -1,7 +1,7 @@
-// network.h
 #ifndef GENIE_INTERFACES_NETWORK_H
 #define GENIE_INTERFACES_NETWORK_H
 
+// network.h
 class ISerializer;
 class IErrorOutput;
 class IXmlWriterExtension;
@@ -84,6 +84,8 @@ public:
 	
 	virtual IDiagNetwork* CreateDiagNetwork() = 0;
 	virtual void SetEntropyCostRatio(double alpha, double alphaMax) = 0;
+	virtual void SetDiagPreferences(unsigned int prefs) = 0;
+	virtual unsigned int GetDiagPreferences() = 0;
 
 	virtual ISearchForOpportunities* CreateSfo() = 0;
 
@@ -148,6 +150,7 @@ public:
 	virtual int GetNodeValueStatus(int node) = 0;
 	virtual bool GetMinMaxUtility(int node, double &minUtility, double &maxUtility) = 0;
 	
+
 	virtual void GetProperties(int node, PropertyMap &map) = 0;
 
 	// MUTATORS
@@ -160,7 +163,6 @@ public:
 	virtual void SetOutcomeIds(int node, const std::vector<std::string> &ids) = 0;
 	virtual bool SetOutcomeLabel(int node, int outcomeIndex, const char *label) = 0;
 	virtual void SetOutcomeLabels(int node, const std::vector<std::string> &labels) = 0;
-
 	virtual void SetEvidence(int node, int outcomeIndex) = 0;
 	virtual void ClearEvidence(int node) = 0;
 	virtual void SetControlledValue(int node, int outcomeIndex) = 0;
@@ -168,6 +170,7 @@ public:
 	virtual bool IsControllable(int node) = 0;
 	virtual void SetTarget(int node, bool asTarget) = 0;
 	virtual void SetProperties(int node, const PropertyMap &map) = 0;
+	virtual void ObfuscateDefinition(int node, int algorithm, double param) = 0;
 
 	// Noisy-related functions
 	virtual void NoisyToCpt(
@@ -263,9 +266,6 @@ public:
 	virtual void SetDefaultOutcome(int node, int outcome) = 0;
 	virtual bool IsFaultOutcome(int node, int outcome) = 0;
 	virtual void SetFaultOutcome(int node, int outcome, bool fault) = 0;
-
-	// learning 
-	virtual bool LearnStructureAndParams(const char *dataFile, const char *networkFile) = 0;
 };
 
 #endif	// GENIE_INTERFACES_NETWORK_H

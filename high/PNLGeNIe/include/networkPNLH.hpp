@@ -79,6 +79,8 @@ public:
     
     virtual IDiagNetwork* CreateDiagNetwork();
     virtual void SetEntropyCostRatio(double alpha, double alphaMax);
+    virtual void SetDiagPreferences(unsigned int prefs);
+    virtual unsigned int GetDiagPreferences();
     
     virtual ISearchForOpportunities* CreateSfo();
     
@@ -163,6 +165,7 @@ public:
     virtual bool IsControllable(int node);
     virtual void SetTarget(int node, bool asTarget);
     virtual void SetProperties(int node, const PropertyMap &map);
+    virtual void ObfuscateDefinition(int node, int algorithm, double param);
     
     // Noisy-related functions
     virtual void NoisyToCpt(

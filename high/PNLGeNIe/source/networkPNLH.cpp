@@ -232,6 +232,17 @@ void NetworkPNL::SetEntropyCostRatio(double alpha, double alphaMax)
     return;
 }
 
+void NetworkPNL::SetDiagPreferences(unsigned int prefs)
+{
+    MarkCallFunction("SetDiagPreferences");
+}
+
+unsigned int NetworkPNL::GetDiagPreferences()
+{
+    MarkCallFunction("GetDiagPreferences");
+    return 0;
+}
+
 ISearchForOpportunities* NetworkPNL::CreateSfo()
 {
     MarkCallFunction("CreateSfo");
@@ -619,6 +630,12 @@ void NetworkPNL::SetProperties(int node, const PropertyMap &mp)
 {
     MarkCallFunction("SetProperties", true);
     m_aNodeProperty.at(node) = mp;
+}
+
+void NetworkPNL::ObfuscateDefinition(int node, int algorithm, double param)
+{
+    MarkCallFunction("ObfuscateDefinition", false,
+	(String()<< "Node #" << node << "; algo #" << algorithm << " ;param=" << param).c_str());
 }
 
 bool NetworkPNL::SetNodeId(int node, const char *id)

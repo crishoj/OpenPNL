@@ -64,6 +64,7 @@ class EngineFactoryPNLH: public IEngineFactory
 {
 public:
     virtual INetwork* CreateNetwork() { return new NetworkPNL; }
+    virtual ILearning* CreateLearning() { return 0; }
     virtual IStructureMatrix* CreateStructureMatrix() { return new StructureMatrixPNLH; }
     virtual IMechLibrary* CreateMechLibrary() { return 0; }
     virtual IXmlReader* CreateXmlReader() { return new XmlReaderPNLH; }
@@ -74,4 +75,3 @@ IEngineFactory *GetFactory()
 {
     return new EngineFactoryPNLH;
 }
-
