@@ -153,7 +153,10 @@ bool CStaticStructLearnSEM::LearnOneStep()
 		pEMLearn = CEMLearningEngine::Create(m_pCurrBNet, pInf);
 	}
 	else
-		pEMLearn = CEMLearningEngine::Create(m_pCurrBNet);
+    {
+        CJtreeInfEngine *pInf = CJtreeInfEngine::Create(m_pCurrBNet);
+        pEMLearn = CEMLearningEngine::Create(m_pCurrBNet, pInf);
+    }
 
 	int i;
 	for(i=0; i<decompsition.size(); i++)
@@ -165,7 +168,6 @@ bool CStaticStructLearnSEM::LearnOneStep()
 	
 	pEMLearn->SetMaxIterEM(m_IterEM);
 
-	pEMLearn->Learn();
 //	pEMLearn->ClearStatisticData();
 	pCPDVector vNeighborCPDs;
 	floatVector vNeighborLLs;
@@ -195,7 +197,7 @@ bool CStaticStructLearnSEM::LearnOneStep()
 	{
 		pCPD = static_cast<CFactor*>(vNeighborCPDs[i]);
 		freeparams = pCPD->GetNumberOfFreeParameters();
-		neighborScores[i] = vNeighborLLs[i] -0.5f * float(freeparams) * logebase;
+		neighborScores[i] = vNeighborLLs[i] - 0.5f * float(freeparams) * logebase;
 	}
 
 	int start, end, max_position=0;

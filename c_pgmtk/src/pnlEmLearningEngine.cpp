@@ -393,91 +393,186 @@ void CEMLearningEngine::Learn()
 
 void CEMLearningEngine::LearnExtraCPDs(int nMaxFamily, pCPDVector* additionalCPDs, floatVector* additionalLLs)
 {
-/*
-	function takes an information from m_pEvidences and learns parameters & additional CPDs
-	of graphical model using prior probabilities or not, do just 1 step em learning
-	It must be execute after the Learn() function called
-	Currently it does not support SoftMax distribution
-*/
+
     CStaticGraphicalModel *pGrModel =  this->GetStaticModel();
     PNL_CHECK_IS_NULL_POINTER(pGrModel);
     PNL_CHECK_LEFT_BORDER(GetNumEv(), 1);
-
-	int numberOfFactors = pGrModel->GetNumberOfFactors();
-	int numberOfAddFactors = additionalCPDs->size();
-
-	float	loglik, ll;
+    
+    int numberOfFactors = pGrModel->GetNumberOfFactors();
+    int numberOfAddFactors = additionalCPDs->size();
+    
+    additionalLLs->resize(numberOfAddFactors);
+    additionalLLs->clear();
+    
+    m_vFamilyLogLik.resize(numberOfFactors);
+    float	loglik = 0.0f, ll;
     int		i, ev;
+    int iteration = 0;
     const CEvidence* pEv;
-
+    
     CFactor *factor = NULL;
-	int nnodes;
-	const int * domain;
-	bool bInfIsNeed;
-	CInfEngine *pInfEng = m_pInfEngine;
-
-	for( ev = 0; ev < GetNumEv() ; ev++)
-	{
-		bInfIsNeed = !GetObsFlags(ev)->empty(); 
-		pEv = m_Vector_pEvidences[ev];
-		if( bInfIsNeed )
-		{
-			pInfEng->EnterEvidence(pEv, 0, 0);
-		}
-			
-		for( i = 0; i < numberOfAddFactors; i++ )
-		{
-			factor = static_cast<CFactor*>(additionalCPDs->at(i));
-		    factor->GetDomain( &nnodes, &domain );
-		    if( bInfIsNeed && !IsDomainObserved(nnodes, domain, ev ) )
-		    {
-				pInfEng->MarginalNodes( domain, nnodes, 1 );
-				factor->UpdateStatisticsEM( pInfEng->GetQueryJPD(), pEv );
-		    }
-		    else
-		    {
-				factor->UpdateStatisticsML( &pEv, 1 );
-		    }
-		}
-	}
-
-	m_vFamilyLogLik.clear();
-	additionalLLs->clear();
-
-	switch (pGrModel->GetModelType())
-	{
-	case mtBNet:
-		{
-			loglik = 0.0f;
-            for( i = 0; i<numberOfFactors; i++ )
-            {
-                factor = pGrModel->GetFactor(i);
-				ll = factor->ProcessingStatisticalData( GetNumEv());
-				loglik += ll;
-				m_vFamilyLogLik.push_back(ll);                   
-            }
-			for( i = 0; i < numberOfAddFactors; i++ )
-            {
-				factor = static_cast<CFactor*>(additionalCPDs->at( i ));
-				ll = factor->ProcessingStatisticalData( GetNumEv());
-				additionalLLs->push_back(ll);
-            }
-            break;
-		}
-	case mtMRF2:
-	case mtMNet:
-        {	
-            break;
-        }
-    default:
+    int nnodes;
+    const int * domain;
+    
+    bool bInfIsNeed;
+    CInfEngine *pInfEng = m_pInfEngine;
+    EDistributionType dt;
+    
+    if (IsAllObserved())
+    {
+        for (i = 0; i < numberOfFactors; i++)
         {
-            PNL_THROW(CBadConst, "model type" )
-                break;
+            factor = pGrModel->GetFactor(i);
+            factor->UpdateStatisticsML(&m_Vector_pEvidences[GetNumberProcEv()], 
+                GetNumEv() - GetNumberProcEv());
         }
-    }
+        
+        for( ev = 0; ev < GetNumEv() ; ev++)
+        {
+            pEv = m_Vector_pEvidences[ev];
+            for( i = 0; i < numberOfAddFactors; i++ )
+            {
+                factor = static_cast<CFactor*>(additionalCPDs->at(i));
+                factor->UpdateStatisticsML( &pEv, 1 );
+            }
+        }
+        
+        switch (pGrModel->GetModelType())
+        {
+        case mtBNet:
+            {
+                for( i = 0; i<numberOfFactors; i++ )
+                {
+                    factor = pGrModel->GetFactor(i);
+                    ll = factor->ProcessingStatisticalData( GetNumEv());
+                    m_vFamilyLogLik[i] = ll;
+                    loglik += ll;
+                }
                 
-    ClearStatisticData();
-    m_critValue.push_back(loglik);    
+                for( i = 0; i < numberOfAddFactors; i++ )
+                {
+                    factor = static_cast<CFactor*>(additionalCPDs->at( i ));
+                    ll = factor->ProcessingStatisticalData( GetNumEv());
+                    (*additionalLLs)[i] = ll;
+                }
+                break;
+            }
+        case mtMRF2:
+        case mtMNet:
+            {	
+                break;
+            }
+        default:
+            {
+                PNL_THROW(CBadConst, "model type" )
+                    break;
+            }
+        }
+        m_critValue.push_back(loglik);    
+        
+    }
+    else
+    {
+        bool isFirst = false;
+
+        bool bContinue;
+        do
+        {
+            ClearStatisticData();
+            
+            iteration++;
+            for( ev = 0; ev < GetNumEv() ; ev++)
+            {
+                bInfIsNeed = !GetObsFlags(ev)->empty(); 
+                pEv = m_Vector_pEvidences[ev];
+                if( bInfIsNeed )
+                {
+                    pInfEng->EnterEvidence(pEv, 0, 0);
+                }
+                
+                for (i = 0; i < numberOfFactors; i++)
+                {
+                    factor = pGrModel->GetFactor(i);
+                    factor->GetDomain( &nnodes, &domain );
+                    if( bInfIsNeed && !IsDomainObserved(nnodes, domain, ev ) )
+                    {
+                        pInfEng->MarginalNodes( domain, nnodes, 1 );
+                        factor->UpdateStatisticsEM( pInfEng->GetQueryJPD(), pEv );
+                    }
+                    else
+                    {
+                        factor->UpdateStatisticsML( &pEv, 1 );
+                    }
+                }
+                if (!isFirst)
+                {
+                    for( i = 0; i < numberOfAddFactors; i++ )
+                    {
+                        factor = static_cast<CFactor*>(additionalCPDs->at(i));
+                        factor->GetDomain( &nnodes, &domain );
+                        if( bInfIsNeed && !IsDomainObserved(nnodes, domain, ev ) )
+                        {
+                            pInfEng->MarginalNodes( domain, nnodes, 1 );
+                            factor->UpdateStatisticsEM( pInfEng->GetQueryJPD(), pEv );
+                        }
+                        else
+                        {
+                            factor->UpdateStatisticsML( &pEv, 1 );
+                        }
+                    }
+                }
+            } // for( ev = 0;  
+
+            loglik = 0.0f;
+            switch (pGrModel->GetModelType())
+            {
+            case mtBNet:
+                {
+                    for( i = 0; i<numberOfFactors; i++ )
+                    {
+                        factor = pGrModel->GetFactor(i);
+                        ll = factor->ProcessingStatisticalData( GetNumEv());
+                        m_vFamilyLogLik[i] = ll;
+                        loglik += ll;
+                    }
+                    if (!isFirst)                
+                    {
+                        for( i = 0; i < numberOfAddFactors; i++ )
+                        {
+                            factor = static_cast<CFactor*>(additionalCPDs->at( i ));
+                            ll = factor->ProcessingStatisticalData( GetNumEv());
+                            (*additionalLLs)[i] = ll;
+                        }
+                        isFirst = true;
+                    }
+                    break;
+                }
+            case mtMRF2:
+            case mtMNet:
+                {	
+                    break;
+                }
+            default:
+                {
+                    PNL_THROW(CBadConst, "model type" )
+                        break;
+                }
+            }
+            if( GetMaxIterEM() != 1)
+            {
+                bool flag = iteration == 1 ? true : 
+                (fabs(2*(m_critValue.back()-loglik)/(m_critValue.back() + loglik)) > GetPrecisionEM() );
+                
+                bContinue = GetMaxIterEM() > iteration && flag;
+            }
+            else
+            {
+                bContinue = false;
+            }
+            m_critValue.push_back(loglik);
+        
+        } while(bContinue);
+    }
 }
 
 float CEMLearningEngine::_LearnPotentials()
