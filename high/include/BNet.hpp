@@ -66,9 +66,10 @@ public:
 
     // get tabular probability
     TokArr P(TokArr value, TokArr parents = TokArr());
+    
     TokArr JPD(TokArr value );
     // set parameters for gaussian distribution
-    void SetGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr());
+    void SetGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
     
     // setting evidence on the board (bPush == false) or to the history
     void Evid(TokArr values = TokArr(), bool bPush = false);
