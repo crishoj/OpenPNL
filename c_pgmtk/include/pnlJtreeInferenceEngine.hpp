@@ -213,6 +213,7 @@ protected:
     void ShrinkJTreeCliques(int domSize, int* Domain);     
 	CPotential* MergeCliques(int domSize, int* Domain);
 
+    void RebuildTreeFromRoot() const;
 
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
@@ -230,7 +231,7 @@ private:
     CJunctionTree *m_pOriginalJTree;
     CJunctionTree *m_pJTree;
     
-    void RebuildTreeFromRoot() const;
+    //void RebuildTreeFromRoot() const;
     
     void MarginalizeCliqueToQuery( int clqNum, int querySz,
                                    const int *query, int notExpandJPD = 0 );
