@@ -138,6 +138,10 @@ static const char *GetClassName(CPNLBase *pObj)
         {
             return "DBN";
         }
+        else if(dynamic_cast<CIDNet*>(pObj) != 0)
+        {
+            return "IDNet";
+        }
         else if(dynamic_cast<CBNet*>(pObj) != 0)
         {
             return "BNet";
@@ -149,10 +153,6 @@ static const char *GetClassName(CPNLBase *pObj)
         else if(dynamic_cast<CMNet*>(pObj) != 0)
         {
             return "MNet";
-        }
-        else if(dynamic_cast<CIDNet*>(pObj) != 0)
-        {
-            return "IDNet";
         }
     }
     else if(dynamic_cast<CFactor*>(pObj) != 0)
