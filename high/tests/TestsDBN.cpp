@@ -201,12 +201,7 @@ int testDBNLearning()
 	// setting number of slices
 	pDBN->SetNumSlices(4);
 	//evidences generation
-	pnl ::intVector nS(4);
-	nS[0] = 6;
-	nS[1] = 6;
-	nS[2] = 6;
-	nS[3] = 6;
-	pDBN->GenerateEvidences(nS);
+	pDBN->GenerateEvidences("4 6 5 6");
 	// learning execution
 	pDBN->LearnParameters();
 	// free memory

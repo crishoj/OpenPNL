@@ -127,7 +127,7 @@ public:
     //whatNodes - which nodes should be included. By default - all
     //ignoreCurrEvid - if 'false', then current evidence specifies some fixed values
     //                 if 'true',then no fixed values while generating evidences
-    void GenerateEvidences(pnl::intVector nSlices);
+    void GenerateEvidences(TokArr numSlices);
     
     ProbabilisticNet &Net() const { return *m_pNet; }
 

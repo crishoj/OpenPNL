@@ -845,8 +845,22 @@ int DBN::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr co
 // the required portion of observed nodes
 // For example, if whatNodes = TokArr("Node1")
 //    
-void DBN::GenerateEvidences(pnl::intVector nSlices)
+void DBN::GenerateEvidences(TokArr numSlices)
 {
+    pnl::intVector nSlices;
+    int i;
+    int size = numSlices.size();
+    for(i = 0; i < size; i++)
+    {
+	if(numSlices[i].fload.size())
+	{
+	    nSlices.push_back(int(numSlices[i].FltValue()));
+	}
+	else
+	{
+	    nSlices.push_back(numSlices[i].IntValue());
+	}
+    }
     Model()->GenerateSamples(&m_AllEvidences,nSlices);
 }
 
