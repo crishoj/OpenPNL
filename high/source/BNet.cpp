@@ -157,75 +157,172 @@ TokArr BayesNet::GetGaussianCovar(TokArr var)
 TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
 {
     static const char fname[] = "GetPTabular";
-
+	
     int nchldComb = child.size();
     if( !nchldComb )
     {
-	ThrowUsingError("Must be at least one combination for a child node", fname);
+		ThrowUsingError("Must be at least one combination for a child node", fname);
     }
-
+	
     Vector<int> childNd, childVl;
     int i;
     Net().ExtractTokArr(child, &childNd, &childVl);
-
+	
     // node for all child must be same (its may differ by combination only)
     for(i = childNd.size(); --i > 0; ++i)
     {
-	if(childNd[i] != childNd[0])
-	{
-	    ThrowUsingError("Can't return probabilities for different nodes", fname);
-	}
+		if(childNd[i] != childNd[0])
+		{
+			ThrowUsingError("Can't return probabilities for different nodes", fname);
+		}
     }
-
+	
     if( !childVl.size())
     {
-	childVl.assign(nchldComb, -1);
+		childVl.assign(nchldComb, -1);
     }
-
+	
     Vector<int> parentNds, parentVls;
     int nparents = parents.size();
     if( nparents )
     {
-	Net().ExtractTokArr(parents, &parentNds, &parentVls);
-	if( parentVls.size() == 0 ||
-	    std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
-	{
-	    ThrowInternalError("undefindes values for given parent nodes", "P");
-	}
+		Net().ExtractTokArr(parents, &parentNds, &parentVls);
+		if( parentVls.size() == 0 ||
+			std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
+		{
+			ThrowInternalError("undefindes values for given parent nodes", "P");
+		}
     }
     else
     {
-	Net().Graph()->Graph()->GetParents( childNd.front(), &parentNds );
-	nparents = parentNds.size();
-	parentVls.assign(nparents, -1);
+		Net().Graph()->Graph()->GetParents( childNd.front(), &parentNds );
+		nparents = parentNds.size();
+		parentVls.assign(nparents, -1);
     }
-
+	
     parentNds.resize(nparents + 1);
     parentVls.resize(nparents + 1);
-
+	
     const pnl::CFactor * cpd = Model()->GetFactor(childNd.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matTable);
-
+	
     TokArr result = "";
     for( i = 0; i < nchldComb; i++ )
     {
-	parentNds[nparents] = childNd.front();
-	parentVls[nparents] = childVl[i];
-	result << Net().CutReq( parentNds, parentVls, mat);
+		parentNds[nparents] = childNd.front();
+		parentVls[nparents] = childVl[i];
+		result << Net().CutReq( parentNds, parentVls, mat);
     }
-
+	
     return result;
+}
+
+void BayesNet::SetInferenceProperties(TokArr &nodes)
+{
+    pnl::CInfEngine *infEngine = &Inference();
+    
+    if(dynamic_cast<pnl::CGibbsSamplingInfEngine *>(infEngine) != NULL)
+    {
+	pnl::CGibbsSamplingInfEngine *infGibbs = static_cast<pnl::CGibbsSamplingInfEngine *>(infEngine);
+	Vector<int> queryVls;
+	pnl::intVecVector queries(1);
+	queries[0].clear();
+	
+	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
+	infGibbs->SetQueries( queries );
+	
+	if(GetProperty("GibbsNumberOfIterations").length())
+	{
+	    int MaxTime = atoi(GetProperty("GibbsNumberOfIterations").c_str());
+	    if(MaxTime)
+	    {
+		infGibbs->SetMaxTime(MaxTime);
+	    }
+	}
+	if(GetProperty("GibbsNumberOfStreams").length())
+	{
+	    int NumStreams = atoi(GetProperty("GibbsNumberOfStreams").c_str());
+	    if(NumStreams)
+	    {
+		infGibbs->SetNumStreams(NumStreams);
+	    }
+	}
+	if(GetProperty("GibbsThresholdIteration").length())
+	{
+	    int BurnIn = atoi(GetProperty("GibbsThresholdIteration").c_str());
+	    if(BurnIn)
+	    {
+		infGibbs->SetBurnIn(BurnIn);
+	    }
+	}
+	/*
+	const char *aGibbsProp[] = { "GibbsMaxTime", "GibbsNumStreams", "GibbsBurnIn" };
+	const int nGibbsProp = sizeof(aGibbsProp)/sizeof(aGibbsProp[0]);
+	
+	int i;
+	for(i = 0; i < nGibbsProp; i++)
+	{
+	    if(GetProperty(aGibbsProp[i]).length())
+	    {
+		int number = atoi(GetProperty(aGibbsProp[i]).c_str());
+		if(number)
+		{
+		    switch(i)
+		    {
+		    case 0:
+			infGibbs->SetMaxTime(number);
+			break;
+		    case 1:
+			infGibbs->SetNumStreams(number);
+			break;
+		    case 2:
+			infGibbs->SetBurnIn(number);
+			break;
+		    }
+		}
+	    }
+	}
+	*/	
+	/*if(GetProperty("GibbsUseDSeparation").length())
+	{
+	    int BurnIn = atoi(GetProperty("GibbsUseDSeparation").c_str());
+	    if(BurnIn)
+	    {
+		infGibbs->SetBurnIn(BurnIn);
+	    }
+	}*/
+    }
+    else if (dynamic_cast<pnl::CPearlInfEngine *>(infEngine) != NULL)
+    {
+	pnl::CPearlInfEngine *infPearl = static_cast<pnl::CPearlInfEngine *>(infEngine);
+	if(GetProperty("PearlMaxNumberOfIterations").length())
+	{
+	    int MaxNumberOfIterations = atoi(GetProperty("PearlMaxNumberOfIterations").c_str());
+	    if(MaxNumberOfIterations)
+	    {
+		infPearl->SetMaxNumberOfIterations(MaxNumberOfIterations);
+	    }
+	}
+	if(GetProperty("PearlTolerance").length())
+	{
+	    float Tolerance = (float)atof(GetProperty("PearlTolerance").c_str());
+	    if(Tolerance)
+	    {
+		infPearl->SetTolerance(Tolerance);
+	    }
+	}
+    }
 }
 
 TokArr BayesNet::GetJPD( TokArr nodes )
 {
     static const char fname[] = "GetJPD";
-
+    
     if( !nodes.size())
     {
 	ThrowInternalError("undefined query nodes", "JPD");
     }
-
+    
     pnl::CEvidence *evid = NULL;
     if( Net().EvidenceBoard()->IsEmpty() )
     {
@@ -235,23 +332,13 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     {
 	evid = Net().CreateEvidence(Net().EvidenceBoard()->GetBoard());
     }
-
+    
     pnl::CInfEngine *infEngine = &Inference();
-
-    pnl::CGibbsSamplingInfEngine *infGibbs;
-    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(infEngine);
-    if(infGibbs != NULL)
-    {
-	Vector<int> queryVls;
-	pnl::intVecVector queries(1);
-	queries[0].clear();
-
-	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
-	infGibbs->SetQueries( queries );
-    }
-
+    
+    SetInferenceProperties(nodes);
+    
     infEngine->EnterEvidence( evid );
-
+    
     int nnodes = nodes.size();
     Vector<int> queryNds, queryVls;
     Net().ExtractTokArr(nodes, &queryNds, &queryVls);
@@ -259,11 +346,11 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     {
 	queryVls.assign(nnodes, -1);
     }
-
+    
     infEngine->MarginalNodes(&queryNds.front(), queryNds.size());
-
+    
     const pnl::CPotential *pot = infEngine->GetQueryJPD();
-
+    
     TokArr res = "";
     if (pot->GetDistribFun()->GetDistributionType() == pnl::dtTabular)
     {
@@ -276,7 +363,7 @@ TokArr BayesNet::GetJPD( TokArr nodes )
         {
             const pnl::CMatrix<float> *mean = pot->GetMatrix(pnl::matMean);
             res << Net().ConvertMatrixToToken(mean);
-
+	    
             if (pot->GetDistribFun()->IsDistributionSpecific() != 2)
             {
                 const pnl::CMatrix<float> *cov = pot->GetMatrix(pnl::matCovariance);
@@ -289,12 +376,12 @@ TokArr BayesNet::GetJPD( TokArr nodes )
         }
         else
         {
-        // ?
+	    // ?
             res << "uniform";
             res << "distribution";
         }
     }
-
+    
     delete evid;
     Net().Token()->Resolve(res);
     return res;
@@ -326,6 +413,32 @@ void BayesNet::ClearEvidBuf()
     m_nLearnedEvidence = 0;
 }
 
+void BayesNet::SetParamLearningProperties()
+{
+    pnl::CStaticLearningEngine *learnEngine = &Learning();
+    
+    if(dynamic_cast<pnl::CEMLearningEngine *>(learnEngine) != NULL)
+    {
+	pnl::CEMLearningEngine *learnEM = static_cast<pnl::CEMLearningEngine *>(learnEngine);
+	if(GetProperty("EMMaxNumberOfIterations").length())
+	{
+	    int nIter = atoi(GetProperty("EMMaxNumberOfIterations").c_str());
+	    if(nIter)
+	    {
+		learnEM->SetMaxIterEM(nIter);
+	    }
+	}
+	if(GetProperty("EMTolerance").length())
+	{
+	    float tolerance = (float)atof(GetProperty("EMTolerance").c_str());
+	    if(tolerance)
+	    {
+		learnEM->SetTerminationToleranceEM(tolerance);
+	    }
+	}
+    }
+}
+
 void BayesNet::LearnParameters(TokArr aSample[], int nSample)
 {
     if(m_nLearnedEvidence > Net().EvidenceBuf()->size())
@@ -350,6 +463,8 @@ void BayesNet::LearnParameters(TokArr aSample[], int nSample)
     Learning().SetData(Net().EvidenceBuf()->size() - m_nLearnedEvidence,
 	&(*Net().EvidenceBuf())[m_nLearnedEvidence]);
     m_nLearnedEvidence = Net().EvidenceBuf()->size();
+
+    SetParamLearningProperties();
     Learning().Learn();
     for (i = 0; i < Net().Graph()->iNodeMax(); i++)
     {
@@ -568,30 +683,8 @@ TokArr BayesNet::GetMPE(TokArr nodes)
 
     pnl::CInfEngine *infEngine = &Inference();
 
-    pnl::CGibbsSamplingInfEngine *infGibbs;
-    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(infEngine);
-    if(infGibbs != NULL)
-    {
-	Vector<int> queryVls;
-	pnl::intVecVector queries(1);
-	queries[0].clear();
+	SetInferenceProperties(nodes);
 
-	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
-	infGibbs->SetQueries( queries );
-    }
-
-/*    pnl::CGibbsSamplingInfEngine *infGibbs;
-    infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(&Inference());
-    if(infGibbs != NULL)
-    {
-	Vector<int> queryVls;
-	pnl::intVecVector queries(1);
-	queries[0].clear();
-
-	Net().ExtractTokArr(nodes, &(queries[0]), &queryVls);
-	infGibbs->SetQueries( queries );
-    }
-*/
     infEngine->EnterEvidence(evid, 1);
 
     int nnodes = nodes.size();
@@ -740,10 +833,8 @@ pnl::CInfEngine &BayesNet::Inference()
 	{
             delete m_Inference;
         }
-
+	
         m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model());
-        ((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetMaxTime( 10000 );
-        ((pnl::CGibbsSamplingInfEngine*)m_Inference)->SetBurnIn( 1000 );
 	break;
     case 'n': // Naive inference
 	if(m_Inference)
@@ -794,7 +885,7 @@ pnl::CInfEngine &BayesNet::Inference()
 	}
 	break;
     }
-
+    
     return *m_Inference;
 }
 

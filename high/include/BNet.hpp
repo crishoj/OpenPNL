@@ -123,10 +123,11 @@ private:
     pnl::CMatrix<float> *Matrix(int iNode) const;
     pnl::CInfEngine &Inference();
     pnl::CStaticLearningEngine &Learning();
-
     void CreateModel();
     pnl::CBNet *Model();
 
+    void SetInferenceProperties(TokArr &nodes);
+    void SetParamLearningProperties();
     const char PropertyAbbrev(const char *name) const;
 //    void RebindFrom(BayesNet *bnet);
 
