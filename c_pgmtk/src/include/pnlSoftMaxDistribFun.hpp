@@ -156,7 +156,7 @@ public:
 
   virtual int GetNumberOfFreeParameters() const;
 
-  CSoftMaxDistribFun::~CSoftMaxDistribFun();
+  virtual ~CSoftMaxDistribFun();
 
   void MaximumLikelihood(float **Observation,
     int NumberOfObservations, float Accuracy, float step = 0.1);
@@ -225,7 +225,7 @@ private:
   C2DNumericDenseMatrix<float> *m_pMatrixH;
   C2DNumericDenseMatrix<float> *m_pMatrixK;
 
-
+  const static CNodeType m_ZeroNT;
 };
 
 inline int CSoftMaxDistribFun::IsDistributionSpecific() const
