@@ -2951,3 +2951,27 @@ Footer_begin
   Elapsed_Time,258.0
 Footer_end
 ==
+09/21/04 20:20:02	w2k_icc	failed	70.0	testComputeLikelihood
+Header_begin
+  Processor,Pentium
+  OS,WindowsNT v5.0 build 2195
+  Start_Date,
+  Start_Time,Wed Sep 22 00:47:34 2004
+Header_end
+Data_begin
+  Flavour,Function,Value,Units,Comments,Param1,Param2,Param3,Param4
+  d,testPerformanceJTreeInf,1.268318e-004,4.569575e-004,3.579545e+004,
+ time of inference procedure creation,
+ everage time of inference doing,
+ CPU Freq,
+  d,timeBKInfEngine,2.665981e-003,4.399442e-003,3.579545e+004,
+ JTree inference creation ,
+ average time for entering evidence ,
+ CPU frequency ,
+Data_end
+Footer_begin
+  End_Date,
+  End_Time,Wed Sep 22 00:51:42 2004
+  Elapsed_Time,248.0
+Footer_end
+==
