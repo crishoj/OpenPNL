@@ -225,7 +225,7 @@ TokArr BayesNet::JPD( TokArr nodes )
     }
     
     Inference().EnterEvidence( evid );
-    
+
     int nnodes = nodes.size();
     Vector<int> queryNds, queryVls;
     Net().ExtractTokArr(nodes, &queryNds, &queryVls);
@@ -251,6 +251,9 @@ TokArr BayesNet::JPD( TokArr nodes )
         const pnl::CMatrix<float> *cov = pot->GetMatrix(pnl::matCovariance);
         res << Net().ConvertMatrixToToken(cov);
     }
+
+    delete evid;
+    
     return res;
 }
 
@@ -300,7 +303,7 @@ void BayesNet::Learn(TokArr aSample[], int nSample)
 	}
     }
     
-    Learning().AppendData(Net().EvidenceBuf()->size() - m_nLearnedEvidence,
+    Learning().SetData(Net().EvidenceBuf()->size() - m_nLearnedEvidence,
 	&(*Net().EvidenceBuf())[m_nLearnedEvidence]);
     m_nLearnedEvidence = Net().EvidenceBuf()->size();
     Learning().Learn();
@@ -566,6 +569,8 @@ TokArr BayesNet::MPE(TokArr nodes)
     	    result.push_back(v.GetFlt());
     }
 
+    delete evid;
+
     return result;
 }
 
@@ -747,7 +752,7 @@ pnl::CStaticLearningEngine &BayesNet::Learning()
 	    learnBayes = dynamic_cast<pnl::CBayesLearningEngine *>(m_Learning);
 	    if(!learnBayes)
 	    {		    
-		delete []m_Learning;
+		delete m_Learning;
 		m_Learning = pnl::CBayesLearningEngine::Create(Model());
 	    }
 	}
@@ -763,7 +768,7 @@ pnl::CStaticLearningEngine &BayesNet::Learning()
 	    learnEM = dynamic_cast<pnl::CEMLearningEngine *>(m_Learning);
 	    if(!learnEM)
 	    {		    
-		delete []m_Learning;
+		delete m_Learning;
 		m_Learning = pnl::CEMLearningEngine::Create(Model());
 	    }
 	}
@@ -779,7 +784,7 @@ pnl::CStaticLearningEngine &BayesNet::Learning()
 	    learnEM = dynamic_cast<pnl::CEMLearningEngine *>(m_Learning);
 	    if(!learnEM)
 	    {		    
-		delete []m_Learning;
+		delete m_Learning;
 		m_Learning = pnl::CEMLearningEngine::Create(Model());
 	    }
 	}
@@ -809,7 +814,7 @@ String BayesNet::Property(const char *name) const
 
 const char BayesNet::PropertyAbbrev(const char *name) const
 {   
-    if(strcmp(name,"Infrernce"))
+    if(!strcmp(name,"Infrernce"))
     {
 	String infName = Property("Inference");
 	pnl::pnlVector<char> infNameVec(infName.length());
@@ -840,7 +845,7 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 	    return 0;
 	}
     }
-    if(strcmp(name,"Learning"))
+    if(!strcmp(name,"Learning"))
     {
 	String learnName = Property("Learning");
 	pnl::pnlVector<char> learnNameVec(learnName.length());
