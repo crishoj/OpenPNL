@@ -655,6 +655,10 @@ void CParGibbsSamplingInfEngine::CreateQueryFactors()
         }
 };
 // ----------------------------------------------------------------------------
+#ifdef PNL_RTTI
+const CPNLType CParGibbsSamplingInfEngine::m_TypeInfo = CPNLType("CParGibbsSamplingInfEngine", &(CGibbsSamplingInfEngine::m_TypeInfo));
+
+#endif
 
 #endif // PAR_PNL
 

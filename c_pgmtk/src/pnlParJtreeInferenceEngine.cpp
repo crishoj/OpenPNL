@@ -2694,6 +2694,10 @@ void CParJtreeInfEngine::BalanceTree()
 }
 #endif // PAR_MPI
 // ----------------------------------------------------------------------------
+#ifdef PNL_RTTI
+const CPNLType CParJtreeInfEngine::m_TypeInfo = CPNLType("CParJtreeInfEngine", &(CJtreeInfEngine::m_TypeInfo));
+
+#endif
 
 #endif // PAR_PNL
 
