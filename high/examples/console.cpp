@@ -7,271 +7,19 @@
 #include "pnlConfig.h"
 #include "example_common_funs.hpp"
 
-enum EToken
-{   eTOKEN_ID
-,   eTOKEN_DELIMITER
-,   eTOKEN_OP_CATENATION
-,   eTOKEN_OP_CARTESIAN
-,   eTOKEN_STRING
-,   eTOKEN_BRACE_OPEN
-,   eTOKEN_BRACE_CLOSE
-,   eTOKEN_EOL
-,   eTOKEN_EOF
-,   eTOKEN_BAD
-};
+#include "script_lex.hpp"
 
-class ScriptingLex
+Scripting::Scripting()
 {
-public:
-    // get token
-    int GetToken(pnl::pnlString& str);   
-        
-    ScriptingLex(FILE *pFile)
-        : m_pFile(pFile), m_Ungetch(-70000), m_BufSize(0), m_BufPos(0)
-    {
-    }
-
-protected:
-    int Getch();
-    void Ungetch(int ch)
-    {
-        m_Ungetch = ch;
-    }
-    int GetchAfterSpaces();
-
-    int GetTag(pnl::pnlString& str);
-    int GetAttribute(pnl::pnlString& str);
-
-    int GetField(pnl::pnlString& str, const char* aDelimiter = NULL);
-    int GetQString(pnl::pnlString& str, int quotationMark);
-
-private:
-    FILE *m_pFile;
-    unsigned char m_Buf[512];
-    int m_BufSize;
-    int m_BufPos;
-    int m_Ungetch;
-};
-
-int
-ScriptingLex::GetToken(pnl::pnlString& str)
-{
-    int ch = GetchAfterSpaces();
-
-    str.resize(0);
-    switch(ch)
-    {
-    case '"': case '\'':  return GetQString(str, ch);
-    case '\n': case '\r': case ';': return eTOKEN_EOL;
-    case -1:  return eTOKEN_EOF;
-    case '(': return eTOKEN_BRACE_OPEN;
-    case ')': return eTOKEN_BRACE_CLOSE;
-    case '&': return eTOKEN_OP_CATENATION;
-    case ',': return eTOKEN_DELIMITER;
-    case '^': return eTOKEN_OP_CARTESIAN;
-    }
-    
-    Ungetch(ch);
-    ch = GetField(str, "^&,()'\"\n\t\r ");
-
-    return (ch == eTOKEN_STRING) ? eTOKEN_ID:eTOKEN_BAD;
+    Enter(stdin, stdout, 0);
+    Enter(new BayesNet, true);
 }
 
-int
-ScriptingLex::GetField(pnl::pnlString& str, const char* aDelimiter)
+Scripting::~Scripting()
 {
-    int ch;
-    char bitmap[32];
-    
-    str.resize(0);
-    memset((void*)bitmap, 0, sizeof(bitmap));
-    if(aDelimiter)
-    {
-	for(; *aDelimiter; ++aDelimiter)
-	{
-	    bitmap[*aDelimiter >> 3] |= (1 << (*aDelimiter & 7));
-	}
-    }
-    for(;;)
-    {
-        if((ch = Getch()) == -1)
-	{
-            return eTOKEN_STRING;
-	}
-	if((bitmap[ch >> 3] & (1 << (ch & 7))) != 0)
-	{
-            Ungetch(ch);
-            return eTOKEN_STRING;
-	}
-        str << char(ch);
-    }
+    Leave();
+    Leave();
 }
-
-int
-ScriptingLex::GetQString(pnl::pnlString& str, int quotationMark)
-{
-    char aDelimiter[2];
-    
-    aDelimiter[0] = char(quotationMark);
-    aDelimiter[1] = 0;
-
-    return (GetField(str, aDelimiter) != eTOKEN_STRING || Getch() != quotationMark)
-	? eTOKEN_BAD:eTOKEN_STRING;
-}
-
-int
-ScriptingLex::GetchAfterSpaces()
-{
-    int ch;
-    
-    for(;;)
-    {
-        ch = Getch();
-        if(ch == -1 || (ch != ' ' && ch != '\t'))
-	{
-	    if(ch == '#' || ch == '/')
-	    {
-		for(;ch != -1; ch = Getch())
-		{
-		    if(ch == '\r' || ch == '\n')
-		    {
-			break;
-		    }
-		}
-	    }
-            return ch;
-	}
-    }
-}
-
-int ScriptingLex::Getch()
-{
-    if(m_Ungetch != -70000)
-    {
-	int ch = m_Ungetch;
-	m_Ungetch = -70000;
-	return ch;
-    }
-    
-    if(m_BufPos < m_BufSize)
-    {
-	return m_Buf[m_BufPos++];
-    }
-
-    if(!feof(m_pFile))
-    {
-	m_BufSize = m_BufPos = 0;
-	if(fgets((char*)m_Buf, sizeof(m_Buf), m_pFile))
-	{
-	    m_BufSize = strlen((char*)m_Buf);
-	}
-	if(m_BufPos < m_BufSize)
-	{
-	    return m_Buf[m_BufPos++];
-	}
-    }
-    
-    Ungetch(-1);
-
-    return -1;
-}
-
-int ScriptingSyntax(ScriptingLex &lex, pnl::pnlString &fname, pnl::pnlVector<pnl::pnlString> &args)
-{
-    pnl::pnlString arg;
-    int token;
-    
-    while((token = lex.GetToken(arg)) == eTOKEN_EOL);
-
-    if(token != eTOKEN_ID)
-    {
-	return -1;
-    }
-
-    fname = arg;
-    args.resize(0);
-
-    if(lex.GetToken(arg) != eTOKEN_BRACE_OPEN)
-    {
-	return -1;
-    }
-    token = lex.GetToken(arg);
-    if(token == eTOKEN_STRING || token == eTOKEN_ID)
-    {
-	args.push_back(arg);
-	for(;(token = lex.GetToken(arg)) == eTOKEN_DELIMITER;)
-	{
-	    token = lex.GetToken(arg);
-	    if(token == eTOKEN_STRING || token == eTOKEN_ID)
-	    {
-		args.push_back(arg);
-	    }
-	    else
-	    {
-		break;
-	    }
-	}
-    }
-
-    if(token != eTOKEN_BRACE_CLOSE)
-    {
-	return -1;
-    }
-
-    if((token = lex.GetToken(arg)) == eTOKEN_EOL)
-    {
-	return args.size();
-    }
-
-    return -1;
-}
-
-struct FuncDesc
-{
-    const char *name;// function name in lowercase
-    int id;// unique id - from enum in WInner.hpp
-    bool bSimple;// left and right arguments - TokArr's
-    int nLeftArg;
-    int nRightArg;
-    int nOptArg;
-};
-
-FuncDesc aFuncDesc[] =
-{   "savenet",      eSaveNet,   false, 0, 1, 0
-,   "loadnet",      eLoadNet,	false, 0, 1, 0
-,   "savelearnbuf", eSaveLearnBuf,false,0,1, 0
-,   "loadlearnbuf", eLoadLearnBuf,false,0,1, 0
-,   "addnode",	    eAddNode,	true,  0, 2, 0
-,   "addarc",	    eAddArc,	true,  0, 2, 0
-,   "setp",	    eSetP,	true,  0, 3, 1
-,   "p",	    eP,		true,  1, 2, 1
-,   "evid",	    eEvidence,	false, 0, 2, 1
-,   "clearevid",    eClearEvid,	true,  0, 0, 0
-,   "clearevidhistory", eClearEvidHistory, true, 0, 0, 0
-,   "learn",	    eLearn,	true,  0, 0, 0
-,   "mpe",	    eMPE,	true,  1, 1, 1
-,   "generateevidences", eGenerateEvidences, false, 0, 3, 2
-,   "learnstructure", eLearnStructure, true, 0, 0, 0
-,   "gaussianmean", eGaussianMean,true, 1, 1, 0
-,   "gaussiancovar", eGaussianCovar, true, 1, 2, 0 
-,   "setgaussian",  eSetGaussian, false, 0, 4, 3
-,   "setproperty", eSetProperty, false, 0, 2, 0
-,   "jpd",          eJPD,       true, 1, 1, 0 
-// build-in commands
-,   "execute",	    -1,		false, 0, 1, 0
-,   "clear",	    -2,		true,  0, 0, 0
-,   "clearall",	    -3,		true,  0, 0, 0
-,   "listnodes",    -4,		true,  0, 0, 0
-,   "exit",	    -5,		true,  0, 0, 0
-,   "listcommands", -6,		true,  0, 0, 0
-,   "print",	    -7,		true,  0, 1, 1
-,   "new",	    -8,		true,  0, 0, 0
-,   "console",	    -9,		true,  0, 0, 0
-,   "comparefiles", -10,	true,  1, 3, 1
-,   0, 0, 0, 0, 0, 0
-};
-
-FuncDesc* FunctionInfo(pnl::pnlString &fname);
 
 int Scripting::Execute(FILE *file, BayesNet *bnet)
 {
@@ -283,17 +31,18 @@ int Scripting::Execute(FILE *file, BayesNet *bnet)
     if(bnet)
     {
 	Enter(bnet, false);
-    } else if(!m_apBnet.size())
+    }
+    else if(!m_apBnet.size())
     {
 	Enter(new BayesNet, true);
     }
 
     while(true)
     {
-	if(file == stdin)
+	if(Stdout() == stdout && file == stdin)
 	{
-	    fprintf(stdout, "= ");
-	    fflush(stdout);
+	    fprintf(stderr, "= ");
+	    fflush(stderr);
 	}
 	if(ScriptingSyntax(lex, fname, args) < 0)
 	{
@@ -301,7 +50,7 @@ int Scripting::Execute(FILE *file, BayesNet *bnet)
 	    {
 		break;
 	    }
-	    fprintf(stderr, "Syntax error, resync...\n");
+	    fprintf(Stdout(), "Syntax error, resync...\n");
 
 	    int token = lex.GetToken(fname);
 
@@ -313,7 +62,7 @@ int Scripting::Execute(FILE *file, BayesNet *bnet)
 	    {
 		break;
 	    }
-	    fprintf(stderr, "Resync done...\n");
+	    fprintf(Stdout(), "Resync done...\n");
 	    continue;
 	}
 
@@ -331,76 +80,13 @@ int Scripting::Execute(FILE *file, BayesNet *bnet)
     return nCommand;
 }
 
-static void Print(Vector<String> &v)
-{
-    for(unsigned int i = 0; i < v.size(); ++i)
-    {
-	cout << v[i] << ((i == v.size() - 1) ? '\n':' ');
-    }
-}
-
-static void Print(TokArr &v)
-{
-    cout << String(v) << "\n";
-}
-
-static void Print(String &s)
-{
-    cout << s << "\n";
-}
-
-static void PrintStripped(TokArr &v)
-{
-    if(!v.size())
-    {
-	return;
-    }
-    for(int i = 0; i < v.size(); ++i)
-    {
-	cout << String(v[i].Name()) << ' ';
-    }
-    cout << '\n';
-}
-
-static void ListCommands()
-{
-    int i, len, maxName, cols;
-
-    for(maxName = i = 0; aFuncDesc[i].name; ++i)
-    {
-	len = strlen(aFuncDesc[i].name);
-	maxName = (maxName > len) ? maxName:len;
-    }
-
-    cols = (80 / (maxName + 1));
-
-    for(i = 0; aFuncDesc[i].name; ++i)
-    {
-	len = strlen(aFuncDesc[i].name);
-	cout << aFuncDesc[i].name;
-
-	if(((i % 3) == 2) || !aFuncDesc[i + 1].name)
-	{
-	    cout << '\n';
-	}
-	else
-	{
-	    while(len < (maxName + 1))
-	    {
-		len++;
-		cout << ' ';
-	    }
-	}
-    }
-}
-
 int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlString> &args)
 {
     FuncDesc *pFD = FunctionInfo(fname);
 
     if(!pFD)
     {
-	cout << "Unrecognized command: '" << fname << "'\n";
+	fprintf(Stdout(), "Unrecognized command: '%s'\n", fname.c_str());
 	return -2;
     }
 
@@ -408,7 +94,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
     {
 	if(pFD->nRightArg - pFD->nOptArg > args.size())
 	{
-	    cout << "Error (function '" << fname << "'): too few arguments\n";
+	    fprintf(Stdout(), "Error (function '%s'): too few arguments\n", fname.c_str());
 	    return -2;
 	}
 	if(pFD->bSimple)
@@ -418,7 +104,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
     }
     else if(pFD->nRightArg < args.size())
     {
-	cerr << "'" << fname << "' warning: unnecessary arguments are ignored\n";
+	fprintf(Stdout(), "'%s' warning: unnecessary arguments are ignored\n", fname.c_str());
     }
 
     try
@@ -443,21 +129,13 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	    Enter(new BayesNet, true);
 	    break;
 	case -3:// clearAll
-	    for(;m_apBnet.size();Leave());
+	    for(;m_apBnet.size() > 1;Leave());
 	    Enter(new BayesNet, true);
 	    break;
 	case -4:/* ListNodes */ Print(BNet().Net().Graph()->Names()); break;
 	case -5:/* Exit */ return -1;
 	case -6:	ListCommands(); break;
-	case -7:/* print */
-	    {
-		for(int i = 0; i < args.size(); ++i)
-		{
-		    cout << args[i];
-		}
-		cout << '\n';
-	    }
-	    break;
+	case -7:/* print */ Print(args); break;
 	case -8:/* new */ Enter(new BayesNet, true); break;
 	case -9:/* console */ Execute(stdin, &BNet()); break;
 	case -10:/* comparefiles */
@@ -475,6 +153,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 		}
 		Print(args[2]);
 	    }
+	case -11:/* checkOrCreate */ CheckOrCreate(args[0].c_str(), args[1].c_str(), args[2].c_str());break;
 	case eAddNode:	    BNet().AddNode(args[0], args[1]); break;
 	case eAddArc:	    BNet().AddArc (args[0], args[1]); break;
 	case eLoadNet:	    BNet().LoadNet(args[0].c_str());  break;
@@ -487,34 +166,7 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
         case eGaussianMean: Print(BNet().GaussianMean(args[0]));break;
         case eGaussianCovar: Print(BNet().GaussianCovar(args[0], args[1]));break;
 	case eSetProperty:  BNet().SetProperty(args[0].c_str(), args[1].c_str()); break;
-        case eSetGaussian: 
-            {
-                TokArr arg1;
-                TokArr arg2;
-                TokArr arg3;
-                TokArr arg4;
-
-		if(args.size() > 0)
-		{
-		    arg1 = args[0];
-		    if(args.size() > 1)
-		    {
-			arg2 = args[1];
-        	        if(args.size() > 2)
-		        {
-			    arg3 = args[2];
-                            if(args.size() > 3)
-		            {
-			        arg4 = args[3];
-		            }
-		        }
-		    }
-		}
-
-                BNet().SetGaussian(arg1, arg2, arg3, arg4);
-                break;
-            }
-
+        case eSetGaussian:  BNet().SetGaussian(args[0], args[1], args[2], args[3]); break;
 	case eGenerateEvidences:
 	    {
 		int nSample = atoi(args[0].c_str());
@@ -560,43 +212,22 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 	case eJPD:	    Print(BNet().JPD(args[0])); break;
 	case eNodeType:
 	default:
-	    cout << "Unrealized command: '" << fname << "'\n";
+	    fprintf(Stdout(), "Unrealized command: '%s'\n", fname.c_str());
 	    return -2;
 	}
     }
 
     catch(pnl::CException &ex)
     {
-	cout << "\nException during execution of '" << fname << "' command: "
-	    << ex.GetMessage() << "\n";
+	fprintf(Stdout(), "\nException during execution of '%s' command: %s\n",
+	    fname.c_str(), ex.GetMessage());
 	return -2;
     }
 
     catch(...)
     {
-	cout << "\nUnrecognized exception during execution of '" << fname << "'\n";
+	fprintf(Stdout(), "\nUnrecognized exception during execution of '%s'\n", fname.c_str());
 	return -2;
-    }
-
-    return 0;
-}
-
-FuncDesc* FunctionInfo(pnl::pnlString &fname)
-{
-    pnl::pnlString fnameLowerCase;
-    int i;
-
-    for(i = 0; i < fname.size(); ++i)
-    {
-	fnameLowerCase << char(tolower(fname[i]));
-    }
-
-    for(i = 0; aFuncDesc[i].name; ++i)
-    {
-	if(fnameLowerCase == aFuncDesc[i].name)
-	{
-	    return aFuncDesc + i;
-	}
     }
 
     return 0;
@@ -606,3 +237,151 @@ BayesNet &Scripting::BNet() const
 {
     return *m_apBnet.back();
 }
+
+FILE *Scripting::Stdin() const
+{
+    return m_aStdin.back();
+}
+
+FILE *Scripting::Stdout() const
+{
+    return m_aStdout.back();
+}
+
+bool Scripting::CheckOrCreate(const char *etalon, const char *script, const char *id)
+{
+    FILE *etalonF = fopen(etalon, "r");
+    const char *tmpFile = "tmpCompFile.txt";
+
+    if(!etalonF)
+    {
+	tmpFile = etalon;
+    }
+    else
+    {
+	fclose(etalonF);
+    }
+
+    Enter(script, tmpFile);
+    Execute(Stdin(), &BNet());
+    Leave();
+    if(tmpFile != etalon)
+    {
+	int result = CompareFiles(etalon, tmpFile);
+	fprintf(Stdout(), "%s: %s\n", id, (result == 0) ? "Ok":"FAILED");
+	return result == 0;
+    }
+
+    return false;
+}
+
+void Scripting::Enter(BayesNet *bnet, bool bAutoDelete)
+{
+    m_apBnet.push_back(bnet);
+    m_aStdin.push_back(m_aStdin.back());
+    m_aStdout.push_back(m_aStdout.back());
+    m_aAutodeleteFlags.push_back(bAutoDelete ? 1:0);
+}
+
+void Scripting::Enter(FILE *stdinF, FILE *stdoutF, char bAutodelete)
+{
+    if(!stdinF)
+    {
+	stdinF = Stdin();
+	bAutodelete &= ~2;
+    }
+    if(!stdoutF)
+    {
+	stdoutF = Stdout();
+	bAutodelete &= ~4;
+    }
+    m_aStdin.push_back(stdinF);
+    m_aStdout.push_back(stdoutF);
+    m_apBnet.push_back(m_apBnet.size() ? m_apBnet.back():0);
+    m_aAutodeleteFlags.push_back(bAutodelete);
+}
+
+void Scripting::Enter(const char *stdinName, const char *stdoutName)
+{
+    FILE *stdinF = 0, *stdoutF = 0;
+    char autoDelete = 0;
+
+    if(stdinName)
+    {
+	stdinF = fopen(stdinName, "r");
+	if(!stdinF)
+	{
+	    fprintf(Stdout(), "can't open file '%s' for input\n", stdinName);
+	}
+	else
+	{
+	    autoDelete |= 2;
+	}
+    }
+    if(stdoutName)
+    {
+	stdoutF = fopen(stdoutName, "w");
+	if(!stdoutF)
+	{
+	    fprintf(Stdout(), "can't open file '%s' for output\n", stdoutName);
+	}
+	else
+	{
+	    autoDelete |= 4;
+	}
+    }
+    Enter(stdinF, stdoutF, autoDelete);
+}
+
+void Scripting::Leave()
+{
+    int flags = m_aAutodeleteFlags.back();
+
+    if(flags & 1)
+    {
+	delete m_apBnet.back();
+    }
+    if(flags & 2)
+    {
+	fclose(m_aStdin.back());
+    }
+    if(flags & 4)
+    {
+	fclose(m_aStdout.back());
+    }
+    m_aAutodeleteFlags.pop_back();
+    m_apBnet.pop_back();
+    m_aStdin.pop_back();
+    m_aStdout.pop_back();
+}
+
+void Scripting::Print(Vector<String> &v)
+{
+    for(unsigned int i = 0; i < v.size(); ++i)
+    {
+	fprintf(Stdout(), "%s%c", v[i].c_str(), ((i == v.size() - 1) ? '\n':' '));
+    }
+}
+
+void Scripting::Print(TokArr &v)
+{
+    fprintf(Stdout(), "%s\n", String(v).c_str());
+}
+
+void Scripting::Print(String &s)
+{
+    fprintf(Stdout(), "%s\n", s.c_str());
+}
+
+void Scripting::PrintStripped(TokArr &v)
+{
+    if(!v.size())
+    {
+	return;
+    }
+    for(int i = 0; i < v.size(); ++i)
+    {
+	fprintf(Stdout(), "%s%c", String(v[i].Name()).c_str(), ((i == int(v.size() - 1)) ? '\n':' '));
+    }
+}
+

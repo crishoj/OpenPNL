@@ -97,6 +97,14 @@ SOURCE=.\example_common_funs.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\example_common_funs.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\script_lex.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\rps.cpp
 # End Source File
 # End Group
@@ -113,6 +121,10 @@ SOURCE=.\example_common_funs.hpp
 # End Source File
 # End Group
 # Begin Group "Resource Files"
+
+SOURCE=.\script_lex.hpp
+# End Source File
+# Begin Source File
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # End Group
