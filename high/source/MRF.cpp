@@ -210,7 +210,7 @@ TokArr MRF::GetGaussianMean(TokArr vars)
     return Net().ConvertMatrixToToken(mat);
 }
 
-TokArr BayesNet::GetGaussianCovar(TokArr var)
+TokArr MRF::GetGaussianCovar(TokArr var)
 {
     static const char fname[] = "GetGaussianCovar";
 
@@ -233,69 +233,84 @@ TokArr BayesNet::GetGaussianCovar(TokArr var)
     return Net().ConvertMatrixToToken(mat);
 }
 */
-TokArr MRF::GetPTabular(TokArr value)
+TokArr MRF::GetPTabular(TokArr aValue)
 {
-/*    static const char fname[] = "GetPTabular";
-	
-    int nchldComb = child.size();
-    if( !nchldComb )
+    static const char fname[] = "GetPTabular";
+
+    int aValSize = aValue.size();
+    Vector<int> tokNumbers(aValSize, 1);
+    int i, j;
+    TokIdNode *node;
+    int nVal = 1, nval;
+    for(i = aValSize; --i; )
     {
-		ThrowUsingError("Must be at least one combination for a child node", fname);
+        node = m_pNet->Token()->Node(aValue[i]);
+        if(node->tag == eTagValue)
+        {
+            tokNumbers[i - 1] = tokNumbers[i];
+            node = node->v_prev;
+            if(node->tag != eTagNetNode)
+            {
+                ThrowUsingError("There is must be node", fname);
+            }
+        }
+        else
+        {
+            if(node->tag == eTagNetNode)
+            {
+                nval = m_pNet->Token()->nValue(m_pNet->Graph()->INode(node->Name()));
+                tokNumbers[i - 1] = tokNumbers[i] * nval;
+                nVal *= nval;
+            }
+            else
+            {
+                ThrowUsingError("There is must be node", fname);
+            }
+        }
     }
-	
-    Vector<int> childNd, childVl;
-    int i;
-    Net().ExtractTokArr(child, &childNd, &childVl);
-	
-    // node for all child must be same (its may differ by combination only)
-    for(i = childNd.size(); --i > 0; ++i)
+    node = m_pNet->Token()->Node(aValue[0]);
+    if(node->tag == eTagNetNode)
     {
-		if(childNd[i] != childNd[0])
-		{
-			ThrowUsingError("Can't return probabilities for different nodes", fname);
-		}
+	nVal *= m_pNet->Token()->nValue(m_pNet->Graph()->INode(node->Name()));
     }
-	
-    if( !childVl.size())
+
+    int TokInd;
+    Vector<Tok> aTok(nVal);
+    for(i = 0; i < aValSize; i++)
     {
-		childVl.assign(nchldComb, -1);
+        node = m_pNet->Token()->Node(aValue[i]);
+        if(node->tag == eTagValue)
+        {
+            for(TokInd = 0; TokInd < nVal; TokInd++)
+            {
+                aTok[TokInd] ^= aValue[i];
+            }
+        }
+        else
+        {
+            Vector<String> values;
+            m_pNet->Token()->GetValues(m_pNet->Graph()->INode(node->Name()), values);
+	    int flag = 1;
+            for(TokInd = 0, j = 0; TokInd < nVal; TokInd++, flag++)
+            {
+                aTok[TokInd] ^= (Tok(node->Name()) ^ values[j]);
+                if(flag == tokNumbers[i])
+                {
+                    j++;
+		    flag = 0;
+		    if(j == values.size())
+		    {
+			j = 0;
+		    }
+                }
+            }
+        }
     }
-	
-    Vector<int> parentNds, parentVls;
-    int nparents = parents.size();
-    if( nparents )
-    {
-		Net().ExtractTokArr(parents, &parentNds, &parentVls);
-		if( parentVls.size() == 0 ||
-			std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
-		{
-			ThrowInternalError("undefindes values for given parent nodes", "P");
-		}
-    }
-    else
-    {
-		Net().Graph()->Graph()->GetParents( childNd.front(), &parentNds );
-		nparents = parentNds.size();
-		parentVls.assign(nparents, -1);
-    }
-	
-    parentNds.resize(nparents + 1);
-    parentVls.resize(nparents + 1);
-	
-    const pnl::CFactor * cpd = Model()->GetFactor(childNd.front());
-    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matTable);
-	
-    TokArr result = "";
-    for( i = 0; i < nchldComb; i++ )
-    {
-		parentNds[nparents] = childNd.front();
-		parentVls[nparents] = childVl[i];
-		result << Net().CutReq( parentNds, parentVls, mat);
-    }
-	
+
+    TokArr result(&aTok.front(), nVal);
+    Net().Distributions()->ExtractData(pnl::matTable, result);
+
     return result;
-    */
-    return 0;
 }
 
 void MRF::SetInferenceProperties(TokArr &nodes)
