@@ -104,7 +104,7 @@ protected:
 
   inline int GetJTreeRootNode() const;
 
-  inline virtual void SetJTreeRootNode(int nodeNum);
+  inline void SetJTreeRootNode(int nodeNum);
 
   int GetMailBoxNumber(int clqFrom, int clqTo); // get mailBox number between cliques
 
