@@ -23,13 +23,22 @@ WDistributions::WDistributions(TokenCover *pToken): m_pToken(pToken)
 
 void WDistributions::Setup(int iNode)
 {
+    int nodeClass = m_pToken->NodesClassification(TokArr(Tok(m_pToken->Node(iNode))));
+
     if(iNode >= m_aDistribution.size())
     {
 	m_aDistribution.resize(iNode + 1, 0);
-	m_abDiscrete.resize(iNode + 1, true);
+	m_abDiscrete.resize(iNode + 1, nodeClass == eNodeClassCategoric );
     }
     delete m_aDistribution[iNode];
-    m_aDistribution[iNode] = new WTabularDistribFun();
+    if (nodeClass == eNodeClassCategoric )
+        m_aDistribution[iNode] = new WTabularDistribFun();
+    else
+        if (nodeClass == eNodeClassContinuous)
+            m_aDistribution[iNode] = new WGaussianDistribFun();
+        else
+	    ThrowUsingError("Uknown type", "Setup");
+
 
     Vector<int> aParent;
     
