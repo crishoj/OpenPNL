@@ -340,28 +340,20 @@ CGaussianCPD::ConvertWithEvidenceToPotential(const CEvidence* pEvidence,
             }
         } //        for( i = 0; i < domSize; i++ )
 
-        //can enter discrete evidence first if all continuous nodes observed
-        //need to check if all them observed!
         CModelDomain* pMD = GetModelDomain();
         
-        //need to enter continuous evidence
-        //if after entering continuous evidence there isn't unobserved nodes - need to create scalar
         CPotential* resPot = NULL;
-        if( obsDiscreteIndex.size() + obsGauIndex.size() == m_Domain.size() )
+        int isLastNodeObs = pEvidence->IsNodeObserved(m_Domain[m_Domain.size()-1]); 
+        if( (obsDiscreteIndex.size() + obsGauIndex.size() == m_Domain.size()-1) && isLastNodeObs)
         {
-            CCondGaussianDistribFun* withDiscrEv =
-                (static_cast<CCondGaussianDistribFun*>(m_CorrespDistribFun))->
-                EnterDiscreteEvidence(obsDiscreteIndex.size(),
-                &obsDiscreteIndex.front(), &obsDiscrVals.front(),
-                pMD->GetObsTabVarType() );
-            
             //result distribution is scalar
             obsDiscreteIndex.insert(obsDiscreteIndex.end(), obsGauIndex.begin(),
                 obsGauIndex.end());
             //child node is observed
-            obsDiscreteIndex.insert(obsDiscreteIndex.end(), domSize-1);  // ??????????
+            obsDiscreteIndex.insert(obsDiscreteIndex.end(), domSize-1);  
             resPot = CScalarPotential::Create( m_Domain, GetModelDomain(), obsDiscreteIndex );
         }
+
         else
         {
             const CNodeType* nt;
@@ -406,6 +398,7 @@ CGaussianCPD::ConvertWithEvidenceToPotential(const CEvidence* pEvidence,
                     &m_Domain.front(), m_Domain.size(), GetModelDomain(), NULL,
                     obsDiscreteIndex );
                 resPot->SetDistribFun( resDistr );
+                delete withDiscrEv;
                 delete resDistr;
             }
             else
