@@ -18,7 +18,7 @@
 
 #ifndef __PNLPARGIBBSSAMPLINGINFERENCEENGINE_HPP__
 #define __PNLPARGIBBSSAMPLINGINFERENCEENGINE_HPP__
-
+ 
 #include "pnlParConfig.hpp"
 
 //#undef PAR_PNL
@@ -46,6 +46,8 @@ public:
     void EnterEvidence( const CEvidence *pEvidenceIn, int maximize = 0, 
         int sumOnMixtureNode = 1 );
 
+	virtual ~CParGibbsSamplingInfEngine();
+
 #ifdef PNL_RTTI
   virtual const CPNLType &GetTypeInfo() const
   {
@@ -68,6 +70,12 @@ protected:
     bool ConvertingFamilyToPot( int node, const CEvidence* pEv );
 
     void CreateQueryFactors();
+
+	virtual void Initialization();
+
+	//Each cont. parent of tabular child has got an element in m_SoftMaxGaussianFactorsForOMP
+	//It contains a potential for statistic inference (see ConvertingFamilyToPot function)
+	pFactorVector m_SoftMaxGaussianFactorsForOMP;
 
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;

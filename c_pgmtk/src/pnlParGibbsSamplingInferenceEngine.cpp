@@ -19,7 +19,7 @@
 
 #include "pnlConfig.hpp"
 #include "pnlParGibbsSamplingInferenceEngine.hpp"
-
+ 
 #ifdef PAR_PNL
 
 #include "pnlTabularDistribFun.hpp"
@@ -29,6 +29,9 @@
 #include "pnlCPD.hpp"
 #include "pnlMixtureGaussianCPD.hpp"
 #include "pnlMNet.hpp"
+#include "pnlSoftMaxCPD.hpp"
+#include "pnlSoftMaxDistribFun.hpp"
+#include "pnlCondSoftMaxDistribFun.hpp"
 
 #ifdef PAR_OMP
 #include <omp.h>
@@ -99,6 +102,36 @@ CParGibbsSamplingInfEngine::CParGibbsSamplingInfEngine(
     CreateSamplingPotentials( &potsToSampling );
     
     FindEnvironment(&m_environment);
+
+	m_SoftMaxGaussianFactorsForOMP.resize(pGraphicalModel->GetNumberOfNodes()*m_NumberOfThreads, NULL);
+
+	Initialization();
+}
+// ----------------------------------------------------------------------------
+
+CParGibbsSamplingInfEngine::~CParGibbsSamplingInfEngine()
+{
+	int NFactors = m_pGraphicalModel->GetNumberOfNodes()*m_NumberOfThreads;
+	for (int factor = 0; factor < NFactors; factor++) {
+		if (m_SoftMaxGaussianFactorsForOMP[factor]!=NULL) {
+			delete m_SoftMaxGaussianFactorsForOMP[factor];
+			m_SoftMaxGaussianFactorsForOMP[factor] = NULL;
+		}
+	}	
+	
+	//Destroy query factors, that was created in CParGibbsSamplingInfEngine::Initialization()
+	int nFactors = GetModel()->GetNumberOfFactors();
+	int nFactorsOMP = GetModel()->GetNumberOfFactors()*m_NumberOfThreads;
+	pFactorVector *currentFactors = GetCurrentFactors();
+	int i;
+	for( i = nFactors; i < nFactorsOMP; i++ )
+	{
+		if ((*currentFactors)[i])
+		{
+			delete (*currentFactors)[i];
+			(*currentFactors)[i] = NULL;
+		};
+	}
 }
 // ----------------------------------------------------------------------------
 
@@ -414,6 +447,8 @@ Sampling( int statTime, int endTime )
     };
 
     rfQueryFactors.resize(queryFactorsSize);
+
+	GetModel()->GetModelDomain()->ClearNodeTypeCopies();
 }
 // ----------------------------------------------------------------------------
 
@@ -456,108 +491,364 @@ CreateSamplingPotentials( potsPVector* potsToSampling )
 bool CParGibbsSamplingInfEngine::
 ConvertingFamilyToPot( int node, const CEvidence* pEv )
 {
-    //intVector ndsForSampling;
-    //GetNdsForSampling( &ndsForSampling );
-    int ndsSize = m_NumberOfNodesForSample;//ndsForSampling.size();
-    int nodeModndsSize = node%ndsSize;
-    pFactorVector& currentFactors = *GetCurrentFactors();
+    int NNodes = m_pGraphicalModel->GetNumberOfNodes();
+    int nodeModndsSize = node%NNodes;
+	
+	int ThreadId = PAR_OMP_NUM_CURR_THREAD;
 
-    bool ret = false;
-    CPotential* potToSample = GetPotToSampling(node);
-    Normalization(potToSample);
-    int i;
-    if( !IsAllNdsTab() )
-    {
-        if( GetModel()->GetModelType() == mtBNet )
-        {
-            for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-            {
-                int num = m_environment[nodeModndsSize][i];
-                CPotential *pot1 =
-                    static_cast< CCPD* >( currentFactors[ num ] )->
-                    ConvertWithEvidenceToPotential(pEv);
-                int delta = nodeModndsSize;
-                CPotential *pot2 = pot1->Marginalize(&delta, 1);
-                delete pot1;
-                *potToSample *= *pot2;
-                delete pot2;
-            }
+	bool ret = false;
+	CPotential* potToSample = GetPotToSampling(node);
+	Normalization(potToSample);
+	int i;
+	bool isTreeNode = false;
+	
+	//Has node got discrete child with more than 2 values
+	bool bHasNodeGotDChldWMrThn2Vl = false;
+	
+	for (int ii = 0; ((ii < (m_environment[nodeModndsSize].size()-1))&&(!bHasNodeGotDChldWMrThn2Vl)); ii++) {
+		int num = m_environment[nodeModndsSize][ii];
+		if ((GetModel()->GetNodeType(num)->IsDiscrete())&&(GetModel()->GetNodeType(num)->GetNodeSize() > 2))
+			bHasNodeGotDChldWMrThn2Vl = true;
+	};
+	
+	int *obsNds = NULL;
+	valueVector obsVals;
+	CEvidence *pSoftMaxEvidence = NULL; 	
+	
+	if ((bHasNodeGotDChldWMrThn2Vl)&&(m_SoftMaxGaussianFactorsForOMP[node] != NULL)) 
+	{
+		obsVals.resize(NNodes);
+		obsNds = new int[NNodes];
+		
+		const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &nodeModndsSize);
+		
+		for (i = 0; i < NNodes; i++) 
+		{
+			const CNodeType *nt = m_pGraphicalModel->GetNodeType(i);
+			if (nt->IsDiscrete()) 
+				obsVals[i].SetInt(pEv->GetValue(i)->GetInt()); 
+			else 
+				obsVals[i].SetFlt(pEv->GetValue(i)->GetFlt()); 
+			
+			obsNds[i] = i;
+		}
+		
+		const_cast<CEvidence*> (pEv)->ToggleNodeState(1, &nodeModndsSize);
+	}
+	
+	for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+	{            
+		int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+		if ( (*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtTree)
+		{
+			isTreeNode = true;
+		};
+	};
+	
+	if( (!IsAllNdsTab()) || (isTreeNode == true))
+	{
+		if( GetModel()->GetModelType() == mtBNet )
+		{
+			if (m_SoftMaxGaussianFactorsForOMP[node] == NULL) {	  
+				for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+				{            
+					int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+					CPotential *pot1 = (!(((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtSoftMax)||
+						((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtCondSoftMax)))?
+						
+						(static_cast< CCPD* >( (*GetCurrentFactors())[num] )
+						->ConvertWithEvidenceToPotential(pEv)):
+					
+					(static_cast< CSoftMaxCPD* >( (*GetCurrentFactors())[num] )
+						->ConvertWithEvidenceToTabularPotential(pEv));
+					
+					CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
+					delete pot1;
+					*potToSample *= *pot2;
+					delete pot2;
+				} //for( i = 0; i < m_envir...
+			}
+			else {
+				if (!bHasNodeGotDChldWMrThn2Vl) {
+					for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+					{       
+						int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+						
+						if (!(((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtSoftMax)||
+							((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtCondSoftMax))) {           
+							CPotential *pot1 = (static_cast< CCPD* >( (*GetCurrentFactors())[num] )
+								->ConvertWithEvidenceToPotential(pEv));
+							
+							CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
+							delete pot1;
+							*potToSample *= *pot2;  
+							//static_cast<CGaussianDistribFun *>(potToSample->GetDistribFun())->UpdateMomentForm();
+							//potToSample->Dump();
+							delete pot2;
+						}
+						else {
+							//Converting distribution to gaussiang
+							//Variational Approzimation (see Kevin P. Murphy
+							//"A variational Approximation for Bayesian Networks with Disrete and Continuous Latent Variables")
+							floatVector MeanContParents;
+							C2DNumericDenseMatrix<float>* CovContParents;
+							
+							static_cast<const CSoftMaxCPD*>((*GetCurrentFactors())[num])->
+								CreateMeanAndCovMatrixForNode(num%NNodes, pEv, static_cast<const CBNet*> (GetModel()), 
+								MeanContParents, &CovContParents);
+							
+							intVector discParents(0);
+							static_cast <const CBNet *>(GetModel())->GetDiscreteParents(num%NNodes, &discParents);
+							
+							int *parentComb = new int [discParents.size()];
+							
+							intVector pObsNodes;
+							pConstValueVector pObsValues;
+							pConstNodeTypeVector pNodeTypes;
+							pEv->GetObsNodesWithValues(&pObsNodes, &pObsValues,
+								&pNodeTypes);
+							
+							int location;
+							for (int k = 0; k < discParents.size(); k++)
+							{
+								location = 
+									std::find(pObsNodes.begin(), pObsNodes.end(), 
+									discParents[k]) - pObsNodes.begin();
+								parentComb[k] = pObsValues[location]->GetInt();
+							}
+							
+							int index = 0; 
+							int multidimindexes[2];
+							
+							const CSoftMaxDistribFun* dtSM = NULL;
+							
+							if ((*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtCondSoftMax)
+								dtSM = 
+								static_cast<CCondSoftMaxDistribFun*>((*GetCurrentFactors())[num]->GetDistribFun())->
+								GetDistribution(parentComb);
+							else 
+								dtSM = 
+								static_cast<CSoftMaxDistribFun*>((*GetCurrentFactors())[num]->GetDistribFun());
+							
+							intVector Domain;
+							(*GetCurrentFactors())[num]->GetDomain(&Domain);
+							
+							const CNodeType *nt;
+							for(int ii = 0; ii < Domain.size(); ii++)
+							{
+								nt = GetModel()->GetNodeType( Domain[ii] );
+								if(!(nt->IsDiscrete()))
+								{
+									if (Domain[ii] != nodeModndsSize) 
+										index++;
+									else
+										break;
+								}
+							}
+							
+							multidimindexes[0] = index;
+							CMatrix<float>* pMatWeights = dtSM->GetMatrix(matWeights);
+							
+							multidimindexes[1] = 0;
+							float weight0 = pMatWeights->GetElementByIndexes(multidimindexes);
+							multidimindexes[1] = 1;
+							float weight1 = pMatWeights->GetElementByIndexes(multidimindexes);;
+							
+							if (weight0 != weight1) {
+								GetModel()->GetModelDomain()->ChangeNodeTypeOnThread(num%NNodes, 1);
+								
+								CPotential *pot1 = (static_cast< CSoftMaxCPD* >( (*GetCurrentFactors())[num] )
+									->ConvertWithEvidenceToGaussianPotential(pEv, MeanContParents, CovContParents, parentComb));
+								
+								CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
+								
+								delete pot1;
+								*potToSample *= *pot2;
+								delete pot2;
+								
+								GetModel()->GetModelDomain()->ChangeNodeTypeOnThread(num%NNodes, 0);
+							};
+							
+							delete[] parentComb;
+							delete CovContParents;
+						}
+          }
+        }  //if (!bHasNodeGotDChldWMrThn2Vl) {
+        else {
+			int numberOfCorrectSamples = 0;
+			int numberOfAllSamples = 0;
+			
+			m_SoftMaxGaussianFactorsForOMP[node]->GetDistribFun()->ClearStatisticalData();
+			
+			for (;(numberOfCorrectSamples < GetNSamplesForSoftMax())&&(numberOfAllSamples < GetMaxNSamplesForSoftMax());numberOfAllSamples++) {
+				
+				//Generating of the continuous parent
+				pSoftMaxEvidence = CEvidence::Create( m_pGraphicalModel, NNodes, obsNds, obsVals );  
+				
+				pSoftMaxEvidence->ToggleNodeState(1, &nodeModndsSize);
+				
+				CPotential *pDeltaPotToSample = dynamic_cast<CPotential*>(potToSample->Clone());
+				
+				const CNodeType *nt;
+				for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+				{            
+					int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+					nt = m_pGraphicalModel->GetNodeType(num%NNodes);
+					if (!nt->IsDiscrete()) {
+						CPotential *pot1 = static_cast< CCPD* >( (*GetCurrentFactors())[num] )
+							->ConvertWithEvidenceToPotential(pSoftMaxEvidence);
+						CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
+						delete pot1;
+						*pDeltaPotToSample *= *pot2;
+						delete pot2;
+					}
+				}//for( i = 0; i < m_envir...
+				
+				pDeltaPotToSample->GenerateSample( pSoftMaxEvidence, m_bMaximize );
+				
+				delete pDeltaPotToSample;
+				
+				//Generating of the children's values
+				for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+				{            
+					int child = m_environment[nodeModndsSize][i];
+					nt = m_pGraphicalModel->GetNodeType(child);
+					
+					if (nt->IsDiscrete()) {
+						pDeltaPotToSample = dynamic_cast<CPotential*>(GetPotToSampling(child)->Clone());
+						pSoftMaxEvidence->ToggleNodeState(1, &child);
+						
+						for(int j = 0; j < m_environment[child].size(); j++ )
+						{        
+							int grandchild = m_environment[child][j];     
+							
+							CPotential *pot1 = (!(((*GetCurrentFactors())[grandchild]->GetDistribFun()->GetDistributionType() == dtSoftMax)||
+								((*GetCurrentFactors())[grandchild]->GetDistribFun()->GetDistributionType() == dtCondSoftMax)))?
+								
+								(static_cast< CCPD* >( (*GetCurrentFactors())[grandchild] )
+								->ConvertWithEvidenceToPotential(pSoftMaxEvidence)):
+							
+							(static_cast< CSoftMaxCPD* >( (*GetCurrentFactors())[grandchild] )
+								->ConvertWithEvidenceToTabularPotential(pSoftMaxEvidence));
+							CPotential *pot2 = pot1->Marginalize(&child, 1);
+							delete pot1;
+							*pDeltaPotToSample *= *pot2;
+							delete pot2;
+						}
+						
+						pDeltaPotToSample->GenerateSample( pSoftMaxEvidence, m_bMaximize );
+						
+						delete pDeltaPotToSample;        
+					}
+				}//for( i = 0; i < m_envir...
+				
+				//Verification of children values
+				bool NeedToUpgrade = true;
+				for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+				{            
+					int child = m_environment[nodeModndsSize][i];
+					nt = m_pGraphicalModel->GetNodeType(child);
+					
+					if (nt->IsDiscrete()) {
+						if (pSoftMaxEvidence->GetValue(child)->GetInt() != pEv->GetValue(child)->GetInt())   
+							NeedToUpgrade = false;
+					}
+				}//for( i = 0; i < m_envir...
+				
+				if (NeedToUpgrade) {
+					m_SoftMaxGaussianFactorsForOMP[node]->UpdateStatisticsML(&pSoftMaxEvidence, 1);
+					numberOfCorrectSamples++;
+				}
+				
+				delete pSoftMaxEvidence;
+			}//for ((numberOfCorrectSamples < m_NSamplesForS...
+			
+			if (numberOfCorrectSamples) {
+				CPotential *tempPot = m_SoftMaxGaussianFactorsForOMP[node]
+					->ConvertStatisticToPot(numberOfCorrectSamples);
+				*potToSample *= *tempPot;
+				delete tempPot;
+			}
         }
-        else
-        {
-            for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-            {
-                int num = m_environment[nodeModndsSize][i];
-                CPotential *pot1 =
-                    static_cast< CPotential* >( currentFactors[ num ] )->
-                    ShrinkObservedNodes(pEv);
-                int delta = nodeModndsSize;
-                CPotential *pot2 = pot1->Marginalize(&delta, 1);
-                delete pot1;
-                *potToSample *= *pot2;
-                delete pot2;
-            }
-        }
-    }
+      }
+    }//if( GetModel()->GetModelType() == mtBNe...
     else
     {
-        CMatrix< float > *pMatToSample;
-        pMatToSample = 
-            static_cast<CTabularDistribFun*>(potToSample->GetDistribFun())->
-            GetMatrix(matTable);
-        intVector dims;
-        intVector vls;
-        intVector domain;
-
-        for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
-        {
-            int num = m_environment[nodeModndsSize][i];
-            currentFactors[ num ]->GetDomain(&domain);
-            GetObsDimsWithVls( domain, nodeModndsSize, pEv, &dims, &vls); 
-            CMatrix< float > *pMat;
-            pMat = static_cast<CTabularDistribFun*>(currentFactors[ num ]->
-                GetDistribFun())->GetMatrix(matTable);
-            pMat->ReduceOp( &dims.front(), dims.size(), 2, &vls.front(),
-                pMatToSample, PNL_ACCUM_TYPE_MUL );
-            dims.clear();
-            vls.clear();
-            domain.clear();
-        }
+		for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+		{
+			int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+			CPotential *pot1 = static_cast< CPotential* >( (*GetCurrentFactors())[num] )
+				->ShrinkObservedNodes(pEv);
+			CPotential *pot2 = pot1->Marginalize(&nodeModndsSize, 1);
+			delete pot1;
+			*potToSample *= *pot2;
+			delete pot2;
+		}
     }
-
-    //check for non zero elements
-    CMatrix<float> *pMat;
-    if( potToSample->GetDistributionType()==dtTabular )
-    {
-        pMat = potToSample->GetDistribFun()->GetMatrix(matTable);
-    }
-    else
-    {
-        CGaussianDistribFun* pDistr =
-            static_cast<CGaussianDistribFun*>(potToSample->GetDistribFun());
-        if(pDistr->GetMomentFormFlag())
-        {
-            pMat = pDistr->GetMatrix(matCovariance);
-        }
-        else
-        {
-            pMat = pDistr->GetMatrix(matK);
-        }
-    }
-
-    CMatrixIterator<float>* iter = pMat->InitIterator();
-    for( iter; pMat->IsValueHere( iter ); pMat->Next(iter) )
-    {
-        if(*(pMat->Value( iter )) > FLT_EPSILON)
-        {
-            ret = true;
-            break;
-        }
-    }
-
-    delete iter;
-    return ret;
+  }
+  else //  if( !IsAllNdsTab() )...
+  {
+	  
+	  CMatrix< float > *pMatToSample;
+	  pMatToSample = static_cast<CTabularDistribFun*>(potToSample->GetDistribFun())
+		  ->GetMatrix(matTable);
+	  
+	  intVector dims;
+	  intVector vls;
+	  intVector domain;
+	  
+	  for( i = 0; i < m_environment[nodeModndsSize].size(); i++ )
+	  {            
+		  int num = m_environment[nodeModndsSize][i]+ThreadId*NNodes;
+		  (*GetCurrentFactors())[num]->GetDomain(&domain);
+		  GetObsDimsWithVls( domain, nodeModndsSize, pEv, &dims, &vls); 
+		  CMatrix< float > *pMat;
+		  pMat = static_cast<CTabularDistribFun*>((*GetCurrentFactors())[num]->
+			  GetDistribFun())->GetMatrix(matTable);
+		  pMat->ReduceOp( &dims.front(), dims.size(), 2, &vls.front(),
+			  pMatToSample, PNL_ACCUM_TYPE_MUL );
+		  dims.clear();
+		  vls.clear();
+		  domain.clear();
+		  
+	  }
+  }  
+  //check for non zero elements
+  CMatrix<float> *pMat;
+  if( potToSample->GetDistributionType()==dtTabular )
+  {	
+	  pMat = potToSample->GetDistribFun()->GetMatrix(matTable);
+  }
+  else
+  {
+	  CGaussianDistribFun* pDistr = static_cast<CGaussianDistribFun*>(potToSample->GetDistribFun());
+	  if(pDistr->GetMomentFormFlag())
+	  {
+		  pMat = pDistr->GetMatrix(matCovariance);
+	  }
+	  else
+	  {
+		  pMat = pDistr->GetMatrix(matK);
+	  }
+  }
+  
+  CMatrixIterator<float>* iter = pMat->InitIterator();
+  for( iter; pMat->IsValueHere( iter ); pMat->Next(iter) )
+  {
+	  
+	  if(*(pMat->Value( iter )) > FLT_EPSILON)
+	  {
+		  ret = true;
+		  break;
+	  }
+  }
+  
+  if (obsNds != NULL)
+	  delete obsNds;
+  delete iter;
+  return ret;
 }
+
 // ----------------------------------------------------------------------------
 
 void CParGibbsSamplingInfEngine::EnterEvidence( const CEvidence *pEvidenceIn,
@@ -608,16 +899,17 @@ void CParGibbsSamplingInfEngine::EnterEvidence( const CEvidence *pEvidenceIn,
 void CParGibbsSamplingInfEngine::CreateQueryFactors()
 {
     int NumThreads = PAR_OMP_NUM_THREADS;
-
+	
     pConstNodeTypeVector ntVec;
     const CNodeType *nt;
     intVector query;
-
+	
     intVecVector& rfQueryes = GetQueryes();
     pFactorVector& rfQueryFactors = *GetQueryFactors();
-
-    //Цикл создания дополнительных факторов для каждого из процессов
+	
+    //Create additional factors for every processes
     for (int proc = 0; proc < NumThreads; proc++)
+	{
         for( int number = 0; number < rfQueryes.size(); number++ )
         {
             for( int node = 0; node < rfQueryes[number].size(); node++)
@@ -653,8 +945,61 @@ void CParGibbsSamplingInfEngine::CreateQueryFactors()
             ntVec.clear();
             query.clear();
         }
-};
+	};
+	
+	//Create m_SoftMaxGaussianFactorsForOMP potentials
+	int NNodes = m_pGraphicalModel->GetNumberOfNodes();
+	int NFactors = m_pGraphicalModel->GetNumberOfNodes()*m_NumberOfThreads;
+	CGraph *pGraph = m_pGraphicalModel->GetGraph();
+	intVector Children;
+	
+	for (int factor = 0; factor < NFactors; factor++) 
+	{
+		nt = m_pGraphicalModel->GetNodeType(factor%NNodes);
+		
+		if ((!nt->IsDiscrete())&&(!(m_pEvidence->IsNodeObserved(factor%NNodes))))
+		{
+			pGraph->GetChildren(factor%NNodes, &Children);
+			
+			for (int child = 0; child < Children.size(); child++) 
+			{
+				nt = m_pGraphicalModel->GetNodeType(Children[child]);
+				
+				if (nt->IsDiscrete()) {
+					int node = factor%NNodes;
+					m_SoftMaxGaussianFactorsForOMP[factor] = CGaussianPotential::Create(&node, 1, m_pGraphicalModel->GetModelDomain());
+					break;
+				};
+			}
+		}
+	};
+
+	
+}
 // ----------------------------------------------------------------------------
+
+void CParGibbsSamplingInfEngine::Initialization()
+{
+	int nFactors = GetModel()->GetNumberOfFactors();
+	int nFactorsOMP = GetModel()->GetNumberOfFactors()*m_NumberOfThreads;
+	pFactorVector *currentFactors = GetCurrentFactors();
+	currentFactors->resize(nFactorsOMP);
+	int i;
+	for( i = 0; i < nFactorsOMP; i++ )
+	{
+		if (i<nFactors)
+		{
+			(*currentFactors)[i] = GetModel()->GetFactor(i);
+		}
+		else
+		{
+			(*currentFactors)[i] = GetModel()->GetFactor(i%nFactors)->Clone();
+		};
+	}
+}
+// ----------------------------------------------------------------------------
+
+
 #ifdef PNL_RTTI
 const CPNLType CParGibbsSamplingInfEngine::m_TypeInfo = CPNLType("CParGibbsSamplingInfEngine", &(CGibbsSamplingInfEngine::m_TypeInfo));
 
