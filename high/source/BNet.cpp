@@ -838,7 +838,7 @@ void BayesNet::LoadNet(const char *filename)
 	ThrowUsingError("Can't load file - bad file?", "LoadNet");
     }
 
-    delete &Net();
+    delete m_pNet;
     m_pNet = pNewNet;
     m_pNet->SetCallback(new BayesNetCallback());
 
@@ -848,7 +848,7 @@ void BayesNet::LoadNet(const char *filename)
     delete &Learning();
     m_Learning = NULL;
 
-    // We must load net-specific data here.
+    // We can load net-specific data here.
     // BayesNet haven't any specific data for now
 }
 

@@ -40,12 +40,14 @@ class NetworkPNL: public INetwork
 {
 public:
     typedef std::vector<std::pair<std::string, std::string> > PropertyMap;
+    typedef std::map<String, String> PropertyRealMap;
     // high-level operations
     virtual void Delete();
     NetworkPNL();
+    virtual ~NetworkPNL();
     
-    virtual const char* GetId() { return m_NetName.c_str(); }
-    virtual bool SetId(const char*id) { m_NetName.assign(id); return true; }
+    virtual const char* GetId();
+    virtual bool SetId(const char*id);
     
     virtual void SetErrorOutput(IErrorOutput *errorOutput) { m_ErrorOutput = errorOutput; }
     virtual bool Load(const char *filename, IXmlBinding *externalBinding);
@@ -275,11 +277,12 @@ protected:
 
 private:
     IErrorOutput *m_ErrorOutput;		// INetwork requires implycitly this pointer
-    BayesNet *m_pWNet;				// Doesn't used in this time
+    BayesNet *m_pWNet;
     StringGP m_NetName;				// name of net
     StringGP m_Bad;				// stub (returned when nothing to return)
-    PropertyMap m_NetProperty;			// properties for whole net
-    std::vector<PropertyMap> m_aNodeProperty;	// properties for each node
+    PropertyRealMap m_NetProperty;		// properties for whole net
+    std::vector<PropertyRealMap> m_aNodeProperty;// properties for each node
+//    std::vector<StringGP> m_aNodeComment;	// comment for every node
     pnl::Log *m_pLog;				// log driver (head) for debugging purposes
     pnl::LogDrvStream *m_pLogStream;		// stream driver for debugging purposes
     std::vector<NetConst::NodeValueStatus> m_aNodeValueStatus;// nodevalue status for every node

@@ -28,26 +28,74 @@
 #include "pnlPersistence.hpp"
 #include "pnlXMLRead.hpp"
 #include "pnlXMLWrite.hpp"
+#include "pnlPersistCover.hpp"
+#include "pnlGroup.hpp"
+
+static void TranslatePropertyToReal(NetworkPNL::PropertyRealMap *pTo, const NetworkPNL::PropertyMap &from)
+{
+    pTo->clear();
+    for(int i = 0; i < from.size(); ++i)
+    {
+	(*pTo)[from[i].first] = from[i].second;
+    }
+}
+
+static void TranslatePropertyFromReal(NetworkPNL::PropertyMap *to, const NetworkPNL::PropertyRealMap &from)
+{
+    NetworkPNL::PropertyRealMap::const_iterator it, itEnd;
+    int i;
+
+    it = from.begin();
+    itEnd = from.end();
+    to->resize(0);
+    to->reserve(from.size());
+    for(i = 0; it != itEnd; ++it, ++i)
+    {
+	to->push_back(std::pair<std::string, std::string>(it->first.c_str(), it->second.c_str()));
+    }
+    if(i != from.size())
+    {
+	ThrowInternalError("Bad coping", "TranslatePropertyFromReal");
+    }
+}
 
 void NetworkPNL::Delete()
 {
     MarkCallFunction("Delete", true);
-    delete m_pWNet;
-    delete m_pLog;
-    delete m_pLogStream;
-    delete m_aEvidence;
+    delete this;
 }
 
-NetworkPNL::NetworkPNL(): m_ErrorOutput(0), m_NetName("PNLBNet")
+NetworkPNL::NetworkPNL(): m_ErrorOutput(0), m_NetName("PNLBayesNet")
 {
     m_pWNet = new BayesNet;
     m_aNodeProperty.reserve(40);
+    m_NetProperty["NetName"] = m_NetName;
     m_pLogStream = new pnl::LogDrvStream("GeNIe_PNLModule.log", pnl::eLOG_ALL, pnl::eLOGSRV_ALL);
     m_pLog = new pnl::Log("", pnl::eLOG_DEBUG|pnl::eLOG_NOTICE|pnl::eLOG_INFO, pnl::eLOGSRV_TEST1);
     (*m_pLog) << "Ok, Started!\n";
     m_aEvidence = new WEvidence;
 }
 
+NetworkPNL::~NetworkPNL()
+{
+    delete m_pWNet;
+    delete m_pLog;
+    delete m_pLogStream;
+    delete m_aEvidence;
+}
+
+const char* NetworkPNL::GetId()
+{
+    return m_NetName.c_str();
+}
+
+bool NetworkPNL::SetId(const char*id)
+{
+    m_NetName.assign(id);
+    m_NetProperty["NetName"] = id;
+    return true;
+}
+    
 // Persistence
 
 bool NetworkPNL::Load(const char *filename, IXmlBinding *externalBinding)
@@ -60,20 +108,56 @@ bool NetworkPNL::Load(const char *filename, IXmlBinding *externalBinding)
     pnl::CContextPersistence xml;
 
     xml.LoadXMLToContainer(&filter, filename);
+    xml.LoadXML(filename);
     m_pWNet->LoadNet(filename);
     {
 	int nNode = m_pWNet->Net().nNetNode();
-	m_NetName = "NetWoRk"; // stub
-	m_aNodeProperty.assign(nNode, PropertyMap());
+
+	m_aNodeProperty.assign(nNode, PropertyRealMap());
 	m_aNodeValueStatus.assign(nNode, NetConst::NotUpdated);
 	m_aEvidence->Clear();// stub ?
-	m_abEvidence.assign(nNode, false);// same as previous
+	m_abEvidence.assign(nNode, false);// stub?
+
+	pnl::CGroupObj *propertyGroup = static_cast<pnl::CGroupObj *>(xml.Get("Bridge_PNL_to_GeNIe"));
+	pnl::CGroupObj *propertyNodes;
+
+        m_NetProperty = *static_cast<pnl::CCover<PropertyRealMap>*>(
+	    propertyGroup->Get("NetProperty", true))->GetPointer();
+	m_NetName.assign(m_NetProperty["NetName"].c_str());
+        propertyNodes = static_cast<pnl::CGroupObj *>(propertyGroup->Get("Nodes", true));
+
+	if(propertyNodes)
+	{
+	    pnl::CCover<PropertyRealMap>* pProperty;
+	    pnl::pnlVector<pnl::pnlString> aName;
+	    String name;
+	    int i, j;
+
+	    propertyNodes->GetChildrenNames(&aName);
+
+	    for(i = 0; i < aName.size(); ++i)
+	    {
+		if(aName[i] == "NetProperty")
+		{
+		    continue;
+		}
+		pProperty = static_cast<pnl::CCover<PropertyRealMap>*>(
+		    propertyNodes->Get(aName[i].c_str(), true));
+		name.resize(0);
+		name.append(aName[i].c_str(), aName[i].length() - 9);// remove ".property"
+		j = m_pWNet->Net().Graph()->INode(name);
+		if(j < 0 || j >= nNode)
+		{
+		    continue;
+		}
+		m_aNodeProperty[j] = *pProperty->GetPointer();
+	    }
+	}
     }
 
     return reader.Parse(container, externalBinding);
 }
 
-// FORWARDS
 bool NetworkPNL::Save(const char *filename, IXmlWriterExtension *externalExtension,
 		       const LegacyDslFileInfo *gnet)
 {
@@ -81,15 +165,47 @@ bool NetworkPNL::Save(const char *filename, IXmlWriterExtension *externalExtensi
     static const char fname[] = "Save";
     pnl::CContextPersistence saver;
     pnl::CXMLWriterStd writer;
+    pnl::CGroupObj pnlhGroup;
+    bool bWriteNodeProperty = false;
 
     if(!writer.OpenFile(filename))
     {
 	ThrowUsingError("can't open file", fname);
     }
-    if(!m_pWNet->Net().SaveNet(&saver))
+    if(!m_pWNet->Net().SaveNet(&saver, &pnlhGroup))
     {
 	ThrowInternalError("Can't save file", fname);
     }
+    saver.Put(&pnlhGroup, "WrapperInfo", false);
+
+    pnl::CGroupObj propertyGroup, propertyNodes;
+
+    propertyGroup.Put(new pnl::CCover<PropertyRealMap >(&m_NetProperty),
+	"NetProperty", true);
+
+    Vector<String> aNodeName = Graph()->Names();
+    String name;
+    int i, j;
+
+    for(i = 0; i < aNodeName.size(); ++i)
+    {
+	j = Graph()->INode(aNodeName[i]);
+	if(!m_aNodeProperty[j].size())
+	{
+	    continue;
+	}
+	bWriteNodeProperty = true;
+	name = aNodeName[i];
+	name << ".property";
+	propertyNodes.Put(new pnl::CCover<PropertyRealMap >(&m_aNodeProperty[j]),
+	    name.c_str(), true);
+    }
+    if(bWriteNodeProperty)
+    {
+	propertyGroup.Put(&propertyNodes, "Nodes", false);
+    }
+
+    saver.Put(&propertyGroup, "Bridge_PNL_to_GeNIe", false);
 
     if(!saver.SaveViaWriter(&writer))
     {
@@ -104,14 +220,6 @@ bool NetworkPNL::Save(const char *filename, IXmlWriterExtension *externalExtensi
     }
 
     return true;
-}
-
-static void LoadAttr(std::string *result, pnl::CContextLoad &context, const char *name)
-{
-    pnl::pnlString str;
-
-    context.GetAttribute(str, name);
-    result->assign(str.c_str(), str.c_str() + str.length());
 }
 
 bool NetworkPNL::UpdateBeliefs()
@@ -190,13 +298,13 @@ void NetworkPNL::SetNumberOfSamples(int samples)
 void NetworkPNL::GetNetworkProperties(PropertyMap &mp)
 {
     MarkCallFunction("GetNetworkProperties", true);
-    mp = m_NetProperty;
+    TranslatePropertyFromReal(&mp, m_NetProperty);
 }
 
 void NetworkPNL::SetNetworkProperties(const PropertyMap &mp)
 {
     MarkCallFunction("SetNetworkProperties", true);
-    m_NetProperty = mp;
+    TranslatePropertyToReal(&m_NetProperty, mp);
 }
 
 void NetworkPNL::InvalidateValues()
@@ -315,7 +423,7 @@ int NetworkPNL::AddNode(int nodeType, const char *nodeId)
     {
 	m_aNodeProperty.resize(result + 1);
 	m_aNodeValueStatus.resize(result + 1);
-	m_abEvidence.resize(result + 1);
+	m_abEvidence.resize(result + 1, false);
     }
     Distributions()->Setup(result);
     m_aNodeValueStatus[result] = NetConst::NotUpdated;
@@ -326,7 +434,7 @@ void NetworkPNL::DeleteNode(int node)
 {
     MarkCallFunction("DeleteNode", true);
     Distributions()->DropDistribution(node);
-    m_aNodeProperty[node].resize(0);
+    m_aNodeProperty[node].clear();
     Token()->DelNode(node);
 }
 
@@ -623,13 +731,13 @@ bool NetworkPNL::GetMinMaxUtility(int node, double &minUtility, double &maxUtili
 void NetworkPNL::GetProperties(int node, PropertyMap &mp)
 {
     MarkCallFunction("GetProperties", true);
-    mp = m_aNodeProperty.at(node);
+    TranslatePropertyFromReal(&mp, m_aNodeProperty.at(node));
 }
 
 void NetworkPNL::SetProperties(int node, const PropertyMap &mp)
 {
     MarkCallFunction("SetProperties", true);
-    m_aNodeProperty.at(node) = mp;
+    TranslatePropertyToReal(&m_aNodeProperty.at(node), mp);
 }
 
 void NetworkPNL::ObfuscateDefinition(int node, int algorithm, double param)
@@ -711,11 +819,7 @@ void NetworkPNL::SetEvidence(int node, int outcomeIndex)
 {
     MarkCallFunction("SetEvidence", true, (String() << "Node #" << node).c_str());
 
-#if 0 // resolving doesn't work for 0^0
-    m_aEvidence->Set(Tok(node) ^ outcomeIndex);
-#else
     m_aEvidence->Set(Tok(Graph()->NodeName(node)) ^ outcomeIndex);
-#endif
     m_abEvidence[node] = true;
     m_aNodeValueStatus[node] = NetConst::Updated;
 }

@@ -566,7 +566,11 @@ void TokenCover::DoNotify(int message, int iNode, ModelEngine *pObj)
     case eChangeName:
 	{
 	    PNL_CHECK_IS_NULL_POINTER(m_pGraph);
-	    TokIdNode *node = Node(iNode);
+	    Tok tokNode(iNode);
+
+	    tokNode.Resolve(Tok::Matcher(eTagNetNode), m_aNode);
+	    
+	    TokIdNode *node = tokNode.Node();
 	    String name = m_pGraph->NodeName(iNode);
 	    String oldName = node->Name();
 
@@ -587,7 +591,7 @@ void TokenCover::DoNotify(int message, int iNode, ModelEngine *pObj)
 	break;
     case eDelNode:
 	{// if user deletes node via WGraph
-	    TokIdNode *node = Tok(m_pGraph->NodeName(iNode)).Node(m_aNode);
+	    TokIdNode *node = Node(iNode);
 	    if(!node)
 	    {
 		break;
