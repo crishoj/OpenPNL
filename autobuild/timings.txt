@@ -1983,3 +1983,27 @@ Footer_begin
   Elapsed_Time,250.0
 Footer_end
 ==
+07/10/04 20:20:04	w2k_vc6	success	bad_build	
+Header_begin
+  Processor,Pentium
+  OS,WindowsNT v5.0 build 2195
+  Start_Date,
+  Start_Time,Sun Jul 11 00:48:11 2004
+Header_end
+Data_begin
+  Flavour,Function,Value,Units,Comments,Param1,Param2,Param3,Param4
+  d,testPerformanceJTreeInf,1.290667e-004,6.130109e-004,3.579545e+004,
+ time of inference procedure creation,
+ everage time of inference doing,
+ CPU Freq,
+  d,timeBKInfEngine,2.568762e-003,4.414248e-003,3.579545e+004,
+ JTree inference creation ,
+ average time for entering evidence ,
+ CPU frequency ,
+Data_end
+Footer_begin
+  End_Date,
+  End_Time,Sun Jul 11 00:52:32 2004
+  Elapsed_Time,261.0
+Footer_end
+==

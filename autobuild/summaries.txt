@@ -146,3 +146,4 @@ Note: it is normal for w2k_vc6 autobuilds to have "bad_build" code coverage summ
 07/07/04 20:20:01	w2k_vc6	failed	bad_build	testGibbsInference
 07/08/04 20:20:02	w2k_vc6	failed	bad_build	testLWInference
 07/09/04 20:20:02	w2k_vc6	success	bad_build	
+07/10/04 20:20:04	w2k_vc6	success	bad_build	
