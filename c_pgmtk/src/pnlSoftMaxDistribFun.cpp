@@ -1023,17 +1023,18 @@ EMaximizingMethod CSoftMaxDistribFun::GetMaximizingMethod()
 void CSoftMaxDistribFun::CalculateHessian(float ** pContVectorEvidence, 
   int NumberOfObservations)
 {
+  int i, j, e, k, l, w, z;
   int NumOfStates = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
   int NumOfContinousParents = m_NumberOfNodes-1;
   int * multiindex =  new int [2];
   int * mindex     =  new int [2];
-  for (int k = 0; k < NumOfStates - 1; k++)
+  for ( k = 0; k < NumOfStates - 1; k++ )
   {
-    for (int l = 0; l < NumOfStates - 1; l++ )
+    for ( l = 0; l < NumOfStates - 1; l++ )
     {
-      for (int i = 0; i < NumOfContinousParents+1; i++)
+      for ( i = 0; i < NumOfContinousParents+1; i++ )
       {
-        for (int j = 0; j < NumOfContinousParents+1; j++)
+        for ( j = 0; j < NumOfContinousParents+1; j++ )
         {
           multiindex[0] = k * (NumOfContinousParents +1) + i;
           multiindex[1] = l * (NumOfContinousParents +1) + j;
@@ -1041,13 +1042,13 @@ void CSoftMaxDistribFun::CalculateHessian(float ** pContVectorEvidence,
           float temp = 0;
           float globSum = 0;
           float globTempSum = 0;
-          for (int e = 0; e < NumberOfObservations; e++)
+          for ( e = 0; e < NumberOfObservations; e++ )
           {
             tempSum = 0;
-            for (int z = 0; z < NumOfStates - 1; z++)
+            for ( z = 0; z < NumOfStates - 1; z++ )
             {
               temp = 0;
-              for (int w = 0; w < NumOfContinousParents; w++)
+              for ( w = 0; w < NumOfContinousParents; w++ )
               {
                 mindex[0] = w;
                 mindex[1] = z;
