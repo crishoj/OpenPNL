@@ -609,13 +609,60 @@ void CParEMLearningEngine::LearnOMP()
 // ----------------------------------------------------------------------------
 
 #ifdef PAR_RESULTS_RELIABILITY
+bool IsEqualNumbers1(float Num1, float Num2, float Diff)
+{
+    int exponent1 = 0;
+    int sign1 = 1, sign2 = 1;
+    if (Num1<0.0f)
+        sign1 = 0;
+    
+    if (Num2<0.0f)
+        sign2 = 0;
+
+    if (sign1 != sign2)
+        return false;
+
+    if ((fabs(Num1)<1.0f)&&(fabs(Num2)<1.0f)) // numbers < 1
+        if ( fabs(Num1-Num2) > Diff)
+            return false;
+        else
+            return true;
+
+    // number > 1
+    while (fabs(Num1)>1.0f)
+    {
+        Num1 = Num1/10.0f;
+        exponent1 ++;
+    }
+
+    int exponent2 = 0;
+    while (fabs(Num2)>1.0f)
+    {
+        Num2 = Num2/10.0f;
+        exponent2 ++;
+    }
+    if (exponent1 != exponent2)
+        return false;
+    else
+        if ( fabs(Num1-Num2) > Diff)
+            return false;
+        else
+            return true;
+}
+
 bool pnl::EqualResults(CEMLearningEngine& eng1, CEMLearningEngine& eng2,
     float epsilon, int doPrint)
 {
     int i, j, result = 1;
     CGraphicalModel *pGrModel1 = eng1.GetStaticModel();
-    CGraphicalModel *pGrModel2 = eng2.GetStaticModel();
+    CGraphicalModel *pGrModel2 = eng2.GetStaticModel();    
     int numberOfNodes = pGrModel1->GetNumberOfNodes();
+    bool flag = false;
+    for (i = 0; i < numberOfNodes; i++)
+    {
+        if (pGrModel1->GetFactor(i)->GetDistributionType()!=dtGaussian)
+            flag = true;
+    }
     const float *output1;
     const float *output2;
     CNumericDenseMatrix<float> *pMatrix1;
@@ -623,37 +670,106 @@ bool pnl::EqualResults(CEMLearningEngine& eng1, CEMLearningEngine& eng2,
     int length1 = 0; 
     int length2 = 0;
     int result1=1;
-
-    for (i = 0; i < numberOfNodes; i++)
+    if (flag)
     {
-        pMatrix1 = static_cast<CNumericDenseMatrix<float>*>(
-            pGrModel1->GetFactor(i)->GetMatrix(matTable));
-        pMatrix1->GetRawData(&length1, &output1);
-        pMatrix2 = static_cast<CNumericDenseMatrix<float>*>(
-            pGrModel2->GetFactor(i)->GetMatrix(matTable));
-        pMatrix2->GetRawData(&length2, &output2);
-        result1 = 1;
-        for (int j = 0; j < length1; j++)
+        for (i = 0; i < numberOfNodes; i++)
         {
-            if (fabs(output1[j] - output2[j]) > epsilon)
+            pMatrix1 = static_cast<CNumericDenseMatrix<float>*>(
+                pGrModel1->GetFactor(i)->GetMatrix(matTable));
+            pMatrix1->GetRawData(&length1, &output1);
+            pMatrix2 = static_cast<CNumericDenseMatrix<float>*>(
+                pGrModel2->GetFactor(i)->GetMatrix(matTable));
+            pMatrix2->GetRawData(&length2, &output2);
+            result1 = 1;
+            for (int j = 0; j < length1; j++)
             {
-                result = 0;
-                result1 = 0;
-                break;
+                if (fabs(output1[j] - output2[j]) > epsilon)
+                {
+                    result = 0;
+                    result1 = 0;
+                    break;
+                }
             }
-        }
 #if 0
-        if (print)
-        {
-            if (result1)
-                printf("%d\tOK", i);
-            else
-                printf("%d\tnot OK", i);
-            printf("\n");
-        }
+            if (print)
+            {
+                if (result1)
+                    printf("%d\tOK", i);
+                else
+                    printf("%d\tnot OK", i);
+                printf("\n");
+            }
 #endif
+        }
     }
-
+    else
+    {
+        for (i = 0; i < numberOfNodes; i++)
+        {
+            pMatrix1 = static_cast<C2DNumericDenseMatrix<float>*>(
+                pGrModel1->GetFactor(i)->GetMatrix(matMean));
+            pMatrix1->GetRawData(&length1, &output1);
+            pMatrix2 = static_cast<C2DNumericDenseMatrix<float>*>(
+                pGrModel2->GetFactor(i)->GetMatrix(matMean));
+            pMatrix2->GetRawData(&length2, &output2);
+            result1 = 1;
+            for (int j = 0; j < length1; j++)
+            {
+                if (!IsEqualNumbers1(output1[j],output2[j],epsilon))
+                {
+                    printf("\n after mean nodes %d ",i);
+                    printf("\n 1-  %f ",output1[j]);
+                    printf("\n 2-  %f ",output2[j]);
+                    result = 0;
+                    result1 = 0;
+                    break;
+                }
+            }
+#if 0
+            if (print)
+            {
+                if (result1)
+                    printf("%d\tOK", i);
+                else
+                    printf("%d\tnot OK", i);
+                printf("\n");
+            }
+#endif
+        }
+        for (i = 0; i < numberOfNodes; i++)
+        {
+            pMatrix1 = static_cast<C2DNumericDenseMatrix<float>*>(
+                pGrModel1->GetFactor(i)->GetMatrix(matCovariance));
+            pMatrix1->GetRawData(&length1, &output1);
+            pMatrix2 = static_cast<C2DNumericDenseMatrix<float>*>(
+                pGrModel2->GetFactor(i)->GetMatrix(matCovariance));
+            pMatrix2->GetRawData(&length2, &output2);
+            result1 = 1;
+            for (int j = 0; j < length1; j++)
+            {
+                if (!IsEqualNumbers1(output1[j],output2[j],epsilon))
+                {
+                    printf("\n after cov nodes %d ",i);
+                    printf("\n 1-  %f ",output1[j]);
+                    printf("\n 2-  %f ",output2[j]);
+                    result = 0;
+                    result1 = 0;
+                    break;
+                }
+            }
+#if 0
+            if (print)
+            {
+                if (result1)
+                    printf("%d\tOK", i);
+                else
+                    printf("%d\tnot OK", i);
+                printf("\n");
+            }
+#endif
+        }
+    }    
+    
     return result;
 }
 #endif // PAR_RESULTS_RELIABILITY
