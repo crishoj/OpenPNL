@@ -176,8 +176,14 @@ int CreateEvidences(CDBN *pDBN,
         inFile.open(argv);
         if( !inFile)
         {
-    	printf( "can't open file %s\n", argv );
-    	return TRS_FAIL;
+	    argv = "../testdata/casesDBN";
+	    inFile.clear();
+	    inFile.open(argv);
+	    if (!inFile)
+	    {
+    	        printf( "can't open file %s\n", argv );
+    	        return TRS_FAIL;
+	    }
         }
 
         intVector nslicesVector;
@@ -306,6 +312,12 @@ int CreateEvidences(CDBN *pDBN,
     char *argv = "../c_pgmtk/tests/testdata/MyCasesDBN";
 
     bool isOk = CEvidence::Load( argv, myEvidencesForDBN, pDBN->GetModelDomain());
+    
+    if (!isOk)
+    {
+        argv = "../testdata/MyCasesDBN";
+        isOk = CEvidence::Load( argv, myEvidencesForDBN, pDBN->GetModelDomain());
+    }
 
     return isOk ? 1 : 0;
 }
@@ -322,9 +334,14 @@ int GetDataToCompare(CDBN *pDBN, pnlVector<float*> *data2Compare)
     inFile.open(argv);
     if( !inFile)
     {
-	printf( "can't open file %s\n", argv );
-	ret = TRS_FAIL;
-
+        argv = "../testdata/apostparams";
+	inFile.clear();
+        inFile.open(argv);
+        if (!inFile)
+	{
+	    printf( "can't open file %s\n", argv );
+	    return TRS_FAIL;
+	}
     }
     float data;
     floatVector dataVector;

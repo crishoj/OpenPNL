@@ -124,13 +124,16 @@ int testFactorLearningEngine()
     int simbol;
     if( (fp = fopen( argv, "r" ) ) == NULL)
     {
-	printf( "can't open file %s\n", argv );
-	ret = TRS_FAIL;
-	return trsResult( ret, ret == TRS_OK ? "No errors" :
-	"Bad test: not file with cases");
-
+        argv = "../testdata/cases1";
+	if ( (fp = fopen( argv, "r" ) ) == NULL )
+	{
+	    printf( "can't open file %s\n", argv );
+	    ret = TRS_FAIL;
+	    return trsResult( ret, ret == TRS_OK ? "No errors" :
+	    "Bad test: not file with cases");
+	}
     }
-    else
+    if (fp)
     {
 
 	i = 0;

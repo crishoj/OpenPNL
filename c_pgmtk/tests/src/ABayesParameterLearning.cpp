@@ -107,8 +107,6 @@ int testBayesLearningEngine()
 
     ///////////////////////////////////////////////////////////////
     //Reading cases from disk
-    char *argv = "../c_pgmtk/tests/testdata/cases1";
-    //char *argv = "../testdata/cases1";
 
     FILE *fp;
     const int nEv = 50;
@@ -121,14 +119,20 @@ int testBayesLearningEngine()
     }
 
     int simbol;
-    if( (fp = fopen( argv, "r" ) ) == NULL)
+    char *argv = "../c_pgmtk/tests/testdata/cases1";
+    fp = fopen(argv, "r");
+    if(!fp)
     {
-	printf( "can't open file %s\n", argv );
-	ret = TRS_FAIL;
-	return trsResult( ret, ret == TRS_OK ? "No errors" :
-	"Bad test: no file with cases");
+        argv = "../testdata/cases1";
+        if ((fp = fopen(argv, "r")) == NULL)
+	{
+            printf( "can't open file %s\n", argv );
+	    ret = TRS_FAIL;
+	    return trsResult( ret, ret == TRS_OK ? "No errors" :
+	        "Bad test: no file with cases");
+	}
     }
-    else
+    if (fp)
     {
 	i = 0;
 	j = 0;
