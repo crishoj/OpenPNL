@@ -23,6 +23,11 @@ GetGaussianCovar("x")
 GetGaussianCovar("x2")
 GetGaussianCovar("y")
 GetGaussianCovar("z")
+print("Weights");
+GetGaussianWeights("y","x0")
+GetGaussianWeights("y","x")
+GetGaussianWeights("y","x2")
+GetGaussianWeights("z","y")
 print("created net...")
 
 print("***JPD***")
