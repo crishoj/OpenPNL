@@ -49,6 +49,9 @@ public:
     void SaveNet(const char *filename);
     void LoadNet(const char *filename);
 
+    void SetProperty(const char *name, const char *value);
+    String GetProperty(const char *name) const;
+
     // Set max amount of iterations
     void SetIterMax(int IterMax);
 

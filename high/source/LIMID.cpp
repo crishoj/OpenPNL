@@ -97,6 +97,15 @@ TokArr LIMID::GetValueCost(TokArr value, TokArr parents)
     return GetP(value, parents);
 }
 
+String LIMID::GetProperty(const char *name) const
+{
+    return m_pLIMID->GetProperty(name);
+}
+
+void LIMID::SetProperty(const char *name, const char *value)
+{
+    m_pLIMID->SetProperty(name, value);
+}
 
 void LIMID::SaveNet(const char *filename)
 {
