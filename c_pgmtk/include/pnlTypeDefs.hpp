@@ -277,9 +277,9 @@ public:
     return (&OtherType == this);
   }
 
-  bool IsDerived(const CPNLType *const ParentType) const
+  bool IsDerived(const CPNLType &ParentType) const
   {
-    if (*ParentType == *this) 
+    if (ParentType == *this) 
     {
       return true;
     }
@@ -307,7 +307,7 @@ protected:
 private:
   const pnlString m_TypeName;
   const CPNLType *const m_pParent;
-}
+};
 #endif //PNL_RTTI
 
 PNL_END
