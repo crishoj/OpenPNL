@@ -100,6 +100,8 @@ protected:
 
 #ifdef PAR_MPI
     void ParallelProtocol();
+    void ParallelProtocolContMPI();
+
 #endif
 
 #ifdef PAR_OMP
@@ -288,13 +290,14 @@ private:
     // collect parallel EnterEvidence results on choosen (m_CollectRanks)
     // processes
     void CollectBeliefsOnProcess(int MainProcNum);
+    void CollectBeliefsOnProcessContMPI(int MainProcNum);
 
     // set necessary parameters for message sending via MPI
     void SetFarNeighbors(intVector *sinks, intVector *sources, int &size);
 
     // set necessary parameters for message sending via MPI
     void SetFarNeighbors(intVector* sinks, intVector* sources, 
-        intVector* messLengthSend, intVector* messLengthRecv, int &size);
+        intVector* messLengthSend, intVector* messLengthRecv, int &size, int Discrete_Continuous);
 
     // divide nodes between processes if model is grille
     void DivideGrille();
