@@ -79,16 +79,18 @@ CPotential* pnlMultiply( CPotential* Pot1, CPotential* Pot2, CModelDomain* pMD )
 
 //	if(dt == dtTabular || dt == dtScalar)
     if (dt == dtTabular)
+    {
         bigPotential = CTabularPotential::CreateUnitFunctionDistribution(
-        bigDomain.begin(), bigDomain.size(), pMD, 1, Obspos);
-    else 
+	    &bigDomain.front(), bigDomain.size(), pMD, 1, Obspos);
+    } else {
         if (dt == dtScalar)
-            bigPotential = CScalarPotential::Create(bigDomain.begin(), bigDomain.size(), 
+            bigPotential = CScalarPotential::Create(&bigDomain.front(), bigDomain.size(), 
             pMD, Obspos);
         
         else
             bigPotential = CGaussianPotential::CreateUnitFunctionDistribution(
-            bigDomain.begin(), bigDomain.size(), pMD, 1, Obspos);
+            &bigDomain.front(), bigDomain.size(), pMD, 1, Obspos);
+    }
 
 	*bigPotential *= *Pot1;
 	*bigPotential *= *Pot2;
