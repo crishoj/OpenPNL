@@ -22,7 +22,6 @@
 #include "trsapi.h"
 #include "pnl_dll.hpp"
 #include <stdlib.h>
-#include <conio.h>
 #include <algorithm>
 #include <math.h>
 #include "pnlSoftMaxCPD.hpp"

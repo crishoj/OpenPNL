@@ -23,7 +23,6 @@
 #include "pnlLog.hpp"
 #include <sstream>
 #include "pnlRng.hpp"
-#include "conio.h"
 // ----------------------------------------------------------------------------
 
 #ifdef _DEBUG
