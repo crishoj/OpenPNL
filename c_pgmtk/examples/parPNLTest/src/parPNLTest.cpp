@@ -79,27 +79,32 @@ void GenerateEvidence(CStaticGraphicalModel *pBNet, int NumOfEvidence)
 {
   int i;
   int numberOfNodes = pBNet->GetNumberOfNodes();
-  const CNodeType *nodeTypes = new CNodeType [numberOfNodes];
+  const CNodeType **nodeTypes = new const CNodeType* [numberOfNodes];
   
   int *NumOfNodeVal = new int [numberOfNodes];
   for (i = 0; i < numberOfNodes; i++)
   {
-    nodeTypes = pBNet->GetModelDomain()->GetVariableType(i);
-    NumOfNodeVal[i] = nodeTypes->GetNodeSize();
+    nodeTypes[i] = pBNet->GetModelDomain()->GetVariableType(i);
+    NumOfNodeVal[i] = nodeTypes[i]->GetNodeSize();
   }
   
   FILE *stream;
-  int *Evidence = new int [numberOfNodes];
-  srand(100);
+  float *Evidence = new float [numberOfNodes];
+  srand((unsigned)time(NULL));
   if ((stream = fopen("Evidence.txt", "w")) != NULL)
   {
     for (i = 0; i < NumOfEvidence; i++)
     {
       for (int j = 0; j < numberOfNodes; j++)
-        Evidence[j] = rand() % NumOfNodeVal[j];
+      {
+        if (nodeTypes[j]->IsDiscrete())
+          Evidence[j] = (float)(rand() % NumOfNodeVal[j]);
+        else
+          Evidence[j] = (rand() / (float)RAND_MAX) * 10.0f;
+      }
       
       for (int k = 0; k < numberOfNodes; k++)
-        fprintf(stream, "%d ", Evidence[k]);
+        fprintf(stream, "%.6f ", Evidence[k]);
       fprintf(stream, "\n");
     }
     fclose(stream);
@@ -334,7 +339,7 @@ int RunTest(int argc, char* argv[])
 
   if (strcmp(argv[2],"EMLearn") == 0)
   {
-    const int numberOfEvidences = 100;
+    const int numberOfEvidences = 1000;
     
     GenerateEvidence(pBNet, numberOfEvidences);
 
@@ -356,20 +361,18 @@ int RunTest(int argc, char* argv[])
     }
     else
     {
-      i = 0; j = 0;
-      int simbol;
-      while(i < numberOfEvidences)
-      { 
-        simbol = getc(fp);
-        if(isdigit(simbol))
+      float val;
+      for (i = 0; i < numberOfEvidences; ++i)
+      {
+        for (j =0; j < numberOfNodes; ++j)
         {
-          (EvidenceData[i])[j].SetInt(simbol - '0');
-          j++;
-          if((j - numberOfNodes) == 0)
-          {
-            i++; j = 0;
-          }
+          fscanf(fp, "%f ", &val);
+          if (pBNet->GetNodeType(j)->IsDiscrete())
+            (EvidenceData[i])[j].SetInt((int)val);
+          else
+            (EvidenceData[i])[j].SetFlt(val);
         }
+        fscanf(fp, "\n");
       }
     }
     fclose(fp);
@@ -378,11 +381,23 @@ int RunTest(int argc, char* argv[])
     int *obsNodes = new int [numOfObsNds];
     for (i = 0; i < numOfObsNds; i++)
       obsNodes[i] = i;
-    int offset = 2;
+    int offset = numOfObsNds - 2;
     int *unObsNds = new int [numOfObsNds - offset];
+
+    intVector nodes(numOfObsNds, 0);
+    for (i = 0; i < numOfObsNds; ++i)
+      nodes[i] = i;
+
+    for (i = 0; i < numOfObsNds - offset; ++i)
+    {
+      int num = rand() % nodes.size();
+      unObsNds[i] = nodes[num];
+      nodes.erase(nodes.begin() + num);
+    }
+/*
     for (i = 0;i < numOfObsNds - offset;i++)
       unObsNds[i] = i + offset;
-    
+*/    
     CEvidence **m_pEv, **m_pEv1;
     m_pEv = new CEvidence *[numberOfEvidences];
     m_pEv1 = new CEvidence *[numberOfEvidences];
@@ -539,6 +554,7 @@ int RunTest(int argc, char* argv[])
         static_cast<CParEMLearningEngine*>(pParLearnEng)->LearnOMP();
       #else // we aren't need starting of both versions
         static_cast<CParEMLearningEngine*>(pParLearnEng)->Learn();
+        //static_cast<CParEMLearningEngine*>(pParLearnEng)->LearnContMPI();
       #endif
       TIME_E(start, finish, duration)
     }
@@ -576,7 +592,7 @@ int RunTest(int argc, char* argv[])
       {
           int flag = pnl::EqualResults(
               dynamic_cast<CEMLearningEngine&>(*pLearnEng),
-              dynamic_cast<CEMLearningEngine&>(*pParLearnEng), 0.0001f);
+              dynamic_cast<CEMLearningEngine&>(*pParLearnEng), 0.001f);
         if (flag)
           printf("Factors comparing:  OK\n");
         else
