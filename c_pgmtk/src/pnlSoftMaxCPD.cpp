@@ -48,7 +48,20 @@ CSoftMaxCPD* CSoftMaxCPD::Create(const int *domain, int nNodes,
     PNL_CHECK_IS_NULL_POINTER(domain);
     PNL_CHECK_IS_NULL_POINTER(pMD);
     PNL_CHECK_LEFT_BORDER(nNodes, 1);
-    
+    int i;
+	int NumContPar = 0;
+	for(i = 0; i<nNodes; i++)
+	{
+		if (!pMD->GetVariableType(domain[i])->IsDiscrete()) 
+		{
+			NumContPar++;
+		}
+	}
+	if(NumContPar == 0 )
+	{
+		PNL_THROW(CInconsistentType,
+			"SoftMax node does not have continuous parents");          
+	}
     CSoftMaxCPD *pNewParam = new CSoftMaxCPD(domain, nNodes, pMD);
     PNL_CHECK_IF_MEMORY_ALLOCATED(pNewParam);
     
