@@ -18,6 +18,7 @@
 #include "pnlLearningEngine.hpp"
 #include "pnlEvidence.hpp"
 #include "pnlDistribFun.hpp"
+#include "pnlString.hpp"
 
 PNL_USING
 
@@ -54,8 +55,7 @@ bool CLearningEngine::IsInfNeed(const CEvidence * pEvidences)
 }
 
 
-void CLearningEngine::
-CheckModelValidity(const CGraphicalModel *pGrModel )
+void CLearningEngine::CheckModelValidity(const CGraphicalModel *pGrModel)
 {
     if(!pGrModel)
     {
@@ -68,22 +68,23 @@ CheckModelValidity(const CGraphicalModel *pGrModel )
     for( i = 0; i < numFactors; ++i )
     {
         const CFactor* pFact = pGrModel->GetFactor(i);
+	pnlString str;
         
         if( !pFact )
         {
-            PNL_THROW( CInvalidOperation, "learning on invalid model" );
+	    str << "learning on invalid model: factor #" << i << " is absent";
+            PNL_THROW( CInvalidOperation, str.c_str());
         }
         else
         {
-            if( !pFact->IsValid() )
+	    std::string mesg;
+            if( !pFact->IsValid(&mesg) )
             {
-                PNL_THROW( CInvalidOperation, "learning on invalid model" );
+		str << "learning on invalid model: factor #" << i << ": " << mesg;
+                PNL_THROW( CInvalidOperation, str.c_str());
             }
         }
     }
-    
-    
-    
 }
 
 
