@@ -22,6 +22,10 @@
 #include "pnlCPD.hpp"
 #include "pnlTypeDefs.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 #ifdef SWIG
 %rename(CreateUnitF) CGaussianCPD::CreateUnitFunctionCPD( const intVector& domainIn, CModelDomain* pMD);
@@ -81,10 +85,25 @@ public:
     virtual void UpdateStatisticsML(CFactor *pPot);
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CGaussianCPD::m_TypeInfo;
+    }
+#endif
+
 protected:
     CGaussianCPD( const int *domain, int nNodes, CModelDomain* pMD );
     CGaussianCPD( const CGaussianCPD& GauCPD );
     CGaussianCPD( const CGaussianCPD* pGauCPD );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     
 };

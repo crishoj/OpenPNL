@@ -19,6 +19,10 @@
 #include "pnlObject.hpp"
 #include "pnlFactor.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 /* a class to represent factors structure and operations */
@@ -44,12 +48,25 @@ public:
 
 	~CFactors();
 	
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CFactors::m_TypeInfo;
+  }
+#endif
 protected:
 
 	/* constructors */
 	CFactors(int numberOfFactors);
 	CFactors(const CFactors& rFactors);
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
 
 	int m_capacity;

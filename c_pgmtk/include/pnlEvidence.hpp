@@ -24,6 +24,9 @@
 #include "pnlNodeType.hpp"
 #include "pnlModelDomain.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 
 PNL_BEGIN
 
@@ -97,7 +100,22 @@ public:
     inline const CModelDomain* GetModelDomain() const;
     void Dump() const;
     ~CEvidence();
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CEvidence::m_TypeInfo;
+  }
+#endif
 protected:
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     CEvidence ( int nNodes, const int *obsNodes,
                 const valueVector& pEvidence,

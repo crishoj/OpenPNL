@@ -24,6 +24,10 @@
 #include "pnlEvidence.hpp"
 #include "pnlRing.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 typedef PNL_API enum
@@ -57,6 +61,16 @@ public:
     virtual void FixLagSmoothing(int time)=0;
     virtual void FindMPE()=0;
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CDynamicInfEngine::m_TypeInfo;
+    }
+#endif
 protected:
     inline int GetLag() const;
     inline int GetTime() const;
@@ -95,6 +109,10 @@ protected:
     int m_Lag;
     int m_CurrentTime;
     CRing<CEvidence *> m_CRingpEv;
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 
 private:
     const CDynamicGraphicalModel *m_pGrModel;

@@ -23,6 +23,9 @@
 #include "pnlObject.hpp"
 #include "pnlError.h"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CException : public CPNLBase
@@ -38,10 +41,23 @@ public:
 
     void GenMessage() throw();
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CException::m_TypeInfo;
+    }
+#endif
 protected:
     CException( std::string file, int line, std::string description,
 	pgmErrorType code ) throw();
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 private:
 
     pgmErrorType m_code;
@@ -59,9 +75,23 @@ public:
 	std::string description = "error") throw();
     virtual ~CMemoryException() throw() {}
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CMemoryException::m_TypeInfo;
+    }
+#endif
 protected:
     CMemoryException( std::string file, int line, std::string description,
 	pgmErrorType code ) throw();
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CNotEnoughMemory : public CMemoryException
@@ -70,6 +100,21 @@ public:
     CNotEnoughMemory( std::string file = "unknown",  int line = -1,
 	std::string description = "error") throw();
     virtual ~CNotEnoughMemory() throw() {}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CNotEnoughMemory::m_TypeInfo;
+    }
+#endif
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CDamagedMemory : public CMemoryException
@@ -78,6 +123,22 @@ public:
     CDamagedMemory( std::string file = "unknown",  int line = -1,
 	std::string description = "error") throw();
     virtual ~CDamagedMemory() throw() {}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CDamagedMemory::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CBadPointer : public CMemoryException
@@ -86,6 +147,22 @@ public:
     CBadPointer( std::string file = "unknown",  int line = -1,
 	std::string description = "error") throw();
     virtual ~CBadPointer() throw() {}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CBadPointer::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CBadArg : public CException
@@ -96,9 +173,23 @@ public:
 	throw();
     virtual ~CBadArg() throw() {}
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CBadArg::m_TypeInfo;
+    }
+#endif
 protected:
     CBadArg( std::string file, int line, std::string description,
 	pgmErrorType code ) throw();
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API COutOfRange : public CBadArg
@@ -107,6 +198,22 @@ public:
     COutOfRange( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
     virtual ~COutOfRange() throw() {}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return COutOfRange::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CNULLPointer : public CBadArg
@@ -115,6 +222,22 @@ public:
     CNULLPointer( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
     virtual ~CNULLPointer() throw() {}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CNULLPointer::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CInconsistentType : public CBadArg
@@ -123,6 +246,22 @@ public:
     CInconsistentType( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
     virtual ~CInconsistentType() throw() {}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CInconsistentType::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CInconsistentSize : public CBadArg
@@ -131,6 +270,22 @@ public:
     CInconsistentSize( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
     virtual ~CInconsistentSize() throw() {}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CInconsistentSize::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CBadConst : public CBadArg
@@ -138,7 +293,24 @@ class PNL_API CBadConst : public CBadArg
 public:
     CBadConst( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
-    virtual ~CBadConst() throw() {}
+    virtual ~CBadConst() throw() {};
+
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CBadConst::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CInternalError : public CException
@@ -148,9 +320,23 @@ public:
 	std::string description = "error" ) throw();
     virtual ~CInternalError() throw() {}
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CInternalError::m_TypeInfo;
+    }
+#endif
 protected:
     CInternalError( std::string file, int line, std::string description,
 	pgmErrorType code ) throw();
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CNotImplemented : public CInternalError
@@ -159,6 +345,22 @@ public:
     CNotImplemented( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
     virtual ~CNotImplemented() throw() {}
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CNotImplemented::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CNumericException : public CException
@@ -168,9 +370,23 @@ public:
 	std::string description = "error" ) throw();
     virtual ~CNumericException() throw() {};
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CNumericException::m_TypeInfo;
+    }
+#endif
 protected:
     CNumericException( std::string file, int line, std::string description,
 	pgmErrorType code ) throw();
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API COverflow : public CNumericException
@@ -179,6 +395,22 @@ public:
     COverflow( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
     virtual ~COverflow() throw() {};
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return COverflow::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CUnderflow : public CNumericException
@@ -187,6 +419,22 @@ public:
     CUnderflow( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
     virtual ~CUnderflow() throw() {};
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CUnderflow::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CAlgorithmicException : public CException
@@ -196,9 +444,23 @@ public:
 	std::string description = "error" ) throw();
     virtual ~CAlgorithmicException() throw() {};
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CAlgorithmicException::m_TypeInfo;
+    }
+#endif
 protected:
     CAlgorithmicException( std::string file, int line, std::string description,
 	pgmErrorType code ) throw();
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CNotConverged : public CAlgorithmicException
@@ -207,6 +469,22 @@ public:
     CNotConverged( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
     virtual ~CNotConverged() throw() {};
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CNotConverged::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CInconsistentState : public CAlgorithmicException
@@ -215,6 +493,22 @@ public:
     CInconsistentState( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
     virtual ~CInconsistentState() throw() {};
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CInconsistentState::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 class PNL_API CInvalidOperation : public CAlgorithmicException
@@ -223,6 +517,22 @@ public:
     CInvalidOperation( std::string file = "unknown", int line = -1,
 	std::string description = "error" ) throw();
     virtual ~CInvalidOperation() throw() {};
+
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }  
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CInvalidOperation::m_TypeInfo;
+    }
+#endif
+
+protected:
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif  
 };
 
 //macros for error handling

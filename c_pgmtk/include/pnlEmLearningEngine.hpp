@@ -19,6 +19,9 @@
 
 #include "pnlStaticLearningEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CEMLearningEngine : public CStaticLearningEngine
@@ -47,6 +50,16 @@ public:
 	const float* GetFamilyLogLik()const;  
 	void LearnExtraCPDs(int nMaxFamily, pCPDVector* additionalCPDs, floatVector* additionalLLs);
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CEMLearningEngine::m_TypeInfo;
+  }
+#endif
 protected:
     CEMLearningEngine(CStaticGraphicalModel *pGrModel, CInfEngine *pInfEng,
   ELearningTypes LearnType );
@@ -60,6 +73,9 @@ protected:
     void BuildFullEvidenceMatrix(float ***full_evid);
     void BuildCurrentEvidenceMatrix(int Node, float ***full_evid, float ***evid);
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     CInfEngine *m_pInfEngine;
     bool m_bDelInf;

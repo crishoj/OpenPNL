@@ -20,6 +20,9 @@
 #include "pnlTypeDefs.hpp"
 #include "pnlStaticGraphicalModel.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class CBNet;
@@ -76,8 +79,23 @@ public:
     inline void GetNbrFactors( int node, intVector* nbrsFactorsOut) const;
     inline int GetNumNbrFactors(int node) const;
     virtual ~CFactorGraph(){}
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CFactorGraph::m_TypeInfo;
+  }
+#endif
 protected:
     int IsDomainFromMD( int numNodesInDomain, const int* domain) const;
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     CFactorGraph( CModelDomain* pMD, int numFactors );
     CFactorGraph( CModelDomain* pMD, CFactors* pFactors );

@@ -22,6 +22,9 @@
 #include "pnlDynamicInferenceEngine.hpp"
 #include "pnlDBN.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CEMLearningEngineDBN : public CDynamicLearningEngine
@@ -35,6 +38,16 @@ public:
 
     //inline const CInfEngine *GetInfEngine(){ return m_pInfEngine;};
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CEMLearningEngineDBN::m_TypeInfo;
+  }
+#endif
 protected:
     CEMLearningEngineDBN(CDynamicGraphicalModel *pGrModel, ELearningTypes LearnType, 
 	CDynamicInfEngine *pInfEngine );
@@ -46,6 +59,9 @@ protected:
 
     bool IsInfNeed(const pConstEvidenceVector* pEvidences, int nnodesPerSlice);
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     CDynamicInfEngine *m_pInfEngine;
 

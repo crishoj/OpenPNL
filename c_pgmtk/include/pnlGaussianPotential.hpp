@@ -24,6 +24,9 @@
 #include "pnlPotential.hpp"
 //#include "GaussianData.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 #ifdef SWIG
 %rename(CreateUnitF) CGaussianPotential::CreateUnitFunctionDistribution(const intVector&, CModelDomain*,int, const intVector& ); 
@@ -110,11 +113,25 @@ public:
     void UpdateStatisticsML(CFactor *pPot);
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CGaussianPotential::m_TypeInfo;
+    }
+#endif
 protected:
 	CGaussianPotential( const int *domain, int nNodes, CModelDomain* pMD,
         const intVector& obsIndicesIn = intVector() );
 	CGaussianPotential( const CGaussianPotential &pGauPot );
     CGaussianPotential( const CGaussianPotential* pGauPot );
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
 };
 

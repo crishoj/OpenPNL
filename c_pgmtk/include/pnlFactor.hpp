@@ -28,6 +28,10 @@
 
 #include <float.h>
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
+
 PNL_BEGIN
 
 //fixme - enum use for Param&Diatribution - should they be here?
@@ -179,6 +183,16 @@ public:
     virtual void UpdateStatisticsML(CFactor *pPot) = 0;
 #endif
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CFactor::m_TypeInfo;
+    }
+#endif
 protected:
 
     CFactor( EDistributionType dt, EFactorType pt,
@@ -202,6 +216,9 @@ protected:
     //change model domain and corresponding node types in factor
     void SetModelDomain(CModelDomain* pMD, bool checkNodeTypesinMD = 1);
 
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif
 private:
     // a pointer to a model domain
     CModelDomain *m_pMD;

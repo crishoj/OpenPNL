@@ -22,6 +22,9 @@
 #include "pnlTabularPotential.hpp"
 #include "pnlGaussianPotential.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 typedef CPotential* fgMessage;
@@ -52,6 +55,17 @@ public:
 	//set tolerance for check convergency
 	void SetTolerance( float tolerance);
 	virtual ~CFGSumMaxInfEngine();
+
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CFGSumMaxInfEngine::m_TypeInfo;
+  }
+#endif
 protected:
 	CFGSumMaxInfEngine( const CFactorGraph *pFactorGraph );
 	void InitMessages();
@@ -63,6 +77,10 @@ protected:
 	void TreeProtocol();
 	void DestroyAllMessages();
     inline fgMessage InitUnitMessage(int node);
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     //create new factor graph with shrinked potentials
     CFactorGraph* m_pShrinkedFG;

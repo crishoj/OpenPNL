@@ -25,6 +25,9 @@
 #include "pnlCPD.hpp"
 #include "pnlImpDefs.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 enum EExInfEngineFlavour
@@ -74,6 +77,16 @@ public:
 
     ~CExInfEngine();
 
+#ifdef PNL_RTTI
+    virtual const CPNLType &GetTypeInfo() const
+    {
+      return GetStaticTypeInfo();
+    }
+    static const CPNLType &GetStaticTypeInfo()
+    {
+      return CExInfEngine< CJtreeInfEngine >::GetStaticTypeInfo();
+    }
+#endif
 protected:
     CExInfEngine( CStaticGraphicalModel const *pGM );
 
@@ -101,7 +114,19 @@ protected:
     int maximize;
     mutable CPotential *query_JPD;
     mutable CEvidence *MPE_ev;
+
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 };
+
+#ifdef PNL_RTTI
+template< class INF_ENGINE, class MODEL ,
+          EExInfEngineFlavour FLAV,
+          class FALLBACK_ENGINE1 , class FALLBACK_ENGINE2>
+const CPNLType CExInfEngine<INF_ENGINE, MODEL, FLAV, FALLBACK_ENGINE1, FALLBACK_ENGINE2>::m_TypeInfo = CPNLType("CExInfEngine", &(CInfEngine::m_TypeInfo));
+
+#endif
 
 #ifndef SWIG
 template< class INF_ENGINE, class MODEL, EExInfEngineFlavour FLAV, class FALLBACK_ENGINE1, class FALLBACK_ENGINE2 >

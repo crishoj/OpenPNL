@@ -26,6 +26,9 @@
 #include "pnlEvidence.hpp"
 #include "pnlInferenceEngine.hpp"
 
+#ifdef PNL_RTTI
+#include "pnlpnlType.hpp"
+#endif 
 PNL_BEGIN
 
 class PNL_API CDynamicLearningEngine : public CLearningEngine
@@ -40,6 +43,16 @@ public:
     virtual void SetData(const pEvidencesVecVector& evidencesIn );
     virtual void Learn()=0;
 
+#ifdef PNL_RTTI
+  virtual const CPNLType &GetTypeInfo() const
+  {
+    return GetStaticTypeInfo();
+  }
+  static const CPNLType &GetStaticTypeInfo()
+  {
+    return CDynamicLearningEngine::m_TypeInfo;
+  }
+#endif
 protected:
     CDynamicLearningEngine(CDynamicGraphicalModel *pGrModel, ELearningTypes LearnType);
     intVector* GetObservationsFlags(){return &m_FlagsIsAllObserved;}
@@ -47,6 +60,9 @@ protected:
     int m_numberOfAllEvISlice;
     pnlVector< pConstEvidenceVector * > m_VecPVecPEvidences;
     
+#ifdef PNL_RTTI
+    static const CPNLType m_TypeInfo;
+#endif 
 private:
     ELearningTypes m_LearnType;
     intVector m_FlagsIsAllObserved;
