@@ -55,6 +55,8 @@ public:
                                 int numberOfWeightMatrix = -1,
                                 const int *parentIndices = NULL,
                                 bool isMultipliedByDelta = 0);
+	void UpdateTree(const CGraph* pGraphTree, TreeNodeFields *fields );
+	void SetDomain(intVector domain );
     virtual bool IsValid(std::string* descriptionOut = NULL) const;
     CDistribFun *ConvertCPDDistribFunToPot()const ;
     CDistribFun *CPD_to_pi( CDistribFun *const* allPiMessages, 
@@ -115,13 +117,17 @@ public:
     virtual int IsDense() const;
     void Dump() const;
     
+	void ConvertGraphToTree(CxCART *pCart,CxCARTNode *node,const CGraph *pGraph, int nodeNum) const;
+    void FillTree(CxCART *pCart,CxCARTNode *node,const CGraph *pGraph, TreeNodeFields *filds, int nodeNum) const;
+
     void GenerateSample( CEvidence* evidence, int maximize ) const;
     
     virtual inline int IsDistributionSpecific()const;
     inline bool IsRegression() const;
     inline float GetNodeValue( const CEvidence* pEv, int i ) const;
     float GetLogLik( const CEvidence* pEv ) const;
-
+	floatVector GetProbability( const CEvidence* pEv ) const;
+    int GetAdjectives( const CEvidence* pEv, float &expect, float &varian) const;
 	virtual int GetNumberOfFreeParameters() const;
 
 #ifdef PAR_OMP

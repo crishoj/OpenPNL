@@ -45,6 +45,17 @@ typedef enum
   mmConjGradient // conjugate gradient method
 } EMaximizingMethod;
 
+typedef struct _TreeNodeFields
+{ 
+    bool isTerminal;     // is this tree node terminal
+    int Question;        // question type 
+    int node_index;      // node of Baysam net that asks   
+    float questionValue; // question value
+    float *probVect;     // probalistic vector if this tetminal node is discrete
+    float expectation;   // terminal node expectation if this node is continuous
+    float variance;      // terminal node variance if this node is continuous
+} TreeNodeFields;
+
 template<class T> class GeneralAllocator: public std::allocator<T>
 {
 public:

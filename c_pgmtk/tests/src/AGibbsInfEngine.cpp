@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "tCreateKjaerulffDBN.hpp"
 #include "tCreateIncineratorBNet.hpp"
+#include "pnlTreeCPD.hpp"
 
 // this file must be last included file
 #include "tUtil.h"
@@ -32,7 +33,7 @@ int GibbsForMixtureBNet(float eps);
 int GibbsMPEForMNet(float eps);
 int GibbsForSingleGaussian(float eps);
 int GibbsForSparseBNet(float eps);
-
+int GibbsForTreeBNet();
 
 int testGibbsInference()
 {
@@ -49,6 +50,7 @@ int testGibbsInference()
 	trssRead( &eps, "1.5e-1f", "accuracy in test" );
     }
 
+	ret = ret && GibbsForTreeBNet();
     ret = ret && GibbsMPEforScalarGaussianBNet( eps );
     ret = ret && GibbsForSingleGaussian( eps );
     ret = ret && GibbsForMixtureBNet(eps);
@@ -1134,6 +1136,283 @@ int GibbsForSparseBNet( float eps)
     delete pGibbsInfDense;
     delete pDenseBnet;
     delete pSparseBnet;
+
+    return ret;
+}
+
+CBNet *CreateTestTabularNetWithDecTreeNodeBNet()
+{
+	//   Baysam network     
+	//        0 1...8 9       0,1, 9- discrete nodes distribution type is tabular, size is 2
+	//        \ \  / /      10 - is discrete desigion tree node
+	//            10        
+	//          
+	//      
+	//
+	// Desigion tree on the node 10 is
+	//
+	//     0
+	//    / \	
+	//   1	 2
+	//  / \ / \
+	// 3  4 5  6
+	//  	   
+    const int nnodes = 11; //Number of nodes
+    const int numNt =  1; //number of Node types (all nodes are discrete)
+    CNodeType* nodeTypes = new CNodeType [numNt];
+	int size = 2;
+    int i;
+	nodeTypes[0] = CNodeType( 1,size );
+    int *nodeAssociation = new int[nnodes];
+    for( i = 0; i < nnodes; i++ )
+	{
+		nodeAssociation[i] = 0;
+	};
+    int *numOfNeigh;
+    numOfNeigh = new int[nnodes];
+
+	for( i = 0; i < nnodes - 1; i++ )
+	{
+		numOfNeigh[i] = 1;
+	};
+	numOfNeigh[nnodes - 1] = nnodes - 1;
+
+    int **neigh;
+	neigh = new int*[nnodes];
+    for( i = 0; i < nnodes - 1; i++ )
+	{
+		neigh[i] = new int;
+		neigh[i][0] = nnodes - 1;
+
+	};
+	neigh[nnodes - 1] = new int[nnodes - 1];
+
+    for( i = 0; i < nnodes - 1; i++ )
+	{
+		neigh[nnodes - 1][i] = i;
+	};
+
+	ENeighborType **orient;
+    orient = new ENeighborType*[nnodes];
+
+	for( i = 0; i < nnodes - 1; i++ )
+	{
+		orient[i] = new ENeighborType;
+		orient[i][0] = ntChild;
+
+	};
+    
+	orient[nnodes - 1] = new ENeighborType[nnodes - 1];
+
+	for( i = 0; i < nnodes - 1; i++ )
+	{
+		orient[nnodes - 1][i] = ntParent;
+	};
+
+    CGraph* pGraph = CGraph::Create( nnodes, numOfNeigh, neigh, orient);
+
+    //Create static BNet
+    CBNet* pBNet = CBNet::Create( nnodes, numNt, nodeTypes, nodeAssociation, pGraph );
+    pBNet->AllocFactors();
+
+
+    int nnodesInDom = 1;
+    int *domains;
+	domains = new int[nnodes -1];
+	for( i = 0; i < nnodes - 1; i++ )
+	{
+		domains[i] = i;
+	};
+    float table[] = { 0.3f, 0.7f};
+
+    CTabularCPD **pCPDPar;
+	pCPDPar = new CTabularCPD*[nnodes - 1];
+	for( i = 0; i < nnodes - 1; i++ )
+	{
+		pCPDPar[i] = CTabularCPD::Create( &domains[i], nnodesInDom, pBNet->GetModelDomain(), table );
+		pBNet->AttachFactor(pCPDPar[i]);
+	};	
+		
+
+    int nnodesInChilddom = nnodes;
+	int *domainChild; 
+	domainChild = new int[ nnodes - 1];
+
+		for( i = 0; i < nnodes; i++ )
+		{
+			domainChild[i] = i;
+		};
+
+    CTreeCPD *pCPDChild = CTreeCPD::Create( domainChild, nnodesInChilddom, pBNet->GetModelDomain());
+    // creating tree on node 11
+	// 1) start of graph creation
+     const int nnodesT = 7; 
+    int numOfNeighT[] = {2, 3, 3, 1, 1, 1, 1 };
+    int neigh0T[] = {1, 2};
+    int neigh1T[] = {0, 3, 4};
+    int neigh2T[] = {0, 5, 6};
+    int neigh3T[] = {1};
+    int neigh4T[] = {1};
+    int neigh5T[] = {2};
+    int neigh6T[] = {2};
+    
+
+    ENeighborType orient0T[] = { ntChild, ntChild };
+    ENeighborType orient1T[] = { ntParent, ntChild, ntChild };
+    ENeighborType orient2T[] = { ntParent, ntChild, ntChild  };
+    ENeighborType orient3T[] = { ntParent };
+    ENeighborType orient4T[] = { ntParent };
+    ENeighborType orient5T[] = { ntParent };
+    ENeighborType orient6T[] = { ntParent };
+   
+
+    int *neighT[] = { neigh0T, neigh1T, neigh2T, neigh3T, neigh4T, neigh5T, neigh6T };
+    ENeighborType *orientT[] = { orient0T, orient1T, orient2T, orient3T, orient4T, orient5T, orient6T };
+
+    CGraph* pGraphT = CGraph::Create( nnodesT, numOfNeighT, neighT, orientT);
+    // end of graph creation
+	// 2) start of filling tree nodes
+    TreeNodeFields fnode0; //This structures will contain properties of all     
+    TreeNodeFields fnode1; //tree nodes 
+    TreeNodeFields fnode2; //
+    TreeNodeFields fnode3; //
+    TreeNodeFields fnode4; //
+    TreeNodeFields fnode5; //
+    TreeNodeFields fnode6; //
+
+	// start of filling information of node 0  
+    fnode0.isTerminal = false; // means that this node is split
+    fnode0.Question = 0; // question type on node 0. 
+	                     // Value 0 means that that question type is "="
+						 //	Value 1 means that that question type is ">"
+    fnode0.questionValue = 0; //Asking value
+    fnode0.node_index = 0;    // Index of asked desigion tree parent
+	// end of filling information of node 0  
+
+    // start of filling information of node 1  
+    fnode1.isTerminal = false;
+    fnode1.Question = 0;
+    fnode1.questionValue = 0;
+    fnode1.node_index = 1;
+    // end of filling information of node 1  
+    
+    // start of filling information of node 2 
+    fnode2.isTerminal = false;
+    fnode2.Question = 0;
+    fnode2.questionValue = 0;
+    fnode2.node_index = 1;
+	// end of filling information of node 2  
+
+	// start of filling information of node 3	
+    fnode3.isTerminal = true; //means that this node is terminal
+    fnode3.probVect = new float[2];
+    fnode3.probVect[0] = 0.3f;  //Terminal nodes probabilities.
+    fnode3.probVect[1] = 0.7f;  //This properties doesn`t fill when desigion tree node
+								// is continuous node.
+	// end of filling information of node 3
+    
+	// start of filling information of node 4
+    fnode4.isTerminal = true;
+    fnode4.probVect = new float[2];
+    fnode4.probVect[0] = 0.6f;
+    fnode4.probVect[1] = 0.4f;
+	// end of filling information of node 4
+
+    // start of filling information of node 5
+    fnode5.isTerminal = true;
+    fnode5.probVect = new float[2];
+    fnode5.probVect[0] = 0.9f;
+    fnode5.probVect[1] = 0.1f;
+	// end of filling information of node 5
+
+	// start of filling information of node 6
+    fnode6.isTerminal = true;
+    fnode6.probVect = new float[2];
+    fnode6.probVect[0] = 0.2f;
+    fnode6.probVect[1] = 0.8f;
+	// end of filling information of node 6
+   
+    TreeNodeFields fields[7];
+    fields[0] = fnode0;
+    fields[1] = fnode1;
+    fields[2] = fnode2;
+    fields[3] = fnode3;
+    fields[4] = fnode4;
+    fields[5] = fnode5;
+    fields[6] = fnode6;
+   
+   
+    pCPDChild->UpdateTree(pGraphT,fields);
+    pBNet->AttachFactor(pCPDChild);
+    return pBNet;
+}
+
+int GibbsForTreeBNet()
+{
+    std::cout<<std::endl<<"Gibbs for net that contains tree node"<<std::endl;
+	int ret = 1; 
+    CBNet *pBNet =	CreateTestTabularNetWithDecTreeNodeBNet();
+    std::cout<<"BNet has been created \n";
+    const int numOfObsNds  = 2;
+    const int obsNds[]     = { 0, 1 };
+    int i;
+    
+    printf("number of observed nodes: %d\n", numOfObsNds);
+    printf("observed nodes:  ");
+
+    for( i = 0; i < numOfObsNds; ++i)
+        printf("%d  ", obsNds[i]);
+    printf("\n");
+
+    valueVector obsNdsVals(numOfObsNds);
+    obsNdsVals[0].SetInt(0);
+    obsNdsVals[1].SetInt(1);
+
+    printf("observed values: ");
+    for( i = 0; i < numOfObsNds; ++i)
+        printf("%d  ", obsNdsVals[i].GetInt());
+    printf("\n");
+	
+    CEvidence *pEvidence = CEvidence::Create( pBNet, numOfObsNds, obsNds,
+        obsNdsVals );
+    std::cout<<"evidence has been generated \n";
+	
+    CGibbsSamplingInfEngine *pGibbsInf;
+	
+    pGibbsInf = CGibbsSamplingInfEngine::Create( pBNet );
+    
+    pGibbsInf->SetMaxTime( 10000);
+    pGibbsInf->SetBurnIn( 1000 );
+
+
+    intVecVector queries(1);
+    queries[0].clear();
+    queries[0].push_back( 10 );
+ 
+    pGibbsInf->SetQueries( queries );    
+    pGibbsInf->EnterEvidence( pEvidence );
+
+    const int querySz1 = 1;
+    const int query1[] = { 10 };
+    printf("number of Marginal nodes: %d\n", querySz1);
+    printf("Marginal nodes: ");
+    for( i = 0; i < querySz1; ++i)
+        printf("%d  ", query1[i]);
+    printf("\n");
+
+    
+    pGibbsInf->MarginalNodes( query1, querySz1 );
+    
+    const CPotential *pQueryPot;
+    pQueryPot = pGibbsInf->GetQueryJPD();
+    
+    std::cout<<"result of gibbs"<<std::endl<<std::endl;
+    pQueryPot->Dump();
+   
+	delete pEvidence;
+    delete pGibbsInf;
+	delete pBNet;
+	
 
     return ret;
 }

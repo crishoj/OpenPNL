@@ -555,10 +555,20 @@ bool CGibbsSamplingInfEngine::
 ConvertingFamilyToPot( int node, const CEvidence* pEv )
 {
   bool ret = false;
+  bool isTreeNode = false;
   CPotential* potToSample = GetPotToSampling(node);
   Normalization(potToSample);
   int i;
-  if( !IsAllNdsTab() )
+  for( i = 0; i < m_environment[node].size(); i++ )
+	{            
+		int num = m_environment[node][i];
+		if ( (*GetCurrentFactors())[num]->GetDistribFun()->GetDistributionType() == dtTree)
+		{
+		isTreeNode = true;
+		};
+	};
+
+  if( (!IsAllNdsTab()) || (isTreeNode == true) )
   {
     if( GetModel()->GetModelType() == mtBNet )
     {

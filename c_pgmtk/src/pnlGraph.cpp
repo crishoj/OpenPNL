@@ -790,6 +790,36 @@ int CGraph::IsDAG() const
 
     return 1;
 }
+
+//////////////////////////////////////////////////////////////////////////
+
+int CGraph::IsBinaryTree() const
+{
+    int res = 0;
+    int NNodes = GetNumberOfNodes();
+    int i;
+	
+    if (NNodes == 1) return 1; // tree with the only root node
+    
+    if ((IsDAG() == 1) && (NumberOfConnectivityComponents() == 1) && (IsTopologicallySorted() == 1) )
+    {
+        //finding the root
+        int root = 0;
+        //investigating the graph
+        res = 1;
+        for (i = 0; i < NNodes; i++)
+        {
+            if ( ! (((i == root) && (GetNumberOfChildren(i) == 2)) ||
+                ((i != root) && (GetNumberOfParents(i) == 1) 
+                && ((GetNumberOfChildren(i) == 2) || (GetNumberOfChildren(i) == 0)))))
+            {
+                res = 0;
+                break;
+            }
+        }
+    }
+    return res;
+}
 //////////////////////////////////////////////////////////////////////////
 
 int CGraph::IsTopologicallySorted() const

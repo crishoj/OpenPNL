@@ -191,6 +191,9 @@ public:
     
     /* returns 1 if the graph is topologically sorted */
     int IsTopologicallySorted() const;
+
+	/* returns 1 if graph is a binary tree and 0 otherwise */
+    int IsBinaryTree() const;
     
     /* returns the number of connectivity components of the graph */
     int NumberOfConnectivityComponents() const;

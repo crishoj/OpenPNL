@@ -21,6 +21,7 @@
 #include "pnlParConfig.hpp"
 #include "pnlCPD.hpp"
 #include "pnlTypeDefs.hpp"
+#include "pnlGraph.hpp"
 
 PNL_BEGIN
 
@@ -30,10 +31,14 @@ public:
     static  CTreeCPD* Create( const intVector& domainIn, CModelDomain* pMD );
     static  CTreeCPD* Create( const int *domain, int nNodes, CModelDomain* pMD );
     static  CTreeCPD* Copy( const CTreeCPD* pTreeCPD );
+	void UpdateTree(const CGraph *pGraphTree, TreeNodeFields *fields );
     virtual CFactor* Clone() const;
     virtual CFactor* CloneWithSharedMatrices();
     virtual ~CTreeCPD(){}
     virtual CPotential* ConvertToPotential() const;
+	virtual CPotential* ConvertWithEvidenceToPotential(
+        const CEvidence* pEvidence,
+        int flagSumOnMixtureNode = 1)const; 
     virtual void NormalizeCPD();
     
     virtual float ProcessingStatisticalData( int numberOfEvidences);

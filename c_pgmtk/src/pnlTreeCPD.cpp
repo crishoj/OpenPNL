@@ -21,7 +21,10 @@
 #include "pnlConfig.hpp"
 #include "pnlTreeCPD.hpp"
 #include "pnlDistribFun.hpp"
+#include "pnlTabularPotential.hpp"
+#include "pnlGaussianPotential.hpp"
 #include "pnlTreeDistribFun.hpp"
+
 
 PNL_USING
 
@@ -182,3 +185,54 @@ void CTreeCPD::UpdateStatisticsML(CFactor *pPot)
         "UpdateStatisticsML for CTreeCPD not implemented yet");
 };
 #endif // PAR_OMP
+
+void CTreeCPD::UpdateTree(const CGraph* pGraphTree, TreeNodeFields *fields )
+{
+    static_cast<CTreeDistribFun*>(m_CorrespDistribFun)->SetDomain(m_Domain);
+    static_cast<CTreeDistribFun*>(m_CorrespDistribFun)->UpdateTree(pGraphTree,fields);
+}
+
+CPotential* CTreeCPD::ConvertWithEvidenceToPotential(const CEvidence* pEvidence, 
+                    int )const
+{
+    int DomSize = m_CorrespDistribFun->GetNumberOfNodes();
+    intVector obsVec;
+    valueVecVector valVec;
+    pConstNodeTypeVector NTVec;
+    pEvidence->GetObsNodesWithValues( &obsVec, &valVec, &NTVec );
+    const pConstNodeTypeVector *NodeTVector = m_CorrespDistribFun->GetNodeTypesVector();
+    CPotential *resPot; 
+    intVector obsIndInDomain;
+    int i;
+    for( i = 0; i < m_Domain.size(); ++i )
+    {
+        if (pEvidence->IsNodeObserved(m_Domain[i]))
+            obsIndInDomain.push_back(i);
+    }
+    if ((*NodeTVector)[DomSize - 1]->IsDiscrete())
+    {
+        for( i = 0; i < m_Domain.size(); ++i)
+        {
+            if(!((*NodeTVector)[i]->IsDiscrete()) && !(pEvidence->IsNodeObserved(m_Domain[i])))
+                obsIndInDomain.push_back(i);
+        }
+        floatVector prob = static_cast<CTreeDistribFun*>(m_CorrespDistribFun)->GetProbability(pEvidence);
+        resPot = CTabularPotential::Create(	&m_Domain.front(), m_Domain.size(), GetModelDomain(), 
+            &prob.front(), obsIndInDomain);
+    }
+    else
+    {
+        for( i = 0; i < m_Domain.size(); ++i)
+        {
+            if(((*NodeTVector)[i]->IsDiscrete()) && !(pEvidence->IsNodeObserved(m_Domain[i])))
+                obsIndInDomain.push_back(i);
+        }
+        float exp, var;
+        static_cast<CTreeDistribFun*>(m_CorrespDistribFun)->GetAdjectives( pEvidence, exp, var );
+        resPot = CGaussianPotential::Create( &m_Domain.front(), m_Domain.size(), GetModelDomain(), 1, 
+            &exp, &var, 0.0f, obsIndInDomain);
+    }
+    return resPot;
+}
+
+

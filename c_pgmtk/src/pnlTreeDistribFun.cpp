@@ -17,6 +17,7 @@
 #include "pnlEvidence.hpp"
 #include "pnlException.hpp"
 #include "pnlTreeDistribFun.hpp"
+#include "pnlRng.hpp" 
 
 PNL_USING
 
@@ -415,9 +416,51 @@ float CTreeDistribFun::GetLogLik( const CEvidence* pEv ) const
     }
 }
 
-void  CTreeDistribFun::GenerateSample( CEvidence*, int ) const
+void  CTreeDistribFun::GenerateSample( CEvidence* evidence, int maximize) const
 {
-    PNL_THROW( CNotImplemented, "this operation" );
+     CxCARTNode* node = m_pCART->root;
+    assert(node);
+    CxClassifierVar var;
+    while (icxIsNodeSplit(node))
+    {
+        if (evidence->GetValue(node->split->feature_idx)->IsDiscrete())
+        {
+            var.i = evidence->GetValue(node->split->feature_idx)->GetInt();
+            var.fl = var.i;
+        }
+        else 
+        {
+            var.fl = evidence->GetValue(node->split->feature_idx)->GetFlt();
+        }
+        node = icxIsVarSplitLeft(m_pCART, node->split , var)
+                ? node->child_left : node->child_right;
+    }
+    if (IsRegression())
+    {
+    float response = node->response.fl;
+    float dev = node->error;
+    doubleVector doubleMean;
+    doubleMean.push_back(response);
+    doubleVector doubleCov;
+    doubleCov.push_back(dev);
+    doubleVector rndVls;
+    pnlRandNormal( &rndVls, doubleMean, doubleCov );
+    evidence->GetValue(m_domain[m_NodeTypes.size() - 1])->SetFlt((float)rndVls[0]);
+    }
+    else
+    {
+    int rnd = pnlRand( 0, 10000000);
+    int i=0;
+    int sum=node->fallen_stats[0];
+    while (rnd > sum)
+    {
+        ++i;
+        sum+=node->fallen_stats[i];
+    }
+    evidence->GetValue(m_domain[m_NodeTypes.size() - 1])->SetInt(i);
+    }
+    int arr[]={ m_domain[m_NodeTypes.size() - 1] };
+    evidence->ToggleNodeState(1, arr);
 }
 
 int CTreeDistribFun::GetMultipliedDelta(const int **, const float **,
@@ -654,3 +697,384 @@ void CTreeDistribFun::UpdateStatisticsML(CDistribFun *pPot)
         "UpdateStatisticsML for CTreeDistribFun not implemented yet");
 }
 #endif // PAR_OMP
+
+void CTreeDistribFun::UpdateTree(const CGraph* pGraphTree, TreeNodeFields *fields )
+{
+    
+    if( pGraphTree->IsBinaryTree())
+    {
+        //creating tree that contains only one node  
+        int type_step = 0;
+        int total_vars = m_NodeTypes.size() - 1;
+        int num_features = 0;
+        int response_type;
+        int j;
+        int i;
+        for( i = 0; i< pGraphTree->GetNumberOfNodes(); i++)
+        {
+            if( fields[i].isTerminal == false) num_features++;
+        }
+            
+        int s = sizeof( CxClassifierVarType ) * num_features;
+        CxClassifierVarType *feature_type;
+        feature_type = ( CxClassifierVarType*)malloc( s );
+        memset(feature_type, 0, s);
+        CxMat* type_mask     = cxCreateMat(total_vars+1, 1, CX_32SC1 );
+        type_step = (type_mask->rows == 1) ? sizeof(int) : type_mask->step;
+        response_type = *(CxClassifierVarType *)(type_mask->data.ptr + type_step * num_features);
+        
+        CxMat* features_of_interest = cxCreateMat(1, num_features, CX_32SC1 );
+        
+        int tmp = 0; 
+        for( i = 0; i< pGraphTree->GetNumberOfNodes(); i++)
+        {
+            if( fields[i].isTerminal == false)
+            {   
+                if ( fields[i].Question == 1)
+                    ((int *)features_of_interest->data.ptr)[tmp] = 1;
+                else
+                    if(fields[i].Question == 0)
+                        ((int *)features_of_interest->data.ptr)[tmp] = 0;
+                    else
+                        PNL_THROW( CInvalidOperation, 
+                        "we can compute only two types of questions now " );
+                    tmp++;
+            };
+        };
+        
+        CxMat* priors_mat = m_Params.priors;
+        //creation params
+        CxCARTTrainParams*  train_params = 
+        cxCARTTrainParams( features_of_interest,   // features_of_interest 
+        priors_mat,             // priors 
+        CxCARTEntropyCriterion, //splitting rule
+        0,    // num_competitors 
+        0,    // competitor_threshold 
+        5,    // num_surrogates 
+        .2f,  // surrogate_threshold 
+        12,   // tree_max_depth 
+        5,    // split_max_points, 
+        0,    // split_min_points, 
+        10,0);// number of clusters
+        //end of creation params
+        response_type = 1; 
+        m_pCART = cxCreateCART(num_features,feature_type,
+        response_type, train_params, NULL);
+        //end of creation tree contains one root node
+        
+        // finding root node number in the tree
+        
+        int rootNode;
+        for(i = 0; i < pGraphTree->GetNumberOfNodes(); i++)
+        {
+            intVector NodeParents;
+            pGraphTree->GetParents(i,&NodeParents);
+            if( NodeParents.size() == 0 )
+            {
+                rootNode = i;  
+                break;
+            };
+        };
+        //end of finding root node number in the tree
+                
+        //filling feature type array
+        m_pCART->feature_type = new int[pGraphTree->GetNumberOfNodes()];
+        for( i = 0; i< pGraphTree->GetNumberOfNodes(); i++)
+        {
+            m_pCART->feature_type[i] = 1;
+        };
+        for(i = 0; i < pGraphTree->GetNumberOfNodes(); i++ )
+        {
+            if( !(fields[i].isTerminal) )
+                if ( fields[i].Question == 1)
+                    m_pCART->feature_type[fields[i].node_index] = 24576;
+                else
+                    if(fields[i].Question == 0)
+                        m_pCART->feature_type[fields[i].node_index] = 2;
+                    else
+                        PNL_THROW( CInvalidOperation, 
+                        "we can compute only two types of questions now " );
+        };
+        //end of filling feature type array
+        cxInitNodeStorage(m_pCART);
+        cxSetNodeStorageDepth(m_pCART, total_vars + 1, m_pCART->params->tree_max_depth);
+        int currClass = 0;
+        //filling number of classes array
+        m_pCART->num_classes = new int[num_features]; 
+        for( i = 0; i < pGraphTree->GetNumberOfNodes(); i++)
+        {
+            if( fields[i].isTerminal == false)
+            {
+                for(j = 0; j < total_vars; j++)
+                {
+                    if(m_domain[j] == fields[i].node_index) 
+                    {
+                        if(m_NodeTypes[j]->IsDiscrete())  
+                            m_pCART->num_classes[currClass] = m_NodeTypes[j]->GetNodeSize();
+                        else   m_pCART->num_classes[currClass]  = 1;
+                        
+                    currClass++;
+                    }
+                }
+                
+            }
+        };
+        int *arr = new int[pGraphTree->GetNumberOfNodes()];
+        for( i = 0; i < pGraphTree->GetNumberOfNodes(); i++)
+        {
+            if( fields[i].isTerminal == false)
+            {
+                arr[i] = fields[i].node_index;
+            }
+            else 
+            {
+                arr[i] = 0;
+            }
+        };
+        int max = arr[0];
+        for( i = 1; i < pGraphTree->GetNumberOfNodes(); i++)
+            if (arr[i] > max)
+                max = arr[i];
+        m_pCART->features_corr = new int[max+1];
+        for( i = 0; i < max+1; i++)
+            m_pCART->features_corr[i] = 0;
+
+        //end of filling number of classes array
+        
+        // growing tree
+        CxCARTNode* root = cxAllocNode(m_pCART, 1 , 0);
+        m_pCART->root = root;
+        m_pCART->num_nodes = 1;
+        ConvertGraphToTree(m_pCART,m_pCART->root,pGraphTree,rootNode);
+        //end of growing tree
+        
+        
+        
+        //filling tree
+        FillTree(m_pCART,m_pCART->root,pGraphTree, fields,rootNode);
+        // end of filling tree
+		m_pCART->num_response_classes = m_NodeTypes[m_NodeTypes.size()-1]->GetNodeSize();
+        m_pCART->root->num_fallens = 0;
+    }
+    else
+    {
+        PNL_THROW( CInvalidOperation, 
+            "input graph must be Tree " );
+    };
+    
+}
+
+void CTreeDistribFun::ConvertGraphToTree(CxCART *pCart,CxCARTNode *node,
+    const CGraph *pGraph, int nodeNum) const
+{
+    intVector CurrentNodeChildren;
+    pGraph->GetChildren(nodeNum,&CurrentNodeChildren);
+    if( CurrentNodeChildren.size() !=0)
+    {
+        //creating two child nodes
+        CxCARTNode *left, *right;
+        int id_left = node->id * 2;
+        int id_right = id_left + 1 ;
+        int new_depth = node->depth + 1 ;
+        
+        left = cxAllocNode(pCart , id_left , new_depth);
+        right = cxAllocNode(pCart , id_right , new_depth);
+        
+        pCart->num_nodes += 2;
+        node->child_left = left;
+        node->child_right = right;
+        left->parent = right->parent = node;
+        
+        ConvertGraphToTree(pCart,left,pGraph,CurrentNodeChildren[0]);
+        ConvertGraphToTree(pCart,right,pGraph,CurrentNodeChildren[1]);  
+        return;
+    }
+    else
+    {
+        return;
+    }    
+}
+
+void CTreeDistribFun::FillTree(CxCART *pCart,CxCARTNode *node,
+       const CGraph *pGraph, TreeNodeFields *fields, int nodeNum) const
+{
+       
+    if( fields[nodeNum].isTerminal)
+    {
+        if(m_NodeTypes[m_NodeTypes.size() - 1]->IsDiscrete())
+        {   
+            int fallen_size;
+            int i;
+            fallen_size = m_NodeTypes[m_NodeTypes.size()-1]->GetNodeSize();
+            int tmp_sum = 0;
+            node->fallen_stats = new int [fallen_size];
+            for (i = 0; i < fallen_size-1; i++)
+            {
+                node->fallen_stats[i] = 10000000*fields[nodeNum].probVect[i];
+                tmp_sum +=  node->fallen_stats[i];
+            }
+            node->fallen_stats[fallen_size-1] = 10000000 - tmp_sum;
+            node->num_fallens = 10000000;
+            
+        }
+        else
+        {
+            // terminal node is continuous
+            node->response.fl = fields[nodeNum].expectation;   
+            node->error = fields[nodeNum].variance;
+                
+        }
+    }
+    else
+    {
+		int s = sizeof( CxCARTSplit );
+        CxCARTSplit *split;
+        split = (CxCARTSplit *) malloc( s );
+        split->feature_idx = fields[nodeNum].node_index;
+        if( fields[nodeNum].Question == 1)
+        {
+            split->value.fl = fields[nodeNum].questionValue;
+        }
+        else
+        {
+            int tmpQuestionVal = (int)fields[nodeNum].questionValue;
+            char *strQuestion;
+            int j;
+            int nodeSize = -1;
+            for(j = 0; j < m_NodeTypes.size()-1; j++)
+                if(m_domain[j] == fields[nodeNum].node_index ) 
+                {
+                 nodeSize = m_NodeTypes[j]->GetNodeSize();
+                 if( m_NodeTypes[j]->IsDiscrete() == false)
+                         PNL_THROW( CInvalidOperation, 
+                        "we can compute 0 type questions only for discrete nodes " );
+                 break;
+                };
+            if (nodeSize == -1)
+                PNL_THROW( CInvalidOperation, 
+                        "we can compute questions only by parents of tree node " );
+
+            strQuestion = new char[nodeSize];
+            int i;
+            for( i= 0; i < nodeSize; i++ )
+                strQuestion[i] = 0;
+            strQuestion[tmpQuestionVal] = 1;
+            split->value.ptr = (void*)strQuestion;
+        }
+        node->split= split;
+        split->revert = 0;
+    }
+    intVector CurrentNodeChildren;
+    pGraph->GetChildren(nodeNum,&CurrentNodeChildren);
+    if( CurrentNodeChildren.size() !=0)
+    {
+        FillTree(pCart,node->child_left,pGraph,fields, CurrentNodeChildren[0]);
+        FillTree(pCart,node->child_right,pGraph,fields, CurrentNodeChildren[1]);
+        return;
+    }
+    else return;
+    
+}
+
+void CTreeDistribFun::SetDomain(intVector domain )
+{ 
+ int i;
+ int *tmp_domain;
+ tmp_domain = new int[domain.size()];
+
+ for ( i = 0; i < domain.size(); i++)
+     tmp_domain[i] = domain[i];
+ m_domain = tmp_domain;
+ 
+}
+
+floatVector CTreeDistribFun::GetProbability( const CEvidence* pEv ) const
+{
+    floatVector res;
+    if (m_NodeTypes[m_NodeTypes.size() - 1]->IsDiscrete())
+    {
+        int DTNodeSize = m_NodeTypes[m_NodeTypes.size() - 1]->GetNodeSize();
+        int i;
+        CxCARTNode* node = m_pCART->root;
+        CEvidence copyEv = *pEv;
+        intVector indObsNow;
+        copyEv.GetObsNodesFlags( &indObsNow );
+        assert(node);
+        CxClassifierVar var;
+        intVector noObsNodes;
+        while (icxIsNodeSplit(node))
+        {
+            if ( !(indObsNow[node->split->feature_idx]) )
+            {
+                noObsNodes.push_back(node->split->feature_idx);
+                copyEv.ToggleNodeStateBySerialNumber(1, &(node->split->feature_idx));
+            }
+                if (copyEv.GetValue(node->split->feature_idx)->IsDiscrete())
+                {
+                    var.i = copyEv.GetValue(node->split->feature_idx)->GetInt();
+                    var.fl = var.i;
+                }
+                else 
+                {
+                    var.fl = copyEv.GetValue(node->split->feature_idx)->GetFlt();
+                }
+                node = icxIsVarSplitLeft(m_pCART, node->split , var)
+                    ? node->child_left : node->child_right;
+        }
+        while ( noObsNodes.size() > 0 )
+        {
+            copyEv.ToggleNodeStateBySerialNumber(1, &(noObsNodes[noObsNodes.size() - 1]));
+            noObsNodes.pop_back();
+        }
+        for( i = 0; i < DTNodeSize; ++i)
+        {
+            res.push_back(( (float)(node->fallen_stats[i])/(float)(node->num_fallens)));
+        }
+    }
+    return res;
+}
+
+int CTreeDistribFun::GetAdjectives( const CEvidence* pEv, float &expect,
+                                    float &varian) const
+{
+    int result = 0;
+    if ( ! (m_NodeTypes[m_NodeTypes.size() - 1]->IsDiscrete()) )
+    {
+        CxCARTNode* node = m_pCART->root;
+        assert(node);
+        assert(pEv);
+        CEvidence copyEv = *pEv;
+        intVector indObsNow;
+        copyEv.GetObsNodesFlags( &indObsNow );
+        CxClassifierVar var;
+        intVector noObsNodes;
+        while (icxIsNodeSplit(node))
+        {
+            if ( !(indObsNow[node->split->feature_idx]) )
+            {
+                noObsNodes.push_back(node->split->feature_idx);
+                copyEv.ToggleNodeStateBySerialNumber(1, &(node->split->feature_idx));
+            }
+                if (copyEv.GetValue(node->split->feature_idx)->IsDiscrete())
+                {
+                    var.i = copyEv.GetValue(node->split->feature_idx)->GetInt();
+                    var.fl = var.i;
+                }
+                else 
+                {
+                    var.fl = copyEv.GetValue(node->split->feature_idx)->GetFlt();
+                }
+                node = icxIsVarSplitLeft(m_pCART, node->split , var)
+                    ? node->child_left : node->child_right;
+        }
+        while ( noObsNodes.size() > 0 )
+        {
+            copyEv.ToggleNodeStateBySerialNumber(1, &(noObsNodes[noObsNodes.size() - 1]));
+            noObsNodes.pop_back();
+        }
+        expect = node->response.fl;
+        varian = node->error;
+        result = 1;
+    }
+    return result;
+}
