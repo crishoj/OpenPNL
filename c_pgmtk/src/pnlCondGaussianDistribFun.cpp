@@ -1854,13 +1854,14 @@ void CCondGaussianDistribFun::ResetNodeTypes(pConstNodeTypeVector &nodeTypes)
 {
         CDistribFun::ResetNodeTypes(nodeTypes);
 	
-	int ncontNds = m_contParentsIndex.size();
+	int ncontNds = m_contParentsIndex.size() + 1;
 	pConstNodeTypeVector ntCont(ncontNds, NULL);
 	int i;
-	for( i = 0 ; i < ncontNds; i++ )
+	for( i = 0 ; i < ncontNds - 1; i++ )
 	{
 	    ntCont[i] = nodeTypes[m_contParentsIndex[i]];
 	}
+	ntCont.back() = nodeTypes.back();
 	CMatrix<CGaussianDistribFun*>* distribf = static_cast<CCondGaussianDistribFun*>(this)
 	    ->GetMatrixWithDistribution();
 	CMatrixIterator<CGaussianDistribFun*>* iter = distribf->InitIterator();
