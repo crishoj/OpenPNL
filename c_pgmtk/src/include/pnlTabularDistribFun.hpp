@@ -142,6 +142,7 @@ public:
     virtual int IsDense() const;
     virtual void Dump() const;
 
+    //for domain with value node as last function allways return true 
     bool IsMatrixNormalizedForCPD( float eps = 1e-5f) const;
     
     CTabularDistribFun::~CTabularDistribFun();
