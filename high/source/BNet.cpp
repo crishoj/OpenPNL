@@ -89,13 +89,45 @@ void BayesNet::SetGaussian(TokArr var, TokArr mean, TokArr variance, TokArr weig
 {
     Net().Distributions()->FillData(var, mean, TokArr(), pnl::matMean);
     Net().Distributions()->FillData(var, variance, TokArr(), pnl::matCovariance);
-    Net().Distributions()->FillData(var, weight, TokArr(), pnl::matWeights);
+    if (weight.size() != 0)
+        Net().Distributions()->FillData(var, weight, TokArr(), pnl::matWeights);
 }
 
 TokArr BayesNet::GaussianMean(TokArr vars)
 {
+    static const char fname[] = "GaussianMean";
+    
+    int nchldComb = vars.size();
+    if( !nchldComb )
+    {
+	ThrowUsingError("Must be at least one combination for a child node", fname);
+    }
+
+    Vector<int> childNd, childVl;
+    Net().ExtractTokArr(vars, &childNd, &childVl);
+
+    if( !childVl.size())
+    {
+	childVl.assign(nchldComb, -1);
+    }
+           
+    const pnl::CFactor * cpd = Model()->GetFactor(childNd.front());
+    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matMean);
+    
+/*    TokArr result = "";
+    int i;
+    for( i = 0; i < nchldComb; i++ )
+    {
+	parentNds[nparents] = childNd.front();
+	parentVls[nparents] = childVl[i];
+	result << Net().CutReq( parentNds, parentVls, mat);
+    }    
+    
+    return result;
+*/
     TokArr result = "there is mean";
     return result;
+
 }
 
 TokArr BayesNet::GaussianCovar(TokArr var, TokArr vars)

@@ -116,13 +116,14 @@ void WDistributions::FillData(TokArr &value, TokArr &probability, TokArr &parent
     else 
         if (nodeClass == eNodeClassContinuous)
         {
-/*            if (static_cast<WGaussianDistribFun*>(Distribution(index))->IsDistributionSpecific() == 1)
+            if (static_cast<WGaussianDistribFun*>(Distribution(index))->IsDistributionSpecific() == 1)
             {
-//                if (m_aDistribution[index] != 0)
-//                    delete m_aDistribution[index];
+/*                if (m_aDistribution[index] != 0)
+                    delete m_aDistribution[index];
+*/
                   static_cast<WGaussianDistribFun*>(Distribution(index))->CreateDefaultDistribution();
-}
- */
+            }
+
             Distribution(index)->FillData(matType, value, probability, parentValue);
         }
         else

@@ -232,7 +232,13 @@ WGaussianDistribFun::~WGaussianDistribFun()
 {
     if (m_pDistrib != 0) 
     {   
-	delete m_pDistrib;
+	
+        /*for (node = 0; node < NumberOfNodes; node++)
+    {
+	delete nodeTypes[node];
+    }*/
+
+        delete m_pDistrib;
 	m_pDistrib = 0;
     };
 }
@@ -308,7 +314,7 @@ pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType) const
 	pMatrix = m_pDistrib->GetMatrix(matCovariance);
 	break;
     case matWeights:
-	pMatrix = m_pDistrib->GetMatrix(matWeights);
+	pMatrix = m_pDistrib->GetMatrix(matWeights, 0);
 	break;
     default:
 	ThrowUsingError("Unsupported matrix type", fname);
@@ -351,7 +357,7 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
     }
 
 /////????????????????????????
-   m_pDistrib->AllocMatrix( &probability, matType);
+   m_pDistrib->AllocMatrix( &probability, matType, 0);
 //    m_pDistrib->GetMatrix(matType)->SetElementByIndexes(probability, &aIndex.front());
 }
 
@@ -408,10 +414,11 @@ void WGaussianDistribFun::CreateDefaultDistribution()
     m_pDistrib = CGaussianDistribFun::CreateInMomentForm(false, NumberOfNodes, nodeTypes, 
         dataMean, dataCov, (const float **)dataWeight);
 
-    for (node = 0; node < NumberOfNodes; node++)
+/*    for (node = 0; node < NumberOfNodes; node++)
     {
 	delete nodeTypes[node];
     }
+*/
 
     delete nodeTypes;
     delete dataMean;
@@ -421,4 +428,9 @@ void WGaussianDistribFun::CreateDefaultDistribution()
         delete dataWeight[node];     
     };
     delete dataWeight;
+}
+
+int WGaussianDistribFun::IsDistributionSpecific()
+{
+    return m_pDistrib->IsDistributionSpecific();
 }
