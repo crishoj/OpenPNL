@@ -479,7 +479,7 @@ void CParPearlInfEngine::EnterEvidenceOMP(const CEvidence *evidence,
 {
   PNL_CHECK_IS_NULL_POINTER(evidence);
   m_bMaximize = maximize ? 1 : 0;
-  if (!AllCountinuesNodes(GetModel()))
+  if (!AllContinuousNodes(GetModel()))
   {
     // clear all the previous data
     ClearMessagesStorage();
