@@ -242,3 +242,4 @@ Note: it is normal for w2k_vc6 autobuilds to have "bad_build" code coverage summ
 11/05/04 21:20:02	w2k_icc	crashed	crashed_27.4	testExInfEngine
 11/09/04 21:20:02	w2k_icc	success	69.1	
 11/10/04 21:20:02	w2k_icc	success	69.1	
+11/11/04 21:20:01	w2k_icc	crashed	crashed_54.6	testGibbsInference
