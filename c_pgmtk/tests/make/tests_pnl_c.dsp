@@ -25,7 +25,7 @@ CFG=tests_pnl_c - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "tests_pnl_c - Win32 Release"
@@ -49,14 +49,14 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=link.exe
+LINK32=xilink6.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:console /debug /machine:I386 /out:"..\..\..\bin\tests_pnl_c.exe" /libpath:"..\..\lib" /libpath:"..\..\..\cxcore\lib" /fixed:no"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\work\PNL\bin\tests_pnl_c.exe
+TargetPath=\PNL\bin\tests_pnl_c.exe
 TargetName=tests_pnl_c
-InputPath=\work\PNL\bin\tests_pnl_c.exe
+InputPath=\PNL\bin\tests_pnl_c.exe
 SOURCE="$(InputPath)"
 
 "..\..\..\bin\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -85,13 +85,13 @@ SOURCE="$(InputPath)"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=link.exe
+LINK32=xilink6.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:console /debug /machine:I386 /out:"..\..\..\bin\tests_pnl_cd.exe" /pdbtype:sept /libpath:"..\..\lib" /libpath:"..\..\..\cxcore\lib"
 # Begin Custom Build
-TargetPath=\work\PNL\bin\tests_pnl_cd.exe
+TargetPath=\PNL\bin\tests_pnl_cd.exe
 TargetName=tests_pnl_cd
-InputPath=\work\PNL\bin\tests_pnl_cd.exe
+InputPath=\PNL\bin\tests_pnl_cd.exe
 SOURCE="$(InputPath)"
 
 "..\..\..\bin\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -155,6 +155,10 @@ SOURCE=..\src\ADSeparation.cpp
 # Begin Source File
 
 SOURCE=..\src\AExInfEngine.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\AExLearnEngine.cpp
 # End Source File
 # Begin Source File
 

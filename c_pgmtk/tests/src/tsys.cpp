@@ -95,6 +95,7 @@ void initASetStatistics();
 void initALearningCondGaussDBN();
 void initAInfForRndBNet();
 void initAExInfEngine();
+void initAExLearnEngine();
 
 struct {
     void (*pFunc)();
@@ -168,6 +169,8 @@ struct {
     FUNC_ENTITY(initALearningCondGaussDBN),	       1,
     FUNC_ENTITY(initAInfForRndBNet),                   1,
     FUNC_ENTITY(initAExInfEngine),                     1,
+    FUNC_ENTITY(initAExLearnEngine),                   1,
+
 
     0, 0 // don't delete this line!
 };
