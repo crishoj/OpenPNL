@@ -76,7 +76,7 @@ void MRF::SetClique(TokArr nodes)
 	aINode[i] = Net().Graph()->INode(nodes[i].Name());
     }
     
-    m_pNet->Distributions()->Cliques()->FormClique(aINode);
+    m_pNet->Distributions()->Cliques().FormClique(aINode);
 }
 
 // destroy clique
@@ -88,7 +88,7 @@ void MRF::DestroyClique(TokArr nodes)
 	aINode[i] = Net().Graph()->INode(nodes[i].Name());
     }
     
-    m_pNet->Distributions()->Cliques()->DestroyClique(aINode);
+    m_pNet->Distributions()->Cliques().DestroyClique(aINode);
 }
 
 TokArr MRF::GetNeighbors(TokArr nodes)

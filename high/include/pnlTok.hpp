@@ -19,9 +19,6 @@
 #endif
 #include <map>
 
-#include "pnlConfig.hpp"
-#include "pnlException.hpp"
-
 PNLW_BEGIN
 
 struct PNLHIGH_API TokId
@@ -154,7 +151,9 @@ struct PNLHIGH_API TokIdNode
             chain[0] = chain[1] = 0;
             if ( type != positive )
             {
-		PNL_THROW( pnl::CBadArg, "Matcher without additional parameters must be of positive type" );
+		ThrowInternalError(
+		    "Matcher without additional parameters must be of positive type",
+		    "Matcher::Matcher");
             }
         }
 
@@ -168,7 +167,9 @@ struct PNLHIGH_API TokIdNode
             case bit_any:
                 break;
             default:
-                PNL_THROW( pnl::CBadArg, "Matcher with one immediate parameter must be of bit_* type" );
+		ThrowInternalError(
+		    "Matcher with one immediate parameter must be of bit_* type",
+		    "Matcher::Matcher");
             }
         }
 
@@ -176,7 +177,9 @@ struct PNLHIGH_API TokIdNode
         {
             if ( type != chain_not )
             {
-                PNL_THROW( pnl::CBadArg, "Matcher with one chain parameter must be of chain_not type" );
+		ThrowInternalError(
+		    "Matcher with one chain parameter must be of chain_not type",
+		    "Matcher::Matcher");
             }
             this->chain[0] = new( Matcher )( chain );
             this->chain[1] = 0;
@@ -191,7 +194,9 @@ struct PNLHIGH_API TokIdNode
             case chain_xor:
                 break;
             default:
-                PNL_THROW( pnl::CBadArg, "Matcher with two chain parameters must be of type chain_and, chain_or or chain_xor" );
+		ThrowInternalError(
+		    "Matcher with two chain parameters must be of type chain_and, chain_or or chain_xor",
+		    "Matcher::Matcher");
             }
             chain[0] = new( Matcher )( chain1 );
             chain[1] = new( Matcher )( chain2 );
@@ -255,7 +260,10 @@ struct PNLHIGH_API TokIdNode
             case chain_xor:
                 return chain[0]->Match( node ) ^ chain[1]->Match( node );
             default:
-                PNL_THROW( pnl::CBadArg, "Matcher appears to have invalid type" );
+		ThrowInternalError(
+		    "Matcher appears to have invalid type",
+		    "Matcher::Matcher");
+		return false;
             }
         }
 
@@ -614,6 +622,25 @@ struct PNLHIGH_API Tok
     inline Tok( TokIdNode *, std::deque< TokId > const &, std::vector< F > const & );
 
     char const *Init( char const s[] );
+
+private:
+    TokIdNode *ContextCheck()
+    {
+	if ( IsNil() )
+	{
+	    return 0;
+	}
+	else
+	{
+	    Resolve();
+	    if ( node.size() != 1 || IsUnres() )
+	    {
+		ThrowInternalError("context must be a single resolved node",
+		    "Tok::ContextCheck");
+	    }
+	    return Node();
+	}
+    }
 };
 
 PNLHIGH_API Tok::Tok()
@@ -915,45 +942,9 @@ PNLHIGH_API void Tok::Resolve( int hint_num_nodes,
 {
     TokIdNode *hard_context_node, *soft_context_node, *subroot_node;
 
-    if ( hard_context.IsNil() )
-    {
-        hard_context_node = 0;
-    }
-    else
-    {
-	hard_context.Resolve();
-	if ( hard_context.node.size() != 1 || hard_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        hard_context_node = hard_context.Node();
-    }
-    if ( soft_context.IsNil() )
-    {
-        soft_context_node = 0;
-    }
-    else
-    {
-	soft_context.Resolve();
-        if ( soft_context.node.size() != 1 || soft_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        soft_context_node = soft_context.Node();
-    }
-    if ( subroot.IsNil() )
-    {
-        subroot_node = 0;
-    }
-    else
-    {
-	subroot.Resolve();
-        if ( subroot.node.size() != 1 || subroot.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "subroot must be a single resolved node" );
-        }
-        subroot_node = subroot.Node();
-    }
+    hard_context_node = hard_context.ContextCheck();
+    soft_context_node = soft_context.ContextCheck();
+    subroot_node = subroot.ContextCheck();
 
     Resolve( hint_num_nodes, hard_matcher, soft_matcher,
              hard_context_node, soft_context_node, subroot_node );
@@ -967,45 +958,9 @@ PNLHIGH_API void Tok::Resolve( int hint_num_nodes,
 {
     TokIdNode *hard_context_node, *soft_context_node, *subroot_node;
 
-    if ( hard_context.IsNil() )
-    {
-        hard_context_node = 0;
-    }
-    else
-    {
-	hard_context.Resolve();
-	if ( hard_context.node.size() != 1 || hard_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        hard_context_node = hard_context.Node();
-    }
-    if ( soft_context.IsNil() )
-    {
-        soft_context_node = 0;
-    }
-    else
-    {
-	soft_context.Resolve();
-        if ( soft_context.node.size() != 1 || soft_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        soft_context_node = soft_context.Node();
-    }
-    if ( subroot.IsNil() )
-    {
-        subroot_node = 0;
-    }
-    else
-    {
-	subroot.Resolve();
-        if ( subroot.node.size() != 1 || subroot.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "subroot must be a single resolved node" );
-        }
-        subroot_node = subroot.Node();
-    }
+    hard_context_node = hard_context.ContextCheck();
+    soft_context_node = soft_context.ContextCheck();
+    subroot_node = subroot.ContextCheck();
 
     Resolve( hint_num_nodes, hard_matcher,
              hard_context_node, soft_context_node, subroot_node );
@@ -1018,45 +973,9 @@ PNLHIGH_API void Tok::Resolve( int hint_num_nodes,
 {
     TokIdNode *hard_context_node, *soft_context_node, *subroot_node;
 
-    if ( hard_context.IsNil() )
-    {
-        hard_context_node = 0;
-    }
-    else
-    {
-	hard_context.Resolve();
-	if ( hard_context.node.size() != 1 || hard_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        hard_context_node = hard_context.Node();
-    }
-    if ( soft_context.IsNil() )
-    {
-        soft_context_node = 0;
-    }
-    else
-    {
-	soft_context.Resolve();
-        if ( soft_context.node.size() != 1 || soft_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        soft_context_node = soft_context.Node();
-    }
-    if ( subroot.IsNil() )
-    {
-        subroot_node = 0;
-    }
-    else
-    {
-	subroot.Resolve();
-        if ( subroot.node.size() != 1 || subroot.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "subroot must be a single resolved node" );
-        }
-        subroot_node = subroot.Node();
-    }
+    hard_context_node = hard_context.ContextCheck();
+    soft_context_node = soft_context.ContextCheck();
+    subroot_node = subroot.ContextCheck();
 
     Resolve( hint_num_nodes, hard_context_node, soft_context_node, subroot_node );
 }
@@ -1069,45 +988,9 @@ PNLHIGH_API void Tok::Resolve( Matcher const &hard_matcher,
 {
     TokIdNode *hard_context_node, *soft_context_node, *subroot_node;
 
-    if ( hard_context.IsNil() )
-    {
-        hard_context_node = 0;
-    }
-    else
-    {
-	hard_context.Resolve();
-	if ( hard_context.node.size() != 1 || hard_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        hard_context_node = hard_context.Node();
-    }
-    if ( soft_context.IsNil() )
-    {
-        soft_context_node = 0;
-    }
-    else
-    {
-	soft_context.Resolve();
-        if ( soft_context.node.size() != 1 || soft_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        soft_context_node = soft_context.Node();
-    }
-    if ( subroot.IsNil() )
-    {
-        subroot_node = 0;
-    }
-    else
-    {
-	subroot.Resolve();
-        if ( subroot.node.size() != 1 || subroot.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "subroot must be a single resolved node" );
-        }
-        subroot_node = subroot.Node();
-    }
+    hard_context_node = hard_context.ContextCheck();
+    soft_context_node = soft_context.ContextCheck();
+    subroot_node = subroot.ContextCheck();
 
     Resolve( -1, hard_matcher, soft_matcher,
              hard_context_node, soft_context_node, subroot_node );
@@ -1120,45 +1003,9 @@ PNLHIGH_API void Tok::Resolve( Matcher const &hard_matcher,
 {
     TokIdNode *hard_context_node, *soft_context_node, *subroot_node;
 
-    if ( hard_context.IsNil() )
-    {
-        hard_context_node = 0;
-    }
-    else
-    {
-	hard_context.Resolve();
-	if ( hard_context.node.size() != 1 || hard_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        hard_context_node = hard_context.Node();
-    }
-    if ( soft_context.IsNil() )
-    {
-        soft_context_node = 0;
-    }
-    else
-    {
-	soft_context.Resolve();
-        if ( soft_context.node.size() != 1 || soft_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        soft_context_node = soft_context.Node();
-    }
-    if ( subroot.IsNil() )
-    {
-        subroot_node = 0;
-    }
-    else
-    {
-	subroot.Resolve();
-        if ( subroot.node.size() != 1 || subroot.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "subroot must be a single resolved node" );
-        }
-        subroot_node = subroot.Node();
-    }
+    hard_context_node = hard_context.ContextCheck();
+    soft_context_node = soft_context.ContextCheck();
+    subroot_node = subroot.ContextCheck();
 
     Resolve( -1, hard_matcher, hard_context_node, soft_context_node, subroot_node );
 }
@@ -1169,45 +1016,9 @@ PNLHIGH_API void Tok::Resolve( Tok hard_context,
 {
     TokIdNode *hard_context_node, *soft_context_node, *subroot_node;
 
-    if ( hard_context.IsNil() )
-    {
-        hard_context_node = 0;
-    }
-    else
-    {
-	hard_context.Resolve();
-	if ( hard_context.node.size() != 1 || hard_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        hard_context_node = hard_context.Node();
-    }
-    if ( soft_context.IsNil() )
-    {
-        soft_context_node = 0;
-    }
-    else
-    {
-	soft_context.Resolve();
-        if ( soft_context.node.size() != 1 || soft_context.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "context must be a single resolved node" );
-        }
-        soft_context_node = soft_context.Node();
-    }
-    if ( subroot.IsNil() )
-    {
-        subroot_node = 0;
-    }
-    else
-    {
-	subroot.Resolve();
-        if ( subroot.node.size() != 1 || subroot.IsUnres() )
-        {
-            PNL_THROW( pnl::CBadArg, "subroot must be a single resolved node" );
-        }
-        subroot_node = subroot.Node();
-    }
+    hard_context_node = hard_context.ContextCheck();
+    soft_context_node = soft_context.ContextCheck();
+    subroot_node = subroot.ContextCheck();
 
     Resolve( -1, hard_context_node, soft_context_node, subroot_node );
 }

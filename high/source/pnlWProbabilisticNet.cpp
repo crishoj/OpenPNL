@@ -1216,12 +1216,7 @@ int ProbabilisticNet::GetInt(TokIdNode *node)
 
 pnl::CNodeType ProbabilisticNet::pnlNodeType(int i)
 {
-    int size;
-    bool bDiscrete;
-
-    pnl::EIDNodeState nodeState = pnl::nsChance;
-    m_paDistribution->GetNodeTypeInfo(&bDiscrete, &size, &nodeState, i);
-    return pnl::CNodeType(bDiscrete, size, nodeState );
+    return m_paDistribution->NodeType(i);
 }
 
 void ProbabilisticNet::Accumulate(TokArr *pResult, Vector<int> &aIndex,
@@ -1338,11 +1333,6 @@ TokArr ProbabilisticNet::CutReq( Vector<int>& queryNds, Vector<int>& queryVls,
     }
 
     return result;
-}
-
-int ProbabilisticNet::NodesClassification(TokArr &aValue) const
-{
-    return Token()->NodesClassification(aValue);
 }
 
 // assume that this function is called seldom. It isn't optimal.

@@ -114,7 +114,6 @@ public:
     TokArr CutReq( Vector<int>& queryNds, Vector<int>& queryVls, 
 			const pnl::CMatrix<float> * mat ) const;
 
-    int NodesClassification(TokArr &aValue) const;
     void SetTopologicalOrder(const int *renaming, pnl::CGraph *pnlGraph);
 
     static int NodeAssociation(Vector<pnl::CNodeType> *paNodeType,

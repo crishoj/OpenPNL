@@ -31,9 +31,8 @@ public:
 	return m_aDistribution[iNode];
     }
     void DropDistribution(int iNode);
-    bool IsValid(int iNode);
     void GetNodeTypeInfo(bool *pbDiscrete, int *pSize, pnl::EIDNodeState *, int iNode);
-    pnl::CNodeType NodeType(int iDistribution);
+    pnl::CNodeType NodeType(int iDistribution) const;
     void ResetDistribution(int iNode, pnl::CFactor &ft);
     void FillData(TokArr &value, TokArr &probability, const TokArr &parentValue, 
         pnl::EMatrixType matType = pnl::matTable);
@@ -41,15 +40,16 @@ public:
 
     void SetMRF(bool mrfFlag /* = true */);
     bool IsMRF() const { return m_bMRF; }
-    WCliques *Cliques() { return m_pCliques; }
+    WCliques &Cliques() const { return *m_pCliques; }
 
 protected:
     virtual void DoNotify(int message, int iNode, ModelEngine *pObj);
     virtual int InterestedIn() const { return eDelNode|eChangeNState|eChangeParentNState|eInit; }
-    TokenCover &Token() { return *m_pToken; }
-    WGraph &Graph();
+    TokenCover &Token() const { return *m_pToken; }
+    WGraph &Graph() const;
     bool IsDiscrete(int iNode) const;
-    int iDistribution(const Vector<TokIdNode *> &nodes);
+    int IDistribution(const Vector<TokIdNode *> &nodes) const;
+    void GetDomain(Vector<int> *domain, int iDistibution) const;
 
 private:
     TokenCover *m_pToken;			// token handler

@@ -48,14 +48,12 @@ namespace pnl
     class pnlString;
 };
 
-//#pragma warning(push, 2)
 #define Vector pnl::pnlVector
 #include "pnlConfig.hpp"
 #include "pnlTypeDefs.hpp"
 #include "pnlString.hpp"
 
 typedef pnl::pnlString String;
-//#pragma warning(pop)
 
 PNLW_BEGIN
 

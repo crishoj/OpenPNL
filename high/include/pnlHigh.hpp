@@ -2,6 +2,8 @@
 
 #include "BNet.hpp"
 #include "LIMID.hpp"
+#include "DBN.hpp"
+#include "MRF.hpp"
 
 // FORWARDS
 PNLW_BEGIN
