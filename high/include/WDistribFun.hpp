@@ -12,6 +12,7 @@ namespace pnl
 {
     class CDistribFun;
     template<class Type> class CDenseMatrix;
+    class CGaussianDistribFun;
 }
 
 class DistribFunDesc
@@ -74,7 +75,17 @@ private:
 class PNLHIGH_API WGaussianDistribFun: public WDistribFun
 {
 public:
-    WGaussianDistribFun() {}
+    WGaussianDistribFun();
+    virtual ~WGaussianDistribFun();
+    void SetDefaultDistribution();
+    Vector<int> Dimensions(int matrixType);
+    void FillData(int matrixType, TokArr value, TokArr probability, TokArr parentValue = TokArr());
+    void DoSetup();
+    pnl::CDenseMatrix<float> *Matrix(int maxtixType) const;
+    void CreateDistribution();
+
+private:
+    pnl::CGaussianDistribFun *m_pDistrib;
 };
 
 #endif //__WDISTRIBFUN_HPP__

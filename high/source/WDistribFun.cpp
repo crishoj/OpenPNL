@@ -220,3 +220,102 @@ void WTabularDistribFun::DoSetup()
 {
     CreateMatrix();
 }
+
+
+WGaussianDistribFun::WGaussianDistribFun():WDistribFun(), m_pDistrib(0) {}
+
+WGaussianDistribFun::~WGaussianDistribFun()
+{
+    if (m_pDistrib != 0) 
+    {   
+	delete m_pDistrib;
+	m_pDistrib = 0;
+    };
+}
+
+void WGaussianDistribFun::SetDefaultDistribution()
+{
+    CreateDistribution();
+}
+
+void WGaussianDistribFun::CreateDistribution()
+{
+    if (m_pDistrib != 0)
+    {
+	delete m_pDistrib;
+	m_pDistrib = 0;
+    }
+
+    int NumberOfNodes = desc()->nNode();
+    const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
+
+    int node;
+    for (node = 0; node < NumberOfNodes; node++)
+    {
+	nodeTypes[node] = new CNodeType(false, desc()->nodeSize(node), nsChance);
+    }
+
+    m_pDistrib = CGaussianDistribFun::CreateUnitFunctionDistribution(NumberOfNodes, nodeTypes);
+
+    for (node = 0; node < NumberOfNodes; node++)
+    {
+	delete nodeTypes[node];
+    }
+
+    delete nodeTypes;
+}
+
+
+Vector<int> WGaussianDistribFun::Dimensions(int matrixType)
+{
+    if(!m_pDistrib)
+    {
+	CreateDistribution();
+    }
+
+    return desc()->nodeSizes();
+}
+
+
+void WGaussianDistribFun::DoSetup()
+{
+    CreateDistribution();
+}
+
+
+pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType) const
+{
+    static const char fname[] = "Matrix";
+
+    if (!m_pDistrib)
+    {
+	ThrowUsingError("Distribution function is not set", fname);
+    }
+
+    pnl::CMatrix<float> *pMatrix = 0;
+
+    switch (matrixType)
+    {
+    case matMean:
+	pMatrix = m_pDistrib->GetMatrix(matMean);
+	break;
+    case matCovariance:
+	pMatrix = m_pDistrib->GetMatrix(matCovariance);
+	break;
+    case matWeights:
+	pMatrix = m_pDistrib->GetMatrix(matWeights);
+	break;
+    default:
+	ThrowUsingError("Unsupported matrix type", fname);
+	break;
+    }
+
+    if (dynamic_cast<pnl::CDenseMatrix<float> *>(pMatrix) != 0)
+    {
+	return dynamic_cast<pnl::CDenseMatrix<float> *>(pMatrix);
+    }
+    else
+    {
+	return pMatrix->ConvertToDense();
+    }
+}
