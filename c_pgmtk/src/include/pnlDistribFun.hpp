@@ -176,24 +176,6 @@ private:
 
 };
 
-inline void CDistribFun::ResetNodeTypes( pConstNodeTypeVector &nodeTypes )
-{
-    if( int(nodeTypes.size()) != m_NumberOfNodes )
-    {
-        PNL_THROW( COutOfRange, "number of node types" );
-    }
-    int i;
-    for( i = 0; i < m_NumberOfNodes; i++)
-    {
-        PNL_CHECK_IS_NULL_POINTER( nodeTypes[i] );
-        if( *m_NodeTypes[i] != *nodeTypes[i] )
-        {
-            PNL_THROW( CInconsistentType, "node types must be equal");
-        }
-    }
-    m_NodeTypes.assign( nodeTypes.begin(), nodeTypes.end() );
-}
-
 inline void CDistribFun::SetUnitValue(int unitValue)
 {
     m_bUnitFunctionDistribution = unitValue;
