@@ -111,6 +111,14 @@ SOURCE=..\source\DBNCB.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\source\LIMID.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\source\LIMIDCB.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\source\ModelEngine.cpp
 # End Source File
 # Begin Source File
@@ -180,6 +188,14 @@ SOURCE=..\include\DBN.hpp
 # Begin Source File
 
 SOURCE=..\include\DBNCB.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\LIMID.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\LIMIDCB.hpp
 # End Source File
 # Begin Source File
 
