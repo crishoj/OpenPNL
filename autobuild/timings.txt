@@ -2453,3 +2453,21 @@ Footer_begin
   Elapsed_Time,259.0
 Footer_end
 ==
+08/19/04 20:20:02	w2k_icc	crashed	70.7	testComputeLikelihood testGaussianFactorLearningEngine testJTreeInfDBN
+Header_begin
+  Processor,Pentium
+  OS,WindowsNT v5.0 build 2195
+  Start_Date,
+  Start_Time,Fri Aug 20 00:45:01 2004
+Header_end
+Data_begin
+  Flavour,Function,Value,Units,Comments,Param1,Param2,Param3,Param4
+  d,testPerformanceJTreeInf,1.368889e-004,5.198985e-004,3.579545e+004,
+ time of inference procedure creation,
+ everage time of inference doing,
+ CPU Freq,
+  d,timeBKInfEngine,2.688331e-003,4.547226e-003,3.579545e+004,
+ JTree inference creation ,
+ average time for entering evidence ,
+ CPU frequency ,
+==
