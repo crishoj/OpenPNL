@@ -1,0 +1,204 @@
+<html>
+
+<head>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<title>Reference manual</title>
+</head>
+
+<body>
+<font class="classes"><p>Class CSoftMaxCPD</p></font>
+<p>Class CSoftMaxCPD containes implementations of Class CCPD virtual functions.</p>
+<table width="100%">
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">Create</font></p>
+			<p><font class="description">Returns class object</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">  static CSoftMaxCPD* Create(const int *domain, int nNodes, CModelDomain* pMD);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">domain</font></td>
+					<td>Pointer to the array of numbers of domain nodes.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">nNodes</font></td>
+					<td>Number of nodes in domain.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">pMD</font></td>
+					<td>pointer to model domain, which includes this factor</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">Copy</font></p>
+			<p><font class="description">Creates new SoftMax CPD as copy of the input object</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">  static CSoftMaxCPD* Copy(const CSoftMaxCPD* pSMCPD);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pSMCPD</font></td>
+					<td>Pointer to CSoftMaxCPD object.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">AllocDistribution</font></p>
+			<p><font class="description">Allocates SoftMax distribution on SoftMax child node.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">    void AllocDistribution(const float* pWeights, const float* pOffsets, const int* parentCombination = NULL);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="6"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pWeights</font></td>
+					<td >Pointer to SoftMax weight matrix.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">pOffsets</font></td>
+					<td >Pointer to SoftMax offset vector.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">parentCombination</font></td>
+					<td >Pointer to discontinous parents state combination.</td>
+				</tr>	
+				<tr><td><font class="arg">Discussion</font></td></tr>
+				<tr><td colspan = "2">This function allocates a SoftMax distribution on SoftMax child node with Gaussian parents and the given discrete parent combination.</td></tr>			
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">GetMaximizingMethod</font></p>
+			<p><font class="description">Gets method, which is used for likelihood maximizing.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">    EMaximizeMethod GetMaximizingMethod();</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Discussion</font></td></tr>
+				<tr>
+					<td>There are three possible methods for likelihood maximising. They are Gradient, ConjugateGradient and Hessian</td>
+				</tr>				
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">SetMaximizingMethod</font></p>
+			<p><font class="description">Sets method, which is used for likelihood maximizing.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">    void SetMaximizingMethod(EMaximizeMethod met);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">met</font></td>
+					<td>Defines Likelihood maximizing method, which you want to use.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">MaximumLikelihood</font></p>
+			<p><font class="description">Maximizes likelihood using defined method.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">    void MaximumLikelihood(float ** Observation, int NumberOfObservations, float Accuracy, float step = 0.1);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="6"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">Observation</font></td>
+					<td>pointer to float matrix of observations on the SoftMax node family.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">NumberOfObservations</font></td>
+					<td>Defines quantity of observations</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">Accuracy</font></td>
+					<td>Accuracy - parameter of maximizing method</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">Step</font></td>
+					<td>Step - parameter of maximizing method</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+</table>
+</body>
+</html>

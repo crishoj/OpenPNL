@@ -1,0 +1,794 @@
+<html>
+
+<head>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<title>Reference manual</title>
+</head>
+
+<body>
+<font class="classes"><p>Class CSoftMaxDistribFun</p></font>
+<font class="description"><p>Class CSoftMaxDistribFun implements basic operations wiht distribution on SoftMax node when it has only continuous parents. In this case distribution can de defined by one matrix of weights and one offset vector.</p></font>
+<table width="100%">
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">Clone</font></p>
+			<p><font class="description">Clones SoftMaxDistribFun object and return pointer to it.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">  CDistribFun* Clone();</font></p><td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">Create</font></p>
+			<p><font class="description">Returns class object</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">  CSoftMaxDistribFun* Create(int NumberOfNodes, const CNodeType *const* NodeTypes, const float *dataWeight, const float *dataOffset)</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="5"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">NumberOfNodes</font></td>
+					<td>Quantity of SoftMax node parents</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">NodeTypes</font></td>
+					<td>Pointer to the array of parent nodes types.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">dataWeight</font></td>
+					<td>Pointer to float matrix of SoftMax node weights.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">dataOffset</font></td>
+					<td>Pointer to float vector of SoftMax node offsets.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">CreateUnitFunctionDistribution</font></p>
+			<p><font class="description">Creates unit form of distribution.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">  CSoftMaxDistribFun* CreateUnitFunctionDistribution(int NumberOfNodes, const CNodeType *const* NodeTypes);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="3"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">NumberOfNodes</font></td>
+					<td>Quantity of SoftMax node parents</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">NodeTypes</font></td>
+					<td>Pointer to the array of parent nodes types.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">Copy</font></p>
+			<p><font class="description">Creates a copy of an input object and returns a pointer to it.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface"> CSoftMaxDistribFun* Copy(const CSoftMaxDistribFun* pInpDistr);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pInpDistr</font></td>
+					<td>Pointer to the SoftMaxDistribFun object.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">IsValid</font></p>
+			<p><font class="description">checks weather this distribution is a unit distribution.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface"> bool IsValid(std::string* description) const</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">description</font></td>
+					<td>Output message.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">CreateDefaultMatrices</font></p>
+              <p><font class="description">Creates random&nbsp; matrices for
+              this distribution.&nbsp;</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface"> void CreateDefaultMatrices(int typeOfMatrices);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">typeOfMatrices</font></td>
+					<td>We may think about different types of matricies, but now
+                      only random type is realized</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">AllocMatrix</font></p>
+			<p><font class="description">Creates matrices and attaches them to
+            this distribution.&nbsp;</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void AllocMatrix(const float *data, EMatrixType mType, int numberOfWeightMatrix, const int *parentIndices);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="5"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">data</font></td>
+					<td>data for matrix creation</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">mType</font></td>
+					<td>as there is only one type of matrix for SoftMax
+                      distribution, here you are to define Weight matrix.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">numberOfWeightMatrix</font></td>
+					<td>this parameter is not used here</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">parentIndices</font></td>
+					<td>this parameter is not used here</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">AttachMatrix</font></p>
+              <p><font class="description">Attaches definite matrix to
+              distribution.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void AttachMatrix(CMatrix<float>* pMatrix, EMatrixType mType, int numberOfWeightMatrix, const int *parentIndices)</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="5"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pMatrix</font></td>
+					<td>pointer to matrix, which you want to attach.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">mType</font></td>
+					<td>as there is only one type of matrix for SoftMax
+                      distribution, here you are to define Weight matrix.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">numberOfWeightMatrix</font></td>
+					<td>this parameter is not used here</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">parentIndices</font></td>
+					<td>this parameter is not used here</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">AllocOffsetVector</font></p>
+              <p><font class="description">Creates an offset vector and attaches
+              it to a distribution</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void AllocOffsetVector(const float *data);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">data</font></td>
+					<td>a source data for vector creation</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">AttachOffsetVector</font></p>
+			<p><font class="description">Attaches offset vector to a
+            distribution.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void AttachOffsetVector(const floatVector *pVector);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pVector</font></td>
+					<td>pointer to the offset vector, which you want to attach.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">IsEqual</font></p>
+              <p><font class="description">Compares current SoftMaxDistribFun
+              object with input one.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">int IsEqual(const CDistribFun *dataToCompare, float epsilon, int withCoeff, float* maxDifference) const</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="5"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">dataToCompare</font></td>
+					<td>SoftMaxDistribFun object to compare</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">epsilon</font></td>
+					<td>accuracy of comparing</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">withCoeff</font></td>
+					<td>this parameter is not used here</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">maxDifference</font></td>
+					<td>an output value of maximum difference</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">GetMatrix</font></p>
+              <p><font class="description">Returns pointer to a SoftMax weight
+              matrix.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">CMatrix<float>* GetMatrix(EMatrixType mType, int numWeightMat, const int *parentIndices) const</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">mType</font></td>
+					<td>as there is only one type of matrix for SoftMax
+                      distribution, here you are to define Weight matrix.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">numWeightMat</font></td>
+					<td>this parameter is not used here</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">parentIndices</font></td>
+					<td>this parameter is not used here</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">GetOffsetVector</font></p>
+			<p><font class="description">Returns pointer to a SoftMax offset vector</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">floatVector* GetOffsetVector()</font></p><td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">GetStatisticalMatrix</font></p>
+			<p><font class="description">Returns pointer to a matrix, which had been produced while maximize Likelihood</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">CMatrix<float> *GetStatisticalMatrix(EStatisticalMatrix mType, int *parentIndices) const</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="3"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">mType</font></td>
+					<td>as there is only one type of matrix for SoftMax
+                      distribution, here you are to define Weight matrix.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">parentIndices</font></td>
+					<td>this parameter is not used here</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">GetStatisticalOffsetVector</font></p>
+			<p><font class="description">Returns pointer to a offset vector, which had been produced while maximize Likelihood</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">floatVector* GetStatisticalOffsetVector();</font></p><td>
+			</tr>
+
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">InitLearnData</font></p>
+              <p><font class="description">Copies a weight matrix and offset
+              vector to statistical weight matrix and statistical offset vector.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void InitLearnData();</font></p><td>
+			</tr>
+
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">CopyLearnDataToDistrib</font></p>
+			<p><font class="description">Copies the results of learning process
+            - statistical weight matrix and offset vector, to distribution
+            parameters</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void CopyLearnDataToDistrib();</font></p><td>
+			</tr>
+
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">Dump</font></p>
+			<p><font class="description">Organizes convinient results output.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void Dump() const;</font></p><td>
+			</tr>
+
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetStatistics</font></p>
+              <p><font class="description">Fills statistical weight matrix of
+              distribution.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetStatistics(const CMatrix<float> *pMat, EStatisticalMatrix matrix, const int* parentsComb)</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pMat</font></td>
+					<td>a data vector, which will be stored as statistical
+                      offset vector</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">matrix</font></td>
+					<td>this parameter is not used here</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">parentsComb</font></td>
+					<td>Discrete parents state combination.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetOffsetStatistics</font></p>
+              <p><font class="description">Fills statistical offset vector.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetOffsetStatistics(const floatVector *pVec);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pVec</font></td>
+					<td>a data vector, which will be stored as statistical
+                      offset vector</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			
+			<tr>
+            <td>
+			</tr>
+
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">SetMaximizingMethod</font></p>
+			<p><font class="description">sets method, which would be used for likelihood maximizing.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetMaximizingMethod (SMMaximizeMethod met);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">met</font></td>
+					<td>Defines likelihood maximizing method, which you want to use.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">GetMaximizingMethod</font></p>
+			<p><font class="description">Gets method, which is used for likelihood maximizing.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">SMMaximizeMethod GetMaximizingMethod ();</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="2"></td><td><font class = "arg">Discussion</font></td></tr>
+				<tr>
+					<td colspan ="2">There are three possible maximizing methods. They are Gradient, Conjugate Gradient and Newton-Rafsen(using Hessian).</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">MaximumLikelihood</font></p>
+			<p><font class="description">Calls definite maximizing method, according to current value of Maximizing Method</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void MaximumLikelihood(float **Observation, int NumberOfObservations, float Accuracy, float step);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="5"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">Observation</font></td>
+					<td>Matrix of observations on SoftMax node and it's continous parents</td>
+				</tr>
+				<tr>
+					<td><font class="argname">NumberOfObservations</font></td>
+					<td>Number of Observations.</td>
+				</tr>
+				<tr>
+					<td><font class="argname">Accuracy</font></td>
+					<td>Maximizing method parameter, defines the stop condition.</td>
+				</tr>
+				<tr>
+					<td><font class="argname">step</font></td>
+					<td>Maximizing method parameter, it is better to set the value between 0 and 1.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">CalculateHessian</font></p>
+			<p><font class="description">Calculates Hessian matrix for Likelihood function using Evidences</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void CalculateHessian(float ** pContVectorEvidence, int NumberOfObservations);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="3"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pContVectorEvidence</font></td>
+					<td>Matrix of observations on SoftMax node and it's continous parents</td>
+				</tr>
+				<tr>
+					<td><font class="argname">NumberOfObservations</font></td>
+					<td>Number of Observations.</td>
+				</tr>
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">CalculateLikelihood</font></p>
+			<p><font class="description">Calculates Likelihood using Evidences</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">float CalculateLikelihood(float **Observations, int NumOfObservations);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="3"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">Observations</font></td>
+					<td>Matrix of observations on SoftMax node and it's continous parents</td>
+				</tr>
+				<tr>
+					<td><font class="argname">NumberOfObservations</font></td>
+					<td>Number of Observations.</td>
+				</tr>
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"></hr><p><font class="method">MaximumLikelihoodGradient<br>MaximumLikelihoodConjugateGradient<br>MaximumLikelihoodHessian</font></p>
+			<p><font class="description">Functions for likelihood maximizing</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void MaximumLikelihoodGradient(float **Observations, int NumOfObservations, float Accuracy, float step);<br>
+							void MaximumLikelihoodConjugateGradient(float **Observations, int NumOfObservations, float Accuracy, float step);<br>
+							void MaximumLikelihoodHessian(float ** Observations, int NumberOfObservations, float Accuracy, float step);</font></p><td>
+			</tr>
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="5"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">Observation</font></td>
+					<td>Matrix of observations on SoftMax node and it's continous parents</td>
+				</tr>
+				<tr>
+					<td><font class="argname">NumberOfObservations</font></td>
+					<td>Number of Observations.</td>
+				</tr>
+				<tr>
+					<td><font class="argname">Accuracy</font></td>
+					<td>Maximizing method parameter, defines the stop condition.</td>
+				</tr>
+				<tr>
+					<td><font class="argname">step</font></td>
+					<td>Maximizing method parameter, it is better to set the value between 0 and 1.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+		</table>
+		</td>
+	</tr>
+</table>
+</body>
+</html>

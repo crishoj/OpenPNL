@@ -1,0 +1,17 @@
+<html>
+<title>SoftMax Distribition</title>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<body>
+<table width = "100%">
+	<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">One of the learn methods.</font></h2></td></tr>
+	<tr><td><p>We want to execute learning process on Bayesian networks which include SoftMax  nodes. So, we have learning set for every node in SoftMax node family. This set consists of evidences on every node of the family, it is a matrix, where every coloumn represents one evidence, last element in a column is a SoftMax node value. Our goal is to find out softmax distribution parameters: weight matrix and offset vector.</p>
+		<p>To solve this task we will use the following algorithm. Let’s form a likelihood function for softmax node.</p>
+		<p><img src="formula_2.gif" align="center"></p>
+		<p>Here <i>n</i> is quantity of experiments, <i>y<sub>i</sub></i>  is a value of SoftMax node in experiment number <i>i</i>. <i>m</i> is quantity of SoftMax node states. <i>X<sub>i</sub></i>  is a column of evidence matrix.</p>
+		<p>To find real distribution parameters, we have to maximize Likelihood function by changing W and b. A point (W and b values), which corresponds to maximum Likelihood, is a point of real distribution parameters. In the case when we have large amount of evidences, Likelihood function is very close to zero. So, it’s better to use likelihood logarithm for maximizing. </p>
+		<p><img src="formula_3.gif"></p>
+		<p>To maximize LogLikelihood function, we have used three methods: Gradient method, Conjugate Gradient method and Newton-Ravsen method.</p>
+	</td></tr>
+</table>
+</body>
+</html>
