@@ -1,0 +1,38 @@
+loadnet("alarm.xml")
+
+// default inference
+print("start of default learning... ")
+Learn()
+
+// set evidence
+Evid("JohnCalls^true MaryCalls^false", "1")
+//Evid("MaryCalls^false", "1")
+//Evid("JohnCalls^true", "1")
+
+// EM learning
+print("start of EM learning... ")
+SetProperty("Learning", "em")
+Learn()
+savenet("em1.xml")
+comparefiles("learnem1.xml", "em1.xml", "EMLearning with 1st evidence")
+
+// clear and set evidence
+ClearEvidHistory()
+Evid("Earthquake^false", "1")
+
+// EM learning
+print("start of EM learning with another evidences... ")
+Learn()
+savenet("em2.xml")
+comparefiles("learnem2.xml", "em2.xml", "EMLearning with 2nd evidence")
+
+// clear and set evidence
+ClearEvidHistory()
+Evid("Burglary^true Earthquake^false Alarm^false JohnCalls^false MaryCalls^true", "1")
+
+// EM learning
+print("start of Bayes learning... ")
+SetProperty("Learning", "bayes")
+Learn()
+savenet("bayes.xml")
+comparefiles("learnbayes.xml", "bayes.xml", "Bayesian Learning")

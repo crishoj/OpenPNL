@@ -1,0 +1,4 @@
+clear()
+loadnet("alarm.xml")
+savenet("net.xml")
+comparefiles("alarm.xml", "net.xml", "save\load")

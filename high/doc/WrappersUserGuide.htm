@@ -1,0 +1,373 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html><head>
+<link rel="STYLESHEET" href="style.css" charset="ISO-8859-1" type="text/css">
+<title>PNL Wrappers: User Guide</title>
+</head><body>
+
+<center><table cellspacing=0 cellpadding=5 width="90%" bgcolor="#6a9bed" nosave >
+<tr nosave>
+<td nosave>
+<center><i><font color="#000000"><font size=+4>
+PNL Wrappers: User Guide
+</font></font></i></center>
+</td>
+</tr>
+</table></center>
+
+<hr><h2><a name="Intro">Intro</a></h2>
+<hr>
+<P>
+This manual describes usage of PNL with the help of wrappers.
+It is BayesNet  class, that is used for working with Bayesian networks in wrappers. 
+It is main class, all the operations are made by it. This class allows user 
+<UL>
+    <LI>to create new Bayesian network,</LI>
+    <LI>to specify probability distributions on the net nodes,</LI>
+    <LI>to assign observations (evidences),</LI>
+    <LI>to carry out learning process,</LI>
+    <LI>to get joint probability distribution (JPD) and maximum probability explanation (MPE) for network nodes,</LI>
+    <LI>to save Bayesian network and observations (evidences) as files and to load them from files,
+    <br>etc.</LI>
+</UL>
+With the help of BayesNet class methods user specifies parameters of the network, evidences and other net 
+characteristics and demands desired results. Required algorithms are called automatically. Learning 
+and inference processes can be carried out with the help of different PNL algorithms. If it is not 
+convenient for user to use default algorithm, he can specify definite algorithm that he want to use 
+to solve his task.
+We are going to analyze Bayesian network functioning by the well-known example of “water-sprinkler”. 
+The graph structure of the model and the parameters are all shown in Figure 1:
+</P>
+<hr>
+<h4><a name="figWaterSprinkler">Figure1. Water-sprinkler model</a></h4>
+<img align=center src="imgname.gif">
+<p>
+All nodes are discrete and can take on two values: true or false.
+</p>
+<hr>
+
+<h2><a name="CreateNet">Creating the net</a></h2>
+<p>
+The first step of operating the Bayesian network is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create BayesNet class object: 
+<pre>BayesNet net;</pre>
+Now network is empty. We have to add nodes and edges.
+</p>
+<hr>
+
+<h3><a name="AddNodes">Adding nodes</a></h3>
+<p>
+Method AddNode is used to add new node to the network:
+<pre>
+net.AddNode("discrete^Cloudy", "true false"); 
+net.AddNode("discrete^Sprinkler", "true false");
+net.AddNode("discrete^Rain", "true false");
+net.AddNode("discrete^WetGrass", "true false");
+</pre>
+The first argument of this method is type and name of the new node, second argument is the corresponding 
+variate values list, and values are separated by the space.
+<br>
+In our example all the nodes are discrete and can take on the same values, so all the nodes can be 
+added by the one call of AddNode method:
+<pre>
+net.AddNode(discrete^"Cloudy Sprinkler Rain WetGrass", "true false");
+</pre>
+</p>
+<hr>
+
+<h3><a name="AddEdges">Adding edges</a></h3>
+<p>
+AddArc method is used to add a new arc to the network:
+<pre>
+net.AddArc("Cloudy", "Sprinkler");
+net.AddArc("Cloudy", "Rain");
+net.AddArc("Sprinkler", "WetGrass");
+net.AddArc("Rain", "WetGrass");
+</pre>
+We can indicate several nodes as the beginning and end of the arc. In this case every node from the beginning 
+list will be connected with every node from the end list. In our example two calls of AddArc method are enough:
+<pre>
+net.AddArc("Cloudy", "Sprinkler Rain");
+net.AddArc("Sprinkler Rain", "WetGrass");
+</pre>
+</p>
+<hr>
+
+<h2><a name="SpecProb">Specifying the probabilities</a></h2>
+<p>
+Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. If we know probability distributions on some of the network nodes, we can specify them with the SetPTabular method for the discrete nodes or SetPGaussian method for the continuous nodes.
+<br>
+In our example we are going to specify probability distributions on the Cloudy and Sprinkler nodes.  We will leave the distributions on the other nodes uniform.
+<br>
+Probability distribution on the Cloudy node is unconditional:
+<pre>
+net.SetPTabular("Cloudy^true", "0.6");
+net.SetPTabular("Cloudy^false", "0.4"); 
+</pre>
+The first argument of this method is the state of the variable; we define the probability for the node to take on this state. The second argument is the value of probability. It is possible to define the list of states and list of values:
+<pre>
+net.SetPTabular("Cloudy^true Cloudy^false", "0.6 0.4");
+</pre>
+Probability distribution on the Sprinkler node is conditional:
+<pre>
+net.SetPTabular("Sprinkler^true", "0.1", "Cloudy^true");
+net.SetPTabular("Sprinkler^false", "0.9", "Cloudy^true");
+net.SetPTabular("Sprinkler^true", "0.5", "Cloudy^false");
+net.SetPTabular("Sprinkler^false", "0.5", "Cloudy^false");
+</pre>
+For the conditional distribution one new argument was added. This argument specifies the parents state configuration, the probability value is defined for the indicated state and indicated parent’s configuration. The probabilities for the same parents configuration can be defined by the one call of SetPTabular method:
+<pre>
+net.SetPTabular("Sprinkler^true Sprinkler^false", "0.1 0.9", "Cloudy^true");
+net.SetPTabular("Sprinkler^true Sprinkler^false", "0.5 0.5", "Cloudy^false");
+</pre>
+To get the probability distribution of the node we must call of GetPTabular method:
+<pre>
+TokArr PCloudy = net.GetPTabular("Cloudy");
+</pre>
+Now it is possible to represent this distribution as string or as float numbers: 
+<pre>
+String PCloudyStr = PCloudy.String();
+float PCloudyTrueF = PCloudy[0].FltValue(0).fl;
+float PCloudyFalseF = PCloudy[1].FltValue().fl;
+</pre>
+The following values are now stored in the variables:
+<pre>
+PCloudyStr		"Cloudy^true^0.6 Cloudy^false^0.4"
+PCloudyTrueF		0.6
+PCloudyFalseF		0.4
+</pre>
+For the conditional distribution it is possible to get probabilities for the indicated parents state configuration (or for the definite states of some parents):
+<pre>
+TokArr PSprinkler = net.GetPTabular("Sprinkler", "Cloudy^true");
+String PSprinklerStr = PSprinkler.String();
+float PSprinklerTrue = PSprinkler[0].FltValue();
+float PSprinklerFalse = PSprinkler[1].FltValue();
+</pre>
+The values of the variables:
+<pre>
+PSprinklerStr		"Sprinkler^true^Cloudy^true^0.1 Sprinkler^false^Cloudy^true^0.9"
+PSprinklerTrue		0.1
+PsprinklerFalse		0.9
+</pre>
+With the help of  GetPTabular method user can also get the probability of some state of the variate:
+<pre>
+TokArr PCloudyFalse = net.GetPTabular("Cloudy^false");
+</pre>
+Now it is possible to represent this distribution  as string or as float number:
+<pre>
+String PCloudyFalseStr = PCloudyFalse.String();
+float PCloudyFalseF = PCloudyFalse[0].FloatValue();
+</pre>
+The values of the variables:
+<pre>
+PCloudyFalseStr		"Cloudy^false^0.4"
+PCloudyFalseF		0.4
+</pre>
+</p>
+<p>
+We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+<h2><a name="AddObserv">Adding observations</a></h2>
+<p>
+Here we will describe the way of working with evidences in wrappers. BayesNet class allows user to work with current evidence and with the buffer of evidences.
+<br>
+Default current evidence is empty. User can edit it with the EditEvidence method:
+<pre>
+net.EditEvidence("Cloudy^false WetGrass^false");
+net.EditEvidence("Sprinkler^true Cloudy^true");
+</pre>
+After these calls there is three observed nodes in the current evidence, they are Cloudy, Sprinkler (both are true) and WetGrass, which is false.
+<br>
+After editing user can copy current evidence to the evidence buffer with the help of  CurEvidToBuf method:
+<pre>
+net.CurEvidToBuf();
+</pre>
+It is possible to clear the current evidence with ClearEvid method:
+<pre>
+net.ClearEvid();
+</pre>
+You can also put evidence-to-evidence buffer without editing. Call AddEvidToBuf method:
+<pre>
+net.AddEvidToBuf("Rain^true WetGrass^true");
+</pre>
+At the moment we have empty current evidence. Evidence buffer contains 2 evidences. In the first evidence, which was copied from the current evidence, there are three observed nodes: Cloudy, Sprinkler (both are true) and WetGrass (false). In second evidence there are two observed nodes, Rain and WetGrass, both are true.
+<br>
+The main operations with evidence buffer are:
+<UL>
+    <LI>total clearance of the buffer with the help of  ClearEvidBuf method,</LI>
+    <LI>saving the buffer to file (SaveEvidBuffer) and loading buffer from file (LoadEvidBuffer). We support the csv file format,</LI>
+    <LI>filling the evidence buffer with random values of observations with the help of GenerateEvidences method.</LI>
+</UL>
+Current evidence is used to get JPD and MPE, evidence buffer is used for learning.
+</p>
+<hr>
+
+<h2><a name="Learn">Learning the network</a></h2>
+<p>
+To carry out learning process evidences from evidence buffer are used. 
+<br>
+It is possible to specify probability distributions on the net nodes with the help of learning. This setting of probabilities is named parameters learning. We can find out not only probability distributions, but also the net structure, i.e. structure of net edges. This process is named structural learning.
+<br>
+If we are going to specify probability distributions for network nodes, then we will call LearnParameters method after filling the evidence buffer to learn the network:
+<pre>
+net.LearnParameters();
+</pre>
+As a result, the probability distributions on the nodes have been changed. To get new distributions GetPTabular method is used:
+<pre>
+TokArr PCloudy = net.GetPTabular("Cloudy");
+TokArr PSprinkler = net.GetPTabular("Sprinkler");
+TokArr PRain = net.GetPTabular("Sprinkler");
+TokArr PWetGrass = net.GetPTabular("WetGrass");
+</pre>
+Now distributions are presented as TokArr type objects. They can be converted into strings or float numbers, as it was shown earlier. They also can be used as arguments for other methods. 
+<br>
+Default learning algorithm is Expectation Maximization algorithm. You also can carry out learning using Bayesian method. You have to set “Learning” property to “bayes” by SetProperty method:
+<pre>
+net.SetProperty("Learning", "bayes");
+net.LearnParameters();
+</pre>
+To run EM learning algorithm set the “Learning” property to “em”:
+<pre>
+net.SetProperty("Learning", "em");
+net.LearnParameters();
+</pre>
+If we are going to find not only distributions, but also the network structure, we will call LearnStructure method:
+<pre>
+net.LearnStructure();
+</pre>
+In this case probability distributions and network structure have been changed. New distributions can be taken with the help of GetPTabular method. We can investigate new network structure using following methods: GetNeighbors, GetParents and GetChildren. For example:
+<pre>
+TokArr SprinklerParents = net.GetParents("Sprinkler");
+TokArr SprinklerChildren = net.GetChildren("Sprinkler");
+</pre>
+SprinklerParents and SprinklerChildren are the lists of Sprinkler node parents and children. They can be used as arguments for other methods, or can be converted to strings objects for displaying:
+<pre>
+String SprinklerParentsStr = SprinklerParents.String();
+String SprinklerChildrenStr = SprinklerChildren.String();
+</pre>
+Another way of getting the learning results is saving the final net to file (SaveNet method).
+<br>
+We must mention that  LearnParameters and LearnStructure methods can get two arguments: array of evidences and number of evidences in this array:
+<pre>
+TokArr evidences[] = {"Sprinkler^true WetGrass^false", "Cloudy^true WetGrass^false"};
+net.LearnParameters(evidences, 2);
+</pre>
+In this case two new evidences will be added to evidence buffer and then learning process will be carried out using all evidences from the buffer.
+</p>
+<hr>
+
+<h2><a name="MPEandJPD">Getting MPE and JPD</a></h2>
+<p>
+If Bayesian network and probability distributions have been already defined, we can get Joint Probability Distribution (JPD) and Maximum Probability Explanation (MPE).
+<br>
+For calculating JPD and MPE current evidence is used. You can edit this evidence with the help of  EditEvidence method (look through “Adding observations” section).
+<br>
+You can use GetJPD method to get the marginal probability distribution of the node:  
+<pre>
+TokArr WetGrassMarg = net.GetJPD("WetGrass");
+</pre>
+It is possible to get joint distribution for the nodes from one family (family is the set, which consists of node and node parents):
+<pre>
+TokArr WetGrassAndSprinklerMarg = net.GetJPD("WetGrass Sprinkler");
+</pre>
+You can use GetMPE method to get Maximum Probability Explanation for one node or for some set of nodes from one family:
+<pre>
+TokArr WetGrassMPE = net.GetMPE("WetGrass");
+TokArr WetGrassAndSprinklerMPE = net.GetMPE("WetGrass Sprinkler");
+</pre>
+To calculate JPD and MPE inference algorithms are used. There are four inference algorithms: Pearl (or Loopy Belief Propagation), Junction Tree, Gibbs Sampling and full summation, which is called PNL Naive inference. We must mention, that Junction Tree and Naive Inference are exact, Pearl Inference and Gibbs Sampling are approximate algorithms (see PNL documentation for the full information).
+<br>
+Default inference algorithm, which is used to calculate MPE and JPD, is Pearl Inference. You can use other algorithms by setting “Inference” property with SetProperty method. You must define the desired algorithm by its string name: “pearl”, “jtree”, “gibbs”, or “naive”. For example:
+<pre>
+net.SetProperty("Inference", "jtree");
+TokArr WetGrassMPE = net.GetMPE("WetGrass");
+net.SetProperty("Inference", "gibbs");
+TokArr WetGrassMPE = net.GetMPE("WetGrass Sprinkler");
+</pre>
+</p>
+<hr>
+
+<h2><a name="Hints">Hints</a></h2>
+<p>
+Now we are going to discuss some additional possibilities of parameters definition with the help of TokArr class.
+</p>
+<hr>
+<h3><a name="Operation1">“^” operation</a></h3>
+<p>
+If we use operation “^”, we can make parameters definition shorter. 
+<br>
+The following three pieces of code are equal:
+</p>
+<table width="100%">
+<tr>
+<td><pre>(1)</pre></td>
+<td>
+<pre>
+net.AddNode("discrete^Cloudy discrete^Sprinkler discrete^Rain discrete^WetGrass", "true false");
+</pre>
+</td>
+</tr>
+<tr>
+<td><pre>(2)</pre></td>
+<td>
+<pre>
+TokArr nodeType = "discrete";
+net.AddNode(nodeType^"Cloudy Sprinkler Rain WetGrass", "true false");
+</pre>
+</td>
+</tr>
+<tr>
+<td><pre>(3)</pre></td>
+<td>
+<pre>
+net.AddNode(discrete^"Cloudy Sprinkler Rain WetGrass", "true false");
+</pre>
+</td>
+</tr>
+</table>
+<p>
+When we compare pieces (1) and (2), we can see that “^” operation carries out Cartesian product of two TokArr objects.
+<br>
+It is possible to use (3) variant, because there is global variables of  TokArr type for all types of nodes. These variables specify the node types: 
+<pre>
+extern TokArr discrete;
+extern TokArr continuous;
+</pre>
+</p>
+<hr>
+<h3><a name="Operation2">[ ] operation</a></h3>
+<p>
+If  TokArr class object specifies some set of network nodes, then we can get every node with the help of  [] operation. Result of this operation is a Tok class object, which specifies only one node (TokArr = array of Tok):
+<pre>
+TokArr nodes = "Cloudy Sprinkler Rain WetGrass";
+Tok node0 = nodes[0];
+Tok node1 = nodes[1];
+Tok node2 = nodes[2];
+Tok node3 = nodes[3];
+</pre>
+Tok class object can be converted into string. For example, the result of conversion of node0 into string ( node0.String() )  is “Cloudy”.
+</p>
+<hr>
+<h3><a name="StrAndFltMethods">String and FltValue methods</a></h3>
+<p>
+To convert TokArr and Tok class objects into strings String method is used:
+<pre>
+TokArr distribution = "Cloudy^true^0.6 Cloudy^false^0.4";
+Tok probabilityTrue = distribution[0];
+Tok probabilityFalse = distribution[1];
+String distributionStr = distribution.String();
+String probabilityTrueStr = probabilityTrue.String();
+String probabilityFalseStr = probabilityFalse.String();
+</pre>
+If Tok class variable contains the value of probability, then it is possible to get this value as a float number with the help of FltValue method:
+<pre>
+float probabTrueF = probabilityTrue.FltValue();
+float probabFalseF = probabilityFalse.FltValue();
+</pre>
+probabTrueF and probabFalseF variables will contain 0.6 and 0.4 values correspondingly.
+</p>
+<hr>
+

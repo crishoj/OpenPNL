@@ -1,0 +1,19 @@
+clear()
+AddNode("categoric^Node0", "First Second")
+AddNode("categoric^Node1", "First Second")
+AddNode("categoric^Node2", "First Second")
+AddNode("categoric^Node3", "First Second")
+print("Model creation - OK")
+
+LoadLearnBuf("EvidForStructurelearn.csv")
+print("Load evidences of structure learning - OK")
+
+learnstructure()
+print("Structure learning - OK")
+
+SaveNet("StrLearnNet.xml")
+print("save of structure learned network - OK")
+
+CompareFiles("StructureLearnedNet.xml", "StrLearnNet.xml", "Results of structure learning")
+
+print("End of test")
