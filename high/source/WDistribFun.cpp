@@ -76,12 +76,12 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
     }
 
     // argument checking
-    if(value.size() != probability.size() || value.size() == 0)
+    if((value.size() != probability.size() || value.size() == 0)&&(matrixId == matTable))
     {
 	ThrowUsingError("The number of values must be equals to number of probabilities", fname);
     }
 
-    if(parentValue.size() != (desc()->nNode() - 1))
+    if((parentValue.size() != (desc()->nNode() - 1))&&(matrixId == matTable))
     {
 	ThrowUsingError("Wrong number of parent's values", fname);
     }
@@ -98,6 +98,7 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	}
     }
 
+    //This "for" works only for tabular
     for(i = parentValue.size(); --i >= 0;)
     {
 	if(!desc()->getIndexAndValue(&mIndex, &mValue, parentValue[i]))
@@ -126,18 +127,21 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 
     for(i = value.size(); --i >= 0;)
     {
-	if(!desc()->getIndexAndValue(&mIndex, &mValue, value[i]))
-	{
-	    pnl::pnlString str;
+        if (matrixId == matTable)  
+        {
+	    if(!desc()->getIndexAndValue(&mIndex, &mValue, value[i]))
+	    {
+	        pnl::pnlString str;
 
-	    str << "Unknown value for node '" << valueBayesNode->Name() << "'";
-	    ThrowUsingError(str.c_str(), fname);
-	}
-	if(mIndex != aIndex.size() - 1)
-	{
-	    ThrowUsingError("mixed parent and node itself", fname);
-	}
-	aIndex[mIndex] = mValue;
+	        str << "Unknown value for node '" << valueBayesNode->Name() << "'";
+	        ThrowUsingError(str.c_str(), fname);
+	    }
+	    if(mIndex != aIndex.size() - 1)
+	    {
+	        ThrowUsingError("mixed parent and node itself", fname);
+	    }
+            aIndex[mIndex] = mValue;
+        }
 	if(!probability[i].FltValue(0).IsUndef())
 	{
 	    SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
@@ -279,6 +283,7 @@ Vector<int> WGaussianDistribFun::Dimensions(int matrixType)
 
 void WGaussianDistribFun::DoSetup()
 {
+//    CreateDefaultDistribution();
     CreateDistribution();
 }
 
@@ -326,7 +331,8 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
 
     if(!m_pDistrib)
     {
-	CreateDistribution();
+//	CreateDistribution();
+        CreateDefaultDistribution();
     }
 
     EMatrixType matType;
@@ -344,5 +350,75 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
 	break;
     }
 
-    m_pDistrib->GetMatrix(matType)->SetElementByIndexes(probability, &aIndex.front());
+/////????????????????????????
+   m_pDistrib->AllocMatrix( &probability, matType);
+//    m_pDistrib->GetMatrix(matType)->SetElementByIndexes(probability, &aIndex.front());
+}
+
+void WGaussianDistribFun::CreateDefaultDistribution()
+{
+    if (m_pDistrib != 0)
+    {
+	delete m_pDistrib;
+	m_pDistrib = 0;
+    }
+
+    int NumberOfNodes = desc()->nNode();
+    const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
+
+    int node;
+    for (node = 0; node < NumberOfNodes; node++)
+    {
+	nodeTypes[node] = new CNodeType(false, desc()->nodeSize(node), nsChance);
+    }
+
+    float *dataMean = new float[NumberOfNodes];
+    float *dataCov = new float[NumberOfNodes*NumberOfNodes];
+    float **dataWeight = new float *[NumberOfNodes];
+
+    for (node = 0; node < NumberOfNodes; node++)
+    {
+        dataMean[node] = 1;
+        dataWeight[node] = new float[NumberOfNodes-1];
+
+        for (int node2 = 0; node2 < NumberOfNodes-1; node2++)
+        {
+            if (node != node2)
+            {
+                dataCov[node*NumberOfNodes+node2] = 0;
+            }
+            else 
+            {
+                dataCov[node*NumberOfNodes+node2] = 1;
+            }
+
+            dataWeight[node][node2] = 0;
+        };
+
+        if (node != (NumberOfNodes-1))
+        {
+            dataCov[node*NumberOfNodes+NumberOfNodes-1] = 0;
+        }
+        else 
+        {
+            dataCov[node*NumberOfNodes+NumberOfNodes-1] = 1;
+        };       
+    }
+
+    m_pDistrib = CGaussianDistribFun::CreateInMomentForm(false, NumberOfNodes, nodeTypes, 
+        dataMean, dataCov, (const float **)dataWeight);
+
+    for (node = 0; node < NumberOfNodes; node++)
+    {
+	delete nodeTypes[node];
+    }
+
+    delete nodeTypes;
+    delete dataMean;
+    delete dataCov;
+    for (node = 0; node < NumberOfNodes; node++)
+    {
+        delete dataWeight[node];     
+    };
+    delete dataWeight;
 }
