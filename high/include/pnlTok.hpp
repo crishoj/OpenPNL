@@ -256,6 +256,11 @@ struct PNLHIGH_API TokIdNode
 	TokIdNode const *hard_context = root,
 	TokIdNode const *soft_context = root,
 	TokIdNode const *subroot = root);
+    static std::pair< TokIdNode *, int > ResolveN(
+	TokIdNode const * context,
+	std::deque< TokId >::const_iterator unres,
+	int len,
+	Matcher const &matcher);
     static bool Match(TokIdNode const *node1, std::deque< TokId >::const_iterator unres1, int len1,
 		      TokIdNode const *node2, std::deque< TokId >::const_iterator unres2, int len2);
     bool IsInContext(TokIdNode const *) const;
