@@ -18,13 +18,14 @@ PNL Wrappers: User Guide
 <P>
   <h4>
 <UL>
-  <LI><A href="#Intro">Intro</A> 
+  <LI><A href="#Intro">Introduction</A> 
   <UL>  
       <LI><A href="#BayesNet_class">BayesNet class</A> 
       <LI><A href="#DBN_class">DBN class</A> 
       <LI><A href="#LIMID_class">LIMID class</A> 
       <LI><A href="#MRF_class">MRF class</A> 
   </UL>
+  <LI><A href="#Limitations">Limitations</A> 
   <LI><A href="#DiscreteNet">Bayesian networks with discrete nodes</A> 
   <UL>  
       <LI><A href="#CreateNetDiscr">Creating the net</A> 
@@ -40,12 +41,6 @@ PNL Wrappers: User Guide
           <LI><A href="#StructLearnDiscr">Structure learning</A> 
       </UL>
       <LI><A href="#MPEandJPDDiscr">Getting the MPE and JPD</A> 
-      <LI><a href="#HintsDiscr">TokArr Hints</a> 
-      <UL>
-          <LI><A href="#Operation1Discr">"^" operation</A> 
-          <LI><A href="#Operation2Discr">[ ] operation</A> 
-          <LI><A href="#StrAndFltMethodsDiscr">String and FltValue methods</A> 
-      </UL>
   </UL>
   <LI><A href="#Gaussian">Bayesian networks with continuous nodes</A> 
   <UL>  
@@ -67,7 +62,6 @@ PNL Wrappers: User Guide
           <LI><A href="#ExampleMultiGau">An example</A> 
       </UL>
   </UL>
-  <LI><A href="#Limitations">Limitations</A> 
 <LI><A href="#DiscreteDBN">Dynamic Bayesian Networks with discrete nodes</A> 
   <UL>  
       <LI><A href="#CreateDBNDiscr">Creating the net</A> 
@@ -123,6 +117,12 @@ PNL Wrappers: User Guide
       </UL>
       <LI><A href="#MPEandJPDMRFDiscr">Getting MPE and JPD</A> 
   </UL>
+  <LI><a href="#HintsDiscr">TokArr Hints</a> 
+  <UL>
+      <LI><A href="#Operation1Discr">"^" operation</A> 
+      <LI><A href="#Operation2Discr">[ ] operation</A> 
+      <LI><A href="#StrAndFltMethodsDiscr">String and FltValue methods</A> 
+  </UL>
 </UL>
   </h4>
 
@@ -130,7 +130,6 @@ PNL Wrappers: User Guide
 <hr>
 <h1><a name="Intro">Intro</a>duction</h1>
 
-<hr>
 <P>
 This manual describes usage of PNL using the high-level API defined by the &quot;wrappers&quot;.
 <p>
@@ -189,8 +188,7 @@ It is LIMID class that is used for working with LImited Memory Influence Diagram
 <p> With the help of the LIMID class methods, the user can specify and retrieve parameters of LIMID.&nbsp; 
 The LIMID inference algorithm allows user to get only pure politics.  A pure policy for decision node d prescribes an alternative in the set of all possible values for each possible configuration of its parents.
 </p>
-<!--webbot bot="PurpleText" PREVIEW="Denver: What does &quot;pure politics&quot; mean??" --> At the moment inference for LIMIDs 
-is implemented only for discrete nodes.<p>
+At the moment inference for LIMIDs is implemented only for discrete nodes.<p>
 
 <h2><a name="MRF_class">MRF class</a></h2>
 It is MRF class, that is used for working with Markov Random Fields (MRF) in wrappers. 
@@ -210,7 +208,47 @@ can be carried out with the help of different PNL algorithms. User can specify d
 to solve his task.
 <p>
 
-
+<hr>
+<h1><a name="Limitations">Limitations</a></h1>
+<P>
+Here we are going to discuss some limitations of work with Bayesian nets. 
+<UL>
+    <LI>Limitations of string nodes names:
+    <ul>
+        <li>Name cannot contain characters '_', '^' and space character.
+        <li>The first character cannot be number.
+        <li>Names are case sensitive.
+    </ul>
+    <p>
+    <LI>Limitations of saving in file:
+    <ul>
+        <li>It is possible to save Bayes net to file if its graph is connected and it has more than one node only.
+        <li>If we save empty evidence buffer to file result file is empty. But loading evidence buffer from empty file is impossible.
+    </ul>
+    <p>
+    <li>Limitations of Structure Learning:
+    <ul>
+	    <li>Only the BIC score is implemented at present.
+    </ul>
+    <p>
+	<li>Limitations of Parameter Learning:
+	<ul>
+    	<li>No priors are implemented, so only the ML estimate is available at present (we expect to have simple Bayesian methods available soon).
+    </ul>
+    <p>
+    <li>Limitations to LIMIDs:
+    <ul>
+    	<li>Inference is available for discrete nodes only.
+    </ul>
+    <p>
+    <li>Current limitations that are planed to be removed:
+    <ul>
+        <li>Names of nodes may be only strings but cannot be integer numbers.
+        <li>Now nodes and edges must be added to net in such order that graph is topological sorted. That means that parents are added to graph before their children.
+        <li>Operation of nodes deleting may work incorrectly.
+    </ul>
+</UL>
+<p>
 
 <hr>
 
@@ -328,8 +366,6 @@ Note that two different versions of SetPTabular exist, one with two arguments
 parents). This third argument specifies the parents' state configuration, the probability value is defined for the indicated state and indicated parents' configuration. The order of parents nodes in this list doesn't matter.
 Again, this function can be called in batch form:
 <p>
-<!--webbot bot="PurpleText" PREVIEW="Denver: We should provide an example of how to set a CPD when a node has multiple parents!  I assume the third argument would then become a list such as &quot;Sprinkler^false Rain^true&quot;.  Is this correct, and does the order of the parents in this list matter?  An example would eliminate these questions." --></p>
-<p>
 <pre>
 net.SetPTabular("Sprinkler^true Sprinkler^false", "0.1 0.9", "Cloudy^true");
 net.SetPTabular("Sprinkler^true Sprinkler^false", "0.5 0.5", "Cloudy^false");
@@ -365,8 +401,6 @@ PCloudyFalseF		0.4
 </p>
 For the conditional distribution it is possible to get probabilities for the indicated parents state configuration (or for the definite states of some parents):
 <p>
-<pre>
-<!--webbot bot="PurpleText" PREVIEW="Denver: Is there a way to get the string portion of a particular token in the tokenArray (e.g. pSprinkler[0].StrValue())?" --></pre>
 <pre>
 TokArr PSprinkler = net.GetPTabular("Sprinkler", "Cloudy^true");
 String PSprinklerStr = String(PSprinkler);
@@ -411,7 +445,7 @@ order to do this, we have to specify observations (i.e., the data) first.
 
 <h2><a name="AddObservDiscr">Adding observations</a></h2>
 <p>
-Here we will describe how to work with evidence using the wrappers. The BayesNet class allows users to work with 
+Here we will describe how to work with evidences using the wrappers. The BayesNet class allows users to work with 
 <i>current evidence</i> (one instantiation of the nodes in the network) and with 
 a <i>buffer of evidence</i> (a set of instantiations forming a database). The 
 current evidence is used to get joint and marginal probability distributions 
@@ -458,9 +492,9 @@ There are other useful operations that can be performed on the evidence buffer:
     a file by calling LoadEvidBuffer (we support the csv file format), and</LI>
     <LI>filling the evidence buffer with random values of observations by 
     calling the GenerateEvidence method.
-    <!--webbot bot="PurpleText" PREVIEW="Denver: Does GenerateEvidence sample from the distribution defined by the parameters of the network?" --></LI>
+    </LI>
 </UL>
-&nbsp;</p>
+
 <hr>
 
 <h2><a name="LearnDiscr">Learning the network</a></h2>
@@ -496,9 +530,9 @@ TokArr PWetGrass = net.GetPTabular("WetGrass");
 Now the distributions are presented as TokArr type objects. They can be converted into strings or float numbers, as shown earlier. They also can be used as arguments for other methods. 
 <br>
 The default learning algorithm is Expectation Maximization algorithm. You also can carry out learning using 
-the Bayesian method.
-<!--webbot bot="PurpleText" PREVIEW="Denver: What do you mean by &quot;Bayesian&quot; method.  Could you please provide more details here?  E.g.,   How do you specify priors for the learning?  The EM algorithm is a general algorithm for hill-climbing--it can have a Bayesian interpretation if you are maximizing a Bayesian metric." --> You have to set “Learning” property to “bayes” by 
-calling the SetProperty method:
+the Bayesian approach. For more detailed description see "Bayesian Update" section in "PNL: User Guide".
+<br>
+You have to set “Learning” property to “bayes” by calling the SetProperty method:
 <p>
 <pre>
 net.SetProperty("Learning", "bayes");
@@ -576,6 +610,8 @@ net.LearnStructure(evidences, 2);
 </p>
 In this case two new evidence instances will be added to evidence buffer, and the learning process will be carried out using all 
 evidence from the buffer.
+
+<p>
 <hr>
 
 <h2><a name="MPEandJPDDiscr">Getting the MPE and JPD</a></h2>
@@ -663,104 +699,6 @@ TokArr WetGrassMPE = net.GetMPE("WetGrass Sprinkler");
 </p>
 </p>
 <hr>
-
-<h2><a name="HintsDiscr">TokArr Hints</a></h2>
-<p>
-Here we discuss some additional features of the TokArr class.
-</p>
-<hr>
-
-<h3><a name="Operation1Discr">"^" operation</a></h3>
-<p>
-If we use the "^" operation, we can make the parameters definition shorter. 
-<br>
-The following three pieces of code are equal:
-</p>
-<table width="100%">
-<tr>
-<td><pre>(1)</pre></td>
-<td>
-<pre>
-net.AddNode("discrete^Cloudy discrete^Sprinkler discrete^Rain discrete^WetGrass", "true false");
-</pre>
-</td>
-</tr>
-<tr>
-<td><pre>(2)</pre></td>
-<td>
-<pre>
-TokArr nodeType = "discrete";
-net.AddNode(nodeType^"Cloudy Sprinkler Rain WetGrass", "true false");
-</pre>
-</td>
-</tr>
-<tr>
-<td><pre>(3)</pre></td>
-<td>
-<pre>
-net.AddNode(discrete^"Cloudy Sprinkler Rain WetGrass", "true false");
-</pre>
-</td>
-</tr>
-</table>
-<p>
-When we compare pieces (1) and (2), we can see that the "^" operation carries out 
-the Cartesian product of two TokArr objects.
-<br>
-It is possible to use the (3) variant because global variables are defined of TokArr 
-type specifying all types of nodes. Currently&nbsp; there are only two types of 
-nodes defined:<p>
-<pre>
-extern TokArr discrete;
-extern TokArr continuous;
-</pre>
-</p>
-</p>
-<hr>
-
-<h3><a name="Operation2Discr">[ ] operation</a></h3>
-<p>
-If  the TokArr class object specifies some set of network nodes, then we can get every node with the help of  
-the [] operation. The result of this operation is a Tok class object, which specifies only one node (TokArr = array of Tok):
-<p>
-<pre>
-TokArr nodes = "Cloudy Sprinkler Rain WetGrass";
-Tok node0 = nodes[0];
-Tok node1 = nodes[1];
-Tok node2 = nodes[2];
-Tok node3 = nodes[3];
-</pre>
-</p>
-A
-Tok class object can be converted into a string. For example, the result of 
-converting node0 into a string ( node0.String() )  is "Cloudy".
-</p>
-<hr>
-
-<h3><a name="StrAndFltMethodsDiscr">String operator and FltValue method</a></h3>
-<p>
-To convert TokArr and Tok class objects into strings, the String method is used:
-<p>
-<pre>
-TokArr distribution = "Cloudy^true^0.6 Cloudy^false^0.4";
-Tok probabilityTrue = distribution[0];
-Tok probabilityFalse = distribution[1];
-</p><p>
-String distributionStr = String(distribution);
-String probabilityTrueStr = String(probabilityTrue);
-String probabilityFalseStr = String(probabilityFalse);
-</pre>
-</p>
-If Tok class variable contains the value of probability, then it is possible to get this value as a float number with the help of FltValue method:
-<p>
-<pre>
-float probabTrueF = probabilityTrue.FltValue();
-float probabFalseF = probabilityFalse.FltValue();
-</pre></p>The variables probabTrueF and probabFalseF will contain values 0.6 and 0.4 respectively.
-</p>
-<hr>
-
-
 
 <P></P>
 <h1><a name="Gaussian">Bayesian networks with continuous nodes</a></h1><P>
@@ -867,8 +805,9 @@ net.AddEvidToBuf("x0^0.4");
 </pre>
 </p>
 Usage of the other functions, which are calling to work with evidences (CurEvidToBuf, ClearEvid, ClearEvidBuf, SaveEvidBuffer, LoadEvidBuffer, GenerateEvidences), is similar to the discrete case.
-<hr>
 
+<p>
+<hr>
 
 <h2><a name="LearnGau">Learning the network</a></h2><p>
 Learning of continuous network is similar to learning the discrete one. To carry out learning process use the following calls: 
@@ -913,6 +852,7 @@ It is possible to represent MPE as float number:
 float x3MPE = X3MPE[0].FltValue(0).fl;
 </pre>
 
+<p>
 <hr>
 
 <h2><a name="MultiGau">Multivariate Gaussian case</a></h2><p>
@@ -929,6 +869,8 @@ If multivariate Gaussian node without parents has n dimensions, then it is chara
 where M is a function for calculating average of distribution. If multivariate node has parents (we suppose that all nodes in the network are continuous) then the third parameter characterizing the node is a vector (W) of weights matrixes. Number of elements in the vector is equal to number of parents. The size of matrix for the k-th parent (W[k]) is NDimChild * NDimParent[k], where NDimChild is a number of dimensions of the child node, NDimParent[k] is a number of dimensions of the k-th parent. The covariation matrix C does not depent on values of parents by definition. But matrix of averages of distribution depends on them in the following way:
 </p>
 <img align=center src="Formula2.gif">
+
+<p>
 <hr>
 
 <h3><a name="CreateNetMultiGau">Creating the net</a></h3><p>
@@ -970,7 +912,10 @@ You should set observations for each dimension of multivariate variable. For exa
 </p>
 <pre>
 net.editEvidence("x^First^0.4 x^Second^0.6 y^Third^-17.34");
-</pre><hr>
+</pre>
+
+<p>
+<hr>
 
 <h3><a name="ExampleMultiGau">An example</a></h3><p>
 In the example we create the network shown below:
@@ -995,34 +940,8 @@ net.SetPGaussian("z", "1.0", "1.5", "1.5 2.5 3.5");
 net.EditEvidence("x^dim1^-15.0");
 net.EditEvidence("x^dim2^5.0 z^dim1^15.67");
 net.GetJPD("y z");
-</pre><hr>
-<h1><a name="Limitations">Limitations</a></h1><hr>
-<P>
-<!--webbot bot="PurpleText" PREVIEW="Denver: What are the limitations on discrete node state names?  I assume they are the same as node names?  Those restrictions should be listed here as well." --><P>
-<!--webbot bot="PurpleText" PREVIEW="Denver: I would make this section globally applicable (e.g. add the fact that LIMID inference is only available for discrete nodes, etc.), add all limitations we can think of, and move it to the beginning of the document as a preamble." --><P>
-Here we are going to discuss some limitations of work with Bayesian nets. 
-<UL>
-    <LI>Limitations of string nodes names:
-    <ul>
-        <li>Name cannot contain characters '_', '^' and space character.
-        <li>The first character cannot be number.
-        <li>Names are case sensitive.
-    </ul>
-    <LI>Limitations of saving in file:
-    <ul>
-        <li>It is possible to save Bayes net to file if its graph is connected and it has more than one node only.
-        <li>If we save empty evidence buffer to file result file is empty. But loading evidence buffer from empty file is impossible.
-    </ul>
-    <LI>Current limitations that are planed to be removed:
-    <ul>
-        <li>Names of nodes may be only strings but cannot be integer numbers.
-        <li>Now nodes and edges must be added to net in such order that graph is topological sorted. That means that parents are added to graph before their children.
-        <li>Operation of nodes deleting may work incorrectly now.
-    </ul>
-<li>Limitations of Structure Learning:<UL>
-    <li>Only the BIC score is implemented at present.</li></UL></li><li>Limitations of Parameter Learning:<UL>
-    <li>No priors are implemented, so only the ML estimate is available at present (we expect to have simple Bayesian methods available soon).</li><li><!--webbot bot="PurpleText" PREVIEW="Denver: The above is my understanding, but this may be incorrect (still need more details as to what the &quot;Bayesian&quot; learning method is doing)." --></li></UL></li><li>Limitations to LIMIDs:<UL>
-    <li>Inference is only available for discrete nodes at present.</li></UL><p>&nbsp;</li></UL>
+</pre>
+
 <p>
 <hr>
 
@@ -1045,10 +964,12 @@ To start network building we must create DBN class object:
 <p>
 <pre>DBN dbn;</pre></p>Now network is empty. We have to add nodes and edges.
 </p>
+
 <hr>
 
 <h3><a name="AddNodesDiscrDBN">Adding nodes</a></h3><p>
 Users has to create 0 and 1 slice topology and connect slices for DBN creation. (see Figure 5.)
+<p>
 <hr>
 <h4><a name="Street-House-Flat">Figure 5. 0 and 1 slices of Street - House - Flat model</a></h4><img align=center src="2slicesOfDBN.gif">
 <p>Method AddNode is used to add new node to the network:
@@ -1077,6 +998,7 @@ dbn.AddNode(discrete^”Street-0 House-0 Flat-0", "true false");
 dbn.AddNode(discrete^”Street-1 House-1 Flat-1", "true false");
 </pre></p>We have to add edges for creation 0 and 1 slice topology and slices connection.
 
+<p>
 <hr>
 
 <h3><a name="AddEdgesDiscrDBN">Adding edges</a></h3><p>
@@ -1104,7 +1026,9 @@ SetNumSlices method is used to set number of networks slices.
 <p>
 <pre>
 dbn.SetNumSlices(4);
-</pre></p>After this call user may use any slice(>1) nodes names as parameters of manage evidence methods or GetJPD(MPE) methods.
+</pre></p>After this call user may use any slice (>1) nodes names as parameters of manage evidence methods or GetJPD (MPE) methods.
+
+<p>
 <hr>
 
 <h2><a name="SpecProbDiscrDBN">Specifying the conditional probabilities</a></h2><p>
@@ -1324,7 +1248,9 @@ SetNumSlices method is used to set number of networks slices.
 <p>
 <pre>
 dbn.SetNumSlices(4);
-</pre></p>After this call user may use any slice(>1) nodes names as parameters of manage evidence methods or GetJPD(MPE) methods.
+</pre></p>After this call user may use any slice (>1) nodes names as parameters of manage evidence methods or GetJPD (MPE) methods.
+
+<p>
 <hr>
 
 <h2><a name="SpecProbGauDBN">Specifying the conditional probabilities</a></h2><p>
@@ -1374,8 +1300,9 @@ dbn.editEvidence("Flat-3^dim1^0.4");
 <pre>
 dbn.AddEvidToBuf("Flat-3^dim1^0.4");
 </pre></p>Usage of the other functions, which are calling to work with evidence (CurEvidToBuf, ClearEvid, ClearEvidBuf, SaveEvidBuffer, LoadEvidBuffer, GenerateEvidence), is similar to the discrete case.
-<hr>
 
+<p>
+<hr>
 
 <h2><a name="LearnGauDBN">Learning the network</a></h2><p>
 Learning of continuous network is similar to learning the discrete one. To carry out learning process use the following calls: 
@@ -1579,12 +1506,16 @@ pigsFromFile.LoadNet("pigs.xml");
 <h1><a name="DiscreteMRF">Markov Random Fields</a></h1>
 We are going to analyze Markov Random Fields (MRF) functioning by the simple example. 
 <br>The graph structure of the model and the parameters are all shown in Figure 8:
+
+<p>
 <hr>
+
 <h4><a name="figWaterSprinkler">Figure8. Simple example of MRF</a></h4>
 <img align=center src="mrfModel.gif">
 <p>
 All nodes are discrete and can take on two values: true or false.
 </p>
+
 <hr>
 
 <h2><a name="CreateNetMRFDiscr">Creating the net</a></h2>
@@ -1597,6 +1528,8 @@ To start network building we must create MRF class object:
 <pre>MRF net;</pre>
 <p>
 Now network is empty. We have to add nodes and to form cliques.
+
+<p>
 <hr>
 
 <h3><a name="AddNodesMRFDiscr">Adding nodes</a></h3>
@@ -1620,6 +1553,8 @@ added by the one call of AddNode method:
 <pre>
 net.AddNode(discrete^&quot;X Y Z W&quot;, &quot;true false&quot;);
 </pre>
+
+<p>
 <hr>
 
 <h3><a name="SetCliqueMRFDiscr">Setting cliques</a></h3>
@@ -1748,6 +1683,8 @@ The main operations with evidence buffer are:
     <LI>filling the evidence buffer with random values of observations with the help of GenerateEvidences method.</LI>
 </UL>
 Current evidence is used to get JPD and MPE, evidence buffer is used for learning.
+
+<p>
 <hr>
 
 <h2><a name="LearnMRFDiscr">Learning the network</a></h2>
@@ -1796,6 +1733,8 @@ net.SetProperty(&quot;EMTolerance&quot;, &quot;1e-4&quot;)
 net.SetProperty(&quot;Learning&quot;, &quot;em&quot;);
 net.LearnParameters();
 </pre>
+
+<p>
 <hr>
 
 <h2><a name="MPEandJPDMRFDiscr">Getting MPE and JPD</a></h2>
@@ -1868,4 +1807,101 @@ net.SetProperty(&quot;GibbsNumberOfStreams&quot;, &quot;2&quot;);
 net.SetProperty(&quot;Inference&quot;, &quot;gibbs&quot;);
 TokArr ZWMPE = net.GetMPE(&quot;Z W&quot;);
 </pre>
+
+<p>
 <hr>
+
+<h1><a name="HintsDiscr">TokArr Hints</a></h1>
+<p>
+Here we discuss some additional features of the TokArr class.
+</p>
+<hr>
+
+<h2><a name="Operation1Discr">"^" operation</a></h2>
+<p>
+If we use the "^" operation, we can make the parameters definition shorter. 
+<br>
+The following three pieces of code are equal:
+</p>
+<table width="100%">
+<tr>
+<td><pre>(1)</pre></td>
+<td>
+<pre>
+net.AddNode("discrete^Cloudy discrete^Sprinkler discrete^Rain discrete^WetGrass", "true false");
+</pre>
+</td>
+</tr>
+<tr>
+<td><pre>(2)</pre></td>
+<td>
+<pre>
+TokArr nodeType = "discrete";
+net.AddNode(nodeType^"Cloudy Sprinkler Rain WetGrass", "true false");
+</pre>
+</td>
+</tr>
+<tr>
+<td><pre>(3)</pre></td>
+<td>
+<pre>
+net.AddNode(discrete^"Cloudy Sprinkler Rain WetGrass", "true false");
+</pre>
+</td>
+</tr>
+</table>
+<p>
+When we compare pieces (1) and (2), we can see that the "^" operation carries out 
+the Cartesian product of two TokArr objects.
+<br>
+It is possible to use the (3) variant because global variables are defined of TokArr 
+type specifying all types of nodes. Currently&nbsp; there are only two types of 
+nodes defined:<p>
+<pre>
+extern TokArr discrete;
+extern TokArr continuous;
+</pre>
+</p>
+</p>
+<hr>
+
+<h2><a name="Operation2Discr">[ ] operation</a></h2>
+<p>
+If  the TokArr class object specifies some set of network nodes, then we can get every node with the help of  
+the [] operation. The result of this operation is a Tok class object, which specifies only one node (TokArr = array of Tok):
+<p>
+<pre>
+TokArr nodes = "Cloudy Sprinkler Rain WetGrass";
+Tok node0 = nodes[0];
+Tok node1 = nodes[1];
+Tok node2 = nodes[2];
+Tok node3 = nodes[3];
+</pre>
+</p>
+A
+Tok class object can be converted into a string. For example, the result of 
+converting node0 into a string ( node0.String() )  is "Cloudy".
+</p>
+<hr>
+
+<h2><a name="StrAndFltMethodsDiscr">String operator and FltValue method</a></h2>
+<p>
+To convert TokArr and Tok class objects into strings, the String method is used:
+<p>
+<pre>
+TokArr distribution = "Cloudy^true^0.6 Cloudy^false^0.4";
+Tok probabilityTrue = distribution[0];
+Tok probabilityFalse = distribution[1];
+</p><p>
+String distributionStr = String(distribution);
+String probabilityTrueStr = String(probabilityTrue);
+String probabilityFalseStr = String(probabilityFalse);
+</pre>
+</p>
+If Tok class variable contains the value of probability, then it is possible to get this value as a float number with the help of FltValue method:
+<p>
+<pre>
+float probabTrueF = probabilityTrue.FltValue();
+float probabFalseF = probabilityFalse.FltValue();
+</pre></p>The variables probabTrueF and probabFalseF will contain values 0.6 and 0.4 respectively.
+</p>
