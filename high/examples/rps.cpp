@@ -26,6 +26,11 @@ static const char *round(int *best, int *result, int human, int computer)
     return saResult[((human + 3) - computer) % 3];
 }
 
+std::ostream &operator<<(std::ostream &str, TokArr &ta)
+{
+    return str << String(ta);
+}
+
 // used by ReadHumanResponse
 static void reportExpectedResponse()
 {
@@ -159,7 +164,6 @@ int scenario()
     net.AddArc("Predictor","Response2");
 
     // initial with uniform distribution
-    net.MakeUniformDistribution();
 
 //    net.SetP("Predictor^True", Tok(0.3f) );
 //    net.SetP("Predictor^False", Tok(0.7f) );
@@ -176,7 +180,7 @@ int scenario()
    // net.Evid(Tok("Response")^"True", true);
    // net.Evid(Tok("Response")^"True", true);
 
-    pnlSeed(time(0));
+//    pnlSeed(time(0));
     //Scripting scr;
     //scr.Execute(stdin, &net);
 
@@ -202,8 +206,6 @@ int scenario()
     net2.AddNode(categoric ^ "Response", aChoice);
     net2.AddNode(categoric ^ "Response2", aChoice);
     net2.AddNode(categoric ^ "Predictor", aChoice);
-
-    net2.MakeUniformDistribution();
 
     net.Evid(ev, true);
 
@@ -247,9 +249,6 @@ int rpsMain2()
     net.AddArc("PreviousHumanTurn", "CurrentHumanTurn");
     // next commented command makes the same
     // net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
-
-    // initial with uniform distribution
-    net.MakeUniformDistribution();
 
     bool bSkipInitialLearning = false;
     // initial learning from file
@@ -387,9 +386,6 @@ int rpsMain()
     // next commented command makes the same
     // net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
 
-    // initial with uniform distribution
-    net.MakeUniformDistribution();
-
     bool bSkipInitialLearning = false;
     // initial learning from file
     try
@@ -484,10 +480,26 @@ int rpsMain()
     return 0;
 }
 
-int main()
+int main(int ac, char **av)
 {
     int result = -1;
-
+    
+    if(ac > 1 && av[1][0] == '-' && tolower(av[1][1]) == 's')
+    {
+	Scripting scr;
+	const char *fname = av[1][2] ? av[1] + 2:av[2];
+	FILE *fp = fopen(fname, "r");
+	
+	if(fp)
+	{
+	    fprintf(stderr, "\nExecution of script from %s:\n\n", fname);
+	    result = scr.Execute(fp);
+	    fclose(fp);
+	    fprintf(stderr, "\nEnd of script\n");
+	}
+	return result;
+    }
+    
     try
     {
 	result = rpsMain();
