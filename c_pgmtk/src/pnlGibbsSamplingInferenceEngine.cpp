@@ -33,6 +33,7 @@
 #include "pnlSoftMaxCPD.hpp"
 #include "pnlSoftMaxDistribFun.hpp"
 #include "pnlCondSoftMaxDistribFun.hpp"
+#include "pnlScalarPotential.hpp"
 #include <time.h>
 
 PNL_USING
@@ -351,6 +352,12 @@ MarginalNodes( const int *queryIn, int querySz, int notExpandJPD )
     case dtGaussian:
       {
         pQueryPot = CGaussianPotential::CreateUnitFunctionDistribution(
+          queryIn, querySz, m_pGraphicalModel->GetModelDomain()  );
+        break;
+      }
+    case dtScalar:
+      {
+        pQueryPot = CScalarPotential::Create(
           queryIn, querySz, m_pGraphicalModel->GetModelDomain()  );
         break;
       }
