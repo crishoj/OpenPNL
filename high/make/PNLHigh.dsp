@@ -131,6 +131,10 @@ SOURCE=..\source\MRFCB.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\source\NetCallBack.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\source\PersistProbNet.cpp
 # End Source File
 # Begin Source File
