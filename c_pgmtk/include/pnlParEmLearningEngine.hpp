@@ -50,6 +50,7 @@ public:
 
 #ifdef PAR_MPI
     void Learn();
+    void LearnContMPI()
 #endif
 
 #ifdef PAR_OMP

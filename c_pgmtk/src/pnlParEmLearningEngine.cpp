@@ -241,6 +241,157 @@ void CParEMLearningEngine::Learn()
 }
 #endif // PAR_MPI
 // ----------------------------------------------------------------------------
+#ifdef PAR_MPI
+void CParEMLearningEngine::LearnContMPI()
+{
+    CStaticGraphicalModel *pGrModel =  this->GetStaticModel();
+    PNL_CHECK_IS_NULL_POINTER(pGrModel);
+    PNL_CHECK_LEFT_BORDER(GetNumEv() - GetNumberProcEv() , 1);
+    
+    CInfEngine *pInfEng = NULL;
+  
+    pInfEng = CJtreeInfEngine::Create(pGrModel);
+      
+    
+    float loglik = 0.0f;
+    int domainNodes;
+    CFactor *parameter = NULL;
+    int numberOfParameters = pGrModel->GetNumberOfParameters();
+    
+    int nFactors = pGrModel->GetNumberOfFactors();
+    const CEvidence *pEv;
+    CFactor *pFactor;
+    
+    int iteration = 0;
+    int ev;
+    int i,numSelfEvidences,NumberOfProcesses, MyRank;
+    int start_mpi, finish_mpi;
+    
+    MPI_Comm_size(MPI_COMM_WORLD, &NumberOfProcesses);
+    MPI_Comm_rank(MPI_COMM_WORLD, &MyRank);
+    
+    if (IsAllObserved())
+    {
+        int i;
+        float **evid = NULL;
+        EDistributionType dt;
+        CFactor *factor = NULL;
+        for (i = 0; i < nFactors; i++)
+        {
+            factor = pGrModel->GetFactor(i);
+                 
+            factor->UpdateStatisticsML(&m_Vector_pEvidences[GetNumberProcEv()], 
+               GetNumEv() - GetNumberProcEv());
+            
+        }
+        m_critValue.push_back(UpdateModel());
+    }
+    else
+    {
+        bool bContinue;
+        const CPotential * pot;
+        
+        do
+        {
+            ClearStatisticData();
+            iteration++;
+
+            numSelfEvidences = (GetNumEv() - GetNumberProcEv()) / NumberOfProcesses;
+            start_mpi = GetNumberProcEv() + numSelfEvidences * MyRank; 
+            if (MyRank < NumberOfProcesses - 1)
+                finish_mpi = start_mpi + numSelfEvidences; 
+            else
+                finish_mpi = GetNumEv();            
+
+            for(int ev = start_mpi; ev < finish_mpi; ev++)
+            {
+                
+                bool bInfIsNeed = !GetObsFlags(ev)->empty(); 
+                pEv = m_Vector_pEvidences[ev];
+                
+                if( bInfIsNeed )
+                {
+                    pInfEng->EnterEvidence(pEv,      0, 0);
+                }
+                int i;
+                
+                for( i = 0; i < nFactors; i++ )
+                {
+                    pFactor = pGrModel->GetFactor(i);
+                    int nnodes;
+                    const int * domain;
+                    pFactor->GetDomain( &nnodes, &domain );
+                    if( bInfIsNeed && !IsDomainObserved(nnodes, domain, ev ) )
+                    {
+                        pInfEng->MarginalNodes( domain, nnodes, 1 );
+                        pot = pInfEng->GetQueryJPD(); 
+                        
+                        pFactor->UpdateStatisticsEM( /*pInfEng->GetQueryJPD */ pot, pEv );
+                    }
+                    else
+                    {
+                        pFactor->UpdateStatisticsML( &pEv, 1 );
+                    }
+                }
+            }
+            
+            for(domainNodes = 0; domainNodes < numberOfParameters; domainNodes++ )
+            {   
+                parameter = pGrModel->GetFactor(domainNodes);
+                
+                C2DNumericDenseMatrix<float> *matMeanForSending;
+                C2DNumericDenseMatrix<float> *matCovForSending;
+                int dataLengthM,dataLengthC;
+                
+                float *pMeanDataForSending;
+                float *pCovDataForSending;
+                
+                matMeanForSending = static_cast<C2DNumericDenseMatrix<float>*>
+                    ((parameter->GetDistribFun())->GetStatisticalMatrix(stMatMu));               
+                
+                matMeanForSending->GetRawData(&dataLengthM, &pMeanDataForSending);
+                
+                matCovForSending = static_cast<C2DNumericDenseMatrix<float>*>
+                    ((parameter->GetDistribFun())->GetStatisticalMatrix(stMatSigma));               
+                
+                matCovForSending->GetRawData(&dataLengthC, &pCovDataForSending);
+                
+                float *pMeanDataRecv = new float[dataLengthM];
+                float *pCovDataRecv = new float[dataLengthC];
+                MPI_Status status;                         
+                
+                MPI_Allreduce(pMeanDataForSending, pMeanDataRecv, dataLengthM, MPI_FLOAT, MPI_SUM,
+                    MPI_COMM_WORLD);
+                MPI_Allreduce(pCovDataForSending, pCovDataRecv, dataLengthC, MPI_FLOAT, MPI_SUM,
+                    MPI_COMM_WORLD);
+                
+                memcpy(pMeanDataForSending,pMeanDataRecv,dataLengthM*sizeof(float));
+                
+                memcpy(pCovDataForSending,pCovDataRecv,dataLengthC*sizeof(float));
+            }                        
+
+            loglik = UpdateModel();
+            
+            if( GetMaxIterEM() != 1)
+            {
+                bool flag = iteration == 1 ? true : 
+                (fabs(2*(m_critValue.back()-loglik)/(m_critValue.back() + loglik)) > GetPrecisionEM() );
+                
+                bContinue = GetMaxIterEM() > iteration && flag;
+            }
+            else
+            {
+                bContinue = false;
+            }
+            m_critValue.push_back(loglik);
+            
+        }while(bContinue);
+    }
+    SetNumProcEv( GetNumEv() );
+    printf("\n ParPNL iteration = %d ",iteration);
+}
+#endif // PAR_MPI
+// ----------------------------------------------------------------------------
 
 #ifdef PAR_OMP
 void CParEMLearningEngine::LearnOMP()
