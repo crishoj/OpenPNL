@@ -24,7 +24,8 @@
 #include "pnlTabularDistribFun.hpp"
 #include "pnlCondGaussianDistribFun.hpp"
 #include "pnlScalarDistribFun.hpp"
-
+#include "pnlSoftMaxDistribFun.hpp"
+#include "pnlCondSoftMaxDistribFun.hpp"
 PNL_USING
 
 // Common methods
@@ -237,6 +238,76 @@ CPersistGaussianDistribFun::TraverseSubobject(CPNLBase *pObj, CContext *pContext
 }
 
 
+// SoftMaxDistribFun
+
+void 
+CPersistSoftMaxDistribFun::Save(CPNLBase *pObj, CContextSave *pContext)
+{
+    CSoftMaxDistribFun *pDF = dynamic_cast<CSoftMaxDistribFun*>(pObj);
+    bool isUnitFun = pDF->IsDistributionSpecific() == 1 ? true:false;
+
+    SaveForDistribFun(pDF, pContext);
+
+    if(isUnitFun)
+    {
+        return;
+    }
+
+    pContext->AddAttribute("MaximizingMethod", pDF->GetMaximizingMethod());
+}
+
+CPNLBase *
+CPersistSoftMaxDistribFun::Load(CContextLoad *pContext)
+{
+    int nNode;
+    bool isUnitFun;
+    CSoftMaxDistribFun *pDF = 0;
+    const CNodeType *const* ppNodeType;
+
+    LoadForDistribFun(&isUnitFun, &nNode, &ppNodeType, pContext);
+
+    if(isUnitFun)
+    {
+        pDF = CSoftMaxDistribFun::CreateUnitFunctionDistribution(nNode,
+            ppNodeType);
+        return pDF;
+    }
+
+    const float *pWeightsData;
+    floatVector *pOffsets;
+    int len;
+    int MaxMethod;
+
+    getMatrixByName("MatWeights", pContext)->GetRawData(&len, &pWeightsData);
+    pOffsets = (floatVector*)(static_cast<CCover<floatVector>*>(
+        pContext->Get("Offsets"))->GetPointer());
+
+    pDF = CSoftMaxDistribFun::Create(nNode, ppNodeType, pWeightsData,
+        &pOffsets->front());
+
+    pContext->GetAttribute(&MaxMethod, "MaximizingMethod");
+    pDF->SetMaximizingMethod((EMaximizingMethod)MaxMethod);
+    
+    return pDF;
+}
+
+void 
+CPersistSoftMaxDistribFun::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
+{
+    CSoftMaxDistribFun *pDF = dynamic_cast<CSoftMaxDistribFun*>(pObj);
+
+    TraverseDistribFunSubobjects(pDF, pContext);
+
+    if(pDF->IsDistributionSpecific() == 1)
+    {
+        return;
+    }
+
+    pContext->Put(pDF->GetMatrix(matWeights), "MatWeights");
+    pContext->Put(new CCoverDel<floatVector>(pDF->GetOffsetVector()), "Offsets");
+}
+
+
 // TabularDistribFun
 
 void
@@ -351,6 +422,62 @@ CPersistCondGaussianDistribFun::Load(CContextLoad *pContext)
     delete it;
 
     return pDF;
+}
+
+
+// ConditionalSoftMaxDistribFun
+
+void 
+CPersistCondSoftMaxDistribFun::Save(CPNLBase *pObj, CContextSave *pContext)
+{
+    CCondSoftMaxDistribFun *pDF = dynamic_cast<CCondSoftMaxDistribFun*>(pObj);
+
+    pContext->AddAttribute("NumberOfNodes", pDF->GetNumberOfNodes());
+    pContext->AddAttribute("IsFactor", false);
+}
+
+CPNLBase *
+CPersistCondSoftMaxDistribFun::Load(CContextLoad *pContext)
+{
+    int nNode;
+    bool bFactor;
+    bool isUnitFun;
+    CCondSoftMaxDistribFun *pDF;
+    const CNodeType *const* ppNodeType;
+
+    LoadForDistribFun(&isUnitFun, &nNode, &ppNodeType, pContext);
+
+    pContext->GetAttribute(&nNode, "NumberOfNodes");
+    pContext->GetAttribute(&bFactor, "IsFactor");
+    
+    CMatrix<CSoftMaxDistribFun*> *mat = static_cast<CMatrix<CSoftMaxDistribFun*>*>(
+        pContext->Get("DistributionMatrix"));
+    bool isDense(mat->GetMatrixClass() == mcDense);
+
+    pDF = CCondSoftMaxDistribFun::Create(nNode, ppNodeType);
+
+    CMatrixIterator<CSoftMaxDistribFun*> *it = mat->InitIterator();
+    intVector index;
+
+    for(; mat->IsValueHere(it); mat->Next(it))
+    {
+        mat->Index(it, &index);
+        pDF->SetDistribFun(*mat->Value(it), &index.front());
+    }
+
+    delete it;
+
+    return pDF;
+}
+
+void 
+CPersistCondSoftMaxDistribFun::TraverseSubobject(CPNLBase *pObj, CContext *pContext)
+{
+    CCondSoftMaxDistribFun *pDF = dynamic_cast<CCondSoftMaxDistribFun*>(pObj);
+
+    TraverseDistribFunSubobjects(pDF, pContext);
+
+    pContext->Put(pDF->GetMatrixWithDistribution(), "DistributionMatrix");
 }
 
 

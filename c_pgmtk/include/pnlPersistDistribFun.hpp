@@ -31,6 +31,15 @@ public:
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
 };
 
+class PNL_API CPersistSoftMaxDistribFun: public CPersistence
+{
+public:
+    virtual const char *Signature() { return "SoftMaxDistribFun"; }
+    virtual void Save(CPNLBase *pObj, CContextSave *pContext);
+    virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+};
+
 class PNL_API CPersistTabularDistribFun: public CPersistence
 {
 public:
@@ -44,6 +53,15 @@ class PNL_API CPersistCondGaussianDistribFun: public CPersistence
 {
 public:
     virtual const char *Signature() { return "ConditionalGaussianDistribFun"; }
+    virtual void Save(CPNLBase *pObj, CContextSave *pContext);
+    virtual CPNLBase *Load(CContextLoad *pContext);
+    virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);
+};
+
+class PNL_API CPersistCondSoftMaxDistribFun: public CPersistence
+{
+public:
+    virtual const char *Signature() { return "ConditionalSoftMaxDistribFun"; }
     virtual void Save(CPNLBase *pObj, CContextSave *pContext);
     virtual CPNLBase *Load(CContextLoad *pContext);
     virtual void TraverseSubobject(CPNLBase *pObj, CContext *pContext);

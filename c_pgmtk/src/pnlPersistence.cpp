@@ -60,7 +60,9 @@ CPersistenceZoo *GetZoo()
         pZoo->Register(new CPersistValueVector());
         pZoo->Register(new CPersistGaussianDistribFun());
         pZoo->Register(new CPersistTabularDistribFun());
+        pZoo->Register(new CPersistSoftMaxDistribFun());
         pZoo->Register(new CPersistCondGaussianDistribFun());
+        pZoo->Register(new CPersistCondSoftMaxDistribFun());
         pZoo->Register(new CPersistScalarDistribFun());
         pZoo->Register(new CPersistModelDomain());
         pZoo->Register(new CPersistBNet());

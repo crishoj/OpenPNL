@@ -58,6 +58,7 @@ CDistribFun* CSoftMaxDistribFun::Clone() const
     resData->AttachMatrix(m_pMatrixWeight->Clone(), matWeights);
   }
   resData->m_VectorOffset = m_VectorOffset;
+  resData->m_MaximizingMethod = m_MaximizingMethod;
 
   return resData;
 }
@@ -83,6 +84,7 @@ CDistribFun* CSoftMaxDistribFun::CloneWithSharedMatrices()
     resData->AttachMatrix(m_pMatrixWeight, matWeights);
   }
   resData->m_VectorOffset = m_VectorOffset;
+  resData->m_MaximizingMethod = m_MaximizingMethod;
 
   return resData;
 }
@@ -460,8 +462,8 @@ void CSoftMaxDistribFun::AllocMatrix(const float *data, EMatrixType mType,
     int* dims = new int[2];
     PNL_CHECK_IF_MEMORY_ALLOCATED(dims);
 
-    dims[0] = m_NumberOfNodes - 1;
-    dims[1] = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
+    dims[0] = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
+    dims[1] = m_NumberOfNodes - 1;
 
     m_pMatrixWeight = C2DNumericDenseMatrix<float>::Create(dims, data);
     static_cast<CMatrix<float>*>(m_pMatrixWeight)->AddRef(pObj);

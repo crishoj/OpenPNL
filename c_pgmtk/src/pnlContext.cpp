@@ -23,13 +23,15 @@
 #include "pnlGraph.hpp"
 #include "pnlDBN.hpp"
 #include "pnlMRF2.hpp"
+#include "pnlIDNet.hpp"
 #include "pnlNodeValues.hpp"
 #include "pnlEvidence.hpp"
 #include "pnlGaussianDistribFun.hpp"
 #include "pnlCondGaussianDistribFun.hpp"
 #include "pnlTabularDistribFun.hpp"
 #include "pnlScalarDistribFun.hpp"
-#include "pnlIDNet.hpp"
+#include "pnlSoftMaxDistribFun.hpp"
+#include "pnlCondSoftMaxDistribFun.hpp"
 
 #ifdef DEBUG_PERSISTENCE
 #undef THIS_FILE
@@ -215,9 +217,17 @@ static const char *GetClassName(CPNLBase *pObj)
         {
             return "TabularDistribFun";
         }
+        else if(dynamic_cast<CSoftMaxDistribFun*>(pObj) != 0)
+        {
+            return "SoftMaxDistribFun";
+        }
         else if(dynamic_cast<CCondGaussianDistribFun*>(pObj) != 0)
         {
             return "ConditionalGaussianDistribFun";
+        }
+        else if(dynamic_cast<CCondSoftMaxDistribFun*>(pObj) != 0)
+        {
+            return "ConditionalSoftMaxDistribFun";
         }
         else if(dynamic_cast<CScalarDistribFun*>(pObj) != 0)
         {
@@ -229,7 +239,8 @@ static const char *GetClassName(CPNLBase *pObj)
         return "MatrixOfFloat";
     }
     else if(dynamic_cast<CMatrix<CDistribFun*>*>(pObj) != 0
-        || dynamic_cast<CMatrix<CGaussianDistribFun*>*>(pObj) != 0)
+        || dynamic_cast<CMatrix<CGaussianDistribFun*>*>(pObj) != 0
+        || dynamic_cast<CMatrix<CSoftMaxDistribFun*>*>(pObj) != 0)
     {
         return "MatrixDistribFun";
     }

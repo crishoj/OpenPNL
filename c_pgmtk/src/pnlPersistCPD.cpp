@@ -28,6 +28,7 @@
 #include "pnlTabularCPD.hpp"
 #include "pnlGaussianCPD.hpp"
 #include "pnlMixtureGaussianCPD.hpp"
+#include "pnlSoftMaxCPD.hpp"
 
 PNL_USING
 
@@ -118,6 +119,9 @@ CPersistFactor::Load(CContextLoad *pContext)
 		pContext->Get("Probabilities"))->GetPointer();
 	    pFactor = CMixtureGaussianCPD::Create(*pDomain, pMD, *pX);
 	    break;
+        case dtSoftMax:
+            pFactor = CSoftMaxCPD::Create(*pDomain, pMD);
+            break;
         }
     }
 

@@ -173,6 +173,8 @@ public:
   void MaximumLikelihood(float **Observation, int NumberOfObservations, 
     float Accuracy, float step = 0.1);
 
+  inline CMatrix<CSoftMaxDistribFun*>* GetMatrixWithDistribution();
+
   int GetSoftMaxSize() const;
 
 protected:
@@ -216,6 +218,12 @@ inline int CCondSoftMaxDistribFun::IsDistributionSpecific() const
   {
     return 0;
   }
+}
+
+inline CMatrix<CSoftMaxDistribFun*>* 
+CCondSoftMaxDistribFun::GetMatrixWithDistribution()
+{
+  return m_distribution;
 }
 
 PNL_END
