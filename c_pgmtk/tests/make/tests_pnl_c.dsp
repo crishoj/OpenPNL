@@ -51,12 +51,12 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:console /debug /machine:I386 /out:"..\..\..\bin\tests_pnl_c.exe" /libpath:"..\..\lib" /libpath:"..\..\..\cxcore\lib" /fixed:no"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib /nologo /subsystem:console /debug /machine:I386 /out:"..\..\..\bin\tests_pnl_c.exe" /libpath:"..\..\..\lib" /fixed:no"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\OpenPNL\PNL\bin\tests_pnl_c.exe
+TargetPath=\work\pnl.sf\PNL\bin\tests_pnl_c.exe
 TargetName=tests_pnl_c
-InputPath=\OpenPNL\PNL\bin\tests_pnl_c.exe
+InputPath=\work\pnl.sf\PNL\bin\tests_pnl_c.exe
 SOURCE="$(InputPath)"
 
 "..\..\..\bin\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -87,11 +87,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:console /incremental:no /debug /machine:I386 /out:"..\..\..\bin\tests_pnl_cd.exe" /pdbtype:sept /libpath:"..\..\lib" /libpath:"..\..\..\cxcore\lib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcored.lib /nologo /subsystem:console /incremental:no /debug /machine:I386 /out:"..\..\..\bin\tests_pnl_cd.exe" /pdbtype:sept /libpath:"..\..\..\lib"
 # Begin Custom Build
-TargetPath=\OpenPNL\PNL\bin\tests_pnl_cd.exe
+TargetPath=\work\pnl.sf\PNL\bin\tests_pnl_cd.exe
 TargetName=tests_pnl_cd
-InputPath=\OpenPNL\PNL\bin\tests_pnl_cd.exe
+InputPath=\work\pnl.sf\PNL\bin\tests_pnl_cd.exe
 SOURCE="$(InputPath)"
 
 "..\..\..\bin\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
