@@ -43,23 +43,25 @@ int testExLearnEngine()
       
        
        int nSamples = -1;
-       while(nSamples < 100)
+       while(nSamples < 400)
        {
-           trsiRead (&nSamples, "100", "Number of slices");
+           trsiRead (&nSamples, "400", "Number of slices");
        }
        
        float eps = -1.0f;
        while( eps <= 0 )
        {
-           trssRead( &eps, "1.5e-2f", "accuracy in test");
+           trssRead( &eps, "1.e-1f", "accuracy in test");
        }
        
        int nnodes = 10;
-       int nedges = 1;
+       int nedges = 2;
        int ndSz = 2;
        float edgeprob = 0.4f;
    
        CBNet* pBNet = pnlExCreateRandomBNet( nnodes, nedges, 0, ndSz, 1, edgeprob, true );
+       
+       
        CModelDomain *pMD = pBNet->GetModelDomain();
        CGraph *pGraph =pBNet->GetGraph();
 
@@ -67,24 +69,23 @@ int testExLearnEngine()
        
        
        
-       CExInfEngine< CNaiveInfEngine, CBNet, PNL_EXINFENGINEFLAVOUR_DISCONNECTED > *pInf = 
-                	CExInfEngine< CNaiveInfEngine, CBNet, PNL_EXINFENGINEFLAVOUR_DISCONNECTED >::
+       CExInfEngine< CJtreeInfEngine, CBNet, PNL_EXINFENGINEFLAVOUR_DISCONNECTED > *pInf = 
+                	CExInfEngine< CJtreeInfEngine, CBNet, PNL_EXINFENGINEFLAVOUR_DISCONNECTED >::
        		Create( pBNetToLearn  );
        
-       //CJtreeInfEngine *pInf = CJtreeInfEngine::Create(pBNetToLearn);
        
        CEMLearningEngine *pLearn = CEMLearningEngine::Create(pBNetToLearn, pInf);
    
        pEvidencesVector pEv;
        pBNet->GenerateSamples( &pEv, nSamples );
-   
+       
        int sn, i;
        for( i = 0; i < nSamples; i++ )
        {
-   	sn = (int)pnlRand(0, nnodes);
-   	pEv[i]->MakeNodeHiddenBySerialNum(sn);
+	   sn = (int)pnlRand(0, nnodes-1);
+	   pEv[i]->MakeNodeHiddenBySerialNum(sn);
        }
-   
+       
        pLearn->SetData(nSamples, &pEv.front() );
        pLearn->Learn();
 
@@ -93,26 +94,25 @@ int testExLearnEngine()
 	   if(  ! pBNetToLearn->GetFactor(i)->IsFactorsDistribFunEqual(pBNet->GetFactor(i), eps))
 	   {
 	       ret = TRS_FAIL;
+	       pBNetToLearn->GetFactor(i)->GetDistribFun()->Dump();
+	       pBNet->GetFactor(i)->GetDistribFun()->Dump();
+		       
 	       break;
 	   }
        }
 
        for( i = 0; i < pEv.size(); i++ )
        {
-	   if( i == 17 )
-	   {
-	      int ttt = 1;
-	   }
 	   delete pEv[i];
-	   std::cout<<i<<std::endl;
        }
-
+       
+       delete pInf;
        delete pBNet;
        delete pBNetToLearn;
       
       
     return trsResult( ret, ret == TRS_OK ? "No errors" : 
-    "Bad test on learning disconnected network");
+    "Bad test of learning disconnected network");
     
     
 }

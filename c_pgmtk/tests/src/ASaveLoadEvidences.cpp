@@ -173,10 +173,10 @@ int testSaveLoadEvidences()
 	}
     }
     
-    for( i = 0; i < nSlices.size(); i++ )
+    for( i = 0; i < evVec.size(); i++ )
     {
 	int j;
-	for( j = 0; j < nSlices[i]; j++ )
+	for( j = 0; j < evVec[i].size(); j++ )
 	{
 	    delete (evVec[i])[j];
 	}
