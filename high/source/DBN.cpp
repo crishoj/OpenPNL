@@ -49,44 +49,9 @@ DBN::~DBN()
 
 void DBN::AddNode(TokArr nodes, TokArr subnodes)
 {
-/*  unsigned int i;
-TokArr newBotNodes;
-String tmpName;
-Tok *newTok;
-Net().DelNode(bottomNode);
-for(i = 0; i < nodes.size(); ++i)
-{
-tmpName = nodes[i].Name(); 
-//	tmpName[tmpName.length() - 1] = '1';
-
-  std::string mystr(tmpName.c_str());
-  mystr[mystr.length() - 1] = '1';
-  tmpName = mystr;
-  
-	newTok = new Tok(tmpName);
-	newBotNodes.push_back(*newTok);
-	newTok = new Tok(tmpName);
-	bottomNode.push_back(*newTok);
-    }
-    for(i = 0; i < newBotNodes.size(); ++i)
-    {
-	bottomSubnodes.push_back(newBotNodes[i]);
-}*/
+	
     Net().AddNode(nodes, subnodes);
-	/* for(i = 0; i < newBotNodes.size(); i++)
-    {
-	TokArr tmpNode,tmpSubN;
-	tmpNode.push_back(newBotNodes[i]);
-	tmpSubN.push_back(bottomSubnodes[bottomSubnodes.size()-newBotNodes.size()+i]);
-	Net().AddNode(tmpNode, tmpSubN);
-    };
-    for(i = 0; i < bottomEdgesFr.size(); i++)
-    {
-	TokArr tmpFr,tmpTo;
-	tmpFr.push_back(bottomEdgesFr[i]);
-	tmpTo.push_back(bottomEdgesTo[i]);
-	Net().AddArc(tmpFr,tmpTo); 
-}*/
+	
 }
 
 void DBN::DelNode(TokArr nodes)
@@ -94,69 +59,18 @@ void DBN::DelNode(TokArr nodes)
     Net().DelNode(nodes);
 }
 
-/*
+
 // returns one of "categoric" or "continuous"
-TokArr DBN::NodeType(TokArr nodes)
+TokArr DBN::GetNodeType(TokArr nodes)
 {
-    return Net().NodeType(nodes);
+return Net().GetNodeType(nodes);
 }
-*/
+
 
 // manipulating arcs
 void DBN::AddArc(TokArr from, TokArr to)
 {
-/* TokArr edgeFr,edgeTo;
-unsigned int i,j;
-String tmpStr;
-Tok *pTok;
-for(i = 0; i < from.size(); i++)
-{
-for(j = 0; j < to.size(); j++)
-{
-tmpStr = to[j].Name();
-if(tmpStr[tmpStr.length()-1] == '0')
-{
-tmpStr = from[i].Name();
-
-  std::string mystr(tmpStr.c_str());
-  mystr[mystr.length() - 1] = '1';
-  tmpStr = mystr;
-		//tmpStr[tmpStr.length()-1] = '1';
-		
-		  pTok = new Tok(tmpStr);
-		  bottomEdgesFr.push_back(*pTok);
-		  }
-		  else
-		  {
-		  pTok = new Tok(from[i].Name());
-		  bottomEdgesFr.push_back(*pTok);
-		  };
-		  tmpStr = to[j].Name();
-		  
-			std::string mystr(tmpStr.c_str());
-			mystr[mystr.length() - 1] = '1';
-			tmpStr = mystr;
-			// tmpStr[tmpStr.length()-1] = '1';
-			
-			  pTok = new Tok(tmpStr);
-			  bottomEdgesTo.push_back(*pTok);
-			  edgeFr.push_back(from[i]);
-			  edgeTo.push_back(to[j]);
-			  }
-}*/
-    Net().AddArc(from, to);
-	/*  for(i = 0; i < edgeFr.size(); i++)
-    {
-	tmpStr = edgeFr[i].Name();
-	if (tmpStr[tmpStr.length() - 1] != '0')
-	{
-	TokArr tmpFr,tmpTo;
-	tmpFr.push_back(edgeFr[i]);
-	tmpTo.push_back(edgeTo[i]);
-	Net().AddArc(tmpFr,tmpTo); 
-	}
-};*/
-    
+    Net().AddArc(from, to);   
 }
 
 void DBN::DelArc(TokArr from, TokArr to)
@@ -283,7 +197,7 @@ TokArr DBN::P(TokArr child, TokArr parents)
     return result;
 }
 
-TokArr DBN::JPD( TokArr nodes)
+TokArr DBN::GetJPD( TokArr nodes)
 {
 	static const char fname[] = "JPD";
 	
@@ -399,7 +313,9 @@ TokArr DBN::JPD( TokArr nodes)
 			const pnl::CMatrix<float> *cov = pot->GetMatrix(pnl::matCovariance);
 			res << Net().ConvertMatrixToToken(cov);
 		}
-		return res;
+		
+		res = ConvertBNetQueToDBNQue(res,nSlice); 
+		return res;	
 }
 
 void DBN::EditEvidence(TokArr values)
@@ -690,10 +606,10 @@ void DBN::LearnStructure(TokArr aSample[], int nSample)
 }
 #endif
 
-TokArr DBN::MPE(TokArr nodes)
+TokArr DBN::GetMPE(TokArr nodes)
 {
-    TokArr NewQue;
-    String tmpStr;
+    TokArr NewQue,OutQue;
+    String tmpStr, tmpRez,tmpS,tmpVal;
     Tok *pTok;
     tmpStr = nodes[nodes.size() - 1].Name();
 	int nSlice = GetSliceNum(tmpStr);
@@ -704,7 +620,7 @@ TokArr DBN::MPE(TokArr nodes)
 	//  Net().MustBeNode(nodes);	
     pnl::CEvidence **pEvid;
     pEvid = new pnl::CEvidence*[m_nSlices];
-    int i;
+    int i,j;
     for(i = 0; i < m_nSlices; i++)
     {
 		pEvid[i] = (m_AllEvidences[i])[m_AllEvidences[i].size() - 1]; 
@@ -789,6 +705,7 @@ TokArr DBN::MPE(TokArr nodes)
 		//	result.push_back(Net().Token()->TokByNodeValue(queryNds[i], v.GetFlt()));
     }
 	
+	result = ConvertBNetQueToDBNQue(result,nSlice);
     return result;
 }
 
@@ -1010,5 +927,65 @@ String DBN::GetShortName(String nodeName)
 	}
 	return tmpName;
 	
+	
+}
+
+TokArr DBN::ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice)
+{
+	int i,j;
+	String tmpRez,tmpS,tmpVal;
+	TokArr  OutQue;
+	
+	if(nSlice != 0)
+	{
+		for(i = 0; i < bnetQue.size(); i++)
+		{
+			tmpRez = String(bnetQue[i]);
+			tmpVal.resize(0);
+			for(j = 0; j < tmpRez.length(); j++)
+			{
+				if(tmpRez[j] != '^')
+				{
+					const char e = tmpRez[j];
+					tmpVal.append(&e,1);
+				}
+				else
+				{
+					if(!(GetShortName(tmpVal) == tmpVal))
+					{
+						if(GetSliceNum(tmpVal) == 0)
+						{
+							tmpVal = GetShortName(tmpVal);
+							tmpVal.append("-",1);
+							char c[2];  
+							itoa(nSlice - 1,c,2);
+							tmpVal.append(c,strlen(c));
+						}
+						else
+						{
+							tmpVal = GetShortName(tmpVal);
+							tmpVal.append("-",1);
+							char c[2];  
+							itoa(nSlice,c,10);
+							tmpVal.append(c,strlen(c));
+						}
+						
+					}
+					
+					tmpS.append(tmpVal.c_str(),tmpVal.length());
+					tmpS.append("^",1);
+					tmpVal.resize(0);
+				}
+			}
+			tmpS.append(tmpVal.c_str(),tmpVal.length());
+			OutQue.push_back(tmpS);	
+			tmpS.resize(0);
+		}
+		return OutQue;
+	}
+	else
+	{
+		return bnetQue;
+	}
 	
 }

@@ -42,10 +42,10 @@ public:
     // remove node
     void DelNode(TokArr nodes);
    
-	/*
+	
     // returns one of "categoric" or "continuous"
-    TokArr NodeType(TokArr nodes);
-    */
+    TokArr GetNodeType(TokArr nodes);
+    
     // manipulating arcs
     void AddArc(TokArr from, TokArr to);
     void DelArc(TokArr from, TokArr to);
@@ -67,7 +67,7 @@ public:
     // get tabular probability
     TokArr P(TokArr value, TokArr parents = TokArr());
     
-    TokArr JPD(TokArr value );
+    TokArr GetJPD(TokArr value );
     // set parameters for gaussian distribution
     void SetGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
     
@@ -98,7 +98,7 @@ public:
 #endif
 
     // returns MPE for nodes using current evidence
-    TokArr MPE(TokArr nodes = TokArr());
+    TokArr GetMPE(TokArr nodes = TokArr());
     
     // get parameters of gaussian distribution
     TokArr GaussianMean(TokArr vars);
@@ -141,6 +141,8 @@ private:
     int GetSliceNum(String nodeName);
 	String GetNodeName(String nodeEvid);
 	String GetShortName(String nodeName);
+	TokArr ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice);
+
     void CreateModel();
     pnl::CDBN *Model();
 

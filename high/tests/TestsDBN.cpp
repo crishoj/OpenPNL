@@ -35,7 +35,7 @@ pDBN->EditEvidence("House-3^True Flat-3^False");
 // setting inference property: Smoothing
 pDBN->SetProperty("Inference","Smoothing");
 // getting request 
-TokArr  tmpJPD = pDBN->JPD("Street-3 House-3");
+TokArr  tmpJPD = pDBN->GetJPD("Street-3 House-3");
 printf("%s",String(tmpJPD).c_str());
 // free memory
 delete pDBN;
@@ -75,7 +75,7 @@ pDBN->EditEvidence("House-3^True Flat-3^False");
 // setting inference property:FixLagSmoothing
 pDBN->SetProperty("Inference","fix");
 // getting request 
-TokArr  tmpJPD = pDBN->JPD("Street-0 House-0");
+TokArr  tmpJPD = pDBN->GetJPD("Street-0 House-0");
 printf("%s",String(tmpJPD).c_str());
 // free memory
 delete pDBN;
@@ -114,7 +114,7 @@ pDBN->EditEvidence("House-3^True Flat-3^False");
 // setting inference property:Filtering
 pDBN->SetProperty("Inference","filt");
 // getting request 
-TokArr  tmpJPD = pDBN->JPD("Street-0 Flat-0");
+TokArr  tmpJPD = pDBN->GetJPD("Street-0 Flat-0");
 printf("%s",String(tmpJPD).c_str());
 // free memory
 delete pDBN;
@@ -153,8 +153,8 @@ pDBN->EditEvidence("House-3^True Flat-3^False");
 //  inference property must be Viterbi
 pDBN->SetProperty("Inference","viter");
 // getting request 
-TokArr  tmpJPD = pDBN->MPE("Street-1 Flat-1");
-printf("%s",String(tmpJPD).c_str());
+TokArr  tmpMPE = pDBN->GetMPE("Street-1 Flat-1");
+printf("%s",String(tmpMPE).c_str());
 // free memory
 delete pDBN;
 return result;
