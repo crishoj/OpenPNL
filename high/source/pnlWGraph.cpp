@@ -63,7 +63,7 @@ TopologicalSort::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &aPar
 	    if(candidate >= 0)
 	    {
 		result[i++] = candidate;
-		aNode[j] = -1;
+		aNode[candidate] = -1;
 	    }
 	    else
 	    {
@@ -120,7 +120,7 @@ TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &a
 	bChange = false;
 	// walk thru all nodes and add nodes without non-marked parent
 	// to topological order vector
-	for(j = 0; j < aNode.size()/2; ++j)
+	for(j = 0; j < half; ++j)
 	{
 	    if(aNode[j] < 0)
 	    {
@@ -137,11 +137,21 @@ TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &a
 	    }
 	    it = aParent[j + half].begin();
 	    itEnd = aParent[j + half].end();
-	    for(k = aParent[j + half].size(); --k >= 0 && aNode[aParent[j][k]] == -1;)
+	    for(; it != itEnd;)
 	    {
-		if;
-	    result[i++] = j;
-	    aNode[j] = -1;
+		if(*it >= half && aNode[*it] >= 0)
+		{
+		    break;
+		}
+	    }
+	    if(it != itEnd)
+	    {
+		continue;
+	    }
+	    result[i] = j;
+	    result[i + half] = j + half;
+	    aNode[j] = aNode[j + half] = -1;
+	    i++;
 	    bChange = true;
 	}
 
@@ -149,13 +159,15 @@ TopologicalSortDBN::GetOrderDirect(IIMap *pResult, const Vector<Vector<int> > &a
 	{
 	    if(candidate >= 0)
 	    {
-		result[i++] = candidate;
-		aNode[j] = -1;
+		result[i] = candidate;
+		result[i + half] = candidate + half;
+		aNode[candidate] = aNode[candidate + half] = -1;
+		i++;
 	    }
 	    else
 	    {
 		ThrowInternalError("incorrect algo of topological sort",
-		    "TopologicalSort::GetOrderDirect");
+		    "TopologicalSortDBN::GetOrderDirect");
 	    }
 	}
     }
