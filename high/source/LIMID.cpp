@@ -65,7 +65,7 @@ void LIMID::AddArc(TokArr from, TokArr to)
 
 void LIMID::DelArc(TokArr from, TokArr to)
 {
-    Net().AddArc(from, to);
+    Net().DelArc(from, to);
 }
 
 

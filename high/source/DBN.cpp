@@ -132,7 +132,7 @@ void DBN::AddArc(TokArr from, TokArr to)
 
 void DBN::DelArc(TokArr from, TokArr to)
 {
-    Net().AddArc(from, to);
+    Net().DelArc(from, to);
 }
 
 static int cmpTokIdNode(TokIdNode *node1, TokIdNode *node2)
