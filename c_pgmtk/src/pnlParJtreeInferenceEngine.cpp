@@ -180,6 +180,41 @@ CParJtreeInfEngine::CParJtreeInfEngine(const CJtreeInfEngine& rJTreeInfEngine):
 }
 // ----------------------------------------------------------------------------
 
+CParJtreeInfEngine::CParJtreeInfEngine(const CParJtreeInfEngine& rParJTreeInfEngine):CJtreeInfEngine((CJtreeInfEngine &)rParJTreeInfEngine)
+{
+    m_QueueNodes = rParJTreeInfEngine.m_QueueNodes;     
+    m_NodeConditions = rParJTreeInfEngine.m_NodeConditions; 
+    m_UpdateRatios = rParJTreeInfEngine.m_UpdateRatios;   
+    m_NbrsTypes = rParJTreeInfEngine.m_NbrsTypes;     
+
+    SetNbrsTypes();
+
+#ifdef PAR_MPI
+    m_NodeProcesses = rParJTreeInfEngine.m_NodeProcesses;         
+    m_NodesOfProcess = rParJTreeInfEngine.m_NodesOfProcess;        
+    m_NumberOfProcesses = rParJTreeInfEngine.m_NumberOfProcesses;     
+    m_NumberOfUsedProcesses = rParJTreeInfEngine.m_NumberOfUsedProcesses; 
+    m_MyRank = rParJTreeInfEngine.m_MyRank;                
+    m_CollectRanks = rParJTreeInfEngine.m_CollectRanks;          
+                             
+    m_pWeightesOfNodes = rParJTreeInfEngine.m_pWeightesOfNodes;   
+    m_pWeightesOfSubTrees = rParJTreeInfEngine.m_pWeightesOfSubTrees;
+    m_UsedNodes = rParJTreeInfEngine.m_UsedNodes;          
+                          
+    m_Roots = rParJTreeInfEngine.m_Roots;              
+                          
+    m_Routes = rParJTreeInfEngine.m_Routes;             
+    m_IsPropagated = rParJTreeInfEngine.m_IsPropagated;       
+
+    World_group = rParJTreeInfEngine.World_group;
+    CollectEv_group = rParJTreeInfEngine.CollectEv_group;
+    CollectEv_comm = rParJTreeInfEngine.CollectEv_comm;
+
+#endif
+
+}
+// ----------------------------------------------------------------------------
+
 void CParJtreeInfEngine::SetNbrsTypes()
 {
     const int *nbr, *nbrs_end;
@@ -328,6 +363,20 @@ void CParJtreeInfEngine::GetParents(int NumOfNode, intVector* Parents)
     }
 }
 // ----------------------------------------------------------------------------
+CParJtreeInfEngine* CParJtreeInfEngine::Copy(const CParJtreeInfEngine *pJTreeInfEng)
+{
+    /* bad-args check */
+    PNL_CHECK_IS_NULL_POINTER(pJTreeInfEng);
+    /* bad-args check end */
+    
+    CParJtreeInfEngine *pJTreeInfEngineCopy = new CParJtreeInfEngine(*pJTreeInfEng);
+    
+    PNL_CHECK_IF_MEMORY_ALLOCATED(pJTreeInfEngineCopy);
+    
+    return pJTreeInfEngineCopy;
+}
+
+// ----------------------------------------------------------------------------
 
 #ifdef PAR_OMP
 void CParJtreeInfEngine::EnterEvidenceOMP(const CEvidence *pEvidence,
@@ -368,7 +417,7 @@ void CParJtreeInfEngine::ShrinkObservedOMP( const CEvidence *pEvidence,
     m_bMaximize = maximize;
 
     // deletes an old internal junction tree to start computations anew
-    GetOriginalJTree()->ClearChargeOMP();
+    GetOriginalJTree()->ClearCharge();
     GetOriginalJTree()->InitChargeOMP( m_pGraphicalModel, pEvidence,
         sumOnMixtureNode );
 
