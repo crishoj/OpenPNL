@@ -96,6 +96,7 @@ int main(int argc, char* argv[])
     {
         TestForGetPTabular();
 	TestForSetInferenceProperties();
+	TestForGetMPE();
     }
     catch(pnl::CException e)
     {
