@@ -463,15 +463,19 @@ int main(int ac, char **av)
     if(ac > 1 && av[1][0] == '-' && tolower(av[1][1]) == 's')
     {
 	Scripting scr;
-	const char *fname = av[1][2] ? av[1] + 2:av[2];
+	const char *fname = (av[1][2] || ac < 3) ? av[1] + 2:av[2];
 	FILE *fp = fopen(fname, "r");
 	
 	if(fp)
 	{
-	    fprintf(stderr, "\nExecution of script from %s:\n\n", fname);
+	    fprintf(stderr, "\nExecution of script from '%s':\n\n", fname);
 	    result = scr.Execute(fp);
 	    fclose(fp);
 	    fprintf(stderr, "\nEnd of script\n");
+	}
+	else
+	{
+	    fprintf(stderr, "\nCan't open file '%s'\n\n", fname);
 	}
 	return result;
     }

@@ -5,41 +5,53 @@
 #include "example_common_funs.hpp"
 #include "script_lex.hpp"
 
+/*
+struct FuncDesc
+{
+    const char *name;// function name in lowercase
+    int id;// unique id - from enum in WInner.hpp
+    bool bSimple;// left and right arguments - TokArr's
+    int nLeftArg;
+    int nRightArg;
+    int nOptArg;
+};
+*/
+
 FuncDesc aFuncDesc[] =
-{   "savenet",      eSaveNet,   false, 0, 1, 0
-,   "loadnet",      eLoadNet,	false, 0, 1, 0
-,   "saveevidbuf", eSaveEvidBuf, false,0, 1, 0
-,   "loadevidbuf", eLoadEvidBuf, false,0, 1, 0
-,   "addnode",	    eAddNode,	true,  0, 2, 0
-,   "addarc",	    eAddArc,	true,  0, 2, 0
-,   "setp",	    eSetP,	true,  0, 3, 1
-,   "p",	    eP,		true,  1, 2, 1
-,   "editevidence", eEditEvidence,  true, 0, 1, 0
-,   "clearevid",    eClearEvid,	true,  0, 0, 0
-,   "addevidtobuf", eAddEvidToBuf,  true, 0, 1, 1
-,   "clearevidbuf", eClearEvidBuf, true, 0, 0, 0
-,   "curevidtobuf", eCurEvidToBuf, true, 0, 0, 0
-,   "learn",	    eLearn,	true,  0, 0, 0
-,   "mpe",	    eMPE,	true,  1, 1, 1
+{   "savenet",	      eSaveNet,	    false, 0, 1, 0
+,   "loadnet",        eLoadNet,	    false, 0, 1, 0
+,   "saveevidbuf",    eSaveEvidBuf, false, 0, 1, 0
+,   "loadevidbuf",    eLoadEvidBuf, false, 0, 1, 0
+,   "addnode",	      eAddNode,	    true,  0, 2, 0
+,   "addarc",	      eAddArc,	    true,  0, 2, 0
+,   "setp",	      eSetP,	    true,  0, 3, 1
+,   "p",	      eP,	    true,  1, 2, 1
+,   "editevidence",   eEditEvidence,true,  0, 1, 0
+,   "clearevid",      eClearEvid,   true,  0, 0, 0
+,   "addevidtobuf",   eAddEvidToBuf,true,  0, 1, 1
+,   "clearevidbuf",   eClearEvidBuf,true,  0, 0, 0
+,   "curevidtobuf",   eCurEvidToBuf,true,  0, 0, 0
+,   "learn",	      eLearn,	    true,  0, 0, 0
+,   "mpe",	      eMPE,	    true,  1, 1, 1
 ,   "generateevidences", eGenerateEvidences, false, 0, 3, 2
-,   "learnstructure", eLearnStructure, true, 0, 0, 0
-,   "gaussianmean", eGaussianMean,true, 1, 1, 0
-,   "gaussiancovar", eGaussianCovar, true, 1, 2, 0 
-,   "setgaussian",  eSetGaussian, false, 0, 4, 3
-,   "setproperty", eSetProperty, false, 0, 2, 0
-,   "jpd",          eJPD,       true, 1, 1, 0 
+,   "learnstructure", eLearnStructure,true,0, 0, 0
+,   "gaussianmean",   eGaussianMean,true,  1, 1, 0
+,   "gaussiancovar",  eGaussianCovar,true, 1, 2, 0 
+,   "setgaussian",    eSetGaussian, true,  0, 4, 3
+,   "setproperty",    eSetProperty, false, 0, 2, 0
+,   "jpd",            eJPD,	    true,  1, 1, 0 
 // build-in commands
-,   "execute",	    -1,		false, 0, 1, 0
-,   "clear",	    -2,		true,  0, 0, 0
-,   "clearall",	    -3,		true,  0, 0, 0
-,   "listnodes",    -4,		true,  0, 0, 0
-,   "exit",	    -5,		true,  0, 0, 0
-,   "listcommands", -6,		true,  0, 0, 0
-,   "print",	    -7,		true,  0, 1, 1
-,   "new",	    -8,		true,  0, 0, 0
-,   "console",	    -9,		true,  0, 0, 0
-,   "comparefiles", -10,	true,  1, 3, 1
-,   "checkorcreate",-11,	true,  0, 3, 0
+,   "execute",	      -1,	    false, 0, 1, 0
+,   "clear",	      -2,	    true,  0, 0, 0
+,   "clearall",	      -3,	    true,  0, 0, 0
+,   "listnodes",      -4,	    true,  0, 0, 0
+,   "exit",	      -5,	    true,  0, 0, 0
+,   "listcommands",   -6,	    true,  0, 0, 0
+,   "print",	      -7,	    true,  0, 1, 1
+,   "new",	      -8,	    true,  0, 0, 0
+,   "console",	      -9,	    true,  0, 0, 0
+,   "comparefiles",   -10,	    true,  1, 3, 1
+,   "checkorcreate",  -11,	    true,  0, 3, 0
 ,   0, 0, 0, 0, 0, 0
 };
 

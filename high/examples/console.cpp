@@ -118,9 +118,12 @@ int Scripting::ExecuteACommand(pnl::pnlString &fname, pnl::pnlVector<pnl::pnlStr
 		if(fp)
 		{
 		    Execute(fp);
+		    fclose(fp);
 		}
-
-		fclose(fp);
+		else
+		{
+		    fprintf(Stdout(), "can't open file '%s'\n", args[0].c_str());
+		}
 
 		break;
 	    }
@@ -256,6 +259,10 @@ bool Scripting::CheckOrCreate(const char *etalon, const char *script, const char
     {
 	int result = CompareFiles(etalon, tmpFile);
 	fprintf(Stdout(), "%s: %s\n", id, (result == 0) ? "Ok":"FAILED");
+	if(remove(tmpFile))
+	{
+	    fprintf(Stdout(), "can't delete tmp file '%s'\n", tmpFile);
+	}
 	return result == 0;
     }
 
