@@ -4,6 +4,72 @@
 PNLW_USING
 //#define PRINT_RESULT
 
+int testDBNEvidences()
+// this test provides smoothing with DBN
+{
+	int result = -1;
+	// node values
+	TokArr aChoice = "True False MayBe";
+	// DBN creation
+	DBN *pDBN; 
+	pDBN = new DBN();
+	// prior slice nodes creation 
+	pDBN->AddNode(discrete ^ "Street-0", aChoice); 
+	pDBN->AddNode(discrete ^ "House-0", aChoice);
+	pDBN->AddNode(discrete ^ "Flat-0", aChoice);
+	// 1-st slice nodes creation 
+	pDBN->AddNode(discrete ^ "Street-1", aChoice); 
+	pDBN->AddNode(discrete ^ "House-1", aChoice);
+	pDBN->AddNode(discrete ^ "Flat-1", aChoice);
+	// edges creation
+	
+	pDBN->AddArc("Street-0","House-0");
+	pDBN->AddArc("Street-0","Flat-0");
+	
+	pDBN->AddArc("Street-1"," House-1");
+	pDBN->AddArc("Street-1","Flat-1");
+	pDBN->AddArc("Street-0","Street-1"); 
+	// setting Boyen-Koller inference algorithm
+	pDBN->SetProperty("InferenceAlgorithm","Boyen-Koller");
+	// setting number of slices
+	pDBN->SetNumSlices(4);
+	// evidences creation
+	pDBN->AddEvidToBuf("Street-0^True Flat-0^False");
+	pDBN->AddEvidToBuf("House-1^True Flat-1^False");
+	pDBN->AddEvidToBuf("Street-2^True Flat-2^False");
+	pDBN->AddEvidToBuf("House-3^True Flat-3^False");
+	// saving evidences
+	pDBN->SaveEvidBuf("evidencesBuffer1.csv");
+	// loading evidences
+	pDBN->LoadEvidBuf("evidencesBuffer1.csv");
+	// setting inference property: Smoothing
+	pDBN->SetProperty("Inference","Smoothing");
+	TokArr  tmpJPD;
+	tmpJPD = pDBN->GetJPD("Street-3 House-3");
+	
+#ifdef PRINT_RESULT
+	printf("%s",String(tmpJPD).c_str());
+#endif
+	// model changing
+	pDBN->DelArc("Street-0" ,"Flat-0");
+	pDBN->DelArc("Street-1","Flat-1");
+	pDBN->AddArc("House-0","Flat-0");
+	pDBN->AddArc("House-1","Flat-1");
+
+	pDBN->SetProperty("InferenceAlgorithm","1_5SliceJunctionTree");
+	// getting request
+	tmpJPD = pDBN->GetJPD("Street-0");
+	// saving evidences buffer
+	pDBN->SaveEvidBuf("evidencesBuffer2.csv");
+	
+#ifdef PRINT_RESULT
+	printf("%s",String(tmpJPD).c_str());
+#endif
+	// free memory
+	delete pDBN;
+	return result;
+}
+
 int testDBNSmothing()
 // this test provides smoothing with DBN
 {

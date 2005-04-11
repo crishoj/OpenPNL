@@ -1,10 +1,10 @@
 #include "test_conf.hpp"
 
-//#define SKIP_TOKEN
-//#define SKIP_LIMID
-#define SKIP_DBN
-//#define SKIP_MRF
-//#define SKIP_NUMERATION
+#define SKIP_TOKEN
+#define SKIP_LIMID
+//#define SKIP_DBN
+#define SKIP_MRF
+#define SKIP_NUMERATION
 
 int main(int argc, char* argv[])
 {
@@ -100,6 +100,7 @@ int main(int argc, char* argv[])
     int res = 1;
     
     res = testDBN() & res;
+	res = testDBNEvidences() & res;
     res = testDBNTopologicalSort1() & res;
     res = testDBNTopologicalSort2() & res;
     res = testDBNSmothing() & res;

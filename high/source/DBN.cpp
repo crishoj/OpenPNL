@@ -36,15 +36,26 @@ DBN::DBN(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
 	"Smothing", "FixLagSmoothing", "Filtering", "Viterbi"
     };
 
+	static const char *aInferenceAlgorithm[] = 
+    {
+	"1_5SliceJunctionTree", "Boyen-Koller"
+    };
+
+
     static const char *aLearning[] = 
     {
 	"EM Learning for DBN" 
     };
-    
+
+	m_lag = 0;
     m_pNet = new ProbabilisticNet();
+	SpyTo(m_pNet);
     m_pNet->SetCallback(new DBNCallback());
     m_pNet->Token().AddProperty("Inference", aInference,
 	sizeof(aInference)/sizeof(aInference[0]));
+
+	m_pNet->Token().AddProperty("InferenceAlgorithm", aInferenceAlgorithm,
+	sizeof(aInferenceAlgorithm)/sizeof(aInferenceAlgorithm[0]));
 }
 
 DBN::~DBN()
@@ -307,8 +318,8 @@ TokArr DBN::GetJPD( TokArr nodes)
     String tmpStr;
     Tok *pTok;
     tmpStr = nodes[nodes.size() - 1].Name();
-    int nSlice = GetSliceNum(tmpStr);
-    
+    int nSlice = GetSliceNum(tmpStr);   
+
     if( !nodes.size())
     {
 	ThrowInternalError("undefined query nodes", "JPD");
@@ -328,9 +339,10 @@ TokArr DBN::GetJPD( TokArr nodes)
     pEvid = new pnl::CEvidence*[GetNumSlices()];
     int i;
     for(i = 0; i < GetNumSlices(); i++)
-    {
-	pEvid[i] = (m_AllEvidences[i])[m_AllEvidences[i].size() - 1]; 
+    {	
+		pEvid[i] = Net().CreateEvidence((*Net().EvidenceBuf())[m_AllEvidences[i][m_AllEvidences[i].size() - 1]].Get()); 
     }
+
     switch(PropertyAbbrev("Inference"))
     {
     case 's': 
@@ -345,9 +357,18 @@ TokArr DBN::GetJPD( TokArr nodes)
 	Inference().FixLagSmoothing( nSlice );
 	break;
     case 'f':
+	int i;
+	Inference().DefineProcedure(pnl::ptFiltering,0);
+	for(i = 0; i <= nSlice; i++) 
+	{
+	Inference().EnterEvidence( &(pEvid[i]), 1 );
+    Inference().Filtering( i );
+	}
+	/*
 	Inference().DefineProcedure(pnl::ptFiltering,0 );
 	Inference().EnterEvidence( &(pEvid[nSlice]), 1 );
 	Inference().Filtering( nSlice );
+	*/
 	break;		
     default:
 	ThrowUsingError("Setted wrong property", fname);
@@ -379,14 +400,16 @@ TokArr DBN::GetJPD( TokArr nodes)
     }
     int nnodes = nodes.size();
     Vector<int> queryNds, queryVls;
-    
+    Vector<int> queryNdsInner;
     Net().ExtractTokArr(NewQue, &queryNds, &queryVls);
+	Net().Graph().IGraph(&queryNds, &queryNdsInner);
+
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
     }
     
-    Inference().MarginalNodes(&queryNds.front(), queryNds.size(),nSlice);
+    Inference().MarginalNodes(&queryNdsInner.front(), queryNdsInner.size(),nSlice);
     
     const pnl::CPotential *pot = Inference().GetQueryJPD();
     
@@ -454,16 +477,20 @@ void DBN::EditEvidence(TokArr values)
 	    NewQue.push_back(tmpStr);
 	}
     }
+
     Net().EditEvidence(NewQue); 
     m_curSlice = nSlice;
 }
 
 void DBN::CurEvidToBuf()
 {
-    pnl::CEvidence *evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
-    m_AllEvidences[m_curSlice].push_back(evid);
-    Net().ClearEvid();
-    Net().ClearEvidBuf();
+	Net().CurEvidToBuf();
+	if (m_AllEvidences.size() <= m_curSlice)
+	{
+		m_AllEvidences.resize(m_curSlice + 1);
+	}
+	m_AllEvidences[m_curSlice].push_back(Net().EvidenceBuf()->size() - 1);
+	Net().ClearEvid();
 }
 
 // adds evidence to the buffer
@@ -479,20 +506,19 @@ void DBN::PushEvid(TokArr const values[], int nValue)
     int i;
     for(i = 0; i < nValue; i++)
     {
-	EditEvidence(values[i]);
+	AddEvidToBuf(values[i]);
     }
 }
 
 void DBN::ClearEvid()
 {
-    Net().ClearEvid();
-    m_AllEvidences.clear();
-    
+    Net().ClearEvid();   
 }
 
 void DBN::ClearEvidBuf()
 {
     Net().ClearEvidBuf();
+	m_AllEvidences.resize(0); 
     m_nLearnedEvidence = 0;
 }
 
@@ -501,7 +527,7 @@ void DBN::LearnParameters()
 {  
     int i;
     
-    Learning().SetData(static_cast<const pnl::pEvidencesVecVector>(m_AllEvidences));
+    Learning().SetData(static_cast<const pnl::pEvidencesVecVector>(GetPNLEvidences()));
     Learning().Learn();
     for (i = 0; i < Net().Graph().iNodeMax(); i++)
     {
@@ -529,7 +555,7 @@ TokArr DBN::GetMPE(TokArr nodes)
     int i,j;
     for(i = 0; i < GetNumSlices(); i++)
     {
-	pEvid[i] = (m_AllEvidences[i])[m_AllEvidences[i].size() - 1]; 
+	pEvid[i] = pEvid[i] = Net().CreateEvidence((*Net().EvidenceBuf())[m_AllEvidences[i][m_AllEvidences[i].size() - 1]].Get());  
     }
     switch(PropertyAbbrev("Inference"))
     {
@@ -639,15 +665,15 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
     int evNum = 0;
     const int *aEvidNode;
     int nEvidNode;
-
+	pnl::pEvidencesVecVector AllEvidences = GetPNLEvidences();
     // mark nodes for saving
     for(i = 0; i < GetNumSlices(); i++)
     {
-	for(iEvid = 0; iEvid < m_AllEvidences[i].size(); ++iEvid)
+	for(iEvid = 0; iEvid < AllEvidences[i].size(); ++iEvid)
 	{
 	    evNum++;
-	    aEvidNode = m_AllEvidences[i][iEvid]->GetAllObsNodes();
-	    nEvidNode = m_AllEvidences[i][iEvid]->GetNumberObsNodes();
+		    aEvidNode = AllEvidences[i][iEvid]->GetAllObsNodes();
+	    nEvidNode = AllEvidences[i][iEvid]->GetNumberObsNodes();
 	    for(iCol = 0; iCol < nEvidNode; ++iCol)
 	    {
 		nUsingCol[aEvidNode[iCol]]++;
@@ -696,10 +722,10 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 	// write evidences one by one
 	for(j = 0; j < GetNumSlices(); j++)
 	{
-	    for(iEvid = 0; iEvid < m_AllEvidences[j].size(); ++iEvid)
+	    for(iEvid = 0; iEvid < AllEvidences[j].size(); ++iEvid)
 	    {
-		aEvidNode = m_AllEvidences[j][iEvid]->GetAllObsNodes();
-		nEvidNode = m_AllEvidences[j][iEvid]->GetNumberObsNodes();
+		aEvidNode = AllEvidences[j][iEvid]->GetAllObsNodes();
+		nEvidNode = AllEvidences[j][iEvid]->GetNumberObsNodes();
 		// sort indices of nodes in evidence
 		for(iCol = 1; iCol < nEvidNode; ++iCol)
 		{
@@ -719,7 +745,7 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 		{
 		    if(aiCSVCol[iCol] == aEvidNode[i])
 		    {
-			m_AllEvidences[j][iEvid]->GetValues(aEvidNode[i], &v);
+			AllEvidences[j][iEvid]->GetValues(aEvidNode[i], &v);
 			for(int j = 0; j < v.size(); ++j)
 			{
 			    str.resize(0);
@@ -790,7 +816,7 @@ int DBN::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr co
     int nslice;
     String colName, sliceHeader,numSlice;
     
-//	ClearEvid();
+	ClearEvid();
 
     lex.GetValue(&sliceHeader);
 	
@@ -869,13 +895,9 @@ int DBN::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr co
 
 	if(evid.size() > 0)
 	{
-	    //AddEvidToBuf(evid);
-		Net().ClearEvidBuf();
-	    Net().ClearEvid();
 	    EditEvidence(evid);
-	    pnl::CEvidence *evid = NULL; 
-	    evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
-	    (m_AllEvidences[nslice]).push_back(evid);
+		m_curSlice = nslice;
+		CurEvidToBuf();
 	    nEvid++;
 	}
     }
@@ -890,8 +912,9 @@ int DBN::LoadEvidBuf(const char *filename, NetConst::ESavingType mode, TokArr co
 void DBN::GenerateEvidences(TokArr numSlices)
 {
     pnl::intVector nSlices;
-    int i;
+    int i,j;
     int size = numSlices.size();
+	pnl::pEvidencesVecVector resEvid;
     for(i = 0; i < size; i++)
     {
 	if(numSlices[i].fload.size())
@@ -903,7 +926,21 @@ void DBN::GenerateEvidences(TokArr numSlices)
 	    nSlices.push_back(numSlices[i].IntValue());
 	}
     }
-    Model()->GenerateSamples(&m_AllEvidences,nSlices);
+    Model()->GenerateSamples(&resEvid,nSlices);
+	
+	for( i = 0; i < resEvid.size(); i++)
+	{
+		for(j = 0; j < resEvid[i].size(); j++)
+		{
+			TokArr tmpEvid;
+			
+			Net().GetTokenByEvidence(&tmpEvid,*resEvid[i][j]);
+			EditEvidence(tmpEvid);
+			m_curSlice = i;
+			CurEvidToBuf();
+		}
+	}
+	
 }
 
 pnl::CMatrix<float> *DBN::Matrix(int iNode) const
@@ -915,11 +952,63 @@ pnl::CMatrix<float> *DBN::Matrix(int iNode) const
 
 pnl::CDynamicInfEngine &DBN::Inference()
 {
-    if (!m_Inference)
+	 switch(PropertyAbbrev("InferenceAlgorithm"))
     {
-	m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(Model());  
+    case 'j': //Junction tree inference
+	if(m_Inference)
+	{
+	    pnl::C1_5SliceJtreeInfEngine *infJtree;
+	    infJtree = dynamic_cast<pnl::C1_5SliceJtreeInfEngine *>(m_Inference);
+
+	    if(!infJtree)
+	    {
+		delete m_Inference;
+		m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(Model());
+	    }
+	}
+	else
+	{
+	    m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(Model());
+	}
+	break;
+    case 'b': // Boyen-Koller inference
+	if(m_Inference)
+	{
+	    pnl::CBKInfEngine *infBK;
+	    infBK = dynamic_cast<pnl::CBKInfEngine *>(m_Inference);
+
+	    if(!infBK)
+	    {
+		delete m_Inference;
+		m_Inference = pnl::CBKInfEngine::Create(Model());
+	    }
+	}
+	else
+	{
+	    m_Inference = pnl::CBKInfEngine::Create(Model());
+	}
+	break;
+    default: //default inference algorithm
+	if(m_Inference)
+	{
+	    pnl::C1_5SliceJtreeInfEngine *infJTree;
+	    infJTree = dynamic_cast<pnl::C1_5SliceJtreeInfEngine *>(m_Inference);
+
+	    if(!infJTree)
+	    {
+		delete m_Inference;
+		m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(Model());
+	    }
+	}
+	else
+	{
+	    m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(Model());
+	}
+	break;
     }
+    
     return *m_Inference;
+    
 }
 
 pnl::CDynamicLearningEngine &DBN::Learning()
@@ -970,45 +1059,76 @@ const char DBN::PropertyAbbrev(const char *name) const
 {   
     if(!strcmp(name,"Inference"))
     {
-	String infName = GetProperty("Inference");
-
-	if(infName.length() == 0)
-	{
-	    return 's';
-	}
-	pnl::pnlVector<char> infNameVec(infName.length());
-	for(int i = 0; i < infName.length(); ++i)
-	{
-	    infNameVec[i] = tolower(infName[i]);
-	}
-	char *pInfName = &infNameVec.front();
-
-	if(strstr(pInfName, "smooth"))
-	{
-	    return 's';
-	}
-	if(strstr(pInfName, "fix"))
-	{
-	    return 'x';
-	}
-	if(strstr(pInfName, "filt"))
-	{
-	    return 'f';
-	}
-	if(strstr(pInfName, "viter"))
-	{
-	    return 'v';
-	}
-	else 
-	{
-	    return 's';
-	}
+		String infName = GetProperty("Inference");
+		
+		if(infName.length() == 0)
+		{
+			return 's';
+		}
+		pnl::pnlVector<char> infNameVec(infName.length());
+		for(int i = 0; i < infName.length(); ++i)
+		{
+			infNameVec[i] = tolower(infName[i]);
+		}
+		char *pInfName = &infNameVec.front();
+		
+		if(strstr(pInfName, "smooth"))
+		{
+			return 's';
+		}
+		if(strstr(pInfName, "fix"))
+		{
+			return 'x';
+		}
+		if(strstr(pInfName, "filt"))
+		{
+			return 'f';
+		}
+		if(strstr(pInfName, "viter"))
+		{
+			return 'v';
+		}
+		else 
+		{
+			return 's';
+		}
     }
     else
     {
-	return 0;
+		if(!strcmp(name,"InferenceAlgorithm"))
+		{
+			String infName = GetProperty("InferenceAlgorithm");
+			
+			if(infName.length() == 0)
+			{
+				return 'j';
+			}
+			pnl::pnlVector<char> infNameVec(infName.length());
+			for(int i = 0; i < infName.length(); ++i)
+			{
+				infNameVec[i] = tolower(infName[i]);
+			}
+			char *pInfName = &infNameVec.front();
+			
+			if(strstr(pInfName, "1_5"))
+			{
+				return 'j';
+			}
+			if(strstr(pInfName, "bo"))
+			{
+				return 'b';
+			}
+			else
+			{
+				return 'j';
+			}
+		}
+		else
+		{
+			return 0;
+		}
     }
-
+	
     return -1;
 }
 
@@ -1175,6 +1295,16 @@ TokArr DBN::GetParents(TokArr nodes)
     }
     
     return nodesParents;
+}
+
+void DBN::SetLag(int lag)
+{
+	m_lag = lag;
+}
+
+int DBN::GetLag()
+{
+	return m_lag;
 }
 
 TokArr DBN::GetChildren(TokArr nodes)
@@ -1363,6 +1493,23 @@ void DBN::DoNotify(const Message &msg)
 	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
 	return;
     }
+}
+
+pnl::pEvidencesVecVector DBN::GetPNLEvidences()
+{
+	int i;
+	int j;
+	pnl::pEvidencesVecVector resultEvidences;
+	resultEvidences.resize(m_AllEvidences.size());
+	for(i = 0; i < m_AllEvidences.size(); i++)
+	{
+		for(j = 0; j < m_AllEvidences[i].size(); j++)
+		{
+			resultEvidences[i].push_back( 
+				Net().CreateEvidence((*Net().EvidenceBuf())[m_AllEvidences[i][j]].Get()) );
+		}
+	}
+return resultEvidences; 
 }
 
 PNLW_END

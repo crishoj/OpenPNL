@@ -107,6 +107,12 @@ public:
 
     int GetNumSlices();
     // returnes number of slices
+
+	// sets lag for fixlagsmoothing prosedure
+	void SetLag(int lag);
+
+	//returnes lag
+	int GetLag();
     
     // learn using evidences buffer
     void LearnParameters();
@@ -161,7 +167,7 @@ private:
     String GetValue(String nodeEvid);
     TokArr ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice);
     pnl::intVector GetSlicesNodesCorrespInd();
-
+	pnl::pEvidencesVecVector GetPNLEvidences();
     pnl::CDBN *Model();
 
     const char PropertyAbbrev(const char *name) const;
@@ -171,8 +177,9 @@ private:// DATA members
     pnl::CDynamicLearningEngine *m_Learning;   // learning, if it exists
     int m_nLearnedEvidence;
     int m_curSlice;
+	int m_lag;
 
-    pnl::pEvidencesVecVector m_AllEvidences; //all evidences matrix 
+    pnl::intVecVector m_AllEvidences; //all evidences matrix 
 
     ProbabilisticNet *m_pNet;
     // controls Graph, Token, Distributions, Evidence Board, Evidence Buffer

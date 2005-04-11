@@ -23,6 +23,7 @@ int testDBNFiltering();
 int testDBNMPE();
 int testDBNLearning();
 int testDBNSaveLoad();
+int testDBNEvidences();
 
 pnl::CGraphicalModel* LoadGrModelFromXML(const std::string& xmlname, std::vector<pnl::CEvidence*>* pEv);
 void PureLimidModel1();

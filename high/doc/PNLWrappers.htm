@@ -2456,15 +2456,39 @@ void SetProperty(const char *name, const char *value);
   <DT>value
   <DD>Array of nodes from one family.</DD></DL>
 <H5>Discussion</H5>
-<p class="description">The function sets value to the property with given name. 
-</font>
+<p class="description">The function sets value to the property with given name. The function is used to specify algorithms
+for inference and getting MPE and JPD and to specify parameters of algorithms. User can use this function to define his own
+properties. Used properties names with their possible values and descriptions are presented in table:
+</p>
+<table width="100%">
+<tr><td width="50pt" Rowspan="10"></td>
+<td><table BORDER="1">
+  <tr>
+     <td width="20%"><center><b>Property Name</b></center></td>
+     <td width="25%"><center><b>Possible Values</b></center></td>
+     <td width="55%"><center><b>Description</b></center></td>
+  </tr>
+  <tr>
+     <td>"Inference"</td>
+     <td>"fix", "smooth", "filt","viter"</td>
+     <td>Inference tasks. Smoothing is used by default. You must set Viterbi for getting MPE</td>
+  </tr>
+  
+  <tr>
+     <td>"InferenceAlgorithm"</td>
+     <td>"1_5SliceJunctionTree", "Boyen-Koller"</td>
+     <td>Inference algorithm that is used for getting MPE and JPD. 1_5SliceJunctionTree Inference is used by default.</td>
+  </tr>
+</table><tr></td>
+</table>
 <H5>
 Example of usage
 </H5>
 <p class="description">
-Set FixLagSmoothing inference for getting JPD:
+Set FixLagSmoothing inference for getting JPD by Boyen-Koller algorithm:
 </p>
 <p class="example">
+dbn.SetProperty("InferenceAlgorithm", "Boyen-Koller");<br>
 dbn.SetProperty("Inference", "fix");
 </P>
 <HR>
