@@ -21,13 +21,13 @@ int main(int argc, char* argv[])
     {
         SimpleModel();
 	TestGaussianModelCreate();// del arc
-        TestGaussianInference();
+	TestGaussianInference();
 	TestGaussianParamLearning();// too long
 	TestGetLogLik();
 	TestMultivariateWrapperJPD();
 	TestMultivariateWrapperLearn();
 	TestMultivariateWrapperLearnPartOfObservation();
-//	TestMultivariateWrapperMPE();
+//	TestMultivariateWrapperMPE();// wild test. It doesn't test wrapper!
     }
     catch(pnl::CException e)
     {
@@ -43,31 +43,39 @@ int main(int argc, char* argv[])
     }
     catch(pnl::CException e)
     {
-        std::cout << e.GetMessage()<< "\n";
-        lastTestRes = true;
+	static const char messageOk[] = "CLIMIDInfEngine:: there are no desision nodes in net";
+
+	if((e.GetCode() == pgmInternalError)
+	    && strstr(e.GetMessage(), messageOk))
+	{
+	    lastTestRes = true;// this exception must be produced
+	}
+	else
+	{
+	    std::cout << e.GetMessage()<< "\n";
+	}
     }
     bTestOK = bTestOK && lastTestRes;
+
     try 
     {
-	lastTestRes = false;
 	PureLimidModel2();
     }
     catch(pnl::CException e)
     {
         std::cout << e.GetMessage()<< "\n";
-        lastTestRes = true;
+	lastTestRes = false;
     }
     bTestOK = bTestOK && lastTestRes;
     
     try 
     {
-	lastTestRes = false;
 	PureLimidModel3();
     }
     catch(pnl::CException e)
     {
         std::cout << e.GetMessage()<<"\n";
-        lastTestRes = true;
+	lastTestRes = false;
     }
     bTestOK = bTestOK && lastTestRes;
     
