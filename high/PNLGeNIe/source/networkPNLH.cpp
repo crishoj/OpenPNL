@@ -554,7 +554,7 @@ void NetworkPNL::GetValue(int node, bool &valueValid, std::vector<int> &parents,
     int len = GetOutcomeCount(node);
     MarkCallFunction("GetValue unfin x", true, (String() << node << "#" << len).c_str());
 
-    TokArr evid(m_aEvidence->GetBoard());
+    TokArr evid(m_aEvidence->Get());
     parents.resize(0);
     values.resize(0);
     m_pWNet->ClearEvid();
@@ -614,7 +614,7 @@ int NetworkPNL::GetEvidence(int node)
     }
 
     Vector<int> aiNode, aiValue;
-    Net().ExtractTokArr(m_aEvidence->GetBoard(), &aiNode, &aiValue);
+    Net().ExtractTokArr(m_aEvidence->Get(), &aiNode, &aiValue);
     for(int i = aiNode.size(); --i >= 0;)
     {
 	if(aiNode[i] == node)
