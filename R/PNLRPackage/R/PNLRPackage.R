@@ -6,11 +6,31 @@ CreateBNet <- function ()
 }
 pnlCreateBNet <- function() CreateBNet()
 
+CreateDBN <- function ()
+{
+	result <- .Call("pnlCreateDBN")
+	class(result) <- "pnlDBN"
+	result
+}
+pnlCreateDBN <- function() CreateDBN()
+
+
 AddNode <- function (x, names, values) UseMethod("AddNode", x)
 AddNode.pnlBNet <- function(x, names, values) 
 {
 	res <- "ok"
-	result <- .Call("pnlAddNode", x, names, values)
+	result <- .Call("pnlAddNode", x, 0, names, values)
+	if (result < 0) invisible (result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+AddNode.pnlDBN <- function(x, names, values) 
+{
+	res <- "ok"
+	result <- .Call("pnlAddNode", x, 1, names, values)
 	if (result < 0) invisible (result)
 	else 
 	{
@@ -23,7 +43,18 @@ DelNode <- function(x, nodes) UseMethod("DelNode", x)
 DelNode.pnlBNet <- function(x, nodes) 
 {
 	result <- "ok"
-	res <- .Call("pnlDelNode", x, nodes, result)
+	res <- .Call("pnlDelNode", x, 0, nodes, result)
+	if (res < 0) invisible(result)
+	else 
+	{
+		result <- .Call("pnlReturnError")
+		result
+	}
+}
+DelNode.pnlDBN <- function(x, nodes) 
+{
+	result <- "ok"
+	res <- .Call("pnlDelNode", x, 1, nodes, result)
 	if (res < 0) invisible(result)
 	else 
 	{
@@ -36,7 +67,18 @@ AddArc <- function (x, Start, Finish) UseMethod("AddArc", x)
 AddArc.pnlBNet <- function(x, Start, Finish) 
 {
 	res <- "ok"
-	result <- .Call("pnlAddArc", x, Start, Finish)
+	result <- .Call("pnlAddArc", x, 0, Start, Finish)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+AddArc.pnlDBN <- function(x, Start, Finish) 
+{
+	res <- "ok"
+	result <- .Call("pnlAddArc", x, 1, Start, Finish)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -49,7 +91,18 @@ DelArc <- function(x, StartOfArc, EndOfArc) UseMethod("DelArc", x)
 DelArc.pnlBNet <- function(x, StartOfArc, EndOfArc) 
 {
 	res <- "ok"
-	result <- .Call("pnlDelArc", x, StartOfArc, EndOfArc)
+	result <- .Call("pnlDelArc", x, 0, StartOfArc, EndOfArc)
+	if (result < 0) invisible(result)
+	else
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+DelArc.pnlDBN <- function(x, StartOfArc, EndOfArc) 
+{
+	res <- "ok"
+	result <- .Call("pnlDelArc", x, 1, StartOfArc, EndOfArc)
 	if (result < 0) invisible(result)
 	else
 	{
@@ -62,7 +115,18 @@ SaveNet <- function(x, filename) UseMethod("SaveNet", x)
 SaveNet.pnlBNet <- function(x, filename) 
 {
 	res <- "ok"
-	result <- .Call("pnlSaveNet", x, filename)
+	result <- .Call("pnlSaveNet", x, 0, filename)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+SaveNet.pnlDBN <- function(x, filename) 
+{
+	res <- "ok"
+	result <- .Call("pnlSaveNet", x, 1, filename)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -73,16 +137,20 @@ SaveNet.pnlBNet <- function(x, filename)
 
 
 GetNodeType <- function(x, nodes) UseMethod("GetNodeType", x)
-GetNodeType.pnlBNet <- function(x, nodes) .Call("pnlGetNodeType", x, nodes)
+GetNodeType.pnlBNet <- function(x, nodes) .Call("pnlGetNodeType", x, 0, nodes)
+GetNodeType.pnlDBN <- function(x, nodes) .Call("pnlGetNodeType", x, 1, nodes)
 
 GetNeighbors <- function(x, nodes) UseMethod("GetNeighbors", x)
-GetNeighbors.pnlBNet <- function(x, nodes) .Call("pnlGetNeighbors", x, nodes)
+GetNeighbors.pnlBNet <- function(x, nodes) .Call("pnlGetNeighbors", x, 0, nodes)
+GetNeighbors.pnlDBN <- function(x, nodes) .Call("pnlGetNeighbors", x, 1, nodes)
 
 GetParents <- function(x, nodes) UseMethod("GetParents", x)
-GetParents.pnlBNet <- function(x, nodes) .Call("pnlGetParents", x, nodes)
+GetParents.pnlBNet <- function(x, nodes) .Call("pnlGetParents", x, 0, nodes)
+GetParents.pnlDBN <- function(x, nodes) .Call("pnlGetParents", x, 1, nodes)
 
 GetChildren <- function(x, nodes) UseMethod("GetChildren", x)
-GetChildren.pnlBNet <- function(x, nodes) .Call("pnlGetChildren", x, nodes)
+GetChildren.pnlBNet <- function(x, nodes) .Call("pnlGetChildren", x, 0, nodes)
+GetChildren.pnlDBN <- function(x, nodes) .Call("pnlGetChildren", x, 1, nodes)
 
 SetPTabular <- function(x, value, probability, ParentValue) UseMethod("SetPTabular", x)
 SetPTabular.pnlBNet <- function (x, value, probability, ParentValue = -1)
@@ -255,14 +323,21 @@ LearnStructure.pnlBNet <- function(x)
 
 
 SaveEvidBuf <- function(x, filename) UseMethod("SaveEvidBuf", x)
-SaveEvidBuf.pnlBNet <- function (x, filename) .Call("pnlSaveEvidBuf", x, filename)
+SaveEvidBuf.pnlBNet <- function (x, filename) .Call("pnlSaveEvidBuf", x, 0, filename)
+SaveEvidBuf.pnlDBN <- function (x, filename) .Call("pnlSaveEvidBuf", x, 0, filename)
 
 LoadEvidBuf <- function(x, filename, columns) UseMethod("LoadEvidBuf", x)
 LoadEvidBuf.pnlBNet <- function (x, filename, columns = -1)
 {
-	if (columns < 0) .Call("pnlLoadEvidBufNative", x, filename)
-	else .Call("pnlLoadEvidBufForeign", x, filename, columns)
+	if (columns < 0) .Call("pnlLoadEvidBufNative", x, 0, filename)
+	else .Call("pnlLoadEvidBufForeign", x, 0, filename, columns)
 }
+LoadEvidBuf.pnlDBN <- function (x, filename, columns = -1)
+{
+	if (columns < 0) .Call("pnlLoadEvidBufNative", x, 1, filename)
+	else .Call("pnlLoadEvidBufForeign", x, filename, 1, columns)
+}
+
 
 GenerateEvidences <- function(x, nSamples, ignoreCurrEvid, whatNodes) UseMethod("GenerateEvidences", x)
 GenerateEvid.pnlBNet <- function(x, nSamples, ignoreCurrEvid = -1, whatNodes = -1)
@@ -300,7 +375,18 @@ LoadNet <- function(x, filename) UseMethod("LoadNet", x)
 LoadNet.pnlBNet <- function (x, filename) 
 {
 	res <- "ok"
-	result <- .Call("pnlLoadNet", x, filename)
+	result <- .Call("pnlLoadNet", x, 0, filename)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+LoadNet.pnlDBN <- function (x, filename) 
+{
+	res <- "ok"
+	result <- .Call("pnlLoadNet", x, 1, filename)
 	if (result < 0) invisible(result)
 	else 
 	{

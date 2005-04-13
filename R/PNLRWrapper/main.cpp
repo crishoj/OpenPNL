@@ -1,7 +1,9 @@
 #include <math.h>
 
 #include "BNet.hpp"
+#include "DBN.hpp"
 #include "pnlException.hpp"
+//#include "RForDBN.h"
 
 #include <Rdefines.h>
 #include <Rinternals.h>
@@ -10,16 +12,16 @@
 extern "C" __declspec(dllexport) SEXP pnlCreateBNet();
 extern "C" __declspec(dllexport) SEXP pnlReturnError();
 
-extern "C" __declspec(dllexport) SEXP pnlAddNode(SEXP net, SEXP names, SEXP values);
-extern "C" __declspec(dllexport) SEXP pnlDelNode(SEXP net, SEXP nodes);
-extern "C" __declspec(dllexport) SEXP pnlGetNodeType(SEXP net, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlAddNode(SEXP net, SEXP type, SEXP names, SEXP values);
+extern "C" __declspec(dllexport) SEXP pnlDelNode(SEXP net, SEXP type, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetNodeType(SEXP net, SEXP type, SEXP nodes);
 
-extern "C" __declspec(dllexport) SEXP pnlAddArc(SEXP net, SEXP source, SEXP dest);
-extern "C" __declspec(dllexport) SEXP pnlDelArc(SEXP net, SEXP source, SEXP dest);
+extern "C" __declspec(dllexport) SEXP pnlAddArc(SEXP net, SEXP type, SEXP source, SEXP dest);
+extern "C" __declspec(dllexport) SEXP pnlDelArc(SEXP net, SEXP type, SEXP source, SEXP dest);
 
-extern "C" __declspec(dllexport) SEXP pnlGetNeighbors(SEXP net, SEXP nodes);
-extern "C" __declspec(dllexport) SEXP pnlGetParents(SEXP net, SEXP nodes);
-extern "C" __declspec(dllexport) SEXP pnlGetChildren(SEXP net, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetNeighbors(SEXP net, SEXP type, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetParents(SEXP net, SEXP type, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetChildren(SEXP net, SEXP type, SEXP nodes);
 
 extern "C" __declspec(dllexport) SEXP pnlSetPTabular(SEXP net, SEXP value, SEXP prob);
 extern "C" __declspec(dllexport) SEXP pnlSetPTabularCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue);
@@ -51,9 +53,9 @@ extern "C" __declspec(dllexport) SEXP pnlGetProperty(SEXP net, SEXP name);
 extern "C" __declspec(dllexport) SEXP pnlLearnParameters(SEXP net);
 extern "C" __declspec(dllexport) SEXP pnlLearnStructure(SEXP net);
 
-extern "C" __declspec(dllexport) SEXP pnlSaveEvidBuf(SEXP net, SEXP filename);  
-extern "C" __declspec(dllexport) SEXP pnlLoadEvidBufNative(SEXP net, SEXP filename);
-extern "C" __declspec(dllexport) SEXP pnlLoadEvidBufForeign(SEXP net, SEXP filename, SEXP columns);
+extern "C" __declspec(dllexport) SEXP pnlSaveEvidBuf(SEXP net, SEXP type, SEXP filename);  
+extern "C" __declspec(dllexport) SEXP pnlLoadEvidBufNative(SEXP net, SEXP type, SEXP filename);
+extern "C" __declspec(dllexport) SEXP pnlLoadEvidBufForeign(SEXP net, SEXP type, SEXP filename, SEXP columns);
 
 extern "C" __declspec(dllexport) SEXP pnlGenerateEvidences(SEXP net, SEXP nSample);
 extern "C" __declspec(dllexport) SEXP pnlGenerateEvidencesCurr(SEXP net, SEXP nSample, SEXP ignoreCurrEvid);
@@ -62,12 +64,8 @@ extern "C" __declspec(dllexport) SEXP pnlGenerateEvidencesCurrSome(SEXP net, SEX
 extern "C" __declspec(dllexport) SEXP pnlMaskEvidBufFull(SEXP net);    
 extern "C" __declspec(dllexport) SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes);
 
-extern "C" __declspec(dllexport) SEXP pnlSaveNet(SEXP net, SEXP file);
-extern "C" __declspec(dllexport) SEXP pnlLoadNet(SEXP net, SEXP filename);
-
-    /*float GetCurEvidenceLogLik();
-    TokArr GetEvidBufLogLik();
-    float GetEMLearningCriterionValue();*/
+extern "C" __declspec(dllexport) SEXP pnlSaveNet(SEXP net, SEXP type, SEXP file);
+extern "C" __declspec(dllexport) SEXP pnlLoadNet(SEXP net, SEXP type, SEXP filename);
 
 extern "C" __declspec(dllexport) SEXP pnlGetCurEvidenceLogLik(SEXP net);
 extern "C" __declspec(dllexport) SEXP pnlGetEvidBufLogLik(SEXP net);
@@ -82,7 +80,13 @@ extern "C"
     BayesNet ** pBNets = new BayesNet * [CurrentSize];
     int NetsCount = 0;
     char * my_result;
+
     std::string ErrorString;
+
+    int DBNCurrentSize = 1;
+    DBN ** pDBNs = new DBN * [DBNCurrentSize];
+    int DBNCount = 0;
+
     
 //----------------------------------------------------------------------------
     SEXP pnlCreateBNet()
@@ -127,13 +131,16 @@ extern "C"
     }
 
 //----------------------------------------------------------------------------
-    SEXP pnlAddNode(SEXP net, SEXP names, SEXP values)
+    SEXP pnlAddNode(SEXP net, SEXP type, SEXP names, SEXP values)
     {
         SEXP res;
         int flag = -1;
 
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
 
         PROTECT(names = AS_CHARACTER(names));
         PROTECT(values = AS_CHARACTER(values));
@@ -142,7 +149,10 @@ extern "C"
         
         try
         {
-            pBNets[NetNum]->AddNode(arg1, arg2);
+            if (NetType == 0) 
+				pBNets[NetNum]->AddNode(arg1, arg2);
+            if (NetType == 1) 
+				pDBNs[NetNum]->AddNode(arg1, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -159,12 +169,12 @@ extern "C"
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
         
-        UNPROTECT(4);
+        UNPROTECT(5);
         return (res);
     }
 
 //----------------------------------------------------------------------------
-    SEXP pnlDelNode(SEXP net, SEXP nodes)
+    SEXP pnlDelNode(SEXP net, SEXP type,  SEXP nodes)
     {
         SEXP res;
         PROTECT(res = NEW_INTEGER(1));
@@ -177,9 +187,15 @@ extern "C"
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
 
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->DelNode(arg);
+            if (NetType == 0)
+				pBNets[NetNum]->DelNode(arg);
+			if (NetType == 1)
+				pDBNs[NetNum]->DelNode(arg);
         }
         catch (pnl::CException E)
         {
@@ -193,13 +209,13 @@ extern "C"
         }
 
         pres[0] = flag;
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
 
     }
 
 //----------------------------------------------------------------------------
-    SEXP pnlGetNodeType(SEXP net, SEXP nodes)
+    SEXP pnlGetNodeType(SEXP net, SEXP type, SEXP nodes)
     {
         SEXP res;
 
@@ -210,11 +226,17 @@ extern "C"
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         TokArr ResTok;
 
         try
         {
-            ResTok = pBNets[NetNum]->GetNodeType(arg);
+            if (NetType == 0) 
+				ResTok = pBNets[NetNum]->GetNodeType(arg);
+            if (NetType == 1) 
+				ResTok = pDBNs[NetNum]->GetNodeType(arg);
         }
         catch (pnl::CException &E)
         {
@@ -240,11 +262,11 @@ extern "C"
                 SET_STRING_ELT(res, i, mkChar(String(ResTok[i]).c_str()));
         }
 
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlAddArc(SEXP net, SEXP source, SEXP dest)
+    SEXP pnlAddArc(SEXP net, SEXP type, SEXP source, SEXP dest)
     {
         SEXP res;
         int flag = -1;
@@ -257,9 +279,15 @@ extern "C"
         char * arg1 = CHAR(asChar(source));
         char * arg2 = CHAR(asChar(dest));
         
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->AddArc(arg1, arg2);
+            if (NetType == 0)
+				pBNets[NetNum]->AddArc(arg1, arg2);
+			if (NetType == 1)
+				pDBNs[NetNum]->AddArc(arg1, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -276,12 +304,12 @@ extern "C"
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
 
-        UNPROTECT(4);
+        UNPROTECT(5);
         return (res);
     }
 
 //----------------------------------------------------------------------------
-    SEXP pnlDelArc(SEXP net, SEXP source, SEXP dest)
+    SEXP pnlDelArc(SEXP net, SEXP type, SEXP source, SEXP dest)
     {
         SEXP res;
         int flag = -1;
@@ -294,9 +322,15 @@ extern "C"
         char * arg1 = CHAR(asChar(source));
         char * arg2 = CHAR(asChar(dest));
         
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->DelArc(arg1, arg2);
+            if (NetType == 0)
+				pBNets[NetNum]->DelArc(arg1, arg2);
+			if (NetType == 1)
+				pDBNs[NetNum]->DelArc(arg1, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -313,11 +347,11 @@ extern "C"
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
        
-        UNPROTECT(4);
+        UNPROTECT(5);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetNeighbors(SEXP net, SEXP nodes)
+    SEXP pnlGetNeighbors(SEXP net, SEXP type, SEXP nodes)
     {
         SEXP res;
         int flag = 0;
@@ -328,12 +362,17 @@ extern "C"
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         TokArr ResTok;
         
         try
         {
-            ResTok = pBNets[NetNum]->GetNeighbors(arg);
-            //result = temp.c_str();
+            if (NetType == 0)
+				ResTok = pBNets[NetNum]->GetNeighbors(arg);
+			if (NetType == 1)
+				ResTok = pDBNs[NetNum]->GetNeighbors(arg);
         }
         catch (pnl::CException &E)
         {
@@ -358,11 +397,11 @@ extern "C"
             for (int i=0; i<size; i++)
                 SET_STRING_ELT(res, i, mkChar(String(ResTok[i]).c_str()));
         }
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetParents(SEXP net, SEXP nodes)
+    SEXP pnlGetParents(SEXP net, SEXP type, SEXP nodes)
     {
         SEXP res;
         int flag = 0;
@@ -373,11 +412,17 @@ extern "C"
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         TokArr ResTok;
         
         try
         {
-            ResTok = pBNets[NetNum]->GetParents(arg);
+            if (NetType == 0)
+				ResTok = pBNets[NetNum]->GetParents(arg);
+			if (NetType == 1)
+				ResTok = pDBNs[NetNum]->GetParents(arg);
         }
         catch (pnl::CException &E)
         {
@@ -402,11 +447,11 @@ extern "C"
             for (int i=0; i<size; i++)
                 SET_STRING_ELT(res, i, mkChar(String(ResTok[i]).c_str()));
         }
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetChildren(SEXP net, SEXP nodes)
+    SEXP pnlGetChildren(SEXP net, SEXP type, SEXP nodes)
     {
         SEXP res;
         int flag = 0;
@@ -417,11 +462,17 @@ extern "C"
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         TokArr ResTok;
         
         try
         {
-            ResTok = pBNets[NetNum]->GetChildren(arg);
+            if (NetType == 0)
+				ResTok = pBNets[NetNum]->GetChildren(arg);
+			if (NetType == 1)
+				ResTok = pDBNs[NetNum]->GetChildren(arg);
         }
         catch (pnl::CException &E)
         {
@@ -446,7 +497,7 @@ extern "C"
             for (int i=0; i<size; i++)
                 SET_STRING_ELT(res, i, mkChar(String(ResTok[i]).c_str()));
         }
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
@@ -1529,7 +1580,7 @@ SEXP pnlLearnParameters(SEXP net)
     }
 
 //----------------------------------------------------------------------------
-    SEXP pnlSaveEvidBuf(SEXP net, SEXP filename)
+    SEXP pnlSaveEvidBuf(SEXP net, SEXP type, SEXP filename)
     {
         SEXP res;
         int flag = 0;
@@ -1541,9 +1592,15 @@ SEXP pnlLearnParameters(SEXP net)
         PROTECT(filename = AS_CHARACTER(filename));
         char * arg1 = CHAR(asChar(filename));
 
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         try
         {
-            count = pBNets[NetNum]->SaveEvidBuf(arg1);
+            if (NetType == 0)
+				count = pBNets[NetNum]->SaveEvidBuf(arg1);
+			if (NetType == 1)
+				count = pDBNs[NetNum]->SaveEvidBuf(arg1);
         }
         catch (pnl::CException &E)
         {
@@ -1567,11 +1624,11 @@ SEXP pnlLearnParameters(SEXP net)
             PROTECT(res = allocVector(STRSXP, 1));
             SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
         }
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlLoadEvidBufNative(SEXP net, SEXP filename)
+    SEXP pnlLoadEvidBufNative(SEXP net, SEXP type, SEXP filename)
     {
         SEXP res;
         int flag = 0;
@@ -1583,53 +1640,15 @@ SEXP pnlLearnParameters(SEXP net)
         PROTECT(filename = AS_CHARACTER(filename));
         char * arg1 = CHAR(asChar(filename));
 
-        try
-        {
-            count = pBNets[NetNum]->LoadEvidBuf(arg1);
-        }
-        catch (pnl::CException &E)
-        {
-            ErrorString = E.GetMessage();
-            flag = 1;
-        }
-        catch (...)
-        {
-            ErrorString = "Unrecognized exception during execution of LoadEvidBuf function";
-            flag = 1;
-        }
-
-        if (flag == 0)
-        {
-            PROTECT(res = NEW_INTEGER(1));
-            int * pres = INTEGER_POINTER(res);
-            pres [0] = count; 
-        }
-        else
-        {
-            PROTECT(res = allocVector(STRSXP, 1));
-            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
-        }
-        UNPROTECT(3);
-        return (res);
-    }
-//----------------------------------------------------------------------------
-    SEXP pnlLoadEvidBufForeign(SEXP net, SEXP filename, SEXP columns)
-    {
-        SEXP res;
-        int flag = 0;
-        int count;
-
-        PROTECT(net = AS_INTEGER(net));
-        int NetNum = INTEGER_VALUE(net);
-
-        PROTECT(filename = AS_CHARACTER(filename));
-        PROTECT(columns = AS_CHARACTER(columns));
-        char * arg1 = CHAR(asChar(filename));
-        char * arg2 = CHAR(asChar(columns));
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
 
         try
         {
-            count = pBNets[NetNum]->LoadEvidBuf(arg1, NetConst::eCSV, arg2);
+            if (NetType == 0)
+				count = pBNets[NetNum]->LoadEvidBuf(arg1);
+			if (NetType == 1)
+				count = pDBNs[NetNum]->LoadEvidBuf(arg1);
         }
         catch (pnl::CException &E)
         {
@@ -1654,6 +1673,56 @@ SEXP pnlLearnParameters(SEXP net)
             SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
         }
         UNPROTECT(4);
+        return (res);
+    }
+//----------------------------------------------------------------------------
+    SEXP pnlLoadEvidBufForeign(SEXP net, SEXP type, SEXP filename, SEXP columns)
+    {
+        SEXP res;
+        int flag = 0;
+        int count;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(filename = AS_CHARACTER(filename));
+        PROTECT(columns = AS_CHARACTER(columns));
+        char * arg1 = CHAR(asChar(filename));
+        char * arg2 = CHAR(asChar(columns));
+
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
+        try
+        {
+            if (NetType == 0)
+				count = pBNets[NetNum]->LoadEvidBuf(arg1, NetConst::eCSV, arg2);
+			if (NetType == 1)
+				count = pDBNs[NetNum]->LoadEvidBuf(arg1, NetConst::eCSV, arg2);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch (...)
+        {
+            ErrorString = "Unrecognized exception during execution of LoadEvidBuf function";
+            flag = 1;
+        }
+
+        if (flag == 0)
+        {
+            PROTECT(res = NEW_INTEGER(1));
+            int * pres = INTEGER_POINTER(res);
+            pres [0] = count; 
+        }
+        else
+        {
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+        UNPROTECT(5);
         return (res);
     }
 //----------------------------------------------------------------------------
@@ -1827,7 +1896,7 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
 }
 
 //----------------------------------------------------------------------------
-    SEXP pnlSaveNet(SEXP net, SEXP file)
+    SEXP pnlSaveNet(SEXP net, SEXP type, SEXP file)
     {
         SEXP res;
         
@@ -1838,9 +1907,16 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         PROTECT(file = AS_CHARACTER(file));
         char * filename = CHAR(asChar(file));
         
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->SaveNet(filename);
+            if (NetType == 0)
+				pBNets[NetNum]->SaveNet(filename);
+            if (NetType == 1)
+				pDBNs[NetNum]->SaveNet(filename);
+
         }
         catch (pnl::CException &E)
         {
@@ -1857,11 +1933,11 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
 
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlLoadNet(SEXP net, SEXP filename)
+    SEXP pnlLoadNet(SEXP net, SEXP type, SEXP filename)
     {
         SEXP res;
         int flag = -1;
@@ -1873,9 +1949,16 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         PROTECT(filename = AS_CHARACTER(filename));
         char * file = CHAR(asChar(filename));
         
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->LoadNet(file);
+            if (NetType == 0)
+				pBNets[NetNum]->LoadNet(file);
+			if (NetType == 1)
+				pDBNs[NetNum]->LoadNet(file);
+
         }
         catch (pnl::CException &E)
         {
@@ -1892,7 +1975,7 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
 
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
