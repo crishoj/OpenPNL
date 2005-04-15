@@ -83,12 +83,13 @@
 #include "pnlGaussianDistribFun.hpp"
 #include "pnlScalarDistribFun.hpp"
 #include "pnlCondGaussianDistribFun.hpp"
-
+#include "pnlSoftMaxDistribFun.hpp"
 #include "pnlParNewDelete.hpp"
 #include "pnlParPearlInferenceEngine.hpp"
 #include "pnlParJtreeInferenceEngine.hpp"
 #include "pnlParGibbsSamplingInferenceEngine.hpp"
 #include "pnlParEmLearningEngine.hpp"
+#include "pnlSoftMaxDistribFun.hpp"
 
 #include "pnl2TPFInferenceEngine.hpp"
 #include "pnlLWSamplingInferenceEngine.hpp"
