@@ -210,25 +210,25 @@ TokArr DBN::GetGaussianMean(TokArr vars)
     }
 }
 
-TokArr DBN::GetGaussianCovar(TokArr var, TokArr vars)
+TokArr DBN::GetGaussianCovar(TokArr node)
 {
     static const char fname[] = "GetGaussianCovar";
 
-    if( !var.size() )
+    int nnodes = node.size();
+    if(nnodes != 1)
     {
-	ThrowUsingError("Must be at least one combination for a child node", fname);
+	ThrowUsingError("Variance may be got only for one node", fname);
     }
 
-    int nnodes = var.size();
     Vector<int> queryNds, queryVls;
-    Net().ExtractTokArr(var, &queryNds, &queryVls);
+    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph().MapOuterToGraph());
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
     }
-	
+
     const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
-	
+
     if (cpd->GetDistribFun()->IsDistributionSpecific() == 2) // delta
     {
         TokArr res;
@@ -244,7 +244,7 @@ TokArr DBN::GetGaussianCovar(TokArr var, TokArr vars)
             return res;
         }
         else
-		{
+	{
             if (cpd->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
             {
                 TokArr res;
@@ -255,8 +255,67 @@ TokArr DBN::GetGaussianCovar(TokArr var, TokArr vars)
             {
                 const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matCovariance);
                 return Net().ConvertMatrixToToken(mat);
+            }
+	}
+    }
+}
+
+TokArr DBN::GetGaussianWeights(TokArr node, TokArr parent)
+{
+    static const char fname[] = "GetGaussianWeight";
+
+    if( (!node.size())||(!parent.size()) )
+    {
+	ThrowUsingError("Node and parent variables must be specified", fname);
+    }
+    if(node.size() > 1)
+    {
+	ThrowUsingError("Weights may be got only for one node", fname);
+    }
+
+    Vector<int> queryNdsOuter, queryVls;
+    Net().ExtractTokArr(node, &queryNdsOuter, &queryVls, &Net().Graph().MapOuterToGraph());
+
+    Vector<int> parentsOuter;
+    Net().ExtractTokArr(parent, &parentsOuter, &queryVls, &Net().Graph().MapOuterToGraph());
+    
+    int iNode = queryNdsOuter[0];
+    int iParent = parentsOuter[0];
+
+    const pnl::CFactor * cpd = Model()->GetFactor(iNode);
+
+    if (cpd->GetDistribFun()->IsDistributionSpecific() == 2) // delta
+    {
+        TokArr res;
+        res << "0";
+        return res;
+    }
+    if (cpd->GetDistribFun()->IsDistributionSpecific() == 1)
+    {
+	TokArr res;
+	res << "uniform";
+	return res;
+    }
+    else
+    {
+	pnl::intVector Domain;
+	cpd->GetDomain(&Domain);
+	int WeightsIndex = -1;
+
+	for (int i = 0; (i < Domain.size())&&(WeightsIndex == -1); i++)
+	{
+	    if (Domain[i] == iParent)
+	    {
+		WeightsIndex = i;
 	    }
 	}
+
+	if (WeightsIndex == -1)
+	{
+	    ThrowUsingError("Wrong parameters in function", fname);
+	}
+	const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matWeights, WeightsIndex);
+	return Net().ConvertMatrixToToken(mat);
     }
 }
 

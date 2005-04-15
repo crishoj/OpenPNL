@@ -63,17 +63,6 @@ public:
     void AddArc(TokArr from, TokArr to);
     void DelArc(TokArr from, TokArr to);
     
-#ifndef SEPARATE_FUNS_FOR_NEIG
-    // possible values for 'id' are:
-    //   "parents", "children", "ancestors", "descedants" and so on
-    TokArr Neighbours(const char *id = "parents", TokArr nodes = TokArr());
-#else
-    TokArr Parents(TokArr nodes);
-    TokArr Children(TokArr nodes);
-    TokArr Ancestors(TokArr nodes);
-    TokArr Descendants(TokArr nodes);
-#endif
-    
     // set tabular probability
     void SetPTabular(TokArr value, TokArr prob, TokArr parentValue = TokArr());
 
@@ -126,26 +115,19 @@ public:
     bool IsDBNContainNode(TokArr node);
 
     // returns MPE for nodes using current evidence
-    TokArr GetMPE(TokArr nodes = TokArr());
+    TokArr GetMPE(TokArr nodes);
     
     // get parameters of gaussian distribution
     TokArr GetGaussianMean(TokArr node);
-    TokArr GetGaussianCovar(TokArr node, TokArr vars);
+    TokArr GetGaussianCovar(TokArr node);
+	TokArr GetGaussianWeights(TokArr node, TokArr parent);
     
     void SaveNet(const char *filename);
     int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
     void LoadNet(const char *filename);
     int LoadEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV, TokArr columns = TokArr());
 
-    // sets all distributions to uniform;
-    // This function temporary here - I think it should be external function
-    //void MakeUniformDistribution();
-
-    //add several evidences to learning buffer
-    //nSample - number of evidences to generate
-    //whatNodes - which nodes should be included. By default - all
-    //ignoreCurrEvid - if 'false', then current evidence specifies some fixed values
-    //                 if 'true',then no fixed values while generating evidences
+    // generates array of evidences 
     void GenerateEvidences(TokArr numSlices);
     
     ProbabilisticNet &Net() const { return *m_pNet; }
