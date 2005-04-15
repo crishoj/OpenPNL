@@ -57,10 +57,28 @@ void WDistributions::Setup(int iNode)
     }
     delete m_aDistribution[iNode];
 
+    Vector<int> aParent;
+    Graph().GetParents(&aParent, iNode);
+    Vector<TokIdNode*> parTokId = Token().Nodes(aParent);
+/////////////////////////////////abrosimova    
     if (nodeClass == eNodeClassDiscrete )
     {
-        m_aDistribution[iNode] = new WTabularDistribFun();
+        bool isSoftMax = false;
+        for (int i=0; i< parTokId.size(); i++)
+        {
+            TokIdNode *tok = parTokId[i];
+            if (!static_cast<pnl::CNodeType*>(tok->v_prev->data)->IsDiscrete() )
+            {
+                isSoftMax = true;
+                break;
+            }
+        }
+        if (isSoftMax)
+            m_aDistribution[iNode] = new WSoftMaxDistribFun();
+        else
+            m_aDistribution[iNode] = new WTabularDistribFun();            
     }
+/////////////////////////////////abrosimova    
     else
     {
         if (nodeClass == eNodeClassContinuous)
@@ -73,10 +91,10 @@ void WDistributions::Setup(int iNode)
 	}
     }
 
-    Vector<int> aParent;
     
-    Graph().GetParents(&aParent, iNode);
+/*    Graph().GetParents(&aParent, iNode);
     Vector<TokIdNode*> parTokId = Token().Nodes(aParent);
+*/
     m_aDistribution[iNode]->Setup(Token().Node(iNode), parTokId);
     TokIdNode *tok = Token().Node(iNode);
     if (nodeClass == eNodeClassDiscrete )
@@ -313,7 +331,7 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
 
     if (nodeClass == eNodeClassDiscrete)
     {
-        Distribution(index)->FillData(pnl::matTable, value, probability, parentValue);
+        Distribution(index)->FillData(matType, value, probability, parentValue);
     }
     else
     {

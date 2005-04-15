@@ -57,11 +57,42 @@ NetCallback::CommonAttachFactors(pnl::CGraphicalModel &pnlModel,
 
         if (net.pnlNodeType(iWNode).IsDiscrete())
         {
-            pnl::CDenseMatrix<float> *mat = pWDF->Matrix(pnl::matTable);
-            PNL_CHECK_IS_NULL_POINTER(mat);
-	
-            pPNLF->AttachMatrix(mat, pnl::matTable);
-	    pPNLF->AttachMatrix(mat->Copy(mat), pnl::matDirichlet);
+            bool isSoftMax = false;
+            DistribFunDesc  *des = pWDF->desc();
+            for (int j=0; j<des->nNode(); j++ )
+            {
+                TokIdNode * tokId = des->node(j);
+                if (!static_cast<pnl::CNodeType*>(tokId->v_prev->data)->IsDiscrete() )
+                {
+                    isSoftMax = true;
+                    break;
+                }
+            }
+            if (!isSoftMax)
+            {
+                pnl::CDenseMatrix<float> *mat = pWDF->Matrix(pnl::matTable);
+                PNL_CHECK_IS_NULL_POINTER(mat);
+                
+                pPNLF->AttachMatrix(mat, pnl::matTable);
+                pPNLF->AttachMatrix(mat->Copy(mat), pnl::matDirichlet);
+            }
+            else
+            {
+                pnl::CDenseMatrix<float> *weight = pWDF->Matrix(pnl::matWeights, 0);
+                PNL_CHECK_IS_NULL_POINTER(weight);
+                pPNLF->AttachMatrix(weight, pnl::matWeights);
+                // offsetVector 
+                pnl::floatVector *offVector = dynamic_cast<WSoftMaxDistribFun*>(pWDF)->
+                    OffsetVector();
+                pnl::CDistribFun *df = pPNLF->GetDistribFun();
+                
+                float *offVec = new float[offVector->size()];
+                memcpy(&offVec[0], &offVector->front(), (offVector->size())*sizeof(float) );
+
+                dynamic_cast<pnl::CSoftMaxDistribFun*>(df)->
+                    AllocOffsetVector(offVec);
+
+            }
         }
         else
         {
