@@ -5,7 +5,7 @@
 #include "Tokens.hpp"
 #include "BNet.hpp"
 #include "TokenCover.hpp"
-
+//#include "pnlSoftMaxDistribFun.hpp"
 using namespace pnl;
 
 PNLW_BEGIN
@@ -149,7 +149,11 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	{
 	    WeightsSize += desc()->nodeSize(parent);
 	}
-	WeightsSize *= ChildNodeSize;
+/*        if (WeightsSize == 0)
+	    WeightsSize = ChildNodeSize;
+        else
+*/
+        WeightsSize *= ChildNodeSize;
 
 	//cont case
 	switch(matrixId)
@@ -180,6 +184,14 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	    aIndex.resize(3, -1);
 	    aIndex[1] = 0;
 	    break;
+	case vectorOffset:
+            aIndex.resize(1, -1);
+            if (probability.size() != ChildNodeSize)
+            {
+                ThrowUsingError("The number of probabilities is wrong. The correct value is ChildNodeSize", fname);
+            }
+
+            break;
 
 	default:
 		ThrowUsingError("This matrixId is not supported", fname);
@@ -243,6 +255,17 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	aIndex[mIndex] = mValue;
     }
 
+    bool isSoftMax = false;
+    for (int j=0; j< desc()->nNode(); j++)
+    {
+        TokIdNode *tokId = desc()->node(j);
+        if (!static_cast<pnl::CNodeType*>(tokId->v_prev->data)->IsDiscrete() )
+        {
+            isSoftMax = true;
+            break;
+        }
+    }
+
     int IndexWeightsMatrix = 0;
     for(i = 0; i < probability.size(); i++)
     {
@@ -292,16 +315,28 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 
 	if (matrixId == matWeights)
 	{
-	    //aIndex[0] - index of weights matrix
+            //aIndex[0] - index of weights matrix
 	    //aIndex[1] - col index in the weights matrix
 	    //aIndex[2] - row index in the weights matrix
-	    aIndex[0] = IndexWeightsMatrix;
-	    aIndex[1] = (aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1)?(aIndex[1]+1):(aIndex[1]);
-	    aIndex[2] = (aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1)?(0):(aIndex[2]+1);
-	    
-	    if(!probability[i].FltValue(0).IsUndef())
+            int col;
+            int row;
+            if (!isSoftMax)
+            {
+                aIndex[0] = IndexWeightsMatrix;
+                aIndex[1] = (aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1)?(aIndex[1]+1):(aIndex[1]);
+                aIndex[2] = (aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1)?(0):(aIndex[2]+1);
+            }
+            else
+            {
+                col = i % (NumberOfNodes-1);
+                row = i / (NumberOfNodes-1);
+                aIndex[0] = col;
+                aIndex[1] = row;
+            }
+
+            if(!probability[i].FltValue(0).IsUndef())
 	    {
-	        SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
+                    SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
 	    }
 
 	    if ((aIndex[1] == ChildNodeSize -1)&&(aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1))
@@ -310,6 +345,15 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 		aIndex[1] = 0;
 		aIndex[2] = -1;
 	    }
+	}
+        if (matrixId == vectorOffset)
+	{
+            aIndex[0] = i;
+            
+            if(!probability[i].FltValue(0).IsUndef())
+            {
+                SetAValue(matrixId, aIndex, probability[i].FltValue(0).fl);
+            }
 	}
     }
 }
@@ -742,6 +786,182 @@ void WGaussianDistribFun::SetData(int matrixId, const float *probability, int nu
     }
 
    m_pDistrib->AllocMatrix( probability, matType, numWeightMat);
+}
+
+
+
+
+WSoftMaxDistribFun::WSoftMaxDistribFun():WDistribFun(), m_pDistrib(0) {}
+
+WSoftMaxDistribFun::~WSoftMaxDistribFun()
+{
+    if (m_pDistrib != 0) 
+    { 
+        const pnl::pConstNodeTypeVector *ntVec = m_pDistrib->GetNodeTypesVector();
+        int NumberOfNodes = ntVec->size();
+        for (int node = 0; node < NumberOfNodes; node++)
+        {
+            delete const_cast<CNodeType*>((*ntVec)[node]);
+        }
+        
+        delete m_pDistrib;
+	m_pDistrib = 0;
+    }
+}
+
+void WSoftMaxDistribFun::SetDefaultDistribution()
+{
+    CreateDefaultDistribution();
+}
+
+
+Vector<int> WSoftMaxDistribFun::Dimensions(int matrixType)
+{
+    if(!m_pDistrib)
+    {
+        CreateDefaultDistribution();
+    }
+    return desc()->nodeSizes();
+}
+
+
+void WSoftMaxDistribFun::DoSetup() // OK
+{
+    CreateDefaultDistribution();
+}
+
+pnl::CDenseMatrix<float> *WSoftMaxDistribFun::Matrix(int matrixType, int numWeightMat) const
+{
+    static const char fname[] = "Matrix";
+
+    if (!m_pDistrib)
+    {
+	ThrowUsingError("Distribution function is not set", fname);
+    }
+
+    pnl::CMatrix<float> *pMatrix = 0;
+
+    switch (matrixType)
+    {
+    case matWeights:
+	pMatrix = m_pDistrib->GetMatrix(matWeights, numWeightMat);
+	break;
+    default:
+	ThrowUsingError("Unsupported matrix type", fname);
+	break;
+    }
+
+    if (dynamic_cast<pnl::CDenseMatrix<float> *>(pMatrix) != 0)
+    {
+	return dynamic_cast<pnl::CDenseMatrix<float> *>(pMatrix);
+    }
+    else
+    {
+	return pMatrix->ConvertToDense();
+    }
+}
+
+pnl::floatVector* WSoftMaxDistribFun::OffsetVector() const
+{
+    return m_pDistrib->GetOffsetVector();
+}
+
+void WSoftMaxDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float probability) //OK
+{
+    static const char fname[] = "SetAValue";
+
+    if(!m_pDistrib)
+    {
+        CreateDefaultDistribution();
+    }
+
+    int Index[2];
+    CMatrix<float> * pMatrix;
+    floatVector *offVector;
+    float * off;
+    switch (matrixId)
+    {
+    case matWeights:
+        Index[0] = aIndex[1];
+	Index[1] = aIndex[0];
+	pMatrix = m_pDistrib->GetMatrix( static_cast<EMatrixType>(matrixId) );
+	pMatrix->SetElementByIndexes(probability, Index);
+	break;
+    case vectorOffset:
+        Index[0] = aIndex[0];
+        offVector = m_pDistrib->GetOffsetVector();
+        (*offVector)[Index[0]] = probability;
+        off = new float[offVector->size()];
+        memcpy(&off[0], &offVector->front(), (offVector->size())*sizeof(float) );
+        m_pDistrib->AllocOffsetVector(off);
+        break;
+
+    default:
+	ThrowUsingError("Unsupported type of matrix in gaussian distribution", fname);
+	break;
+    }
+}
+
+float WSoftMaxDistribFun::GetAValue(int matrixId, Vector<int> &aIndex)
+{
+    static const char fname[] = "GetAValue";
+
+    if(!m_pDistrib)
+    {
+	ThrowUsingError("Distribution does not exist", fname);
+    }
+
+    int Index[2];
+    floatVector *offVector;
+    CMatrix<float> * pMatrix;
+    float val;
+    switch (matrixId)
+    {
+    case matWeights:
+        Index[0] = aIndex[1];
+        Index[1] = aIndex[2];
+        val = m_pDistrib->GetMatrix(static_cast<EMatrixType>(matrixId))->GetElementByIndexes(Index);
+        break;
+    case vectorOffset:
+        Index[0] = aIndex[1];
+        offVector = m_pDistrib->GetOffsetVector();
+        val = (*offVector)[Index[0]];
+        break;
+    default:
+        ThrowUsingError("Unsupported type of matrix in gaussian distribution", fname);
+        break;
+    }
+    return val;
+}
+
+void WSoftMaxDistribFun::CreateDefaultDistribution() //OK
+{
+    if (m_pDistrib != 0)
+    {
+	delete m_pDistrib;
+	m_pDistrib = 0;
+    }
+
+    int NumberOfNodes = desc()->nNode();
+
+    TokIdNode *TokID = desc()->node(NumberOfNodes-1);
+    int node = TokID->id[NumberOfNodes-1].int_id;
+
+    const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
+
+    int ChildNodeSize = desc()->nodeSize(NumberOfNodes-1);
+
+    for (node = 0; node < NumberOfNodes-1; node++)
+    {
+        nodeTypes[node] = new CNodeType(false, desc()->nodeSize(node), nsChance);
+    }
+
+    nodeTypes[NumberOfNodes-1] = new CNodeType(true, desc()->nodeSize(node), nsChance);
+
+    m_pDistrib = CSoftMaxDistribFun::Create(NumberOfNodes, nodeTypes, NULL, NULL);
+  
+    m_pDistrib->CreateDefaultMatrices(1);
+
 }
 
 PNLW_END

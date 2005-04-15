@@ -13,6 +13,7 @@ namespace pnl
 {
     class CDistribFun;
     template<class Type> class CDenseMatrix;
+    class CSoftMaxDistribFun;
     class CGaussianDistribFun;
 }
 
@@ -52,10 +53,10 @@ public:
     void Setup(TokIdNode *node, Vector<TokIdNode*> &aParent);
     virtual void DoSetup() = 0;
     virtual pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1) const = 0;
+    DistribFunDesc *desc() const { return m_pDesc; }
 
 protected:
     WDistribFun();
-    DistribFunDesc *desc() const { return m_pDesc; }
     // matrix must be created
     virtual void SetAValue(int matrixId, Vector<int> &aIndex, float probability) = 0;
     virtual float GetAValue(int matrixType, Vector<int> &aIndex) = 0;
@@ -104,6 +105,28 @@ public:
 
 private:
     pnl::CGaussianDistribFun *m_pDistrib;
+
+};
+
+
+class PNLHIGH_API WSoftMaxDistribFun: public WDistribFun
+{
+public:
+    WSoftMaxDistribFun();
+    virtual ~WSoftMaxDistribFun();
+    void SetDefaultDistribution();
+    Vector<int> Dimensions(int matrixType);
+    void DoSetup();
+    pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1) const;
+    pnl::floatVector* OffsetVector() const;
+
+    void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
+    void SetAValue(int NumberOfNode, int matrixId, Vector<int> &aIndex, float probability);
+
+    virtual float GetAValue(int matrixType, Vector<int> &aIndex);
+    void CreateDefaultDistribution();
+private:
+    pnl::CSoftMaxDistribFun *m_pDistrib;
 
 };
 
