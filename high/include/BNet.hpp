@@ -70,6 +70,11 @@ public:
     // set parameters for gaussian distribution
     void SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight = TokArr());
     
+    void SetPSoftMax(TokArr node, TokArr weigth, TokArr offset, TokArr parentValue = TokArr());
+    
+    TokArr GetSoftMaxOffset(TokArr node, TokArr parent = TokArr());
+    TokArr GetSoftMaxWeights(TokArr node, TokArr parent = TokArr());
+
     // setting evidence on the board
     void EditEvidence(TokArr values);
     

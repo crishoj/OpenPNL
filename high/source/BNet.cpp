@@ -17,6 +17,7 @@
 #pragma warning(default: 4251)
 #pragma warning(pop)
 
+
 #if defined(_MSC_VER)
 #pragma warning(disable : 4239) // nonstandard extension used: 'T' to 'T&'
 #endif
@@ -114,6 +115,73 @@ void BayesNet::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr we
         Net().Distributions().FillData(node, weight, TokArr(), pnl::matWeights);
     }
 }
+
+void BayesNet::SetPSoftMax(TokArr node, TokArr weigth, TokArr offset, TokArr parentValue)
+{
+    const int par[] = {0}; 
+    
+    if (parentValue.size() == 0)
+    {
+        parentValue = TokArr(par, 1);
+    }
+
+    Net().Distributions().FillData(node, weigth, TokArr(), pnl::matWeights);
+    Net().Distributions().FillData(node, offset, TokArr(), vectorOffset);
+}
+
+
+TokArr BayesNet::GetSoftMaxOffset(TokArr node, TokArr parent)
+{
+    static const char fname[] = "GetGaussianMean";
+    TokArr res;
+    int nnodes = node.size();
+    if(nnodes != 1)
+    {
+	ThrowUsingError("Mean may be got only for one node", fname);
+    }
+
+    Vector<int> queryNds, queryVls;
+    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph().MapOuterToGraph());
+    if(!queryVls.size())
+    {
+	queryVls.assign(nnodes, -1);
+    }
+    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
+    pnl::CDistribFun *df = cpd->GetDistribFun();
+
+    pnl::floatVector *offVector = dynamic_cast<pnl::CSoftMaxDistribFun *>(df)->GetOffsetVector();
+
+    std::vector<float> vec(offVector->begin(), offVector->end());
+
+    res = Tok(vec);
+
+    return res;
+}
+
+
+TokArr BayesNet::GetSoftMaxWeights(TokArr node, TokArr parent )
+{
+    static const char fname[] = "GetGaussianMean";
+    TokArr res;
+    int nnodes = node.size();
+    if(nnodes != 1)
+    {
+	ThrowUsingError("Mean may be got only for one node", fname);
+    }
+
+    Vector<int> queryNds, queryVls;
+    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph().MapOuterToGraph());
+    if(!queryVls.size())
+    {
+	queryVls.assign(nnodes, -1);
+    }
+
+    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
+    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matWeights);
+    return Net().ConvertMatrixToToken(mat);
+
+}
+
 
 TokArr BayesNet::GetGaussianMean(TokArr node)
 {
