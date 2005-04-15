@@ -1331,11 +1331,12 @@ void ProbabilisticNet::DoNotify(const Message &msg)
     case Message::eChangeParentNState:
     case Message::eChangeNState:
     case Message::eInit:
-	SetModelInvalid();
-	break;
+    SetModelInvalid();
+    break;
+    case Message::eChangeName: break;//Current bug, because node name in all evidences have to  be changed
     default:
-	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
-	return;
+    ThrowInternalError("Unhandled message arrive" ,"DoNotify");
+    return;
     }
 }
 

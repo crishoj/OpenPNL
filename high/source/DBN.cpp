@@ -98,6 +98,10 @@ void DBN::DelNode(TokArr nodes)
 	priorNodes.push_back(prStr);
 	fsliceNodes.push_back(slStr);
     }
+    if(!IsDBNContainNode(fsliceNodes) && !IsDBNContainNode(priorNodes))
+    {
+	ThrowUsingError("DBN does`t contain these nodes", "DelNode");	
+    }	
     if(IsDBNContainNode(fsliceNodes))
     {
 	Net().DelNode(fsliceNodes);
