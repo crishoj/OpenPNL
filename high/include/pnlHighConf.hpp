@@ -35,6 +35,8 @@ namespace NetConst
     } ESavingType;    
 };
 
+#define vectorOffset ((pnl::EMatrixType)-1)
+
 #define PNLW_BEGIN namespace pnlw {
 #define PNLW_END };
 #define PNLW_USING using namespace pnlw;
