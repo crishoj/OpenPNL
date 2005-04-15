@@ -219,8 +219,12 @@ void CSoftMaxDistribFun::CreateDefaultMatrices(int typeOfMatrices)
   intVector dims;
   dims.resize(2);
   int chldNodeSize = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
-  dims[0] = m_NumberOfNodes - 1;
-  dims[1] = chldNodeSize;
+//  dims[0] = m_NumberOfNodes - 1;
+//  dims[1] = chldNodeSize;
+
+  dims[0] = chldNodeSize;
+  dims[1] = m_NumberOfNodes - 1;
+
   floatVector weight;
   int weightSize = dims[0] * dims[1];
   weight.assign(weightSize, 0.0f);
