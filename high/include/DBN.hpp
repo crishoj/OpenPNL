@@ -73,6 +73,9 @@ public:
     // set parameters for gaussian distribution
     void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
     
+	// returns criterion value for last learning performance
+    float GetEMLearningCriterionValue();
+
     // adds evidence to the buffer
     void AddEvidToBuf(TokArr values);
 

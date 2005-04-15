@@ -158,6 +158,9 @@ rel=STYLESHEET>
     href="#decl_GenerateEvidences_DBN">GenerateEvidences</A> 
 
     <LI><A 
+    href="#decl_GetEMLearningCriterionValue_DBN">GetEMLearningCriterionValue</A> 	
+
+    <LI><A 
     href="#decl_GetChildren_DBN">GetChildren</A> 
 
     <LI><A 
@@ -2373,6 +2376,27 @@ Function learns network with help of evidences buffer. See <A href="#decl_AddEvi
 dbn.LearnParameters();
 </P>
 
+<HR>
+
+<H3><A 
+name=decl_GetEMLearningCriterionValue_DBN>GetEMLearningCriterionValue</A></H3>
+<P class=Blurb>Returns criterion value for last EM learning execution 
+</P>
+<font class="interface">
+float GetEMLearningCriterionValue();
+</font>
+<H5>Discussion</H5>
+<p class="description">
+The function returns criterion value that was got during last EM learning
+execution.
+</p>
+<H5>
+Example of usage
+</H5>
+<p class="example">
+dbn.LearnParameters();<br>
+float resLogLik = dbn.GetEMLearningCriterionValue();
+</P>
 <HR>
 
 <H3><A 

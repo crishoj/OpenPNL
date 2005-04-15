@@ -1262,6 +1262,27 @@ String DBN::GetValue(String nodeEvid)
     return tmpValue;
 }
 
+// returns criterion value for last learning performance
+float DBN::GetEMLearningCriterionValue()
+{
+    pnl::CDynamicLearningEngine *learnEng = &Learning();
+    if(dynamic_cast<pnl::CEMLearningEngineDBN *>(learnEng) == NULL)
+    {
+	ThrowInternalError("Criterion value can be got only after EM learning", "GetEMLearningCriterionValue");
+    }
+
+    int nsteps;
+    const float * score;
+    learnEng->GetCriterionValue(&nsteps, &score);
+
+    if(nsteps < 1)
+    {
+	ThrowInternalError("Learning was not done yet", "GetEMLearningCriterionValue");
+    }
+
+    return score[0];
+}
+
 TokArr DBN::ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice)
 {
     int i,j;

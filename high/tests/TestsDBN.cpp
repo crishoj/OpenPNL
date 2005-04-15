@@ -381,6 +381,7 @@ int testDBNLearning()
         pDBN->LoadEvidBuf("evidences1.csv");
 	// learning execution
 	pDBN->LearnParameters();
+	float value = pDBN->GetEMLearningCriterionValue();
 	// free memory
 	delete pDBN;
 	return result;
