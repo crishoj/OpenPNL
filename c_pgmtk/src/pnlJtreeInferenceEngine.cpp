@@ -207,17 +207,13 @@ void CJtreeInfEngine::EnterEvidence( const CEvidence *pEvidence,
 
     if (GetModel()->GetModelType() == mtBNet)
     {
-	bool allDiscrObs = pEvidence->IsAllDiscreteNodesObs(GetModel());
-	if (allDiscrObs)
-	{
-	    for (i = 0; i < GetModel()->GetNumberOfNodes(); i++)
-	    {
-		if (GetModel()->GetFactor(i)->GetDistributionType() == dtSoftMax)
-		{
-		    GetModel()->GetModelDomain()->ChangeNodeType(i, 0);
-		}
-	    }
-	}
+        for (i = 0; i < GetModel()->GetNumberOfNodes(); i++)
+        {
+            if (GetModel()->GetFactor(i)->GetDistributionType() == dtSoftMax)
+            {
+                GetModel()->GetModelDomain()->ChangeNodeType(i, 0);
+            }
+        }
     }
 
 }

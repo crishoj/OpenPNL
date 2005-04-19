@@ -862,26 +862,33 @@ bool CEvidence::IsAllDiscreteNodesObs(const CStaticGraphicalModel *pGrModel) con
      pConstValueVector obsNdsVals;
      GetObsNodesWithValues( &obsNdsNums, &obsNdsVals );
      
-     int counter = 0;
      intVector discrObsNdsNums(0);
      int i;
      for ( i = 0; i < obsNdsNums.size(); i++)
      {
          if (pGrModel->GetNodeType(obsNdsNums[i])->IsDiscrete())
+         {
              discrObsNdsNums.push_back(obsNdsNums[i]);
+         }
      }
 
+     bool isAllDiscrObs = true;
+
+     int NumDiscr = 0;
      for ( i = 0; i < pGrModel->GetNumberOfNodes(); i++)
+     {
          if (pGrModel->GetNodeType(i)->IsDiscrete())
          {
-             counter++;
+             NumDiscr++;
+             intVector ::iterator loc = std::find(discrObsNdsNums.begin(),discrObsNdsNums.end(), i);
+             if (loc ==  discrObsNdsNums.end())
+             {
+                 isAllDiscrObs = false;
+                 break;
+             }
          }
-
-     if ( (counter == discrObsNdsNums.size()) &&(counter != 0))
-        return true;
-     else 
-        return false;
-         
+     }
+     return (NumDiscr == 0)? false :isAllDiscrObs;
  }
 
 bool CEvidence::IsAllCountinuesNodesObs( const CStaticGraphicalModel *pGrModel) const
@@ -890,26 +897,32 @@ bool CEvidence::IsAllCountinuesNodesObs( const CStaticGraphicalModel *pGrModel) 
     pConstValueVector obsNdsVals;
     GetObsNodesWithValues( &obsNdsNums, &obsNdsVals );
     
-    int counter = 0;
     intVector contObsNdsNums(0);
     int i;
     for(i = 0; i < obsNdsNums.size(); i++)
     {
         if (!pGrModel->GetNodeType(obsNdsNums[i])->IsDiscrete())
+        {
             contObsNdsNums.push_back(obsNdsNums[i]);
+        }
     }
 
-    for (i = 0; i < pGrModel->GetNumberOfNodes(); i++)
+    bool isAllContObs = true;
+    int NumCont = 0;
+    for ( i = 0; i < pGrModel->GetNumberOfNodes(); i++)
+    {
         if (!pGrModel->GetNodeType(i)->IsDiscrete())
         {
-            counter++;
+            NumCont++;
+            intVector ::iterator loc = std::find(contObsNdsNums.begin(),contObsNdsNums.end(), i);
+            if (loc ==  contObsNdsNums.end())
+            {
+                isAllContObs = false;
+                break;
+            }
         }
-    
-    if ( (counter == contObsNdsNums.size())&&(counter != 0))
-        return true;
-    else 
-        return false;
-    
+    }
+    return (NumCont == 0)? false :isAllContObs;
 }
 
 #ifdef PNL_RTTI

@@ -1482,15 +1482,11 @@ void CParJtreeInfEngine::EnterEvidence(const CEvidence *pEvidence,
         {
             if (GetModel()->GetModelType() == mtBNet)
             {
-                bool allDiscrObs = pEvidence->IsAllDiscreteNodesObs(GetModel());
-                if (allDiscrObs)
+                for (j = 0; j < GetModel()->GetNumberOfNodes(); j++)
                 {
-                    for (j = 0; j < GetModel()->GetNumberOfNodes(); j++)
+                    if (GetModel()->GetFactor(j)->GetDistributionType() == dtSoftMax)
                     {
-                        if (GetModel()->GetFactor(j)->GetDistributionType() == dtSoftMax)
-                        {
-                            GetModel()->GetModelDomain()->ChangeNodeType(j, 0);
-                        }
+                        GetModel()->GetModelDomain()->ChangeNodeType(j, 0);
                     }
                 }
             }
