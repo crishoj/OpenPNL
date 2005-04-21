@@ -5,10 +5,10 @@
 The function returns list of children for given node or some nodes. 
  }
 \usage{
-GetChildren(BayesNet, nodes)
+GetChildren(Net, nodes)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{nodes}{String. One or several nodes whose children are needed.}
 }
 \examples{

@@ -5,10 +5,10 @@
 The function adds evidence to the buffer. Current evidence is not changed.
  }
 \usage{
-AddEvidToBuf(BayesNet, values)
+AddEvidToBuf(Net, values)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{values}{String. Array of observed nodes with values.}
 }
 \examples{

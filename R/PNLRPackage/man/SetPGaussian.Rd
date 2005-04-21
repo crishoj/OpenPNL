@@ -5,10 +5,10 @@
 The function sets parameters for gaussian variate. 
  }
 \usage{
-SetPGaussian(BayesNet, var, mean, variance, weight)
+SetPGaussian(Net, var, mean, variance, weight)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{var}{String. Name of node which probability is setted. 
 }
 \item{mean}{Either String or Float Vector. Vector of means.}

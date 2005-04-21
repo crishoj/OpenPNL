@@ -5,10 +5,10 @@
 The function sets or edits current evidence. New observed nodes are added to current evidence with EditEvidence method or old values of observed nodes are changed.
  }
 \usage{
-EditEvidence(BayesNet, values)
+EditEvidence(Net, values)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{values}{String. Array of observed nodes with values.
 }
 \examples{

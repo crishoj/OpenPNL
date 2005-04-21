@@ -5,10 +5,10 @@
 The function returns array of types (discrete or continuous) of given nodes.
  }
 \usage{
-GetNodeType(BayesNet, nodes) 
+GetNodeType(Net, nodes) 
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{nodes}{String. Array of nodes,  whose type we are interesting in.}
 }
 \examples{

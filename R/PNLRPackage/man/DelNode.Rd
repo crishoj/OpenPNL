@@ -5,10 +5,10 @@
 The function deletes one or several nodes from the network together with all adjacent edges. 
  }
 \usage{
-DelNode(BayesNet, nodes)
+DelNode(Net, nodes)
 }
 \arguments{
-\item{net}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{nodes}{String. Array of names of nodes to delete.}
 }
 \examples{

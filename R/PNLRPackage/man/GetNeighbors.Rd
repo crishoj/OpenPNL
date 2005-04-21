@@ -5,10 +5,10 @@
 The function returns list of neighbours for given node or some nodes. If neighbours of several nodes are demanded then neighbors of every node are in the result. 
  }
 \usage{
-GetNeighbours(BayesNet, nodes) 
+GetNeighbours(Net, nodes) 
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{nodes}{String. One or several nodes whose neighbours are need. Nodes are separated with the space.}
 }
 \examples{

@@ -5,10 +5,10 @@
 The function returns probability of discrete node as float vector. If values of parents are given then probabilities only for these parents configuration will be returned. If concrete values of node are given in array node then only probabilities of these values will be returned. 
  }
 \usage{
-GetPTabularFloat(BayesNet, node, parents)
+GetPTabularFloat(Net, node, parents)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{node}{String. Name of node or array of node values whose probabilities are needed. }
 \item{parents}{String. Values of parents of the node.}
 }

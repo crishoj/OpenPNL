@@ -5,10 +5,10 @@
 The function sets [conditional] probability for one or several values of the discrete node [for given values of parents]. Sizes of values array and probabilities array must be the same. While distribution of probabilities is not specified it is considered uniform.
  }
 \usage{
-SetPTabular(BayesNet, value, prob, parentValue)
+SetPTabular(Net, value, prob, parentValue)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{value}{String. Array of node values for wich probabilities are set.}
 \item{prob}{Either String or Float Vector. Array of values of probabilities.}
 \item{parentValue}{String. Array of values of discrete parents of the node.}

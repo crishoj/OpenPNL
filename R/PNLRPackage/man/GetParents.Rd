@@ -5,10 +5,10 @@
 The function returns list of parents for given node or some nodes. If parents of several nodes are demanded then parents of every node are in the result.
  }
 \usage{
-GetParents(BayesNet, nodes)
+GetParents(Net, nodes)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{nodes}{String. One or several nodes whose parents are needed.}
 }
 \examples{

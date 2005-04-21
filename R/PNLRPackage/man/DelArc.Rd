@@ -5,10 +5,10 @@
 The function deletes one or several arcs from the network. 
  }
 \usage{
-DelArc(net, from, to)
+DelArc(Net, from, to)
 }
 \arguments{
-\item{net}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{from}{String. Array of starting nodes of the arcs to delete.}
 \item{to}{String. Array of ending nodes of the arcs to delete.}
 }

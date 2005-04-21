@@ -5,10 +5,10 @@
 The function learns network parameters using evidence buffer. Learning algorithm may be set to property "Learning" with method SetProperty(). By default EM learning is used. Besides Bayes learning is available. 
 }
 \usage{
-LearnParameters(BayesNet) 
+LearnParameters(Net) 
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 }
 \examples{
 AddEvidToBuf(net, "NodeA^true NodeB^false")

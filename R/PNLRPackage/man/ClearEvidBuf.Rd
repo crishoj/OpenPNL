@@ -5,10 +5,10 @@
 The function clears evidence buffer. 
  }
 \usage{
-ClearEvidBuf(BayesNet) 
+ClearEvidBuf(Net) 
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 }
 \examples{
 AddEvidToBuf(net, "NodeA^true NodeB^false")

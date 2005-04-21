@@ -5,10 +5,10 @@
 The function returns joint probability distribution (JPD) for specified nodes using current evidence. The inference algorithm may be set to property "Inference" with method SetProperty(). By default Pearl inference is used. Besides Gibbs sampling, Junction Tree inference and Naive inference are available. Corresponding property "Inference" values are "pearl", "gibbs", "jtree", "naive". 
  }
 \usage{
-GetJPDString(BayesNet, nodes)
+GetJPDString(Net, nodes)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{nodes}{String. Array of nodes from one family.}
 }
 \examples{

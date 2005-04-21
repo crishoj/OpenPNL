@@ -5,10 +5,10 @@
 The function loads evidence buffer content from file. Buffer is cleared before loading. We can load evidences created in another net with another node names but with the same values of nodes. For this we must set new node names in evidences using array "columns". The function returns number of evidences loaded from file. 
 }
 \usage{
-LoadEvidBuf(BayesNet, filename, columns)
+LoadEvidBuf(Net, filename, columns)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{filename}{String. File name.}
 \item{columns}{String. Names of nodes.}
 }

@@ -5,10 +5,10 @@
 The function loads network from file with given name.
 }
 \usage{
-LoadNet(BayesNet, filename) 
+LoadNet(Net, filename) 
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{filename}{String. File name.}
 }
 \examples{

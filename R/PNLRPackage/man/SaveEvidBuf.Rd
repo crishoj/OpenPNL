@@ -5,10 +5,10 @@
 The function saves evidence buffer content to file of "cvs" format. The separating character is ','. 
 }
 \usage{
-SaveEvidBuf(BayesNet, filename) 
+SaveEvidBuf(Net, filename) 
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{filename}{String. File name.}
 }
 \examples{

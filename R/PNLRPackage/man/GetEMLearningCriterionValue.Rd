@@ -5,10 +5,10 @@
 The function returns criterion value that was got during last EM learning execution. 
  }
 \usage{
-GetEMLearningCriterionValue(BayesNet)
+GetEMLearningCriterionValue(Net)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 }
 \examples{
 SetProperty(net, "Learning", "em")

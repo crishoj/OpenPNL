@@ -5,10 +5,10 @@
 The function returns value of the property with given name. If property was not set with SetProperty method then empty string is returned. 
 }
 \usage{
-GetProperty(BayesNet, name)
+GetProperty(Net, name)
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{name}{String. Name of property.}
 }
 \examples{
