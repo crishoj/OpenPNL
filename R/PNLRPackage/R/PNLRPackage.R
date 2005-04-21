@@ -14,6 +14,14 @@ CreateDBN <- function ()
 }
 pnlCreateDBN <- function() CreateDBN()
 
+Unroll <- function(x) UseMethod("Unroll", x)
+Unroll.pnlDBN <- function(x)
+{
+	result <- .Call("pnlUnroll", x)
+	class(result) <- "pnlBNet"
+	result
+}
+
 
 AddNode <- function (x, names, values) UseMethod("AddNode", x)
 AddNode.pnlBNet <- function(x, names, values) 
@@ -156,8 +164,20 @@ SetPTabular <- function(x, value, probability, ParentValue) UseMethod("SetPTabul
 SetPTabular.pnlBNet <- function (x, value, probability, ParentValue = -1)
 {
 	res <- "ok"
-	if (ParentValue < 0) result <- .Call("pnlSetPTabular", x, value, probability)
-	else result <- .Call("pnlSetPTabularCond",x, value, probability, ParentValue)
+	if (ParentValue < 0) result <- .Call("pnlSetPTabular", x, 0, value, probability)
+	else result <- .Call("pnlSetPTabularCond",x, 0, value, probability, ParentValue)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+SetPTabular.pnlDBN <- function (x, value, probability, ParentValue = -1)
+{
+	res <- "ok"
+	if (ParentValue < 0) result <- .Call("pnlSetPTabular", x, 1, value, probability)
+	else result <- .Call("pnlSetPTabularCond",x, 1, value, probability, ParentValue)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -169,15 +189,25 @@ SetPTabular.pnlBNet <- function (x, value, probability, ParentValue = -1)
 GetPTabularString <- function(x, value, parents) UseMethod("GetPTabularString", x)
 GetPTabularString.pnlBNet <- function(x, value, parents = -1)
 {
-	if (parents < 0) .Call("pnlGetPTabularString", x, value)
-	else .Call("pnlGetPTabularStringCond", x, value, parents)
+	if (parents < 0) .Call("pnlGetPTabularString", x, 0, value)
+	else .Call("pnlGetPTabularStringCond", x, 0, value, parents)
+}
+GetPTabularString.pnlDBN <- function(x, value, parents = -1)
+{
+	if (parents < 0) .Call("pnlGetPTabularString", x, 1, value)
+	else .Call("pnlGetPTabularStringCond", x, 1, value, parents)
 }
 
 GetPTabularFloat <- function(x, value, parents) UseMethod("GetPTabularFloat", x)
 GetPTabularFloat.pnlBNet <- function(x, value, parents = -1)
 {
-	if (parents < 0) .Call("pnlGetPTabularFloat", x, value)
-	else .Call("pnlGetPTabularFloatCond", x, value, parents)
+	if (parents < 0) .Call("pnlGetPTabularFloat", x, 0, value)
+	else .Call("pnlGetPTabularFloatCond", x, 0, value, parents)
+}
+GetPTabularFloat.pnlDBN <- function(x, value, parents = -1)
+{
+	if (parents < 0) .Call("pnlGetPTabularFloat", x, 1, value)
+	else .Call("pnlGetPTabularFloatCond", x, 1, value, parents)
 }
 
 
@@ -185,8 +215,20 @@ SetPGaussian <- function(x, node, mean, variance, weight) UseMethod("SetPGaussia
 SetPGaussian.pnlBNet <- function(x, node, mean, variance, weight = -1)
 {
 	res <- "ok"
-	if (weight < 0) result <- .Call("pnlSetPGaussian", x,  node, mean, variance)
-	else result <- .Call("pnlSetPGaussianCond", x, node, mean, variance, weight)
+	if (weight < 0) result <- .Call("pnlSetPGaussian", x, 0, node, mean, variance)
+	else result <- .Call("pnlSetPGaussianCond", x, 0, node, mean, variance, weight)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+SetPGaussian.pnlDBN <- function(x, node, mean, variance, weight = -1)
+{
+	res <- "ok"
+	if (weight < 0) result <- .Call("pnlSetPGaussian", x, 1, node, mean, variance)
+	else result <- .Call("pnlSetPGaussianCond", x, 1, node, mean, variance, weight)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -200,7 +242,18 @@ EditEvidence <- function(x, values) UseMethod("EditEvidence", x)
 EditEvidence.pnlBNet <- function(x, values) 
 {
 	res <- "ok"
-	result <- .Call("pnlEditEvidence", x, values)
+	result <- .Call("pnlEditEvidence", x, 0, values)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+EditEvidence.pnlDBN <- function(x, values) 
+{
+	res <- "ok"
+	result <- .Call("pnlEditEvidence", x, 1, values)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -213,7 +266,18 @@ ClearEvid <- function(x) UseMethod("ClearEvid", x)
 ClearEvid.pnlBNet <- function(x) 
 {
 	res <- "ok"
-	result <- .Call("pnlClearEvid", x)
+	result <- .Call("pnlClearEvid", x, 0)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+ClearEvid.pnlDBN <- function(x) 
+{
+	res <- "ok"
+	result <- .Call("pnlClearEvid", x, 1)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -226,7 +290,18 @@ CurEvidToBuf <- function(x) UseMethod("CurEvidToBuf", x)
 CurEvidToBuf.pnlBNet <- function(x) 
 {
 	res <- "ok"
-	result <- .Call("pnlCurEvidToBuf", x)
+	result <- .Call("pnlCurEvidToBuf", x, 0)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+CurEvidToBuf.pnlDBN <- function(x) 
+{
+	res <- "ok"
+	result <- .Call("pnlCurEvidToBuf", x, 1)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -239,7 +314,18 @@ AddEvidToBuf <- function(x, values) UseMethod("AddEvidToBuf", x)
 AddEvidToBuf.pnlBNet <- function(x, values) 
 {
 	res <- "ok"
-	result <- .Call("pnlAddEvidToBuf", x, values)
+	result <- .Call("pnlAddEvidToBuf", x, 0, values)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+AddEvidToBuf.pnlDBN <- function(x, values) 
+{
+	res <- "ok"
+	result <- .Call("pnlAddEvidToBuf", x, 1, values)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -252,7 +338,18 @@ ClearEvidBuf <- function(x) UseMethod("ClearEvidBuf", x)
 ClearEvidBuf.pnlBNet <- function(x) 
 {
 	res <- "ok"
-	result <- .Call("pnlClearEvidBuf", x)
+	result <- .Call("pnlClearEvidBuf", x, 0)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+ClearEvidBuf.pnlDBN <- function(x) 
+{
+	res <- "ok"
+	result <- .Call("pnlClearEvidBuf", x, 1)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -262,28 +359,45 @@ ClearEvidBuf.pnlBNet <- function(x)
 }
 
 GetMPE <- function(x, nodes) UseMethod("GetMPE", x)
-GetMPE.pnlBNet <- function(x, nodes) .Call("pnlGetMPE",x, nodes)
+GetMPE.pnlBNet <- function(x, nodes) .Call("pnlGetMPE",x, 0, nodes)
+GetMPE.pnlDBN <- function(x, nodes) .Call("pnlGetMPE",x, 1, nodes)
 
 GetJPDString <- function(x, nodes) UseMethod("GetJPDString", x)
-GetJPDString.pnlBNet <- function(x, nodes) .Call("pnlGetJPDString", x, nodes)
+GetJPDString.pnlBNet <- function(x, nodes) .Call("pnlGetJPDString", x, 0, nodes)
+GetJPDString.pnlDBN <- function(x, nodes) .Call("pnlGetJPDString", x, 1, nodes)
 
 GetJPDFloat <- function(x, nodes) UseMethod("GetJPDFloat", x)
-GetJPDFloat.pnlBNet <- function(x, nodes) .Call("pnlGetJPDFloat", x, nodes)
+GetJPDFloat.pnlBNet <- function(x, nodes) .Call("pnlGetJPDFloat", x, 0, nodes)
+GetJPDFloat.pnlDBN <- function(x, nodes) .Call("pnlGetJPDFloat", x, 1, nodes)
 
 GetGaussianMean <- function(x, nodes) UseMethod("GetGaussianMean", x)
-GetGaussianMean.pnlBNet <- function(x, nodes) .Call("pnlGetGaussianMean", x, nodes)
+GetGaussianMean.pnlBNet <- function(x, nodes) .Call("pnlGetGaussianMean", x, 0, nodes)
+GetGaussianMean.pnlDBN <- function(x, nodes) .Call("pnlGetGaussianMean", x, 1, nodes)
 
 GetGaussianCovar <- function(x, nodes) UseMethod("GetGaussianCovar", x)
-GetGaussianCovar.pnlBNet <- function(x, nodes) .Call("pnlGetGaussianCovar", x, nodes)
+GetGaussianCovar.pnlBNet <- function(x, nodes) .Call("pnlGetGaussianCovar", x, 0, nodes)
+GetGaussianCovar.pnlDBN <- function(x, nodes) .Call("pnlGetGaussianCovar", x, 1, nodes)
 
 GetGaussianWeights <- function(x, nodes, parents) UseMethod("GetGaussianWeights", x)
-GetGaussianWeights.pnlBNet <- function(x, nodes, parents) .Call("pnlGetGaussianWeights", x, nodes, parents)
+GetGaussianWeights.pnlBNet <- function(x, nodes, parents) .Call("pnlGetGaussianWeights", x, 0, nodes, parents)
+GetGaussianWeights.pnlDBN <- function(x, nodes, parents) .Call("pnlGetGaussianWeights", x, 1, nodes, parents)
 
 SetProperty <- function(x, name, value) UseMethod("SetProperty", x)
 SetProperty.pnlBNet <- function(x, name, value) 
 {
 	res <- "ok"
-	result <- .Call("pnlSetProperty", x, name, value)
+	result <- .Call("pnlSetProperty", x, 0, name, value)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+SetProperty.pnlDBN <- function(x, name, value) 
+{
+	res <- "ok"
+	result <- .Call("pnlSetProperty", x, 1, name, value)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -293,13 +407,14 @@ SetProperty.pnlBNet <- function(x, name, value)
 }
 
 GetProperty <- function(x, name) UseMethod("GetProperty", x)
-GetProperty.pnlBNet <- function(x, name) .Call("pnlGetProperty", x, name)
+GetProperty.pnlBNet <- function(x, name) .Call("pnlGetProperty", x, 0, name)
+GetProperty.pnlBNet <- function(x, name) .Call("pnlGetProperty", x, 1, name)
 
 LearnParameters <- function(x) UseMethod("LearnParameters", x)
 LearnParameters.pnlBNet <- function(x) 
 {
 	res <- "ok"
-	result <- .Call("pnlLearnParameters", x)
+	result <- .Call("pnlLearnParameters", x, 0)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -307,6 +422,18 @@ LearnParameters.pnlBNet <- function(x)
 		res
 	}
 }
+LearnParameters.pnlDBN <- function(x) 
+{
+	res <- "ok"
+	result <- .Call("pnlLearnParameters", x, 1)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+
 
 LearnStructure <- function(x) UseMethod("LearnStructure", x)
 LearnStructure.pnlBNet <- function(x) 
@@ -324,7 +451,7 @@ LearnStructure.pnlBNet <- function(x)
 
 SaveEvidBuf <- function(x, filename) UseMethod("SaveEvidBuf", x)
 SaveEvidBuf.pnlBNet <- function (x, filename) .Call("pnlSaveEvidBuf", x, 0, filename)
-SaveEvidBuf.pnlDBN <- function (x, filename) .Call("pnlSaveEvidBuf", x, 0, filename)
+SaveEvidBuf.pnlDBN <- function (x, filename) .Call("pnlSaveEvidBuf", x, 1, filename)
 
 LoadEvidBuf <- function(x, filename, columns) UseMethod("LoadEvidBuf", x)
 LoadEvidBuf.pnlBNet <- function (x, filename, columns = -1)
@@ -340,7 +467,7 @@ LoadEvidBuf.pnlDBN <- function (x, filename, columns = -1)
 
 
 GenerateEvidences <- function(x, nSamples, ignoreCurrEvid, whatNodes) UseMethod("GenerateEvidences", x)
-GenerateEvid.pnlBNet <- function(x, nSamples, ignoreCurrEvid = -1, whatNodes = -1)
+GenerateEvidences.pnlBNet <- function(x, nSamples, ignoreCurrEvid = -1, whatNodes = -1)
 {
 	res <- "ok"
 	if (ignoreCurrEvid < 0) result <- .Call("pnlGenerateEvidences", x, nSamples)
@@ -349,6 +476,17 @@ GenerateEvid.pnlBNet <- function(x, nSamples, ignoreCurrEvid = -1, whatNodes = -
 		if (whatNodes < 0) result <- .Call("pnlGenerateEvidencesCurr", x, nSamples, ignoreCurrEvid)
 		else result <- .Call("pnlGenerateEvidencesCurrSome", x,  nSamples, ignoreCurrEvid, whatNodes)
 	}
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+GenerateEvidences.pnlDBN <- function(x, numSamples)
+{
+	res <- "ok"
+	result <- .Call("dbnGenerateEvidences", x, numSamples)
 	if (result < 0) invisible(result)
 	else 
 	{
@@ -402,4 +540,39 @@ GetEvidBufLogLik <- function(x) UseMethod("GetEvidBufLogLik", x)
 GetEvidBufLogLik.pnlBNet <- function(x) .Call("pnlGetEvidBufLogLik", x)
 
 GetEMLearningCriterionValue <- function(x) UseMethod("GetEMLearningCriterionValue", x)
-GetEMLearningCriterionValue.pnlBNet <- function(x) .Call("pnlGetEMLearningCriterionValue", x)
+GetEMLearningCriterionValue.pnlBNet <- function(x) .Call("pnlGetEMLearningCriterionValue", x, 0)
+GetEMLearningCriterionValue.pnlDBN <- function(x) .Call("pnlGetEMLearningCriterionValue", x, 1)
+
+SetNumSlices <- function(x, NumSlice) UseMethod("SetNumSlices", x)
+SetNumSlices.pnlDBN <- function(x, NumSlice)
+{
+	res <- "ok"
+	result <- .Call("pnlSetNumSlices", x, NumSlice)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+GetNumSlices <- function(x) UseMethod("GetNumSlices")
+GetNumSlices.pnlDBN <- function(x) .Call("pnlGetNumSlices", x)
+
+SetLag <- function(x, LagNum) UseMethod("SetLag", x)
+SetLag.pnlDBN <- function(x, LagNum)
+{
+	res <- "ok"
+	result <- .Call("pnlSetLag", x, LagNum)
+	if (result < 0) invisible(result)
+	else 
+	{
+		res <- .Call("pnlReturnError")
+		res
+	}
+}
+GetLag <- function(x) UseMethod("GetLag")
+GetLag.pnlDBN <- function(x) .Call("pnlGetLag", x)
+
+IsFullDBN <- function(x) UseMethod("IsFullDBN", x)
+IsFullDBN.pnlDBN <- function(x) .Call("pnlIsFullDBN", x)
+

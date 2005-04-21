@@ -23,34 +23,35 @@ extern "C" __declspec(dllexport) SEXP pnlGetNeighbors(SEXP net, SEXP type, SEXP 
 extern "C" __declspec(dllexport) SEXP pnlGetParents(SEXP net, SEXP type, SEXP nodes);
 extern "C" __declspec(dllexport) SEXP pnlGetChildren(SEXP net, SEXP type, SEXP nodes);
 
-extern "C" __declspec(dllexport) SEXP pnlSetPTabular(SEXP net, SEXP value, SEXP prob);
-extern "C" __declspec(dllexport) SEXP pnlSetPTabularCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue);
+extern "C" __declspec(dllexport) SEXP pnlSetPTabular(SEXP net, SEXP type, SEXP value, SEXP prob);
+extern "C" __declspec(dllexport) SEXP pnlSetPTabularCond(SEXP net, SEXP type, SEXP value, SEXP prob, SEXP parentValue);
 
-extern "C" __declspec(dllexport) SEXP pnlGetPTabularString(SEXP net, SEXP value);
-extern "C" __declspec(dllexport) SEXP pnlGetPTabularStringCond(SEXP net, SEXP value, SEXP parents);
-extern "C" __declspec(dllexport) SEXP pnlGetPTabularFloat(SEXP net, SEXP value);
-extern "C" __declspec(dllexport) SEXP pnlGetPTabularFloatCond(SEXP net, SEXP value, SEXP parents);
+extern "C" __declspec(dllexport) SEXP pnlGetPTabularString(SEXP net, SEXP type, SEXP value);
+extern "C" __declspec(dllexport) SEXP pnlGetPTabularStringCond(SEXP net, SEXP type, SEXP value, SEXP parents);
+extern "C" __declspec(dllexport) SEXP pnlGetPTabularFloat(SEXP net, SEXP type, SEXP value);
+extern "C" __declspec(dllexport) SEXP pnlGetPTabularFloatCond(SEXP net, SEXP type, SEXP value, SEXP parents);
 
-extern "C" __declspec(dllexport) SEXP pnlSetPGaussian(SEXP net, SEXP node, SEXP mean, SEXP variance);
-extern "C" __declspec(dllexport) SEXP pnlSetPGaussianCond(SEXP net, SEXP node, SEXP mean, SEXP variance, SEXP weight);
+extern "C" __declspec(dllexport) SEXP pnlSetPGaussian(SEXP net, SEXP type, SEXP node, SEXP mean, SEXP variance);
+extern "C" __declspec(dllexport) SEXP pnlSetPGaussianCond(SEXP net, SEXP type, SEXP node, SEXP mean, SEXP variance, SEXP weight);
 
-extern "C" __declspec(dllexport) SEXP pnlEditEvidence(SEXP net, SEXP values);
-extern "C" __declspec(dllexport) SEXP pnlClearEvid(SEXP net);
-extern "C" __declspec(dllexport) SEXP pnlCurEvidToBuf(SEXP net);
-extern "C" __declspec(dllexport) SEXP pnlAddEvidToBuf(SEXP net, SEXP values);
-extern "C" __declspec(dllexport) SEXP pnlClearEvidBuf(SEXP net);
+extern "C" __declspec(dllexport) SEXP pnlEditEvidence(SEXP net, SEXP type, SEXP values);
+extern "C" __declspec(dllexport) SEXP pnlClearEvid(SEXP net, SEXP type);
+extern "C" __declspec(dllexport) SEXP pnlCurEvidToBuf(SEXP net, SEXP type);
+extern "C" __declspec(dllexport) SEXP pnlAddEvidToBuf(SEXP net, SEXP type, SEXP values);
+extern "C" __declspec(dllexport) SEXP pnlClearEvidBuf(SEXP net, SEXP type);
 
-extern "C" __declspec(dllexport) SEXP pnlGetMPE(SEXP net, SEXP nodes);
-extern "C" __declspec(dllexport) SEXP pnlGetJPDString(SEXP net, SEXP nodes);
-extern "C" __declspec(dllexport) SEXP pnlGetJPDFloat(SEXP net, SEXP nodes);
-extern "C" __declspec(dllexport) SEXP pnlGetGaussianMean(SEXP net, SEXP nodes);
-extern "C" __declspec(dllexport) SEXP pnlGetGaussianCovar(SEXP net, SEXP nodes);
-extern "C" __declspec(dllexport) SEXP pnlGetGaussianWeights (SEXP net, SEXP nodes, SEXP parents);
+extern "C" __declspec(dllexport) SEXP pnlGetMPE(SEXP net, SEXP type, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetJPDString(SEXP net, SEXP type, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetJPDFloat(SEXP net, SEXP type, SEXP nodes);
 
-extern "C" __declspec(dllexport) SEXP pnlSetProperty(SEXP net, SEXP name, SEXP value);
-extern "C" __declspec(dllexport) SEXP pnlGetProperty(SEXP net, SEXP name);
+extern "C" __declspec(dllexport) SEXP pnlGetGaussianMean(SEXP net, SEXP type, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetGaussianCovar(SEXP net, SEXP type, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetGaussianWeights (SEXP net, SEXP type, SEXP nodes, SEXP parents);
 
-extern "C" __declspec(dllexport) SEXP pnlLearnParameters(SEXP net);
+extern "C" __declspec(dllexport) SEXP pnlSetProperty(SEXP net, SEXP type, SEXP name, SEXP value);
+extern "C" __declspec(dllexport) SEXP pnlGetProperty(SEXP net, SEXP type, SEXP name);
+
+extern "C" __declspec(dllexport) SEXP pnlLearnParameters(SEXP net, SEXP type);
 extern "C" __declspec(dllexport) SEXP pnlLearnStructure(SEXP net);
 
 extern "C" __declspec(dllexport) SEXP pnlSaveEvidBuf(SEXP net, SEXP type, SEXP filename);  
@@ -69,7 +70,7 @@ extern "C" __declspec(dllexport) SEXP pnlLoadNet(SEXP net, SEXP type, SEXP filen
 
 extern "C" __declspec(dllexport) SEXP pnlGetCurEvidenceLogLik(SEXP net);
 extern "C" __declspec(dllexport) SEXP pnlGetEvidBufLogLik(SEXP net);
-extern "C" __declspec(dllexport) SEXP pnlGetEMLearningCriterionValue(SEXP net);
+extern "C" __declspec(dllexport) SEXP pnlGetEMLearningCriterionValue(SEXP net, SEXP type);
 
 
 PNLW_USING
@@ -501,7 +502,7 @@ extern "C"
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlSetPTabular(SEXP net, SEXP value, SEXP prob)
+    SEXP pnlSetPTabular(SEXP net, SEXP type, SEXP value, SEXP prob)
     {
         SEXP res;
         int flag = -1;
@@ -509,7 +510,10 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
-        PROTECT(value = AS_CHARACTER(value));
+        PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+		
+		PROTECT(value = AS_CHARACTER(value));
         char * arg1 = CHAR(asChar(value));
 
         char * arg2;
@@ -537,8 +541,16 @@ extern "C"
         
         try
         {
-            if (IS_CHARACTER(prob)) pBNets[NetNum]->SetPTabular(arg1, arg2);
-            if (IS_NUMERIC(prob)) pBNets[NetNum]->SetPTabular(arg1, arg3);
+            if (NetType == 0)
+			{
+				if (IS_CHARACTER(prob)) pBNets[NetNum]->SetPTabular(arg1, arg2);
+				if (IS_NUMERIC(prob)) pBNets[NetNum]->SetPTabular(arg1, arg3);
+			}
+			if (NetType == 1)
+			{
+				if (IS_CHARACTER(prob)) pDBNs[NetNum]->SetPTabular(arg1, arg2);
+				if (IS_NUMERIC(prob)) pDBNs[NetNum]->SetPTabular(arg1, arg3);
+			}
         }
         catch (pnl::CException &E)
         {
@@ -555,17 +567,20 @@ extern "C"
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
-        UNPROTECT(4);
+        UNPROTECT(5);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlSetPTabularCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue)
+    SEXP pnlSetPTabularCond(SEXP net, SEXP type, SEXP value, SEXP prob, SEXP parentValue)
     {
         SEXP res;
         int flag = -1;
 
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
 
         PROTECT(value = AS_CHARACTER(value));
         PROTECT(parentValue = AS_CHARACTER(parentValue));
@@ -597,10 +612,20 @@ extern "C"
 
         try
         {
-            if (IS_CHARACTER(prob)) 
-                pBNets[NetNum]->SetPTabular(arg1, arg2, arg4);
-            if (IS_NUMERIC(prob)) 
-                pBNets[NetNum]->SetPTabular(arg1, arg3, arg4);
+            if (NetType == 0)
+			{
+				if (IS_CHARACTER(prob)) 
+					pBNets[NetNum]->SetPTabular(arg1, arg2, arg4);
+				if (IS_NUMERIC(prob)) 
+					pBNets[NetNum]->SetPTabular(arg1, arg3, arg4);
+			}
+			if (NetType == 1)
+			{
+				if (IS_CHARACTER(prob)) 
+					pDBNs[NetNum]->SetPTabular(arg1, arg2, arg4);
+				if (IS_NUMERIC(prob)) 
+					pDBNs[NetNum]->SetPTabular(arg1, arg3, arg4);
+			}
         }
         catch (pnl::CException &E)
         {
@@ -616,12 +641,12 @@ extern "C"
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
-        UNPROTECT(5);
+        UNPROTECT(6);
         return (res);
 
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetPTabularString(SEXP net, SEXP value)
+    SEXP pnlGetPTabularString(SEXP net, SEXP type, SEXP value)
     {
         SEXP res;
         const char * result = "";
@@ -631,12 +656,18 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         PROTECT(value = AS_CHARACTER(value));
         char * arg = CHAR(asChar(value));
         
         try
         {
-            temp = pBNets[NetNum]->GetPTabular(arg);
+            if (NetType == 0)
+				temp = pBNets[NetNum]->GetPTabular(arg);
+			if (NetType == 1)
+				temp = pDBNs[NetNum]->GetPTabular(arg);
             result = temp.c_str();
         }
         catch (pnl::CException &E)
@@ -655,11 +686,11 @@ extern "C"
             SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
         else
             SET_STRING_ELT(res, 0, mkChar(result));
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetPTabularStringCond(SEXP net, SEXP value, SEXP parents)
+    SEXP pnlGetPTabularStringCond(SEXP net, SEXP type, SEXP value, SEXP parents)
     {
         SEXP res;
         const char * result = "";
@@ -668,6 +699,9 @@ extern "C"
 
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
 
         PROTECT(value = AS_CHARACTER(value));
         PROTECT(parents = AS_CHARACTER(parents));
@@ -676,7 +710,10 @@ extern "C"
         
         try
         {
-            temp = pBNets[NetNum]->GetPTabular(arg1, arg2);
+            if (NetType == 0)
+				temp = pBNets[NetNum]->GetPTabular(arg1, arg2);
+			if (NetType == 1)
+				temp = pDBNs[NetNum]->GetPTabular(arg1, arg2);
             result = temp.c_str();
         }
         catch (pnl::CException &E)
@@ -695,11 +732,11 @@ extern "C"
             SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
         else
             SET_STRING_ELT(res, 0, mkChar(result));
-        UNPROTECT(4);
+        UNPROTECT(5);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetPTabularFloat(SEXP net, SEXP value)
+    SEXP pnlGetPTabularFloat(SEXP net, SEXP type, SEXP value)
     {
         SEXP res;
         int flag = 0;
@@ -707,13 +744,19 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         PROTECT(value = AS_CHARACTER(value));
         char * arg = CHAR(asChar(value));
         
         TokArr ResTok;
         try
         {
-            ResTok = pBNets[NetNum]->GetPTabular(arg);
+            if (NetType == 0)
+				ResTok = pBNets[NetNum]->GetPTabular(arg);
+			if (NetType == 1)
+				ResTok = pDBNs[NetNum]->GetPTabular(arg);
         }
         catch (pnl::CException &E)
         {
@@ -743,17 +786,20 @@ extern "C"
                 pRes[i] = ResTok[i].FltValue();
             }
         }
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetPTabularFloatCond(SEXP net, SEXP value, SEXP parents)
+    SEXP pnlGetPTabularFloatCond(SEXP net, SEXP type, SEXP value, SEXP parents)
     {
         SEXP res;
         int flag = 0;
 
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
 
         PROTECT(value = AS_CHARACTER(value));
         char * arg = CHAR(asChar(value));
@@ -764,7 +810,10 @@ extern "C"
         TokArr ResTok;
         try
         {
-            ResTok = pBNets[NetNum]->GetPTabular(arg, arg2);
+            if (NetType == 0)
+				ResTok = pBNets[NetNum]->GetPTabular(arg, arg2);
+			if (NetType == 1)
+				ResTok = pDBNs[NetNum]->GetPTabular(arg, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -794,18 +843,21 @@ extern "C"
                 pRes[i] = ResTok[i].FltValue();
             }
         }
-        UNPROTECT(4);
+        UNPROTECT(5);
         return (res);
     }
 
 //----------------------------------------------------------------------------
-    SEXP pnlSetPGaussian(SEXP net, SEXP node, SEXP mean, SEXP variance)
+    SEXP pnlSetPGaussian(SEXP net, SEXP type, SEXP node, SEXP mean, SEXP variance)
     {
         SEXP res;
         int flag = -1;
 
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
 
         PROTECT(node = AS_CHARACTER(node));
         char * arg1 = CHAR(asChar(node));
@@ -849,14 +901,29 @@ extern "C"
 
             try
             {
-                if ((IS_CHARACTER(mean)) && (IS_CHARACTER(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str);
-                if ((IS_CHARACTER(mean)) && (IS_NUMERIC(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok);
-                if ((IS_NUMERIC(mean)) && (IS_CHARACTER(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str);
-                if ((IS_NUMERIC(mean)) && (IS_NUMERIC(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok);
+                if (NetType == 0)
+				{
+					if ((IS_CHARACTER(mean)) && (IS_CHARACTER(variance)))
+						pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str);
+					if ((IS_CHARACTER(mean)) && (IS_NUMERIC(variance)))
+						pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok);
+					if ((IS_NUMERIC(mean)) && (IS_CHARACTER(variance)))
+						pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str);
+					if ((IS_NUMERIC(mean)) && (IS_NUMERIC(variance)))
+						pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok);
+				}
+				if (NetType == 1)
+				{
+					if ((IS_CHARACTER(mean)) && (IS_CHARACTER(variance)))
+						pDBNs[NetNum]->SetPGaussian(arg1, mean_str, variance_str);
+					if ((IS_CHARACTER(mean)) && (IS_NUMERIC(variance)))
+						pDBNs[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok);
+					if ((IS_NUMERIC(mean)) && (IS_CHARACTER(variance)))
+						pDBNs[NetNum]->SetPGaussian(arg1, MeanTok, variance_str);
+					if ((IS_NUMERIC(mean)) && (IS_NUMERIC(variance)))
+						pDBNs[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok);
+				}
+
             }
             catch (pnl::CException &E)
             {
@@ -873,18 +940,21 @@ extern "C"
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
 
-        UNPROTECT(5);
+        UNPROTECT(6);
         return (res);
     }
 
 //----------------------------------------------------------------------------
-    SEXP pnlSetPGaussianCond(SEXP net, SEXP node, SEXP mean, SEXP variance, SEXP weight)
+    SEXP pnlSetPGaussianCond(SEXP net, SEXP type, SEXP node, SEXP mean, SEXP variance, SEXP weight)
     {
         SEXP res;
         int flag = -1;
 
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
 
         PROTECT(node = AS_CHARACTER(node));
         char * arg1 = CHAR(asChar(node));
@@ -952,24 +1022,48 @@ extern "C"
             if (IS_CHARACTER(weight))
             {
                 if ((IS_CHARACTER(mean)) && (IS_CHARACTER(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str, weight_str);
+				{
+                    if (NetType == 0) pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str, weight_str);
+                    if (NetType == 1) pDBNs[NetNum]->SetPGaussian(arg1, mean_str, variance_str, weight_str);
+				}
                 if ((IS_CHARACTER(mean)) && (IS_NUMERIC(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok, weight_str);
+				{
+                    if (NetType == 0) pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok, weight_str);
+                    if (NetType == 1) pDBNs[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok, weight_str);
+				}
                 if ((IS_NUMERIC(mean)) && (IS_CHARACTER(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str, weight_str);
+				{
+                    if (NetType == 0) pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str, weight_str);
+                    if (NetType == 1) pDBNs[NetNum]->SetPGaussian(arg1, MeanTok, variance_str, weight_str);
+				}
                 if ((IS_NUMERIC(mean)) && (IS_NUMERIC(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok, weight_str);
+				{
+                    if (NetType == 0) pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok, weight_str);
+                    if (NetType == 1) pDBNs[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok, weight_str);
+				}
             }
             else if (IS_NUMERIC(weight))
             {
                 if ((IS_CHARACTER(mean)) && (IS_CHARACTER(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str, WeightTok);
+				{
+                    if (NetType == 0) pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str, WeightTok);
+					if (NetType == 1) pDBNs[NetNum]->SetPGaussian(arg1, mean_str, variance_str, WeightTok);
+				}
                 if ((IS_CHARACTER(mean)) && (IS_NUMERIC(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok, WeightTok);
+				{
+                    if (NetType == 0) pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok, WeightTok);
+					if (NetType == 1) pDBNs[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok, WeightTok);
+				}
                 if ((IS_NUMERIC(mean)) && (IS_CHARACTER(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str, WeightTok);
+				{
+                    if (NetType == 0) pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str, WeightTok);
+					if (NetType == 1) pDBNs[NetNum]->SetPGaussian(arg1, MeanTok, variance_str, WeightTok);
+				}
                 if ((IS_NUMERIC(mean)) && (IS_NUMERIC(variance)))
-                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok, WeightTok);
+				{
+                    if (NetType == 0) pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok, WeightTok);
+                    if (NetType == 1) pDBNs[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok, WeightTok);
+				}
             }
         }
         catch (pnl::CException &E)
@@ -986,12 +1080,12 @@ extern "C"
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
-        UNPROTECT(6);
+        UNPROTECT(7);
         return (res);
     }
 
 //----------------------------------------------------------------------------
-    SEXP pnlEditEvidence(SEXP net, SEXP values)
+    SEXP pnlEditEvidence(SEXP net, SEXP type, SEXP values)
     {
         SEXP res;
         int flag = -1;
@@ -999,12 +1093,16 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         PROTECT(values = AS_CHARACTER(values));
         char * arg = CHAR(asChar(values));
 
         try
         {
-            pBNets[NetNum]->EditEvidence(arg);
+            if (NetType == 0) pBNets[NetNum]->EditEvidence(arg);
+			if (NetType == 1) pDBNs[NetNum]->EditEvidence(arg);
         }
         catch (pnl::CException &E)
         {
@@ -1020,12 +1118,12 @@ extern "C"
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
 
     }    
 //----------------------------------------------------------------------------
-    SEXP pnlClearEvid(SEXP net)
+    SEXP pnlClearEvid(SEXP net, SEXP type)
     {
         SEXP res;
         int flag = -1;
@@ -1033,9 +1131,13 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->ClearEvid();
+            if (NetType == 0) pBNets[NetNum]->ClearEvid();
+			if (NetType == 1) pDBNs[NetNum]->ClearEvid(); 
         }
         catch (pnl::CException &E)
         {
@@ -1051,12 +1153,12 @@ extern "C"
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
-        UNPROTECT(2);
+        UNPROTECT(3);
         return (res);
     }
     
 //----------------------------------------------------------------------------
-    SEXP pnlCurEvidToBuf(SEXP net)
+    SEXP pnlCurEvidToBuf(SEXP net, SEXP type)
     {
         SEXP res;
         int flag = -1;
@@ -1064,9 +1166,13 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->CurEvidToBuf();
+            if (NetType == 0) pBNets[NetNum]->CurEvidToBuf();
+			if (NetType == 1) pDBNs[NetNum]->CurEvidToBuf();
         }
         catch (pnl::CException &E)
         {
@@ -1082,12 +1188,12 @@ extern "C"
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
-        UNPROTECT(2);
+        UNPROTECT(3);
         return (res);
     }
 
 //----------------------------------------------------------------------------
-    SEXP pnlAddEvidToBuf(SEXP net, SEXP values)
+    SEXP pnlAddEvidToBuf(SEXP net, SEXP type, SEXP values)
     {
         SEXP res;
         int flag = -1;
@@ -1095,12 +1201,16 @@ extern "C"
         PROTECT(values = AS_CHARACTER(values));
         char * arg = CHAR(asChar(values));
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
         try
         {
-            pBNets[NetNum]->AddEvidToBuf(arg);
+            if (NetType == 0) pBNets[NetNum]->AddEvidToBuf(arg);
+			if (NetType == 1) pDBNs[NetNum]->AddEvidToBuf(arg);
         }
         catch (pnl::CException &E)
         {
@@ -1116,12 +1226,12 @@ extern "C"
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
     
 //----------------------------------------------------------------------------
-    SEXP pnlClearEvidBuf(SEXP net)
+    SEXP pnlClearEvidBuf(SEXP net, SEXP type)
     {
         SEXP res;
         int flag = -1;
@@ -1129,9 +1239,13 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->ClearEvidBuf();
+            if (NetType == 0) pBNets[NetNum]->ClearEvidBuf();
+			if (NetType == 1) pDBNs[NetNum]->ClearEvidBuf();
         }
         catch (pnl::CException &E)
         {
@@ -1147,11 +1261,11 @@ extern "C"
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
-        UNPROTECT(2);
+        UNPROTECT(3);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetMPE(SEXP net, SEXP nodes)
+    SEXP pnlGetMPE(SEXP net, SEXP type, SEXP nodes)
     {
         SEXP res;
         const char * result = "";
@@ -1161,14 +1275,22 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
-        try
+        DBN * qqq = pDBNs[NetNum];
+		qqq ->SaveNet("dbn.xml");
+		try
         {
-            temp = pBNets[NetNum]->GetMPE(arg);
+            if (NetType == 0) 
+				temp = pBNets[NetNum]->GetMPE(arg);
+			if (NetType == 1) 
+				temp = pDBNs[NetNum]->GetMPE(arg);
             result = temp.c_str();
-        }
+		}
         catch (pnl::CException &E)
         {
             ErrorString = E.GetMessage();
@@ -1186,17 +1308,20 @@ extern "C"
         else
             SET_STRING_ELT(res, 0, mkChar(result));
 
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
-   SEXP pnlGetJPDFloat(SEXP net, SEXP nodes)
+   SEXP pnlGetJPDFloat(SEXP net, SEXP type, SEXP nodes)
     {
         SEXP res;
         int flag = 0;
 
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
 
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
@@ -1205,7 +1330,8 @@ extern "C"
 
         try
         {
-            ResTok = pBNets[NetNum]->GetJPD(arg);
+            if (NetType == 0) ResTok = pBNets[NetNum]->GetJPD(arg);
+			if (NetType == 1) ResTok = pDBNs[NetNum]->GetJPD(arg);
         }
         catch (pnl::CException &E)
         {
@@ -1234,11 +1360,11 @@ extern "C"
             }
         }
 
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
-   SEXP pnlGetJPDString(SEXP net, SEXP nodes)
+   SEXP pnlGetJPDString(SEXP net, SEXP type, SEXP nodes)
     {
         SEXP res;
         const char * result = "";
@@ -1248,12 +1374,16 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
         try
         {
-            temp = pBNets[NetNum]->GetJPD(arg);
+            if (NetType == 0) temp = pBNets[NetNum]->GetJPD(arg);
+			if (NetType == 1) temp = pDBNs[NetNum]->GetJPD(arg); 
             result = temp.c_str();
         }
         catch (pnl::CException &E)
@@ -1273,11 +1403,11 @@ extern "C"
         else
             SET_STRING_ELT(res, 0, mkChar(result));
 
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetGaussianMean(SEXP net, SEXP nodes)
+    SEXP pnlGetGaussianMean(SEXP net, SEXP type, SEXP nodes)
     {
         SEXP res;
         const char * result = "";
@@ -1287,6 +1417,9 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         
@@ -1294,8 +1427,10 @@ extern "C"
 
         try
         {
-            ResTok = pBNets[NetNum]->GetGaussianMean(arg);
-           // result = str.c_str();
+            if (NetType == 0) 
+				ResTok = pBNets[NetNum]->GetGaussianMean(arg);
+            if (NetType == 1) 
+				ResTok = pDBNs[NetNum]->GetGaussianMean(arg);
         }
         catch (pnl::CException &E)
         {
@@ -1326,12 +1461,12 @@ extern "C"
             SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
         }
 
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
 
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetGaussianCovar(SEXP net, SEXP nodes)
+    SEXP pnlGetGaussianCovar(SEXP net, SEXP type, SEXP nodes)
     {
         SEXP res;
         const char * result = "";
@@ -1341,70 +1476,17 @@ extern "C"
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
         TokArr ResTok;
         
         try
         {
-            ResTok = pBNets[NetNum]->GetGaussianCovar(arg);
-         //   result = str.c_str();
-        }
-        catch (pnl::CException &E)
-        {
-            ErrorString = E.GetMessage();
-            temp = 1;
-        }
-        catch(...)
-        {
-            ErrorString = "Unrecognized exception during execution of GetGaussianCovar function";
-            temp = 1;
-        }
-
-        if (temp == 0)
-        {
-            //there was no exceptions
-            int size = ResTok[0].fload.size();
-            PROTECT(res = NEW_NUMERIC(size));
-            double * pres = NUMERIC_POINTER(res);
-            for (int i=0; i<size; i++)
-            {
-                pres [i] = ResTok[0].FltValue(i).fl; 
-            }
-        }
-        else
-        {
-            //there were exceptions
-            PROTECT(res = allocVector(STRSXP, 1));
-            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
-        }
-
-        UNPROTECT(3);
-        return (res);
-    }
-
-//----------------------------------------------------------------------------
-    SEXP pnlGetGaussianWeights (SEXP net, SEXP nodes, SEXP parents)
-    {
-        SEXP res;
-        const char * result = "";
-        int temp = 0;
-        String str;
-
-        PROTECT(net = AS_INTEGER(net));
-        int NetNum = INTEGER_VALUE(net);
-
-        PROTECT(nodes = AS_CHARACTER(nodes));
-        char * arg = CHAR(asChar(nodes));
-
-        PROTECT(parents = AS_CHARACTER(parents));
-        char * arg2 = CHAR(asChar(parents));
-        TokArr ResTok;
-        
-        try
-        {
-            ResTok = pBNets[NetNum]->GetGaussianWeights(arg, arg2);
-         //   result = str.c_str();
+            if (NetType == 0) ResTok = pBNets[NetNum]->GetGaussianCovar(arg);
+            if (NetType == 1) ResTok = pDBNs[NetNum]->GetGaussianCovar(arg);
         }
         catch (pnl::CException &E)
         {
@@ -1438,8 +1520,67 @@ extern "C"
         UNPROTECT(4);
         return (res);
     }
+
 //----------------------------------------------------------------------------
-    SEXP pnlSetProperty(SEXP net, SEXP name, SEXP value)
+    SEXP pnlGetGaussianWeights (SEXP net, SEXP type, SEXP nodes, SEXP parents)
+    {
+        SEXP res;
+        const char * result = "";
+        int temp = 0;
+        String str;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
+        PROTECT(nodes = AS_CHARACTER(nodes));
+        char * arg = CHAR(asChar(nodes));
+
+        PROTECT(parents = AS_CHARACTER(parents));
+        char * arg2 = CHAR(asChar(parents));
+        TokArr ResTok;
+        
+        try
+        {
+            if (NetType == 0) ResTok = pBNets[NetNum]->GetGaussianWeights(arg, arg2);
+			if (NetType == 1) ResTok = pDBNs[NetNum]->GetGaussianWeights(arg, arg2);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            temp = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetGaussianCovar function";
+            temp = 1;
+        }
+
+        if (temp == 0)
+        {
+            //there was no exceptions
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
+            double * pres = NUMERIC_POINTER(res);
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
+        }
+        else
+        {
+            //there were exceptions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+
+        UNPROTECT(5);
+        return (res);
+    }
+//----------------------------------------------------------------------------
+    SEXP pnlSetProperty(SEXP net, SEXP type, SEXP name, SEXP value)
     {
         SEXP res;
         int flag = -1;
@@ -1453,9 +1594,15 @@ extern "C"
         PROTECT(value = AS_CHARACTER(value));
         char * arg2 = CHAR(asChar(value));
         
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->SetProperty(arg1, arg2);
+            if (NetType == 0)
+				pBNets[NetNum]->SetProperty(arg1, arg2);
+			if (NetType == 1)
+				pDBNs[NetNum]->SetProperty(arg1, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -1472,11 +1619,11 @@ extern "C"
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
 
-        UNPROTECT(4);
+        UNPROTECT(5);
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetProperty(SEXP net, SEXP name)
+    SEXP pnlGetProperty(SEXP net, SEXP type, SEXP name)
     {
         SEXP res;
         const char * result = "";
@@ -1489,9 +1636,15 @@ extern "C"
         PROTECT(name = AS_CHARACTER(name));
         char * arg1 = CHAR(asChar(name));
         
+        PROTECT(type = AS_INTEGER(type));
+        int NetType = INTEGER_VALUE(type);
+
         try
         {
-            temp = pBNets[NetNum]->GetProperty(arg1);
+            if (NetType == 0) 
+				temp = pBNets[NetNum]->GetProperty(arg1);
+			if (NetType == 1)
+				temp = pDBNs[NetNum]->GetProperty(arg1);
             result = temp.c_str();
         }
         catch (pnl::CException &E)
@@ -1516,7 +1669,7 @@ extern "C"
     }
    
 //----------------------------------------------------------------------------
-SEXP pnlLearnParameters(SEXP net)
+SEXP pnlLearnParameters(SEXP net, SEXP type)
 {
         SEXP res;
         int flag = -1;
@@ -1524,9 +1677,13 @@ SEXP pnlLearnParameters(SEXP net)
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->LearnParameters();
+            if (NetType == 0) pBNets[NetNum]->LearnParameters();
+			if (NetType == 1) pDBNs[NetNum]->LearnParameters();
         }
         catch (pnl::CException &E)
         {
@@ -1543,7 +1700,7 @@ SEXP pnlLearnParameters(SEXP net)
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
 
-        UNPROTECT(2);
+        UNPROTECT(3);
         return (res);
 }
 
@@ -2065,7 +2222,7 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGetEMLearningCriterionValue(SEXP net)
+    SEXP pnlGetEMLearningCriterionValue(SEXP net, SEXP type)
     {
         SEXP res;
         int flag = 0;
@@ -2073,10 +2230,16 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
-        float result;
+        PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
+		float result;
         try
         {
-            result = pBNets[NetNum]->GetEMLearningCriterionValue();
+            if (NetType == 0) 
+				result = pBNets[NetNum]->GetEMLearningCriterionValue();
+			if (NetType == 1)
+				result = pDBNs[NetNum]->GetEMLearningCriterionValue();
         }
         catch (pnl::CException &E)
         {
@@ -2102,7 +2265,7 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
             double * pRes = NUMERIC_POINTER(res);
             pRes[0] = result;
         }
-        UNPROTECT(2);
+        UNPROTECT(3);
         return (res);
     }
 //----------------------------------------------------------------------------
