@@ -111,6 +111,7 @@ bool PersistProbabilisticNet::IsHandledType(pnl::CPNLBase *pObj) const
 // This class registers all such savers/loaders in constructor
 class ExternalPersistenceUsing
 {
+ALLOW_TESTING
 public:
     ExternalPersistenceUsing();
     ~ExternalPersistenceUsing();
