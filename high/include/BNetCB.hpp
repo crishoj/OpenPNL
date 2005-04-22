@@ -11,6 +11,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API BayesNetCallback: public NetCallback
 {
+ALLOW_TESTING
 public:
     BayesNetCallback() {}
 

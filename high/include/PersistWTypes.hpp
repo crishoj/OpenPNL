@@ -12,6 +12,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API PersistTokenArray: public pnl::CPersistence
 {
+ALLOW_TESTING
 public:
     virtual const char *Signature();
     virtual void Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext);
@@ -21,6 +22,7 @@ public:
 
 class PNLHIGH_API PersistSSMap: public pnl::CPersistence
 {
+ALLOW_TESTING
 public:
     virtual const char *Signature();
     virtual void Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext);

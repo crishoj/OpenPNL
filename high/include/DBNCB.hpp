@@ -11,6 +11,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API DBNCallback: public NetCallback
 {
+ALLOW_TESTING
 public:
     DBNCallback() {}
 

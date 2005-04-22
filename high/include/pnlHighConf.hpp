@@ -73,6 +73,9 @@ extern PNLHIGH_API TokArr chance;
 extern PNLHIGH_API TokArr decision;
 extern PNLHIGH_API TokArr value;
 
+class TestsPnlHigh;
+#define ALLOW_TESTING friend TestsPnlHigh;
+
 PNLW_END
 
 #endif //__PNLHIGHCONFIG_HPP__

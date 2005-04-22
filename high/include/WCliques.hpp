@@ -14,6 +14,7 @@ class TokIdNode;
 
 class PNLHIGH_API WCliques: public ModelEngine
 {
+ALLOW_TESTING
 public:
     typedef std::multimap<int, int> Map;
 

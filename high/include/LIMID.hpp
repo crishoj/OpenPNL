@@ -33,6 +33,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API LIMID: public ModelEngine
 {
+ALLOW_TESTING
 public:
     LIMID();
     ~LIMID();

@@ -39,6 +39,7 @@ PNLHIGH_API void DropEvidences(pnl::pEvidencesVector &raEvidence);
 
 class PNLHIGH_API ProbabilisticNet: public ModelEngine
 {
+ALLOW_TESTING
 public:
     ProbabilisticNet(const char *netType = "bnet");
     virtual ~ProbabilisticNet();

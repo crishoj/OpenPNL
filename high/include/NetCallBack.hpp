@@ -24,6 +24,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API NetCallback
 {
+ALLOW_TESTING
 public:
     NetCallback() {}
 

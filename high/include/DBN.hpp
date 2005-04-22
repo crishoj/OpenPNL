@@ -38,6 +38,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API DBN: public ModelEngine
 {
+ALLOW_TESTING
 public:
     DBN();
     ~DBN();

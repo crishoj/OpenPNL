@@ -29,6 +29,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API TokenCover: public ModelEngine
 {
+ALLOW_TESTING
 public:
     TokenCover(TokIdNode *root, WGraph *graph);
     TokenCover(const char *rootName, WGraph *graph, bool bAutoNum = false);

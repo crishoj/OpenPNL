@@ -9,6 +9,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API WCover
 {
+ALLOW_TESTING
 public:
     virtual ~WCover() {}
 

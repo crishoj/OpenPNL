@@ -12,6 +12,7 @@ class ModelEngine;
 
 class PNLHIGH_API Message
 {
+ALLOW_TESTING
 public:
     typedef enum
     {	eChangeNState		= 1
@@ -43,6 +44,7 @@ private:
 // objects who interested in it
 class PNLHIGH_API ModelEngine
 {
+ALLOW_TESTING
 public:
     ModelEngine(): m_MaskMessage(0) {}
     virtual ~ModelEngine();

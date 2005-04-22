@@ -24,6 +24,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API TopologicalSort
 {
+ALLOW_TESTING
 public:
     TopologicalSort() {}
     virtual ~TopologicalSort() {}
@@ -35,6 +36,7 @@ public:
 
 class PNLHIGH_API TopologicalSortDBN: public TopologicalSort
 {
+ALLOW_TESTING
 public:
     TopologicalSortDBN() {}
     virtual bool GetOrderReverse(IIMap *pResult,
@@ -47,6 +49,7 @@ private:
 
 class PNLHIGH_API WGraph: public ModelEngine
 {
+ALLOW_TESTING
 public:
     WGraph();
 //    WGraph(const WGraph &g);

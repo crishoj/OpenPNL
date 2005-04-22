@@ -11,6 +11,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API MRFCallback: public NetCallback
 {
+ALLOW_TESTING
 public:
     MRFCallback() {}
 

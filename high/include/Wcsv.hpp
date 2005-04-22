@@ -11,6 +11,7 @@ PNLW_BEGIN
 
 class WLex
 {
+ALLOW_TESTING
 public:
     WLex(const char *fname, bool bRead, char delim = ',');
     WLex();

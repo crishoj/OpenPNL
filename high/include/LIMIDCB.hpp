@@ -11,6 +11,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API LIMIDCallback: public NetCallback
 {
+ALLOW_TESTING
 public:
     LIMIDCallback() {}
 

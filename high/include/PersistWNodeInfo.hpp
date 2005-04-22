@@ -15,6 +15,7 @@ PNLW_BEGIN
 
 struct PNLHIGH_API WNodeInfo: public pnl::CPNLBase
 {
+ALLOW_TESTING
     WNodeInfo(const String &name, pnl::CNodeType nt);
     WNodeInfo() {}
 
@@ -25,6 +26,7 @@ struct PNLHIGH_API WNodeInfo: public pnl::CPNLBase
 
 class PNLHIGH_API PersistWNodeInfo: public pnl::CPersistence
 {
+ALLOW_TESTING
 public:
     virtual const char *Signature();
     virtual void Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext);
@@ -35,6 +37,7 @@ public:
 
 class PNLHIGH_API PersistTokenArray: public pnl::CPersistence
 {
+ALLOW_TESTING
 public:
     virtual const char *Signature();
     virtual void Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext);
@@ -44,6 +47,7 @@ public:
 
 class PNLHIGH_API PersistSSMap: public pnl::CPersistence
 {
+ALLOW_TESTING
 public:
     virtual const char *Signature();
     virtual void Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext);

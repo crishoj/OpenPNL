@@ -36,6 +36,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API MRF: public ModelEngine
 {
+ALLOW_TESTING
 public:
     MRF();
     ~MRF();

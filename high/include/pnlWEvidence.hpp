@@ -38,6 +38,7 @@ PNLW_BEGIN
 // Inner storage for evidence (before it will be transformed to PNL's Evidence)
 class PNLHIGH_API WEvidence
 {
+ALLOW_TESTING
 public:
     void Clear();
     void Set(const TokArr &evidence);

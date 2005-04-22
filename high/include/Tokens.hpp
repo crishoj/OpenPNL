@@ -30,6 +30,7 @@ class ResolveContext;
 
 class PNLHIGH_API TokId
 {
+ALLOW_TESTING
 public:
     // internal logic relies on TokId::Match being transitive
     bool Match(TokId const &) const;
@@ -51,6 +52,7 @@ public:
 
 class PNLHIGH_API TokIdNode
 {
+ALLOW_TESTING
 public:
     class Matcher
     {
@@ -127,6 +129,7 @@ public:
 
 class ResolveContext
 {
+ALLOW_TESTING
 public:
     ResolveContext();
     ResolveContext(const ResolveContext &, int, TokIdNode *);
@@ -145,6 +148,7 @@ public:
 template< bool exploit_nan >
 class PNLHIGH_API TokFlt
 {
+ALLOW_TESTING
 public:
     float fl;
     bool undef;
@@ -176,6 +180,7 @@ public:
 template<>
 class PNLHIGH_API TokFlt< true >
 {
+ALLOW_TESTING
 public:
     float fl;
     
@@ -210,6 +215,7 @@ class TokArr;
 
 class PNLHIGH_API Tok
 {
+ALLOW_TESTING
 public:
     typedef TokFlt< std::numeric_limits< float >::has_quiet_NaN > F;
     typedef TokIdNode::Matcher Matcher;
@@ -278,6 +284,7 @@ PNLHIGH_API Tok operator^(Tok const &a, Tok const &b);
 
 class PNLHIGH_API TokArr: public std::deque< Tok >
 {
+ALLOW_TESTING
 public:
     typedef Tok::Matcher Matcher;
 

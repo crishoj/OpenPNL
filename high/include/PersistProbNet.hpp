@@ -12,6 +12,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API PersistProbabilisticNet: public pnl::CPersistence
 {
+ALLOW_TESTING
 public:
     virtual const char *Signature();
     virtual void Save(pnl::CPNLBase *pObj, pnl::CContextSave *pContext);

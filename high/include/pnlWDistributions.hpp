@@ -16,6 +16,7 @@ class WCliques;
 
 class PNLHIGH_API WDistributions: public ModelEngine
 {
+ALLOW_TESTING
 public:
     WDistributions(TokenCover *pToken);
     virtual ~WDistributions();
