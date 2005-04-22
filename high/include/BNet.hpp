@@ -36,6 +36,7 @@ PNLW_BEGIN
 
 class PNLHIGH_API BayesNet: public ModelEngine
 {
+ALLOW_TESTING
 public:
     BayesNet();
     ~BayesNet();
