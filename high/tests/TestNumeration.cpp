@@ -60,7 +60,7 @@ BayesNet *GetSimpleTabularModelWithDeletedElement()
     return net;
 }
 
-BayesNet *GetSimpleModel()
+BayesNet *GetSimpleTabularModel()
 {
     // Zero       One
     //   |         |
@@ -135,7 +135,7 @@ void TestForSetInferenceProperties()
 
 void TestForGetMPE()
 {
-    BayesNet *net = GetSimpleModel();
+    BayesNet *net = GetSimpleTabularModel();
 
     net->SetProperty("Inference", "naive");
 
