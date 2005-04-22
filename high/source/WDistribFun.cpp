@@ -10,6 +10,77 @@ using namespace pnl;
 
 PNLW_BEGIN
 
+pnl::CGaussianDistribFun *CreateGaussianDefaultDistribution(DistribFunDesc *pDesk)
+{
+    int NumberOfNodes = pDesk->nNode();
+    const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
+
+    int ChildNodeSize = pDesk->nodeSize(NumberOfNodes-1);
+    int WeightsSize = 0;
+
+    //We think that all parents are continuous 
+    int node;
+    int dim;
+    for (node = 0; node < NumberOfNodes; node++)
+    {
+	nodeTypes[node] = new CNodeType(false, pDesk->nodeSize(node), nsChance);
+	
+	if (node != (NumberOfNodes-1))
+	{
+	    WeightsSize += pDesk->nodeSize(node);
+	};
+    }
+
+    float *dataMean = new float[ChildNodeSize];
+    float *dataCov = new float[ChildNodeSize*ChildNodeSize];
+    float **dataWeight = ((NumberOfNodes)!=1)?(new float *[NumberOfNodes-1]):(NULL);
+
+    for (dim = 0; dim < ChildNodeSize; dim++)
+    {
+        dataMean[dim] = 1;
+
+        for (int dim2 = 0; dim2 < ChildNodeSize; dim2++)
+        {
+            if (dim != dim2)
+            {
+                dataCov[dim*ChildNodeSize+dim2] = 0;
+            }
+            else 
+            {
+                dataCov[dim*ChildNodeSize+dim2] = 1;
+            }
+        };      
+    }
+
+    for (node = 0; node < NumberOfNodes-1; node++)
+    {
+	int WeightsVecSize = pDesk->nodeSize(NumberOfNodes-1)*pDesk->nodeSize(node);
+        dataWeight[node] = new float[WeightsVecSize];
+
+        for (int index = 0; index < WeightsVecSize; index++)
+        {
+            dataWeight[node][index] = 0;
+        };      
+    }
+
+    CGaussianDistribFun *pDistrib = CGaussianDistribFun::CreateInMomentForm(false, NumberOfNodes, nodeTypes, 
+        dataMean, dataCov, (const float **)dataWeight);
+    pDistrib->CheckMomentFormValidity();
+
+    delete nodeTypes;
+
+    delete dataMean;
+    delete dataCov;
+    for (node = 0; node < NumberOfNodes-1; node++)
+    {
+        delete dataWeight[node];     
+    };
+    delete dataWeight;
+
+
+    return pDistrib;
+};
+
 static int nSubNodes(TokIdNode *node)
 {
     register int result = 0;
@@ -21,6 +92,14 @@ static int nSubNodes(TokIdNode *node)
     return result;
 }
 
+static bool isDiscrete(TokIdNode *node)
+{
+    TokIdNode * pType = node->v_prev;
+    TokIdNode * pContinuous = continuous[0].Node();
+
+    return (pContinuous != pType);
+}
+
 DistribFunDesc::DistribFunDesc(TokIdNode *node, Vector<TokIdNode*> &aParent)
 : m_aNode(aParent)
 {
@@ -28,9 +107,11 @@ DistribFunDesc::DistribFunDesc(TokIdNode *node, Vector<TokIdNode*> &aParent)
     int i = m_aNode.size();
 
     m_aNodeSize.resize(i);
+    m_aNodeTypeIsTabFlag.resize(i);
     for(; --i >= 0;)
     {
 	m_aNodeSize[i] = nSubNodes(m_aNode[i]);
+	m_aNodeTypeIsTabFlag[i] = pnlw::isDiscrete(m_aNode[i]);
     }
 }
 
@@ -97,6 +178,27 @@ Vector<int> DistribFunDesc::GetValuesAsIndex(Tok &tok)
     }
 
     return result;
+}
+
+int DistribFunDesc::nTabular() const
+{
+    int nT = 0;
+    int nNodes = nNode();
+
+    for (int i = 0; i < nNodes; i++)
+    {
+	if (m_aNodeTypeIsTabFlag[i])
+	{
+	    nT++;
+	};
+    };
+
+    return nT;
+}
+
+int DistribFunDesc::nContinuous() const
+{
+    return nNode() - nTabular();
 }
 
 WTabularDistribFun::WTabularDistribFun(): m_pMatrix(0) {}
@@ -560,7 +662,7 @@ void WGaussianDistribFun::DoSetup()
 }
 
 
-pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType, int numWeightMat) const
+pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType, int numWeightMat, const int* pDiscrParentValues) const
 {
     static const char fname[] = "Matrix";
 
@@ -684,76 +786,7 @@ float WGaussianDistribFun::GetAValue(int matrixId, Vector<int> &aIndex)
 //Changed: I changed sizes of dataMean and dataCov and dataWeight
 void WGaussianDistribFun::CreateDefaultDistribution()
 {
-    if (m_pDistrib != 0)
-    {
-	delete m_pDistrib;
-	m_pDistrib = 0;
-    }
-
-    int NumberOfNodes = desc()->nNode();
-    const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
-
-    int ChildNodeSize = desc()->nodeSize(NumberOfNodes-1);
-    int WeightsSize = 0;
-
-    //We think that all parents are continuous 
-    int node;
-    int dim;
-    for (node = 0; node < NumberOfNodes; node++)
-    {
-	nodeTypes[node] = new CNodeType(false, desc()->nodeSize(node), nsChance);
-	
-	if (node != (NumberOfNodes-1))
-	{
-	    WeightsSize += desc()->nodeSize(node);
-	};
-    }
-
-    float *dataMean = new float[ChildNodeSize];
-    float *dataCov = new float[ChildNodeSize*ChildNodeSize];
-    float **dataWeight = ((NumberOfNodes)!=1)?(new float *[NumberOfNodes-1]):(NULL);
-
-    for (dim = 0; dim < ChildNodeSize; dim++)
-    {
-        dataMean[dim] = 1;
-
-        for (int dim2 = 0; dim2 < ChildNodeSize; dim2++)
-        {
-            if (dim != dim2)
-            {
-                dataCov[dim*ChildNodeSize+dim2] = 0;
-            }
-            else 
-            {
-                dataCov[dim*ChildNodeSize+dim2] = 1;
-            }
-        };      
-    }
-
-    for (node = 0; node < NumberOfNodes-1; node++)
-    {
-	int WeightsVecSize = desc()->nodeSize(NumberOfNodes-1)*desc()->nodeSize(node);
-        dataWeight[node] = new float[WeightsVecSize];
-
-        for (int index = 0; index < WeightsVecSize; index++)
-        {
-            dataWeight[node][index] = 0;
-        };      
-    }
-
-    m_pDistrib = CGaussianDistribFun::CreateInMomentForm(false, NumberOfNodes, nodeTypes, 
-        dataMean, dataCov, (const float **)dataWeight);
-    m_pDistrib->CheckMomentFormValidity();
-
-    delete nodeTypes;
-
-    delete dataMean;
-    delete dataCov;
-    for (node = 0; node < NumberOfNodes-1; node++)
-    {
-        delete dataWeight[node];     
-    };
-    delete dataWeight;
+    m_pDistrib = CreateGaussianDefaultDistribution(desc());
 }
 
 int WGaussianDistribFun::IsDistributionSpecific()
@@ -787,9 +820,6 @@ void WGaussianDistribFun::SetData(int matrixId, const float *probability, int nu
 
    m_pDistrib->AllocMatrix( probability, matType, numWeightMat);
 }
-
-
-
 
 WSoftMaxDistribFun::WSoftMaxDistribFun():WDistribFun(), m_pDistrib(0) {}
 
@@ -830,7 +860,7 @@ void WSoftMaxDistribFun::DoSetup() // OK
     CreateDefaultDistribution();
 }
 
-pnl::CDenseMatrix<float> *WSoftMaxDistribFun::Matrix(int matrixType, int numWeightMat) const
+pnl::CDenseMatrix<float> *WSoftMaxDistribFun::Matrix(int matrixType, int numWeightMat, const int* pDiscrParentValues) const
 {
     static const char fname[] = "Matrix";
 
@@ -963,5 +993,108 @@ void WSoftMaxDistribFun::CreateDefaultDistribution() //OK
     m_pDistrib->CreateDefaultMatrices(1);
 
 }
+
+WCondGaussianDistribFun::WCondGaussianDistribFun(): WDistribFun(), m_pDistrib(0) {};
+
+WCondGaussianDistribFun::~WCondGaussianDistribFun()
+{
+    if (m_pDistrib != 0) 
+    { 
+            const pnl::pConstNodeTypeVector *ntVec = m_pDistrib->GetNodeTypesVector();
+            int NumberOfNodes = ntVec->size();
+            for (int node = 0; node < NumberOfNodes; node++)
+            {
+                delete const_cast<CNodeType*>((*ntVec)[node]);
+            }
+        delete m_pDistrib;
+	m_pDistrib = 0;
+    };
+};
+
+Vector<int> WCondGaussianDistribFun::Dimensions(int matrixType)
+{
+    if(!m_pDistrib)
+    {
+        CreateDefaultDistribution();
+    }
+
+    return desc()->nodeSizes();
+};
+
+void WCondGaussianDistribFun::DoSetup()
+{
+    CreateDefaultDistribution();
+};
+
+pnl::CDenseMatrix<float> *WCondGaussianDistribFun::Matrix(int matrixType, int numWeightMat, const int* pDiscrParentValues) const
+{
+    static const char fname[] = "Matrix";
+
+    if (!m_pDistrib)
+    {
+	ThrowUsingError("Distribution function is not set", fname);
+    }
+
+    if (!pDiscrParentValues)
+    {
+	ThrowUsingError("Discrete parents combination is not set", fname);
+    }
+
+    const CGaussianDistribFun *pGDistribFun = m_pDistrib->GetDistribution(pDiscrParentValues);
+
+    if (!pGDistribFun)
+    {
+	ThrowUsingError("No gaussian function corresponds to indexes", fname);
+    };
+    
+    pnl::CMatrix<float> *pMatrix = 0;
+
+    switch (matrixType)
+    {
+    case matMean:
+	pMatrix = pGDistribFun->GetMatrix(matMean);
+	break;
+    case matCovariance:
+	pMatrix = pGDistribFun->GetMatrix(matCovariance);
+	break;
+    case matWeights:
+	pMatrix = pGDistribFun->GetMatrix(matWeights, numWeightMat);
+	break;
+    case matWishartMean:
+        pMatrix = pGDistribFun->GetMatrix(matWishartMean);
+	break;
+    case matWishartCov:
+        pMatrix = pGDistribFun->GetMatrix(matWishartCov);
+	break;
+    default:
+	ThrowUsingError("Unsupported matrix type", fname);
+	break;
+    }
+
+    if (dynamic_cast<pnl::CDenseMatrix<float> *>(pMatrix) != 0)
+    {
+	return dynamic_cast<pnl::CDenseMatrix<float> *>(pMatrix);
+    }
+    else
+    {
+	return pMatrix->ConvertToDense();
+    }    
+};
+
+void WCondGaussianDistribFun::CreateDefaultDistribution()
+{
+    int NumberOfNodes = desc()->nNode();
+    const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
+
+    for (int node = 0; node < NumberOfNodes; node++)
+    {
+	nodeTypes[node] = new CNodeType(desc()->isTabular(node), desc()->nodeSize(node), nsChance);
+    }
+
+    m_pDistrib = pnl::CCondGaussianDistribFun::Create( 0, NumberOfNodes,
+        nodeTypes );
+
+    delete nodeTypes;
+};
 
 PNLW_END
