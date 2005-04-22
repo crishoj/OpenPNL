@@ -2,13 +2,15 @@
 
 #define SKIP_TOKEN
 #define SKIP_LIMID
-//#define SKIP_DBN
+#define SKIP_DBN
 #define SKIP_MRF
 #define SKIP_NUMERATION
+//#define SKIP_CONDGAUSSIAN
 
 int main(int argc, char* argv[])
 {
     bool bTestOK = true, lastTestRes;
+    TestsPnlHigh tests;
 
 #ifndef SKIP_TOKEN
     bTestOK = TestResolve1() && bTestOK;
@@ -140,6 +142,20 @@ int main(int argc, char* argv[])
     }
 #endif
 
+#ifndef SKIP_CONDGAUSSIAN
+    try 
+    {
+	tests.TestDesc();
+	tests.TestNTabNCont();
+    }
+    catch(pnl::CException e)
+    {
+        std::cout << e.GetMessage();
+        bTestOK = false;
+    }
+
+#endif
+    
     if(bTestOK)
     {
         std::cout << "All tests were completed successfully" << "\n";
