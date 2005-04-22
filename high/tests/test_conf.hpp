@@ -2,6 +2,7 @@
 #include <iostream>
 #include "pnlHigh.hpp"
 #include "Tokens.hpp"
+#include "TestPnlHigh.hpp"
 
 // FORWARDS
 namespace pnl
@@ -60,3 +61,4 @@ void TestForSetInferenceProperties();
 void TestMRFGetJPD();
 void TestMRFModelCreate();
 void TestForGetMPE();
+BayesNet *GetSimpleTabularModel();
