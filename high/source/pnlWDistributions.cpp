@@ -351,6 +351,7 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
 	    ThrowUsingError("Unsupported type of node", fname);
         }
     }
+    Notify(Message::eSetModelInvalid, index);// eNodeUpdated is more informative
 }
 
 int WDistributions::IDistribution(const Vector<TokIdNode *> &nodes) const
