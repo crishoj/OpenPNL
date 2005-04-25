@@ -251,10 +251,7 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	{
 	    WeightsSize += desc()->nodeSize(parent);
 	}
-/*        if (WeightsSize == 0)
-	    WeightsSize = ChildNodeSize;
-        else
-*/
+
         WeightsSize *= ChildNodeSize;
 
 	//cont case
@@ -357,14 +354,18 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	aIndex[mIndex] = mValue;
     }
 
-    bool isSoftMax = false;
-    for (int j=0; j< desc()->nNode(); j++)
+    bool isSoftMax;
+    if (desc()->isTabular(NumberOfNodes-1))
     {
-        TokIdNode *tokId = desc()->node(j);
-        if (!static_cast<pnl::CNodeType*>(tokId->v_prev->data)->IsDiscrete() )
+        isSoftMax = false;
+        for (int j = 0; j < desc()->nNode(); j++)
         {
-            isSoftMax = true;
-            break;
+            TokIdNode *tokId = desc()->node(j);
+            if (!desc()->isTabular(j))
+            {
+                isSoftMax = true;
+                break;
+            }
         }
     }
 
@@ -420,21 +421,9 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
             //aIndex[0] - index of weights matrix
 	    //aIndex[1] - col index in the weights matrix
 	    //aIndex[2] - row index in the weights matrix
-            int col;
-            int row;
-            if (!isSoftMax)
-            {
-                aIndex[0] = IndexWeightsMatrix;
-                aIndex[1] = (aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1)?(aIndex[1]+1):(aIndex[1]);
-                aIndex[2] = (aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1)?(0):(aIndex[2]+1);
-            }
-            else
-            {
-                col = i % (NumberOfNodes-1);
-                row = i / (NumberOfNodes-1);
-                aIndex[0] = col;
-                aIndex[1] = row;
-            }
+            aIndex[0] = IndexWeightsMatrix;
+            aIndex[1] = (aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1)?(aIndex[1]+1):(aIndex[1]);
+            aIndex[2] = (aIndex[2] == desc()->nodeSize(IndexWeightsMatrix)-1)?(0):(aIndex[2]+1);
 
             if(!probability[i].FltValue(0).IsUndef())
 	    {
@@ -921,8 +910,9 @@ void WSoftMaxDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float prob
     switch (matrixId)
     {
     case matWeights:
-        Index[0] = aIndex[1];
-	Index[1] = aIndex[0];
+        Index[0] = aIndex[0];
+	Index[1] = aIndex[1];
+//	Index[2] = aIndex[0];
 	pMatrix = m_pDistrib->GetMatrix( static_cast<EMatrixType>(matrixId) );
 	pMatrix->SetElementByIndexes(probability, Index);
 	break;
