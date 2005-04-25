@@ -16,6 +16,7 @@ namespace pnl
     class CSoftMaxDistribFun;
     class CGaussianDistribFun;
     class CCondGaussianDistribFun;
+    class CCondSoftMaxDistribFun;
 }
 
 PNLW_BEGIN
@@ -59,7 +60,8 @@ public:
     void ExtractData(int matrixType, TokArr &matrix);
     void Setup(TokIdNode *node, Vector<TokIdNode*> &aParent);
     virtual void DoSetup() = 0;
-    virtual pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, const int* pDiscrParentValues = 0) const = 0;
+    virtual pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, 
+        const int* pDiscrParentValues = 0) const = 0;
     DistribFunDesc *desc() const { return m_pDesc; }
 
 protected:
@@ -127,7 +129,8 @@ public:
     void SetDefaultDistribution();
     Vector<int> Dimensions(int matrixType);
     void DoSetup();
-    pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1, const int* pDiscrParentValues = 0) const;
+    pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1, 
+        const int* pDiscrParentValues = 0) const;
     pnl::floatVector* OffsetVector() const;
 
     void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
@@ -148,7 +151,8 @@ public:
     ~WCondGaussianDistribFun();
     Vector<int> Dimensions(int matrixType);
     void DoSetup();
-    pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, const int* pDiscrParentValues = 0) const;
+    pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, 
+        const int* pDiscrParentValues = 0) const;
     void CreateDefaultDistribution();
 
 private:
@@ -156,6 +160,26 @@ private:
 
 };
 
+
+class PNLHIGH_API WCondSoftMaxDistribFun: public WDistribFun
+{
+ALLOW_TESTING
+public:
+    WCondSoftMaxDistribFun();
+    ~WCondSoftMaxDistribFun();
+    virtual void SetDefaultDistribution();
+    Vector<int> Dimensions(int matrixType);
+    void DoSetup();
+    pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, 
+        const int* pDiscrParentValues = 0) const;
+    void CreateDefaultDistribution();
+    virtual void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
+    virtual float GetAValue(int matrixType, Vector<int> &aIndex);
+
+private:
+    pnl::CCondSoftMaxDistribFun *m_pDistrib;
+
+};
 PNLW_END
 
 #endif //__WDISTRIBFUN_HPP__

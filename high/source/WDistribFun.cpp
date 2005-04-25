@@ -5,7 +5,7 @@
 #include "Tokens.hpp"
 #include "BNet.hpp"
 #include "TokenCover.hpp"
-//#include "pnlSoftMaxDistribFun.hpp"
+//#include "pnlCondSoftMaxDistribFun.hpp"
 using namespace pnl;
 
 PNLW_BEGIN
@@ -651,7 +651,8 @@ void WGaussianDistribFun::DoSetup()
 }
 
 
-pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType, int numWeightMat, const int* pDiscrParentValues) const
+pnl::CDenseMatrix<float> *WGaussianDistribFun::Matrix(int matrixType, int numWeightMat, 
+                                                      const int* pDiscrParentValues) const
 {
     static const char fname[] = "Matrix";
 
@@ -963,7 +964,7 @@ float WSoftMaxDistribFun::GetAValue(int matrixId, Vector<int> &aIndex)
     return val;
 }
 
-void WSoftMaxDistribFun::CreateDefaultDistribution() //OK
+void WSoftMaxDistribFun::CreateDefaultDistribution() 
 {
     if (m_pDistrib != 0)
     {
@@ -1025,7 +1026,9 @@ void WCondGaussianDistribFun::DoSetup()
     CreateDefaultDistribution();
 };
 
-pnl::CDenseMatrix<float> *WCondGaussianDistribFun::Matrix(int matrixType, int numWeightMat, const int* pDiscrParentValues) const
+pnl::CDenseMatrix<float> *WCondGaussianDistribFun::Matrix(int matrixType, 
+                                                          int numWeightMat, 
+                                                          const int* pDiscrParentValues) const
 {
     static const char fname[] = "Matrix";
 
@@ -1095,5 +1098,125 @@ void WCondGaussianDistribFun::CreateDefaultDistribution()
 
     delete nodeTypes;
 };
+
+WCondSoftMaxDistribFun::WCondSoftMaxDistribFun(): WDistribFun(), m_pDistrib(0)
+{
+
+}
+WCondSoftMaxDistribFun::~WCondSoftMaxDistribFun()
+{
+    if (m_pDistrib != 0) 
+    { 
+        const pnl::pConstNodeTypeVector *ntVec = m_pDistrib->GetNodeTypesVector();
+        int NumberOfNodes = ntVec->size();
+        for (int node = 0; node < NumberOfNodes; node++)
+        {
+            delete const_cast<CNodeType*>((*ntVec)[node]);
+        }
+        delete m_pDistrib;
+        m_pDistrib = 0;
+    };
+
+}
+
+Vector<int> WCondSoftMaxDistribFun::Dimensions(int matrixType)
+{
+    if(!m_pDistrib)
+    {
+        CreateDefaultDistribution();
+    }
+
+    return desc()->nodeSizes();
+}
+
+void WCondSoftMaxDistribFun::DoSetup()
+{
+    CreateDefaultDistribution();
+}
+
+pnl::CDenseMatrix<float> *WCondSoftMaxDistribFun::Matrix(int matrixType, int numWeightMat, 
+        const int* pDiscrParentValues) const
+{
+    pnl::CMatrix<float> *pMatrix = 0;
+    static const char fname[] = "Matrix";
+
+    if (!m_pDistrib)
+    {
+	ThrowUsingError("Distribution function is not set", fname);
+    }
+
+    if (!pDiscrParentValues)
+    {
+	ThrowUsingError("Discrete parents combination is not set", fname);
+    }
+
+    const CSoftMaxDistribFun *pGDistribFun = m_pDistrib->GetDistribution(pDiscrParentValues);
+
+    if (!pGDistribFun)
+    {
+	ThrowUsingError("No gaussian function corresponds to indexes", fname);
+    };
+    
+    switch (matrixType)
+    {
+    case matWeights:
+	pMatrix = pGDistribFun->GetMatrix(matWeights, numWeightMat);
+	break;
+    default:
+	ThrowUsingError("Unsupported matrix type", fname);
+	break;
+    }
+
+    if (dynamic_cast<pnl::CDenseMatrix<float> *>(pMatrix) != 0)
+    {
+	return dynamic_cast<pnl::CDenseMatrix<float> *>(pMatrix);
+    }
+    else
+    {
+	return pMatrix->ConvertToDense();
+    }    
+
+    return pMatrix->ConvertToDense();
+}
+
+void WCondSoftMaxDistribFun::CreateDefaultDistribution()
+{
+    if (m_pDistrib != 0)
+    {
+	delete m_pDistrib;
+	m_pDistrib = 0;
+    }
+
+    int NumberOfNodes = desc()->nNode();
+    const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
+
+    for (int node = 0; node < NumberOfNodes; node++)
+    {
+	nodeTypes[node] = new CNodeType(desc()->isTabular(node), desc()->nodeSize(node), nsChance);
+    }
+
+
+    m_pDistrib = pnl::CCondSoftMaxDistribFun::Create(NumberOfNodes, nodeTypes);
+  
+    m_pDistrib->CreateDefaultMatrices();
+
+    delete nodeTypes;
+}
+
+void WCondSoftMaxDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float probability)
+{
+
+}
+
+float WCondSoftMaxDistribFun::GetAValue(int matrixType, Vector<int> &aIndex)
+{
+    float res;
+    return res;
+}
+
+void WCondSoftMaxDistribFun::SetDefaultDistribution()
+{
+    CreateDefaultDistribution();
+}
 
 PNLW_END
