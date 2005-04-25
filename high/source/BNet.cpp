@@ -123,9 +123,9 @@ void BayesNet::SetPSoftMax(TokArr node, TokArr weigth, TokArr offset, TokArr par
     {
         parentValue = TokArr(par, 1);
     }
-
-    Net().Distributions().FillData(node, weigth, TokArr(), pnl::matWeights);
-    Net().Distributions().FillData(node, offset, TokArr(), vectorOffset);
+    
+    Net().Distributions().FillData(node, weigth, parentValue, pnl::matWeights);
+    Net().Distributions().FillData(node, offset, parentValue, vectorOffset);
 }
 
 

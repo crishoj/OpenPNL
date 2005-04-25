@@ -60,7 +60,7 @@ void WDistributions::Setup(int iNode)
     Vector<int> aParent;
     Graph().GetParents(&aParent, iNode);
     Vector<TokIdNode*> parTokId = Token().Nodes(aParent);
-/////////////////////////////////abrosimova    
+
     if (nodeClass == eNodeClassDiscrete )
     {
         bool isSoftMax = false;
@@ -73,12 +73,29 @@ void WDistributions::Setup(int iNode)
                 break;
             }
         }
+        bool isCondSoftMax = false;
+
         if (isSoftMax)
-            m_aDistribution[iNode] = new WSoftMaxDistribFun();
+        {
+            for ( i=0; i< parTokId.size(); i++)
+            {
+                TokIdNode *tok = parTokId[i];
+                if (static_cast<pnl::CNodeType*>(tok->v_prev->data)->IsDiscrete() )
+                {
+                    isCondSoftMax = true;
+                    break;
+                }
+            }
+        }
+        if (isCondSoftMax)
+            m_aDistribution[iNode] = new WCondSoftMaxDistribFun();
         else
-            m_aDistribution[iNode] = new WTabularDistribFun();            
+            if (isSoftMax)
+                m_aDistribution[iNode] = new WSoftMaxDistribFun();
+            else
+                m_aDistribution[iNode] = new WTabularDistribFun();            
     }
-/////////////////////////////////abrosimova    
+
     else
     {
         if (nodeClass == eNodeClassContinuous)
