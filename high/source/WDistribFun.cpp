@@ -716,6 +716,15 @@ void WGaussianDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float pro
     }
 
     //In continuous case aIndex means an index in vectors mean or cov or weights
+#ifdef _DEBUG
+    for(int i = aIndex.size(); --i >= 0;)
+    {
+	if(aIndex[i] < 0)
+	{
+	    ThrowInternalError("One of indeces < 0", "WGaussianDistribFun::SetAValue");
+	}
+    }
+#endif
 
     int Index[2];
     CMatrix<float> * pMatrix;
