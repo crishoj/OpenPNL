@@ -8,7 +8,7 @@ The function returns value of the property with given name. If property was not 
 GetProperty(Net, name)
 }
 \arguments{
-\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network, LIMID or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{name}{String. Name of property.}
 }
 \examples{

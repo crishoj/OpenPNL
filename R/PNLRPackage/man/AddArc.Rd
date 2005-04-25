@@ -8,7 +8,7 @@ The function adds one or several arcs to the network. Each starting node is conn
 AddArc(BayesNet, from, to) 
 }
 \arguments{
-\item{net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{net}{Bayesian network, LIMID or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{from}{String. Array of starting nodes of the arcs. Nodes are separated by the space.}
 \item{to}{String. Array of ending nodes of the arcs. Nodes are separated by the space.}
 }

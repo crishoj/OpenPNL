@@ -2,6 +2,7 @@
 
 #include "BNet.hpp"
 #include "DBN.hpp"
+#include "LIMID.hpp"
 #include "pnlException.hpp"
 //#include "RForDBN.h"
 
@@ -77,17 +78,20 @@ PNLW_USING
 
 extern "C"
 {
-    int CurrentSize = 10;
+    int CurrentSize = 3;
     BayesNet ** pBNets = new BayesNet * [CurrentSize];
     int NetsCount = 0;
     char * my_result;
 
     std::string ErrorString;
 
-    int DBNCurrentSize = 1;
+    int DBNCurrentSize = 3;
     DBN ** pDBNs = new DBN * [DBNCurrentSize];
     int DBNCount = 0;
 
+	int LIMIDCurrentSize = 3;
+	int LIMIDCount = 0;
+	LIMID ** pLIMIDs = new LIMID * [LIMIDCurrentSize];
     
 //----------------------------------------------------------------------------
     SEXP pnlCreateBNet()
@@ -154,6 +158,8 @@ extern "C"
 				pBNets[NetNum]->AddNode(arg1, arg2);
             if (NetType == 1) 
 				pDBNs[NetNum]->AddNode(arg1, arg2);
+			if (NetType == 2)
+				pLIMIDs[NetNum]->AddNode(arg1, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -197,6 +203,8 @@ extern "C"
 				pBNets[NetNum]->DelNode(arg);
 			if (NetType == 1)
 				pDBNs[NetNum]->DelNode(arg);
+			if (NetType == 2)
+				pLIMIDs[NetNum]->DelNode(arg);
         }
         catch (pnl::CException E)
         {
@@ -289,6 +297,8 @@ extern "C"
 				pBNets[NetNum]->AddArc(arg1, arg2);
 			if (NetType == 1)
 				pDBNs[NetNum]->AddArc(arg1, arg2);
+			if (NetType == 2)
+				pLIMIDs[NetNum]->AddArc(arg1, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -332,6 +342,8 @@ extern "C"
 				pBNets[NetNum]->DelArc(arg1, arg2);
 			if (NetType == 1)
 				pDBNs[NetNum]->DelArc(arg1, arg2);
+			if (NetType == 2)
+				pLIMIDs[NetNum]->DelArc(arg1, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -1603,6 +1615,8 @@ extern "C"
 				pBNets[NetNum]->SetProperty(arg1, arg2);
 			if (NetType == 1)
 				pDBNs[NetNum]->SetProperty(arg1, arg2);
+			if (NetType == 2)
+				pLIMIDs[NetNum]->SetProperty(arg1, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -1645,6 +1659,8 @@ extern "C"
 				temp = pBNets[NetNum]->GetProperty(arg1);
 			if (NetType == 1)
 				temp = pDBNs[NetNum]->GetProperty(arg1);
+			if (NetType == 2)
+				temp = pLIMIDs[NetNum]->GetProperty(arg1);
             result = temp.c_str();
         }
         catch (pnl::CException &E)
@@ -2073,6 +2089,8 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
 				pBNets[NetNum]->SaveNet(filename);
             if (NetType == 1)
 				pDBNs[NetNum]->SaveNet(filename);
+			if (NetType == 2)
+				pLIMIDs[NetNum]->SaveNet(filename);
 
         }
         catch (pnl::CException &E)
@@ -2115,6 +2133,8 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
 				pBNets[NetNum]->LoadNet(file);
 			if (NetType == 1)
 				pDBNs[NetNum]->LoadNet(file);
+			if (NetType == 2)
+				pLIMIDs[NetNum]->LoadNet(file);
 
         }
         catch (pnl::CException &E)

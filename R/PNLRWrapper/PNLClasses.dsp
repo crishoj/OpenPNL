@@ -98,6 +98,10 @@ SOURCE=.\main.cpp
 
 SOURCE=.\RForDBN.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\RforLIMID.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
