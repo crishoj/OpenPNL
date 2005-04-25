@@ -49,7 +49,6 @@ BayesNet::~BayesNet()
 {
     delete m_Inference;
     delete m_Learning;
-    StopSpyTo(m_pNet);
     delete m_pNet;
 }
 
