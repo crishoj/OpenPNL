@@ -35,7 +35,7 @@ PNL_BEGIN
 template <class Type> class C2DNumericDenseMatrix;
 class CSoftMaxDistribFun;
 
-class CCondSoftMaxDistribFun : public CDistribFun
+class PNL_API CCondSoftMaxDistribFun : public CDistribFun
 {
 public:
   static CCondSoftMaxDistribFun* Create(int nNodes,
