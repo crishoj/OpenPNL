@@ -84,6 +84,7 @@
 #include "pnlScalarDistribFun.hpp"
 #include "pnlCondGaussianDistribFun.hpp"
 #include "pnlSoftMaxDistribFun.hpp"
+#include "pnlCondSoftMaxDistribFun.hpp"
 #include "pnlParNewDelete.hpp"
 #include "pnlParPearlInferenceEngine.hpp"
 #include "pnlParJtreeInferenceEngine.hpp"
