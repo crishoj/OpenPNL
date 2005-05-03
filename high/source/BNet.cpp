@@ -94,11 +94,6 @@ TokArr BayesNet::GetChildren(TokArr nodes)
     return Net().GetChildren(nodes);
 }
 
-static int cmpTokIdNode(TokIdNode *node1, TokIdNode *node2)
-{
-    return (char*)node1->data - (char*)node2->data;
-}
-
 // It is inner DistribFun
 void BayesNet::SetPTabular(TokArr value, TokArr prob, TokArr parentValue)
 {

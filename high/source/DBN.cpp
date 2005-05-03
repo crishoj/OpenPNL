@@ -150,11 +150,6 @@ void DBN::DelArc(TokArr from, TokArr to)
     Net().DelArc(from, to);
 }
 
-static int cmpTokIdNode(TokIdNode *node1, TokIdNode *node2)
-{
-    return (char*)node1->data - (char*)node2->data;
-}
-
 // It is inner DistribFun
 void DBN::SetPTabular(TokArr value, TokArr prob, TokArr parentValue)
 {
@@ -379,7 +374,6 @@ TokArr DBN::GetJPD( TokArr nodes)
     
     TokArr NewQue;
     String tmpStr;
-    Tok *pTok;
     tmpStr = nodes[nodes.size() - 1].Name();
     int nSlice = GetSliceNum(tmpStr);   
 
@@ -415,7 +409,6 @@ TokArr DBN::GetJPD( TokArr nodes)
 	break;
     case 'x':
 	Inference().DefineProcedure(pnl::ptFixLagSmoothing,0 );
-	int slice;
 	Inference().EnterEvidence( &(pEvid[nSlice]), 1 );
 	Inference().FixLagSmoothing( nSlice );
 	break;
@@ -605,7 +598,6 @@ TokArr DBN::GetMPE(TokArr nodes)
 {
     TokArr NewQue,OutQue;
     String tmpStr, tmpRez,tmpS,tmpVal;
-    Tok *pTok;
     tmpStr = nodes[nodes.size() - 1].Name();
     int nSlice = GetSliceNum(tmpStr);
     if( !nodes.size())
@@ -615,7 +607,7 @@ TokArr DBN::GetMPE(TokArr nodes)
     //  Net().MustBeNode(nodes);	
     pnl::CEvidence **pEvid;
     pEvid = new pnl::CEvidence*[GetNumSlices()];
-    int i,j;
+    int i;
     for(i = 0; i < GetNumSlices(); i++)
     {
 	pEvid[i] = pEvid[i] = Net().CreateEvidence((*Net().EvidenceBuf())[m_AllEvidences[i][m_AllEvidences[i].size() - 1]].Get());  
@@ -1395,7 +1387,6 @@ TokArr DBN::GetChildren(TokArr nodes)
 {
     TokArr NewQue1, NewQue2, tmpChildren1,tmpChildren2, nodesChildren;
     String tmpStr;
-    Tok *pTok;
     int i;
     
     tmpStr = nodes[nodes.size() - 1].Name();
