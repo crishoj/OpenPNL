@@ -423,7 +423,6 @@ Vector<TokIdNode*> TokenCover::ExtractNodes(TokArr &aValue) const
     Vector<TokIdNode*> result;
     for(int i = 0; i < aValue.size(); ++i)
     {
-	int j = TokIdNode::root->desc.count(aValue[i].Name());
 	TokIdNode *node = aValue[i].Node(m_aNode);
 	if(node->tag == eTagValue)
 	{
@@ -580,6 +579,16 @@ int TokenCover::Index(TokIdNode *node)
 
     ThrowInternalError("must have integer id (may be wrong Tok?)", "GetInt");
     return -1;
+}
+
+bool TokenCover::IsDiscrete(const TokIdNode *node)
+{
+    TokIdNode *pType = node->v_prev;
+    if(!pType || pType->tag != eTagNodeType || !pType->data)
+    {
+	ThrowInternalError("wrong node (bad parent)", "TokenCover::IsDiscrete");
+    }
+    return ((pnl::CNodeType*)pType->data)->IsDiscrete();
 }
 
 Tok TokenCover::TokByNodeValue(int iNode, int iValue)

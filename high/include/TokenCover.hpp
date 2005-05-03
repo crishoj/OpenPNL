@@ -73,6 +73,7 @@ public:
     int Index(Tok &tok);
     static int SIndex(Tok &tok);
     static int Index(TokIdNode *node);
+    static bool IsDiscrete(const TokIdNode *node);
 
     Tok TokByNodeValue(int iNode, int iValue);
 
