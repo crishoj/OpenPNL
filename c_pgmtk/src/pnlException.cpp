@@ -52,24 +52,24 @@ static char* GetErrorType( pgmErrorType erType )
 	    return "something wrong in exception";
 	}
     }
-};
+}
 
 void CException::GenMessage() throw()
 {
-    std::stringstream buf;
+    pnlString buf;
 
     buf << GetErrorType(pgmErrorType(m_code)) << " in " << m_file << " at line "
 	<< m_line << ". The error description is: " << m_description ;
-    m_message = buf.str();
+    m_message = buf;
 }
 
-CException::CException( std::string file, int line, std::string description)
+CException::CException(pnlString file, int line, pnlString description)
 throw(): m_code(pgmFail), m_file(file), m_line(line), m_description(description)
 {
     GenMessage();
 }
 
-CException::CException( std::string file, int line, std::string description,
+CException::CException(pnlString file, int line, pnlString description,
 		       pgmErrorType code) throw()
 		       : m_code(code), m_file(file), m_line(line),
 		       m_description(description)
@@ -77,197 +77,148 @@ CException::CException( std::string file, int line, std::string description,
     GenMessage();
 }
 
-CNumericException::CNumericException( std::string file, int line,
-				     std::string description  ) throw()
+CNumericException::CNumericException(pnlString file, int line,
+				     pnlString description) throw()
 				     : CException( file, line, description, pgmNumericFail )
 {
 }
 
-CNumericException::CNumericException( std::string file, int line,
-				     std::string description, pgmErrorType code ) throw()
+CNumericException::CNumericException(pnlString file, int line,
+				     pnlString description, pgmErrorType code ) throw()
 				     : CException( file, line, description, code)
 {
 }
 
 
-COverflow::COverflow( std::string file, int line,
-		     std::string description  ) throw():
+COverflow::COverflow(pnlString file, int line,
+		     pnlString description) throw():
 CNumericException( file, line, description, pgmOverflow )
 {
 }
 
 
-CUnderflow::CUnderflow( std::string file, int line,
-		       std::string description  ) throw():
+CUnderflow::CUnderflow(pnlString file, int line,
+		       pnlString description) throw():
 CNumericException( file, line, description, pgmUnderflow )
 {
 }
 
-CAlgorithmicException::CAlgorithmicException(std::string file, int line,
-					     std::string description) throw() :
+CAlgorithmicException::CAlgorithmicException(pnlString file, int line,
+					     pnlString description) throw() :
 CException( file, line, description, pgmAlgorithmic)
 {
 }
 
-CAlgorithmicException::CAlgorithmicException(std::string file, int line,
-					     std::string description,
+CAlgorithmicException::CAlgorithmicException(pnlString file, int line,
+					     pnlString description,
 					     pgmErrorType code) throw() :
 CException( file, line, description, code)
 {
 }
 
-CNotConverged::CNotConverged( std::string file, int line,
-			     std::string description  ) throw():
+CNotConverged::CNotConverged(pnlString file, int line,
+			     pnlString description) throw():
 CAlgorithmicException( file, line, description, pgmNotConverged )
 {
 }
 
-CInvalidOperation::CInvalidOperation( std::string file, int line,
-				     std::string description  ) throw():
+CInvalidOperation::CInvalidOperation(pnlString file, int line,
+				     pnlString description) throw():
 CAlgorithmicException( file, line, description, pgmInvalidOperation )
 {
 }
 
-CMemoryException::CMemoryException( std::string file, int line,
-				   std::string description) throw():
+CMemoryException::CMemoryException(pnlString file, int line,
+				   pnlString description) throw():
 CException( file, line, description, pnlMemoryFail)
 {
 }
 
-CMemoryException::CMemoryException( std::string file, int line,
-				   std::string description, pgmErrorType code)
+CMemoryException::CMemoryException(pnlString file, int line,
+				   pnlString description, pgmErrorType code)
 				   throw():
 CException( file, line, description, code)
 {
 }
 
-CNotEnoughMemory::CNotEnoughMemory( std::string file, int line,
-				   std::string description  ) throw():
+CNotEnoughMemory::CNotEnoughMemory(pnlString file, int line,
+				   pnlString description) throw():
 CMemoryException( file, line, description, pgmNotEnoughMemory )
 {
 }
 
-CDamagedMemory::CDamagedMemory(std::string file, int line,
-			       std::string description) throw():
+CDamagedMemory::CDamagedMemory(pnlString file, int line,
+			       pnlString description) throw():
 CMemoryException( file, line, description, pgmDamagedMemory )
 {
 }
 
-CBadPointer::CBadPointer( std::string file, int line,
-			 std::string description  ) throw():
+CBadPointer::CBadPointer(pnlString file, int line,
+			 pnlString description) throw():
 CMemoryException( file, line, description, pgmBadPointer )
 {
 }
 
-CBadArg::CBadArg( std::string file, int line,
-		 std::string description) throw():
+CBadArg::CBadArg(pnlString file, int line, pnlString description) throw():
 CException( file, line, description, pgmBadArg)
 {
 }
 
-CBadArg::CBadArg( std::string file, int line,
-		 std::string description, pgmErrorType code) throw():
+CBadArg::CBadArg(pnlString file, int line,
+		 pnlString description, pgmErrorType code) throw():
 CException( file, line, description, code )
 {
 }
 
 
-COutOfRange::COutOfRange(std::string file, int line, std::string description)
+COutOfRange::COutOfRange(pnlString file, int line, pnlString description)
 throw(): CBadArg( file, line, description, pgmOutOfRange )
 {
 }
 
-CNULLPointer::CNULLPointer( std::string file, int line,
-			   std::string description  ) throw():
+CNULLPointer::CNULLPointer(pnlString file, int line,
+			   pnlString description) throw():
 CBadArg( file, line, description, pgmNULLPointer )
 {
 }
 
-CInconsistentType::CInconsistentType( std::string file, int line,
-				     std::string description  ) throw():
+CInconsistentType::CInconsistentType(pnlString file, int line,
+				     pnlString description) throw():
 CBadArg( file, line, description, pgmInconsistentType )
 {
 }
 
-CInconsistentSize::CInconsistentSize( std::string file, int line,
-				     std::string description  ) throw():
+CInconsistentSize::CInconsistentSize(pnlString file, int line,
+				     pnlString description) throw():
 CBadArg( file, line, description, pgmInconsistentSize )
 {
 }
 
 CInconsistentState::
-CInconsistentState(std::string file, int line, std::string description) throw()
+CInconsistentState(pnlString file, int line, pnlString description) throw()
 : CAlgorithmicException( file, line, description, pgmAlgorithmic )
 {
 }
 
 
-CBadConst::CBadConst(std::string file, int line, std::string description) throw()
+CBadConst::CBadConst(pnlString file, int line, pnlString description) throw()
 : CBadArg( file, line, description, pgmBadConst )
 {
 }
 
-CInternalError::CInternalError(std::string file, int line, std::string description)
+CInternalError::CInternalError(pnlString file, int line, pnlString description)
 throw(): CException( file, line, description, pgmInternalError )
 {
 }
 
-CInternalError::CInternalError(std::string file, int line, std::string description,
+CInternalError::CInternalError(pnlString file, int line, pnlString description,
 			       pgmErrorType code  ) throw():
 CException( file, line, description, code )
 {
 }
 
-CNotImplemented::CNotImplemented( std::string file, int line,
-				 std::string description  ) throw():
+CNotImplemented::CNotImplemented(pnlString file, int line,
+				 pnlString description) throw():
 CInternalError( file, line, description, pgmNotImplemented )
 {
 }
-
-#ifdef PNL_RTTI
-const CPNLType CException::m_TypeInfo = CPNLType("CException", &(CPNLBase::m_TypeInfo));
-
-
-const CPNLType CAlgorithmicException::m_TypeInfo = CPNLType("CAlgorithmicException", &(CException::m_TypeInfo));
-
-const CPNLType CBadArg::m_TypeInfo = CPNLType("CBadArg", &(CException::m_TypeInfo));
-
-const CPNLType CInternalError::m_TypeInfo = CPNLType("CInternalError", &(CException::m_TypeInfo));
-
-const CPNLType CMemoryException::m_TypeInfo = CPNLType("CMemoryException", &(CException::m_TypeInfo));
-
-const CPNLType CNumericException::m_TypeInfo = CPNLType("CNumericException", &(CException::m_TypeInfo));
-
-
-const CPNLType CInconsistentState::m_TypeInfo = CPNLType("CInconsistentState", &(CAlgorithmicException::m_TypeInfo));
-
-const CPNLType CInvalidOperation::m_TypeInfo = CPNLType("CInvalidOperation", &(CAlgorithmicException::m_TypeInfo));
-
-const CPNLType CNotConverged::m_TypeInfo = CPNLType("CNotConverged", &(CAlgorithmicException::m_TypeInfo));
-
-
-const CPNLType CBadConst::m_TypeInfo = CPNLType("CBadConst", &(CBadArg::m_TypeInfo));
-
-const CPNLType CInconsistentSize::m_TypeInfo = CPNLType("CInconsistentSize", &(CBadArg::m_TypeInfo));
-
-const CPNLType CInconsistentType::m_TypeInfo = CPNLType("CInconsistentType", &(CBadArg::m_TypeInfo));
-
-const CPNLType CNULLPointer::m_TypeInfo = CPNLType("CNULLPointer", &(CBadArg::m_TypeInfo));
-
-const CPNLType COutOfRange::m_TypeInfo = CPNLType("COutOfRange", &(CBadArg::m_TypeInfo));
-
-
-const CPNLType CNotImplemented::m_TypeInfo = CPNLType("CNotImplemented", &(CInternalError::m_TypeInfo));
-
-
-const CPNLType CBadPointer::m_TypeInfo = CPNLType("CBadPointer", &(CMemoryException::m_TypeInfo));
-
-const CPNLType CDamagedMemory::m_TypeInfo = CPNLType("CDamagedMemory", &(CMemoryException::m_TypeInfo));
-
-const CPNLType CNotEnoughMemory::m_TypeInfo = CPNLType("CNotEnoughMemory", &(CMemoryException::m_TypeInfo));
-
-
-const CPNLType COverflow::m_TypeInfo = CPNLType("COverflow", &(CNumericException::m_TypeInfo));
-
-const CPNLType CUnderflow::m_TypeInfo = CPNLType("CUnderflow", &(CNumericException::m_TypeInfo));
-#endif

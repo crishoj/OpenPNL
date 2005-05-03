@@ -89,10 +89,6 @@ public: // USER INTERFACE
     }
     char operator[](int i)
     {
-#ifdef _DEBUG
-	PNL_CHECK_RANGES(i, 0, m_Len - 1);
-#endif
-
 	return m_Ptr[i];
     }
     void resize(int minNewSize);
