@@ -105,14 +105,14 @@ void BayesNet::SetPTabular(TokArr value, TokArr prob, TokArr parentValue)
     Net().Distributions().FillData(value, prob, parentValue);
 }
 
-void BayesNet::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight)
+void BayesNet::SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight, TokArr tabParentValue)
 {
-    Net().Distributions().FillData(node, mean, TokArr(), pnl::matMean);
-    Net().Distributions().FillData(node, variance, TokArr(), pnl::matCovariance);
-    if (weight.size() != 0)
-    {
-        Net().Distributions().FillData(node, weight, TokArr(), pnl::matWeights);
-    }
+  Net().Distributions().FillData(node, mean, tabParentValue, pnl::matMean);
+  Net().Distributions().FillData(node, variance, tabParentValue, pnl::matCovariance);
+  if (weight.size() != 0)
+  {
+    Net().Distributions().FillData(node, weight, tabParentValue, pnl::matWeights);
+  }
 }
 
 void BayesNet::SetPSoftMax(TokArr node, TokArr weigth, TokArr offset, TokArr parentValue)
@@ -182,48 +182,62 @@ TokArr BayesNet::GetSoftMaxWeights(TokArr node, TokArr parent )
 }
 
 
-TokArr BayesNet::GetGaussianMean(TokArr node)
+TokArr BayesNet::GetGaussianMean(TokArr node, TokArr tabParentValue)
 {
-    static const char fname[] = "GetGaussianMean";
-
-    int nnodes = node.size();
-    if(nnodes != 1)
+  static const char fname[] = "GetGaussianMean";
+  
+  int nnodes = node.size();
+  if(nnodes != 1)
+  {
+    ThrowUsingError("Mean may be got only for one node", fname);
+  }
+  
+  Vector<int> queryNdsOuter, queryVls;
+  Vector<int> queryNdsInner;
+  Net().ExtractTokArr(node, &queryNdsInner, &queryVls, &Net().Graph().MapOuterToGraph());
+  Net().Graph().IOuter(&queryNdsInner, &queryNdsOuter);
+  if(!queryVls.size())
+  {
+    queryVls.assign(nnodes, -1);
+  }
+  
+  const pnl::CFactor * cpd = Model()->GetFactor(queryNdsInner.front());
+  
+  if (cpd->IsDistributionSpecific() == 1)
+  {
+    TokArr res;
+    res << "uniform";
+    return res;
+  }
+  else
+  {
+    if (cpd->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
     {
-	ThrowUsingError("Mean may be got only for one node", fname);
-    }
-
-    Vector<int> queryNds, queryVls;
-    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph().MapOuterToGraph());
-    if(!queryVls.size())
-    {
-	queryVls.assign(nnodes, -1);
-    }
-
-    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
-
-    if (cpd->IsDistributionSpecific() == 1)
-    {
-        TokArr res;
-        res << "uniform";
-        return res;
+      TokArr res;
+      res << "scalar";
+      return res;  
     }
     else
     {
-        if (cpd->GetDistribFun()->GetDistributionType() == pnl::dtScalar)
-        {
-            TokArr res;
-            res << "scalar";
-            return res;  
-        }
-        else
-        {
-            const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matMean);
-            return Net().ConvertMatrixToToken(mat);
-        }
+      const pnl::CMatrix<float> *mat;
+      if (tabParentValue.size())
+      {
+        Vector<int> discrParentValuesIndices = Net().Distributions().Distribution(
+          queryNdsOuter[0])->GetDiscreteParentValuesIndexes(tabParentValue);
+        mat = cpd->GetMatrix(pnl::matMean, -1, 
+          &(discrParentValuesIndices.front()));
+      }
+      else
+      {
+        mat = cpd->GetMatrix(pnl::matMean);
+      };
+      
+      return Net().ConvertMatrixToToken(mat);
     }
+  }
 }
 
-TokArr BayesNet::GetGaussianCovar(TokArr node)
+TokArr BayesNet::GetGaussianCovar(TokArr node, TokArr tabParentValue)
 {
     static const char fname[] = "GetGaussianCovar";
 
@@ -273,7 +287,7 @@ TokArr BayesNet::GetGaussianCovar(TokArr node)
     }
 }
 
-TokArr BayesNet::GetGaussianWeights(TokArr node, TokArr parent)
+TokArr BayesNet::GetGaussianWeights(TokArr node, TokArr parent, TokArr tabParentValue)
 {
     static const char fname[] = "GetGaussianWeight";
 

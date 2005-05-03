@@ -60,9 +60,9 @@ public:
     void ExtractData(int matrixType, TokArr &matrix);
     void Setup(TokIdNode *node, Vector<TokIdNode*> &aParent);
     virtual void DoSetup() = 0;
-    virtual pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, 
-        const int* pDiscrParentValues = 0) const = 0;
+    virtual pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, const int* pDiscrParentValues = 0) const = 0;
     DistribFunDesc *desc() const { return m_pDesc; }
+    Vector<int> GetDiscreteParentValuesIndexes(TokArr &tabParentValue);
 
 protected:
     WDistribFun();
@@ -129,8 +129,7 @@ public:
     void SetDefaultDistribution();
     Vector<int> Dimensions(int matrixType);
     void DoSetup();
-    pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1, 
-        const int* pDiscrParentValues = 0) const;
+    pnl::CDenseMatrix<float> *Matrix(int maxtixType, int numWeightMat = -1, const int* pDiscrParentValues = 0) const;
     pnl::floatVector* OffsetVector() const;
 
     void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
@@ -151,15 +150,19 @@ public:
     ~WCondGaussianDistribFun();
     Vector<int> Dimensions(int matrixType);
     void DoSetup();
-    pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, 
-        const int* pDiscrParentValues = 0) const;
+    pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, const int* pDiscrParentValues = 0) const;
     void CreateDefaultDistribution();
+    void SetDefaultDistribution();
+
+protected:
+    virtual void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
+    virtual float GetAValue(int matrixType, Vector<int> &aIndex);
+    Vector<int> GetDiscreteParentIndexes(Vector<int> &aIndex);
 
 private:
     pnl::CCondGaussianDistribFun *m_pDistrib;
 
 };
-
 
 class PNLHIGH_API WCondSoftMaxDistribFun: public WDistribFun
 {

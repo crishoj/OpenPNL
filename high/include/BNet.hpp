@@ -69,7 +69,7 @@ public:
     TokArr GetPTabular(TokArr value, TokArr parents = TokArr());
     
     // set parameters for gaussian distribution
-    void SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight = TokArr());
+    void SetPGaussian(TokArr node, TokArr mean, TokArr variance, TokArr weight = TokArr(), TokArr tabParentValue = TokArr());
     
     void SetPSoftMax(TokArr node, TokArr weigth, TokArr offset, TokArr parentValue = TokArr());
     
@@ -113,9 +113,9 @@ public:
     TokArr GetJPD(TokArr nodes);
 
     // get parameters of gaussian distribution
-    TokArr GetGaussianMean(TokArr node);
-    TokArr GetGaussianCovar(TokArr node);
-    TokArr GetGaussianWeights(TokArr node, TokArr parent);
+    TokArr GetGaussianMean(TokArr node, TokArr tabParentValue = TokArr());
+    TokArr GetGaussianCovar(TokArr node, TokArr tabParentValue = TokArr());
+    TokArr GetGaussianWeights(TokArr node, TokArr parent, TokArr tabParentValue = TokArr());
     
     void SaveNet(const char *filename);
     int SaveEvidBuf(const char *filename, NetConst::ESavingType mode = NetConst::eCSV);
