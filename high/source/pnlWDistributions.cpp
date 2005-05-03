@@ -27,7 +27,7 @@ WDistributions::~WDistributions()
 {
     if(IsMRF())
     {
-		delete m_pCliques;
+	delete m_pCliques;
     }
 }
 
@@ -36,13 +36,13 @@ void WDistributions::SetMRF(bool mrfFlag /* = true */)
     m_bMRF = mrfFlag;
     if(mrfFlag)
     {
-		StopSpyTo(Token().Graph());
-		m_pCliques = new WCliques(Token().Graph());
-		SpyTo(m_pCliques);
+	StopSpyTo(Token().Graph());
+	m_pCliques = new WCliques(Token().Graph());
+	SpyTo(m_pCliques);
     }
     else
     {
-		ThrowInternalError("Not yet realized", "SetMRF(false)");
+	ThrowInternalError("Not yet realized", "SetMRF(false)");
     }
 }
 
@@ -52,137 +52,137 @@ void WDistributions::Setup(int iNode)
     int nodeClass = Token().NodesClassification(ta);
     if(iNode >= m_aDistribution.size())
     {
-		m_aDistribution.resize(iNode + 1, 0);
-		m_abDiscrete.resize(iNode + 1, nodeClass == eNodeClassDiscrete );
+	m_aDistribution.resize(iNode + 1, 0);
+	m_abDiscrete.resize(iNode + 1, nodeClass == eNodeClassDiscrete );
     }
     delete m_aDistribution[iNode];
-	
+
     Vector<int> aParent;
     Graph().GetParents(&aParent, iNode);
     Vector<TokIdNode*> parTokId = Token().Nodes(aParent);
-	
+
     if (nodeClass == eNodeClassDiscrete )
     {
-        bool isSoftMax = false;
-        for (int i=0; i< parTokId.size(); i++)
-        {
-            TokIdNode *tok = parTokId[i];
-            if (!static_cast<pnl::CNodeType*>(tok->v_prev->data)->IsDiscrete() )
-            {
-                isSoftMax = true;
-                break;
-            }
-        }
-        bool isCondSoftMax = false;
-		
-        if (isSoftMax)
-        {
-            for ( i=0; i< parTokId.size(); i++)
-            {
-                TokIdNode *tok = parTokId[i];
-                if (static_cast<pnl::CNodeType*>(tok->v_prev->data)->IsDiscrete() )
-                {
-                    isCondSoftMax = true;
-                    break;
-                }
-            }
-        }
-        if (isCondSoftMax)
-            m_aDistribution[iNode] = new WCondSoftMaxDistribFun();
-        else
-            if (isSoftMax)
-                m_aDistribution[iNode] = new WSoftMaxDistribFun();
-            else
-                m_aDistribution[iNode] = new WTabularDistribFun();            
+	bool isSoftMax = false;
+	for (int i=0; i< parTokId.size(); i++)
+	{
+	    TokIdNode *tok = parTokId[i];
+	    if (!static_cast<pnl::CNodeType*>(tok->v_prev->data)->IsDiscrete() )
+	    {
+		isSoftMax = true;
+		break;
+	    }
+	}
+	bool isCondSoftMax = false;
+
+	if (isSoftMax)
+	{
+	    for ( i=0; i< parTokId.size(); i++)
+	    {
+		TokIdNode *tok = parTokId[i];
+		if (static_cast<pnl::CNodeType*>(tok->v_prev->data)->IsDiscrete() )
+		{
+		    isCondSoftMax = true;
+		    break;
+		}
+	    }
+	}
+	if (isCondSoftMax)
+	    m_aDistribution[iNode] = new WCondSoftMaxDistribFun();
+	else
+	    if (isSoftMax)
+		m_aDistribution[iNode] = new WSoftMaxDistribFun();
+	    else
+		m_aDistribution[iNode] = new WTabularDistribFun();            
     }
-	
+
     else
     {
-        if (nodeClass == eNodeClassContinuous)
-		{
-			bool isCondGauss = false;
-			int size = parTokId.size();
-			for (int index = 0; (index < size)&&(!isCondGauss); index++)
-			{
-				TokIdNode *tokIdNode = parTokId[index];
-				isCondGauss = isCondGauss||(static_cast<pnl::CNodeType*>(tokIdNode->v_prev->data)->IsDiscrete());
-			};
-			
-			if (isCondGauss)
-			{
-				m_aDistribution[iNode] = new WCondGaussianDistribFun();
-			}
-			else
-			{
-				m_aDistribution[iNode] = new WGaussianDistribFun();
-			};
-		}
-        else
-		{
-			ThrowUsingError("Unknown type", "Setup");
-		}
+	if (nodeClass == eNodeClassContinuous)
+	{
+	    bool isCondGauss = false;
+	    int size = parTokId.size();
+	    for (int index = 0; (index < size)&&(!isCondGauss); index++)
+	    {
+		TokIdNode *tokIdNode = parTokId[index];
+		isCondGauss = isCondGauss||(static_cast<pnl::CNodeType*>(tokIdNode->v_prev->data)->IsDiscrete());
+	    };
+
+	    if (isCondGauss)
+	    {
+		m_aDistribution[iNode] = new WCondGaussianDistribFun();
+	    }
+	    else
+	    {
+		m_aDistribution[iNode] = new WGaussianDistribFun();
+	    };
+	}
+	else
+	{
+	    ThrowUsingError("Unknown type", "Setup");
+	}
     }
-	
-    
-	/*    Graph().GetParents(&aParent, iNode);
+
+
+    /*    Graph().GetParents(&aParent, iNode);
     Vector<TokIdNode*> parTokId = Token().Nodes(aParent);
-	*/
+    */
     m_aDistribution[iNode]->Setup(Token().Node(iNode), parTokId);
     TokIdNode *tok = Token().Node(iNode);
     if (nodeClass == eNodeClassDiscrete )
     {
-        if (static_cast<pnl::CNodeType*>(tok->v_prev->data)->GetNodeState() != pnl::nsValue)
-        {
-            m_aDistribution[iNode]->SetDefaultDistribution();
-        }
-        else
-        {
-            static_cast<WTabularDistribFun*>(m_aDistribution[iNode])->SetDefaultUtilityFunction();
-        }
+	if (static_cast<pnl::CNodeType*>(tok->v_prev->data)->GetNodeState() != pnl::nsValue)
+	{
+	    m_aDistribution[iNode]->SetDefaultDistribution();
+	}
+	else
+	{
+	    static_cast<WTabularDistribFun*>(m_aDistribution[iNode])->SetDefaultUtilityFunction();
+	}
     }
     else
     {
-        m_aDistribution[iNode]->SetDefaultDistribution();
+	m_aDistribution[iNode]->SetDefaultDistribution();
     }
 }
 
 void WDistributions::SetupNew(int iDistribution)
 {
     pnl::CNodeType nt = DistributionType(iDistribution);
-	
+
     if(iDistribution >= m_aDistribution.size())
     {
-		m_aDistribution.resize(iDistribution + 1, 0);
-		m_abDiscrete.resize(iDistribution + 1, true);
-		m_abValid.resize(iDistribution + 1, false);
+	m_aDistribution.resize(iDistribution + 1, 0);
+	m_abDiscrete.resize(iDistribution + 1, true);
+	m_abValid.resize(iDistribution + 1, false);
     }
     else
     {
-		delete m_aDistribution[iDistribution];
+	delete m_aDistribution[iDistribution];
     }
-	
+
     Vector<int> domain;
     WDistribFun *pDistribution;
-	
+
     GetDomain(&domain, iDistribution);
-	
+
     Vector<TokIdNode*> parentTokIds = Token().Nodes(domain);
     TokIdNode *node = parentTokIds.back();
-	
+
     parentTokIds.pop_back();
     m_abDiscrete[iDistribution] = nt.IsDiscrete();// will be deleted soon
-	
+
     if(nt.IsDiscrete())
     {
-		pDistribution = new WTabularDistribFun();
-		pDistribution->Setup(node, parentTokIds);
+	pDistribution = new WTabularDistribFun();
+	pDistribution->Setup(node, parentTokIds);
     }
     else
     {
-		pDistribution = new WGaussianDistribFun();
-		pDistribution->Setup(node, parentTokIds);
+	pDistribution = new WGaussianDistribFun();
+	pDistribution->Setup(node, parentTokIds);
     }
-	
+
     m_aDistribution[iDistribution] = pDistribution;
     m_abValid[iDistribution] = false;
 }
@@ -191,15 +191,15 @@ void WDistributions::DropDistribution(int iNode)
 {
     if(iNode >= m_aDistribution.size())
     {
-		m_aDistribution.resize(iNode + 1, 0);
-		m_abValid.resize(iNode + 1, false);
-		return;
+	m_aDistribution.resize(iNode + 1, 0);
+	m_abValid.resize(iNode + 1, false);
+	return;
     }
     delete m_aDistribution[iNode];
     m_aDistribution[iNode] = 0;
     if(m_abValid.size() > iNode)
     {
-		m_abValid[iNode] = false;
+	m_abValid[iNode] = false;
     }
 }
 
@@ -211,53 +211,53 @@ void WDistributions::ApplyNew(int iDistribution)
 {
     if(m_abValid.at(iDistribution))
     {
-		return;
+	return;
     }
     WDistribFun *pDistribution = m_aDistribution[iDistribution];
-	
+
     if(m_abDiscrete[iDistribution])
     {
-		pnl::CNodeType nt = DistributionType(iDistribution);
-		
-		if (nt.GetNodeState() != pnl::nsValue)
-		{
-			pDistribution->SetDefaultDistribution();
-            if(IsMRF())
-            {
-                pDistribution->Matrix(pnl::matTable)->Normalize();
-            }
-		}
-		else
-		{
-			static_cast<WTabularDistribFun*>(pDistribution)->SetDefaultUtilityFunction();
-		}
+	pnl::CNodeType nt = DistributionType(iDistribution);
+
+	if (nt.GetNodeState() != pnl::nsValue)
+	{
+	    pDistribution->SetDefaultDistribution();
+	    if(IsMRF())
+	    {
+		pDistribution->Matrix(pnl::matTable)->Normalize();
+	    }
+	}
+	else
+	{
+	    static_cast<WTabularDistribFun*>(pDistribution)->SetDefaultUtilityFunction();
+	}
     }
     else
     {
-		pDistribution->SetDefaultDistribution();
+	pDistribution->SetDefaultDistribution();
     }
     m_abValid[iDistribution] = true;
 }
 
 void
 WDistributions::GetNodeTypeInfo(bool *pbDiscrete, int *pSize,
-								pnl::EIDNodeState *nodeState, int iNode)
+				pnl::EIDNodeState *nodeState, int iNode)
 {
     if(iNode >= m_abDiscrete.size())
     {
-		if(!Graph().IsValidINode(iNode))
-		{
-			ThrowUsingError("Requested info for non-existant node", "GetNodeTypeInfo");
-		}
-		Setup(iNode);
+	if(!Graph().IsValidINode(iNode))
+	{
+	    ThrowUsingError("Requested info for non-existant node", "GetNodeTypeInfo");
+	}
+	Setup(iNode);
     }
     *pbDiscrete = m_abDiscrete[iNode];
     *pSize = Token().nValue(iNode);
-	
+
     TokIdNode *TokId = Token().Node(iNode);
     while(TokId && TokId->tag != eTagNodeType)
     {
-		TokId = TokId->v_prev;
+	TokId = TokId->v_prev;
     }
     *nodeState = ((pnl::CNodeType*)(TokId->data))->GetNodeState();
 }
@@ -278,18 +278,18 @@ pnl::CNodeType WDistributions::DistributionType(int iDistribution) const
 {
     if(!IsMRF())
     {
-		return NodeType(iDistribution);
+	return NodeType(iDistribution);
     }
-	
+
     Vector<int> clique;
     int iNode;
-	
+
     m_pCliques->GetClique(iDistribution, &clique);
     PNL_CHECK_LEFT_BORDER(clique.size(), 1);
     iNode = clique.back();
-	
+
     TokIdNode *tokNode = Token().Node(iNode);
-	
+
     for(; tokNode && tokNode->tag != eTagNodeType; tokNode = tokNode->v_prev);
     PNL_CHECK_IS_NULL_POINTER(tokNode);
     PNL_CHECK_IS_NULL_POINTER(tokNode->data);
@@ -302,86 +302,86 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
 {
     const float *pData;
     int nElement;
-	
+
     DropDistribution(iNode);
-    
+
     if(DistributionType(iNode).IsDiscrete())
     {
-        static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->
-            GetRawData(&nElement, &pData);
-        Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
+	static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->
+	    GetRawData(&nElement, &pData);
+	Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
     }
     else
     {
-		WGaussianDistribFun* pGauDistr = static_cast<WGaussianDistribFun*>(Distribution(iNode));
-		
-		pGauDistr->CreateDefaultDistribution();
-		
-		if (ft.GetDistribFun()->IsDistributionSpecific() == 1)
-		{
-			pGauDistr->CreateDistribution();
-		}
-		else
-		{
-			static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matMean))
-				->GetRawData(&nElement, &pData);
-			pGauDistr->SetData(pnl::matMean, pData);
-			
-			if (ft.GetDistribFun()->IsDistributionSpecific() != 2)
-			{
-				static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matCovariance))
-					->GetRawData(&nElement, &pData);
-				pGauDistr->SetData(pnl::matCovariance, pData);
-			}
-			
-			int NumOfNodes = ft.GetDomainSize();
-			for (int parent = 0; parent < (NumOfNodes - 1); parent++)
-			{
-				static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matWeights, parent))
-					->GetRawData(&nElement, &pData);
-				pGauDistr->SetData(pnl::matWeights, pData, parent);
-			}
-		}
+	WGaussianDistribFun* pGauDistr = static_cast<WGaussianDistribFun*>(Distribution(iNode));
+
+	pGauDistr->CreateDefaultDistribution();
+
+	if (ft.GetDistribFun()->IsDistributionSpecific() == 1)
+	{
+	    pGauDistr->CreateDistribution();
+	}
+	else
+	{
+	    static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matMean))
+		->GetRawData(&nElement, &pData);
+	    pGauDistr->SetData(pnl::matMean, pData);
+
+	    if (ft.GetDistribFun()->IsDistributionSpecific() != 2)
+	    {
+		static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matCovariance))
+		    ->GetRawData(&nElement, &pData);
+		pGauDistr->SetData(pnl::matCovariance, pData);
+	    }
+
+	    int NumOfNodes = ft.GetDomainSize();
+	    for (int parent = 0; parent < (NumOfNodes - 1); parent++)
+	    {
+		static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matWeights, parent))
+		    ->GetRawData(&nElement, &pData);
+		pGauDistr->SetData(pnl::matWeights, pData, parent);
+	    }
+	}
     }
 }
 
 void WDistributions::FillData(TokArr &value, TokArr &probability,
-							  const TokArr &parentValue, pnl::EMatrixType matType)
+			      const TokArr &parentValue, pnl::EMatrixType matType)
 {
     static const char fname[] = "FillData";
-	
+
     PNL_CHECK_FOR_ZERO(value.size());
-	
+
     int index = Token().iNode(value[0]);
-	
+
     TokArr ta(Tok(this->Token().Node(index)));
     int nodeClass = Token().NodesClassification(ta);
     if(parentValue.size())
     {
-		Token().Resolve(const_cast<TokArr&>(parentValue));
+	Token().Resolve(const_cast<TokArr&>(parentValue));
     }
-	
+
     if (nodeClass == eNodeClassDiscrete)
     {
-        Distribution(index)->FillData(matType, value, probability, parentValue);
+	Distribution(index)->FillData(matType, value, probability, parentValue);
     }
     else
     {
-        if (nodeClass == eNodeClassContinuous)
-        {
-            if (static_cast<WGaussianDistribFun*>(Distribution(index))->
-                IsDistributionSpecific() == 1)
-            {
-				
-				static_cast<WGaussianDistribFun*>(Distribution(index))->CreateDefaultDistribution();
-            }
-			
-            Distribution(index)->FillData(matType, value, probability, parentValue);
-        }
-        else
-        {
-			ThrowUsingError("Unsupported type of node", fname);
-        }
+	if (nodeClass == eNodeClassContinuous)
+	{
+	    if (static_cast<WGaussianDistribFun*>(Distribution(index))->
+		IsDistributionSpecific() == 1)
+	    {
+
+		static_cast<WGaussianDistribFun*>(Distribution(index))->CreateDefaultDistribution();
+	    }
+
+	    Distribution(index)->FillData(matType, value, probability, parentValue);
+	}
+	else
+	{
+	    ThrowUsingError("Unsupported type of node", fname);
+	}
     }
     Notify(Message::eSetModelInvalid, index);// eNodeUpdated is more informative
 }
@@ -390,11 +390,11 @@ int WDistributions::IDistribution(const Vector<TokIdNode *> &nodes) const
 {
     if(IsMRF())
     {
-        return m_pCliques->iClique(nodes);
+	return m_pCliques->iClique(nodes);
     }
     else
     {
-        return Graph().INode(nodes[nodes.size() - 1]->Name());
+	return Graph().INode(nodes[nodes.size() - 1]->Name());
     }
 }
 
@@ -402,36 +402,36 @@ void WDistributions::GetDomain(Vector<int> *domain, int iDistribution) const
 {
     if(IsMRF())
     {
-		m_pCliques->GetClique(iDistribution, domain);
+	m_pCliques->GetClique(iDistribution, domain);
     }
     else
     {
-		Graph().GetChildren(domain, iDistribution);
-		domain->push_back(iDistribution);
+	Graph().GetChildren(domain, iDistribution);
+	domain->push_back(iDistribution);
     }
 }
 
 void WDistributions::FillDataNew(pnl::EMatrixType matType, TokArr &matrix)
 {
     static const char fname[] = "FillDataNew";
-	
+
     int i;
-	
+
     Vector<TokIdNode *> nodes = Token().ExtractNodes(matrix[0]);
-	
+
     int iDistrib = IDistribution(nodes);
-	
+
     // check that all elements from the same matrix
     for(i = 1; i < matrix.size(); i++)
     {
-        nodes = Token().ExtractNodes(matrix[i]);
-		
-        if(iDistrib != IDistribution(nodes))
-        {
-            ThrowUsingError("All elements of matrix must be for the same distribution", fname);
-        }
+	nodes = Token().ExtractNodes(matrix[i]);
+
+	if(iDistrib != IDistribution(nodes))
+	{
+	    ThrowUsingError("All elements of matrix must be for the same distribution", fname);
+	}
     }
-	
+
     // apply will be called in Distribution(iDistribution), if need
     Distribution(iDistrib)->FillDataNew(matType, matrix);
 }
@@ -439,24 +439,24 @@ void WDistributions::FillDataNew(pnl::EMatrixType matType, TokArr &matrix)
 void WDistributions::ExtractData(pnl::EMatrixType matType, TokArr &matrix)
 {
     static const char fname[] = "FillDataNew";
-	
+
     int i;
-	
+
     Vector<TokIdNode *> nodes = Token().ExtractNodes(matrix[0]);
-	
+
     int iDistrib = IDistribution(nodes);
-	
+
     // check that all elements from the same matrix
     for(i = 1; i < matrix.size(); i++)
     {
-        nodes = Token().ExtractNodes(matrix[i]);
-		
-        if(iDistrib != IDistribution(nodes))
-        {
-            ThrowUsingError("All elements of matrix must be for the same distribution", fname);
-        }
+	nodes = Token().ExtractNodes(matrix[i]);
+
+	if(iDistrib != IDistribution(nodes))
+	{
+	    ThrowUsingError("All elements of matrix must be for the same distribution", fname);
+	}
     }
-	
+
     // apply will be called in Distribution(iDistribution), if need
     Distribution(iDistrib)->ExtractData(matType, matrix);
 }
@@ -466,25 +466,25 @@ void WDistributions::DoNotify(const Message &msg)
     switch(msg.MessageId())
     {
     case Message::eMSGDelNode:
-		DropDistribution(msg.IntArg());
-		break;
+	DropDistribution(msg.IntArg());
+	break;
     case Message::eChangeParentNState:
     case Message::eChangeNState:
     case Message::eInit:
-		if(IsMRF())
-		{
-			SetupNew(msg.IntArg());
-			ApplyNew(msg.IntArg());
-		}
-		else
-		{
-			Setup(msg.IntArg());
-			Apply(msg.IntArg());
-		}
-		break;
+	if(IsMRF())
+	{
+	    SetupNew(msg.IntArg());
+	    ApplyNew(msg.IntArg());
+	}
+	else
+	{
+	    Setup(msg.IntArg());
+	    Apply(msg.IntArg());
+	}
+	break;
     default:
-		ThrowInternalError("Unhandled message arrive" ,"DoNotify");
-		return;
+	ThrowInternalError("Unhandled message arrive" ,"DoNotify");
+	return;
     }
 }
 
