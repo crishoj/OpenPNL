@@ -80,12 +80,11 @@ int main(int argc, char* argv[])
     }
     bTestOK = bTestOK && lastTestRes;
 
-    if((e.GetCode() == pgmInternalError)
-	&& strstr(e.GetMessage(), messageOk))
+    try 
     {
-	lastTestRes = true;// this exception must be produced
+	PureLimidModel3();
     }
-    else
+    catch(pnl::CException e)
     {
 	static const char messageOk[] = "The Influence Diagram hasn't chance nodes.";
 
@@ -98,29 +97,6 @@ int main(int argc, char* argv[])
 	{
 	    std::cout << e.GetMessage()<< "\n";
 	}
-    }
-
-    bTestOK = bTestOK && lastTestRes;
-
-    try 
-    {
-	PureLimidModel2();
-    }
-    catch(pnl::CException e)
-    {
-	std::cout << e.GetMessage()<< "\n";
-	lastTestRes = false;
-    }
-    bTestOK = bTestOK && lastTestRes;
-
-    try 
-    {
-	PureLimidModel3();
-    }
-    catch(pnl::CException e)
-    {
-	std::cout << e.GetMessage()<<"\n";
-	lastTestRes = false;
     }
     bTestOK = bTestOK && lastTestRes;
 
