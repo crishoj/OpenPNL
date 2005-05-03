@@ -23,7 +23,7 @@ BayesNet *VerySimpleModel()
     return net;
 }
 
-void TestGaussianModelCreate()
+void TestGaussianModelCreate(bool DeleteNet)
 {
     BayesNet *net = VerySimpleModel();
 
@@ -79,6 +79,12 @@ void TestGaussianModelCreate()
         PNL_THROW(pnl::CAlgorithmicException, "Setting or getting gaussian parameters is wrong");
     }
 
+
+    if (DeleteNet)
+    {
+	delete net;
+    };
+
     cout << "TestGaussianModelCreate is completed successfully" << endl;
 }
 
@@ -113,7 +119,7 @@ BayesNet *PolytreeModel()
     return net;
 }
 
-void TestGaussianInference()
+void TestGaussianInference(bool DeleteNet)
 {
     BayesNet *net = PolytreeModel();
     float eps = 1e-3f;
@@ -378,10 +384,15 @@ void TestGaussianInference()
         PNL_THROW(pnl::CAlgorithmicException, "Naive inference without evidences is wrong");
     }
 
+    if (DeleteNet)
+    {
+        delete net;
+    };
+
     cout << "TestGaussianInference is completed successfully" << endl;
 }
 
-void TestGaussianParamLearning()
+void TestGaussianParamLearning(bool DeleteNet)
 {
     BayesNet *net = PolytreeModel();
     BayesNet *netToLearn = PolytreeModel();
@@ -428,10 +439,16 @@ void TestGaussianParamLearning()
         }
     }
 
+    if (DeleteNet)
+    {
+	delete net;
+	delete netToLearn;
+    };
+    
     cout << "TestGaussianParamLearning is completed successfully" << endl;
 }
 
-void TestGetLogLik()
+void TestGetLogLik(bool DeleteNet)
 {
     BayesNet *net = PolytreeModel();
     BayesNet *netToLearn = PolytreeModel();
@@ -485,6 +502,12 @@ void TestGetLogLik()
 	}
     }
 
+    if (DeleteNet)
+    {
+	delete net;
+	delete netToLearn;
+    }
+
     cout << "TestGetLogLik is completed successfully" << endl;
 }
 
@@ -531,4 +554,11 @@ void SimpleModel()
 
     cout<< X3MPE <<"\n";
     float x3MPE = X3MPE[0].FltValue(0).fl;
+}
+
+void TestsPnlHigh::Test2Bnets()
+{
+    TestGaussianModelCreate(false);
+    TestGaussianInference(false);
+    TestGaussianParamLearning(false);
 }
