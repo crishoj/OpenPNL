@@ -203,16 +203,26 @@ TopologicalSortDBN::GetOrderReverse(IIMap *pResult, const Vector<Vector<int> > &
 }
 
 WGraph::WGraph(): m_pGraph(0), m_bTouched(false), m_pSort(0)
-{}
+{
+}
+
+
+
 
 #if 0
-WGraph::WGraph(const WGraph &g): m_iNodeMap(g.m_iNodeMap),
-    m_aNode(g.m_aNode), m_aParent(g.m_aParent),
-    m_aUnusedIndex(g.m_aUnusedIndex), m_pGraph(0),
-    m_bTouched(false), m_abValid(g.m_abValid),
-    m_IndicesGraphToOuter(g.m_IndicesGraphToOuter),
-    m_IndicesOuterToGraph(g.m_IndicesOuterToGraph)
+WGraph::WGraph(const WGraph &g):
+#ifdef MAP_USAGE
+m_iNodeMap(g.m_iNodeMap),
+#else 
+m_NNames(g.m_NNames), m_NIndexes(g.m_NIndexes),
+#endif
+m_aNode(g.m_aNode), m_aParent(g.m_aParent),
+m_aUnusedIndex(g.m_aUnusedIndex), m_pGraph(0),
+m_bTouched(false), m_abValid(g.m_abValid),
+m_IndicesGraphToOuter(g.m_IndicesGraphToOuter),
+m_IndicesOuterToGraph(g.m_IndicesOuterToGraph)
 {
+
 }
 #endif
 
@@ -305,8 +315,13 @@ int WGraph::AddNode(String &nodeName)
 	m_aParent.resize(iNode + 1);
     }
     m_aNode[iNode] = nodeName;
-    m_iNodeMap[nodeName] = iNode;
-    m_abValid[iNode] = 1;
+#ifdef MAP_USAGE
+	m_iNodeMap[nodeName] = iNode;
+#else
+	m_NNames.push_back(nodeName);
+	m_NIndexes.push_back(iNode);
+#endif
+	m_abValid[iNode] = 1;
     Notify(Message::eInit, iNode);
 
     return iNode;
@@ -322,8 +337,25 @@ bool WGraph::DelNode(int iNode)
     m_aUnusedIndex.push_back(iNode);
     m_abValid[iNode] = 0;
     m_aParent[iNode].resize(0);
-    m_iNodeMap.erase(m_aNode[iNode]);
-    for(int i = 0; i < m_aParent.size(); ++i)
+	
+	int i;
+#ifdef MAP_USAGE
+	m_iNodeMap.erase(m_aNode[iNode]);
+#else
+	for(i = 0; i < m_NIndexes.size(); i++)
+	{
+		if(m_aNode[iNode] == m_NNames[i])
+		{
+			m_NNames[i] = m_NNames[m_NNames.size() - 1];
+			m_NIndexes[i] = m_NIndexes[m_NIndexes.size() - 1];
+			m_NNames.resize(m_NNames.size() - 1);
+			m_NIndexes.resize(m_NIndexes.size() - 1);
+			break;
+		}
+	}
+#endif
+
+    for( i = 0; i < m_aParent.size(); ++i)
     {
 	Vector<int> &aParent = m_aParent[i];
 	// unefficient block. Assume that this operation is exotic
@@ -389,8 +421,20 @@ bool WGraph::DelArc(const char *from, const char *to)
 
 int WGraph::INode(const String &name) const
 {
+#ifdef MAP_USAGE
     MapSI::const_iterator it = m_iNodeMap.find(name);
     return (it != m_iNodeMap.end()) ? it->second:-1;
+#else
+	int i;
+	for (i = 0; i < m_NIndexes.size(); i++)
+	{
+		if(m_NNames[i] == name)
+		{
+			return i;
+		}
+	}
+	return -1;
+#endif
 }
 
 String& WGraph::NodeName(int iNode)
@@ -447,9 +491,23 @@ bool WGraph::SetNodeName(int iNode, String &name)
 {
     if(IsValidINode(iNode))
     {
+#ifdef MAP_USAGE
 	m_iNodeMap.erase(NodeName(iNode));
-	m_iNodeMap[name] = iNode;
-	m_aNode[iNode] = name;
+    m_iNodeMap[name] = iNode;
+    m_aNode[iNode] = name;
+
+#else
+	int i;
+	for(i = 0; i < m_NIndexes.size(); i++)
+	{
+		if(iNode == m_NIndexes[i])
+		{
+			m_NNames[i] = name;
+			break;
+		}
+	}
+#endif
+
 	Notify(Message::eChangeName, iNode);
 	return true;
     }

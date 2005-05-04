@@ -22,6 +22,8 @@ namespace pnl
 
 PNLW_BEGIN
 
+#define MAP_USAGE
+
 class PNLHIGH_API TopologicalSort
 {
 ALLOW_TESTING
@@ -151,7 +153,13 @@ protected:
     virtual int InterestedIn() const { return 0; /* nothing intrested in */ }
 
 private:
-    MapSI m_iNodeMap;		// map for 'node name' -> 'node index' translation
+	
+#ifdef MAP_USAGE
+    MapSI m_iNodeMap; // map for 'node name' -> 'node index' translation
+#else
+	Vector<String> m_NNames;
+	Vector<int> m_NIndexes;
+#endif
     Vector<String> m_aNode;	// names of nodes (this vector may have unused
 				// elements after deleting)
     Vector<Vector<int> > m_aParent;// indices for parents
