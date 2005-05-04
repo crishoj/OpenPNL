@@ -22,7 +22,7 @@ namespace pnl
 
 PNLW_BEGIN
 
-#define MAP_USAGE
+//#define MAP_USAGE
 
 class PNLHIGH_API TopologicalSort
 {
