@@ -525,9 +525,10 @@ CCondGaussianDistribFun::AttachMatrix(CMatrix<float> *pMatrix, EMatrixType mType
 {
     PNL_CHECK_IS_NULL_POINTER( pMatrix );
     PNL_CHECK_IS_NULL_POINTER( parentIndices );
-    
+
     if(!(( mType == matMean )||(mType == matCovariance)||( mType == matH )||
-        (mType == matK)||( mType == matWeights) ) )
+        (mType == matK)||( mType == matWeights)||(mType == matWishartMean)||
+	(mType == matWishartCov) ) )
     {
         PNL_THROW( CInconsistentType,
             "can't attach Tabular matrix to Conditional Gaussian" );
