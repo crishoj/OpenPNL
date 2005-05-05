@@ -37,6 +37,8 @@ bool
 NetCallback::CommonAttachFactors(pnl::CGraphicalModel &pnlModel,
 	const ProbabilisticNet &net)
 {
+    static const char fname[] = "CommonAttachFactors";
+ 
     int i, iPNL, iWNode;
     Vector<String> aNodeName(net.Graph().Names());
 
@@ -96,49 +98,116 @@ NetCallback::CommonAttachFactors(pnl::CGraphicalModel &pnlModel,
         }
         else
         {
-	    WGaussianDistribFun* pGWDF = dynamic_cast<WGaussianDistribFun*>(pWDF);
-	    PNL_CHECK_IS_NULL_POINTER(pGWDF);
-            if (pGWDF->IsDistributionSpecific() == 1)
-            {
-                const pnl::pConstNodeTypeVector* ntVec = pPNLF->GetDistribFun()
-                    ->GetNodeTypesVector();
-                int NumberOfNodes = pPNLF->GetDistribFun()->GetNumberOfNodes();
+	    WGaussianDistribFun* pGWDF = dynamic_cast<WGaussianDistribFun* >(pWDF);
+	    WCondGaussianDistribFun* pCGWDF = dynamic_cast<WCondGaussianDistribFun* >(pWDF);
 
-                pnl::CGaussianDistribFun *gaudf = pnl::CGaussianDistribFun
-		    ::CreateUnitFunctionDistribution(NumberOfNodes, &ntVec->front());
-                pPNLF->SetDistribFun(gaudf);
-                
-                delete gaudf;
-            }
-            else
-            {
-                pnl::CDenseMatrix<float> *mean = pWDF->Matrix(pnl::matMean);
-                PNL_CHECK_IS_NULL_POINTER(mean);
-                pnl::CDenseMatrix<float> *cov = pWDF->Matrix(pnl::matCovariance);
-                PNL_CHECK_IS_NULL_POINTER(cov);
+            //Gaussian or cond. gaussian case
+	    if (pGWDF || pCGWDF)
+	    {
+                Vector<int> indexes;
+                pnl::CMatrix<pnl::CGaussianDistribFun* > * pCondMatrix = 0;
 
-                pPNLF->AttachMatrix(mean, pnl::matMean);
-                pPNLF->AttachMatrix(mean->Copy(mean), pnl::matWishartMean);
-
-                pPNLF->AttachMatrix(cov, pnl::matCovariance);
-                pPNLF->AttachMatrix(cov->Copy(cov), pnl::matWishartCov);
-
-		int NDims;
-		const int *Ranges;
-		cov->GetRanges(&NDims, &Ranges);
-
-                dynamic_cast<pnl::CGaussianDistribFun*>(pPNLF->GetDistribFun())
-                    ->SetFreedomDegrees(1 , Ranges[0] + 2); 
-                
-                int NumOfNds = pPNLF->GetDistribFun()->GetNumberOfNodes();
-		for (int parent = 0; parent < (NumOfNds-1); parent++)
-		{
-                    pnl::CDenseMatrix<float> *weight = pWDF->Matrix(pnl::matWeights, parent);
-                    PNL_CHECK_IS_NULL_POINTER(weight);
-
-                    pPNLF->AttachMatrix(weight, pnl::matWeights, parent);
+                if (pCGWDF)
+                {
+                    //Gaussian matrixes for all combinations of discrete parents
+                    pCondMatrix = pCGWDF->GetPNLDistribFun()->GetMatrixWithDistribution();
                 }
-            }
+                else
+                {
+                    const int range = 1;
+                    pnl::CGaussianDistribFun* pGDF = dynamic_cast<pnl::CGaussianDistribFun*>(pPNLF->GetDistribFun());
+                    //For gaussian case there is only 1 distrib function
+                    pCondMatrix = pnl::CDenseMatrix<pnl::CGaussianDistribFun* >::Create(1, &range, &pGDF);
+                };
+
+                pnl::CMatrixIterator<pnl::CGaussianDistribFun* > * iterThis = pCondMatrix->InitIterator();
+                //Excess all distrib functions to attach them to pPNLF
+                for( iterThis; pCondMatrix->IsValueHere( iterThis );
+                    pCondMatrix->Next(iterThis))
+                {                 
+                    //Discrete parent combination for cond. gaussian case
+                    pCondMatrix->Index( iterThis, &indexes );
+
+                    bool isDistributionSpecific = (pGWDF)?
+                        (pGWDF->IsDistributionSpecific() == 1):(pCGWDF->IsDistributionSpecific() == 1);
+
+                    if (isDistributionSpecific)
+		    {
+                        if (pGWDF)
+                        {
+		            const pnl::pConstNodeTypeVector* ntVec = pPNLF->GetDistribFun()
+			        ->GetNodeTypesVector();
+		            int NumberOfNodes = pPNLF->GetDistribFun()->GetNumberOfNodes();
+
+		            pnl::CGaussianDistribFun *gaudf = pnl::CGaussianDistribFun
+			        ::CreateUnitFunctionDistribution(NumberOfNodes, &ntVec->front());
+		            pPNLF->SetDistribFun(gaudf);
+                
+		            delete gaudf;
+                        }
+                        else
+                        {
+                            ThrowUsingError("At the moment of writing this function WCondGaussianDistribFun class could not be specific. Please contact developers.", fname);
+                        };
+		    }
+		    else
+		    {
+                        const int *pDiscrParentValues = 0;
+
+                        if (pCGWDF)
+                        {
+                            pDiscrParentValues = &(indexes.front());
+                        };
+
+		        pnl::CDenseMatrix<float> *mean = pWDF->Matrix(pnl::matMean, -1, pDiscrParentValues);
+		        PNL_CHECK_IS_NULL_POINTER(mean);
+		        pnl::CDenseMatrix<float> *cov = pWDF->Matrix(pnl::matCovariance, -1, pDiscrParentValues);
+		        PNL_CHECK_IS_NULL_POINTER(cov);
+
+		        pPNLF->AttachMatrix(mean, pnl::matMean, -1, pDiscrParentValues);
+		        pPNLF->AttachMatrix(mean->Copy(mean), pnl::matWishartMean, -1, pDiscrParentValues);
+
+		        pPNLF->AttachMatrix(cov, pnl::matCovariance, -1, pDiscrParentValues);
+		        pPNLF->AttachMatrix(cov->Copy(cov), pnl::matWishartCov, -1, pDiscrParentValues);
+
+		        int NDims;
+		        const int *Ranges;
+		        cov->GetRanges(&NDims, &Ranges);
+
+                        pnl::CGaussianDistribFun* a = dynamic_cast<pnl::CGaussianDistribFun*>(pPNLF->GetDistribFun());
+
+		        if (pGWDF)
+                        {
+                            dynamic_cast<pnl::CGaussianDistribFun*>(pPNLF->GetDistribFun())
+			        ->SetFreedomDegrees(1 , Ranges[0] + 2); 
+                        }
+                        else
+                        {
+                            const_cast<pnl::CGaussianDistribFun *>(dynamic_cast<pnl::CCondGaussianDistribFun*>(pPNLF->GetDistribFun())->GetDistribution(pDiscrParentValues))->
+			        SetFreedomDegrees(1 , Ranges[0] + 2); 
+                        };
+                
+                        int ContParent = 0;
+		        int NumOfNds = pPNLF->GetDistribFun()->GetNumberOfNodes();
+                        const pnl::pConstNodeTypeVector *pNodeTypes = pPNLF->GetDistribFun()->GetNodeTypesVector();
+                        for (int parent = 0; parent < (NumOfNds-1); parent++)
+		        {
+                            if (!((*pNodeTypes)[parent]->IsDiscrete()))
+                            {
+			        pnl::CDenseMatrix<float> *weight = pWDF->Matrix(pnl::matWeights, ContParent, pDiscrParentValues);
+			        PNL_CHECK_IS_NULL_POINTER(weight);
+
+			        pPNLF->AttachMatrix(weight, pnl::matWeights, ContParent, pDiscrParentValues);
+                                ContParent++;
+                            };
+		        }
+		    };
+                };
+	    }
+	    else 
+	    {
+                PNL_CHECK_IS_NULL_POINTER(pGWDF);
+	    };
         }
     }
 
