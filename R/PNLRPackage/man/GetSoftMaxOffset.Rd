@@ -1,0 +1,18 @@
+\name{GetSoftMaxOffset}
+\alias{GetSoftMaxOffset}
+\title{Returns offset vector of SoftMax distribution}
+\description{
+The function returns offset vector of SoftMax distribution as float vector.
+}
+\usage{
+GetSoftMaxOffset(Net, node, DiscreteParentsValues)
+}
+\arguments{
+\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{node}{String. Name of node whose offset vector is needed}
+\item{DiscreteParentsValues}{Optional Parameter. String. When you deal with mixture networks and current discrete node has both continuous and discrete parents, it is necessary to define discrete parents values}
+}
+\examples{
+MeanX2 <- GetSoftMaxOffset(net, "x2") 
+}
+\keyword{GetSoftMaxOffset}
