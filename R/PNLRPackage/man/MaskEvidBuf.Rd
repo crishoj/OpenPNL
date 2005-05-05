@@ -8,7 +8,7 @@ The function hides nodes of current learning buffer with given probability. The 
 MaskEvidBuf(BayesNet, whatNodes) 
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{BayesNet}{Bayesian network or MRF, which has been already created in the workspace. The action is carried out on this network. }
 \item{whatNodes}{String. Array of nodes.}
 }
 \examples{

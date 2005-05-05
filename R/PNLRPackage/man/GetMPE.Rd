@@ -8,7 +8,7 @@ The function returns most probable explanation (MPE) for specified nodes using c
 GetMPE(Net, nodes)
 }
 \arguments{
-\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network, MRF or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{nodes}{String. Array of nodes from one family.}
 }
 \examples{

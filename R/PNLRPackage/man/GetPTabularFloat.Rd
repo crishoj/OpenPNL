@@ -8,7 +8,7 @@ The function returns probability of discrete node as float vector. If values of 
 GetPTabularFloat(Net, node, parents)
 }
 \arguments{
-\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network, MRF or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{node}{String. Name of node or array of node values whose probabilities are needed. }
 \item{parents}{String. Values of parents of the node.}
 }

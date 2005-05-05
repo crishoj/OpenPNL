@@ -8,7 +8,7 @@ The function adds evidence to the buffer. Current evidence is not changed.
 AddEvidToBuf(Net, values)
 }
 \arguments{
-\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network, MRF or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{values}{String. Array of observed nodes with values.}
 }
 \examples{

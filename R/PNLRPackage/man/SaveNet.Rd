@@ -8,7 +8,7 @@ The function saves network to file of "xml" format with given name. Net structur
 SaveNet(Net, filename)
 }
 \arguments{
-\item{Net}{Bayesian network, LIMID or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network, LIMID, MRF or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{filename}{String. File name.}
 }
 \examples{

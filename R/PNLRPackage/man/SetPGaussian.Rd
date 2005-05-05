@@ -5,7 +5,7 @@
 The function sets parameters for gaussian variate. 
  }
 \usage{
-SetPGaussian(Net, var, mean, variance, weight)
+SetPGaussian(Net, var, mean, variance, weight, TabularParentsValue)
 }
 \arguments{
 \item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
@@ -13,7 +13,8 @@ SetPGaussian(Net, var, mean, variance, weight)
 }
 \item{mean}{Either String or Float Vector. Vector of means.}
 \item{variance}{Either String or Float Vector. Matrix of variance (for one-dimensional variate it is only one number). }
-\item{weight}{Either String or Float Vector. Matrixes of weights. This parameter is needed only when the node has parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case"}
+\item{weight}{Optional parameter. Either String or Float Vector. Matrixes of weights. This parameter is needed only when the node has continuous parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case"}
+\item{TabularParentsValue}{Optional parameter. String. List of tabular parents values. This parameter is necessary in the case of mixture nets only, when current continuous node has discrete parents. If current continuous node has only discrete parents, it is necessary to set the value of "weight" parameter to blanc string("")}
 }
 \examples{
 ##Let's set gaussian distribution for one - dimentional node without parents. 

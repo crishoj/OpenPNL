@@ -8,7 +8,7 @@ The function sets or edits current evidence. New observed nodes are added to cur
 EditEvidence(Net, values)
 }
 \arguments{
-\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network, MRF or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{values}{String. Array of observed nodes with values.
 }
 \examples{

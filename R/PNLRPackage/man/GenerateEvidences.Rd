@@ -9,7 +9,7 @@ GenerateEvidences(BayesNet, nSamples, ignoreCurrEvid, whatNodes)
 GenerateEvidences(dbn, numSlices) 
 }
 \arguments{
-\item{BayesNet}{Bayesian network, which has been already created in the workspace. The action is carried out on this network. }
+\item{BayesNet}{Bayesian network or MRF, which has been already created in the workspace. The action is carried out on this network. }
 \item{dbn}{DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{nSamples}{Integer. Number of samples to generate.}
 \item{ignoreCurrEvid}{Logistic. Flag of current evidence ignorance. If true - the current evidence will be ignored. Default value is false. }
@@ -39,11 +39,11 @@ GenerateEvidences(net, 100, false, whatNodesToSample, "0.9")
 
 ##Generate 100 samples on 0 slice and 55 on 1 slice (for DBN): 
 
-GenerateEvidences(dbn, "100 50"); 
+GenerateEvidences(dbn, "100 50") 
 
 ##Generate 10 samples on 0 slice, 11 on 1 slice and 15 on 2 slice (for DBN): 
 
-GenerateEvidences(dbn, "10 11 15"); 
+GenerateEvidences(dbn, "10 11 15")
 
 }
 \keyword{GenerateEvidences}

@@ -8,7 +8,7 @@ The function clears evidence buffer.
 ClearEvidBuf(Net) 
 }
 \arguments{
-\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network, MRF or DBN, which has been already created in the workspace. The action is carried out on this network. }
 }
 \examples{
 AddEvidToBuf(net, "NodeA^true NodeB^false")

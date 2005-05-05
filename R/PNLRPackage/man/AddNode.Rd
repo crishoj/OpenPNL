@@ -8,7 +8,7 @@ The function adds one or several nodes with the same probable states into the ne
 AddNode(net, nodes, values)
 }
 \arguments{
-\item{net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{net}{Bayesian network, MRF or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{nodes}{String. List of nodes with nodes type (discrete or continuous) specifying. For DBN it is necessary to specify the slice, where node will be added. For LIMIDs the possible node types are "chance", "decision" and "value"}
 \item{values}{String. Array of values that nodes can take (or names of dimensions for continuous nodes). }
 }
@@ -46,6 +46,15 @@ AddNode(id, "decision^NodeB", "true false")
 ##Add one value node "NodeC" with one state "cost" to LIMID: 
 
 AddNode(id, "value^NodeC", "cost")
+
+##Now we'll see, how to add nodes to Markov random fields
+##Let's add one discrete node "NodeA" with states "true" and "false" to the net: 
+
+AddNode(mrf, "discrete^NodeA", "true false") 
+
+##Now we are going to add discrete nodes "NodeA" and "NodeB" with states "true" and "false" to the net: 
+
+AddNode(mrf, "discrete^NodeA discrete^NodeB", "true false") 
 
 
 }

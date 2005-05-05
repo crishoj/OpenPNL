@@ -8,7 +8,7 @@ The function loads evidence buffer content from file. Buffer is cleared before l
 LoadEvidBuf(Net, filename, columns)
 }
 \arguments{
-\item{Net}{Bayesian network or DBN, which has been already created in the workspace. The action is carried out on this network. }
+\item{Net}{Bayesian network, MRF or DBN, which has been already created in the workspace. The action is carried out on this network. }
 \item{filename}{String. File name.}
 \item{columns}{String. Names of nodes.}
 }
