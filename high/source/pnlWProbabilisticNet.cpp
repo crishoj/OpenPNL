@@ -837,25 +837,27 @@ void ProbabilisticNet::Reset(const pnl::CGraphicalModel &model)
 pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
 {
     PNL_CHECK_FOR_ZERO(aValue.size());// empty aValue is prohibited
-    Vector<int> aiNode, aiValue, aNodeFlag;
+    Vector<int> aiNodeOuter; 
+    Vector<int> aiNodeInner, aiValueInner, aNodeFlag;
     Vector<int> aOffset; // offset for every node in vValue
     pnl::valueVector vValue;
     int j, i, nValue;
     static const char fname[] = "CreateEvidence";
 
-    ExtractTokArr(const_cast<TokArr &>(aValue), &aiNode, &aiValue, &Graph().MapOuterToGraph());
+    ExtractTokArr(const_cast<TokArr &>(aValue), &aiNodeInner, &aiValueInner, &Graph().MapOuterToGraph());
+    Graph().IOuter(&aiNodeInner, &aiNodeOuter);
 
     Vector<TokIdNode*> apNode = Token().ExtractNodes(const_cast<TokArr &>(aValue));
 
-    aiValue.resize(apNode.size(), -1);
+    aiValueInner.resize(apNode.size(), -1);
     for (i = 0; i< apNode.size(); i++ )
     {
         if (!(static_cast<pnl::CNodeType*>(apNode[i]->v_prev->data)->IsDiscrete()))
         {
-	    int size = Token().nValue(aiNode[i]);
+	    int size = Token().nValue(aiNodeOuter[i]);
             if (size == 1)
             {
-                aiValue[i] = GetInt(apNode[i]->v_next);
+                aiValueInner[i] = GetInt(apNode[i]->v_next);
             }
         }
     }
@@ -863,9 +865,9 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
     aNodeFlag.assign(nNetNode(), 0);
 
     // mark nodes for evidence (aNodeFlag)
-    for(i = aiNode.size(); --i >= 0;)
+    for(i = aiNodeInner.size(); --i >= 0;)
     {
-	++aNodeFlag[aiNode[i]];
+	++aNodeFlag[aiNodeInner[i]];
     }
 
     // setup offset for nodes in vValue
@@ -889,13 +891,13 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
 
     // check for unambiguity
     vValue.resize(nValue, pnl::Value(0));
-    for(i = aiNode.size(); --i >= 0;)
+    for(i = aiNodeInner.size(); --i >= 0;)
     {
-	j = aOffset[aiNode[i]];
-	pnl::CNodeType nt = pnlNodeType(Graph().IOuter(aiNode[i]));
+	j = aOffset[aiNodeInner[i]];
+	pnl::CNodeType nt = pnlNodeType(Graph().IOuter(aiNodeInner[i]));
 	if(!nt.IsDiscrete())
 	{
-	    j += aiValue[i];
+	    j += aiValueInner[i];
 	}
 	// check for repeating
 	if(vValue[j].GetInt())
@@ -907,15 +909,15 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
 	vValue[j] = 1;
     }
 
-    // here aiNode is sorted
-    for(i = 0, nValue = 0; i < aiNode.size(); ++i)
+    // here aiNodeInner is sorted
+    for(i = 0, nValue = 0; i < aiNodeInner.size(); ++i)
     {
-	pnl::CNodeType nt = pnlNodeType(Graph().IOuter(aiNode[i]));
+	pnl::CNodeType nt = pnlNodeType(Graph().IOuter(aiNodeInner[i]));
 
 	if(nt.IsDiscrete())
 	{
-	    pnl::Value &value = vValue[aOffset[aiNode[i]]];
-	    if(aiValue[i] == -1)
+	    pnl::Value &value = vValue[aOffset[aiNodeInner[i]]];
+	    if(aiValueInner[i] == -1)
 	    {
 		if(aValue[i].FltValue(0).IsUndef())
 		{
@@ -925,44 +927,44 @@ pnl::CEvidence *ProbabilisticNet::CreateEvidence(const TokArr &aValue)
 	    }
 	    else
 	    {
-		value = aiValue[i];
+		value = aiValueInner[i];
 	    }
 	}
 	else // continuous
 	{
-	    if(aiValue[i] == -1)
+	    if(aiValueInner[i] == -1)
 	    {
 		if(nt.GetNodeSize() != 1)
 		{
 		    ThrowUsingError("Absent value for node", fname);
 		}
-		aiValue[i] = 0;
+		aiValueInner[i] = 0;
 	    }
 
 	    if(aValue[i].fload.size() != 1)// There is must be one value - check
 	    {
 		ThrowUsingError("Incorrect evidence - number of values isn't expected", fname);
 	    }
-	    vValue[aOffset[aiNode[i]] + aiValue[i]] = aValue[i].FltValue(0).fl;
+	    vValue[aOffset[aiNodeInner[i]] + aiValueInner[i]] = aValue[i].FltValue(0).fl;
 	}
     }
 
     //aiNewNode does not contain one node more than once
     Vector<int> aiNewNode;
-    int size = aiNode.size();
+    int size = aiNodeInner.size();
 
     aiNewNode.reserve(size);
 
     if (size != 0)
     {
-	aiNewNode.push_back(aiNode[0]);
+	aiNewNode.push_back(aiNodeInner[0]);
     }
 
     for (int node = 1; node < size; ++node)
     {
-	if (aiNode[node] != aiNode[node-1])
+	if (aiNodeInner[node] != aiNodeInner[node-1])
 	{
-	    aiNewNode.push_back(aiNode[node]);
+	    aiNewNode.push_back(aiNodeInner[node]);
 	}
     }
 
