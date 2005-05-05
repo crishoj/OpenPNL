@@ -1057,6 +1057,7 @@ void WSoftMaxDistribFun::CreateDefaultDistribution()
     m_pDistrib = CSoftMaxDistribFun::Create(NumberOfNodes, nodeTypes, NULL, NULL);
 
     m_pDistrib->CreateDefaultMatrices(1);
+
 }
 
 WCondGaussianDistribFun::WCondGaussianDistribFun(): WDistribFun(), m_pDistrib(0) {}
@@ -1425,4 +1426,8 @@ float WCondGaussianDistribFun::GetAValue(int matrixType, Vector<int> &aIndex)
     return Result;
 }
 
+int WCondGaussianDistribFun::IsDistributionSpecific()
+{
+    return m_pDistrib->IsDistributionSpecific();
+};
 PNLW_END
