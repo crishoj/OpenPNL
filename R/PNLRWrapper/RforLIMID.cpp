@@ -2,7 +2,6 @@
 #define R_LIMID
 
 #include <math.h>
-#include "DBN.hpp"
 #include "BNet.hpp"
 #include "LIMID.hpp"
 #include "pnlException.hpp"
@@ -36,15 +35,14 @@ extern "C" __declspec(dllexport) SEXP pnlGetValueCostCondFloat(SEXP net, SEXP va
 extern "C" __declspec(dllexport) SEXP pnlGetValueCostCondString(SEXP net, SEXP value, SEXP parents);
 extern "C" __declspec(dllexport) SEXP pnlSetIterMax(SEXP net, SEXP IterMax);
 extern "C" __declspec(dllexport) SEXP pnlGetExpectation(SEXP net);
-extern "C" __declspec(dllexport) SEXP pnlGetPolitics(SEXP net);
+extern "C" __declspec(dllexport) SEXP pnlGetPoliticsString(SEXP net);
+extern "C" __declspec(dllexport) SEXP pnlGetPoliticsFloat(SEXP net);
 
 PNLW_USING
 
 extern "C"
 {
     extern int DBNCurrentSize;
-    extern DBN ** pDBNs;
-    extern int DBNCount;
 	extern int NetsCount;
 	extern int CurrentSize;
 	extern BayesNet ** pBNets;
@@ -133,7 +131,7 @@ SEXP pnlSetPChance(SEXP net, SEXP value, SEXP prob)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of SetPTabular function";
+            ErrorString = "Unrecognized exception during execution of SetPChance function";
             flag = 1;
         }
         
@@ -192,7 +190,7 @@ SEXP pnlSetPDecision(SEXP net, SEXP value, SEXP prob)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of SetPTabular function";
+            ErrorString = "Unrecognized exception during execution of SetPDecision function";
             flag = 1;
         }
         
@@ -251,7 +249,7 @@ SEXP pnlSetValueCost(SEXP net, SEXP value, SEXP prob)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of SetPTabular function";
+            ErrorString = "Unrecognized exception during execution of SetValueCost function";
             flag = 1;
         }
         
@@ -314,7 +312,7 @@ SEXP pnlSetPChanceCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of SetPTabular function";    
+            ErrorString = "Unrecognized exception during execution of SetPChance function";    
             flag = 1;
         }
 
@@ -375,7 +373,7 @@ SEXP pnlSetPDecisionCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of SetPTabular function";    
+            ErrorString = "Unrecognized exception during execution of SetPDecision function";    
             flag = 1;
         }
 
@@ -436,7 +434,7 @@ SEXP pnlSetValueCostCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of SetPTabular function";    
+            ErrorString = "Unrecognized exception during execution of SetValueCost function";    
             flag = 1;
         }
 
@@ -472,7 +470,7 @@ SEXP pnlSetValueCostCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of GetPTabular function";
+            ErrorString = "Unrecognized exception during execution of GetPChance function";
             flag = 1;
         }
 
@@ -558,7 +556,7 @@ SEXP pnlSetValueCostCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of GetPTabular function";
+            ErrorString = "Unrecognized exception during execution of GetPDecision function";
             flag = 1;
         }
 
@@ -644,7 +642,7 @@ SEXP pnlSetValueCostCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of GetPTabular function";
+            ErrorString = "Unrecognized exception during execution of GetValueCost function";
             flag = 1;
         }
 
@@ -1057,7 +1055,7 @@ SEXP pnlSetValueCostCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue)
         return (res);
 	}
 //----------------------------------------------------------------------------
-	SEXP pnlGetPolitics(SEXP net)
+	SEXP pnlGetPoliticsString(SEXP net)
 	{
         SEXP res;
         const char * result = "";
@@ -1099,6 +1097,63 @@ SEXP pnlSetValueCostCond(SEXP net, SEXP value, SEXP prob, SEXP parentValue)
 			{
 				temp = ResTok[i];
 				SET_STRING_ELT(res, i, mkChar(temp.c_str()));
+			}
+        }
+        UNPROTECT(2);
+        return (res);
+	}
+//----------------------------------------------------------------------------
+	SEXP pnlGetPoliticsFloat(SEXP net)
+	{
+        SEXP res;
+        const char * result = "";
+        String temp;
+        int flag = 0;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        TokArr ResTok;
+		try
+        {
+			ResTok = pLIMIDs[NetNum]->GetPolitics();
+            //result = temp.c_str();
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetPolitics function";
+            flag = 1;
+        }
+
+        if (flag == 1)
+        {
+            //there were exceptions during the function executions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+        else
+        {
+            //there were no exceptions
+            int len = 0;
+			for (int i=0; i<ResTok.size(); i++)
+			{
+				len += ResTok[i].fload.size();
+			}
+            PROTECT(res = NEW_NUMERIC(len));
+            double * pRes = NUMERIC_POINTER(res);
+			int curr = 0;
+            for (i=0; i < ResTok.size(); i++)
+			{
+				for (int j=0; j<ResTok[i].fload.size(); j++)
+				{
+					pRes[curr] = ResTok[i].FltValue(j).fl;
+					curr++;
+				}
 			}
         }
         UNPROTECT(2);

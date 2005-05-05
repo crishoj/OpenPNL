@@ -239,7 +239,7 @@ extern "C"
 		}
 		catch(...)
 		{
-            ErrorString = "Unrecognized exception during execution of GetNumSlices function";
+            ErrorString = "Unrecognized exception during execution of GetLag function";
             flag = 1;
 		}
 
@@ -324,7 +324,7 @@ extern "C"
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of AddNode function";
+            ErrorString = "Unrecognized exception during execution of GenerateEvidences function";
             flag = 1;
         }
 

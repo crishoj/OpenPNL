@@ -102,6 +102,10 @@ SOURCE=.\RForDBN.cpp
 
 SOURCE=.\RforLIMID.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\RForMRF.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 

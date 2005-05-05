@@ -3,6 +3,7 @@
 #include "BNet.hpp"
 #include "DBN.hpp"
 #include "LIMID.hpp"
+#include "MRF.hpp"
 #include "pnlException.hpp"
 //#include "RForDBN.h"
 
@@ -34,6 +35,7 @@ extern "C" __declspec(dllexport) SEXP pnlGetPTabularFloatCond(SEXP net, SEXP typ
 
 extern "C" __declspec(dllexport) SEXP pnlSetPGaussian(SEXP net, SEXP type, SEXP node, SEXP mean, SEXP variance);
 extern "C" __declspec(dllexport) SEXP pnlSetPGaussianCond(SEXP net, SEXP type, SEXP node, SEXP mean, SEXP variance, SEXP weight);
+extern "C" __declspec(dllexport) SEXP pnlSetPGaussianCondTParents(SEXP net, SEXP node, SEXP mean, SEXP variance, SEXP weight, SEXP tabParentValue);
 
 extern "C" __declspec(dllexport) SEXP pnlEditEvidence(SEXP net, SEXP type, SEXP values);
 extern "C" __declspec(dllexport) SEXP pnlClearEvid(SEXP net, SEXP type);
@@ -46,8 +48,11 @@ extern "C" __declspec(dllexport) SEXP pnlGetJPDString(SEXP net, SEXP type, SEXP 
 extern "C" __declspec(dllexport) SEXP pnlGetJPDFloat(SEXP net, SEXP type, SEXP nodes);
 
 extern "C" __declspec(dllexport) SEXP pnlGetGaussianMean(SEXP net, SEXP type, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetGaussianMeanCond(SEXP net, SEXP type, SEXP nodes, SEXP tabParents);
 extern "C" __declspec(dllexport) SEXP pnlGetGaussianCovar(SEXP net, SEXP type, SEXP nodes);
+extern "C" __declspec(dllexport) SEXP pnlGetGaussianCovarCond(SEXP net, SEXP type, SEXP nodes, SEXP tabParents);
 extern "C" __declspec(dllexport) SEXP pnlGetGaussianWeights (SEXP net, SEXP type, SEXP nodes, SEXP parents);
+extern "C" __declspec(dllexport) SEXP pnlGetGaussianWeightsCond (SEXP net, SEXP type, SEXP nodes, SEXP parents, SEXP tabParents);
 
 extern "C" __declspec(dllexport) SEXP pnlSetProperty(SEXP net, SEXP type, SEXP name, SEXP value);
 extern "C" __declspec(dllexport) SEXP pnlGetProperty(SEXP net, SEXP type, SEXP name);
@@ -59,12 +64,12 @@ extern "C" __declspec(dllexport) SEXP pnlSaveEvidBuf(SEXP net, SEXP type, SEXP f
 extern "C" __declspec(dllexport) SEXP pnlLoadEvidBufNative(SEXP net, SEXP type, SEXP filename);
 extern "C" __declspec(dllexport) SEXP pnlLoadEvidBufForeign(SEXP net, SEXP type, SEXP filename, SEXP columns);
 
-extern "C" __declspec(dllexport) SEXP pnlGenerateEvidences(SEXP net, SEXP nSample);
-extern "C" __declspec(dllexport) SEXP pnlGenerateEvidencesCurr(SEXP net, SEXP nSample, SEXP ignoreCurrEvid);
-extern "C" __declspec(dllexport) SEXP pnlGenerateEvidencesCurrSome(SEXP net, SEXP nSample, SEXP ignoreCurrEvid, SEXP whatNodes);
+extern "C" __declspec(dllexport) SEXP pnlGenerateEvidences(SEXP net, SEXP type, SEXP nSample);
+extern "C" __declspec(dllexport) SEXP pnlGenerateEvidencesCurr(SEXP net, SEXP type, SEXP nSample, SEXP ignoreCurrEvid);
+extern "C" __declspec(dllexport) SEXP pnlGenerateEvidencesCurrSome(SEXP net, SEXP type, SEXP nSample, SEXP ignoreCurrEvid, SEXP whatNodes);
     
-extern "C" __declspec(dllexport) SEXP pnlMaskEvidBufFull(SEXP net);    
-extern "C" __declspec(dllexport) SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes);
+extern "C" __declspec(dllexport) SEXP pnlMaskEvidBufFull(SEXP net, SEXP type);    
+extern "C" __declspec(dllexport) SEXP pnlMaskEvidBufPart(SEXP net, SEXP type, SEXP whatNodes);
 
 extern "C" __declspec(dllexport) SEXP pnlSaveNet(SEXP net, SEXP type, SEXP file);
 extern "C" __declspec(dllexport) SEXP pnlLoadNet(SEXP net, SEXP type, SEXP filename);
@@ -73,25 +78,38 @@ extern "C" __declspec(dllexport) SEXP pnlGetCurEvidenceLogLik(SEXP net);
 extern "C" __declspec(dllexport) SEXP pnlGetEvidBufLogLik(SEXP net);
 extern "C" __declspec(dllexport) SEXP pnlGetEMLearningCriterionValue(SEXP net, SEXP type);
 
+extern "C" __declspec(dllexport) SEXP pnlSetPSoftMax(SEXP net, SEXP node, SEXP weight, SEXP offset);
+extern "C" __declspec(dllexport) SEXP pnlSetPSoftMaxCond(SEXP net, SEXP node, SEXP weight, SEXP offset, SEXP parentValue);
+
+extern "C" __declspec(dllexport) SEXP pnlGetSoftMaxOffset(SEXP net, SEXP node);
+extern "C" __declspec(dllexport) SEXP pnlGetSoftMaxOffsetCond(SEXP net, SEXP node, SEXP parents);
+extern "C" __declspec(dllexport) SEXP pnlGetSoftMaxWeights(SEXP net, SEXP node);
+extern "C" __declspec(dllexport) SEXP pnlGetSoftMaxWeightsCond(SEXP net, SEXP node, SEXP parent);
+
 
 PNLW_USING
 
 extern "C"
 {
-    int CurrentSize = 3;
+    int CurrentSize = 1;
     BayesNet ** pBNets = new BayesNet * [CurrentSize];
     int NetsCount = 0;
     char * my_result;
 
     std::string ErrorString;
 
-    int DBNCurrentSize = 3;
+    int DBNCurrentSize = 1;
     DBN ** pDBNs = new DBN * [DBNCurrentSize];
     int DBNCount = 0;
 
-	int LIMIDCurrentSize = 3;
+	int LIMIDCurrentSize = 1;
 	int LIMIDCount = 0;
 	LIMID ** pLIMIDs = new LIMID * [LIMIDCurrentSize];
+
+	int MRFCurrentSize = 1;
+	int MRFCount = 0;
+	MRF ** pMRFs = new MRF * [MRFCurrentSize];
+
     
 //----------------------------------------------------------------------------
     SEXP pnlCreateBNet()
@@ -160,6 +178,8 @@ extern "C"
 				pDBNs[NetNum]->AddNode(arg1, arg2);
 			if (NetType == 2)
 				pLIMIDs[NetNum]->AddNode(arg1, arg2);
+			if (NetType == 3)
+				pMRFs[NetNum]->AddNode(arg1, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -205,6 +225,8 @@ extern "C"
 				pDBNs[NetNum]->DelNode(arg);
 			if (NetType == 2)
 				pLIMIDs[NetNum]->DelNode(arg);
+			if (NetType == 3)
+				pMRFs[NetNum]->DelNode(arg);
         }
         catch (pnl::CException E)
         {
@@ -246,6 +268,8 @@ extern "C"
 				ResTok = pBNets[NetNum]->GetNodeType(arg);
             if (NetType == 1) 
 				ResTok = pDBNs[NetNum]->GetNodeType(arg);
+			if (NetType == 3)
+				ResTok = pMRFs[NetNum]->GetNodeType(arg);
         }
         catch (pnl::CException &E)
         {
@@ -563,6 +587,11 @@ extern "C"
 				if (IS_CHARACTER(prob)) pDBNs[NetNum]->SetPTabular(arg1, arg2);
 				if (IS_NUMERIC(prob)) pDBNs[NetNum]->SetPTabular(arg1, arg3);
 			}
+			if (NetType == 3)
+			{
+				if (IS_CHARACTER(prob)) pMRFs[NetNum]->SetPTabular(arg1, arg2);
+				if (IS_NUMERIC(prob)) pMRFs[NetNum]->SetPTabular(arg1, arg3);
+			}
         }
         catch (pnl::CException &E)
         {
@@ -680,6 +709,8 @@ extern "C"
 				temp = pBNets[NetNum]->GetPTabular(arg);
 			if (NetType == 1)
 				temp = pDBNs[NetNum]->GetPTabular(arg);
+			if (NetType == 3)
+				temp = pMRFs[NetNum]->GetPTabular(arg);
             result = temp.c_str();
         }
         catch (pnl::CException &E)
@@ -769,6 +800,8 @@ extern "C"
 				ResTok = pBNets[NetNum]->GetPTabular(arg);
 			if (NetType == 1)
 				ResTok = pDBNs[NetNum]->GetPTabular(arg);
+			if (NetType == 3)
+				ResTok = pMRFs[NetNum]->GetPTabular(arg);
         }
         catch (pnl::CException &E)
         {
@@ -859,6 +892,380 @@ extern "C"
         return (res);
     }
 
+//----------------------------------------------------------------------------
+	SEXP pnlSetPSoftMax(SEXP net, SEXP node, SEXP weight, SEXP offset)
+	{
+        SEXP res;
+        int flag = -1;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(node = AS_CHARACTER(node));
+        char * arg1 = CHAR(asChar(node));
+        
+        char * weight_str;
+        char * offset_str;
+        TokArr WeightTok;
+        TokArr OffsetTok;
+
+        if (IS_CHARACTER(weight))
+        {
+            PROTECT(weight = AS_CHARACTER(weight));
+            weight_str = CHAR(asChar(weight));
+        }
+        else if (IS_NUMERIC(weight))
+        {
+            PROTECT(weight = AS_NUMERIC(weight));
+            double * pWeight = NUMERIC_POINTER(weight);
+            int len = LENGTH(weight);
+            for (int i=0; i<len; i++)
+            {
+                WeightTok.push_back((float)pWeight[i]);
+            }
+        }
+
+        if (IS_CHARACTER(offset))
+        {
+            PROTECT(offset = AS_CHARACTER(offset));
+            offset_str = CHAR(asChar(offset));
+        }
+        else if (IS_NUMERIC(offset))
+        {
+            PROTECT(offset = AS_NUMERIC(offset));
+            double * pOffset = NUMERIC_POINTER(offset);
+            int len = LENGTH(offset);
+            for (int i=0; i<len; i++)
+            {
+                OffsetTok.push_back((float)pOffset[i]);
+            }
+        }
+
+            try
+            {
+					if ((IS_CHARACTER(weight)) && (IS_CHARACTER(offset)))
+						pBNets[NetNum]->SetPGaussian(arg1, weight_str, offset_str);
+					if ((IS_CHARACTER(weight)) && (IS_NUMERIC(offset)))
+						pBNets[NetNum]->SetPGaussian(arg1, weight_str, OffsetTok);
+					if ((IS_NUMERIC(weight)) && (IS_CHARACTER(offset)))
+						pBNets[NetNum]->SetPGaussian(arg1, WeightTok, offset_str);
+					if ((IS_NUMERIC(weight)) && (IS_NUMERIC(offset)))
+						pBNets[NetNum]->SetPGaussian(arg1, WeightTok, OffsetTok);
+            }
+            catch (pnl::CException &E)
+            {
+                ErrorString = E.GetMessage();
+                flag = 1;
+            }
+            catch(...)
+            {
+                ErrorString = "Unrecognized exception during execution of SetPSoftMax function"; 
+                flag = 1;
+            }
+
+        PROTECT(res = NEW_INTEGER(1));
+        int * pres = INTEGER_POINTER(res);
+        pres[0] = flag;
+
+        UNPROTECT(5);
+        return (res);
+	}
+//----------------------------------------------------------------------------
+	SEXP pnlSetPSoftMaxCond(SEXP net, SEXP node, SEXP weight, SEXP offset, SEXP parentValue)
+	{
+        SEXP res;
+        int flag = -1;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(node = AS_CHARACTER(node));
+        char * arg1 = CHAR(asChar(node));
+
+		PROTECT(parentValue = AS_CHARACTER(parentValue));
+		char * parents = CHAR(asChar(parentValue));
+        
+        char * weight_str;
+        char * offset_str;
+        TokArr WeightTok;
+        TokArr OffsetTok;
+
+        if (IS_CHARACTER(weight))
+        {
+            PROTECT(weight = AS_CHARACTER(weight));
+            weight_str = CHAR(asChar(weight));
+        }
+        else if (IS_NUMERIC(weight))
+        {
+            PROTECT(weight = AS_NUMERIC(weight));
+            double * pWeight = NUMERIC_POINTER(weight);
+            int len = LENGTH(weight);
+            for (int i=0; i<len; i++)
+            {
+                WeightTok.push_back((float)pWeight[i]);
+            }
+        }
+
+        if (IS_CHARACTER(offset))
+        {
+            PROTECT(offset = AS_CHARACTER(offset));
+            offset_str = CHAR(asChar(offset));
+        }
+        else if (IS_NUMERIC(offset))
+        {
+            PROTECT(offset = AS_NUMERIC(offset));
+            double * pOffset = NUMERIC_POINTER(offset);
+            int len = LENGTH(offset);
+            for (int i=0; i<len; i++)
+            {
+                OffsetTok.push_back((float)pOffset[i]);
+            }
+        }
+
+            try
+            {
+					if ((IS_CHARACTER(weight)) && (IS_CHARACTER(offset)))
+						pBNets[NetNum]->SetPGaussian(arg1, weight_str, offset_str, parents);
+					if ((IS_CHARACTER(weight)) && (IS_NUMERIC(offset)))
+						pBNets[NetNum]->SetPGaussian(arg1, weight_str, OffsetTok, parents);
+					if ((IS_NUMERIC(weight)) && (IS_CHARACTER(offset)))
+						pBNets[NetNum]->SetPGaussian(arg1, WeightTok, offset_str, parents);
+					if ((IS_NUMERIC(weight)) && (IS_NUMERIC(offset)))
+						pBNets[NetNum]->SetPGaussian(arg1, WeightTok, OffsetTok, parents);
+            }
+            catch (pnl::CException &E)
+            {
+                ErrorString = E.GetMessage();
+                flag = 1;
+            }
+            catch(...)
+            {
+                ErrorString = "Unrecognized exception during execution of SetPSoftMax function"; 
+                flag = 1;
+            }
+
+        PROTECT(res = NEW_INTEGER(1));
+        int * pres = INTEGER_POINTER(res);
+        pres[0] = flag;
+
+        UNPROTECT(5);
+        return (res);
+	}
+
+//----------------------------------------------------------------------------
+	SEXP pnlGetSoftMaxOffset(SEXP net, SEXP node)
+	{
+        SEXP res;
+        const char * result = "";
+        int temp = 0;
+        String str;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(node = AS_CHARACTER(node));
+        char * arg = CHAR(asChar(node));
+        
+        TokArr ResTok;
+
+        try
+        {
+			ResTok = pBNets[NetNum]->GetSoftMaxOffset(arg);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            temp = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetSoftMaxOffset  function";
+            temp = 1;
+        }
+
+        if (temp == 0)
+        {
+            //there was no exceptions
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
+            double * pres = NUMERIC_POINTER(res);
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
+        }
+        else
+        {
+            //there were exceptions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+
+        UNPROTECT(3);
+        return (res);
+	}
+//----------------------------------------------------------------------------
+	SEXP pnlGetSoftMaxOffsetCond(SEXP net, SEXP node, SEXP parents)
+	{
+        SEXP res;
+        const char * result = "";
+        int temp = 0;
+        String str;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(node = AS_CHARACTER(node));
+        char * arg = CHAR(asChar(node));
+
+		PROTECT(parents = AS_CHARACTER(parents));
+		char * par = CHAR(asChar(parents));
+        
+        TokArr ResTok;
+
+        try
+        {
+			ResTok = pBNets[NetNum]->GetSoftMaxOffset(arg, par);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            temp = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetSoftMaxOffset execution";
+            temp = 1;
+        }
+
+        if (temp == 0)
+        {
+            //there was no exceptions
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
+            double * pres = NUMERIC_POINTER(res);
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
+        }
+        else
+        {
+            //there were exceptions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+
+        UNPROTECT(4);
+        return (res);
+	}
+//----------------------------------------------------------------------------
+	SEXP pnlGetSoftMaxWeights(SEXP net, SEXP node)
+	{
+        SEXP res;
+        const char * result = "";
+        int temp = 0;
+        String str;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(node = AS_CHARACTER(node));
+        char * arg = CHAR(asChar(node));
+        
+        TokArr ResTok;
+
+        try
+        {
+			ResTok = pBNets[NetNum]->GetSoftMaxWeights(arg);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            temp = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetSoftMaxWeights function";
+            temp = 1;
+        }
+
+        if (temp == 0)
+        {
+            //there was no exceptions
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
+            double * pres = NUMERIC_POINTER(res);
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
+        }
+        else
+        {
+            //there were exceptions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+
+        UNPROTECT(3);
+        return (res);
+	}
+//----------------------------------------------------------------------------
+	SEXP pnlGetSoftMaxWeightsCond(SEXP net, SEXP node, SEXP parents)
+	{
+        SEXP res;
+        const char * result = "";
+        int temp = 0;
+        String str;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(node = AS_CHARACTER(node));
+        char * arg = CHAR(asChar(node));
+
+		PROTECT(parents = AS_CHARACTER(parents));
+		char * par = CHAR(asChar(parents));
+        
+        TokArr ResTok;
+
+        try
+        {
+			ResTok = pBNets[NetNum]->GetSoftMaxWeights(arg, par);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            temp = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetSoftMaxWeights execution";
+            temp = 1;
+        }
+
+        if (temp == 0)
+        {
+            //there was no exceptions
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
+            double * pres = NUMERIC_POINTER(res);
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
+        }
+        else
+        {
+            //there were exceptions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+
+        UNPROTECT(4);
+        return (res);
+	}
 //----------------------------------------------------------------------------
     SEXP pnlSetPGaussian(SEXP net, SEXP type, SEXP node, SEXP mean, SEXP variance)
     {
@@ -1097,6 +1504,139 @@ extern "C"
     }
 
 //----------------------------------------------------------------------------
+	SEXP pnlSetPGaussianCondTParents(SEXP net, SEXP node, 
+		SEXP mean, SEXP variance, SEXP weight, SEXP tabParentValue)
+	{
+        SEXP res;
+        int flag = -1;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+        PROTECT(node = AS_CHARACTER(node));
+        char * arg1 = CHAR(asChar(node));
+
+		PROTECT(tabParentValue = AS_CHARACTER(tabParentValue));
+		char * TabParent = CHAR(asChar(tabParentValue));
+
+        char * mean_str;
+        char * variance_str;
+        char * weight_str;
+        TokArr MeanTok;
+        TokArr VarianceTok;
+        TokArr WeightTok;
+
+        int len;
+
+        if (IS_CHARACTER(mean))
+        {
+            PROTECT(mean = AS_CHARACTER(mean));
+            mean_str = CHAR(asChar(mean));
+        }
+        else if (IS_NUMERIC(mean))
+        {
+            PROTECT(mean = AS_NUMERIC(mean));
+            double * pMean = NUMERIC_POINTER(mean);
+            len = LENGTH(mean);
+            for (int i=0; i<len; i++)
+            {
+                MeanTok.push_back((float)pMean[i]);
+            }
+        }
+
+        if (IS_CHARACTER(variance))
+        {
+            PROTECT(variance = AS_CHARACTER(variance));
+            variance_str = CHAR(asChar(variance));
+        }
+        else if (IS_NUMERIC(variance))
+        {
+            PROTECT(variance = AS_NUMERIC(variance));
+            double * pVariance = NUMERIC_POINTER(variance);
+            len = LENGTH(variance);
+            for (int i=0; i<len; i++)
+            {
+                VarianceTok.push_back((float)pVariance[i]);
+            }
+        }
+      
+        if (IS_CHARACTER(weight))
+        {
+            PROTECT(weight = AS_CHARACTER(weight));
+            weight_str = CHAR(asChar(weight));
+        }
+        else if (IS_NUMERIC(weight))
+        {
+            PROTECT(weight = AS_NUMERIC(weight));
+            double * pWeight = NUMERIC_POINTER(weight);
+            len = LENGTH(weight);
+            for (int i=0; i<len; i++)
+            {
+                WeightTok.push_back((float)pWeight[i]);
+            }
+        }
+
+
+        try
+        {
+            if (IS_CHARACTER(weight))
+            {
+                if ((IS_CHARACTER(mean)) && (IS_CHARACTER(variance)))
+				{
+                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str, weight_str, TabParent);
+				}
+                if ((IS_CHARACTER(mean)) && (IS_NUMERIC(variance)))
+				{
+                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok, weight_str, TabParent);
+				}
+                if ((IS_NUMERIC(mean)) && (IS_CHARACTER(variance)))
+				{
+                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str, weight_str, TabParent);
+				}
+                if ((IS_NUMERIC(mean)) && (IS_NUMERIC(variance)))
+				{
+                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok, weight_str, TabParent);
+				}
+            }
+            else if (IS_NUMERIC(weight))
+            {
+                if ((IS_CHARACTER(mean)) && (IS_CHARACTER(variance)))
+				{
+                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, variance_str, WeightTok, TabParent);
+				}
+                if ((IS_CHARACTER(mean)) && (IS_NUMERIC(variance)))
+				{
+                    pBNets[NetNum]->SetPGaussian(arg1, mean_str, VarianceTok, WeightTok, TabParent);
+				}
+                if ((IS_NUMERIC(mean)) && (IS_CHARACTER(variance)))
+				{
+                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, variance_str, WeightTok, TabParent);
+				}
+                if ((IS_NUMERIC(mean)) && (IS_NUMERIC(variance)))
+				{
+                    pBNets[NetNum]->SetPGaussian(arg1, MeanTok, VarianceTok, WeightTok, TabParent);
+				}
+            }
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            flag = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of SetPGaussian function"; 
+            flag = 1;
+        }
+
+        PROTECT(res = NEW_INTEGER(1));
+        int * pres = INTEGER_POINTER(res);
+        pres[0] = flag;
+        UNPROTECT(7);
+        return (res);
+	}
+
+//----------------------------------------------------------------------------
     SEXP pnlEditEvidence(SEXP net, SEXP type, SEXP values)
     {
         SEXP res;
@@ -1115,6 +1655,7 @@ extern "C"
         {
             if (NetType == 0) pBNets[NetNum]->EditEvidence(arg);
 			if (NetType == 1) pDBNs[NetNum]->EditEvidence(arg);
+			if (NetType == 3) pMRFs[NetNum]->EditEvidence(arg);
         }
         catch (pnl::CException &E)
         {
@@ -1150,6 +1691,7 @@ extern "C"
         {
             if (NetType == 0) pBNets[NetNum]->ClearEvid();
 			if (NetType == 1) pDBNs[NetNum]->ClearEvid(); 
+			if (NetType == 3) pMRFs[NetNum]->ClearEvid(); 
         }
         catch (pnl::CException &E)
         {
@@ -1185,6 +1727,7 @@ extern "C"
         {
             if (NetType == 0) pBNets[NetNum]->CurEvidToBuf();
 			if (NetType == 1) pDBNs[NetNum]->CurEvidToBuf();
+			if (NetType == 3) pMRFs[NetNum]->CurEvidToBuf();
         }
         catch (pnl::CException &E)
         {
@@ -1223,6 +1766,7 @@ extern "C"
         {
             if (NetType == 0) pBNets[NetNum]->AddEvidToBuf(arg);
 			if (NetType == 1) pDBNs[NetNum]->AddEvidToBuf(arg);
+			if (NetType == 3) pMRFs[NetNum]->AddEvidToBuf(arg);
         }
         catch (pnl::CException &E)
         {
@@ -1258,6 +1802,7 @@ extern "C"
         {
             if (NetType == 0) pBNets[NetNum]->ClearEvidBuf();
 			if (NetType == 1) pDBNs[NetNum]->ClearEvidBuf();
+			if (NetType == 3) pMRFs[NetNum]->ClearEvidBuf();
         }
         catch (pnl::CException &E)
         {
@@ -1301,6 +1846,8 @@ extern "C"
 				temp = pBNets[NetNum]->GetMPE(arg);
 			if (NetType == 1) 
 				temp = pDBNs[NetNum]->GetMPE(arg);
+			if (NetType == 3) 
+				temp = pMRFs[NetNum]->GetMPE(arg);
             result = temp.c_str();
 		}
         catch (pnl::CException &E)
@@ -1344,6 +1891,7 @@ extern "C"
         {
             if (NetType == 0) ResTok = pBNets[NetNum]->GetJPD(arg);
 			if (NetType == 1) ResTok = pDBNs[NetNum]->GetJPD(arg);
+			if (NetType == 3) ResTok = pMRFs[NetNum]->GetJPD(arg);
         }
         catch (pnl::CException &E)
         {
@@ -1396,6 +1944,7 @@ extern "C"
         {
             if (NetType == 0) temp = pBNets[NetNum]->GetJPD(arg);
 			if (NetType == 1) temp = pDBNs[NetNum]->GetJPD(arg); 
+			if (NetType == 3) temp = pMRFs[NetNum]->GetJPD(arg); 
             result = temp.c_str();
         }
         catch (pnl::CException &E)
@@ -1478,6 +2027,66 @@ extern "C"
 
     }
 //----------------------------------------------------------------------------
+    SEXP pnlGetGaussianMeanCond(SEXP net, SEXP type, SEXP nodes, SEXP tabParents)
+    {
+        SEXP res;
+        const char * result = "";
+        int temp = 0;
+        String str;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
+        PROTECT(nodes = AS_CHARACTER(nodes));
+        char * arg = CHAR(asChar(nodes));
+
+		PROTECT(tabParents = AS_CHARACTER(tabParents));
+		char * parents = CHAR(asChar(tabParents));
+        
+        TokArr ResTok;
+
+        try
+        {
+            if (NetType == 0) 
+				ResTok = pBNets[NetNum]->GetGaussianMean(arg, parents);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            temp = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetGaussianMean function";
+            temp = 1;
+        }
+
+        if (temp == 0)
+        {
+            //there was no exceptions
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
+            double * pres = NUMERIC_POINTER(res);
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
+        }
+        else
+        {
+            //there were exceptions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+
+        UNPROTECT(5);
+        return (res);
+
+    }
+//----------------------------------------------------------------------------
     SEXP pnlGetGaussianCovar(SEXP net, SEXP type, SEXP nodes)
     {
         SEXP res;
@@ -1534,7 +2143,7 @@ extern "C"
     }
 
 //----------------------------------------------------------------------------
-    SEXP pnlGetGaussianWeights (SEXP net, SEXP type, SEXP nodes, SEXP parents)
+    SEXP pnlGetGaussianCovarCond(SEXP net, SEXP type, SEXP nodes, SEXP tabParents)
     {
         SEXP res;
         const char * result = "";
@@ -1549,15 +2158,15 @@ extern "C"
 
         PROTECT(nodes = AS_CHARACTER(nodes));
         char * arg = CHAR(asChar(nodes));
+		
+		PROTECT(tabParents = AS_CHARACTER(tabParents));
+		char * parents = CHAR(asChar(tabParents));
 
-        PROTECT(parents = AS_CHARACTER(parents));
-        char * arg2 = CHAR(asChar(parents));
         TokArr ResTok;
         
         try
         {
-            if (NetType == 0) ResTok = pBNets[NetNum]->GetGaussianWeights(arg, arg2);
-			if (NetType == 1) ResTok = pDBNs[NetNum]->GetGaussianWeights(arg, arg2);
+            if (NetType == 0) ResTok = pBNets[NetNum]->GetGaussianCovar(arg, parents);
         }
         catch (pnl::CException &E)
         {
@@ -1592,6 +2201,125 @@ extern "C"
         return (res);
     }
 //----------------------------------------------------------------------------
+    SEXP pnlGetGaussianWeights (SEXP net, SEXP type, SEXP nodes, SEXP parents)
+    {
+        SEXP res;
+        const char * result = "";
+        int temp = 0;
+        String str;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
+        PROTECT(nodes = AS_CHARACTER(nodes));
+        char * arg = CHAR(asChar(nodes));
+
+        PROTECT(parents = AS_CHARACTER(parents));
+        char * arg2 = CHAR(asChar(parents));
+        TokArr ResTok;
+        
+        try
+        {
+            if (NetType == 0) ResTok = pBNets[NetNum]->GetGaussianWeights(arg, arg2);
+			if (NetType == 1) ResTok = pDBNs[NetNum]->GetGaussianWeights(arg, arg2);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            temp = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetGaussianWeights function";
+            temp = 1;
+        }
+
+        if (temp == 0)
+        {
+            //there was no exceptions
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
+            double * pres = NUMERIC_POINTER(res);
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
+        }
+        else
+        {
+            //there were exceptions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+
+        UNPROTECT(5);
+        return (res);
+    }
+//----------------------------------------------------------------------------
+    SEXP pnlGetGaussianWeightsCond (SEXP net, SEXP type, SEXP nodes, SEXP contParents, SEXP tabParents)
+    {
+        SEXP res;
+        const char * result = "";
+        int temp = 0;
+        String str;
+
+        PROTECT(net = AS_INTEGER(net));
+        int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
+        PROTECT(nodes = AS_CHARACTER(nodes));
+        char * arg = CHAR(asChar(nodes));
+
+        PROTECT(contParents = AS_CHARACTER(contParents));
+        char * arg2 = CHAR(asChar(contParents));
+
+        PROTECT(tabParents = AS_CHARACTER(tabParents));
+        char * arg3 = CHAR(asChar(tabParents));
+        
+		TokArr ResTok;
+        
+        try
+        {
+            if (NetType == 0) ResTok = pBNets[NetNum]->GetGaussianWeights(arg, arg2, arg3);
+        }
+        catch (pnl::CException &E)
+        {
+            ErrorString = E.GetMessage();
+            temp = 1;
+        }
+        catch(...)
+        {
+            ErrorString = "Unrecognized exception during execution of GetGaussianWeights function";
+            temp = 1;
+        }
+
+        if (temp == 0)
+        {
+            //there was no exceptions
+            int size = ResTok[0].fload.size();
+            PROTECT(res = NEW_NUMERIC(size));
+            double * pres = NUMERIC_POINTER(res);
+            for (int i=0; i<size; i++)
+            {
+                pres [i] = ResTok[0].FltValue(i).fl; 
+            }
+        }
+        else
+        {
+            //there were exceptions
+            PROTECT(res = allocVector(STRSXP, 1));
+            SET_STRING_ELT(res, 0, mkChar(ErrorString.c_str()));
+        }
+
+        UNPROTECT(6);
+        return (res);
+    }
+//----------------------------------------------------------------------------
     SEXP pnlSetProperty(SEXP net, SEXP type, SEXP name, SEXP value)
     {
         SEXP res;
@@ -1617,6 +2345,8 @@ extern "C"
 				pDBNs[NetNum]->SetProperty(arg1, arg2);
 			if (NetType == 2)
 				pLIMIDs[NetNum]->SetProperty(arg1, arg2);
+			if (NetType == 3)
+				pMRFs[NetNum]->SetProperty(arg1, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -1661,6 +2391,8 @@ extern "C"
 				temp = pDBNs[NetNum]->GetProperty(arg1);
 			if (NetType == 2)
 				temp = pLIMIDs[NetNum]->GetProperty(arg1);
+			if (NetType == 3)
+				temp = pMRFs[NetNum]->GetProperty(arg1);
             result = temp.c_str();
         }
         catch (pnl::CException &E)
@@ -1700,6 +2432,7 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
         {
             if (NetType == 0) pBNets[NetNum]->LearnParameters();
 			if (NetType == 1) pDBNs[NetNum]->LearnParameters();
+			if (NetType == 3) pMRFs[NetNum]->LearnParameters();
         }
         catch (pnl::CException &E)
         {
@@ -1740,7 +2473,7 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of LearnParameters function";
+            ErrorString = "Unrecognized exception during execution of LearnStructure function";
             flag = 1;
         }
 
@@ -1774,6 +2507,8 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
 				count = pBNets[NetNum]->SaveEvidBuf(arg1);
 			if (NetType == 1)
 				count = pDBNs[NetNum]->SaveEvidBuf(arg1);
+			if (NetType == 3)
+				count = pMRFs[NetNum]->SaveEvidBuf(arg1);
         }
         catch (pnl::CException &E)
         {
@@ -1822,6 +2557,8 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
 				count = pBNets[NetNum]->LoadEvidBuf(arg1);
 			if (NetType == 1)
 				count = pDBNs[NetNum]->LoadEvidBuf(arg1);
+			if (NetType == 3)
+				count = pMRFs[NetNum]->LoadEvidBuf(arg1);
         }
         catch (pnl::CException &E)
         {
@@ -1872,6 +2609,8 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
 				count = pBNets[NetNum]->LoadEvidBuf(arg1, NetConst::eCSV, arg2);
 			if (NetType == 1)
 				count = pDBNs[NetNum]->LoadEvidBuf(arg1, NetConst::eCSV, arg2);
+			if (NetType == 3)
+				count = pMRFs[NetNum]->LoadEvidBuf(arg1, NetConst::eCSV, arg2);
         }
         catch (pnl::CException &E)
         {
@@ -1899,7 +2638,7 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGenerateEvidences(SEXP net, SEXP nSample)
+    SEXP pnlGenerateEvidences(SEXP net, SEXP type, SEXP nSample)
     {
         SEXP res;
         int flag = -1;
@@ -1907,12 +2646,16 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         PROTECT(nSample = AS_INTEGER(nSample));
         int * arg = INTEGER_POINTER(nSample);
 
         try
         {
-            pBNets[NetNum]->GenerateEvidences(arg[0]) ;
+            if (NetType == 0) pBNets[NetNum]->GenerateEvidences(arg[0]) ;
+            if (NetType == 3) pMRFs[NetNum]->GenerateEvidences(arg[0]) ;
         }
         catch(pnl::CException &E)
         {
@@ -1932,13 +2675,16 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGenerateEvidencesCurr(SEXP net, SEXP nSample, SEXP ignoreCurrEvid)
+    SEXP pnlGenerateEvidencesCurr(SEXP net, SEXP type, SEXP nSample, SEXP ignoreCurrEvid)
     {
         SEXP res;
         int flag = -1;
 
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
+
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
 
         PROTECT(nSample = AS_INTEGER(nSample));
         PROTECT(ignoreCurrEvid = AS_LOGICAL(ignoreCurrEvid));
@@ -1947,7 +2693,8 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
 
         try
         {
-            pBNets[NetNum]->GenerateEvidences(arg1[0], arg2) ;
+            if (NetType == 0) pBNets[NetNum]->GenerateEvidences(arg1[0], arg2) ;
+            if (NetType == 3) pMRFs[NetNum]->GenerateEvidences(arg1[0], arg2) ;
         }
         catch(pnl::CException &E)
         {
@@ -1968,7 +2715,7 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
         return (res);
     }
 //----------------------------------------------------------------------------
-    SEXP pnlGenerateEvidencesCurrSome(SEXP net, SEXP nSample, SEXP ignoreCurrEvid, SEXP whatNodes)
+    SEXP pnlGenerateEvidencesCurrSome(SEXP net, SEXP type, SEXP nSample, SEXP ignoreCurrEvid, SEXP whatNodes)
     {
         SEXP res;
         int flag = -1;
@@ -1983,9 +2730,13 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
         bool arg2 = LOGICAL_VALUE(ignoreCurrEvid);
         char * arg3 = CHAR(asChar(whatNodes));
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->GenerateEvidences(arg1[0], arg2, arg3) ;
+            if (NetType == 0) pBNets[NetNum]->GenerateEvidences(arg1[0], arg2, arg3) ;
+            if (NetType == 3) pMRFs[NetNum]->GenerateEvidences(arg1[0], arg2, arg3) ;
         }
         catch(pnl::CException &E)
         {
@@ -2004,7 +2755,7 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
         return (res);
     }
 //----------------------------------------------------------------------------
-SEXP pnlMaskEvidBufFull(SEXP net)
+SEXP pnlMaskEvidBufFull(SEXP net, SEXP type)
 {
         SEXP res;
         int flag = -1;
@@ -2012,9 +2763,13 @@ SEXP pnlMaskEvidBufFull(SEXP net)
         PROTECT(net = AS_INTEGER(net));
         int NetNum = INTEGER_VALUE(net);
 
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->MaskEvidBuf() ;
+            if (NetType == 0) pBNets[NetNum]->MaskEvidBuf() ;
+            if (NetType == 3) pMRFs[NetNum]->MaskEvidBuf() ;
         }
         catch(pnl::CException &E)
         {
@@ -2033,7 +2788,7 @@ SEXP pnlMaskEvidBufFull(SEXP net)
         return (res);
 }
 //----------------------------------------------------------------------------
-SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
+SEXP pnlMaskEvidBufPart(SEXP net, SEXP type, SEXP whatNodes)
 {
         SEXP res;
         int flag = -1;
@@ -2044,9 +2799,13 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         PROTECT(whatNodes = AS_CHARACTER(whatNodes));
         char * arg = CHAR(asChar(whatNodes));
         
+		PROTECT(type = AS_INTEGER(type));
+		int NetType = INTEGER_VALUE(type);
+
         try
         {
-            pBNets[NetNum]->MaskEvidBuf(arg);
+            if (NetType == 0) pBNets[NetNum]->MaskEvidBuf(arg);
+            if (NetType == 3) pMRFs[NetNum]->MaskEvidBuf(arg);
         }
         catch (pnl::CException &E)
         {
@@ -2091,6 +2850,8 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
 				pDBNs[NetNum]->SaveNet(filename);
 			if (NetType == 2)
 				pLIMIDs[NetNum]->SaveNet(filename);
+			if (NetType == 3)
+				pMRFs[NetNum]->SaveNet(filename);
 
         }
         catch (pnl::CException &E)
@@ -2135,6 +2896,8 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
 				pDBNs[NetNum]->LoadNet(file);
 			if (NetType == 2)
 				pLIMIDs[NetNum]->LoadNet(file);
+			if (NetType == 3)
+				pMRFs[NetNum]->LoadNet(file);
 
         }
         catch (pnl::CException &E)
@@ -2144,7 +2907,7 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of SaveNet function";
+            ErrorString = "Unrecognized exception during execution of LoadNet function";
             flag = 1;
         }
 
@@ -2177,7 +2940,7 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of GetPTabular function";
+            ErrorString = "Unrecognized exception during execution of GetCurEvidenceLogLik function";
             flag = 1;
         }
 
@@ -2218,7 +2981,7 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of GetJPD function";
+            ErrorString = "Unrecognized exception during execution of GetEvidBufLogLik function";
             flag = 1;
         }
 
@@ -2268,7 +3031,7 @@ SEXP pnlMaskEvidBufPart(SEXP net, SEXP whatNodes)
         }
         catch(...)
         {
-            ErrorString = "Unrecognized exception during execution of GetPTabular function";
+            ErrorString = "Unrecognized exception during execution of GetEMLearningCriterionValue function";
             flag = 1;
         }
 
