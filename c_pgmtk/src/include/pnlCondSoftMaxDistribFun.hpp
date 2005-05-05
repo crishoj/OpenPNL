@@ -70,6 +70,9 @@ public:
 
   void SetDistribFun(CSoftMaxDistribFun* inputDistr, 
     const int* discreteParentCombination);
+  
+  inline void GetDiscreteParentsIndices( intVector* const discrParents ) const;
+  inline void GetContinuousParentsIndices( intVector* const contParents ) const;
 
   //we can create distribution functions without asking about their contens
   //and alloc or attach matrices after that
@@ -250,6 +253,23 @@ inline CMatrix<CSoftMaxDistribFun*>*
 CCondSoftMaxDistribFun::GetMatrixWithDistribution()
 {
   return m_distribution;
+}
+
+inline void CCondSoftMaxDistribFun::GetDiscreteParentsIndices( 
+                                                                intVector* const discrParents ) const
+{
+    PNL_CHECK_IS_NULL_POINTER( discrParents );
+    
+    discrParents->assign( m_discrParentsIndex.begin(),
+        m_discrParentsIndex.end());
+}
+
+inline void CCondSoftMaxDistribFun::GetContinuousParentsIndices( 
+                                                                  intVector* const contParents ) const 
+{
+    PNL_CHECK_IS_NULL_POINTER( contParents );
+    
+    contParents->assign( m_contParentsIndex.begin(), m_contParentsIndex.end());
 }
 
 PNL_END
