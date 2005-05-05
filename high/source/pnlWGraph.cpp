@@ -430,7 +430,7 @@ int WGraph::INode(const String &name) const
 	{
 		if(m_NNames[i] == name)
 		{
-			return i;
+			return m_NIndexes[i];
 		}
 	}
 	return -1;
@@ -503,6 +503,7 @@ bool WGraph::SetNodeName(int iNode, String &name)
 		if(iNode == m_NIndexes[i])
 		{
 			m_NNames[i] = name;
+			m_aNode[iNode] = name;
 			break;
 		}
 	}
