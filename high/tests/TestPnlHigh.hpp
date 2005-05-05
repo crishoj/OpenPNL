@@ -7,6 +7,7 @@ PNLW_BEGIN
 class TestsPnlHigh
 {
 public:
+    //Conditional Gaussian tests
     void TestDesc();	
     void TestNTabNCont();
     void Test2Bnets();
@@ -14,7 +15,11 @@ public:
     void TestCondGaussianFillData();
     void TestSetPGaussian();
     void TestGetDiscreteParentValuesIndexes();
-    void TestGetGaussianMean();
+    void TestGetGaussianMeanCovarWeights();
+    void TestConditionalGaussianGetJPD();
+
+    //Evidence
+    void Test2EditEvidence();
 
 private:
     BayesNet *CreateCondGaussianModel1();
