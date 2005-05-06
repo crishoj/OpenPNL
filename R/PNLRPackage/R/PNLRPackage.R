@@ -684,7 +684,7 @@ GetGaussianWeights <- function(x, nodes, parents, tabParents) UseMethod("GetGaus
 GetGaussianWeights.pnlBNet <- function(x, nodes, parents, tabParents = -1)
 {
 	if (tabParents < 0) .Call("pnlGetGaussianWeights", x, 0, nodes, parents)
-	else  .Call("pnlGetGaussianWeights", x, 0, nodes, parents, tabParents)
+	else  .Call("pnlGetGaussianWeightsCond", x, 0, nodes, parents, tabParents)
 }
 GetGaussianWeights.pnlDBN <- function(x, nodes, parents) .Call("pnlGetGaussianWeights", x, 1, nodes, parents)
 
