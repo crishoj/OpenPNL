@@ -64,7 +64,8 @@ void WDistributions::Setup(int iNode)
     if (nodeClass == eNodeClassDiscrete )
     {
 	bool isSoftMax = false;
-	for (int i=0; i< parTokId.size(); i++)
+        int i;
+	for (i=0; i< parTokId.size(); i++)
 	{
 	    TokIdNode *tok = parTokId[i];
 	    if (!static_cast<pnl::CNodeType*>(tok->v_prev->data)->IsDiscrete() )
@@ -77,7 +78,7 @@ void WDistributions::Setup(int iNode)
 
 	if (isSoftMax)
 	{
-	    for ( i=0; i< parTokId.size(); i++)
+	    for (i=0; i< parTokId.size(); i++)
 	    {
 		TokIdNode *tok = parTokId[i];
 		if (static_cast<pnl::CNodeType*>(tok->v_prev->data)->IsDiscrete() )
