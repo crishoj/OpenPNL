@@ -298,6 +298,8 @@ void MRF::SetInferenceProperties(TokArr &nodes)
     
     if(dynamic_cast<pnl::CGibbsSamplingInfEngine *>(infEngine) != NULL)
     {
+	infEngine = &Inference(true);
+
 	pnl::CGibbsSamplingInfEngine *infGibbs = static_cast<pnl::CGibbsSamplingInfEngine *>(infEngine);
 	Vector<int> queryVls;
 	pnl::intVecVector queries(1);
@@ -678,8 +680,14 @@ pnl::CMatrix<float> *MRF::Matrix(int iNode) const
     return mat;
 }
 
-pnl::CInfEngine &MRF::Inference()
+pnl::CInfEngine &MRF::Inference(bool Recreate)
 {
+    if (Recreate)
+    {
+	delete m_Inference;
+	m_Inference = 0;
+    };
+
     switch(PropertyAbbrev("Inference"))
     {
     case 'j': //Junction tree inference

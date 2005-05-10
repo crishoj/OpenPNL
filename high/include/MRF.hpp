@@ -131,7 +131,7 @@ public:
 
 private:
     pnl::CMatrix<float> *Matrix(int iNode) const;
-    pnl::CInfEngine &Inference();
+    pnl::CInfEngine &Inference(bool Recreate = false);
     pnl::CStaticLearningEngine &Learning();
     pnl::CMNet *Model();
 
