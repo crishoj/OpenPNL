@@ -1,10 +1,11 @@
 #include "test_conf.hpp"
 
 //#define SKIP_TOKEN
-//#define SKIP_LIMID
-//#define SKIP_DBN
-//#define SKIP_MRF
-//#define SKIP_NUMERATION
+#define SKIP_LIMID
+#define SKIP_BNET
+#define SKIP_DBN
+#define SKIP_MRF
+#define SKIP_NUMERATION
 //#define SKIP_CONDGAUSSIAN
 
 int main(int argc, char* argv[])
@@ -117,6 +118,17 @@ int main(int argc, char* argv[])
     }
     
 #endif
+#ifndef SKIP_BNET
+    try
+    {
+	tests.TestGibbsRecreate();
+    }
+    catch(pnl::CException e)
+    {
+        std::cout << e.GetMessage();
+        bTestOK = false;
+    };
+#endif
 #ifndef SKIP_DBN
     int res = 1;
     
@@ -173,6 +185,8 @@ int main(int argc, char* argv[])
         tests.TestGetGaussianMeanCovarWeights();
         tests.TestConditionalGaussianGetJPD();
         tests.Test2EditEvidence();
+	tests.TestCondGaussianGetMPE();
+	tests.TestCondGaussianParamLearning();
     }
     catch(pnl::CException e)
     {

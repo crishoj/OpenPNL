@@ -448,3 +448,197 @@ void TestsPnlHigh::Test2EditEvidence()
 
     delete net;
 };
+
+#define PRINT_TestCondGaussianGetMPE
+
+void TestsPnlHigh::TestCondGaussianGetMPE()
+{
+    printf("TestCondGaussianGetMPE\n");
+
+    BayesNet *net = SimpleCGM1();
+    //Cont0(3) Tab0(0)
+    //  |      |
+    //  \/    \/
+    //   Cont1(1)
+    //    |
+    //    \/
+    //   Cont2(2)
+
+    net->SetPGaussian("Cont0", "1.5 -0.5", "1.0 0.3 0.3 2.0", TokArr(), TokArr());
+    net->SetPGaussian("Cont1", "0.0", "2.5", "1.0 3.0", "Tab0^State0");
+    net->SetPGaussian("Cont1", "-1.5", "0.75", "0.5 2.5", "Tab0^State1");
+
+    net->SetProperty("Inference", "naive");
+
+    net->EditEvidence("Tab0^State1");
+    #ifndef PRINT_TestCondGaussianGetMPE
+	net->GetMPE("Cont0");
+	net->GetMPE("Cont1");
+	net->GetMPE("Cont2");
+    #else
+	std::cout << String(net->GetMPE("Cont0")) << "\n";
+	std::cout << String(net->GetMPE("Cont1")) << "\n";
+	std::cout << String(net->GetMPE("Cont2")) << "\n";
+    #endif
+
+    net->ClearEvid();
+
+    net->EditEvidence("Cont0^Dim0^0.0 Cont0^Dim1^1.0");
+    net->EditEvidence("Cont1^Dim0^0.0");
+    net->EditEvidence("Cont2^Dim0^0.0");
+
+    #ifndef PRINT_TestCondGaussianGetMPE
+	net->GetMPE("Tab0");
+    #else
+	std::cout << String(net->GetMPE("Tab0")) << "\n";
+    #endif
+
+    delete net;
+};
+
+//Cont0(3) Tab0(0)
+//  |      |
+//  \/    \/
+//   Cont1(1)
+//    |
+//    \/
+//   Cont2(2) (with parameters)
+BayesNet *TestsPnlHigh::SimpleCGM2()
+{
+    BayesNet *net = SimpleCGM1();
+
+    net->SetPGaussian("Cont0", "1.5 -0.5", "1.0 0.3 0.3 2.0", TokArr(), TokArr());
+    net->SetPGaussian("Cont1", "0.0", "2.5", "1.0 3.0", "Tab0^State0");
+    net->SetPGaussian("Cont1", "-1.5", "0.75", "0.5 2.5", "Tab0^State1");
+    net->SetPGaussian("Cont2", "0.1", "1.1", "0.0");
+
+    return net;
+
+}
+
+/*
+void TestsPnlHigh::TestCondGaussianParamLearning()
+{
+    BayesNet *net = PolytreeModel();
+    BayesNet *netToLearn = PolytreeModel();
+    float eps = 1e-1f;
+
+    int nEvid = 5000;
+    netToLearn->GenerateEvidences(nEvid);
+
+    netToLearn->LearnParameters();
+
+    String nodes[] = {"NodeA", "NodeB", "NodeC", "NodeD", "NodeE"};
+
+    int nNodes = 5;
+    int i, j;
+    TokArr LearnParam, Param;
+    for(i = 0; i < nNodes; i++)
+    {
+        LearnParam = netToLearn->GetGaussianMean(nodes[i]);
+        Param = net->GetGaussianMean(nodes[i]);
+        if(LearnParam[0].fload.size() != Param[0].fload.size())
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+        }
+        for(j = 0; j < LearnParam[0].fload.size(); j++)
+        {
+            if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
+            {
+                PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+            }
+        }
+
+        LearnParam = netToLearn->GetGaussianCovar(nodes[i]);
+        Param = net->GetGaussianCovar(nodes[i]);
+        if(LearnParam[0].fload.size() != Param[0].fload.size())
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+        }
+        for(j = 0; j < LearnParam[0].fload.size(); j++)
+        {
+            if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
+            {
+                PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+            }
+        }
+    }
+
+    delete net;
+    delete netToLearn;
+    
+    cout << "TestGaussianParamLearning is completed successfully" << endl;
+}
+*/
+
+void TestsPnlHigh::TestCondGaussianParamLearning()
+{
+    BayesNet *net = SimpleCGM2();
+    BayesNet *netToLearn = SimpleCGM2();
+
+    float eps = 1e-2f;
+
+    int nEvidences = 5000;
+    netToLearn->GenerateEvidences(nEvidences);
+
+    netToLearn->LearnParameters();
+/*
+    int nNodes = netToLearn->Net().Graph().nNode();
+
+    //Checking step
+    int i; 
+    int j;
+    TokArr LearnParam, Param;
+    for (i = 0; i < nNodes; i++)
+    {
+	//if it is gaussian without tabular parents
+	if (true)
+	{
+	    LearnParam = netToLearn->GetGaussianMean(nodes[i]);
+	    Param = net->GetGaussianMean(nodes[i]);
+	    if(LearnParam[0].fload.size() != Param[0].fload.size())
+	    {
+		PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+	    };
+	    for(j = 0; j < LearnParam[0].fload.size(); j++)
+	    {
+		if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
+		{
+		    PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+		}
+	    };
+
+	    LearnParam = netToLearn->GetGaussianCovar(nodes[i]);
+	    Param = net->GetGaussianCovar(nodes[i]);
+	    if(LearnParam[0].fload.size() != Param[0].fload.size())
+	    {
+		PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+	    };
+	    for(j = 0; j < LearnParam[0].fload.size(); j++)
+	    {
+		if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
+		{
+		    PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+		}
+	    };
+
+	    TokArr parents = netToLearn->GetParents(nodes[i]);
+	    LearnParam = netToLearn->GetGaussianWeights(nodes[i], parents);
+	    Param = net->GetGaussianWeights(nodes[i], parents);
+	    if(LearnParam[0].fload.size() != Param[0].fload.size())
+	    {
+		PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+	    };
+	    for(j = 0; j < LearnParam[0].fload.size(); j++)
+	    {
+		if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
+		{
+		    PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+		}
+	    };	
+	};
+    };
+*/
+    delete net;
+    delete netToLearn;
+}

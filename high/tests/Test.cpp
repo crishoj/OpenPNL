@@ -1108,3 +1108,85 @@ bool testExtractTok()
 
     return true;
 }
+
+//#define PRINT_TestGibbsRecreate
+
+void TestsPnlHigh::TestGibbsRecreate()
+{
+    BayesNet *net = GetSimpleTabularModel();
+    // Zero       One
+    //   |         |
+    //   |         |
+    //   o->Three<-o
+
+    net->SetProperty("Inference", "gibbs");
+    net->SetProperty("GibbsNumberOfIterations", "5000");
+    net->SetProperty("GibbsNumberOfStreams", "2");
+    net->SetProperty("GibbsThresholdIteration", "100");
+
+    //1. Test many requests 
+    #ifndef PRINT_TestGibbsRecreate
+	net->GetJPD("Zero");
+	net->GetJPD("One");
+	net->GetJPD("Three");
+    #else
+	std::cout << String(net->GetJPD("Zero")) << "\n";
+	std::cout << String(net->GetJPD("One")) << "\n";
+	std::cout << String(net->GetJPD("Three")) << "\n";	
+    #endif
+
+    //2. Test set values
+    if (dynamic_cast<CGibbsSamplingInfEngine *>(net->m_Inference)->GetMaxTime() != 5000)
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "There is an error in Inference() for gibbs case");
+    };
+    if (dynamic_cast<CGibbsSamplingInfEngine *>(net->m_Inference)->GetBurnIn() != 100)
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "There is an error in Inference() for gibbs case");
+    };
+    if (const_cast<const CSamplingInfEngine *>(dynamic_cast<CSamplingInfEngine *>(net->m_Inference) )->GetNumStreams() != 2)
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "There is an error in Inference() for gibbs case");
+    };
+
+    net->SetProperty("Inference", "jtree");
+
+    #ifndef PRINT_TestGibbsRecreate
+	net->GetJPD("Zero");
+	net->GetJPD("One");
+	net->GetJPD("Three");
+    #else
+	std::cout << String(net->GetJPD("Zero")) << "\n";
+	std::cout << String(net->GetJPD("One")) << "\n";
+	std::cout << String(net->GetJPD("Three")) << "\n";	
+    #endif
+
+    net->SetProperty("Inference", "gibbs");
+
+    #ifndef PRINT_TestGibbsRecreate
+	net->GetJPD("Zero");
+	net->GetJPD("One");
+	net->GetJPD("Three");
+    #else
+	std::cout << String(net->GetJPD("Zero")) << "\n";
+	std::cout << String(net->GetJPD("One")) << "\n";
+	std::cout << String(net->GetJPD("Three")) << "\n";	
+    #endif
+
+    if (dynamic_cast<CGibbsSamplingInfEngine *>(net->m_Inference)->GetMaxTime() != 5000)
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "There is an error in Inference() for gibbs case");
+    };
+    if (dynamic_cast<CGibbsSamplingInfEngine *>(net->m_Inference)->GetBurnIn() != 100)
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "There is an error in Inference() for gibbs case");
+    };
+    if (const_cast<const CSamplingInfEngine *>(dynamic_cast<CSamplingInfEngine *>(net->m_Inference) )->GetNumStreams() != 2)
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "There is an error in Inference() for gibbs case");
+    };
+
+    cout << "TestGibbsRecreate is completed successfully" << endl;
+
+    delete net;
+}
