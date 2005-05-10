@@ -253,13 +253,13 @@ void TestMRFGetJPD()
             PNL_THROW(pnl::CAlgorithmicException, "Results of Pearl and Naive inferences are diferent");
         }
         
-        /*net->SetProperty("Inference", "gibbs");
+        net->SetProperty("Inference", "gibbs");
         gJPD = net->GetJPD(nodeName);
-        
+       
         if(!bTokArrEqual(gJPD, nJPD, eps3))
         {
             PNL_THROW(pnl::CAlgorithmicException, "Results of Gibbs and Naive inferences are diferent");
-        }*/
+        }
     }
 
     net->EditEvidence("node0^value1 node2^value0 node8^value1 node5^value0");
@@ -284,14 +284,14 @@ void TestMRFGetJPD()
         {
             PNL_THROW(pnl::CAlgorithmicException, "Results of Pearl and Naive inferences are diferent");
         }
-        
-       /* net->SetProperty("Inference", "gibbs");
+       
+        net->SetProperty("Inference", "gibbs");
         gJPD = net->GetJPD(nodeName);
         
         if(!bTokArrEqual(gJPD, nJPD, eps3))
         {
             PNL_THROW(pnl::CAlgorithmicException, "Results of Gibbs and Naive inferences are diferent");
-        }*/
+        }
     }
     net->SetProperty("Inference", "jtree");
     jJPD = net->GetJPD("node7 node6");
@@ -303,7 +303,8 @@ void TestMRFGetJPD()
         PNL_THROW(pnl::CAlgorithmicException, "Results of JTree and Naive inferences are diferent");
     }
     
-    /*net->SetProperty("Inference", "pearl");
+    /*
+    net->SetProperty("Inference", "pearl");
     pJPD = net->GetJPD("node7 node6");
     
     //cout << String(nJPD) << endl;
@@ -311,6 +312,8 @@ void TestMRFGetJPD()
     if(!bTokArrEqual(pJPD, nJPD, eps3))
     {
         PNL_THROW(pnl::CAlgorithmicException, "Results of Pearl and Naive inferences are diferent");
-    }*/
+    }
+    */
+    
     cout << "TestMRFModelCreate is completed successfully" << endl;
 }
