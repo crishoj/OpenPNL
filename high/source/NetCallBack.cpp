@@ -57,44 +57,95 @@ NetCallback::CommonAttachFactors(pnl::CGraphicalModel &pnlModel,
 	pnl::CFactor *pPNLF = pnlModel.GetFactor(iPNL);
         PNL_CHECK_IS_NULL_POINTER(pPNLF);
 
+        pnl::CDistribFun *pPNLdf = pPNLF->GetDistribFun();
+        PNL_CHECK_IS_NULL_POINTER(pPNLdf);
+
         if (net.pnlNodeType(iWNode).IsDiscrete())
         {
             bool isSoftMax = false;
             DistribFunDesc  *des = pWDF->desc();
             for (int j=0; j<des->nNode(); j++ )
             {
-                TokIdNode * tokId = des->node(j);
+                TokIdNode *tokId = des->node(j);
                 if (!static_cast<pnl::CNodeType*>(tokId->v_prev->data)->IsDiscrete() )
                 {
                     isSoftMax = true;
                     break;
                 }
             }
-            if (!isSoftMax)
+            bool isCondSoftMax = false;
+            
+            if (isSoftMax)
             {
-                pnl::CDenseMatrix<float> *mat = pWDF->Matrix(pnl::matTable);
-                PNL_CHECK_IS_NULL_POINTER(mat);
+                for (int j=0; j<des->nNode()-1; j++ )
+                {
+                    TokIdNode * tokId = des->node(j);
+                    if (static_cast<pnl::CNodeType*>(tokId->v_prev->data)->IsDiscrete() )
+                    {
+                        isCondSoftMax = true;
+                        break;
+                    }
+                }
+            }
+            if (isCondSoftMax)
+            {
+                pPNLdf->CreateDefaultMatrices();
+                pnl::CCondSoftMaxDistribFun *pCondSoftMaxDFHigh = 
+                    dynamic_cast<WCondSoftMaxDistribFun*>(pWDF)->GetDistribution();
+                PNL_CHECK_IS_NULL_POINTER(pCondSoftMaxDFHigh);
                 
-                pPNLF->AttachMatrix(mat, pnl::matTable);
-                pPNLF->AttachMatrix(mat->Copy(mat), pnl::matDirichlet);
+                pnl::CCondSoftMaxDistribFun *pCondSoftMaxDFPNL = 
+                    dynamic_cast<pnl::CCondSoftMaxDistribFun*>(pPNLdf);
+                PNL_CHECK_IS_NULL_POINTER(pCondSoftMaxDFPNL);
+                
+                pnl::CMatrixIterator<pnl::CSoftMaxDistribFun*>* iterHigh =
+                    pCondSoftMaxDFHigh->GetMatrixWithDistribution()->InitIterator();
+                
+                pnl::CMatrixIterator<pnl::CSoftMaxDistribFun*>* iterPNL =
+                    pCondSoftMaxDFPNL->GetMatrixWithDistribution()->InitIterator();
+
+                for (iterHigh, iterPNL; 
+                    (pCondSoftMaxDFHigh->GetMatrixWithDistribution()->IsValueHere(iterHigh))&&
+                    (pCondSoftMaxDFPNL->GetMatrixWithDistribution()->IsValueHere(iterPNL));
+                    pCondSoftMaxDFHigh->GetMatrixWithDistribution()->Next(iterHigh),
+                    pCondSoftMaxDFPNL->GetMatrixWithDistribution()->Next(iterPNL) )
+                {
+                    pnl::CSoftMaxDistribFun* DataHigh =
+                        *(pCondSoftMaxDFHigh->GetMatrixWithDistribution()->Value(iterHigh));
+                    PNL_CHECK_IS_NULL_POINTER(DataHigh);
+
+                    pnl::CMatrix<float> *matr = DataHigh->GetMatrix(pnl::matWeights);
+                    pnl::floatVector *ofVect = DataHigh->GetOffsetVector();
+                    
+                    pnl::CSoftMaxDistribFun* DataPNL =
+                        *(pCondSoftMaxDFPNL->GetMatrixWithDistribution()->Value(iterPNL));
+                    PNL_CHECK_IS_NULL_POINTER(DataPNL);
+
+                    DataPNL->AttachOffsetVector(ofVect);
+                    DataPNL->AttachMatrix(matr, pnl::matWeights);
+                }
             }
             else
-            {
-                pnl::CDenseMatrix<float> *weight = pWDF->Matrix(pnl::matWeights, 0);
-                PNL_CHECK_IS_NULL_POINTER(weight);
-                pPNLF->AttachMatrix(weight, pnl::matWeights);
-                // offsetVector 
-                pnl::floatVector *offVector = dynamic_cast<WSoftMaxDistribFun*>(pWDF)->
-                    OffsetVector();
-                pnl::CDistribFun *df = pPNLF->GetDistribFun();
-                
-                float *offVec = new float[offVector->size()];
-                memcpy(&offVec[0], &offVector->front(), (offVector->size())*sizeof(float) );
-
-                dynamic_cast<pnl::CSoftMaxDistribFun*>(df)->
-                    AllocOffsetVector(offVec);
-
-            }
+                if (isSoftMax)
+                {
+                    pnl::CDenseMatrix<float> *weight = pWDF->Matrix(pnl::matWeights, 0);
+                    PNL_CHECK_IS_NULL_POINTER(weight);
+                    pPNLF->AttachMatrix(weight, pnl::matWeights);
+                    // offsetVector 
+                    pnl::floatVector *offVector = dynamic_cast<WSoftMaxDistribFun*>(pWDF)->
+                        OffsetVector();
+                    pnl::CDistribFun *df = pPNLF->GetDistribFun();
+                    
+                    dynamic_cast<pnl::CSoftMaxDistribFun*>(df)->AttachOffsetVector(offVector);
+                }
+                else
+                {
+                    pnl::CDenseMatrix<float> *mat = pWDF->Matrix(pnl::matTable);
+                    PNL_CHECK_IS_NULL_POINTER(mat);
+                    
+                    pPNLF->AttachMatrix(mat, pnl::matTable);
+                    pPNLF->AttachMatrix(mat->Copy(mat), pnl::matDirichlet);
+                }
         }
         else
         {

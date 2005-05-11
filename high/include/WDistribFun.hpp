@@ -87,7 +87,8 @@ public:
     virtual Vector<int> Dimensions(int matrixType);
     virtual void SetAValue(int matrixType, Vector<int> &aIndex, float probability);
     virtual float GetAValue(int matrixType, Vector<int> &aIndex);
-    virtual pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, const int* pDiscrParentValues = 0) const
+    virtual pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, 
+        const int* pDiscrParentValues = 0) const
     {
 	return m_pMatrix;
     }
@@ -104,9 +105,11 @@ public:
     virtual ~WGaussianDistribFun();
     void SetDefaultDistribution();
     Vector<int> Dimensions(int matrixType);
-    void FillData(int matrixType, TokArr value, TokArr probability, TokArr parentValue = TokArr());
+    void FillData(int matrixType, TokArr value, TokArr probability, 
+        TokArr parentValue = TokArr());
     void DoSetup();
-    pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, const int* pDiscrParentValues = 0) const;
+    pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, 
+        const int* pDiscrParentValues = 0) const;
     void CreateDistribution();
     void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
     virtual float GetAValue(int matrixType, Vector<int> &aIndex);
@@ -137,6 +140,9 @@ public:
 
     virtual float GetAValue(int matrixType, Vector<int> &aIndex);
     void CreateDefaultDistribution();
+    void SetData(int matrixId, const float *probability, int numWeightMat = -1);
+    void SetVector(const float *probability);
+
 private:
     pnl::CSoftMaxDistribFun *m_pDistrib;
 
@@ -178,8 +184,14 @@ public:
     pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, 
         const int* pDiscrParentValues = 0) const;
     void CreateDefaultDistribution();
+    pnl::CCondSoftMaxDistribFun *GetDistribution();
+protected:
     virtual void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
+    void SetAValue(int matrixId, Vector<int> &aIndex, float probability, TokArr parentValue);
+
     virtual float GetAValue(int matrixType, Vector<int> &aIndex);
+    float GetAValue(int matrixType, Vector<int> &aIndex, TokArr parentValue);
+    Vector<int> GetDiscreteParentIndexes(Vector<int> &aIndex);
 
 private:
     pnl::CCondSoftMaxDistribFun *m_pDistrib;

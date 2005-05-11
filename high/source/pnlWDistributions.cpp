@@ -306,11 +306,100 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
 
     DropDistribution(iNode);
 
+    WDistribFun* pDistr = Distribution(iNode);
+    DistribFunDesc *desc = pDistr->desc();
+    int NumOfNodes = desc->nNode();
+
     if(DistributionType(iNode).IsDiscrete())
     {
-	static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->
-	    GetRawData(&nElement, &pData);
-	Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
+	bool isSoftMax = false, isCondSoftMax = false;
+        bool noDiscrete = true, noCont = true;
+        for (int i = 0; i < NumOfNodes-1; i++)
+            if (desc->isTabular(i))
+            {
+                noDiscrete = false;
+            }
+            else
+            {
+                noCont = false;
+            }
+
+        if ((noCont == false)&&(noDiscrete == false))
+            isCondSoftMax = true;
+        else
+            if (noCont == false)
+                isSoftMax = true;
+
+        if (isCondSoftMax)
+        {
+             WCondSoftMaxDistribFun* pCondSoftMaxDF = 
+                    static_cast<WCondSoftMaxDistribFun*>(Distribution(iNode));  
+             pCondSoftMaxDF->CreateDefaultDistribution();
+
+             pnl::CCondSoftMaxDistribFun *pCondSoftMaxDFHigh = 
+                 pCondSoftMaxDF->GetDistribution();
+             PNL_CHECK_IS_NULL_POINTER(pCondSoftMaxDFHigh);
+             
+             pnl::CCondSoftMaxDistribFun *pCondSoftMaxDFPNL = 
+                 dynamic_cast<pnl::CCondSoftMaxDistribFun*>(ft.GetDistribFun());
+             PNL_CHECK_IS_NULL_POINTER(pCondSoftMaxDFPNL);
+             
+             pnl::CMatrixIterator<pnl::CSoftMaxDistribFun*>* iterHigh =
+                 pCondSoftMaxDFHigh->GetMatrixWithDistribution()->InitIterator();
+             
+             pnl::CMatrixIterator<pnl::CSoftMaxDistribFun*>* iterPNL =
+                 pCondSoftMaxDFPNL->GetMatrixWithDistribution()->InitIterator();
+             
+             for (iterHigh, iterPNL; 
+             (pCondSoftMaxDFHigh->GetMatrixWithDistribution()->IsValueHere(iterHigh))&&
+                 (pCondSoftMaxDFPNL->GetMatrixWithDistribution()->IsValueHere(iterPNL));
+             pCondSoftMaxDFHigh->GetMatrixWithDistribution()->Next(iterHigh),
+                 pCondSoftMaxDFPNL->GetMatrixWithDistribution()->Next(iterPNL) )
+             {
+                 pnl::CSoftMaxDistribFun* DataPNL =
+                     *(pCondSoftMaxDFPNL->GetMatrixWithDistribution()->Value(iterPNL));
+                 PNL_CHECK_IS_NULL_POINTER(DataPNL);
+                 
+                 pnl::CMatrix<float> *matr = DataPNL->GetMatrix(pnl::matWeights);
+                 pnl::floatVector *ofVect = DataPNL->GetOffsetVector();
+                 
+                 pnl::CSoftMaxDistribFun* DataHigh =
+                     *(pCondSoftMaxDFHigh->GetMatrixWithDistribution()->Value(iterHigh));
+                 PNL_CHECK_IS_NULL_POINTER(DataHigh);
+                 
+                 DataHigh->AttachOffsetVector(ofVect);
+                 DataHigh->AttachMatrix(matr, pnl::matWeights);
+             }
+        }
+        else
+            if (isSoftMax)
+            {
+                WSoftMaxDistribFun* pSoftMaxDistr = 
+                    static_cast<WSoftMaxDistribFun*>(Distribution(iNode));
+
+              	pSoftMaxDistr->CreateDefaultDistribution();
+                
+                static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matWeights))
+                    ->GetRawData(&nElement, &pData);
+                
+                pSoftMaxDistr->SetData(pnl::matWeights, pData);
+
+                pnl::floatVector *offVect = 
+                    static_cast<pnl::CSoftMaxDistribFun*>(ft.GetDistribFun())->
+                    GetOffsetVector();
+
+                float *off = new float [offVect->size()];
+                memcpy(off, &(offVect->front()), (offVect->size())*sizeof(float));
+
+                pSoftMaxDistr->SetVector(off);
+
+            }
+            else
+            {
+                static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matTable))->
+                    GetRawData(&nElement, &pData);
+                Distribution(iNode)->Matrix(pnl::matTable)->SetData(pData);
+            }
     }
     else
     {
