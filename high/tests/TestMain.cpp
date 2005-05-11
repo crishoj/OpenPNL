@@ -2,11 +2,15 @@
 
 //#define SKIP_TOKEN
 #define SKIP_LIMID
-#define SKIP_BNET
-#define SKIP_DBN
-#define SKIP_MRF
-#define SKIP_NUMERATION
+//#define SKIP_DBN
+//#define SKIP_MRF
+//#define SKIP_BNET
+//#define SKIP_NUMERATION
 //#define SKIP_CONDGAUSSIAN
+//#define SKIP_SOFTMAX
+//#define SKIP_CONDSOFTMAX
+
+
 
 int main(int argc, char* argv[])
 {
@@ -182,7 +186,7 @@ int main(int argc, char* argv[])
         tests.TestCondGaussianFillData();
         tests.TestSetPGaussian();
         tests.TestGetDiscreteParentValuesIndexes();
-        tests.TestGetGaussianMeanCovarWeights();
+        tests.TestGetGaussianMeanCovarWeights(); 
         tests.TestConditionalGaussianGetJPD();
         tests.Test2EditEvidence();
 	tests.TestCondGaussianGetMPE();
@@ -195,6 +199,42 @@ int main(int argc, char* argv[])
     }
     
 #endif
+
+#ifndef SKIP_SOFTMAX
+    try
+    {
+        TestSoftMaxParamLearning();
+
+//        CrashTestJtreeInferenceSoftMax();
+        TestSetDistributionSoftMax();
+        TestJtreeInferenceSoftMax1();
+        TestJtreeInferenceSoftMax2();
+        TestGibbsInferenceSoftMax();
+    }
+    catch(pnl::CException e)
+    {
+        std::cout << e.GetMessage();
+        bTestOK = false;
+    }
+
+#endif
+
+#ifndef SKIP_CONDSOFTMAX
+    try
+    {
+        TestCondSoftMaxParamLearning();
+        TestSetDistributionCondSoftMax();
+        TestJtreeInferenceCondSoftMax1();
+        TestJtreeInferenceCondSoftMax2();
+        TestGibbsInferenceCondSoftMax();
+    }
+    catch(pnl::CException e)
+    {
+        std::cout << e.GetMessage();
+        bTestOK = false;
+    }
+#endif
+    
     
     if(bTestOK)
     {

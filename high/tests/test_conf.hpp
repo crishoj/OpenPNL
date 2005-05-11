@@ -62,3 +62,17 @@ void TestMRFGetJPD();
 void TestMRFModelCreate();
 void TestForGetMPE();
 BayesNet *GetSimpleTabularModel();
+
+void TestSetDistributionSoftMax();
+void TestSetDistributionCondSoftMax();
+void TestJtreeInferenceSoftMax1();
+void TestJtreeInferenceSoftMax2();
+void TestGibbsInferenceSoftMax();
+void TestJtreeInferenceCondSoftMax1();
+void TestJtreeInferenceCondSoftMax2();
+void TestGibbsInferenceCondSoftMax();
+void CrashTestJtreeInferenceSoftMax();
+void TestSoftMaxParamLearning(bool DeleteNet = true);
+void TestCondSoftMaxParamLearning(bool DeleteNet = true);
+
+

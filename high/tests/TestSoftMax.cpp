@@ -5,10 +5,8 @@ BayesNet *SimpleSoftMaxModel()
     BayesNet *net;
     net = new BayesNet();
     
-    net->AddNode("continuous^node0");
-    net->AddNode("continuous^node1");
-    net->AddNode("continuous^node2");
-    net->AddNode("discrete^node5", "True False");
+    net->AddNode(continuous^"node0 node1 node2");
+    net->AddNode(discrete^"node5", "True False");
 
     net->AddArc("node0", "node5");
     net->AddArc("node1", "node5");
@@ -255,8 +253,7 @@ void TestGibbsInferenceSoftMax()
     TokArr jpd0 = net->GetJPD("node0");
     cout<< "jpd node0:\t"<<jpd0 << "\n";
 
-    // gibbs inference crash
-/*    TokArr jpd1 = net->GetJPD("node1");
+    TokArr jpd1 = net->GetJPD("node1");
     cout<< "jpd node1:\t"<<jpd1 << "\n";
 
     TokArr jpd2 = net->GetJPD("node2");
@@ -264,7 +261,7 @@ void TestGibbsInferenceSoftMax()
 
     TokArr jpd5 = net->GetJPD("node5");
     cout<< "jpd node5:\t"<<jpd5 << "\n";
-*/
+
     delete net;
 }
 
@@ -324,8 +321,8 @@ void TestGibbsInferenceCondSoftMax()
     TokArr jpd0 = net->GetJPD("node0");
     cout<< "jpd node0:\t"<<jpd0 << "\n";
 
-    // gibbs inference crash
-/*    TokArr jpd1 = net->GetJPD("node1");
+
+    TokArr jpd1 = net->GetJPD("node1");
     cout<< "jpd node1:\t"<<jpd1 << "\n";
 
     TokArr jpd2 = net->GetJPD("node2");
@@ -333,25 +330,115 @@ void TestGibbsInferenceCondSoftMax()
 
     TokArr jpd5 = net->GetJPD("node5");
     cout<< "jpd node5:\t"<<jpd5 << "\n";
-*/
+
     delete net;
 }
 
 
 void TestSoftMaxParamLearning(bool DeleteNet)
 {
-    BayesNet *net = SimpleSoftMaxModel();
+//    BayesNet *net = SimpleSoftMaxModel();
+    BayesNet *netToLearn = SimpleSoftMaxModel();
     float eps = 1e-1f;
 
-    int nEvid = 50;
-    net->GenerateEvidences(nEvid);
+    int nEvid = 100;
+    netToLearn->GenerateEvidences(nEvid);
 
-    net->LearnParameters();
+    netToLearn->LearnParameters();
 
+    String nodes[] = {"node0", "node1", "node2"};
+
+/*    int i, j;
+    TokArr LearnParam, Param;
+    for(i = 0; i < 3; i++)
+    {
+        LearnParam = netToLearn->GetGaussianMean(nodes[i]);
+        Param = net->GetGaussianMean(nodes[i]);
+        if(LearnParam[0].fload.size() != Param[0].fload.size())
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+        }
+        for(j = 0; j < LearnParam[0].fload.size(); j++)
+        {
+            if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
+            {
+                PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+            }
+        }
+
+        LearnParam = netToLearn->GetGaussianCovar(nodes[i]);
+        Param = net->GetGaussianCovar(nodes[i]);
+        if(LearnParam[0].fload.size() != Param[0].fload.size())
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+        }
+        for(j = 0; j < LearnParam[0].fload.size(); j++)
+        {
+            if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
+            {
+                PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+            }
+        }
+    }
+*/
     if (DeleteNet)
     {
-	delete net;
+	delete netToLearn;
     };
-    
-    cout << "TestGaussianParamLearning is completed successfully" << endl;
+
+    cout << "TestSoftMaxParamLearning is completed successfully" << endl;
+}
+
+void TestCondSoftMaxParamLearning(bool DeleteNet)
+{
+//    BayesNet *net = SimpleCondSoftMaxModel();
+    BayesNet *netToLearn = SimpleCondSoftMaxModel();
+    float eps = 1e-1f;
+
+    int nEvid = 100;
+    netToLearn->GenerateEvidences(nEvid);
+
+    netToLearn->LearnParameters();
+
+    String nodes[] = {"node0", "node1", "node2"};
+
+/*    int i, j;
+    TokArr LearnParam, Param;
+    for(i = 0; i < 3; i++)
+    {
+        LearnParam = netToLearn->GetGaussianMean(nodes[i]);
+        Param = net->GetGaussianMean(nodes[i]);
+        if(LearnParam[0].fload.size() != Param[0].fload.size())
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+        }
+        for(j = 0; j < LearnParam[0].fload.size(); j++)
+        {
+            if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
+            {
+                PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+            }
+        }
+
+        LearnParam = netToLearn->GetGaussianCovar(nodes[i]);
+        Param = net->GetGaussianCovar(nodes[i]);
+        if(LearnParam[0].fload.size() != Param[0].fload.size())
+        {
+            PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+        }
+        for(j = 0; j < LearnParam[0].fload.size(); j++)
+        {
+            if( LearnParam[0].FltValue(j).fl - Param[0].FltValue(j).fl > eps)
+            {
+                PNL_THROW(pnl::CAlgorithmicException, "Parameters learning is wrong");
+            }
+        }
+    }
+*/
+    if (DeleteNet)
+    {
+	delete netToLearn;
+    };
+
+    cout << "TestCondSoftMaxParamLearning is completed successfully" << endl;
 }
