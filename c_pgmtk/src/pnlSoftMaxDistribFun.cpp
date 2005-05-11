@@ -11,8 +11,8 @@
 //  Purpose:   CSoftMaxDistribFun class member functions implementation    //
 //                                                                         //
 //  Author(s): (in alphabetical order)                                     //
-//             Abrosimova, Bader, Chernishova, Gergel, Labutina,           //
-//             Senin, Sidorov, Sysoyev, Vinogradov                         //
+//             Abrosimova, Bader, Chernishova, Gergel, Senin, Sidorov,     //
+//             Sysoyev, Vinogradov                                         //
 //             NNSU                                                        //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
@@ -219,11 +219,9 @@ void CSoftMaxDistribFun::CreateDefaultMatrices(int typeOfMatrices)
   intVector dims;
   dims.resize(2);
   int chldNodeSize = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
-//  dims[0] = m_NumberOfNodes - 1;
-//  dims[1] = chldNodeSize;
+  dims[0] = m_NumberOfNodes - 1;
+  dims[1] = chldNodeSize;
 
-  dims[0] = chldNodeSize;
-  dims[1] = m_NumberOfNodes - 1;
 
   floatVector weight;
   int weightSize = dims[0] * dims[1];
@@ -269,8 +267,9 @@ CSoftMaxDistribFun::CSoftMaxDistribFun(int NumberOfNodes,
   {
     int *ranges = new int [2];
     PNL_CHECK_IF_MEMORY_ALLOCATED(ranges);
-    ranges[0] = childNodeSize;
-    ranges[1] = NumberOfNodes - 1;
+    ranges[1] = childNodeSize;
+    ranges[0] = NumberOfNodes - 1;
+
     m_pMatrixWeight = C2DNumericDenseMatrix<float>::Create(ranges, dataWeight);
     static_cast<CMatrix<float>*>(m_pMatrixWeight)->AddRef(pObj);
     delete [] ranges;
@@ -511,9 +510,8 @@ void CSoftMaxDistribFun::AllocMatrix(const float *data, EMatrixType mType,
     int* dims = new int[2];
     PNL_CHECK_IF_MEMORY_ALLOCATED(dims);
 
-    dims[0] = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
-    dims[1] = m_NumberOfNodes - 1;
-
+    dims[1] = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
+    dims[0] = m_NumberOfNodes - 1;
     m_pMatrixWeight = C2DNumericDenseMatrix<float>::Create(dims, data);
     static_cast<CMatrix<float>*>(m_pMatrixWeight)->AddRef(pObj);
     delete [] dims;    
@@ -542,15 +540,16 @@ void CSoftMaxDistribFun::AttachMatrix(CMatrix<float>* pMatrix,
   int childNodeSize = m_NodeTypes[m_NumberOfNodes - 1]->GetNodeSize();
 
   PNL_CHECK_FOR_NON_ZERO (numDims - 2);
-  PNL_CHECK_FOR_NON_ZERO (ranges[0] - childNodeSize);
-  PNL_CHECK_FOR_NON_ZERO (ranges[1] - (m_NumberOfNodes - 1));
-  
+  PNL_CHECK_FOR_NON_ZERO (ranges[1] - childNodeSize);
+  PNL_CHECK_FOR_NON_ZERO (ranges[0] - (m_NumberOfNodes - 1));
+
   if (mType == matWeights)
   {
     void *pObj = this;
     if (m_pMatrixWeight)
     {
       static_cast<CMatrix<float>*>(m_pMatrixWeight)->Release(pObj);
+      m_pMatrixWeight = NULL;
     }
     m_pMatrixWeight = static_cast<C2DNumericDenseMatrix<float>*>(pMatrix);
     static_cast<CMatrix<float>*>(m_pMatrixWeight)->AddRef(pObj);
@@ -1558,7 +1557,7 @@ void CSoftMaxDistribFun::MaximumLikelihoodGradient(float **Observations,
         grad_weight[a][b] = 0;
         for (i = 0; i < NumOfObservations; i++)
         {
-          if (int(Observations[NumOfContinousParents][i]) == b) // индекс!!!!
+          if (int(Observations[NumOfContinousParents][i]) == b) 
             grad_weight[a][b] += Observations[a][i];
         }
         for (i = 0; i < NumOfObservations; i++)
@@ -1790,7 +1789,7 @@ void CSoftMaxDistribFun::MaximumLikelihoodHessian(float ** Observations,
         grad_weight[a][b] = 0;
         for (i = 0; i < NumberOfObservations; i++)
         {
-          if (int(Observations[NumOfContinousParents][i]) == b) // индекс!!!!
+          if (int(Observations[NumOfContinousParents][i]) == b) 
             grad_weight[a][b] += Observations[a][i];
         }
         for (i = 0; i < NumberOfObservations; i++)
@@ -2064,7 +2063,7 @@ void CSoftMaxDistribFun::MaximumLikelihoodConjugateGradient(
         grad_weight[a][b] = 0;
         for (i = 0; i < NumOfObservations; i++)
         {
-          if (int(Observations[NumOfContinousParents][i]) == b) // индекс!!!!
+          if (int(Observations[NumOfContinousParents][i]) == b) 
             grad_weight[a][b] += Observations[a][i];
         }
         for (i = 0; i < NumOfObservations; i++)
