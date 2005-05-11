@@ -11,8 +11,8 @@
 //  Purpose:   CSoftMaxDistribFun class member functions implementation    //
 //                                                                         //
 //  Author(s): (in alphabetical order)                                     //
-//             Abrosimova, Bader, Chernishova, Gergel, Senin, Sidorov,     //
-//             Sysoyev, Vinogradov                                         //
+//             Abrosimova, Bader, Chernishova, Gergel, Labutina,           //
+//             Senin, Sidorov, Sysoyev, Vinogradov                         //
 //             NNSU                                                        //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
