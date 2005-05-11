@@ -116,62 +116,99 @@ void BayesNet::SetPSoftMax(TokArr node, TokArr weigth, TokArr offset, TokArr par
     
     if (parentValue.size() == 0)
     {
-        parentValue = TokArr(par, 1);
+        int size = weigth.size();
+        Net().Distributions().FillData(node, weigth, TokArr(), pnl::matWeights);
+        Net().Distributions().FillData(node, offset, TokArr(), vectorOffset);
+
     }
-    
-    Net().Distributions().FillData(node, weigth, parentValue, pnl::matWeights);
-    Net().Distributions().FillData(node, offset, parentValue, vectorOffset);
+    else
+    {
+        Net().Distributions().FillData(node, weigth, parentValue, pnl::matWeights);
+        Net().Distributions().FillData(node, offset, parentValue, vectorOffset);
+    }
 }
 
 
-TokArr BayesNet::GetSoftMaxOffset(TokArr node, TokArr parent)
+TokArr BayesNet::GetSoftMaxOffset(TokArr node, TokArr parents)
 {
     static const char fname[] = "GetSoftMaxOffset";
     TokArr res;
     int nnodes = node.size();
     if(nnodes != 1)
     {
-	ThrowUsingError("Mean may be got only for one node", fname);
+	ThrowUsingError("Offset may be got only for one node", fname);
     }
-
-    Vector<int> queryNds, queryVls;
-    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph().MapOuterToGraph());
+    Vector<int> queryNdsOuter, queryVls;
+    Vector<int> queryNdsInner;
+    Net().ExtractTokArr(node, &queryNdsInner, &queryVls, &Net().Graph().MapOuterToGraph());
+    Net().Graph().IOuter(&queryNdsInner, &queryNdsOuter);
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
     }
-    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
+
+    const pnl::CFactor * cpd = Model()->GetFactor(queryNdsInner.front());
     pnl::CDistribFun *df = cpd->GetDistribFun();
 
-    pnl::floatVector *offVector = dynamic_cast<pnl::CSoftMaxDistribFun *>(df)->GetOffsetVector();
+    pnl::floatVector *offVector;
 
+    if (parents.size())
+    {
+        Vector<int> discrParentValuesIndices = Net().Distributions().Distribution(
+            queryNdsOuter[0])->GetDiscreteParentValuesIndexes(parents);
+        int *discrPar = new int[discrParentValuesIndices.size()];
+        memcpy(discrPar, &(discrParentValuesIndices.front()), 
+            sizeof(int)*discrParentValuesIndices.size());
+        offVector = 
+            dynamic_cast<pnl::CCondSoftMaxDistribFun *>(df)->GetOffsetVector(discrPar);
+    }
+    else
+    {
+        offVector = dynamic_cast<pnl::CSoftMaxDistribFun *>(df)->GetOffsetVector();
+    }
     std::vector<float> vec(offVector->begin(), offVector->end());
-
+    
     res = Tok(vec);
 
     return res;
 }
 
 
-TokArr BayesNet::GetSoftMaxWeights(TokArr node, TokArr parent )
+TokArr BayesNet::GetSoftMaxWeights(TokArr node, TokArr parents )
 {
     static const char fname[] = "GetSoftMaxWeights";
     TokArr res;
     int nnodes = node.size();
     if(nnodes != 1)
     {
-	ThrowUsingError("Mean may be got only for one node", fname);
+	ThrowUsingError("Weights matrix may be got only for one node", fname);
     }
-
-    Vector<int> queryNds, queryVls;
-    Net().ExtractTokArr(node, &queryNds, &queryVls, &Net().Graph().MapOuterToGraph());
+    Vector<int> queryNdsOuter, queryVls;
+    Vector<int> queryNdsInner;
+    Net().ExtractTokArr(node, &queryNdsInner, &queryVls, &Net().Graph().MapOuterToGraph());
+    Net().Graph().IOuter(&queryNdsInner, &queryNdsOuter);
     if(!queryVls.size())
     {
 	queryVls.assign(nnodes, -1);
     }
 
-    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
-    const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matWeights);
+    const pnl::CFactor * cpd = Model()->GetFactor(queryNdsInner.front());
+    const pnl::CMatrix<float> *mat;
+
+    if (parents.size())
+    {
+        Vector<int> discrParentValuesIndices = Net().Distributions().Distribution(
+            queryNdsOuter[0])->GetDiscreteParentValuesIndexes(parents);
+        int *discrPar = new int[discrParentValuesIndices.size()];
+        memcpy(discrPar, &(discrParentValuesIndices.front()), 
+            sizeof(int)*discrParentValuesIndices.size());
+        mat = cpd->GetMatrix(pnl::matWeights, 0, discrPar);
+    }
+    else
+    {
+            mat = cpd->GetMatrix(pnl::matWeights);
+    }
+
     return Net().ConvertMatrixToToken(mat);
 }
 
@@ -415,7 +452,7 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
 	if( parentVls.size() == 0 ||
 	    std::find(parentVls.begin(), parentVls.end(), -1 ) != parentVls.end() )
 	{
-	    ThrowInternalError("undefindes values for given parent nodes", "P");
+	    ThrowInternalError("undefindes values for given parent nodes", "GetPTabular");
 	}
     }
     else
@@ -708,7 +745,7 @@ void BayesNet::LearnParameters(TokArr aSample[], int nSample)
 
     SetParamLearningProperties();
     Learning().Learn();
-    for (i = 0; i < Net().Graph().iNodeMax(); i++)
+    for (i = 0; i < Net().Graph().nNode(); i++)
     {
 	if(Net().Graph().IsValidINode(i))
 	{
