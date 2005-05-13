@@ -53,6 +53,44 @@ BayesNet *SimpleCondSoftMaxModel()
     return net;
 }
 
+BayesNet *SevenNodesModel()
+{ 
+    BayesNet *net;
+    net = new BayesNet();
+    
+    net->AddNode(continuous^"node0 node1 node5");
+    net->AddNode(discrete^"node2 node3 node4 node6", "False True");
+
+    net->AddArc("node0", "node3");
+    net->AddArc("node1", "node3");
+    net->AddArc("node2", "node3");
+    net->AddArc("node3", "node4");
+    net->AddArc("node3", "node5");
+    net->AddArc("node0", "node6");
+    net->AddArc("node4", "node6");
+  
+    net->SetPGaussian("node0", "0.5", "1.0");
+    
+    net->SetPGaussian("node1", "0.5", "1.0");
+    
+    net->SetPTabular("node2^True node2^False", "0.3 0.7");
+    
+    net->SetPSoftMax("node3^True node3^False", "0.5 0.4 0.5 0.7", "0.3 0.5", "node2^False");
+    net->SetPSoftMax("node3^True node3^False", "0.5 0.1 0.5 0.7", "0.3 0.5 ", "node2^True");
+
+    net->SetPTabular("node4^True node4^False", "0.8 0.2", "node3^True");
+    net->SetPTabular("node4^True node4^False", "0.3 0.7", "node3^False");
+
+    net->SetPGaussian("node5", "0.5", "0.5", "1.0", "node3^True");
+    net->SetPGaussian("node5", "1.0", "1.0", "1.0", "node3^False");
+
+    net->SetPSoftMax("node6^True node6^False", "0.8 0.2", "0.1 0.9", "node4^True");
+    net->SetPSoftMax("node6^True node6^False", "0.5 0.9", "0.7 0.3", "node4^False");
+
+    return net;
+}
+
+
 void TestSetDistributionSoftMax()
 {
     BayesNet *net = SimpleSoftMaxModel();
@@ -107,6 +145,8 @@ void TestSetDistributionSoftMax()
     };
 
     delete net;
+    cout << "TestSetDistributionSoftMax is completed successfully" << endl;
+
 }
 
 void TestSetDistributionCondSoftMax()
@@ -194,6 +234,7 @@ void TestSetDistributionCondSoftMax()
     };
 
     delete net;
+    cout << "TestSetDistributionCondSoftMax is completed successfully" << endl;
 }
 
 void CrashTestJtreeInferenceSoftMax()
@@ -221,6 +262,8 @@ void TestJtreeInferenceSoftMax1()
     cout<< "jpd node5:\t"<<jpd5 << "\n";
 
     delete net;
+    cout << "TestJtreeInferenceSoftMax1 is completed successfully" << endl;
+
 }
 
 void TestJtreeInferenceSoftMax2()
@@ -240,6 +283,8 @@ void TestJtreeInferenceSoftMax2()
     cout<< "jpd node2:\t"<<jpd2 << "\n";
 
     delete net;
+    cout << "TestJtreeInferenceSoftMax2 is completed successfully" << endl;
+
 }
 
 
@@ -263,6 +308,8 @@ void TestGibbsInferenceSoftMax()
     cout<< "jpd node5:\t"<<jpd5 << "\n";
 
     delete net;
+    cout << "TestGibbsInferenceSoftMax is completed successfully" << endl;
+
 }
 
 
@@ -287,6 +334,8 @@ void TestJtreeInferenceCondSoftMax1()
     cout<< "jpd node6:\t"<<jpd6 << "\n";
 
     delete net;
+    cout << "TestJtreeInferenceCondSoftMax1 is completed successfully" << endl;
+
 }
 
 void TestJtreeInferenceCondSoftMax2()
@@ -308,6 +357,8 @@ void TestJtreeInferenceCondSoftMax2()
     cout<< "jpd node2:\t"<<jpd2 << "\n";
 
     delete net;
+    cout << "TestJtreeInferenceCondSoftMax2 is completed successfully" << endl;
+
 }
 
 
@@ -332,6 +383,8 @@ void TestGibbsInferenceCondSoftMax()
     cout<< "jpd node5:\t"<<jpd5 << "\n";
 
     delete net;
+    cout << "TestGibbsInferenceCondSoftMax is completed successfully" << endl;
+
 }
 
 
@@ -441,4 +494,283 @@ void TestCondSoftMaxParamLearning(bool DeleteNet)
     };
 
     cout << "TestCondSoftMaxParamLearning is completed successfully" << endl;
+}
+
+void TestSetDistributionSevenNodesModel()
+{
+    BayesNet *net = SevenNodesModel();
+    if (net->GetGaussianMean("node0")[0].FltValue() != 0.5f)
+    {
+         PNL_THROW(pnl::CAlgorithmicException, "node0 : Setting or getting gaussian parameters is wrong");
+    }
+    if (net->GetGaussianMean("node1")[0].FltValue() != 0.5f)
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "node1 : Setting or getting gaussian parameters is wrong");
+    }
+    
+    if (net->GetGaussianCovar("node0")[0].FltValue() != 1.0f)
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "node0 : Setting or getting gaussian parameters is wrong");
+    }
+    if (net->GetGaussianCovar("node1")[0].FltValue() != 1.0f)
+    {
+         PNL_THROW(pnl::CAlgorithmicException, "node1 : Setting or getting gaussian parameters is wrong");
+    }
+
+    float val12 = net->GetPTabular("node2")[0].FltValue();
+    float val22 = net->GetPTabular("node2")[1].FltValue();
+
+    if ((net->GetPTabular("node2")[0].FltValue() != 0.7f)||
+        (net->GetPTabular("node2")[1].FltValue() != 0.3f))
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "node2 : Setting or getting tabular parameters is wrong");
+    };
+
+    TokArr off5True = net->GetSoftMaxOffset("node3", "node2^True");
+    
+    if ((off5True[0].FltValue(0).fl != 0.3f)||
+        (off5True[0].FltValue(1).fl != 0.5f))
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "node3 : Setting or getting softmax parameters is wrong");
+    };
+
+    TokArr off5False = net->GetSoftMaxOffset("node3", "node2^False");
+
+    float val1off = off5False[0].FltValue(0).fl;
+    float val2off = off5False[0].FltValue(1).fl;
+    if ((off5False[0].FltValue(0).fl != 0.3f)||
+        (off5False[0].FltValue(1).fl != 0.5f))
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "node3 : Setting or getting softmax parameters is wrong");
+    };
+
+    TokArr node5True = net->GetSoftMaxWeights("node3", "node2^True");
+    
+    if ((node5True[0].FltValue(0).fl != 0.5f)||
+        (node5True[0].FltValue(1).fl != 0.1f)||
+	(node5True[0].FltValue(2).fl != 0.5f)||
+        (node5True[0].FltValue(3).fl != 0.7f))
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "node3 : Setting or getting softmax parameters is wrong");
+    };
+
+    TokArr node5False = net->GetSoftMaxWeights("node3", "node2^False");
+    float val0 = node5False[0].FltValue(0).fl;
+    float val1 = node5False[0].FltValue(1).fl;
+    float val2 = node5False[0].FltValue(2).fl;
+    float val3 = node5False[0].FltValue(3).fl;
+
+    if ((node5False[0].FltValue(0).fl != 0.5f)||
+        (node5False[0].FltValue(1).fl != 0.4f)||
+	(node5False[0].FltValue(2).fl != 0.5f)||
+        (node5False[0].FltValue(3).fl != 0.7f))
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "node3 : Setting or getting softmax parameters is wrong");
+    };
+
+    float val40 = net->GetPTabular("node4", "node3^False")[0].FltValue();
+    float val41 = net->GetPTabular("node4", "node3^False")[1].FltValue();
+    float val42 = net->GetPTabular("node4", "node3^True")[0].FltValue() ;
+    float val43 = net->GetPTabular("node4", "node3^True")[1].FltValue() ;
+
+    if ((net->GetPTabular("node4", "node3^False")[0].FltValue() != 0.7f)||
+        (net->GetPTabular("node4", "node3^False")[1].FltValue() != 0.3f)||
+        (net->GetPTabular("node4", "node3^True")[0].FltValue() != 0.2f)||
+        (net->GetPTabular("node4", "node3^True")[1].FltValue() != 0.8f))
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "node4 : Setting or getting tabular parameters is wrong");
+    };
+
+    if ((net->GetGaussianMean("node5", "node3^True")[0].FltValue() != 0.5f)||
+        (net->GetGaussianMean("node5", "node3^False")[0].FltValue() != 1.0f))
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "node5 : Setting or getting gaussian parameters is wrong");
+    }
+    
+    if ((net->GetGaussianCovar("node5", "node3^True")[0].FltValue() != 0.5f)||
+        (net->GetGaussianCovar("node5", "node3^False")[0].FltValue() != 1.0f))
+    {
+        PNL_THROW(pnl::CAlgorithmicException, "node5 : Setting or getting gaussian parameters is wrong");
+    }
+    
+    TokArr off6True = net->GetSoftMaxOffset("node6", "node4^True");
+    
+    if ((off6True[0].FltValue(0).fl != 0.1f)||
+        (off6True[0].FltValue(1).fl != 0.9f))
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "node6 : Setting or getting softmax parameters is wrong");
+    };
+    
+    TokArr off6False = net->GetSoftMaxOffset("node6", "node4^False");
+    
+    if ((off6False[0].FltValue(0).fl != 0.7f)||
+        (off6False[0].FltValue(1).fl != 0.3f))
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "node6 : Setting or getting softmax parameters is wrong");
+    };
+
+
+    TokArr node6True = net->GetSoftMaxWeights("node6", "node4^True");
+    
+    if ((node6True[0].FltValue(0).fl != 0.8f)||
+        (node6True[0].FltValue(1).fl != 0.2f))
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "node6 : Setting or getting softmax parameters is wrong");
+    };
+
+    TokArr node6False = net->GetSoftMaxWeights("node6", "node4^False");
+    float val06 = node5False[0].FltValue(0).fl;
+    float val16 = node5False[0].FltValue(1).fl;
+
+    if ((node6False[0].FltValue(0).fl != 0.5f)||
+        (node6False[0].FltValue(1).fl != 0.9f))
+    {
+	PNL_THROW(pnl::CAlgorithmicException, "node6 : Setting or getting softmax parameters is wrong");
+    };
+
+    delete net;
+    cout << "TestSetDistributionSevenNodesModel is completed successfully" << endl;
+
+}
+
+
+void TestJtreeInference1SevenNodesModel()
+{
+    BayesNet *net = SevenNodesModel();
+    
+    // all continuous nodes are observed
+    net->EditEvidence("node0^0.3");
+    net->EditEvidence("node1^0.2");
+    net->EditEvidence("node5^0.9");
+
+    net->EditEvidence("node4^True");
+
+    net->SetProperty("Inference", "jtree");
+    TokArr jpd3 = net->GetJPD("node3");
+    cout<< "jpd node3:\t"<<jpd3 << "\n";
+
+    TokArr jpd6 = net->GetJPD("node6");
+    cout<< "jpd node6:\t"<<jpd6 << "\n";
+
+    TokArr jpd2 = net->GetJPD("node2");
+    cout<< "jpd node2:\t"<<jpd2 << "\n";
+    
+    delete net;
+    cout << "TestJtreeInference1SevenNodesModel is completed successfully" << endl;
+
+}
+
+void TestJtreeInference2SevenNodesModel()
+{
+    BayesNet *net = SevenNodesModel();
+    
+    // all discrete nodes are observed
+    net->EditEvidence("node2^True");
+    net->EditEvidence("node3^False");
+    net->EditEvidence("node4^False");
+    net->EditEvidence("node6^True");
+    
+    net->EditEvidence("node1^0.55");
+
+    net->SetProperty("Inference", "jtree");
+
+    TokArr jpd0 = net->GetJPD("node0");
+    cout<< "jpd node0:\t"<<jpd0 << "\n";
+
+    TokArr jpd5 = net->GetJPD("node1");
+    cout<< "jpd node5:\t"<<jpd5 << "\n";
+
+    delete net;
+    cout << "TestJtreeInference2SevenNodesModel is completed successfully" << endl;
+
+}
+
+void TestDelArc()
+{
+    BayesNet *net = SevenNodesModel();
+    
+    net->DelArc("node0", "node6");
+  
+    net->SetPTabular("node6^True node6^False", "0.2 0.8", "node4^True");
+    net->SetPTabular("node6^True node6^False", "0.1 0.9", "node4^False");
+
+    // all continuous nodes are observed
+    net->EditEvidence("node0^0.3");
+    net->EditEvidence("node1^0.2");
+    net->EditEvidence("node5^0.9");
+
+    net->EditEvidence("node4^True");
+
+    net->SetProperty("Inference", "jtree");
+    TokArr jpd3 = net->GetJPD("node3");
+    cout<< "jpd node3:\t"<<jpd3 << "\n";
+
+    TokArr jpd6 = net->GetJPD("node6");
+    cout<< "jpd node6:\t"<<jpd6 << "\n";
+
+    TokArr jpd2 = net->GetJPD("node2");
+    cout<< "jpd node2:\t"<<jpd2 << "\n";
+    
+    delete net;
+
+    cout << "TestDelArc is completed successfully" << endl;
+
+}
+
+void TestAddArc()
+{
+    BayesNet *net = SevenNodesModel();
+    
+    net->AddArc("node2", "node5");
+  
+//    net->SetPTabular("node6^True node6^False", "0.2 0.8", "node4^True");
+//    net->SetPTabular("node6^True node6^False", "0.1 0.9", "node4^False");
+
+    // all continuous nodes are observed
+    net->EditEvidence("node0^0.3");
+    net->EditEvidence("node1^0.2");
+    net->EditEvidence("node5^0.9");
+
+    net->EditEvidence("node4^True");
+
+    net->SetProperty("Inference", "jtree");
+    TokArr jpd3 = net->GetJPD("node3");
+    cout<< "jpd node3:\t"<<jpd3 << "\n";
+
+    TokArr jpd6 = net->GetJPD("node6");
+    cout<< "jpd node6:\t"<<jpd6 << "\n";
+
+    TokArr jpd2 = net->GetJPD("node2");
+    cout<< "jpd node2:\t"<<jpd2 << "\n";
+    
+    delete net;
+
+    cout << "TestDelArc is completed successfully" << endl;
+
+}
+
+void TestDelNode()
+{
+    BayesNet *net = SevenNodesModel();
+    
+    net->DelNode("node2");
+  
+    // all continuous nodes are observed
+    net->EditEvidence("node0^0.3");
+    net->EditEvidence("node1^0.2");
+    net->EditEvidence("node5^0.9");
+
+    net->EditEvidence("node4^True");
+
+    net->SetProperty("Inference", "jtree");
+    TokArr jpd3 = net->GetJPD("node3");
+    cout<< "jpd node3:\t"<<jpd3 << "\n";
+
+    TokArr jpd6 = net->GetJPD("node6");
+    cout<< "jpd node6:\t"<<jpd6 << "\n";
+
+    delete net;
+
+    cout << "TestDelArc is completed successfully" << endl;
+
 }

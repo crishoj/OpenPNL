@@ -1,7 +1,7 @@
 #include "test_conf.hpp"
 
 //#define SKIP_TOKEN
-#define SKIP_LIMID
+//#define SKIP_LIMID
 //#define SKIP_DBN
 //#define SKIP_MRF
 //#define SKIP_BNET
@@ -222,6 +222,14 @@ int main(int argc, char* argv[])
 #ifndef SKIP_CONDSOFTMAX
     try
     {
+        TestDelNode();
+        TestDelArc();
+        TestAddArc();
+
+        TestSetDistributionSevenNodesModel();
+        TestJtreeInference1SevenNodesModel();
+        TestJtreeInference2SevenNodesModel();
+
         TestCondSoftMaxParamLearning();
         TestSetDistributionCondSoftMax();
         TestJtreeInferenceCondSoftMax1();

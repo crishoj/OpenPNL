@@ -74,5 +74,10 @@ void TestGibbsInferenceCondSoftMax();
 void CrashTestJtreeInferenceSoftMax();
 void TestSoftMaxParamLearning(bool DeleteNet = true);
 void TestCondSoftMaxParamLearning(bool DeleteNet = true);
-
-
+void TestSetDistributionSevenNodesModel();
+void TestJtreeInference1SevenNodesModel();
+void TestJtreeInference2SevenNodesModel();
+void TestDelArc();
+void TestAddArc();
+void TestDelNode();
+  
