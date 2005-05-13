@@ -294,6 +294,9 @@ void WDistribFun::FillData(int matrixId, TokArr value, TokArr probability, TokAr
 	    if (!desc()->isTabular(parent))
                 WeightsSize += desc()->nodeSize(parent);
 	}
+        if (WeightsSize == 0)
+            WeightsSize = 1;
+
         WeightsSize *= ChildNodeSize;
 
 	switch(matrixId)
@@ -1163,7 +1166,7 @@ float WSoftMaxDistribFun::GetAValue(int matrixId, Vector<int> &aIndex)
 	val = (*offVector)[Index[0]];
 	break;
     default:
-	ThrowUsingError("Unsupported type of matrix in gaussian distribution", fname);
+	ThrowUsingError("Unsupported type of matrix in softmax distribution", fname);
 	break;
     }
     return val;
@@ -1426,7 +1429,6 @@ pnl::CDenseMatrix<float> *WCondSoftMaxDistribFun::Matrix(int matrixType, int num
 	ThrowUsingError("No softmax function corresponds to indexes", fname);
     };
     
-
     switch (matrixType)
     {
     case matWeights:
@@ -1451,23 +1453,25 @@ pnl::CDenseMatrix<float> *WCondSoftMaxDistribFun::Matrix(int matrixType, int num
 
 void WCondSoftMaxDistribFun::CreateDefaultDistribution()
 {
+    static const char fname[] = "CreateDefaultDistribution";
+    
     if (m_pDistrib != 0)
     {
-	delete m_pDistrib;
-	m_pDistrib = 0;
+        delete m_pDistrib;
+        m_pDistrib = 0;
     }
-
+    
     int NumberOfNodes = desc()->nNode();
     const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
-
+    
     for (int node = 0; node < NumberOfNodes; node++)
     {
-	nodeTypes[node] = new CNodeType(desc()->isTabular(node), desc()->nodeSize(node), nsChance);
+        nodeTypes[node] = new CNodeType(desc()->isTabular(node), desc()->nodeSize(node), nsChance);
     }
-
+    
     m_pDistrib = pnl::CCondSoftMaxDistribFun::Create(NumberOfNodes, nodeTypes);
     m_pDistrib->CreateDefaultMatrices();
-
+    
     delete nodeTypes;
 }
 
@@ -1485,7 +1489,6 @@ void WCondSoftMaxDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float 
     floatVector *offVector;
     float *off;
     int *parentIndices = new int [aIndex.size()-2];
-    int numWeightMat;
     memcpy(parentIndices, &aIndex[0],  sizeof(int)*(aIndex.size()-2));
 
     const CSoftMaxDistribFun *pSoftMaxDistribFun = m_pDistrib->GetDistribution(parentIndices);
@@ -1495,12 +1498,9 @@ void WCondSoftMaxDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float 
     case matWeights:
         Index[0] = aIndex[aIndex.size()-2];
 	Index[1] = aIndex[aIndex.size()-1];
-//	Index[2] = aIndex[2];
-
 	pMatrix = pSoftMaxDistribFun->GetMatrix( static_cast<EMatrixType>(matrixId), -1, 
             parentIndices);
 	pMatrix->SetElementByIndexes(probability, Index);
-
 	break;
     case vectorOffset:
         Index[0] = aIndex[aIndex.size()-2];
@@ -1509,19 +1509,56 @@ void WCondSoftMaxDistribFun::SetAValue(int matrixId, Vector<int> &aIndex, float 
         off = new float[offVector->size()];
         memcpy(&off[0], &offVector->front(), (offVector->size())*sizeof(float) );
         m_pDistrib->AllocOffsetVector(off, parentIndices);
-
         break;
 
     default:
-	ThrowUsingError("Unsupported type of matrix in gaussian distribution", fname);
+	ThrowUsingError("Unsupported type of matrix in condsoftmax distribution", fname);
 	break;
     }
 }
 
 float WCondSoftMaxDistribFun::GetAValue(int matrixType, Vector<int> &aIndex)
 {
-    float Result;
+    float Result = 0.0f;
+    static const char fname[] = "GetAValue";
+
+    if(!m_pDistrib)
+    {
+        CreateDefaultDistribution();
+    }
+
+    int Index[2];
+    CMatrix<float> * pMatrix;
+    floatVector *offVector;
+    float *off;
+    int *parentIndices = new int [aIndex.size()-2];
+    memcpy(parentIndices, &aIndex[0],  sizeof(int)*(aIndex.size()-2));
+
+    const CSoftMaxDistribFun *pSoftMaxDistribFun = m_pDistrib->GetDistribution(parentIndices);
+
+    switch (matrixType)
+    {
+    case matWeights:
+        Index[0] = aIndex[aIndex.size()-2];
+	Index[1] = aIndex[aIndex.size()-1];
+
+	pMatrix = pSoftMaxDistribFun->GetMatrix( static_cast<EMatrixType>(matrixType), -1, 
+            parentIndices);
+	Result = pMatrix->GetElementByIndexes(Index);
+
+	break;
+    case vectorOffset:
+        Index[0] = aIndex[aIndex.size()-2];
+        offVector = m_pDistrib->GetOffsetVector(parentIndices);
+        Result = (*offVector)[Index[0]] ;
+        break;
+
+    default:
+	ThrowUsingError("Unsupported type of matrix in condsoftmax distribution", fname);
+	break;
+    }
     return Result;
+
 }
 
 void WCondSoftMaxDistribFun::SetDefaultDistribution()
@@ -1681,10 +1718,7 @@ float WCondGaussianDistribFun::GetAValue(int matrixType, Vector<int> &aIndex)
 pnl::CCondSoftMaxDistribFun *WCondSoftMaxDistribFun::GetDistribution()
 {
     return m_pDistrib;
-
 }
-
-
 
 int WCondGaussianDistribFun::IsDistributionSpecific()
 {
