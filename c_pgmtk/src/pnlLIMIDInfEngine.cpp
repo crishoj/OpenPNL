@@ -73,6 +73,7 @@ CLIMIDInfEngine::CLIMIDInfEngine(const CStaticGraphicalModel *pOldGM,
 {
   m_pIDNet = static_cast <const CIDNet*> (pNewGM);
   m_pBaseIDNet = static_cast <const CIDNet*> (pOldGM);
+  m_JTreeRootNode = -1;
   SetJTreeRootNode(0);
   m_pIDNet->GetDecisionNodes(m_decisionNodes);
 
