@@ -369,9 +369,9 @@ CBNet* CreateSevenNodeEx(void)
   // |  4   5    
   // |/
   // 6
-  // 0, 1, 5 - непрерывные
-  // 3, 6 - вершины softmax
-  // 2, 4 - дискретные
+  // 0, 1, 5 - continuous
+  // 3, 6 - softmax 
+  // 2, 4 - discrete
 
   const int numOfNds = 7;
   int numOfNbrs[numOfNds] = { 2, 1, 1, 5, 2, 1, 2 };
@@ -406,10 +406,8 @@ CBNet* CreateSevenNodeEx(void)
   int nVariableTypes = 2;
   variableTypes.resize( nVariableTypes );
    
-  variableTypes[0].SetType( 0, 1 ); // непрерывная вершина
-  variableTypes[1].SetType( 1, 2 ); // дискретная вершина, 2 состояния
-  
-//  variableTypes[2].SetType( 0, 0 ); // дискретная вершина, 3 состояния
+  variableTypes[0].SetType( 0, 1 ); // continuous
+  variableTypes[1].SetType( 1, 2 ); // discrete, 2 states
   
   intVector variableAssociation;  
   int nnodes = pGraph->GetNumberOfNodes();
@@ -540,9 +538,9 @@ CBNet* CreateSevenNodeExDiscrete(void)
   // |  4   5    
   // |/
   // 6
-  // 0, 1, 5 - непрерывные
-  // 3, 6 - вершины softmax
-  // 2, 4 - дискретные
+  // 0, 1, 5 -  continuous 
+  // 3, 6 - softmax
+  // 2, 4 - discrete
 
   const int numOfNds = 7;
   int numOfNbrs[numOfNds] = { 2, 1, 1, 5, 2, 1, 2 };
@@ -577,8 +575,8 @@ CBNet* CreateSevenNodeExDiscrete(void)
   int nVariableTypes = 2;
   variableTypes.resize( nVariableTypes );
    
-  variableTypes[0].SetType( 0, 1 ); // непрерывная вершина
-  variableTypes[1].SetType( 1, 2 ); // дискретная вершина, 2 состояния
+  variableTypes[0].SetType( 0, 1 ); // continuous
+  variableTypes[1].SetType( 1, 2 ); // discrete, 2 states
   
   intVector variableAssociation;  
   int nnodes = pGraph->GetNumberOfNodes();
@@ -676,7 +674,7 @@ CBNet* CreateTwoNodeExDiscrete(void)
     
   int nVariableTypes = 1;
   variableTypes.resize( nVariableTypes );
-  variableTypes[0].SetType( 1, 2 ); // дискретная вершина, 2 состояния
+  variableTypes[0].SetType( 1, 2 ); // discrete, 2 states
   
   intVector variableAssociation;  
   int nnodes = pGraph->GetNumberOfNodes();
