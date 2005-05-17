@@ -1,13 +1,13 @@
 #include "test_conf.hpp"
 
-//#define SKIP_TOKEN
-//#define SKIP_LIMID
-//#define SKIP_DBN
-//#define SKIP_MRF
-//#define SKIP_BNET
+#define SKIP_TOKEN
+#define SKIP_LIMID
+#define SKIP_DBN
+#define SKIP_MRF
+#define SKIP_BNET
 //#define SKIP_NUMERATION
-//#define SKIP_CONDGAUSSIAN
-//#define SKIP_SOFTMAX
+#define SKIP_CONDGAUSSIAN
+#define SKIP_SOFTMAX
 //#define SKIP_CONDSOFTMAX
 
 
@@ -166,6 +166,8 @@ int main(int argc, char* argv[])
     
     try 
     {
+        Test2Bnets();
+
         TestForGetPTabular();
         TestForSetInferenceProperties();
         TestForGetMPE();

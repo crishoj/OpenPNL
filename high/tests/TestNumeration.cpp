@@ -73,7 +73,7 @@ BayesNet *GetSimpleTabularModel()
     //net->DelNode("Two");
     net->AddArc("Zero One", "Three");
     
-    net->SetPTabular("Zero^State1", "0.4");
+/*    net->SetPTabular("Zero^State1", "0.4");
     net->SetPTabular("Zero^State2", "0.6");
     net->SetPTabular("One^State1", "0.4");
     net->SetPTabular("One^State2", "0.6");
@@ -85,6 +85,13 @@ BayesNet *GetSimpleTabularModel()
     net->SetPTabular("Three^State2","0.7" ,"Zero^State2 One^State1");
     net->SetPTabular("Three^State1","0.8" ,"Zero^State2 One^State2");
     net->SetPTabular("Three^State2","0.2" ,"Zero^State2 One^State2");
+*/
+    net->SetPTabular("Zero^State1 Zero^State2", "0.4 0.6");
+    net->SetPTabular("One^State1 One^State2", "0.4 0.6");
+    net->SetPTabular("Three^State1 Three^State2","0.1 0.9" ,"Zero^State1 One^State1");
+    net->SetPTabular("Three^State1 Three^State2","0.2 0.8" ,"Zero^State1 One^State2");
+    net->SetPTabular("Three^State1 Three^State2","0.3 0.7" ,"Zero^State2 One^State1");
+    net->SetPTabular("Three^State1 Three^State2","0.8 0.2" ,"Zero^State2 One^State2");
 
     return net;
 }
@@ -148,4 +155,14 @@ void TestForGetMPE()
     std::cout << net->GetMPE("One") << "\n";
     std::cout << net->GetMPE("Three") << "\n";
     std::cout << net->GetMPE("Zero One Three") << "\n";
+};
+
+
+void Test2Bnets()
+{
+    BayesNet *net1 = GetSimpleTabularModel();
+    BayesNet *net2 = GetSimpleTabularModel();
+    cout << "2Bnets" << "\n";
+    delete net1;
+    delete net2;
 };

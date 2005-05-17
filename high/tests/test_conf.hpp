@@ -80,4 +80,5 @@ void TestJtreeInference2SevenNodesModel();
 void TestDelArc();
 void TestAddArc();
 void TestDelNode();
+void Test2Bnets();
   
