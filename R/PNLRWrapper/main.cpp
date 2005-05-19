@@ -944,13 +944,13 @@ extern "C"
             try
             {
 					if ((IS_CHARACTER(weight)) && (IS_CHARACTER(offset)))
-						pBNets[NetNum]->SetPGaussian(arg1, weight_str, offset_str);
+						pBNets[NetNum]->SetPSoftMax(arg1, weight_str, offset_str);
 					if ((IS_CHARACTER(weight)) && (IS_NUMERIC(offset)))
-						pBNets[NetNum]->SetPGaussian(arg1, weight_str, OffsetTok);
+						pBNets[NetNum]->SetPSoftMax(arg1, weight_str, OffsetTok);
 					if ((IS_NUMERIC(weight)) && (IS_CHARACTER(offset)))
-						pBNets[NetNum]->SetPGaussian(arg1, WeightTok, offset_str);
+						pBNets[NetNum]->SetPSoftMax(arg1, WeightTok, offset_str);
 					if ((IS_NUMERIC(weight)) && (IS_NUMERIC(offset)))
-						pBNets[NetNum]->SetPGaussian(arg1, WeightTok, OffsetTok);
+						pBNets[NetNum]->SetPSoftMax(arg1, WeightTok, OffsetTok);
             }
             catch (pnl::CException &E)
             {
@@ -1025,13 +1025,13 @@ extern "C"
             try
             {
 					if ((IS_CHARACTER(weight)) && (IS_CHARACTER(offset)))
-						pBNets[NetNum]->SetPGaussian(arg1, weight_str, offset_str, parents);
+						pBNets[NetNum]->SetPSoftMax(arg1, weight_str, offset_str, parents);
 					if ((IS_CHARACTER(weight)) && (IS_NUMERIC(offset)))
-						pBNets[NetNum]->SetPGaussian(arg1, weight_str, OffsetTok, parents);
+						pBNets[NetNum]->SetPSoftMax(arg1, weight_str, OffsetTok, parents);
 					if ((IS_NUMERIC(weight)) && (IS_CHARACTER(offset)))
-						pBNets[NetNum]->SetPGaussian(arg1, WeightTok, offset_str, parents);
+						pBNets[NetNum]->SetPSoftMax(arg1, WeightTok, offset_str, parents);
 					if ((IS_NUMERIC(weight)) && (IS_NUMERIC(offset)))
-						pBNets[NetNum]->SetPGaussian(arg1, WeightTok, OffsetTok, parents);
+						pBNets[NetNum]->SetPSoftMax(arg1, WeightTok, OffsetTok, parents);
             }
             catch (pnl::CException &E)
             {
@@ -1048,7 +1048,7 @@ extern "C"
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
 
-        UNPROTECT(5);
+        UNPROTECT(6);
         return (res);
 	}
 
@@ -2671,7 +2671,7 @@ SEXP pnlLearnParameters(SEXP net, SEXP type)
         PROTECT(res = NEW_INTEGER(1));
         int * pres = INTEGER_POINTER(res);
         pres[0] = flag;
-        UNPROTECT(3);
+        UNPROTECT(4);
         return (res);
     }
 //----------------------------------------------------------------------------
