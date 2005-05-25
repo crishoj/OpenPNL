@@ -2174,7 +2174,7 @@ bool CTabularDistribFun::IsMatrixNormalizedForCPD(float eps) const
     return ret;
 }
 
-void CTabularDistribFun::InitPseudoCounts()
+void CTabularDistribFun::InitPseudoCounts(int val)
 {
     if (!m_pPseudoCounts)
     {
@@ -2186,8 +2186,19 @@ void CTabularDistribFun::InitPseudoCounts()
             NodeSizes, 0);
         void *pObj = this;
             m_pPseudoCounts->AddRef(pObj);
-    }
-    m_pPseudoCounts->ClearData();
+    }	
+	m_pPseudoCounts->ClearData();
+		
+	if (val != 0)
+	{
+		CMatrixIterator<float>* iter = m_pPseudoCounts->InitIterator();
+		for (iter; m_pPseudoCounts->IsValueHere(iter); m_pPseudoCounts->Next(iter))
+		{
+			intVector index;
+			m_pPseudoCounts->Index(iter, &index);
+			m_pPseudoCounts->SetElementByIndexes(1, &index.front());
+		}
+	}
 }
 
 double CTabularDistribFun::Gamma (int arg)

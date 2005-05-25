@@ -156,7 +156,7 @@ public:
 
     void SetCheckNegative(bool val);
 
-    void InitPseudoCounts();
+    void InitPseudoCounts(int val = 0);
 
     float CalculateBayesianScore(); 
 
