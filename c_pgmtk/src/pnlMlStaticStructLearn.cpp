@@ -55,6 +55,8 @@ CMlStaticStructLearn::CMlStaticStructLearn(CStaticGraphicalModel *pGrModel,
     m_Algorithm = AlgorithmType;
     m_nMaxFanIn = nMaxFanIn;
 	m_ScoreMethod = MaxLh;
+	m_priorType = Dirichlet;
+	m_K2alfa = 0;
     m_vAncestor.assign(vAncestor.begin(), vAncestor.end());
     m_vDescent.assign(vDescent.begin(),vDescent.end());
     PNL_CHECK_RANGES(nMaxFanIn, 1, nnodes);
@@ -141,7 +143,9 @@ float CMlStaticStructLearn::ComputeFamilyScore(intVector vFamily)
 {
     int nFamily = vFamily.size();
 	CCPD* iCPD = this->CreateRandomCPD(nFamily, &vFamily.front(), m_pGrModel);
+	CTabularDistribFun *pDistribFun;
 	int ncases = m_Vector_pEvidences.size();
+	const CEvidence * pEv;
 	float score;
 	float pred = 0;
 	EDistributionType NodeType;
@@ -247,23 +251,59 @@ float CMlStaticStructLearn::ComputeFamilyScore(intVector vFamily)
         
         int DomainSize;
         const int * domain;
-        iCPD->GetDomain(&DomainSize, &domain);
-
-        CTabularDistribFun * pDistribFun = 
-            static_cast<CTabularDistribFun *>(iCPD->GetDistribFun());
-
-        pDistribFun->InitPseudoCounts();
-
-    
-        const CEvidence * pEv;
-        for (i=0; i<ncases; i++)
-        {
-            pEv = m_Vector_pEvidences[i];
-            const CEvidence *pEvidences[] = { pEv };
-            pDistribFun->BayesUpdateFactor(pEvidences, 1, domain);
-        }
-        score = pDistribFun->CalculateBayesianScore();
-        pDistribFun->PriorToCPD();
+		switch(m_priorType)
+		{
+		case Dirichlet: 
+			iCPD->GetDomain(&DomainSize, &domain);
+			
+			pDistribFun = static_cast<CTabularDistribFun *>(iCPD->GetDistribFun());
+			
+			pDistribFun->InitPseudoCounts();
+			
+			for (i=0; i<ncases; i++)
+			{
+				pEv = m_Vector_pEvidences[i];
+				const CEvidence *pEvidences[] = { pEv };
+				pDistribFun->BayesUpdateFactor(pEvidences, 1, domain);
+			}
+			score = pDistribFun->CalculateBayesianScore();
+			break;
+		case K2:
+			iCPD->GetDomain(&DomainSize, &domain);
+			
+			pDistribFun = static_cast<CTabularDistribFun *>(iCPD->GetDistribFun());
+			
+			pDistribFun->InitPseudoCounts(m_K2alfa);
+			
+			for (i=0; i<ncases; i++)
+			{
+				pEv = m_Vector_pEvidences[i];
+				const CEvidence *pEvidences[] = { pEv };
+				pDistribFun->BayesUpdateFactor(pEvidences, 1, domain);
+			}
+			score = pDistribFun->CalculateBayesianScore();
+			break;
+		case BDeu:
+			iCPD->GetDomain(&DomainSize, &domain);
+			
+			pDistribFun = static_cast<CTabularDistribFun *>(iCPD->GetDistribFun());
+			
+			pDistribFun->InitPseudoCounts();
+			
+			for (i=0; i<ncases; i++)
+			{
+				pEv = m_Vector_pEvidences[i];
+				const CEvidence *pEvidences[] = { pEv };
+				pDistribFun->BayesUpdateFactor(pEvidences, 1, domain);
+			}
+			score = pDistribFun->CalculateBayesianScore() / iCPD->GetNumberOfFreeParameters();
+			break;
+		default:
+			PNL_THROW(CNotImplemented, 
+				"This type of prior has not been implemented yet");
+			break;
+		}
+       
 
 		break;
         }
@@ -271,24 +311,29 @@ float CMlStaticStructLearn::ComputeFamilyScore(intVector vFamily)
 				  "This type score method has not been implemented yet");
 		break;
 	}
-	int dim = iCPD->GetNumberOfFreeParameters();
-    switch (m_ScoreType)
-    {
-    case BIC :
-		score -= 0.5f * float(dim) * float(log(float(ncases)));
-		break;
-    case AIC :
-		score -= 0.5f * float(dim);
-		break;
-    case VAR :
-		PNL_THROW(CNotImplemented, 
-			"This type score function has not been implemented yet");
-		break;
-    default:
-		PNL_THROW(CNotImplemented, 
-			"This type score function has not been implemented yet");
-		break;
-    }
+	
+
+		int dim = iCPD->GetNumberOfFreeParameters();
+		switch (m_ScoreType)
+		{
+		case BIC :
+			score -= 0.5f * float(dim) * float(log(float(ncases)));
+			break;
+		case AIC :
+			score -= 0.5f * float(dim);
+			break;
+		case WithoutFine:
+			break;
+		case VAR :
+			PNL_THROW(CNotImplemented, 
+				"This type score function has not been implemented yet");
+			break;
+		default:
+			PNL_THROW(CNotImplemented, 
+				"This type score function has not been implemented yet");
+			break;
+		}
+	
     delete iCPD;
     return score;
 }
@@ -354,13 +399,37 @@ CCPD*
 CMlStaticStructLearn::ComputeFactor(intVector vFamily, CGraphicalModel* pGrModel, CEvidence** pEvidences)
 {
     int nFamily = vFamily.size();
+	int DomainSize;
+    const int * domain;
+	const CEvidence * pEv;
+	int i;
+	CTabularDistribFun *pDistribFun;
 	CCPD* iCPD = this->CreateRandomCPD(nFamily, 
 		&vFamily.front(), pGrModel);
     int ncases = m_Vector_pEvidences.size();
     if ( !(iCPD->GetDistributionType() == dtSoftMax))
 	{
-		iCPD->UpdateStatisticsML( pEvidences, ncases );
-		iCPD->ProcessingStatisticalData(ncases);
+		if (m_ScoreMethod != MarLh)
+		{
+			iCPD->UpdateStatisticsML( pEvidences, ncases );
+			iCPD->ProcessingStatisticalData(ncases);
+		}
+		else
+		{
+			iCPD->GetDomain(&DomainSize, &domain);
+			
+			pDistribFun = static_cast<CTabularDistribFun *>(iCPD->GetDistribFun());
+			
+			pDistribFun->InitPseudoCounts(m_K2alfa);
+			
+			for (i=0; i<ncases; i++)
+			{
+				pEv = m_Vector_pEvidences[i];
+				const CEvidence *pEvidences[] = { pEv };
+				pDistribFun->BayesUpdateFactor(pEvidences, 1, domain);
+			}
+			pDistribFun->PriorToCPD();
+		}
     }
 	else
 	{
@@ -418,7 +487,7 @@ CMlStaticStructLearn::CreateRandomCPD(int nfamily, const int* family, CGraphical
 		break;
         }
     }
-   // end of checking
+  // end of checking
 	switch (dt)
     {
     case dtTabular :
@@ -455,6 +524,36 @@ EScoreMethodTypes CMlStaticStructLearn::GetScoreMethod()
 void CMlStaticStructLearn::SetScoreMethod(EScoreMethodTypes Type)
 {
 	m_ScoreMethod = Type;
+}
+
+EPriorTypes CMlStaticStructLearn::GetPriorType()
+{
+	return m_priorType;
+}
+
+void CMlStaticStructLearn::SetPriorType(EPriorTypes ptype)
+{
+	m_priorType = ptype;
+}
+
+void CMlStaticStructLearn::SetScoreFunction(EScoreFunTypes ftype)
+{
+	m_ScoreType = ftype;
+}
+
+EScoreFunTypes CMlStaticStructLearn::GetScoreFunction()
+{
+ return m_ScoreType;
+}
+
+int CMlStaticStructLearn::GetK2PriorParam()
+{
+    return m_K2alfa;
+}
+
+void CMlStaticStructLearn::SetK2PriorParam(int alfa)
+{
+	m_K2alfa = alfa;
 }
 
 #ifdef PNL_RTTI

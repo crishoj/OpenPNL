@@ -40,6 +40,7 @@ typedef PNL_API enum
 {
 	BIC,
 	AIC,
+	WithoutFine,
 	VAR	//not implemented	
 } EScoreFunTypes;
 
@@ -57,6 +58,14 @@ typedef PNL_API enum
 	MarLh  //marginal likelyhood 
 } EScoreMethodTypes;
 
+typedef PNL_API enum
+{
+	Dirichlet, //using Dirichlet prior
+	K2, //using K2 prior
+	BDeu  //using Bayesian Dirichlet kikelihood equivalent (uniform) prior 
+} EPriorTypes;
+
+
 class PNL_API CMlStaticStructLearn : public CStaticLearningEngine
 {
 public:
@@ -67,9 +76,11 @@ public:
 	const CBNet* GetResultBNet()const;
 	const CDAG*  GetResultDAG()const;
 	const int*   GetResultRenaming()const;
+	EScoreFunTypes GetScoreFunction();
 	EScoreMethodTypes GetScoreMethod();
+	EPriorTypes GetPriorType();
+	int GetK2PriorParam();
 	void  SetMinProgress(float minProgress);
-
 
 	float ScoreFamily(intVector vFamily);  //vFamily = [parents self]
 	float ScoreDAG(CDAG* pDAG, floatVector* familyScore);
@@ -77,6 +88,10 @@ public:
 
 	void  SetInitGraphicalModel(CGraphicalModel* pGrModel);
 	void SetScoreMethod(EScoreMethodTypes Type);
+	void SetScoreFunction(EScoreFunTypes ftype);
+	void SetPriorType(EPriorTypes ptype);
+	// uses only in marginal likelyhood methos with k2 priors
+	void SetK2PriorParam(int alfa);
 	//used to re-learn from another initial DAG. nodes order and nodes types
 	//need to be the same as the original m_pGrModel. 
 
@@ -98,6 +113,7 @@ protected:
 	int		m_nNodes;
 	int		m_nMaxFanIn;
 	float   m_minProgress;
+	int		m_K2alfa; 
 
 	intVector	m_vResultRenaming;
 	intVector	m_vAncestor;
@@ -107,6 +123,7 @@ protected:
 	EScoreFunTypes	m_ScoreType;
 	EOptimizeTypes	m_Algorithm;
 	EScoreMethodTypes m_ScoreMethod;
+	EPriorTypes m_priorType;
 	
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;

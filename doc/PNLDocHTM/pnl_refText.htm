@@ -6528,9 +6528,60 @@ BNet</EM> object with its parameters and structure. The learned <EM CLASS="CodeR
 
 <hr><h4><a name="declCMlStaticStructLearn_GetResultBNet">GetResultBNet</a></h4>
 <p class="Blurb">Gets handle of learned BNet.</p><pre>
+const CBNet* CMlStaticStructLearn::GetResultBNet() const
+</pre><p>
 
-const CBNet* CMlStaticStructLearn::GetResultBNet() const;
+<hr><h4><a name="declCMlStaticStructLearn_GetScoreMethod">GetScoreMethod</a></h4>
+<p class="Blurb">Returnes score method that is used in structure learning.</p><pre>
+
+EScoreMethodTypes CMlStaticStructLearn::GetScoreMethod();
+</pre><p>
+This function returnes one of the several values: MaxLh, PreAs, MarLh.
+<br> MaxLh - using maximized likelihood score method. 
+<br> PreAs - using predictive assessment score method.
+<br> MarLh - using marginal likelyhood score method.  
+</p>
 </pre>
+
+<hr><h4><a name="declCMlStaticStructLearn_GetScoreFunction">GetScoreFunction</a></h4>
+<p class="Blurb">Returnes score function that is used in structure learning.</p><pre>
+
+EScoreFunTypes CMlStaticStructLearn::GetScoreFunction();
+</pre><p>
+This function returnes one of the several values: BIC, AIC, WithoutFine, VAR.
+<br> BIC - using Bayessian Information Criterion. 
+<br> AIC - using Akaike`s Information Criterion.
+<br> WithoutFine - using function that does not penalty score. It is usually used with marginal likelihood score method. The other name is BDe metric
+<br> VAR - Not Implemented. 
+</p>
+</pre>
+
+<hr><h4><a name="declCMlStaticStructLearn_GetPriorType">GetPriorType</a></h4>
+<p class="Blurb">Returnes prior`s type that is used in structure learning.</p><pre>
+
+EPriorTypes CMlStaticStructLearn::GetPriorType();
+</pre><p>
+This function returnes one of the several values: Dirichlet, K2, BDeu.
+<br> Dirichlet - using Dirichlet priors for networks scoring. 
+<br> K2 - using K2 priors for networks scoring.
+<br> BDeu - using BDeu priors for networks scoring. 
+</p>
+<p>
+Priors uses only in marginal likelihood score method.
+</p>
+</pre>
+
+<hr><h4><a name="declCMlStaticStructLearn_GetK2PriorParam">GetK2PriorParam</a></h4>
+<p class="Blurb">Returnes K2 prior`s type that is used in structure learning.</p><pre>
+
+int CMlStaticStructLearn::GetK2PriorParam();
+</pre><p>
+ Returnes inital K2 prior parameter. 
+</p>
+
+</pre>
+
+
 
 
 <hr><h4><a name="declCMlStaticStructLearn_GetResultDAG">GetResultDAG</a></h4>
@@ -6550,7 +6601,6 @@ DAG</EM> on the basis of the learned <EM CLASS="CodeReg">DAG</EM> data and creat
 . The function computes all CPDs for the created <EM CLASS="CodeReg">BNet</EM>. Node IDs of the sorted <EM CLASS="CodeReg">DAG</EM> and the resultant <EM CLASS="CodeReg">BNet</EM> are different. The renaming provides mapping between them.
 </p>
 
-
 <hr><h4><a name="declCMlStaticStructLearn_ScoreDAG">ScoreDAG</a></h4>
 <p class="Blurb">Computes score of DAG.</p><pre>
 
@@ -6561,9 +6611,62 @@ float CMlStaticStructLearn::ScoreDAG(CDAG* <EM CLASS="CodeItalic">pDAG</EM>, flo
 DAG</EM> whose score is to be computed.
 <dt>familyScore<dd>  Pointer to a float vector, that stores the score of a family.
 </dl></p><p>
-This function returns the whole score for the <EM CLASS="CodeReg">DAG</EM>. Score metric is defined in <EM CLASS="CodeReg">m_ScoreType</EM>.
+This function returns the whole score for the <EM CLASS="CodeReg">DAG</EM>. 
 </p>
 
+<hr><h4><a name="declCMlStaticStructLearn_SetScoreMethod">SetScoreMethod</a></h4>
+<p class="Blurb">Sets structure learning score method.</p><pre>
+
+void CMlStaticStructLearn::SetScoreMethod(EScoreMethodTypes <EM CLASS="CodeItalic">type</EM>);
+</pre><p><dl>
+ Arguments
+<dt>type<dd> Score method type. This varible may takes one of several values:<br>
+<br> MaxLh - using maximized likelihood score method.(default value) 
+<br> PreAs - using predictive assessment score method.
+<br> MarLh - using marginal likelihood score method.
+</dl></p><p>
+This function sets score method. Score method is defined in <EM CLASS="CodeReg">m_ScoreMethod</EM>.
+</p>
+
+<hr><h4><a name="declCMlStaticStructLearn_SetScoreFunction">SetScoreFunction</a></h4>
+<p class="Blurb">Sets structure learning score function(metric).</p><pre>
+
+void CMlStaticStructLearn::SetScoreFunction(EScoreFunTypes <EM CLASS="CodeItalic">ftype</EM>);
+</pre><p><dl>
+ Arguments
+<dt>ftype<dd> Score function type. This varible may takes one of several values:<br>
+<br> BIC - using Bayessian Information Criterion. 
+<br> AIC - using Akaike`s Information Criterion.
+<br> WithoutFine - using function that does not fine score. It is usually used with marginal likelyhood score method. The other name is BDe metric. 
+<br> VAR - Not Implemented.
+</dl></p><p>
+This function sets score function. Score function is defined in <EM CLASS="CodeReg">m_ScoreType</EM>.
+</p>
+
+<hr><h4><a name="declCMlStaticStructLearn_SetPriorType">SetPriorType</a></h4>
+<p class="Blurb">Sets a type of prior that will be used in marginal likelihood score method.</p><pre>
+
+void CMlStaticStructLearn::SetPriorType(EPriorTypes <EM CLASS="CodeItalic">ptype</EM>);
+</pre><p><dl>
+ Arguments
+<dt>ptype<dd> Prior type. This varible may takes one of several values:<br>
+<br> Dirichlet - using Dirichlet priors for networks scoring.(default value) 
+<br> K2 - using K2 priors for networks scoring.
+<br> BDeu - using BDeu priors for networks scoring.
+</dl></p><p>
+This function sets prior type for marginal likelyhood score method . Prior type is defined in <EM CLASS="CodeReg">m_priorType</EM>.
+</p>
+
+<hr><h4><a name="declCMlStaticStructLearn_SetK2PriorParam">SetK2PriorParam</a></h4>
+<p class="Blurb">Sets K2 prior inital value that will be used in marginal likelihood score method with K2 priors.</p><pre>
+
+void CMlStaticStructLearn::SetK2PriorParam(int <EM CLASS="CodeItalic">alfa</EM>);
+</pre><p><dl>
+ Arguments
+<dt>alfa<dd> Prior inital k2 prior value. (0 - is default value)
+</dl></p><p>
+This function sets K2 prior inital value for marginal likelyhood score method with K2 priors. 
+</p>
 
 <hr><h4><a name="declCMlStaticStructLearn_ScoreFamily">ScoreFamily</a></h4>
 <p class="Blurb">Computes family score in DAG.</p><pre>
@@ -6573,7 +6676,7 @@ float CMlStaticStructLearn::ScoreFamily(intVector <EM CLASS="CodeItalic">vFamily
  Arguments
 <dt>vFamily<dd>  Integer vector. Stores a family in a <EM CLASS="CodeReg">DAG</EM>. The last element of the vector is the child node, all other nodes of the vector are parents of this child node.
 </dl></p><p>
-This function returns the score of a family. Score metric is defined in <EM CLASS="CodeReg">m_ScoreType</EM>.
+This function returns the score of a family.
 </p>
 
 
