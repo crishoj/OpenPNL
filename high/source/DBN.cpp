@@ -854,6 +854,7 @@ void DBN::LoadNet(const char *filename)
     
     delete &Net();
     m_pNet = pNewNet;
+	SpyTo(m_pNet);
     m_pNet->SetCallback(new DBNCallback());
     
     // We must load net-specific data here.

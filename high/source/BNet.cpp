@@ -953,6 +953,7 @@ void BayesNet::LoadNet(const char *filename)
 
     delete m_pNet;
     m_pNet = pNewNet;
+	SpyTo(m_pNet);
     m_pNet->SetCallback(new BayesNetCallback());
 
     delete &Inference();
