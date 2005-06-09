@@ -3,6 +3,7 @@
 #include "pnlHigh.hpp"
 #include "Tokens.hpp"
 #include "TestPnlHigh.hpp"
+#include "trsapi.h"
 
 // FORWARDS
 namespace pnl

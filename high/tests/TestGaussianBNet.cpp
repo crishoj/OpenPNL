@@ -2,8 +2,17 @@
 #include "pnlException.hpp"
 #include "pnl_dll.hpp"
 
+
 PNLW_USING
 using namespace std;
+
+
+
+static char func_name[] = "testGaussianBNet";
+
+static char* test_desc = "Provide some tests of Gaussian network";
+
+static char* test_class = "Algorithm";
 
 BayesNet *VerySimpleModel()
 {
@@ -561,4 +570,30 @@ void TestsPnlHigh::Test2Bnets()
     TestGaussianModelCreate(false);
     TestGaussianInference(false);
     TestGaussianParamLearning(false);
+}
+
+int testGaussianBNet()
+{
+	int res = TRS_OK;
+	try 
+    {
+        TestGaussianModelCreate();// del arc
+        TestGaussianInference();
+        TestGaussianParamLearning();// too long
+        TestGetLogLik();
+    }
+    catch(pnl::CException e)
+    {
+        std::cout << e.GetMessage();
+        res = TRS_FAIL;
+    }
+
+
+	return trsResult( res, res == TRS_OK ? "No errors"
+	: "Bad test on Tokens");
+}
+
+void initTestsGaussianBNet()
+{
+    trsReg(func_name, test_desc, test_class, testGaussianBNet);
 }

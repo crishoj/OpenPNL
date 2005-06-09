@@ -1,18 +1,53 @@
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//                INTEL CORPORATION PROPRIETARY INFORMATION                //
+//   This software is supplied under the terms of a license agreement or   //
+//  nondisclosure agreement with Intel Corporation and may not be copied   //
+//   or disclosed except in accordance with the terms of that agreement.   //
+//       Copyright (c) 2003 Intel Corporation. All Rights Reserved.        //
+//                                                                         //
+//  File:      testsDBN.cpp				                                   //
+//                                                                         //
+//  Purpose:   Provides DBN wrappers testing					           //
+//													                       //
+//                                                                         //
+//  Author(s):                                                             //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
 #include "pnlHigh.hpp"
-#include "DBN.hpp"   
+#include "DBN.hpp"  
+#include "test_conf.hpp"
 
 PNLW_USING
-//#define PRINT_RESULT
+
+static char func_name[] = "testDBNWrappers";
+
+static char* test_desc = "Provide all tests for DBN wrappers";
+
+static char* test_class = "Algorithm";
+ 
+
 
 int testDBNEvidences()
 // this test provides smoothing with DBN
 {
-	int result = -1;
+	int ret = TRS_OK;
 	// node values
 	TokArr aChoice = "True False MayBe";
 	// DBN creation
 	DBN *pDBN; 
 	pDBN = new DBN();
+	if (pDBN == NULL)
+    {
+        ret = TRS_FAIL;
+        return trsResult( ret, ret == TRS_OK ? "No errors" : 
+        "FAIL Net creation");
+    }
+    else
+    {
+        std::cout<<"Net creation OK"<<std::endl; 
+    };
+	
 	// prior slice nodes creation 
 	pDBN->AddNode(discrete ^ "Street-0", aChoice); 
 	pDBN->AddNode(discrete ^ "House-0", aChoice);
@@ -67,13 +102,13 @@ int testDBNEvidences()
 #endif
 	// free memory
 	delete pDBN;
-	return result;
+	return ret;
 }
 
 int testDBNSmothing()
 // this test provides smoothing with DBN
 {
-	int result = -1;
+	int ret = TRS_OK;
 	// node values
 	TokArr aChoice = "True False MayBe";
 	// DBN creation
@@ -114,13 +149,13 @@ int testDBNSmothing()
 #endif
 	// free memory
 	delete pDBN;
-	return result;
+	return ret;
 }
 
 int testDBNTopologicalSort1()
 // this test provides smoothing with DBN
 {
-	int result = -1;
+	int ret = TRS_OK;;
 	// node values
 	TokArr aChoice = "True False MayBe";
 	// DBN creation
@@ -162,13 +197,13 @@ int testDBNTopologicalSort1()
 #endif
 	// free memory
 	delete pDBN;
-	return result;
+	return ret;
 }
 
 int testDBNTopologicalSort2()
 // this test provides smoothing with DBN
 {
-	int result = -1;
+	int result = TRS_OK;
 	// node values
 	TokArr aChoice = "True False MayBe";
 	// DBN creation
@@ -215,7 +250,7 @@ int testDBNTopologicalSort2()
 int testDBNFixLagSmothing()
 // this test provides fixlagsmoothing with DBN
 {
-	int result = -1;
+	int result = TRS_OK;
 	// node values
 	TokArr aChoice = "True False MayBe";
 	// DBN creation
@@ -260,7 +295,7 @@ int testDBNFixLagSmothing()
 
 int testDBNFiltering()
 {
-	int result = -1;
+	int result = TRS_OK;
 	// node values
 	TokArr aChoice = "True False MayBe";
 	// DBN creation
@@ -305,7 +340,7 @@ int testDBNFiltering()
 
 int testDBNMPE()
 {
-	int result = -1;
+	int result = TRS_OK;
 	// node values
 	TokArr aChoice = "True False MayBe";
 	// DBN creation
@@ -352,7 +387,7 @@ int testDBNMPE()
 
 int testDBNLearning()
 {
-	int result = -1;
+	int result = TRS_OK;
 	// node values
 	TokArr aChoice = "True False MayBe";
 	// DBN creation
@@ -390,7 +425,7 @@ int testDBNLearning()
 
 int testDBNSaveLoad()
 {
-	int result = -1;
+	int result = TRS_OK;
 	// node values
 	TokArr aChoice = "True False MayBe";
 	// DBN creation
@@ -411,24 +446,22 @@ int testDBNSaveLoad()
 	pDBN->AddArc("Street-1","Flat-1");
 	pDBN->AddArc("Street-0","Street-1"); // setting interface nodes
 	// setting number of slices
-	pDBN->SetNumSlices(4);
-        
-        pDBN->SaveNet("dbn.xml");
-
-        DBN *newDBN;
+	pDBN->SetNumSlices(4);  
+    pDBN->SaveNet("dbn.xml");
+    DBN *newDBN;
 	newDBN = new DBN();
-        newDBN->LoadNet("dbn.xml");
-
-        // free memory
+    newDBN->LoadNet("dbn.xml");
+     // free memory
 	delete pDBN;
-        delete newDBN;
+    delete newDBN;
+
 	return result;
 }
 
 
 int testDBN()
 {
-    int result = -1;
+    int result = TRS_OK;
     // node values
     TokArr aChoice = "True False MayBe";
     // DBN creation
@@ -541,3 +574,26 @@ int testDBN()
     delete pDBN;
     return result;
 } 
+
+int testDBNWrappers()
+{
+	int res = TRS_OK;
+	res = testDBNTopologicalSort1() & res;
+	res = testDBNTopologicalSort2() & res;
+	res = testDBNEvidences() & res;
+	res = testDBNSmothing() & res;
+	res = testDBNFixLagSmothing() & res;
+	res = testDBNFiltering() & res;
+	res = testDBNMPE() & res;
+	res = testDBNLearning() & res;
+	res = testDBNSaveLoad() & res;
+	res = testDBN() & res;
+
+	return trsResult( res, res == TRS_OK ? "No errors"
+	: "Bad test on DBN wrappers");
+}
+
+void initTestsDBNWrappers()
+{
+    trsReg(func_name, test_desc, test_class, testDBNWrappers);
+}

@@ -1,5 +1,11 @@
 #include "test_conf.hpp"
 
+static char func_name[] = "testSoftMax";
+
+static char* test_desc = "Provide several tests on networks with SoftMax nodes" ;
+
+static char* test_class = "Algorithm";
+
 BayesNet *SimpleSoftMaxModel()
 { 
     BayesNet *net;
@@ -773,4 +779,21 @@ void TestDelNode()
 
     cout << "TestDelArc is completed successfully" << endl;
 
+}
+
+int testSoftMax()
+{
+	
+	int res = TRS_OK;
+	TestSoftMaxParamLearning();
+	TestSetDistributionSoftMax();
+	TestJtreeInferenceSoftMax1();
+	TestJtreeInferenceSoftMax2();
+	TestGibbsInferenceSoftMax();
+	return res;
+}
+
+void initTestsSoftMax()
+{
+    trsReg(func_name, test_desc, test_class, testSoftMax);
 }

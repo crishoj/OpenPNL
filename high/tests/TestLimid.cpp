@@ -2,8 +2,15 @@
 #include "pnlException.hpp"
 #include "pnl_dll.hpp"
 
+
 PNLW_USING
 using namespace std;
+
+static char func_name[] = "testLIMID";
+
+static char* test_desc = "Provide some tests for LIMID";
+
+static char* test_class = "Algorithm";
 
 void OilTest()
 {
@@ -605,4 +612,94 @@ void PureLimidModel3()
 
     delete net;
     cout << "Test PureLimidModel without chance nodes is completed successfully" << endl;
+}
+
+int testLIMID()
+{
+	bool bTestOK = TRS_OK;
+	bool lastTestRes = TRS_OK;
+
+	try 
+    {
+        lastTestRes = false;
+        PureLimidModel1();
+    }
+    catch(pnl::CException e)
+    {
+        static const char messageOk[] = "The Influence Diagram hasn't decision nodes.";
+        
+        if((e.GetCode() == pgmAlgorithmic)
+            && strstr(e.GetMessage(), messageOk))
+        {
+            lastTestRes = true;// this exception must be produced
+        }
+        else
+        {
+            std::cout << e.GetMessage()<< "\n";
+        }
+    }
+    bTestOK = bTestOK && lastTestRes;
+    
+    try 
+    {
+        PureLimidModel2();
+    }
+    catch(pnl::CException e)
+    {
+        static const char messageOk[] = "The Influence Diagram hasn't value nodes.";
+        
+        if((e.GetCode() == pgmAlgorithmic)
+            && strstr(e.GetMessage(), messageOk))
+        {
+            lastTestRes = true;// this exception must be produced
+        }
+        else
+        {
+            std::cout << e.GetMessage()<< "\n";
+        }
+    }
+    bTestOK = bTestOK && lastTestRes;
+    
+    try 
+    {
+        PureLimidModel3();
+    }
+    catch(pnl::CException e)
+    {
+        static const char messageOk[] = "The Influence Diagram hasn't chance nodes.";
+        
+        if((e.GetCode() == pgmAlgorithmic)
+            && strstr(e.GetMessage(), messageOk))
+        {
+            lastTestRes = true;// this exception must be produced
+        }
+        else
+        {
+            std::cout << e.GetMessage()<< "\n";
+        }
+    }
+    bTestOK = bTestOK && lastTestRes;
+    
+    try 
+    {
+        LimidTopology();
+        DelNodes();
+        TestPigs();
+        OilTest();
+        testRandom1();
+        testRandom2();
+        testRandom3();
+    }
+    catch(pnl::CException e)
+    {
+        std::cout << e.GetMessage();
+        bTestOK = TRS_FAIL;
+    }
+    
+	return bTestOK;
+}
+
+void initTestsLIMID()
+{
+    trsReg(func_name, test_desc, test_class, testLIMID);
 }

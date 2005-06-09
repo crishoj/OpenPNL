@@ -3,6 +3,12 @@
 #include "pnl_dll.hpp"
 PNLW_USING
 
+static char func_name[] = "testNumeration";
+
+static char* test_desc = "Provide several tests on network numeration";
+
+static char* test_class = "Algorithm";
+
 BayesNet *GetSimpleTabularModelWithEntanglementNumeration()
 {
     // One  Two
@@ -166,3 +172,32 @@ void Test2Bnets()
     delete net1;
     delete net2;
 };
+
+int testNumeration()
+{
+	int ret = TRS_OK;
+	try 
+    {
+        Test2Bnets();
+        TestForGetPTabular();
+        TestForSetInferenceProperties();
+        TestForGetMPE();
+    }
+    catch(pnl::CException e)
+    {
+        std::cout << e.GetMessage();
+        ret = false;
+    }
+	/*
+	Test2Bnets();
+	TestForGetPTabular();
+	TestForSetInferenceProperties();
+	TestForGetMPE();*/
+	return ret;
+
+}
+
+void initTestsNumeration()
+{
+    trsReg(func_name, test_desc, test_class, testNumeration);
+}

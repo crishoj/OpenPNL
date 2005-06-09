@@ -25,7 +25,7 @@ CFG=tests - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "tests - Win32 Release"
@@ -49,7 +49,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
 # ADD LINK32 pnlhigh.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib pnl.lib /nologo /subsystem:console /debug /machine:I386 /out:"..\bin\toktest.exe" /libpath:"..\bin\\" /libpath:"..\..\cxcore\lib" /libpath:"..\..\lib"
 
@@ -74,7 +74,7 @@ LINK32=xilink6.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 pnlhighd.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib cxcore.lib pnld.lib /nologo /subsystem:console /debug /machine:I386 /out:"..\bin\toktestd.exe" /pdbtype:sept /libpath:"..\..\lib" /libpath:"..\bin\\" /libpath:"..\..\cxcore\lib"
 
@@ -110,6 +110,15 @@ SOURCE=.\TestLimid.cpp
 # Begin Source File
 
 SOURCE=.\TestMain.cpp
+
+!IF  "$(CFG)" == "tests - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tests - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -126,6 +135,22 @@ SOURCE=.\TestsDBN.cpp
 # Begin Source File
 
 SOURCE=.\TestSoftMax.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\trs\src\trsapi.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\trs\src\trserror.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\trs\src\trsread.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\tsys.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"

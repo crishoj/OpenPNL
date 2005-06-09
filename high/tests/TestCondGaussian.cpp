@@ -9,6 +9,12 @@
 
 PNLW_USING
 
+static char func_name[] = "testCondGaussian";
+
+static char* test_desc = "Provide all tests for networks with conditinal Gaussian nodes";
+
+static char* test_class = "Algorithm";
+
 BayesNet *VerySimpleGaussianModel()
 {
     // NodeA -> NodeB -> NodeC
@@ -643,4 +649,36 @@ void TestsPnlHigh::TestCondGaussianParamLearning()
 */
     delete net;
     delete netToLearn;
+}
+
+int testCondGaussian()
+{
+	int res = TRS_OK;
+	TestsPnlHigh tests;
+	try 
+    {
+        tests.TestDesc();
+        tests.TestNTabNCont();
+        tests.TestDefaultDistribution();
+        tests.TestCondGaussianFillData();
+        tests.TestSetPGaussian();
+        tests.TestGetDiscreteParentValuesIndexes();
+        tests.TestGetGaussianMeanCovarWeights(); 
+        tests.TestConditionalGaussianGetJPD();
+        tests.Test2EditEvidence();
+		tests.TestCondGaussianGetMPE();
+		tests.TestCondGaussianParamLearning();
+    }
+    catch(pnl::CException e)
+    {
+        std::cout << e.GetMessage();
+        res = TRS_FAIL;
+    }
+	return trsResult( res, res == TRS_OK ? "No errors"
+		: "Bad test on DBN wrappers");
+}
+
+void initTestsCondGaussian()
+{
+    trsReg(func_name, test_desc, test_class, testCondGaussian);
 }

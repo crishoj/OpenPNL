@@ -9,6 +9,12 @@
 PNLW_USING
 using namespace std;
 
+static char func_name[] = "testMRF";
+
+static char* test_desc = "Provide all tests for MRF";
+
+static char* test_class = "Algorithm";
+
 MRF *VerySimpleMRFModel()
 {
 //    node0 -- node1
@@ -316,4 +322,26 @@ void TestMRFGetJPD()
     */
     
     cout << "TestMRFModelCreate is completed successfully" << endl;
+}
+
+int testMRF()
+{
+	int ret = TRS_OK;
+	try 
+    {
+        TestMRFModelCreate();
+        TestMRFGetJPD();
+    }
+    catch(pnl::CException e)
+    {
+        std::cout << e.GetMessage();
+        ret = false;
+    }
+	return ret;
+
+}
+
+void initTestsMRF()
+{
+    trsReg(func_name, test_desc, test_class, testMRF);
 }

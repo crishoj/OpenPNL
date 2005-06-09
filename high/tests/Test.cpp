@@ -11,6 +11,14 @@
 using namespace std;
 
 //Adding a strange node: discrete2^CurrentHumanTurn
+
+
+static char func_name[] = "testTokens";
+
+static char* test_desc = "Provide all tests for tokens";
+
+static char* test_class = "Algorithm";
+
 bool TestResolve1()
 {
     bool bCurrentError = false, bError = false;
@@ -1189,4 +1197,37 @@ void TestsPnlHigh::TestGibbsRecreate()
     cout << "TestGibbsRecreate is completed successfully" << endl;
 
     delete net;
+}
+
+int testTokens()
+{
+	int res = TRS_OK;
+	res = TestResolve1() & res;
+	res = TestResolve2() & res;
+	res = TestResolve3() & res;
+	res = TestResolve4() & res;
+	res = TestResolve4_5() & res;
+	res = testExtractTok() & res;
+	try 
+    {
+        SimpleModel();
+        TestMultivariateWrapperJPD();
+        TestMultivariateWrapperLearn();
+        TestMultivariateWrapperLearnPartOfObservation();
+        //	TestMultivariateWrapperMPE();// wild test. It doesn't test wrapper!
+    }
+    catch(pnl::CException e)
+    {
+        std::cout << e.GetMessage();
+        res = TRS_FAIL;
+    }
+
+
+	return trsResult( res, res == TRS_OK ? "No errors"
+	: "Bad test on Tokens");
+}
+
+void initTestsTokens()
+{
+    trsReg(func_name, test_desc, test_class, testTokens);
 }
