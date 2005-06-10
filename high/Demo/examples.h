@@ -9,6 +9,7 @@ void AsiaDemo();
 void PigsDemo();
 void ScalarGaussianBNetDemo();
 void WasteDemo();
+void KjaerulfsBNetDemo();
 
 PNLW_END
 #endif

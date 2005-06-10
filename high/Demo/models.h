@@ -7,6 +7,7 @@ BayesNet* AsiaModel();
 LIMID *PigsModel();
 BayesNet* ScalarGaussianBNetModel();
 BayesNet *WasteModel();
+BayesNet* KjaerulfsBNetModel();
 
 PNLW_END
 #endif
