@@ -3,6 +3,21 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
+Project: "Demo"=..\Demo\Demo.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name PNLHigh
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "PNLGeNIe"=..\PNLGeNIe\make\pnlGeNIe.dsp - Package Owner=<4>
 
 Package=<5>
