@@ -109,19 +109,6 @@ SOURCE=.\TestLimid.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\TestMain.cpp
-
-!IF  "$(CFG)" == "tests - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "tests - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\TestMRF.cpp
 # End Source File
 # Begin Source File
