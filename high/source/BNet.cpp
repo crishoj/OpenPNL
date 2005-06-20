@@ -863,14 +863,12 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 	{
     const int* pRenaming = pLearning->GetResultRenaming();
     Vector<int> vRename(pRenaming, pRenaming + Model()->GetNumberOfNodes());
-
     pRenaming = &vRename.front();
     pLearning->CreateResultBNet(const_cast<pnl::CDAG*>(pLearning->GetResultDAG()));
-	Net().Reset(*bnet);
     pnl::CBNet* newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
-
+	Net().Reset(*newNet);
     int i;
-
+	
    // Net().SetTopologicalOrder(pRenaming, newNet->GetGraph());
 
     for(i = 0; i < Net().Graph().nNode(); ++i)
@@ -894,6 +892,8 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     //clear inference engine
     delete m_Inference;
     m_Inference = 0;
+
+	delete bnet;
 
     //change domain in evidences
 
