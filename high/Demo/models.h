@@ -8,6 +8,8 @@ LIMID *PigsModel();
 BayesNet* ScalarGaussianBNetModel();
 BayesNet *WasteModel();
 BayesNet* KjaerulfsBNetModel();
+BayesNet* RPSModel();
+BayesNet* CropModel();
 
 PNLW_END
 #endif

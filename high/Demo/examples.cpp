@@ -139,18 +139,19 @@ void WasteDemo()
     BayesNet *WasteNet;
     WasteNet = WasteModel();
     
-    WasteNet->EditEvidence("node0^True node1^False node3^False");
+    WasteNet->EditEvidence("FilterState^intact TypeOfWaste^household BurningRegime^stable");
+    printf("\nWasteNet->EditEvidence(\"FilterState^intact TypeOfWaste^household BurningRegime^stable\");");
+
     WasteNet->SetProperty("Inference", "jtree");
+    printf("\n\nWasteNet->SetProperty(\"Inference\", \"jtree\");");
 
-    TokArr jpdNode4 = WasteNet->GetJPD("node4");
+    TokArr jpdNode4 = WasteNet->GetJPD("MetalEmission");
+    printf("\n\nTokArr jpdNode4 = WasteNet->GetJPD(\"MetalEmission\");\t\t\t\t\t");
+
+    textcolor(YELLOW);
     cout << jpdNode4 <<"\n";
+    textcolor(WHITE);
 
-/*    WasteNet->GenerateEvidences(200);
-    WasteNet->LearnParameters();
-    
-    TokArr jpdNode4afterLearn = WasteNet->GetJPD("node4");
-    cout << jpdNode4afterLearn <<"\n";
-*/    
     getch();
     delete WasteNet;
 }
@@ -162,5 +163,64 @@ void KjaerulfsBNetDemo()
     
     getch();
     delete DBN;
+}
+
+void RPSDemo()
+{
+    BayesNet *RPS;
+    RPS = RPSModel();
+
+//    RPS->EditEvidence("PreviousCompTurn^Paper PreviousHumanTurn^Rock");
+//    RPS->SetProperty("Inference", "gibbs");
+    TokArr fPaper = RPS->GetJPD("CurrentHumanTurn");
+    cout << fPaper ;
+    getch();
+    delete RPS;
+}
+
+void CropDemo()
+{
+    //  Subsidy(d) Crop(c)
+    //          |   |
+    //          V   V
+    //         Price(c)
+    //            |
+    //            V
+    //          Buy(d)
+
+    BayesNet *net;
+    net = CropModel();
+
+/*    net->EditEvidence("Crop^8.0 Price^15.0");
+    net->SetProperty("Inference", "jtree");
+
+    TokArr BuyJPD = net->GetJPD("Buy");
+    cout << BuyJPD << "\n";
+
+    net->ClearEvidBuf();
+
+    net->EditEvidence("Subsidy^Yes Buy^No");
+*/    net->SetProperty("Inference", "gibbs");
+
+    TokArr PriceJPD = net->GetJPD("Price");
+    cout << PriceJPD<< "\n" ;
+
+//    RPS->EditEvidence("PreviousCompTurn^Paper PreviousHumanTurn^Rock");
+//    RPS->SetProperty("Inference", "gibbs");
+//    
+    getch();
+    delete net;
+}
+
+void Structural()
+{
+    BayesNet *net;
+    net = new BayesNet();
+    
+    net->AddNode("node0 node1 node2 node3 node4 node5 node6", "true false");
+    net->LoadEvidBuf("seven.csv");
+    net->LearnStructure();
+    net->GetNeighbors("node3");
+
 }
 PNLW_END

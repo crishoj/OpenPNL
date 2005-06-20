@@ -523,51 +523,60 @@ BayesNet *WasteModel()
 
     textcolor(WHITE);
 
-    net->AddNode(discrete^"node0 node1 node3", "True False");
-    printf("\n net->AddNode(discrete^\"node0 node1 node3\", \"True False\");");
+    net->AddNode(discrete^"TypeOfWaste", "industrial household");
+    net->AddNode(discrete^"FilterState", "intact defective");
+    net->AddNode(discrete^"BurningRegime", "stable unstable");
+
+    printf("\n net->AddNode(discrete^\"TypeOfWaste\", \"industrial household\");");
     textcolor(LIGHTGREEN);
 
     printf("\t\t\t\tAdding of nodes is in process....");
 //    _sleep(2000);
     textcolor(WHITE);
+
+    printf("\n net->AddNode(discrete^\"FilterState\", \"intact defective\");");
+    printf("\n net->AddNode(discrete^\"BurningRegime\", \"stable unstable\");");
     
-    net->AddNode(continuous^"node2 node4 node5 node6 node7 node8", "dim1");
-    printf("\n net->AddNode(continuous^\"node2 node4 node5 node6 node7 node8\", \"dim1\");");
+    net->AddNode(continuous^"FilterEfficiency CO2Emission DustEmission", "dim1");
+    printf("\n net->AddNode(continuous^\"FilterEfficiency CO2Emission DustEmission\", \"dim1\");");
 //    _sleep(1000);
 
+    net->AddNode(continuous^"MetalInWaste MetalEmission Light", "dim1");
+    printf("\n net->AddNode(continuous^\"MetalInWaste MetalEmission Light\", \"dim1\");");
+    
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
 //    getch();
 
     // arcs
     textcolor(WHITE);
-    net->AddArc("node0 node1", "node2");
-    printf("\n net->AddArc(\"node0 node1\", \"node2\");");
+    net->AddArc("TypeOfWaste FilterState", "FilterEfficiency");
+    printf("\n net->AddArc(\"TypeOfWaste FilterState\", \"FilterEfficiency\");");
 
     textcolor(LIGHTGREEN);
-    printf("\t\t\t\t\t\t\tAdding of arcs is in process....");
+    printf("\t\t\t\tAdding of arcs is in process....");
 //    _sleep(2000);
 
     textcolor(WHITE);
        
-    net->AddArc("node1 node2 node3", "node5") ;
-    printf("\n net->AddArc(\"node1 node2 node3\", \"node5\") ;");
+    net->AddArc("FilterState FilterEfficiency BurningRegime", "DustEmission") ;
+    printf("\n net->AddArc(\"FilterState FilterEfficiency BurningRegime\", \"DustEmission\") ;");
 //    _sleep(1000);
 
-    net->AddArc( "node1", "node6");
-    printf("\n net->AddArc( \"node1\", \"node6\");");
+    net->AddArc( "FilterState", "MetalInWaste");
+    printf("\n net->AddArc(\"FilterState\", \"MetalInWaste\");");
 //    _sleep(1000);
 
-    net->AddArc( "node3", "node4");
-    printf("\n net->AddArc( \"node3\", \"node4\");");
+    net->AddArc( "BurningRegime", "CO2Emission");
+    printf("\n net->AddArc(\"BurningRegime\", \"CO2Emission\");");
 //    _sleep(1000);
     
-    net->AddArc( "node5 node6", "node7");
-    printf("\n net->AddArc( \"node5 node6\", \"node7\");");
+    net->AddArc( "DustEmission MetalInWaste", "MetalEmission");
+    printf("\n net->AddArc(\"DustEmission MetalInWaste\", \"MetalEmission\");");
 //    _sleep(1000);
     
-    net->AddArc( "node6", "node8");
-    printf("\n net->AddArc( \"node6\", \"node8\");");
+    net->AddArc( "MetalInWaste", "Light");
+    printf("\n net->AddArc(\"MetalInWaste\", \"Light\");");
 //    _sleep(1000);
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
@@ -575,85 +584,84 @@ BayesNet *WasteModel()
     // distributions
     textcolor(WHITE);
     
-    net->SetPTabular( "node0^False node0^True", "0.95 0.05");
-    printf("\n net->SetPTabular( \"node0^False node0^True\", \"0.95 0.05\");");
+    net->SetPTabular( "TypeOfWaste^industrial TypeOfWaste^household", "0.95 0.05");
+    printf("\n net->SetPTabular(\"TypeOfWaste^industrial TypeOfWaste^household\", \"0.95 0.05\");");
     textcolor(LIGHTGREEN);
-    printf("\t\t\t\tAdding of distributions is in process....");
+    printf("\t\tAdding of distributions is in process....");
 //    _sleep(2000);
 
     textcolor(WHITE);
 
-    net->SetPTabular( "node1^False node1^True", "0.285714 0.714286");
-    printf("\n net->SetPTabular( \"node1^False node1^True\", \"0.285714 0.714286\");");
+    net->SetPTabular( "FilterState^intact FilterState^defective", "0.285714 0.714286");
+    printf("\n net->SetPTabular(\"FilterState^intact FilterState^defective\", \"0.285714 0.714286\");");
 //    _sleep(1000);
 
-    net->SetPTabular( "node3^False node3^True", "0.85 0.15");
-    printf("\n net->SetPTabular( \"node3^False node3^True\", \"0.85 0.15\");");
+    net->SetPTabular( "BurningRegime^stable BurningRegime^unstable", "0.85 0.15");
+    printf("\n net->SetPTabular(\"BurningRegime^stable BurningRegime^unstable\", \"0.85 0.15\");");
 //    _sleep(1000);
 
-    net->SetPGaussian( "node2", "-3.2", "0.00002", "", "node0^False node1^True");
-    printf("\n net->SetPGaussian( \"node2\", \"-3.2\", \"0.00002\", \"\", \"node0^False node1^True\");");
+    net->SetPGaussian( "FilterEfficiency", "-3.2", "0.00002", "", "TypeOfWaste^industrial FilterState^defective");
+    printf("\n net->SetPGaussian(\"FilterEfficiency\", \"-3.2\", \"0.00002\", \"\", \n\t\t\"TypeOfWaste^industrial FilterState^defective\");");
 //    _sleep(1000);
 
-    net->SetPGaussian( "node2", "-0.5", "0.0001", "", "node0^False node1^False");
-    printf("\n net->SetPGaussian( \"node2\", \"-0.5\", \"0.0001\", \"\", \"node0^False node1^False\");");
+    net->SetPGaussian( "FilterEfficiency", "-0.5", "0.0001", "", "TypeOfWaste^industrial FilterState^intact");
+    printf("\n net->SetPGaussian(\"FilterEfficiency\", \"-0.5\", \"0.0001\", \"\", \n\t\t\"TypeOfWaste^industrial FilterState^intact\");");
 //    _sleep(1000);
 
-    net->SetPGaussian( "node2", "-3.9", "0.00002", "", "node0^True node1^True");
-    printf("\n net->SetPGaussian( \"node2\", \"-3.9\", \"0.00002\", \"\", \"node0^True node1^True\");");
+    net->SetPGaussian( "FilterEfficiency", "-3.9", "0.00002", "", "TypeOfWaste^household FilterState^defective");
+    printf("\n net->SetPGaussian(\"FilterEfficiency\", \"-3.9\", \"0.00002\", \"\", \n\t\t\"TypeOfWaste^household FilterState^defective\");");
 //    _sleep(1000);
 
-    net->SetPGaussian( "node2", "-0.4", "0.0001", "", "node0^True node1^False");
-    printf("\n net->SetPGaussian( \"node2\", \"-0.4\", \"0.0001\", \"\", \"node0^True node1^False\");");
-//    _sleep(1000);
-
-
-    net->SetPGaussian( "node4", "-2", "0.1", "", "node3^False");
-    printf("\n net->SetPGaussian( \"node4\", \"-2\", \"0.1\", \"\", \"node3^False\");");
-//    _sleep(1000);
-
-    net->SetPGaussian( "node4", "-1", "0.3", "", "node3^True");
-    printf("\n net->SetPGaussian( \"node4\", \"-1\", \"0.3\", \"\", \"node3^True\");");
+    net->SetPGaussian( "FilterEfficiency", "-0.4", "0.0001", "", "TypeOfWaste^household FilterState^intact");
+    printf("\n net->SetPGaussian(\"FilterEfficiency\", \"-0.4\", \"0.0001\", \"\", \n\t\t\"TypeOfWaste^household FilterState^intact\");");
 //    _sleep(1000);
 
 
-    net->SetPGaussian( "node5", "6.5", "0.03", "1.0", "node1^False node3^False");
-    printf("\n net->SetPGaussian( \"node5\", \"6.5\", \"0.03\", \"1.0\", \"node1^False node3^False\");");
+    net->SetPGaussian( "CO2Emission", "-2", "0.1", "", "BurningRegime^stable");
+    printf("\n net->SetPGaussian(\"CO2Emission\", \"-2\", \"0.1\", \"\", \"BurningRegime^stable\");");
 //    _sleep(1000);
 
-    net->SetPGaussian( "node5", "7.5", "0.1", "1.0", "node1^False node3^True");
-    printf("\n net->SetPGaussian( \"node5\", \"7.5\", \"0.1\", \"1.0\", \"node1^False node3^True\");");
-//    _sleep(1000);
-
-    net->SetPGaussian( "node5", "6.0", "0.04", "1.0", "node1^True node3^False");
-    printf("\n net->SetPGaussian( \"node5\", \"6.0\", \"0.04\", \"1.0\", \"node1^True node3^False\");");
-//    _sleep(1000);
-
-    net->SetPGaussian( "node5", "7.0", "0.01", "1.0", "node1^True node3^True");
-    printf("\n net->SetPGaussian( \"node5\", \"7.0\", \"0.01\", \"1.0\", \"node1^True node3^True\");");
+    net->SetPGaussian( "CO2Emission", "-1", "0.3", "", "BurningRegime^unstable");
+    printf("\n net->SetPGaussian(\"CO2Emission\", \"-1\", \"0.3\", \"\", \"BurningRegime^unstable\");");
 //    _sleep(1000);
 
 
-    net->SetPGaussian( "node6", "0.5", "0.01", "", "node1^False");
-    printf("\n net->SetPGaussian( \"node6\", \"0.5\", \"0.01\", \"\", \"node1^False\");");
+    net->SetPGaussian( "DustEmission", "6.5", "0.03", "1.0", "FilterState^intact BurningRegime^stable");
+    printf("\n net->SetPGaussian(\"DustEmission\", \"6.5\", \"0.03\", \"1.0\", \"FilterState^intact \n\t\tBurningRegime^stable\");");
 //    _sleep(1000);
 
-    net->SetPGaussian( "node6", "-0.5", "0.005", "", "node1^True");
-    printf("\n net->SetPGaussian( \"node6\", \"-0.5\", \"0.005\", \"\", \"node1^True\");");
+    net->SetPGaussian( "DustEmission", "7.5", "0.1", "1.0", "FilterState^intact BurningRegime^unstable");
+    printf("\n net->SetPGaussian(\"DustEmission\", \"7.5\", \"0.1\", \"1.0\", \"FilterState^intact \n\t\tBurningRegime^unstable\");");
+//    _sleep(1000);
+
+    net->SetPGaussian( "DustEmission", "6.0", "0.04", "1.0", "FilterState^defective BurningRegime^stable");
+    printf("\n net->SetPGaussian(\"DustEmission\", \"6.0\", \"0.04\", \"1.0\", \"FilterState^defective \n\t\tBurningRegime^stable\");");
+//    _sleep(1000);
+
+    net->SetPGaussian( "DustEmission", "7.0", "0.01", "1.0", "FilterState^defective BurningRegime^unstable");
+    printf("\n net->SetPGaussian(\"DustEmission\", \"7.0\", \"0.01\", \"1.0\", \"FilterState^defective \n\t\tBurningRegime^unstable\");");
 //    _sleep(1000);
 
 
-    net->SetPGaussian( "node7", "0.0", "0.02", "1.0 1.0");
-    printf("\n net->SetPGaussian( \"node7\", \"0.0\", \"0.02\", \"1.0 1.0\");");
+    net->SetPGaussian( "MetalInWaste", "0.5", "0.01", "", "FilterState^intact");
+    printf("\n net->SetPGaussian(\"MetalInWaste\", \"0.5\", \"0.01\", \"\", \"FilterState^intact\");");
 //    _sleep(1000);
 
-    net->SetPGaussian( "node8", "3.0", "0.25", "-0.5");
-    printf("\n net->SetPGaussian( \"node8\", \"3.0\", \"0.25\", \"-0.5\");");
+    net->SetPGaussian( "MetalInWaste", "-0.5", "0.005", "", "FilterState^defective");
+    printf("\n net->SetPGaussian(\"MetalInWaste\", \"-0.5\", \"0.005\", \"\", \"FilterState^defective\");");
+//    _sleep(1000);
+
+
+    net->SetPGaussian( "MetalEmission", "0.0", "0.02", "1.0 1.0");
+    printf("\n net->SetPGaussian(\"MetalEmission\", \"0.0\", \"0.02\", \"1.0 1.0\");");
+//    _sleep(1000);
+
+    net->SetPGaussian( "Light", "3.0", "0.25", "-0.5");
+    printf("\n net->SetPGaussian(\"Light\", \"3.0\", \"0.25\", \"-0.5\");");
 //    _sleep(1000);
     textcolor(LIGHTGREEN);
     printf("\n ......All distributions are added....\n");
     textcolor(WHITE);
-
 
     return net;
 }
@@ -884,5 +892,67 @@ BayesNet* KjaerulfsBNetModel()
     return net;
     
 }
+
+BayesNet* RPSModel()
+{
+
+    BayesNet *net;
+    net = new BayesNet();
+
+    TokArr aChoice = "Rock Paper Scissors";// possible values for nodes
+
+
+    // build Graph
+    // add nodes to net
+    net->AddNode(discrete ^ "PreviousCompTurn PreviousHumanTurn CurrentHumanTurn", aChoice);
+//    net.AddNode(discrete ^ "PreviousCompTurn", aChoice);
+//    net.AddNode(discrete ^ "PreviousHumanTurn", aChoice);
+//    net.AddNode(discrete ^ "CurrentHumanTurn", aChoice);
+
+    // add arcs to create following Bayes net:
+    //
+    //  PreviousCompTurn    PreviousHumanTurn
+    //               |         |
+    //               V	       V
+    //             CurrentHumanTurn
+    net->AddArc("PreviousCompTurn", "CurrentHumanTurn");
+    net->AddArc("PreviousHumanTurn", "CurrentHumanTurn");
+
+    return net;
+}
+
+
+BayesNet* CropModel()
+{
+    //  Subsidy(d) Crop(c)
+    //          |   |
+    //          V   V
+    //         Price(c)
+    //            |
+    //            V
+    //          Buy(d)
+
+    BayesNet *net;
+    net = new BayesNet();
+
+    net->AddNode(discrete^"Subsidy", "Yes No");
+    net->AddNode(discrete^"Buy", "Yes No");
+
+    net->AddNode(continuous ^ "Crop");
+    net->AddNode(continuous ^ "Price");
+    
+    net->AddArc("Subsidy Crop", "Price");
+    net->AddArc("Price", "Buy");
+
+    net->SetPTabular("Subsidy^Yes Subsidy^No", "0.3 0.7");
+    net->SetPGaussian("Crop", "5.0", "1.0");
+
+    net->SetPGaussian("Price", "10.0", "1.0", "-1.0", "Subsidy^Yes");
+    net->SetPGaussian("Price", "20.0", "1.0", "-1.0", "Subsidy^No");
+
+    net->SetPSoftMax("Buy^Yes Buy^No", "-1.0 1.0", "5.0 -5.0");
+    return net;
+}
+
 
 PNLW_END

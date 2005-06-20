@@ -11,24 +11,33 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (strcmp(argv[1],"Asia") == 0)
-        AsiaDemo();
+    Structural();
+
+    if (strcmp(argv[1],"Crop") == 0)
+        CropDemo();
     else
-        if (strcmp(argv[1],"Waste") == 0)
-            WasteDemo();
+        if (strcmp(argv[1],"RPS") == 0)
+            RPSDemo();
         else
-            if (strcmp(argv[1],"Gaussian") == 0)
-                ScalarGaussianBNetDemo();
+            if (strcmp(argv[1],"Asia") == 0)
+                AsiaDemo();
             else
-                if (strcmp(argv[1],"Pigs") == 0)
-                    PigsDemo();
+                if (strcmp(argv[1],"Waste") == 0)
+                    WasteDemo();
                 else
-                    if (strcmp(argv[1],"DBN") == 0)
-                        KjaerulfsBNetDemo();
+                    if (strcmp(argv[1],"Gaussian") == 0)
+                        ScalarGaussianBNetDemo();
                     else
-                    {
-                       printf("\nUnknown model \n"); 
-                       return 1;
-                    }
+                        if (strcmp(argv[1],"Pigs") == 0)
+                            PigsDemo();
+                        else
+                            if (strcmp(argv[1],"DBN") == 0)
+                                KjaerulfsBNetDemo();
+                            else
+                            {
+                                printf("\nUnknown model \n"); 
+                                return 1;
+                            }
+
     return 0;
 }

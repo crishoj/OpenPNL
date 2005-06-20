@@ -10,6 +10,9 @@ void PigsDemo();
 void ScalarGaussianBNetDemo();
 void WasteDemo();
 void KjaerulfsBNetDemo();
+void RPSDemo();
+void CropDemo();
+void Structural();
 
 PNLW_END
 #endif
