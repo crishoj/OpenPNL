@@ -36,13 +36,43 @@ BayesNet::BayesNet(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
 	"Bayes Learning", "EM Learning"
     };
 
+	static const char *aLearningStructMethod[] =
+    {
+	"Maximized likelihood", "Predictive assessment", "Marginal likelyhood"
+    };
+
+	static const char *aLearningStructScoreFun[] =
+    {
+	"BIC", "AIC", "Without penalty"
+    };
+
+	static const char *aLearningStructPriorType[] =
+    {
+	"Dirichlet", "K2", "BDeu"
+    };
+
+	static const char *aLearningStructK2PriorVal[] =
+    {
+	"0"
+    };
+
     m_pNet = new ProbabilisticNet();
     SpyTo(m_pNet);
     m_pNet->SetCallback(new BayesNetCallback());
     m_pNet->Token().AddProperty("Inference", aInference,
 	sizeof(aInference)/sizeof(aInference[0]));
-    m_pNet->Token().AddProperty("Learning", aLearning,
+	m_pNet->Token().AddProperty("Learning", aLearning,
 	sizeof(aLearning)/sizeof(aLearning[0]));
+    m_pNet->Token().AddProperty("LearningStructureMethod", aLearning,
+	sizeof(aLearningStructMethod)/sizeof(aLearningStructMethod[0]));
+	m_pNet->Token().AddProperty("LearningStructureScoreFun", aLearning,
+	sizeof(aLearningStructScoreFun)/sizeof(aLearningStructScoreFun[0]));
+	m_pNet->Token().AddProperty("LearningStructurePrior", aLearning,
+	sizeof(aLearningStructPriorType)/sizeof(aLearningStructPriorType[0]));
+
+	m_pNet->Token().AddProperty("LearningStructureK2PriorVal", aLearning,
+	sizeof(aLearningStructK2PriorVal)/sizeof(aLearningStructK2PriorVal[0]));
+
 }
 
 BayesNet::~BayesNet()
@@ -758,10 +788,61 @@ void BayesNet::LearnParameters(TokArr aSample[], int nSample)
 void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 {
     pnl::intVector vAnc, vDesc;//bogus vectors
+	String priorVal;
     pnl::CBNet *bnet = Model();
     pnl::CMlStaticStructLearnHC* pLearning = pnl::CMlStaticStructLearnHC::Create(
 	bnet, pnl::itStructLearnML, pnl::StructLearnHC, pnl::BIC,
 	bnet->GetNumberOfNodes(), vAnc, vDesc, 1/*one restart*/ );
+
+	switch(PropertyAbbrev("LearningStructureMethod"))
+    {
+    case 'm': //maximized likelihood score method
+		pLearning->SetScoreMethod(pnl::MaxLh);
+		break;
+	case 'p': //predictive assessment score method
+		pLearning->SetScoreMethod(pnl::PreAs);
+		break;
+	case 'b': //marginal likelyhood score method
+		pLearning->SetScoreMethod(pnl::MarLh);
+		break;	
+	default:// default value
+		pLearning->SetScoreMethod(pnl::MaxLh);
+		break;
+	};
+	
+	switch(PropertyAbbrev("LearningStructureScoreFun"))
+    {
+    case 'b': //using Bayessian Information Criterion 
+		pLearning->SetScoreFunction(pnl::BIC);
+		break;
+	case 'a': //using Akaike`s Information Criterion 
+		pLearning->SetScoreFunction(pnl::AIC);
+		break;
+	case 'w': //using function that does not penalty score
+		pLearning->SetScoreFunction(pnl::WithoutFine);
+		break;	
+	default:// default value
+		pLearning->SetScoreFunction(pnl::BIC);
+		break;
+	};
+
+	switch(PropertyAbbrev("LearningStructurePrior"))
+    {
+    case 'd': //using Dirichlet priors only for marginal likelyhood score method
+		pLearning->SetPriorType(pnl::Dirichlet);
+		break;
+	case 'k': //using K2 prior only for marginal likelyhood score method
+		pLearning->SetPriorType(pnl::K2);
+		priorVal = GetProperty("LearningStructureK2PriorVal");
+		pLearning->SetK2PriorParam(atoi(priorVal.c_str()));	
+		break;
+	case 'b': //using BDeu priors only for marginal likelyhood score method
+		pLearning->SetPriorType(pnl::BDeu);
+		break;	
+	default:// default value
+		pLearning->SetPriorType(pnl::Dirichlet);
+		break;
+	};
 
     if(nSample)
     {
@@ -777,7 +858,9 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     pLearning->SetData(aEvidence.size(), &aEvidence.front());
     pLearning->Learn();
 
-#if 0
+#if 1
+	if(pLearning->GetResultDAG()->IsTopologicallySorted())
+	{
     Net().Reset(*bnet);
     const int* pRenaming = pLearning->GetResultRenaming();
     Vector<int> vRename(pRenaming, pRenaming + Model()->GetNumberOfNodes());
@@ -789,7 +872,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 
     int i;
 
-    Net().SetTopologicalOrder(pRenaming, newNet->GetGraph());
+   // Net().SetTopologicalOrder(pRenaming, newNet->GetGraph());
 
     for(i = 0; i < Net().Graph().nNode(); ++i)
     {
@@ -803,7 +886,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     //new network to old ordering. So we would not have to do all below
 
     int nnodes = newNet->GetNumberOfNodes();
-    Net().Token().RenameGraph(pRenaming);
+//    Net().Token().RenameGraph(pRenaming);
 
     //clear learning engine
     delete m_Learning;
@@ -818,12 +901,18 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     //change evidence on board
     //IT is in Token form, so do not need to change
 
-    //change evidences in evidence buffer
+   /* //change evidences in evidence buffer
     for( Vector<pnl::CEvidence*>::iterator it1 = Net().EvidenceBuf()->begin(); it1 != Net().EvidenceBuf()->end(); it1++ )
     {
         pnl::CEvidence* oldEv = *it1;
         pnl::CNodeValues* nv = oldEv;
-    }
+    }*/
+	}
+	else
+	{
+	ThrowInternalError("Non implemented yet","LearnStructure");
+	}
+	
 #endif
     DropEvidences(aEvidence);
 }
@@ -1243,6 +1332,107 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 	}
     }
 
+	if(!strcmp(name,"LearningStructureMethod"))
+    {
+	String learnNameMethod = GetProperty("LearningStructureMethod");
+
+	if(!learnNameMethod.length())
+	{
+	    return 0;// default value
+	}
+
+	pnl::pnlVector<char> learnNameMethodVec(learnNameMethod.length());
+	for(int i = 0; i < learnNameMethod.length(); ++i)
+	{
+	    learnNameMethodVec[i] = tolower(learnNameMethod[i]);
+	}
+	char *pLearnNameMethod = &learnNameMethodVec.front();
+
+	if(strstr(pLearnNameMethod, "MaxLh"))
+	{
+	    return 'm';
+	}
+	if(strstr(pLearnNameMethod, "PreAs"))
+	{
+	    return 'p';
+	}
+	if(strstr(pLearnNameMethod, "MarLh"))
+	{
+	    return 'b';
+	}
+	else
+	{
+	    return 0;
+	}
+    }
+
+	if(!strcmp(name,"LearningStructureScoreFun"))
+    {
+	String learnNameScoreFun = GetProperty("LearningStructureScoreFun");
+
+	if(!learnNameScoreFun.length())
+	{
+	    return 0;// default value
+	}
+
+	pnl::pnlVector<char> learnNameScoreFunVec(learnNameScoreFun.length());
+	for(int i = 0; i < learnNameScoreFun.length(); ++i)
+	{
+	    learnNameScoreFunVec[i] = tolower(learnNameScoreFun[i]);
+	}
+	char *pLearnNameScoreFun = &learnNameScoreFunVec.front();
+
+	if(strstr(pLearnNameScoreFun, "BIC"))
+	{
+	    return 'b';
+	}
+	if(strstr(pLearnNameScoreFun, "AIC"))
+	{
+	    return 'a';
+	}
+	if(strstr(pLearnNameScoreFun, "WithoutPenalty"))
+	{
+	    return 'w';
+	}
+	else
+	{
+	    return 0;
+	}
+	}
+
+	if(!strcmp(name,"LearningStructurePrior"))
+    {
+	String learnNamePrior = GetProperty("LearningStructurePrior");
+
+	if(!learnNamePrior.length())
+	{
+	    return 0;// default value
+	}
+
+	pnl::pnlVector<char> learnNamePriorVec(learnNamePrior.length());
+	for(int i = 0; i < learnNamePrior.length(); ++i)
+	{
+	    learnNamePriorVec[i] = tolower(learnNamePrior[i]);
+	}
+	char *pLearnNamePrior = &learnNamePriorVec.front();
+
+	if(strstr(pLearnNamePrior, "Dirichlet"))
+	{
+	    return 'd';
+	}
+	if(strstr(pLearnNamePrior, "K2"))
+	{
+	    return 'k';
+	}
+	if(strstr(pLearnNamePrior, "BDeu"))
+	{
+	    return 'b';
+	}
+	else
+	{
+	    return 0;
+	}
+	}
     return 0;
 }
 

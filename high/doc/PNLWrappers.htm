@@ -1351,6 +1351,26 @@ properties. Used properties names with their possible values and descriptions ar
      <td>Any positive integer number</td>
      <td>Number of streams that generate independent samples. Default value is 1.</td>
   </tr>
+  <tr>
+     <td>"LearningStructureMethod"</td>
+     <td>"MaxLh","PreAs", "MarLh"</td>
+     <td>Score method for structure learning. Default value is MaxLh.</td>
+  </tr>
+  <tr>
+     <td>"LearningStructureScoreFun"</td>
+     <td>"BIC","AIC","WithoutPenalty"</td>
+     <td>Score function for structure learning. Default value is BIC.</td>
+  </tr>
+  <tr>
+     <td>"LearningStructurePrior"</td>
+     <td>"Dirichlet","K2","BDeu"</td>
+     <td>Prior`s type that is used with Marlh(BDe metric) score method. Default value is Dirichlet.</td>
+  </tr>
+  <tr>
+     <td>"LearningStructureK2PriorVal"</td>
+     <td>Any positive integer number</td>
+     <td>Inital K2 prior value. Default value is 0.</td>
+  </tr>			
 </table><tr></td>
 </table>
 <H5>
