@@ -861,13 +861,12 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 #if 1
 	if(pLearning->GetResultDAG()->IsTopologicallySorted())
 	{
-    Net().Reset(*bnet);
     const int* pRenaming = pLearning->GetResultRenaming();
     Vector<int> vRename(pRenaming, pRenaming + Model()->GetNumberOfNodes());
 
     pRenaming = &vRename.front();
     pLearning->CreateResultBNet(const_cast<pnl::CDAG*>(pLearning->GetResultDAG()));
-
+	Net().Reset(*bnet);
     pnl::CBNet* newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
 
     int i;
