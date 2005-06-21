@@ -13,6 +13,7 @@ void KjaerulfsBNetDemo();
 void RPSDemo();
 void CropDemo();
 void Structural();
+void FraudDemo();
 
 PNLW_END
 #endif

@@ -10,6 +10,7 @@ BayesNet *WasteModel();
 BayesNet* KjaerulfsBNetModel();
 BayesNet* RPSModel();
 BayesNet* CropModel();
+BayesNet* FraudModel();
 
 PNLW_END
 #endif

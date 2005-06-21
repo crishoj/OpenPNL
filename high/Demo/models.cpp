@@ -204,42 +204,51 @@ LIMID *PigsModel()
     
     textcolor(LIGHTGREEN);
     printf("\t\t\t\t\t\tAdding of nodes is in process....");
-//    _sleep(2000);
+    _sleep(2000);
     textcolor(WHITE);
 
     net->AddNode(decision^"d1", "False True");
     printf("\n net->AddNode(decision^\"d1\", \"False True\");");
+    _sleep(1000);
 
     net->AddNode(value^"u1", "Cost");    
     printf("\n net->AddNode(value^\"u1\", \"Cost\");");
-    
+    _sleep(1000);
+
     net->AddNode(chance^"h2 t2", "False True");
     printf("\n net->AddNode(chance^\"h2 t2\", \"False True\");");
-    
+    _sleep(1000);
+
     net->AddNode(decision^"d2", "False True");
     printf("\n net->AddNode(decision^\"d2\", \"False True\");");
-    
+    _sleep(1000);
+
     net->AddNode(value^"u2", "Cost");
     printf("\n net->AddNode(value^\"u2\", \"Cost\");");
+    _sleep(1000);
 
     net->AddNode(chance^"h3 t3", "False True");
     printf("\n net->AddNode(chance^\"h3 t3\", \"False True\");");
-    
+    _sleep(1000);
+
     net->AddNode(decision^"d3", "False True");
     printf("\n net->AddNode(decision^\"d3\", \"False True\");");
-    
+    _sleep(1000);
+
     net->AddNode(value^"u3", "Cost");
     printf("\n net->AddNode(value^\"u3\", \"Cost\");");
+    _sleep(1000);
 
     net->AddNode(chance^"h4", "False True");
     printf("\n net->AddNode(chance^\"h4\", \"False True\");");
-    
+    _sleep(1000);
+
     net->AddNode(value^"u4", "Cost");
     printf("\n net->AddNode(value^\"u4\", \"Cost\");");
 
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
-//    getch();
+    getch();
 
     // arcs
     textcolor(WHITE);
@@ -248,48 +257,48 @@ LIMID *PigsModel()
 
     textcolor(LIGHTGREEN);
     printf("\t\t\t\t\t\t\t\tAdding of arcs is in process....");
-//    _sleep(2000);
+    _sleep(2000);
 
     textcolor(WHITE);    
     net->AddArc("h2", "h3 t2");
     printf("\n net->AddArc(\"h2\", \"h3 t2\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->AddArc("t1", "d1");
     printf("\n net->AddArc(\"t1\", \"d1\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->AddArc("t2", "d2");
     printf("\n net->AddArc(\"t2\", \"d2\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->AddArc("d1", "h2 u1");
     printf("\n net->AddArc(\"d1\", \"h2 u1\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->AddArc("h3", "h4 t3");
     printf("\n net->AddArc(\"h3\", \"h4 t3\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->AddArc("t3", "d3");
     printf("\n net->AddArc(\"t3\", \"d3\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->AddArc("d2", "h3 u2");
     printf("\n net->AddArc(\"d2\", \"h3 u2\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->AddArc("d3", "h4 u3");
     printf("\n net->AddArc(\"d3\", \"h4 u3\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->AddArc("h4", "u4");
     printf("\n net->AddArc(\"h4\", \"u4\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
-//    getch();
+    getch();
 
     // distributions
     textcolor(WHITE);
@@ -299,132 +308,132 @@ LIMID *PigsModel()
 
     textcolor(LIGHTGREEN);
     printf("\t\t\t\t\tAdding of distributions is in process....");
-//    _sleep(2000);
+    _sleep(2000);
     textcolor(WHITE);
 
     net->SetPChance("t1^False t1^True", "0.1 0.9", "h1^False");
     printf("\n net->SetPChance(\"t1^False t1^True\", \"0.1 0.9\", \"h1^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("t1^False t1^True", "0.8 0.2", "h1^True");
     printf("\n net->SetPChance(\"t1^False t1^True\", \"0.8 0.2\", \"h1^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPDecision("d1^False d1^True", "0.5 0.5", "t1^False");
     printf("\n net->SetPDecision(\"d1^False d1^True\", \"0.5 0.5\", \"t1^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPDecision("d1^False d1^True", "0.5 0.5", "t1^True");
     printf("\n net->SetPDecision(\"d1^False d1^True\", \"0.5 0.5\", \"t1^True\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetValueCost("u1^Cost", "-100.0", "d1^False");
     printf("\n net->SetValueCost(\"u1^Cost\", \"-100.0\", \"d1^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetValueCost("u1^Cost", "0.0", "d1^True");
     printf("\n net->SetValueCost(\"u1^Cost\", \"0.0\", \"d1^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h2^False h2^True", "0.9 0.1", "h1^False d1^False");
     printf("\n net->SetPChance(\"h2^False h2^True\", \"0.9 0.1\", \"h1^False d1^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h2^False h2^True", "0.8 0.2", "h1^False d1^True");
     printf("\n net->SetPChance(\"h2^False h2^True\", \"0.8 0.2\", \"h1^False d1^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h2^False h2^True", "0.5 0.5", "h1^True d1^False");
     printf("\n net->SetPChance(\"h2^False h2^True\", \"0.5 0.5\", \"h1^True d1^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h2^False h2^True", "0.1 0.9", "h1^True d1^True");
     printf("\n net->SetPChance(\"h2^False h2^True\", \"0.1 0.9\", \"h1^True d1^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("t2^False t2^True", "0.1 0.9", "h2^False");
     printf("\n net->SetPChance(\"t2^False t2^True\", \"0.1 0.9\", \"h2^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("t2^False t2^True", "0.8 0.2", "h2^True");
     printf("\n net->SetPChance(\"t2^False t2^True\", \"0.8 0.2\", \"h2^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPDecision("d2^False d2^True", "0.5 0.5", "t2^False");
     printf("\n net->SetPDecision(\"d2^False d2^True\", \"0.5 0.5\", \"t2^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPDecision("d2^False d2^True", "0.5 0.5", "t2^True");
     printf("\n net->SetPDecision(\"d2^False d2^True\", \"0.5 0.5\", \"t2^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetValueCost("u2^Cost", "-100.0", "d2^False");
     printf("\n net->SetValueCost(\"u2^Cost\", \"-100.0\", \"d2^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetValueCost("u2^Cost", "0.0", "d2^True");
     printf("\n net->SetValueCost(\"u2^Cost\", \"0.0\", \"d2^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h3^False h3^True", "0.9 0.1", "h2^False d2^False");
     printf("\n net->SetPChance(\"h3^False h3^True\", \"0.9 0.1\", \"h2^False d2^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h3^False h3^True", "0.5 0.5", "h2^False d2^True");
     printf("\n net->SetPChance(\"h3^False h3^True\", \"0.5 0.5\", \"h2^False d2^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h3^False h3^True", "0.8 0.2", "h2^True d2^False");
     printf("\n net->SetPChance(\"h3^False h3^True\", \"0.8 0.2\", \"h2^True d2^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h3^False h3^True", "0.1 0.9", "h2^True d2^True");
     printf("\n net->SetPChance(\"h3^False h3^True\", \"0.1 0.9\", \"h2^True d2^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("t3^False t3^True", "0.1 0.9", "h3^False");
     printf("\n net->SetPChance(\"t3^False t3^True\", \"0.1 0.9\", \"h3^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("t3^False t3^True", "0.8 0.2", "h3^True");
     printf("\n net->SetPChance(\"t3^False t3^True\", \"0.8 0.2\", \"h3^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPDecision("d3^False d3^True", "0.5 0.5", "t3^False");
     printf("\n net->SetPDecision(\"d3^False d3^True\", \"0.5 0.5\", \"t3^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPDecision("d3^False d3^True", "0.5 0.5", "t3^True");
     printf("\n net->SetPDecision(\"d3^False d3^True\", \"0.5 0.5\", \"t3^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetValueCost("u3^Cost", "-100.0", "d3^False");
     printf("\n net->SetValueCost(\"u3^Cost\", \"-100.0\", \"d3^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetValueCost("u3^Cost", "0.0", "d3^True");
     printf("\n net->SetValueCost(\"u3^Cost\", \"0.0\", \"d3^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h4^False h4^True", "0.9 0.1", "h3^False d3^False");
     printf("\n net->SetPChance(\"h4^False h4^True\", \"0.9 0.1\", \"h3^False d3^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h4^False h4^True", "0.8 0.2", "h3^False d3^True");
     printf("\n net->SetPChance(\"h4^False h4^True\", \"0.8 0.2\", \"h3^False d3^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h4^False h4^True", "0.5 0.5", "h3^True d3^False");
     printf("\n net->SetPChance(\"h4^False h4^True\", \"0.5 0.5\", \"h3^True d3^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetPChance("h4^False h4^True", "0.1 0.9", "h3^True d3^True");
     printf("\n net->SetPChance(\"h4^False h4^True\", \"0.1 0.9\", \"h3^True d3^True\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetValueCost("u4^Cost", "1000.0", "h4^False");
     printf("\n net->SetValueCost(\"u4^Cost\", \"1000.0\", \"h4^False\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->SetValueCost("u4^Cost", "300.0", "h4^True");
     printf("\n net->SetValueCost(\"u4^Cost\", \"300.0\", \"h4^True\");");
@@ -432,7 +441,7 @@ LIMID *PigsModel()
     textcolor(LIGHTGREEN);
     printf("\n ......All distributions are added....\n");
     textcolor(WHITE);
-//    getch();
+    getch();
 
     return net;
 }
@@ -455,16 +464,16 @@ BayesNet *ScalarGaussianBNetModel()
     textcolor(LIGHTGREEN);
 
     printf("\t\t\t\tAdding of nodes is in process....");
-//    _sleep(2000);
+    _sleep(2000);
     textcolor(WHITE);
 
     net->AddNode(continuous^"NodeD NodeE", "dim1");
     printf("\n net->AddNode(continuous^\"NodeD NodeE\", \"dim1\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
-//    getch();
+    getch();
 
     // arcs
     textcolor(WHITE);
@@ -473,17 +482,17 @@ BayesNet *ScalarGaussianBNetModel()
     
     textcolor(LIGHTGREEN);
     printf("\t\t\t\t\t\tAdding of arcs is in process....");
-//    _sleep(2000);
+    _sleep(2000);
 
     textcolor(WHITE);
     
     net->AddArc("NodeC", "NodeD NodeE");
     printf("\n net->AddArc(\"NodeC\", \"NodeD NodeE\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
-//    getch();
+    getch();
     // distributions
     textcolor(WHITE);
 
@@ -491,26 +500,27 @@ BayesNet *ScalarGaussianBNetModel()
     printf("\n net->SetPGaussian(\"NodeA\", \"1.0\", \"4.0\");");
     textcolor(LIGHTGREEN);
     printf("\t\t\t\t\tAdding of distributions is in process....");
-//    _sleep(2000);
+    _sleep(2000);
 
     textcolor(WHITE);
 
     net->SetPGaussian("NodeB", "1.0", "1.0");
     printf("\n net->SetPGaussian(\"NodeB\", \"1.0\", \"1.0\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian("NodeC", "0.0", "2.0", "1.0 2.0");
     printf("\n net->SetPGaussian(\"NodeC\", \"0.0\", \"2.0\", \"1.0 2.0\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian("NodeD", "0.0", "4.0", "1.1");
     printf("\n net->SetPGaussian(\"NodeD\", \"0.0\", \"4.0\", \"1.1\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian("NodeE", "-0.8", "1.2", "2.0");
     printf("\n net->SetPGaussian(\"NodeE\", \"-0.8\", \"1.2\", \"2.0\");");
     textcolor(LIGHTGREEN);
     printf("\n ......All distributions are added....\n");
+    getch();
     textcolor(WHITE);
 
     return net;
@@ -531,22 +541,23 @@ BayesNet *WasteModel()
     textcolor(LIGHTGREEN);
 
     printf("\t\t\t\tAdding of nodes is in process....");
-//    _sleep(2000);
+    _sleep(2000);
     textcolor(WHITE);
 
     printf("\n net->AddNode(discrete^\"FilterState\", \"intact defective\");");
+    _sleep(1000);
     printf("\n net->AddNode(discrete^\"BurningRegime\", \"stable unstable\");");
-    
+    _sleep(1000);
     net->AddNode(continuous^"FilterEfficiency CO2Emission DustEmission", "dim1");
     printf("\n net->AddNode(continuous^\"FilterEfficiency CO2Emission DustEmission\", \"dim1\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->AddNode(continuous^"MetalInWaste MetalEmission Light", "dim1");
     printf("\n net->AddNode(continuous^\"MetalInWaste MetalEmission Light\", \"dim1\");");
     
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
-//    getch();
+    getch();
 
     // arcs
     textcolor(WHITE);
@@ -555,32 +566,32 @@ BayesNet *WasteModel()
 
     textcolor(LIGHTGREEN);
     printf("\t\t\t\tAdding of arcs is in process....");
-//    _sleep(2000);
+    _sleep(2000);
 
     textcolor(WHITE);
        
     net->AddArc("FilterState FilterEfficiency BurningRegime", "DustEmission") ;
     printf("\n net->AddArc(\"FilterState FilterEfficiency BurningRegime\", \"DustEmission\") ;");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->AddArc( "FilterState", "MetalInWaste");
     printf("\n net->AddArc(\"FilterState\", \"MetalInWaste\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->AddArc( "BurningRegime", "CO2Emission");
     printf("\n net->AddArc(\"BurningRegime\", \"CO2Emission\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->AddArc( "DustEmission MetalInWaste", "MetalEmission");
     printf("\n net->AddArc(\"DustEmission MetalInWaste\", \"MetalEmission\");");
-//    _sleep(1000);
+    _sleep(1000);
     
     net->AddArc( "MetalInWaste", "Light");
     printf("\n net->AddArc(\"MetalInWaste\", \"Light\");");
-//    _sleep(1000);
+    _sleep(1000);
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
-//    getch();
+    getch();
     // distributions
     textcolor(WHITE);
     
@@ -588,79 +599,80 @@ BayesNet *WasteModel()
     printf("\n net->SetPTabular(\"TypeOfWaste^industrial TypeOfWaste^household\", \"0.95 0.05\");");
     textcolor(LIGHTGREEN);
     printf("\t\tAdding of distributions is in process....");
-//    _sleep(2000);
+    _sleep(2000);
 
     textcolor(WHITE);
 
     net->SetPTabular( "FilterState^intact FilterState^defective", "0.285714 0.714286");
     printf("\n net->SetPTabular(\"FilterState^intact FilterState^defective\", \"0.285714 0.714286\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPTabular( "BurningRegime^stable BurningRegime^unstable", "0.85 0.15");
     printf("\n net->SetPTabular(\"BurningRegime^stable BurningRegime^unstable\", \"0.85 0.15\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian( "FilterEfficiency", "-3.2", "0.00002", "", "TypeOfWaste^industrial FilterState^defective");
     printf("\n net->SetPGaussian(\"FilterEfficiency\", \"-3.2\", \"0.00002\", \"\", \n\t\t\"TypeOfWaste^industrial FilterState^defective\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian( "FilterEfficiency", "-0.5", "0.0001", "", "TypeOfWaste^industrial FilterState^intact");
     printf("\n net->SetPGaussian(\"FilterEfficiency\", \"-0.5\", \"0.0001\", \"\", \n\t\t\"TypeOfWaste^industrial FilterState^intact\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian( "FilterEfficiency", "-3.9", "0.00002", "", "TypeOfWaste^household FilterState^defective");
     printf("\n net->SetPGaussian(\"FilterEfficiency\", \"-3.9\", \"0.00002\", \"\", \n\t\t\"TypeOfWaste^household FilterState^defective\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian( "FilterEfficiency", "-0.4", "0.0001", "", "TypeOfWaste^household FilterState^intact");
     printf("\n net->SetPGaussian(\"FilterEfficiency\", \"-0.4\", \"0.0001\", \"\", \n\t\t\"TypeOfWaste^household FilterState^intact\");");
-//    _sleep(1000);
+    _sleep(1000);
 
 
     net->SetPGaussian( "CO2Emission", "-2", "0.1", "", "BurningRegime^stable");
     printf("\n net->SetPGaussian(\"CO2Emission\", \"-2\", \"0.1\", \"\", \"BurningRegime^stable\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian( "CO2Emission", "-1", "0.3", "", "BurningRegime^unstable");
     printf("\n net->SetPGaussian(\"CO2Emission\", \"-1\", \"0.3\", \"\", \"BurningRegime^unstable\");");
-//    _sleep(1000);
+    _sleep(1000);
 
 
     net->SetPGaussian( "DustEmission", "6.5", "0.03", "1.0", "FilterState^intact BurningRegime^stable");
     printf("\n net->SetPGaussian(\"DustEmission\", \"6.5\", \"0.03\", \"1.0\", \"FilterState^intact \n\t\tBurningRegime^stable\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian( "DustEmission", "7.5", "0.1", "1.0", "FilterState^intact BurningRegime^unstable");
     printf("\n net->SetPGaussian(\"DustEmission\", \"7.5\", \"0.1\", \"1.0\", \"FilterState^intact \n\t\tBurningRegime^unstable\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian( "DustEmission", "6.0", "0.04", "1.0", "FilterState^defective BurningRegime^stable");
     printf("\n net->SetPGaussian(\"DustEmission\", \"6.0\", \"0.04\", \"1.0\", \"FilterState^defective \n\t\tBurningRegime^stable\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian( "DustEmission", "7.0", "0.01", "1.0", "FilterState^defective BurningRegime^unstable");
     printf("\n net->SetPGaussian(\"DustEmission\", \"7.0\", \"0.01\", \"1.0\", \"FilterState^defective \n\t\tBurningRegime^unstable\");");
-//    _sleep(1000);
+    _sleep(1000);
 
 
     net->SetPGaussian( "MetalInWaste", "0.5", "0.01", "", "FilterState^intact");
     printf("\n net->SetPGaussian(\"MetalInWaste\", \"0.5\", \"0.01\", \"\", \"FilterState^intact\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian( "MetalInWaste", "-0.5", "0.005", "", "FilterState^defective");
     printf("\n net->SetPGaussian(\"MetalInWaste\", \"-0.5\", \"0.005\", \"\", \"FilterState^defective\");");
-//    _sleep(1000);
+    _sleep(1000);
 
 
     net->SetPGaussian( "MetalEmission", "0.0", "0.02", "1.0 1.0");
     printf("\n net->SetPGaussian(\"MetalEmission\", \"0.0\", \"0.02\", \"1.0 1.0\");");
-//    _sleep(1000);
+    _sleep(1000);
 
     net->SetPGaussian( "Light", "3.0", "0.25", "-0.5");
     printf("\n net->SetPGaussian(\"Light\", \"3.0\", \"0.25\", \"-0.5\");");
-//    _sleep(1000);
+    _sleep(1000);
     textcolor(LIGHTGREEN);
     printf("\n ......All distributions are added....\n");
+    getch();
     textcolor(WHITE);
 
     return net;
@@ -893,33 +905,7 @@ BayesNet* KjaerulfsBNetModel()
     
 }
 
-BayesNet* RPSModel()
-{
 
-    BayesNet *net;
-    net = new BayesNet();
-
-    TokArr aChoice = "Rock Paper Scissors";// possible values for nodes
-
-
-    // build Graph
-    // add nodes to net
-    net->AddNode(discrete ^ "PreviousCompTurn PreviousHumanTurn CurrentHumanTurn", aChoice);
-//    net.AddNode(discrete ^ "PreviousCompTurn", aChoice);
-//    net.AddNode(discrete ^ "PreviousHumanTurn", aChoice);
-//    net.AddNode(discrete ^ "CurrentHumanTurn", aChoice);
-
-    // add arcs to create following Bayes net:
-    //
-    //  PreviousCompTurn    PreviousHumanTurn
-    //               |         |
-    //               V	       V
-    //             CurrentHumanTurn
-    net->AddArc("PreviousCompTurn", "CurrentHumanTurn");
-    net->AddArc("PreviousHumanTurn", "CurrentHumanTurn");
-
-    return net;
-}
 
 
 BayesNet* CropModel()
@@ -935,24 +921,142 @@ BayesNet* CropModel()
     BayesNet *net;
     net = new BayesNet();
 
+    textcolor(WHITE);
+
     net->AddNode(discrete^"Subsidy", "Yes No");
+    printf("\n net->AddNode(discrete^\"Subsidy\", \"Yes No\");");
+    textcolor(LIGHTGREEN);
+    
+    printf("\t\t\t\t\t\tAdding of nodes is in process....");
+    _sleep(2000);
+    textcolor(WHITE);
+
     net->AddNode(discrete^"Buy", "Yes No");
+    printf("\n net->AddNode(discrete^\"Buy\", \"Yes No\");");
+    _sleep(1000);
 
     net->AddNode(continuous ^ "Crop");
+    printf("\n net->AddNode(continuous ^ \"Crop\");");
+    _sleep(1000);
     net->AddNode(continuous ^ "Price");
+    printf("\n net->AddNode(continuous ^ \"Price\");");
+    textcolor(LIGHTGREEN);
+    printf("\n ......All nodes are added....\n");
+    getch();
     
+    // arcs
+    textcolor(WHITE);
+
     net->AddArc("Subsidy Crop", "Price");
+    printf("\n net->AddArc(\"Subsidy Crop\", \"Price\");");
+    textcolor(LIGHTGREEN);
+    printf("\t\t\t\t\t\t\tAdding of arcs is in process....");
+    _sleep(2000);
+    
+    textcolor(WHITE);
     net->AddArc("Price", "Buy");
+    printf("\n net->AddArc(\"Price\", \"Buy\");");
+    textcolor(LIGHTGREEN);
+    printf("\n ......All arcs are added....\n");
+    getch();
+    
+    // distributions
+    textcolor(WHITE);
 
     net->SetPTabular("Subsidy^Yes Subsidy^No", "0.3 0.7");
+    printf("\n net->SetPTabular(\"Subsidy^Yes Subsidy^No\", \"0.3 0.7\");");
+    textcolor(LIGHTGREEN);
+    printf("\t\t\t\t\tAdding of distributions is in process....");
+    _sleep(2000);
+
+    textcolor(WHITE);
+
     net->SetPGaussian("Crop", "5.0", "1.0");
+    printf("\n net->SetPGaussian(\"Crop\", \"5.0\", \"1.0\");");
+    _sleep(1000);
 
     net->SetPGaussian("Price", "10.0", "1.0", "-1.0", "Subsidy^Yes");
+    printf("\n net->SetPGaussian(\"Price\", \"10.0\", \"1.0\", \"-1.0\", \"Subsidy^Yes\");");
+    _sleep(1000);
+    
     net->SetPGaussian("Price", "20.0", "1.0", "-1.0", "Subsidy^No");
+    printf("\n net->SetPGaussian(\"Price\", \"20.0\", \"1.0\", \"-1.0\", \"Subsidy^No\");");
+    _sleep(1000);
 
     net->SetPSoftMax("Buy^Yes Buy^No", "-1.0 1.0", "5.0 -5.0");
+    printf("\n net->SetPSoftMax(\"Buy^Yes Buy^No\", \"-1.0 1.0\", \"5.0 -5.0\");");
+
+    textcolor(LIGHTGREEN);
+    printf("\n ......All distributions are added....\n");
+    getch();
+    textcolor(WHITE);
+
     return net;
 }
 
+BayesNet* FraudModel()
+{
+//    David Heckerman
+//    A Tutorial on Learning With Bayesian Networks, March 1995
+    BayesNet *net;
+    net = new BayesNet();
+
+    net->AddNode(discrete^"Fraud", "Yes No");
+    net->AddNode(discrete^"Age", "Young Middle-Aged Elderly");
+    net->AddNode(discrete^"Sex", "Male Female");
+    net->AddNode(discrete^"Gas", "Yes No");
+    net->AddNode(discrete^"Jewelry", "Yes No");
+
+/*    net->AddArc("Fraud Age Sex", "Jewelry");
+    net->AddArc("Fraud", "Gas");
+
+    net->SetPTabular("Fraud^Yes Fraud^No", "0.00001 0.99999");
+    net->SetPTabular("Age^Young Age^Middle-Aged Age^Elderly", "0.25 0.40 0.35");
+    net->SetPTabular("Sex^Male Sex^Female", "0.5 0.5");
+
+    net->SetPTabular("Gas^Yes Gas^No", "0.2 0.8", "Fraud^Yes");
+    net->SetPTabular("Gas^Yes Gas^No", "0.01 0.99", "Fraud^No");
+ 
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.05 0.95", "Fraud^Yes Age^Young Sex^Male");
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.05 0.95", "Fraud^Yes Age^Middle-Aged Sex^Male");
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.05 0.95", "Fraud^Yes Age^Elderly Sex^Male");
+
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.05 0.95", "Fraud^Yes Age^Young Sex^Female");
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.05 0.95", "Fraud^Yes Age^Middle-Aged Sex^Female");
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.05 0.95", "Fraud^Yes Age^Elderly Sex^Female");
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.00001 0.99999", "Fraud^No Age^Young Sex^Male");
+  
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.0004 0.9996", "Fraud^No Age^Middle-Aged Sex^Male");
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.0002 0.9998", "Fraud^No Age^Elderly Sex^Male");
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.00005 0.99995", "Fraud^No Age^Young Sex^Female");
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.002 0.998", "Fraud^No Age^Middle-Aged Sex^Female");
+    net->SetPTabular("Jewelry^Yes Jewelry^No", "0.001 0.999", "Fraud^No Age^Elderly Sex^Female");
+*/
+    return net;
+}
+
+BayesNet* RPSModel()
+{
+
+    BayesNet *net;
+    net = new BayesNet();
+
+    TokArr aChoice = "Rock Paper Scissors";// possible values for nodes
+
+    // build Graph
+    // add nodes to net
+    net->AddNode(discrete ^ "PreviousCompTurn PreviousHumanTurn CurrentHumanTurn", aChoice);
+
+    // add arcs to create following Bayes net:
+    //
+    //  PreviousCompTurn    PreviousHumanTurn
+    //               |         |
+    //               V	       V
+    //             CurrentHumanTurn
+    net->AddArc("PreviousCompTurn", "CurrentHumanTurn");
+    net->AddArc("PreviousHumanTurn", "CurrentHumanTurn");
+
+    return net;
+}
 
 PNLW_END
