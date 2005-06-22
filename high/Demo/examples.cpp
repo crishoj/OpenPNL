@@ -167,11 +167,28 @@ void WasteDemo()
 
 void KjaerulfsBNetDemo()
 {
-    BayesNet *DBN;
-    DBN = KjaerulfsBNetModel();
+    DBN *pDBN;
+    pDBN = KjaerulfsBNetModel();
     
+    pDBN->SetNumSlices(4);
+    pDBN->EditEvidence("node0-0^true");
+    pDBN->CurEvidToBuf();
+
+    pDBN->SetProperty("Inference","smooth");
+    TokArr jpd1 = pDBN->GetJPD("node2-1");
+    cout << jpd1 <<"\n";
+
+    pDBN->SetProperty("Inference","filt");
+    TokArr jpd2 = pDBN->GetJPD("node2-1");
+    cout << jpd2 <<"\n";
+
+    pDBN->GenerateEvidences("5 5 5 5");
+    pDBN->LearnParameters();
+    float value = pDBN->GetEMLearningCriterionValue();
+    cout << value <<"\n";
+
     getch();
-    delete DBN;
+    delete pDBN;
 }
 
 void RPSDemo()
