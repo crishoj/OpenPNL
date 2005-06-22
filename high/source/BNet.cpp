@@ -891,8 +891,6 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 	{
 	Net().Graph().SetNodeName(i,names[pRenaming[i]]);
 	}
-
-	//ThrowInternalError("Non implemented yet","LearnStructure");
 	}
     int i;
 	
@@ -1370,15 +1368,15 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 	}
 	char *pLearnNameMethod = &learnNameMethodVec.front();
 
-	if(strstr(pLearnNameMethod, "MaxLh"))
+	if(strstr(pLearnNameMethod, "maxlh"))
 	{
 	    return 'm';
 	}
-	if(strstr(pLearnNameMethod, "PreAs"))
+	if(strstr(pLearnNameMethod, "preas"))
 	{
 	    return 'p';
 	}
-	if(strstr(pLearnNameMethod, "MarLh"))
+	if(strstr(pLearnNameMethod, "marlh"))
 	{
 	    return 'b';
 	}
@@ -1404,15 +1402,15 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 	}
 	char *pLearnNameScoreFun = &learnNameScoreFunVec.front();
 
-	if(strstr(pLearnNameScoreFun, "BIC"))
+	if(strstr(pLearnNameScoreFun, "bic"))
 	{
 	    return 'b';
 	}
-	if(strstr(pLearnNameScoreFun, "AIC"))
+	if(strstr(pLearnNameScoreFun, "aic"))
 	{
 	    return 'a';
 	}
-	if(strstr(pLearnNameScoreFun, "WithoutPenalty"))
+	if(strstr(pLearnNameScoreFun, "withoutpenalty"))
 	{
 	    return 'w';
 	}
@@ -1438,15 +1436,15 @@ const char BayesNet::PropertyAbbrev(const char *name) const
 	}
 	char *pLearnNamePrior = &learnNamePriorVec.front();
 
-	if(strstr(pLearnNamePrior, "Dirichlet"))
+	if(strstr(pLearnNamePrior, "dirichlet"))
 	{
 	    return 'd';
 	}
-	if(strstr(pLearnNamePrior, "K2"))
+	if(strstr(pLearnNamePrior, "k2"))
 	{
 	    return 'k';
 	}
-	if(strstr(pLearnNamePrior, "BDeu"))
+	if(strstr(pLearnNamePrior, "bdeu"))
 	{
 	    return 'b';
 	}
