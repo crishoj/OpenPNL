@@ -789,7 +789,10 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 {
     pnl::intVector vAnc, vDesc;//bogus vectors
 	String priorVal;
+	Vector<String> names;
+    names = Net().Graph().Names();
     pnl::CBNet *bnet = Model();
+	pnl::CBNet* newNet;
     pnl::CMlStaticStructLearnHC* pLearning = pnl::CMlStaticStructLearnHC::Create(
 	bnet, pnl::itStructLearnML, pnl::StructLearnHC, pnl::BIC,
 	bnet->GetNumberOfNodes(), vAnc, vDesc, 1/*one restart*/ );
@@ -865,8 +868,32 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     Vector<int> vRename(pRenaming, pRenaming + Model()->GetNumberOfNodes());
     pRenaming = &vRename.front();
     pLearning->CreateResultBNet(const_cast<pnl::CDAG*>(pLearning->GetResultDAG()));
-    pnl::CBNet* newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
+    newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
 	Net().Reset(*newNet);
+	}
+	else
+	{
+	
+	pLearning->GetResultDAG()->Dump();
+	const int* pRenaming = pLearning->GetResultRenaming();
+    pLearning->CreateResultBNet(const_cast<pnl::CDAG*>(pLearning->GetResultDAG()));
+    newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
+	newNet->GetGraph()->Dump();
+	Net().Reset(*newNet);
+	int nnodes= names.size();
+	int i;
+	String tmp = "SS";
+	for(i = 0; i < nnodes; i++)
+	{
+	Net().Graph().SetNodeName(i,tmp<<i);
+	}
+	for(i = 0; i < nnodes; i++)
+	{
+	Net().Graph().SetNodeName(i,names[pRenaming[i]]);
+	}
+
+	//ThrowInternalError("Non implemented yet","LearnStructure");
+	}
     int i;
 	
    // Net().SetTopologicalOrder(pRenaming, newNet->GetGraph());
@@ -906,11 +933,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
         pnl::CEvidence* oldEv = *it1;
         pnl::CNodeValues* nv = oldEv;
     }*/
-	}
-	else
-	{
-	ThrowInternalError("Non implemented yet","LearnStructure");
-	}
+	
 	
 #endif
     DropEvidences(aEvidence);
