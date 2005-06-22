@@ -195,6 +195,9 @@ BayesNet *AsiaModel()
 
 LIMID *PigsModel()
 {
+    // Steffen L. Lauritzen, Dennis Nilsson 
+    // Representing and Solving Decision Problems with Limited Information, 2001
+
     LIMID *net;
     net = new LIMID();
 
@@ -679,10 +682,10 @@ BayesNet *WasteModel()
 }
 
 
-BayesNet* KjaerulfsBNetModel()
+DBN* KjaerulfsBNetModel()
 {
-    BayesNet *net;
-    net = new BayesNet();
+    DBN *net;
+    net = new DBN();
     
     textcolor(WHITE);
 
@@ -792,8 +795,8 @@ BayesNet* KjaerulfsBNetModel()
     net->SetPTabular("node3-0^false node3-0^true", "0.8 0.2", "node2-0^true");
     printf("\n net->SetPTabular(\"node3-0^false node3-0^true\", \"0.8 0.2\",  \n\t \"node2-0^true\");");
 
-    net->SetPTabular("node4-0^false node4-0^true", "0.99 0.04", "node3-0^false");
-    printf("\n net->SetPTabular(\"node4-0^false node4-0^true\", \"0.99 0.04\",  \n\t \"node3-0^false\");");
+    net->SetPTabular("node4-0^false node4-0^true", "0.99 0.01", "node3-0^false");
+    printf("\n net->SetPTabular(\"node4-0^false node4-0^true\", \"0.99 0.01\",  \n\t \"node3-0^false\");");
     
     net->SetPTabular("node4-0^false node4-0^true", "0.92 0.08", "node3-0^true");
     printf("\n net->SetPTabular(\"node4-0^false node4-0^true\", \"0.92 0.08\",  \n\t \"node3-0^true\");");

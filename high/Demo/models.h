@@ -7,7 +7,7 @@ BayesNet* AsiaModel();
 LIMID *PigsModel();
 BayesNet* ScalarGaussianBNetModel();
 BayesNet *WasteModel();
-BayesNet* KjaerulfsBNetModel();
+DBN* KjaerulfsBNetModel();
 BayesNet* RPSModel();
 BayesNet* CropModel();
 BayesNet* FraudModel();
