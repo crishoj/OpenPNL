@@ -392,13 +392,16 @@ TokArr DBN::GetJPD( TokArr nodes)
     evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
     }
     */
-    pnl::CEvidence **pEvid;
+    pnl::CEvidence **pEvid; 
     pEvid = new pnl::CEvidence*[GetNumSlices()];
-    int i;
+    int i; 
     for(i = 0; i < GetNumSlices(); i++)
     {	
+		if(m_AllEvidences[i].size() != 0)
+		{
 		pEvid[i] = Net().CreateEvidence((*Net().EvidenceBuf())[m_AllEvidences[i][m_AllEvidences[i].size() - 1]].Get()); 
-    }
+		}
+	}
 
     switch(PropertyAbbrev("Inference"))
     {
@@ -610,8 +613,11 @@ TokArr DBN::GetMPE(TokArr nodes)
     int i;
     for(i = 0; i < GetNumSlices(); i++)
     {
-	pEvid[i] = pEvid[i] = Net().CreateEvidence((*Net().EvidenceBuf())[m_AllEvidences[i][m_AllEvidences[i].size() - 1]].Get());  
-    }
+		if(m_AllEvidences[i].size() != 0)
+		{
+		pEvid[i] = pEvid[i] = Net().CreateEvidence((*Net().EvidenceBuf())[m_AllEvidences[i][m_AllEvidences[i].size() - 1]].Get());  
+		}
+	}
     switch(PropertyAbbrev("Inference"))
     {
     case 'v':
