@@ -874,11 +874,9 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 	else
 	{
 	
-	pLearning->GetResultDAG()->Dump();
 	const int* pRenaming = pLearning->GetResultRenaming();
     pLearning->CreateResultBNet(const_cast<pnl::CDAG*>(pLearning->GetResultDAG()));
     newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
-	newNet->GetGraph()->Dump();
 	Net().Reset(*newNet);
 	int nnodes= names.size();
 	int i;
