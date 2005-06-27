@@ -576,9 +576,9 @@ evidence from the buffer.
 <h3><a name="StructLearnDiscr">Structure learning</a></h3>
 <p>
 The method LearnStructure will calculate the network structure that is an 
-approximation to the ML structure (currently it maximizes the BIC criterion 
-only):<p>
+approximation to the ML structure (you can specify structure learning parameters using SetProperty method):<p>
 <pre>
+net.SetPropery("LearningStructureScoreFun","BIC");
 net.LearnStructure();
 </pre>
 </p>
