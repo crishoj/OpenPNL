@@ -294,7 +294,7 @@ pMD = CModelDomain::Create( variableTypes, variableAssociation );
 // 3) Creation static BNet with random matrices
 CBNet *pBNet = CBNet::CreateWithRandomMatrices( pGraph, pMD );
 // 4) Creation DBN
-CDBN *pDBN = CDBN::Create( pDBN );
+CDBN *pDBN = CDBN::Create( pBNet );
 </pre>
 
 <hr><h3><a name="ug_Inf">Inference Algorithms for Bayesian and Markov Networks</a></h3>
@@ -573,7 +573,7 @@ pInfEng = C1_5SliceJtreeInfEngine::Create(pArHMM);
 //Number of time slices for unrolling
 int nTimeSlices = 5;
 const CPotential* pQueryJPD;
-//Crate evidence for every slice
+//Create evidence for every slice
 CEvidence** pEvidences;
 pEvidences = new CEvidence*[nTimeSlices];
 //Let node 1 is always observed
@@ -654,13 +654,13 @@ for( slice = 1; slice &lt; nTimeSlices; slice++ )
 }
 //create prediction procedure (it is used only after filtering)
 int delta = 2;
-pInfEng-&gt;DefineProcedure( ptPrediction );
-pInfEng->Prediction(delta);
-
-pInfEng->MarginalNodes( query, querySize, nTimeSlices + delta);
-pQueryJPD = pInfEng->GetQueryJPD();
-std::cout<<" Query slice "<<(slice + delta)<<std::endl;
-pQueryJPD->Dump();
+pInfEng-&gt;Prediction(delta);
+// in prediction procedure query must contain only nodes with numbers n...2n - 1. 
+// in our example query must be equal {1} or {1,2} or {2} 
+pInfEng-&gt;MarginalNodes( query, querySize, nTimeSlices + delta);
+pQueryJPD = pInfEng-&gt;GetQueryJPD();
+std::cout&lt;&lt;" Query slice "&lt;&lt;(slice + delta)&lt;&lt;std::endl;
+pQueryJPD-&gt;Dump();
  
 //Create fixed-lag smoothing (online)
 int lag = 2;
