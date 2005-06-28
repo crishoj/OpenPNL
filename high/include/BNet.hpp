@@ -145,13 +145,14 @@ public:
 
     ProbabilisticNet &Net() const { return *m_pNet; }
 
+    pnl::CInfEngine &Inference(bool Recreate = false);
+    pnl::CStaticLearningEngine &Learning();
+    pnl::CBNet &Model();
+    pnl::CEvidence *GetPNLEvidence();
+
 private:
     // handles messages - from ModelEngine interface
     virtual void DoNotify(const Message &msg);
-
-    pnl::CInfEngine &Inference(bool Recreate = false);
-    pnl::CStaticLearningEngine &Learning();
-    pnl::CBNet *Model();
 
     void SetInferenceProperties(TokArr &nodes);
     void SetParamLearningProperties();

@@ -129,11 +129,13 @@ public:
 
     ProbabilisticNet &Net() const { return *m_pNet; }
 
-private:
-    pnl::CMatrix<float> *Matrix(int iNode) const;
     pnl::CInfEngine &Inference(bool Recreate = false);
     pnl::CStaticLearningEngine &Learning();
-    pnl::CMNet *Model();
+    pnl::CMNet &Model();
+    pnl::CEvidence *GetPNLEvidence();
+
+private:
+    pnl::CMatrix<float> *Matrix(int iNode) const;
 
     void SetInferenceProperties(TokArr &nodes);
     void SetParamLearningProperties();

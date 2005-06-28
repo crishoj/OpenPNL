@@ -73,9 +73,10 @@ public:
 
     ProbabilisticNet &Net() const { return *m_pLIMID; }
 
-private:
     pnl::CLIMIDInfEngine& Inference();
-    pnl::CIDNet *Model();
+    pnl::CIDNet &Model();
+
+private:
     TokArr GetP(TokArr value, TokArr parents = TokArr());
 
     // handles messages - from ModelEngine interface

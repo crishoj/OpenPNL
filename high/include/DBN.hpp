@@ -139,10 +139,13 @@ public:
     void SetProperty(const char *name, const char *value);
     String GetProperty(const char *name) const;
 
-private:
-    pnl::CMatrix<float> *Matrix(int iNode) const;
     pnl::CDynamicInfEngine &Inference();
     pnl::CDynamicLearningEngine &Learning();
+    pnl::CDBN &Model();
+    pnl::pEvidencesVecVector GetPNLEvidences();
+
+private:
+    pnl::CMatrix<float> *Matrix(int iNode) const;
 
     // handles messages - from ModelEngine interface
     virtual void DoNotify(const Message &msg);
@@ -153,8 +156,6 @@ private:
     String GetValue(String nodeEvid);
     TokArr ConvertBNetQueToDBNQue(TokArr bnetQue,int nSlice);
     pnl::intVector GetSlicesNodesCorrespInd();
-	pnl::pEvidencesVecVector GetPNLEvidences();
-    pnl::CDBN *Model();
 
     const char PropertyAbbrev(const char *name) const;
 
