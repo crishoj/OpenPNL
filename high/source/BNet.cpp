@@ -177,7 +177,7 @@ TokArr BayesNet::GetSoftMaxOffset(TokArr node, TokArr parents)
 	queryVls.assign(nnodes, -1);
     }
 
-    const pnl::CFactor * cpd = Model()->GetFactor(queryNdsInner.front());
+    const pnl::CFactor * cpd = Model().GetFactor(queryNdsInner.front());
     pnl::CDistribFun *df = cpd->GetDistribFun();
 
     pnl::floatVector *offVector;
@@ -222,7 +222,7 @@ TokArr BayesNet::GetSoftMaxWeights(TokArr node, TokArr parents )
 	queryVls.assign(nnodes, -1);
     }
 
-    const pnl::CFactor * cpd = Model()->GetFactor(queryNdsInner.front());
+    const pnl::CFactor * cpd = Model().GetFactor(queryNdsInner.front());
     const pnl::CMatrix<float> *mat;
 
     if (parents.size())
@@ -261,7 +261,7 @@ TokArr BayesNet::GetGaussianMean(TokArr node, TokArr tabParentValue)
     queryVls.assign(nnodes, -1);
   }
   
-  const pnl::CFactor * cpd = Model()->GetFactor(queryNdsInner.front());
+  const pnl::CFactor * cpd = Model().GetFactor(queryNdsInner.front());
   
   if (cpd->IsDistributionSpecific() == 1)
   {
@@ -316,7 +316,7 @@ TokArr BayesNet::GetGaussianCovar(TokArr node, TokArr tabParentValue)
 	queryVls.assign(nnodes, -1);
     }
 
-    const pnl::CFactor * cpd = Model()->GetFactor(queryNdsInner.front());
+    const pnl::CFactor * cpd = Model().GetFactor(queryNdsInner.front());
 
     if (cpd->GetDistribFun()->IsDistributionSpecific() == 2) // delta
     {
@@ -385,7 +385,7 @@ TokArr BayesNet::GetGaussianWeights(TokArr node, TokArr parent, TokArr tabParent
     int iNode = queryNdsInner[0];
     int iParent = parentsInner[0];
 
-    const pnl::CFactor * cpd = Model()->GetFactor(iNode);
+    const pnl::CFactor * cpd = Model().GetFactor(iNode);
 
     if (cpd->GetDistribFun()->IsDistributionSpecific() == 2) // delta
     {
@@ -497,7 +497,7 @@ TokArr BayesNet::GetPTabular(TokArr child, TokArr parents)
     parentNdsInner.resize(nparents + 1);
     parentVls.resize(nparents + 1);
 
-    const pnl::CFactor * cpd = Model()->GetFactor(childNdInner.front());
+    const pnl::CFactor * cpd = Model().GetFactor(childNdInner.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matTable);
 	
     TokArr result = "";
@@ -624,7 +624,7 @@ TokArr BayesNet::GetJPD( TokArr nodes )
     pnl::CEvidence *evid = NULL;
     if( Net().EvidenceBoard()->IsEmpty() )
     {
-	evid = pnl::CEvidence::Create(Model()->GetModelDomain(), 0, NULL, pnl::valueVector(0));
+	evid = pnl::CEvidence::Create(Model().GetModelDomain(), 0, NULL, pnl::valueVector(0));
     }
     else
     {
@@ -791,11 +791,11 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 	String priorVal;
 	Vector<String> names;
     names = Net().Graph().Names();
-    pnl::CBNet *bnet = Model();
+    pnl::CBNet &bnet = Model();
 	pnl::CBNet* newNet;
     pnl::CMlStaticStructLearnHC* pLearning = pnl::CMlStaticStructLearnHC::Create(
-	bnet, pnl::itStructLearnML, pnl::StructLearnHC, pnl::BIC,
-	bnet->GetNumberOfNodes(), vAnc, vDesc, 1/*one restart*/ );
+	&bnet, pnl::itStructLearnML, pnl::StructLearnHC, pnl::BIC,
+	bnet.GetNumberOfNodes(), vAnc, vDesc, 1/*one restart*/ );
 
 	switch(PropertyAbbrev("LearningStructureMethod"))
     {
@@ -865,7 +865,7 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
 	if(pLearning->GetResultDAG()->IsTopologicallySorted())
 	{
     const int* pRenaming = pLearning->GetResultRenaming();
-    Vector<int> vRename(pRenaming, pRenaming + Model()->GetNumberOfNodes());
+    Vector<int> vRename(pRenaming, pRenaming + Model().GetNumberOfNodes());
     pRenaming = &vRename.front();
     pLearning->CreateResultBNet(const_cast<pnl::CDAG*>(pLearning->GetResultDAG()));
     newNet = pnl::CBNet::Copy(pLearning->GetResultBNet());
@@ -916,8 +916,6 @@ void BayesNet::LearnStructure(TokArr aSample[], int nSample)
     delete m_Inference;
     m_Inference = 0;
 
-	delete bnet;
-
     //change domain in evidences
 
     //change evidence on board
@@ -946,7 +944,7 @@ TokArr BayesNet::GetMPE(TokArr nodes)
     pnl::CEvidence *evid = NULL;
     if( Net().EvidenceBoard()->IsEmpty() )
     {
-	evid = pnl::CEvidence::Create(Model()->GetModelDomain(), 0, NULL, pnl::valueVector(0));
+	evid = pnl::CEvidence::Create(Model().GetModelDomain(), 0, NULL, pnl::valueVector(0));
     }
     else
     {
@@ -1129,12 +1127,12 @@ pnl::CInfEngine &BayesNet::Inference(bool Recreate)
 	    if(!infJtree)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CJtreeInfEngine::Create(Model());
+		m_Inference = pnl::CJtreeInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CJtreeInfEngine::Create(Model());
+	    m_Inference = pnl::CJtreeInfEngine::Create(&Model());
 	}
 	break;
     case 'g': // Gibbs Sampling
@@ -1146,12 +1144,12 @@ pnl::CInfEngine &BayesNet::Inference(bool Recreate)
 	    if(!infGibbs)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model());
+		m_Inference = pnl::CGibbsSamplingInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model());
+	    m_Inference = pnl::CGibbsSamplingInfEngine::Create(&Model());
 	}
 	break;
     case 'n': // Naive inference
@@ -1163,12 +1161,12 @@ pnl::CInfEngine &BayesNet::Inference(bool Recreate)
 	    if(!infNaive)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CNaiveInfEngine::Create(Model());
+		m_Inference = pnl::CNaiveInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CNaiveInfEngine::Create(Model());
+	    m_Inference = pnl::CNaiveInfEngine::Create(&Model());
 	}
 	break;
     case 'p': // Pearl inference
@@ -1180,12 +1178,12 @@ pnl::CInfEngine &BayesNet::Inference(bool Recreate)
 	    if(!infPearl)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CPearlInfEngine::Create(Model());
+		m_Inference = pnl::CPearlInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CPearlInfEngine::Create(Model());
+	    m_Inference = pnl::CPearlInfEngine::Create(&Model());
 	}
 	break;
     default: //default inference algorithm
@@ -1197,12 +1195,12 @@ pnl::CInfEngine &BayesNet::Inference(bool Recreate)
 	    if(!infPearl)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CPearlInfEngine::Create(Model());
+		m_Inference = pnl::CPearlInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CPearlInfEngine::Create(Model());
+	    m_Inference = pnl::CPearlInfEngine::Create(&Model());
 	}
 	break;
     }
@@ -1222,12 +1220,12 @@ pnl::CStaticLearningEngine &BayesNet::Learning()
 	    if(!learnBayes)
 	    {
 		delete m_Learning;
-		m_Learning = pnl::CBayesLearningEngine::Create(Model());
+		m_Learning = pnl::CBayesLearningEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Learning = pnl::CBayesLearningEngine::Create(Model());
+	    m_Learning = pnl::CBayesLearningEngine::Create(&Model());
 	}
 	break;
     case 'e': //EM learning
@@ -1238,12 +1236,12 @@ pnl::CStaticLearningEngine &BayesNet::Learning()
 	    if(!learnEM)
 	    {
 		delete m_Learning;
-		m_Learning = pnl::CEMLearningEngine::Create(Model());
+		m_Learning = pnl::CEMLearningEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Learning = pnl::CEMLearningEngine::Create(Model());
+	    m_Learning = pnl::CEMLearningEngine::Create(&Model());
 	}
 	break;
     default: // deafult learning algorithm
@@ -1254,21 +1252,21 @@ pnl::CStaticLearningEngine &BayesNet::Learning()
 	    if(!learnEM)
 	    {
 		delete m_Learning;
-		m_Learning = pnl::CEMLearningEngine::Create(Model());
+		m_Learning = pnl::CEMLearningEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Learning = pnl::CEMLearningEngine::Create(Model());
+	    m_Learning = pnl::CEMLearningEngine::Create(&Model());
 	}
 	break;
     }
     return *m_Learning;
 }
 
-pnl::CBNet *BayesNet::Model()
+pnl::CBNet &BayesNet::Model()
 {
-    return static_cast<pnl::CBNet*>(&Net().Model());
+    return static_cast<pnl::CBNet&>(Net().Model());
 }
 
 void BayesNet::SetProperty(const char *name, const char *value)
@@ -1460,13 +1458,13 @@ float BayesNet::GetCurEvidenceLogLik()
     pnl::CEvidence *evid = NULL;
     if( Net().EvidenceBoard()->IsEmpty() )
     {
-	evid = pnl::CEvidence::Create(Model()->GetModelDomain(), 0, NULL, pnl::valueVector(0));
+	evid = pnl::CEvidence::Create(Model().GetModelDomain(), 0, NULL, pnl::valueVector(0));
     }
     else
     {
 	evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
     }
-    float logLik = Model()->ComputeLogLik(evid);
+    float logLik = Model().ComputeLogLik(evid);
 
     delete evid;
 
@@ -1486,7 +1484,7 @@ TokArr BayesNet::GetEvidBufLogLik()
     Net().TranslateBufToEvidences(&evBuf, 0);
     for(int i = 0; i < evBuf.size(); i++)
     {
-	result.push_back(Model()->ComputeLogLik(evBuf[i]));
+	result.push_back(Model().ComputeLogLik(evBuf[i]));
 	delete evBuf[i];
     }
 

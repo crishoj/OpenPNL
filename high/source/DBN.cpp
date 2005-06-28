@@ -181,7 +181,7 @@ TokArr DBN::GetGaussianMean(TokArr vars)
 	queryVls.assign(nnodes, -1);
     }
 	
-    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
+    const pnl::CFactor * cpd = Model().GetFactor(queryNds.front());
 	
     if (cpd->IsDistributionSpecific() == 1)         
     {
@@ -222,7 +222,7 @@ TokArr DBN::GetGaussianCovar(TokArr node)
 	queryVls.assign(nnodes, -1);
     }
 
-    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
+    const pnl::CFactor * cpd = Model().GetFactor(queryNds.front());
 
     if (cpd->GetDistribFun()->IsDistributionSpecific() == 2) // delta
     {
@@ -277,7 +277,7 @@ TokArr DBN::GetGaussianWeights(TokArr node, TokArr parent)
     int iNode = queryNdsOuter[0];
     int iParent = parentsOuter[0];
 
-    const pnl::CFactor * cpd = Model()->GetFactor(iNode);
+    const pnl::CFactor * cpd = Model().GetFactor(iNode);
 
     if (cpd->GetDistribFun()->IsDistributionSpecific() == 2) // delta
     {
@@ -385,7 +385,7 @@ TokArr DBN::GetJPD( TokArr nodes)
     /* pnl::CEvidence *evid = NULL;
     if( Net().EvidenceBoard()->IsEmpty() )
     {
-    evid = pnl::CEvidence::Create(Model()->GetModelDomain(), 0, NULL, pnl::valueVector(0));
+    evid = pnl::CEvidence::Create(Model().GetModelDomain(), 0, NULL, pnl::valueVector(0));
     }
     else
     {
@@ -754,7 +754,7 @@ int DBN::SaveEvidBuf(const char *filename, NetConst::ESavingType mode)
 	    }
 	    String colName(Net().NodeName(Net().Graph().IOuter(iCol)));
 	    String tmpStr;
-	    const pnl::CNodeType &nt = *Model()->GetNodeType(iCol);
+	    const pnl::CNodeType &nt = *Model().GetNodeType(iCol);
 
 	    aiCSVCol.push_back(iCol);
 	    if(nt.IsDiscrete())
@@ -988,7 +988,7 @@ void DBN::GenerateEvidences(TokArr numSlices)
 	    nSlices.push_back(numSlices[i].IntValue());
 	}
     }
-    Model()->GenerateSamples(&resEvid,nSlices);
+    Model().GenerateSamples(&resEvid,nSlices);
 	
 	for( i = 0; i < resEvid.size(); i++)
 	{
@@ -1025,12 +1025,12 @@ pnl::CDynamicInfEngine &DBN::Inference()
 	    if(!infJtree)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(Model());
+		m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(Model());
+	    m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(&Model());
 	}
 	break;
     case 'b': // Boyen-Koller inference
@@ -1042,12 +1042,12 @@ pnl::CDynamicInfEngine &DBN::Inference()
 	    if(!infBK)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CBKInfEngine::Create(Model());
+		m_Inference = pnl::CBKInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CBKInfEngine::Create(Model());
+	    m_Inference = pnl::CBKInfEngine::Create(&Model());
 	}
 	break;
     default: //default inference algorithm
@@ -1059,12 +1059,12 @@ pnl::CDynamicInfEngine &DBN::Inference()
 	    if(!infJTree)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(Model());
+		m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(Model());
+	    m_Inference = pnl::C1_5SliceJtreeInfEngine::Create(&Model());
 	}
 	break;
     }
@@ -1077,14 +1077,14 @@ pnl::CDynamicLearningEngine &DBN::Learning()
 {
     if(!m_Learning)
     {
-	m_Learning = pnl::CEMLearningEngineDBN::Create(Model());
+	m_Learning = pnl::CEMLearningEngineDBN::Create(&Model());
     }
     return *m_Learning;
 }
 
-pnl::CDBN *DBN::Model()
+pnl::CDBN &DBN::Model()
 {
-    return static_cast<pnl::CDBN*>(&Net().Model());
+    return static_cast<pnl::CDBN&>(Net().Model());
 }
 
 void DBN::SetProperty(const char *name, const char *value)
@@ -1455,7 +1455,7 @@ TokArr DBN::GetChildren(TokArr nodes)
 
 BayesNet* DBN::Unroll()
 {
-    int nNodes = Model()->GetNumberOfNodes();
+    int nNodes = Model().GetNumberOfNodes();
     int i,j,k;
     String tmpName, newName, fullName;
 	
@@ -1481,7 +1481,7 @@ BayesNet* DBN::Unroll()
 	    pNet->AddNode(fullName, nodeValues);
 	}
     }
-    pNet->Net().Reset(*Model()->UnrollDynamicModel(GetNumSlices()));
+    pNet->Net().Reset(*Model().UnrollDynamicModel(GetNumSlices()));
     return pNet;
 }
 

@@ -252,7 +252,7 @@ TokArr MRF::GetGaussianMean(TokArr vars)
 	queryVls.assign(nnodes, -1);
     }
 
-    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
+    const pnl::CFactor * cpd = Model().GetFactor(queryNds.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matMean);
 
     return Net().ConvertMatrixToToken(mat);
@@ -275,7 +275,7 @@ TokArr MRF::GetGaussianCovar(TokArr var)
 	queryVls.assign(nnodes, -1);
     }
 
-    const pnl::CFactor * cpd = Model()->GetFactor(queryNds.front());
+    const pnl::CFactor * cpd = Model().GetFactor(queryNds.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matCovariance);
 
     return Net().ConvertMatrixToToken(mat);
@@ -367,7 +367,7 @@ TokArr MRF::GetJPD( TokArr nodes )
     pnl::CEvidence *evid = NULL;
     if( Net().EvidenceBoard()->IsEmpty() )
     {
-	evid = pnl::CEvidence::Create(Model()->GetModelDomain(), 0, NULL, pnl::valueVector(0));
+	evid = pnl::CEvidence::Create(Model().GetModelDomain(), 0, NULL, pnl::valueVector(0));
     }
     else
     {
@@ -530,7 +530,7 @@ TokArr MRF::GetMPE(TokArr nodes)
     pnl::CEvidence *evid = NULL;
     if( Net().EvidenceBoard()->IsEmpty() )
     {
-	evid = pnl::CEvidence::Create(Model()->GetModelDomain(), 0, NULL, pnl::valueVector(0));
+	evid = pnl::CEvidence::Create(Model().GetModelDomain(), 0, NULL, pnl::valueVector(0));
     }
     else
     {
@@ -698,12 +698,12 @@ pnl::CInfEngine &MRF::Inference(bool Recreate)
 	    if(!infJtree)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CJtreeInfEngine::Create(Model());
+		m_Inference = pnl::CJtreeInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CJtreeInfEngine::Create(Model());
+	    m_Inference = pnl::CJtreeInfEngine::Create(&Model());
 	}
 	break;
     case 'g': // Gibbs Sampling
@@ -712,7 +712,7 @@ pnl::CInfEngine &MRF::Inference(bool Recreate)
             delete m_Inference;
         }
 	
-        m_Inference = pnl::CGibbsSamplingInfEngine::Create(Model());
+        m_Inference = pnl::CGibbsSamplingInfEngine::Create(&Model());
 	break;
     case 'n': // Naive inference
 	if(m_Inference)
@@ -722,12 +722,12 @@ pnl::CInfEngine &MRF::Inference(bool Recreate)
 	    if(!infNaive)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CNaiveInfEngine::Create(Model());
+		m_Inference = pnl::CNaiveInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CNaiveInfEngine::Create(Model());
+	    m_Inference = pnl::CNaiveInfEngine::Create(&Model());
 	}
 	break;
     case 'p': // Pearl inference
@@ -738,12 +738,12 @@ pnl::CInfEngine &MRF::Inference(bool Recreate)
 	    if(!infPearl)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CPearlInfEngine::Create(Model());
+		m_Inference = pnl::CPearlInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CPearlInfEngine::Create(Model());
+	    m_Inference = pnl::CPearlInfEngine::Create(&Model());
 	}
 	break;
     default: //default inference algorithm
@@ -754,12 +754,12 @@ pnl::CInfEngine &MRF::Inference(bool Recreate)
 	    if(!infJtree)
 	    {
 		delete m_Inference;
-		m_Inference = pnl::CJtreeInfEngine::Create(Model());
+		m_Inference = pnl::CJtreeInfEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Inference = pnl::CJtreeInfEngine::Create(Model());
+	    m_Inference = pnl::CJtreeInfEngine::Create(&Model());
 	}
 	break;
     }
@@ -779,12 +779,12 @@ pnl::CStaticLearningEngine &MRF::Learning()
 	    if(!learnBayes)
 	    {
 		delete m_Learning;
-		m_Learning = pnl::CBayesLearningEngine::Create(Model());
+		m_Learning = pnl::CBayesLearningEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Learning = pnl::CBayesLearningEngine::Create(Model());
+	    m_Learning = pnl::CBayesLearningEngine::Create(&Model());
 	}
 	break;
     case 'e': //EM learning
@@ -795,12 +795,12 @@ pnl::CStaticLearningEngine &MRF::Learning()
 	    if(!learnEM)
 	    {
 		delete m_Learning;
-		m_Learning = pnl::CEMLearningEngine::Create(Model());
+		m_Learning = pnl::CEMLearningEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Learning = pnl::CEMLearningEngine::Create(Model());
+	    m_Learning = pnl::CEMLearningEngine::Create(&Model());
 	}
 	break;
     default: // deafult learning algorithm
@@ -811,21 +811,21 @@ pnl::CStaticLearningEngine &MRF::Learning()
 	    if(!learnEM)
 	    {
 		delete m_Learning;
-		m_Learning = pnl::CEMLearningEngine::Create(Model());
+		m_Learning = pnl::CEMLearningEngine::Create(&Model());
 	    }
 	}
 	else
 	{
-	    m_Learning = pnl::CEMLearningEngine::Create(Model());
+	    m_Learning = pnl::CEMLearningEngine::Create(&Model());
 	}
 	break;
     };
     return *m_Learning;
 }
 
-pnl::CMNet *MRF::Model()
+pnl::CMNet &MRF::Model()
 {
-    return static_cast<pnl::CMNet*>(&Net().Model());
+    return static_cast<pnl::CMNet&>(Net().Model());
 }
 
 void MRF::SetProperty(const char *name, const char *value)

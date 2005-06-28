@@ -217,9 +217,9 @@ void LIMID::DoNotify(const Message &msg)
     }
 }
 
-pnl::CIDNet *LIMID::Model()
+pnl::CIDNet &LIMID::Model()
 {
-    return static_cast<pnl::CIDNet*>(&Net().Model());
+    return static_cast<pnl::CIDNet&>(Net().Model());
 }
 
 pnl::CLIMIDInfEngine & LIMID::Inference()
@@ -238,7 +238,7 @@ pnl::CLIMIDInfEngine & LIMID::Inference()
     {
         pnl::CLIMIDInfEngine::Release(&m_Inf);
     }
-    m_Inf = pnl::CLIMIDInfEngine::Create(Model());
+    m_Inf = pnl::CLIMIDInfEngine::Create(&Model());
     return *m_Inf;
 }
 
@@ -299,7 +299,7 @@ TokArr LIMID::GetP(TokArr child, TokArr parents)
     parentNdsInner.resize(nparents + 1);
     parentVls.resize(nparents + 1);
 
-    const pnl::CFactor * cpd = Model()->GetFactor(childNdInner.front());
+    const pnl::CFactor * cpd = Model().GetFactor(childNdInner.front());
     const pnl::CMatrix<float> *mat = cpd->GetMatrix(pnl::matTable);
 	
     TokArr result = "";
