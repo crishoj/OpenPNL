@@ -135,6 +135,10 @@ SOURCE=..\source\NetCallBack.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\source\PersistNodeDiagInfo.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\source\PersistProbNet.cpp
 # End Source File
 # Begin Source File
@@ -236,6 +240,10 @@ SOURCE=..\include\MRFCB.hpp
 # Begin Source File
 
 SOURCE=..\include\NetCallBack.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\PersistNodeDiagInfo.hpp
 # End Source File
 # Begin Source File
 
