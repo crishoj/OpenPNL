@@ -1,0 +1,230 @@
+<html>
+
+<head>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<title>Reference manual</title>
+</head>
+
+<body>
+<font class="classes"><p>Class CDiagnostics</p></font>
+<font class="description"><p>Class CDiagnostics carries out diagnostics using marginal approach.</p></font>
+<table width="100%">
+	<tr>
+		<td width="100%">
+		<table width = 100%>
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">Create</font></p>
+			<p><font class="description">Returns class object.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">static CDiagnostics *Create(const CBNet *pBNet);</font></p><td>
+			</tr>			
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pBNet</font></td>
+					<td>Pointer to the class CBNet.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetTargetNodes</font></p>
+			<p><font class="description">Determine target nodes (hypothesis set).</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetTargetNodes(intVector &targetNodes);</font></p><td>
+			</tr>			
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">targetNodes</font></td>
+					<td>list of target(hypothesis) nodes.</td>
+				</tr>				
+			</table></td>
+			</tr>
+			
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetObservationNodes</font></p>
+			<p><font class="description">Determine test nodes.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetObservationNodes(intVector &observationNodes);</font></p><td>
+			</tr>			
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">observationNodes</font></td>
+					<td>list of test nodes.</td>
+				</tr>				
+			</table></td>
+			</tr>
+
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetTargetState</font></p>
+			<p><font class="description">Allow to define target state for specific node.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetTargetState(int node, int state);</font></p><td>
+			</tr>			
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">node</font></td>
+					<td>Number of target node.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">state</font></td>
+					<td>Target state value for it`s node.</td>
+				</tr>				
+			</table></td>
+			</tr>
+
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetTargetStates</font></p>
+			<p><font class="description">Allow to define target state for list of nodes.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetTargetStates(int node, intVector &listStates);</font></p><td>
+			</tr>			
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">node</font></td>
+					<td>Number of target node.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">listStates</font></td>
+					<td>List of target state values for it`s node.</td>
+				</tr>				
+			</table></td>
+			</tr>
+
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">GetTestsList</font></p>
+			<p><font class="description">Return sorted vector of numbers test nodes in order of contraction Value Of Information function.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">intVector GetTestsList(const intVector &pursuedHypNodes, const intVector &pursuedHypNodesState);</font></p><td>
+			</tr>			
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">pursuedHypNodes</font></td>
+					<td>List of pursued nodes.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">pursuedHypNodesState</font></td>
+					<td>List of pursued states of pursued nodes.</td>
+				</tr>				
+			</table></td>
+			</tr>
+
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetCost</font></p>
+			<p><font class="description">Set cost of observation for test node.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface"> void SetCost(int node, float nodeCost);</font></p><td>
+			</tr>			
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">node</font></td>
+					<td>Number of node for which the cost is set.</td>
+				</tr>				
+				<tr>
+					<td><font class="argname">nodeCost</font></td>
+					<td>The cost value.</td>
+				</tr>				
+			</table></td>
+			</tr>
+
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetCostRatio</font></p>
+			<p><font class="description">Set Value Of Information parameter.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetCostRatio(float costR);</font></p><td>
+			</tr>			
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">costR</font></td>
+					<td>The cost ratio value.</td>
+				</tr>				
+			</table></td>
+			</tr>
+
+			<tr>
+			<td width="100%"><hr width="100%"><p><font class="method">SetAlgorithm</font></p>
+			<p><font class="description">Allow to define diferent algorithms for calculation of Value Of Information.</font></p>
+			<hr align="left" width="50%">
+			</td>
+			</tr>
+			
+			<tr>
+			<td><p><font class="interface">void SetAlgorithm(int algNumber);</font></p><td>
+			</tr>			
+
+			<tr>
+			<td><table>
+				<tr><td width="100" Rowspan="4"></td><td><font class = "arg">Arguments</font></td></tr>
+				<tr>
+					<td><font class="argname">algNumber</font></td>
+					<td>The algorithm number:</td> 
+                    <tr><td><ul type=disc>
+                    	<li>0 - using Marginal Strength 1;
+                    	<li>1 - using Marginal Strength 2;
+                    	</ul>
+			        </td></tr>
+				</tr>				
+			</table></td>
+			</tr>
+
+		</table>
+		</td>
+	</tr>
+</table>
+</body>
+</html>

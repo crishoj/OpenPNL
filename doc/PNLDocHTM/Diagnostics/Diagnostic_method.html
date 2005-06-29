@@ -1,0 +1,32 @@
+<html>
+
+<head>
+<title>Diagnostics</title>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+</head>
+
+<body>
+<table width = "100%">
+	<tr><td width="100%" bgcolor="#0000ff"><h2><font color="ffffff">Algorithm idea</font></h2></td></tr>
+	<tr><td><p>The algorithm of diagnostics consists in calculating a priority of performing a tests for reduction of uncertainty of the diagnosis. For that it is necessary to define a list of target nodes.
+The following algorithm solves that problem. The input parameters are:
+    <ul type=disc>
+	<li>The list of target nodes for which it is necessary to reduce uncertainty.
+	<li>The list of target states for these nodes.
+	</ul>
+At the output parameter is the list of test nodes in ascending order.
+Because small and large joint probabilities are only possible when the marginal probabilities are either small or large. 
+Generally it is necessary to estimate benefit of performing each set of test nodes. We suppose that only one test is available now because in the other case it`s computational impracticable problem. Benefit of performing a test is estimated by the following formula: 
+ <img src="Ts_eb_ev.gif" align="left" >
+ <br><br><p>&nbsp;<p>, where K is a parameter set by user, 
+<br>Cost(T) is cost of performing a test (observation) T. 
+<br>V(Pr(H)) is a value function. 
+<br><br><br><br> <p>&nbsp;<p><tr><td> In PNL library two diferent value functions are realized.
+<br> <img src="MS1 & MS2.gif" align="left" width="528" height="345">
+<br><br><br><br><br><br><br><p>&nbsp;<p>, where F is set of target nodes.
+    </td></tr>
+    </td></tr>
+</table>
+</body>
+</html>
+

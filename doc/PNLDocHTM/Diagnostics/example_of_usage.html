@@ -1,0 +1,91 @@
+<html>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<title>Example of usage</title>
+<body>
+<table>
+	<tr>
+		<td colspan=2 align = "center"><h1><font color = "#0000ff">Example of usage diagnostics with Bayesian networks</h1></td>
+	</tr>
+	<tr>
+		<td colspan=2><p>Document contains necessary information to start a simple test in diagnostic algorithm for Bayesian networks that are realized in PNL. At first simple network is presented. Further an example for this algorithm is described.</p></td>
+	</tr>
+	<tr>
+		<td colspan=2 bgcolor = "#0000ff"><h2><font color="#ffffff">Initial model</font></h2></td>
+	</tr>
+	<tr>
+		<td colspan=2><p>Consider the following network also known as Asia network.</p><img src="asia.gif" align = "all"></img><br> <p>This network consist of 8 discrete nodes. Node sizes are 2. 0,1,6,7 is test nodes. 2,3,4 is target nodes.</p>
+			
+</td>
+</tr>
+	<tr>
+		<td bgcolor = "#0000ff"><h2><font color="#ffffff">Implementation</font></h2></td>
+	</tr>
+	<tr>
+		<td>
+		To start diagnostics with this network you may use the following source code.
+		<font class = "code">
+		<pre>
+int main(int argc, char* argv[])
+{
+<font class="comment">/*---- Network creation -----------------------------------------------------*/</font>
+    const CBNet* pBNet;
+    pBNet = pnlExCreateAsiaBNet();  <font class="comment"> // load standart model example </font>
+
+<font class="comment">/*---- Diagnostics creation -------------------------------------------------*/</font>
+    CDiagnostics *pDiag = CDiagnostics::Create(pBNet);
+    pDiag->SetCostRatio(1); <font class="comment">         // set parameter for VOI function</font>
+
+<font class="comment">/*---- Setting of target nodes ----------------------------------------------*/</font>
+    intVector tarN;
+    tarN.push_back(2);
+    tarN.push_back(3);
+    tarN.push_back(4);
+    pDiag->SetTargetNodes(tarN);
+
+<font class="comment">/*---- Setting of test nodes ------------------------------------------------*/</font>
+    intVector testN;
+    testN.push_back(0);
+    testN.push_back(1);
+    testN.push_back(6);
+    testN.push_back(7);
+    pDiag->SetObservationNodes(testN);
+    pDiag->SetCost(0,1);<font class="comment">             // set cost of observation for 0 node</font>
+    pDiag->SetCost(1,1);<font class="comment">             // set cost of observation for 1 node</font>
+
+<font class="comment">/*---- Setting of target states ---------------------------------------------*/</font>
+    pDiag->SetTargetState(2,1);
+    pDiag->SetTargetState(3,1);
+    pDiag->SetTargetState(4,1);
+
+<font class="comment">/*---- Choosing of selecting function ---------------------------------------*/</font>
+    pDiag->SetAlgorithm(0); 
+
+<font class="comment">/*---- Vector of pursued node creation --------------------------------------*/</font>
+    intVector purN;
+    purN.push_back(2);
+    purN.push_back(3);
+    purN.push_back(4);
+    intVector purS;
+    purS.push_back(1);
+    purS.push_back(1);
+    purS.push_back(1);
+<font class="comment">/*---- Diagnostics execution ------------------------------------------------*/</font>
+    intVector res = pDiag->GetTestsList(purN,purS);
+<font class="comment">/*---- Result output --------------------------------------------------------*/</font>
+    int i;
+    for( i = 0; i < res.size(); ++i )
+    {
+        printf("%d\n", res[i]);
+    }
+    return 0;
+}
+
+
+
+		</pre>
+		</font>
+		</td>
+	</tr>
+</table>
+<body>
+<html>

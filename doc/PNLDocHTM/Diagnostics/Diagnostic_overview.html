@@ -1,0 +1,22 @@
+<html>
+<title>Diagnostics</title>
+<link rel="stylesheet" type="text/css" href="css/table.css">
+<body>
+<table width = "100%">
+	<tr><td colspan=2 width="100%" bgcolor="#0000ff"><h2><font color="ffffff">Diagnostics and Bayesian networks</font></h2></td></tr>
+	<tr><td colspan=2 >Diagnosis is the process of identifying the disease or disorder of a patient or a machine by considering its history of symptoms and other signs. In general, diagnostics includes two types of problems. The first task is to determine the true cause or when multiple causes may occur simultaneously the combination of true causes. The second task is to reduce the uncertainty about the true cause by obtaining more information about the state of the world. Possible information sources are symptoms, results of tests, or historic data. Using this information several assumptions are made:
+    <ul type=disc>
+	<li>The information is perfect, i.e., there is no possibility that the information is either wrong or incomplete.
+	<li>The information never increases uncertainty.
+	</ul>
+Now for supporting diagnostics you can use Bayesian networks. All nodes in Bayesian network can be divided into 3 groups:
+    <ul type=disc>
+	<li>Target nodes (hypothesis variable) - each hypothesis state of hypothesis variable may represent a possible disease, fault in a system, or any other discomfort.
+	<li>Observation nodes (test variable)- each test state of test variable may represent an observation, physical sign, indicant, symptom or laboratory result.
+	<li>Other.
+	</ul>
+For performance of diagnostics the network should have a minimum one target node and minimum one test node. For each test node it is necessary to set cost of carrying out of the test.
+
+</table>
+</body>
+</html>
