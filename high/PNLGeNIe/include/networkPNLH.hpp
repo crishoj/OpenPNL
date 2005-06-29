@@ -38,7 +38,9 @@ namespace pnl
 
 class NetworkPNL: public INetwork
 {
+    friend class DiagNetworkPNL;
 public:
+    virtual BayesNet *GetBayesNet();
     typedef std::vector<std::pair<std::string, std::string> > PropertyMap;
     typedef std::map<String, String> PropertyRealMap;
     // high-level operations
@@ -248,19 +250,27 @@ public:
     virtual void GetCostChildren(int node, std::vector<int> &children);
     virtual int GetCostChildrenCount(int node);
     virtual int FindCostChild(int node, int childNode);
+
     virtual void GetCost(int node, std::vector<double> &cost);
     virtual void SetCost(int node, const std::vector<double> &cost);
+
     virtual double GetNotAvailableCostValue();
     virtual double GetNotRelevantTestValue();
+
     virtual void GetGroupCostProperty(std::string &name, std::string &value);
+
     virtual int GetDiagType(int node);
     virtual void SetDiagType(int node, int diagType);
+
     virtual void SetRanked(int node, bool ranked);
     virtual bool IsRanked(int node);
+
     virtual void SetMandatory(int node, bool mandatory);
     virtual bool IsMandatory(int node);
+
     virtual int GetDefaultOutcome(int node);
     virtual void SetDefaultOutcome(int node, int outcome);
+
     virtual bool IsFaultOutcome(int node, int outcome);
     virtual void SetFaultOutcome(int node, int outcome, bool fault);
     
@@ -286,8 +296,17 @@ private:
     pnl::Log *m_pLog;				// log driver (head) for debugging purposes
     pnl::LogDrvStream *m_pLogStream;		// stream driver for debugging purposes
     std::vector<NetConst::NodeValueStatus> m_aNodeValueStatus;// nodevalue status for every node
-    WEvidence *m_aEvidence;
-    std::vector<bool> m_abEvidence;
+//    WEvidence *m_aEvidence;
+	// diagnosis support properties
+    std::vector<double> m_cost;
+    std::vector<int> m_diagType;
+    std::vector<int> m_ranked;
+    std::vector<int> m_mandatory;
+    std::vector<int> m_defaultOutcome;
+    pnl::intVecVector m_faultOutcome;
+    std::vector<std::vector<std::string> > m_stateLabels;
+    unsigned int m_diagpref;
+    double m_entropy, m_entropyMax;
 };
 
 #endif // include guard
