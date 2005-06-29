@@ -43,6 +43,7 @@ CDiagnostics::CDiagnostics(const CBNet *pBNet)
     m_BNet = pBNet;
     m_evid = NULL;
     algorithmNumber = 0;
+    costRatio = 0;
 }
 
 CDiagnostics::~CDiagnostics()
@@ -115,8 +116,9 @@ void CDiagnostics::SetTargetStates(int node, intVector &states)
     }
 }
 
-intVector CDiagnostics::GetTestsList(const intVector &pursuedHypNodes, 
-                                     const intVector &pursuedHypNodesState)
+void CDiagnostics::GetTestsList(const intVector &pursuedHypNodes, 
+			const intVector &pursuedHypNodesState, intVector &listTestNodes,
+		doubleVector &listVOI)
 {
     pnlVector<pair<int,float> > rankedTests;
     int i, j;
@@ -167,8 +169,9 @@ intVector CDiagnostics::GetTestsList(const intVector &pursuedHypNodes,
             "GetTestsList method" );
     }
     if(( pursuedHypNodes.size() == 1) && ( algorithmNumber == 1 ))
-        PNL_THROW( CBadArg, "The Marginal Strength 2 algorithm can`t be used"
-        " with this pursuedNodes" );
+		algorithmNumber = 0;
+/*        PNL_THROW( CBadArg, "The Marginal Strength 2 algorithm can`t be used"
+        " with this pursuedNodes" );*/
     for( i = 0; i < rankedTests.size(); ++i )
     {
         float prob;
@@ -275,7 +278,7 @@ intVector CDiagnostics::GetTestsList(const intVector &pursuedHypNodes,
         // finish computing marginal strength MS1
 
         float expectedBenefit = expectedValue - testVal;
-        rankedTests[i].second = (expectedBenefit/testVal) - costRatio*m_observCost[rankedTests[i].first];
+        rankedTests[i].second = (-1)*(expectedBenefit/testVal);// - costRatio*m_observCost[rankedTests[i].first];
     }
     intVector res;
     intVector resNotBenfit;
@@ -307,13 +310,13 @@ intVector CDiagnostics::GetTestsList(const intVector &pursuedHypNodes,
         counter=0;
     }
     res.insert(res.end(),resNotBenfit.begin(),resNotBenfit.begin()+resNotBenfit.size());
-    intVector output;
-    output.resize(res.size());
+    listTestNodes.resize(res.size());
+    listVOI.resize(res.size());
     for( i = 0; i < res.size(); ++i)
     {
-        output[i] = rankedTests[res[i]].first;
+        listTestNodes[i] = rankedTests[res[i]].first;
+		listVOI[i] = rankedTests[res[i]].second;
     }
-    return output;
 }
 
 void CDiagnostics::SetCost( int node, float nodeCost )
@@ -328,14 +331,21 @@ void CDiagnostics::SetCost( int node, float nodeCost )
 
 void CDiagnostics::SetCostRatio(float costR)
 {
-    PNL_CHECK_RANGES( costR, 0, 10 );
-    costRatio = costR;
+    if (costR >= 0)
+        costRatio = costR;
+    else 
+        PNL_THROW( CBadArg, "bad argument for SetCostRatio method" );
 }
 
 void CDiagnostics::SetAlgorithm(int algNumber)
 {
     PNL_CHECK_RANGES( algNumber, 0, 1 );
     algorithmNumber = algNumber;
+}
+
+double CDiagnostics::GetEntropyCostRatio()
+{
+    return costRatio;
 }
 
 /*----- for GeNIe support -----*/

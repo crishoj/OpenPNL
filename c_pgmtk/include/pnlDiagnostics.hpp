@@ -36,12 +36,14 @@ public:
     void SetObservationNodes(intVector &observationNodes);
     void SetTargetState(int node, int state);
     void SetTargetStates(int node, intVector &listStates);
-    intVector GetTestsList(const intVector &pursuedHypNodes,
-        const intVector &pursuedHypNodesState);
+    void GetTestsList(const intVector &pursuedHypNodes,
+        const intVector &pursuedHypNodesState, intVector &listTestNodes,
+		doubleVector &listVOI);
     void SetCost(int node, float nodeCost);
     void SetCostRatio(float costR);
     void SetAlgorithm(int algNumber);
     virtual ~CDiagnostics();
+    double GetEntropyCostRatio();
     
 /*-------- for GeNIe support -------*/
 
