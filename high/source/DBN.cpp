@@ -411,9 +411,18 @@ TokArr DBN::GetJPD( TokArr nodes)
 	Inference().Smoothing();
 	break;
     case 'x':
-	Inference().DefineProcedure(pnl::ptFixLagSmoothing,0 );
+	int slice;
+	//	nSlice = 1;
+	Inference().DefineProcedure( pnl::ptFixLagSmoothing, nSlice );
+	for (slice = 0; slice < nSlice + 1; slice++)
+	{
+		Inference().EnterEvidence( &(pEvid[slice]), 1 );
+	}
+	Inference().FixLagSmoothing( slice );
+
+/*	Inference().DefineProcedure(pnl::ptFixLagSmoothing,0 );
 	Inference().EnterEvidence( &(pEvid[nSlice]), 1 );
-	Inference().FixLagSmoothing( nSlice );
+	Inference().FixLagSmoothing( nSlice );*/
 	break;
     case 'f':
 	int i;
@@ -442,7 +451,14 @@ TokArr DBN::GetJPD( TokArr nodes)
 	    if(GetSliceNum(tmpStr) == nSlice )
 	    {
 		tmpStr = GetShortName(tmpStr);
-		tmpStr<<"-1";
+		if(PropertyAbbrev("Inference") == 'x')
+		{
+			tmpStr<<"-0";
+		}
+		else
+		{
+			tmpStr<<"-1";
+		}
 		NewQue.push_back(tmpStr);
 	    }
 	    else
