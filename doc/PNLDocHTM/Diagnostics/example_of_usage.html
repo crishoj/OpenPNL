@@ -70,12 +70,15 @@ int main(int argc, char* argv[])
     purS.push_back(1);
     purS.push_back(1);
 <font class="comment">/*---- Diagnostics execution ------------------------------------------------*/</font>
-    intVector res = pDiag->GetTestsList(purN,purS);
+    intVector resVOI, resTests;
+    resVOI.resize(0);
+    resTests.resize(0); 
+    pDiag->GetTestsList(purN, purS, resTests, resVOI);
 <font class="comment">/*---- Result output --------------------------------------------------------*/</font>
     int i;
-    for( i = 0; i < res.size(); ++i )
+    for( i = 0; i < resVOI.size(); ++i )
     {
-        printf("%d\n", res[i]);
+        printf("%d\t%d\n", resTests[i],resVOI[i]);
     }
     return 0;
 }
