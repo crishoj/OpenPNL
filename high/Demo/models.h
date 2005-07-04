@@ -11,6 +11,7 @@ DBN* KjaerulfsBNetModel();
 BayesNet* RPSModel();
 BayesNet* CropModel();
 BayesNet* FraudModel();
+DBN* DBNModel();
 
 PNLW_END
 #endif

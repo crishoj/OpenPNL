@@ -34,8 +34,12 @@ int main(int argc, char* argv[])
                     PigsDemo();
                 else
                     if (strcmp(argv[1],"DBN") == 0)
-                        KjaerulfsBNetDemo();
+//                        KjaerulfsBNetDemo();
+                        DBNDemo();
                     else
+                        if (strcmp(argv[1],"Fraud") == 0)
+                            FraudDemo();
+                        else
                         {
                             printf("\nUnknown model \n"); 
                             return 1;

@@ -5,6 +5,7 @@
 PNLW_BEGIN
 
 std::ostream &operator<<(std::ostream &str, const TokArr &ta);
+
 void AsiaDemo();
 void PigsDemo();
 void ScalarGaussianBNetDemo();
@@ -14,6 +15,7 @@ void RPSDemo();
 void CropDemo();
 void Structural();
 void FraudDemo();
+void DBNDemo();
 
 PNLW_END
 #endif

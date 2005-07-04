@@ -693,7 +693,7 @@ DBN* KjaerulfsBNetModel()
     printf("\n net->AddNode(discrete^\"node0-0 node1-0 node2-0 \n\t node3-0 node4-0 node5-0 node6-0 node7-0\", \"true false\");");
     textcolor(LIGHTGREEN);
     
-    printf("\t\t\t\tAdding of nodes is in process....");
+    printf("\t\t\tAdding of nodes is in process....");
     _sleep(2000);
     textcolor(WHITE);
     
@@ -711,7 +711,7 @@ DBN* KjaerulfsBNetModel()
     net->AddArc("node0-0", "node1-0 node2-0");
     printf("\n net->AddArc(\"node0-0\", \"node1-0 node2-0\");");
     textcolor(LIGHTGREEN);
-    printf("\t\t\t\t\t\t\tAdding of arcs is in process....");
+    printf("\t\t\t\t\t\tAdding of arcs is in process....");
     _sleep(2000);
 
     textcolor(WHITE);
@@ -766,7 +766,7 @@ DBN* KjaerulfsBNetModel()
     net->SetPTabular("node0-0^false node0-0^true", "0.5 0.5");
     printf("\n net->SetPTabular(\"node0-0^false node0-0^true\", \"0.5 0.5\");");
     textcolor(LIGHTGREEN);
-    printf("\t\t\t\t\tAdding of distributions is in process....");
+    printf("\t\t\t\tAdding of distributions is in process....");
     _sleep(2000);
 
     textcolor(WHITE);
@@ -934,15 +934,17 @@ BayesNet* CropModel()
     _sleep(2000);
     textcolor(WHITE);
 
-    net->AddNode(discrete^"Buy", "Yes No");
-    printf("\n net->AddNode(discrete^\"Buy\", \"Yes No\");");
-    _sleep(1000);
-
     net->AddNode(continuous ^ "Crop");
     printf("\n net->AddNode(continuous ^ \"Crop\");");
     _sleep(1000);
+    
     net->AddNode(continuous ^ "Price");
     printf("\n net->AddNode(continuous ^ \"Price\");");
+    _sleep(1000);
+
+    net->AddNode(discrete^"Buy", "Yes No");
+    printf("\n net->AddNode(discrete^\"Buy\", \"Yes No\");");
+
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
     getch();
@@ -1004,12 +1006,34 @@ BayesNet* FraudModel()
     BayesNet *net;
     net = new BayesNet();
 
+    textcolor(WHITE);
     net->AddNode(discrete^"Fraud", "Yes No");
-    net->AddNode(discrete^"Age", "Young Middle-Aged Elderly");
+    printf("\n net->AddNode(discrete^\"Fraud\", \"Yes No\");");
+    textcolor(LIGHTGREEN);
+    
+    printf("\t\t\t\t\t\tAdding of nodes is in process....");
+    _sleep(2000);
+    textcolor(WHITE);
+    net->AddNode(discrete^"Age", "Young MiddleAged InYears");
+    printf("\n net->AddNode(discrete^\"Age\", \"Young MiddleAged InYears\");");
+    _sleep(1000);
+    
     net->AddNode(discrete^"Sex", "Male Female");
+    printf("\n net->AddNode(discrete^\"Sex\", \"Male Female\");");
+    _sleep(1000);
+    
     net->AddNode(discrete^"Gas", "Yes No");
+    printf("\n net->AddNode(discrete^\"Gas\", \"Yes No\");");
+    _sleep(1000);
+    
     net->AddNode(discrete^"Jewelry", "Yes No");
+    printf("\n net->AddNode(discrete^\"Jewelry\", \"Yes No\");");
+    textcolor(LIGHTGREEN);
+    printf("\n ......All nodes are added....\n");
+    textcolor(WHITE);
 
+    getch();
+    
 /*    net->AddArc("Fraud Age Sex", "Jewelry");
     net->AddArc("Fraud", "Gas");
 
@@ -1061,5 +1085,86 @@ BayesNet* RPSModel()
 
     return net;
 }
+
+DBN* DBNModel()
+{
+    
+    DBN *net;
+    net = new DBN();
+
+    textcolor(WHITE);
+    
+    net->AddNode(discrete^"Rain-0 Umbrella-0", "True False");
+    printf("\n net->AddNode(discrete^\"Rain-0 Umbrella-0\", \"True False\");");
+    textcolor(LIGHTGREEN);
+    
+    printf("\t\t\t\t\tAdding of nodes is in process....");
+    _sleep(2000);
+
+    textcolor(WHITE);
+    net->AddNode(discrete^"Rain-1 Umbrella-1", "True False");
+    printf("\n net->AddNode(discrete^\"Rain-1 Umbrella-1\", \"True False\");");
+    textcolor(LIGHTGREEN);
+    printf("\n ......All nodes are added....\n");
+    getch();
+    
+    // arcs
+    textcolor(WHITE);
+    net->AddArc("Rain-0", "Umbrella-0");
+    printf("\n net->AddArc(\"Rain-0\", \"Umbrella-0\");");
+    textcolor(LIGHTGREEN);
+    printf("\t\t\t\t\t\t\t\tAdding of arcs is in process....");
+    _sleep(2000);
+    
+    textcolor(WHITE);    
+    net->AddArc("Rain-0", "Rain-1");
+    printf("\n net->AddArc(\"Rain-0\", \"Rain-1\");");
+    _sleep(1000);
+    
+    net->AddArc("Rain-1", "Umbrella-1");
+    printf("\n net->AddArc(\"Rain-1\", \"Umbrella-1\");");
+    textcolor(LIGHTGREEN);
+    printf("\n ......All arcs are added....\n");
+    getch();
+    
+    // distributions
+    textcolor(WHITE);
+    net->SetPTabular("Rain-0^True Rain-0^False", "0.5 0.5");
+    printf("\n net->SetPTabular(\"Rain-0^True Rain-0^False\", \"0.5 0.5\");");
+    textcolor(LIGHTGREEN);
+    printf("\t\t\t\t\tAdding of distributions is in process....");
+    _sleep(2000);
+
+    textcolor(WHITE);
+    net->SetPTabular("Umbrella-0^True Umbrella-0^False", "0.9 0.1", "Rain-0^True");
+    printf("\n net->SetPTabular(\"Umbrella-0^True Umbrella-0^False\", \"0.9 0.1\", \"Rain-0^True\");");
+    _sleep(1000);
+
+    net->SetPTabular("Umbrella-0^True Umbrella-0^False", "0.2 0.8", "Rain-0^False");
+    printf("\n net->SetPTabular(\"Umbrella-0^True Umbrella-0^False\", \"0.2 0.8\", \"Rain-0^False\");");
+    _sleep(1000);
+
+    net->SetPTabular("Rain-1^True Rain-1^False", "0.7 0.3", "Rain-0^True");
+    printf("\n net->SetPTabular(\"Rain-1^True Rain-1^False\", \"0.7 0.3\", \"Rain-0^True\");");
+    _sleep(1000);
+
+    net->SetPTabular("Rain-1^True Rain-1^False", "0.3 0.7", "Rain-0^False");
+    printf("\n net->SetPTabular(\"Rain-1^True Rain-1^False\", \"0.3 0.7\", \"Rain-0^False\");");
+    _sleep(1000);
+
+    net->SetPTabular("Umbrella-1^True Umbrella-1^False", "0.9 0.1", "Rain-1^True");
+    printf("\n net->SetPTabular(\"Umbrella-1^True Umbrella-1^False\", \"0.9 0.1\", \"Rain-1^True\");");
+    _sleep(1000);
+
+    net->SetPTabular("Umbrella-1^True Umbrella-1^False", "0.2 0.8", "Rain-1^False");
+    printf("\n net->SetPTabular(\"Umbrella-1^True Umbrella-1^False\", \"0.2 0.8\", \"Rain-1^False\");");
+    textcolor(LIGHTGREEN);
+    printf("\n ......All distributions are added....\n");
+    getch();
+    textcolor(WHITE);
+
+    return net;
+}
+
 
 PNLW_END
