@@ -309,6 +309,7 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
     WDistribFun* pDistr = Distribution(iNode);
     DistribFunDesc *desc = pDistr->desc();
     int NumOfNodes = desc->nNode();
+    int NumOfContinuous = desc->nContinuous();
 
     if(DistributionType(iNode).IsDiscrete())
     {
@@ -403,35 +404,92 @@ void WDistributions::ResetDistribution(int iNode, pnl::CFactor &ft)
     }
     else
     {
-	WGaussianDistribFun* pGauDistr = static_cast<WGaussianDistribFun*>(Distribution(iNode));
+	bool isCondGaussian = false;
+	Vector<int> Parents;
+	Graph().GetParents(&Parents, iNode);
 
-	pGauDistr->CreateDefaultDistribution();
-
-	if (ft.GetDistribFun()->IsDistributionSpecific() == 1)
+	int size = Parents.size();
+	for (int parent = 0; (parent < size)&&(!isCondGaussian); parent ++)
 	{
-	    pGauDistr->CreateDistribution();
+	    isCondGaussian = isCondGaussian || DistributionType(Parents[parent]).IsDiscrete();
+	};
+
+	if (isCondGaussian)
+	{
+	    pnl::intVector parentIndexes;
+	    WCondGaussianDistribFun* pCondGauDistr = static_cast<WCondGaussianDistribFun*>(Distribution(iNode));
+	    pnl::CCondGaussianDistribFun* pCondGauFT = static_cast<pnl::CCondGaussianDistribFun *>(ft.GetDistribFun());
+	    pnl::CMatrix<pnl::CGaussianDistribFun*>* pMatrixWithDistribution = pCondGauFT->
+		GetMatrixWithDistribution();
+	    pnl::CMatrixIterator<pnl::CGaussianDistribFun*>* iter = pMatrixWithDistribution->InitIterator();
+
+	    for (iter; pMatrixWithDistribution->IsValueHere(iter); pMatrixWithDistribution->Next(iter))
+	    {
+		pMatrixWithDistribution->Index( iter, &parentIndexes );		
+		pCondGauDistr->CreateDefaultDistribution();
+
+		if (pCondGauFT->GetDistribution(&(parentIndexes.front()))->IsDistributionSpecific() == 1)
+		{
+		    pCondGauDistr->CreateUniformDistribution();
+		}
+		else
+		{
+		    static_cast<pnl::CDenseMatrix<float>*>(pCondGauFT->GetMatrix(pnl::matMean, -1, &(parentIndexes.front())))
+			->GetRawData(&nElement, &pData);
+		    pCondGauDistr->SetData(pnl::matMean, pData, -1, &(parentIndexes.front()));
+
+		    if (pCondGauFT->GetDistribution(&(parentIndexes.front()))->IsDistributionSpecific() != 2)
+		    {
+			static_cast<pnl::CDenseMatrix<float>*>(pCondGauFT->GetMatrix(pnl::matCovariance, -1, &(parentIndexes.front())))
+			    ->GetRawData(&nElement, &pData);
+			pCondGauDistr->SetData(pnl::matCovariance, pData, -1, &(parentIndexes.front()));
+		    
+
+			int NumOfNodes = ft.GetDomainSize();
+			for (int parent = 0; parent < (NumOfContinuous - 1); parent++)
+			{
+			    static_cast<pnl::CDenseMatrix<float>*>(pCondGauFT->GetMatrix(pnl::matWeights, parent, &(parentIndexes.front())))
+				->GetRawData(&nElement, &pData);
+			    pCondGauDistr->SetData(pnl::matWeights, pData, parent, &(parentIndexes.front()));
+			}
+		    }
+		}
+	    }
+
 	}
 	else
-	{
-	    static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matMean))
-		->GetRawData(&nElement, &pData);
-	    pGauDistr->SetData(pnl::matMean, pData);
+	{		    
+	    WGaussianDistribFun* pGauDistr = static_cast<WGaussianDistribFun*>(Distribution(iNode));
 
-	    if (ft.GetDistribFun()->IsDistributionSpecific() != 2)
+	    pGauDistr->CreateDefaultDistribution();
+
+	    if (ft.GetDistribFun()->IsDistributionSpecific() == 1)
 	    {
-		static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matCovariance))
-		    ->GetRawData(&nElement, &pData);
-		pGauDistr->SetData(pnl::matCovariance, pData);
+		pGauDistr->CreateDistribution();
 	    }
-
-	    int NumOfNodes = ft.GetDomainSize();
-	    for (int parent = 0; parent < (NumOfNodes - 1); parent++)
+	    else
 	    {
-		static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matWeights, parent))
+		static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matMean))
 		    ->GetRawData(&nElement, &pData);
-		pGauDistr->SetData(pnl::matWeights, pData, parent);
+		pGauDistr->SetData(pnl::matMean, pData);
+
+		if (ft.GetDistribFun()->IsDistributionSpecific() != 2)
+		{
+		    static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matCovariance))
+			->GetRawData(&nElement, &pData);
+		    pGauDistr->SetData(pnl::matCovariance, pData);
+
+		    int NumOfNodes = ft.GetDomainSize();
+		    for (int parent = 0; parent < (NumOfNodes - 1); parent++)
+		    {
+			static_cast<pnl::CDenseMatrix<float>*>(ft.GetMatrix(pnl::matWeights, parent))
+			    ->GetRawData(&nElement, &pData);
+			pGauDistr->SetData(pnl::matWeights, pData, parent);
+		    }
+		}
 	    }
 	}
+	
     }
 }
 
