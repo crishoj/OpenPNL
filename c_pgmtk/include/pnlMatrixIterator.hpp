@@ -27,7 +27,7 @@
 #include "pnlpnlType.hpp"
 #endif 
 PNL_BEGIN
-template <class Type> class CMatrixIterator : public CPNLBase
+template <class Type> class PNL_API CMatrixIterator : public CPNLBase
 {
     public:
 //        inline Type* GetCurrent();
@@ -76,7 +76,7 @@ const CPNLType CMatrixIterator<Type> ::m_TypeInfo = CPNLType("CMatrixIterator", 
 
 #endif
 
-template <class Type> class CDenseMatrixIterator : public CMatrixIterator<Type>
+template <class Type> class PNL_API CDenseMatrixIterator : public CMatrixIterator<Type>
 {
     public:
         static CDenseMatrixIterator<Type>* Create(const Type* first );
@@ -134,7 +134,7 @@ const CPNLType CDenseMatrixIterator<Type> ::m_TypeInfo = CPNLType("CDenseMatrixI
 
 #endif
 
-template <class Type> class CSparseMatrixIterator : public CMatrixIterator<Type>
+template <class Type> class PNL_API CSparseMatrixIterator : public CMatrixIterator<Type>
 {
 public:
     static CSparseMatrixIterator<Type>* Create( CxSparseMat* matrix );
