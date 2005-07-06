@@ -1368,8 +1368,58 @@ void WCondGaussianDistribFun::CreateDefaultDistribution()
 #else
     m_pDistrib->CreateDefaultMatrices();
 
-    delete nodeTypes;
 #endif
+
+    delete nodeTypes;
+}
+
+void WCondGaussianDistribFun::CreateUniformDistribution()
+{
+    int NumberOfNodes = desc()->nNode();
+    int NumberOfTabular = desc()->nTabular();
+
+    if (m_pDistrib != 0)
+    {
+	const pnl::pConstNodeTypeVector *ntVec = m_pDistrib->GetNodeTypesVector();
+	int NumberOfNodes = ntVec->size();
+	for (int node = 0; node < NumberOfNodes; node++)
+	{
+	    delete const_cast<CNodeType*>((*ntVec)[node]);
+	}
+	delete m_pDistrib;
+	m_pDistrib = 0;
+    }
+
+    const CNodeType **nodeTypes = new const CNodeType *[NumberOfNodes];
+    const CNodeType **nodeTabularTypes = new const CNodeType *[NumberOfTabular];
+
+    int tabNode = 0;
+    for (int node = 0; node < NumberOfNodes; node++)
+    {
+	nodeTypes[node] = new CNodeType(desc()->isTabular(node), desc()->nodeSize(node), nsChance);
+	if (desc()->isTabular(node))
+	{
+	    nodeTabularTypes[tabNode++] = nodeTypes[node];
+	};
+    }
+
+    m_pDistrib = pnl::CCondGaussianDistribFun::Create( 0, NumberOfNodes, nodeTypes );
+
+    CMatrix<CGaussianDistribFun*>* pDistributions = m_pDistrib->GetMatrixWithDistribution();
+
+    CMatrixIterator<CGaussianDistribFun*>* iter = pDistributions->InitIterator();
+    for( iter; pDistributions->IsValueHere( iter ); pDistributions->Next(iter))
+    {
+	intVector parentIndexes;
+	pDistributions->Index( iter, &parentIndexes );
+	pnl::CGaussianDistribFun *pGDF = CGaussianDistribFun::CreateUnitFunctionDistribution
+	    (NumberOfTabular, nodeTabularTypes);
+	m_pDistrib->SetDistribFun(pGDF, &(parentIndexes.front()));
+	delete pGDF;
+    }
+
+    delete nodeTypes;
+    delete nodeTabularTypes;
 }
 
 WCondSoftMaxDistribFun::WCondSoftMaxDistribFun(): WDistribFun(), m_pDistrib(0)
@@ -1574,6 +1624,35 @@ void WCondSoftMaxDistribFun::SetDefaultDistribution()
 void WCondGaussianDistribFun::SetDefaultDistribution()
 {
     CreateDefaultDistribution();
+}
+
+void WCondGaussianDistribFun::SetData(int matrixId, const float *probability, 
+				     int numWeightMat, const int* pDiscrParentValues)
+{
+    static const char fname[] = "SetData";
+
+    if(!m_pDistrib)
+    {
+	CreateDefaultDistribution();
+    }
+
+    EMatrixType matType;
+    switch (matrixId)
+    {
+    case matMean:
+    case matCovariance:
+    case matWeights:
+    case matWishartMean:
+    case matWishartCov:
+	matType = static_cast<EMatrixType>(matrixId);
+	break;
+    default:
+	ThrowUsingError("Unsupported type of matrix in gaussian distribution", fname);
+	break;
+    }
+
+    const_cast<pnl::CGaussianDistribFun *>(m_pDistrib->GetDistribution(pDiscrParentValues))
+	->AllocMatrix( probability, matType, numWeightMat);
 }
 
 Vector<int> WCondSoftMaxDistribFun::GetDiscreteParentIndexes(Vector<int> &aIndex)

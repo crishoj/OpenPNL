@@ -158,9 +158,11 @@ public:
     void DoSetup();
     pnl::CDenseMatrix<float> *Matrix(int matrixType, int numWeightMat = -1, const int* pDiscrParentValues = 0) const;
     void CreateDefaultDistribution();
+    void CreateUniformDistribution();
     void SetDefaultDistribution();
     int IsDistributionSpecific();
     pnl::CCondGaussianDistribFun *GetPNLDistribFun() {return m_pDistrib;};
+    void SetData(int matrixId, const float *probability, int numWeightMat = -1, const int* pDiscrParentValues = 0);
 
 protected:
     virtual void SetAValue(int matrixId, Vector<int> &aIndex, float probability);
