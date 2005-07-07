@@ -1514,5 +1514,19 @@ float BayesNet::GetEMLearningCriterionValue()
     return score[0];
 }
 
+pnl::CEvidence *BayesNet::GetPNLEvidence()
+{
+    pnl::CEvidence *evid = NULL;
+    if( Net().EvidenceBoard()->IsEmpty() )
+    {
+	evid = pnl::CEvidence::Create(Model().GetModelDomain(), 0, NULL, pnl::valueVector(0));
+    }
+    else
+    {
+	evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
+    }
+
+    return evid;
+}
 
 PNLW_END

@@ -910,4 +910,19 @@ const char MRF::PropertyAbbrev(const char *name) const
     return 0;
 }
 
+pnl::CEvidence *MRF::GetPNLEvidence()
+{
+    pnl::CEvidence *evid = NULL;
+    if( Net().EvidenceBoard()->IsEmpty() )
+    {
+	evid = pnl::CEvidence::Create(Model().GetModelDomain(), 0, NULL, pnl::valueVector(0));
+    }
+    else
+    {
+	evid = Net().CreateEvidence(Net().EvidenceBoard()->Get());
+    }
+
+    return evid;
+}
+
 PNLW_END
