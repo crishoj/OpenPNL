@@ -262,28 +262,31 @@ void CropDemo()
     cout << PriceJPD << "\n";
     textcolor(WHITE);
 */
-    net->AddEvidToBuf("Subsidy^Yes Buy^No Crop^5.45 Price^13.0");
-    printf("\n net->AddEvidToBuf(\"Subsidy^Yes Buy^No Crop^5.45 Price^13.0\");");
+    net->AddEvidToBuf("Subsidy^Yes Buy^No Crop^5.45 Price^5.0");
+    printf("\n net->AddEvidToBuf(\"Subsidy^Yes Buy^No Crop^5.45 Price^5.0\");");
     _sleep(1000);
 
-    net->AddEvidToBuf("Subsidy^No Buy^Yes Crop^8.6 Price^21.3");
-    printf("\n net->AddEvidToBuf(\"Subsidy^No Buy^Yes Crop^8.6 Price^21.3\");");
+    net->AddEvidToBuf("Subsidy^No Buy^Yes Crop^8.6 Price^3.3");
+    printf("\n net->AddEvidToBuf(\"Subsidy^No Buy^Yes Crop^8.6 Price^3.3\");");
     _sleep(1000);
 
-    net->AddEvidToBuf("Subsidy^No Buy^No Crop^7.4 Price^17.4");
-    printf("\n net->AddEvidToBuf(\"Subsidy^No Buy^No Crop^7.4 Price^17.4\");");
+    net->AddEvidToBuf("Subsidy^No Buy^No Crop^7.4 Price^2.4");
+    printf("\n net->AddEvidToBuf(\"Subsidy^No Buy^No Crop^7.4 Price^2.4\");");
     _sleep(1000);
 
-    net->AddEvidToBuf("Subsidy^Yes Buy^Yes Crop^3.2 Price^19.8");
-    printf("\n net->AddEvidToBuf(\"Subsidy^Yes Buy^Yes Crop^3.2 Price^19.8\");");
+    net->AddEvidToBuf("Subsidy^Yes Buy^Yes Crop^3.2 Price^1.8");
+    printf("\n net->AddEvidToBuf(\"Subsidy^Yes Buy^Yes Crop^3.2 Price^1.8\");");
     _sleep(1000);
 
     net->LearnParameters();
-    printf("\n net->LearnParameters();");
+    printf("\n\n net->LearnParameters();");
     _sleep(1000);
 
-    net->GetEMLearningCriterionValue();
-    printf("\n net->GetEMLearningCriterionValue();");
+    float val =  net->GetEMLearningCriterionValue();
+    printf("\n\n net->GetEMLearningCriterionValue();");
+    textcolor(YELLOW);
+    printf("\t\t\t\t\t\t\t%f\n", val);
+    textcolor(WHITE);
     _sleep(1000);
 
     getch();
@@ -476,5 +479,6 @@ void DBNDemo()
     cout << j1 << "\n\t\t\t\t\t\t\t\t\t\t\t\t" << j2 << "\n\t\t\t\t\t\t\t\t\t\t\t\t";
     cout << j3 << "\n\t\t\t\t\t\t\t\t\t\t\t\t"<< j4 <<"\n";
     textcolor(WHITE);
+    getch();
 }
 PNLW_END
