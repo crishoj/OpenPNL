@@ -83,10 +83,19 @@ rel=STYLESHEET>
     href="#decl_GetParents">GetParents</A> 
 
     <LI><A 
+    href="#decl_GetPNLEvidence">GetPNLEvidence</A> 
+
+    <LI><A 
     href="#decl_GetProperty">GetProperty</A> 
 
     <LI><A 
     href="#decl_GetPTabular">GetPTabular</A> 
+
+    <LI><A 
+    href="#decl_Inference">Inference</A> 
+
+    <LI><A 
+    href="#decl_Learning">Learning</A> 
 
     <LI><A 
     href="#decl_LearnParameters">LearnParameters</A> 
@@ -102,6 +111,9 @@ rel=STYLESHEET>
 
     <LI><A 
     href="#decl_MaskEvidBuf">MaskEvidBuf</A> 
+
+    <LI><A 
+    href="#decl_Model">Model</A> 
 
     <LI><A 
     href="#decl_SaveEvidBuf">SaveEvidBuf</A> 
@@ -399,7 +411,11 @@ The following functional groups can be distinguished:
     <A href="#decl_GetParents">GetParents</A>,
     <A href="#decl_GetNeighbours">GetNeighbours</A>,
     <A href="#decl_SetProperty">SetProperty</A>,
-    <A href="#decl_GetProperty">GetProperty</A>
+    <A href="#decl_GetProperty">GetProperty</A>,
+    <A href="#decl_GetPNLEvidence">GetPNLEvidence</A>,
+    <A href="#decl_Inference">Inference</A>,
+    <A href="#decl_Learning">Learning</A>,
+    <A href="#decl_Model">Model</A>
     </LI>
     <LI>Learning parameters<BR>
     <A href="#decl_LearnParameters">LearnParameters</A>
@@ -798,6 +814,59 @@ Results of these calls:
   <td>"NodeB^true^NodeA^false^0.4"</td>
 </tr>
 </table>
+<HR>
+
+<H3><A 
+name=decl_GetPNLEvidence>GetPNLEvidence</A></H3>
+<P class=Blurb> Returns a pointer to the evidence (object of pnl::CEvidence class)
+</P>
+<font class="interface">
+pnl::CEvidence *GetPNLEvidence();
+</font>
+<H5>Discussion</H5>
+<p class="description">The function creates an object of pnl::CEvidence class based on the evidence you set. Then the function returns a pointer to the object. You should delete this object yourself.
+</p>
+<HR>
+
+<H3><A 
+name=decl_Inference>Inference</A></H3>
+<P class=Blurb> Returns a reference to the object of pnl::CInfEngine class which corresponds to the current BayesNet object 
+</P>
+<font class="interface">
+pnl::CInfEngine &Inference(bool Recreate = false);
+</font>
+<H5>Arguments</H5>
+<DL>
+  <DT>Recreate
+  <DD>If Recreate variable is equal to true then pnl::CInfEngine object is recreated and the function returns a reference to the new object.
+</DL> 
+<H5>Discussion</H5>
+<p class="description">The object which the function returns is internal. We do not recommend you to use this method if don't really need it.
+</p>
+<HR>
+
+<H3><A 
+name=decl_Learning>Learning</A></H3>
+<P class=Blurb> Returns a reference to the object of pnl::CBNet class which corresponds to the current BayesNet object 
+</P>
+<font class="interface">
+pnl::CBNet &Model();
+</font>
+<H5>Discussion</H5>
+<p class="description">The object which the function returns is internal. We do not recommend you to use this method if don't really need it.
+</p>
+<HR>
+
+<H3><A 
+name=decl_Model>Model</A></H3>
+<P class=Blurb> Returns a reference to the object of pnl::CStaticLearningEngine class which corresponds to the current BayesNet object 
+</P>
+<font class="interface">
+pnl::CStaticLearningEngine &Learning();
+</font>
+<H5>Discussion</H5>
+<p class="description">The object which the function returns is internal. We do not recommend you to use this method if don't really need it.
+</p>
 <HR>
 
 <H3><A 
@@ -1741,9 +1810,9 @@ The following functional groups can be distinguished:
     <A href="#decl_GetParents_DBN">GetParents</A>,
     <A href="#decl_GetNeighbours_DBN">GetNeighbours</A>,
     <A href="#decl_SetProperty_DBN">SetProperty</A>,
-    <A href="#decl_GetProperty_DBN">GetProperty</A>
-    <A href="#decl_SetNumSlices_DBN">SetNumSlices</A>
-    <A href="#decl_Unroll_DBN">Unroll</A>   		
+    <A href="#decl_GetProperty_DBN">GetProperty</A>,
+    <A href="#decl_SetNumSlices_DBN">SetNumSlices</A>,
+    <A href="#decl_Unroll_DBN">Unroll</A>
     
     <LI>Learning parameters<BR>
     <A href="#decl_LearnParameters_DBN">LearnParameters</A>
@@ -2812,9 +2881,6 @@ Generate 10 samples on 0 slice, 11 on 1 slice and 15 on 2 slice:
 <p class="example">
 GenerateEvidences("10 11 15");
 </P>
-
-
-
 
 <hr>
 <H2><A name=decl_Class_LIMID>Class LIMID</A></H2>
