@@ -781,10 +781,33 @@ void TestDelNode()
 
 }
 
+void TestNodeTypes()
+{
+   BayesNet *net = SimpleCondSoftMaxModel();
+
+   TokArr n0t = net->GetNodeType("node0");
+   TokArr n1t = net->GetNodeType("node1");
+   TokArr n2t = net->GetNodeType("node2");
+   TokArr n3t = net->GetNodeType("node3");
+   TokArr n5t = net->GetNodeType("node5");
+   TokArr n6t = net->GetNodeType("node6");
+
+   printf("\nNodes types\n");
+   printf("Node 0 type: %s\n",  String(n0t).c_str());
+   printf("Node 1 type: %s\n",String(n1t).c_str());
+   printf("Node 2 type: %s\n",String(n2t).c_str());
+   printf("Node 3 type: %s\n",String(n3t).c_str());
+   printf("Node 5 type: %s\n",String(n5t).c_str());
+   printf("Node 6 type: %s\n",String(n6t).c_str());
+
+   delete net;
+}
+
 int testSoftMax()
 {
 	
 	int res = TRS_OK;
+	TestNodeTypes();
 	TestSoftMaxParamLearning();
 	TestSetDistributionSoftMax();
 	TestJtreeInferenceSoftMax1();

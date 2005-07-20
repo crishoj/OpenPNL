@@ -1199,9 +1199,357 @@ void TestsPnlHigh::TestGibbsRecreate()
     delete net;
 }
 
+int testDelArc()
+{
+	int res = TRS_OK;
+	//Create a simple model
+    BayesNet net;
+    net.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+    net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
+	net.AddArc("PreviousHumanTurn","PreviousCompTurn");
+	//Deleting arc
+	net.DelArc("PreviousHumanTurn","PreviousCompTurn");
+	//Adding evidences
+	net.AddEvidToBuf("PreviousHumanTurn^Rock");
+	//JPD Request
+	net.GetJPD("CurrentHumanTurn");
+	return res;
+}
+
+int testNodeNeigborsRequests()
+{
+    int res = TRS_OK;
+	//Create a simple model
+    BayesNet net;
+    net.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+    net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
+
+    TokArr n0c = net.GetChildren("PreviousCompTurn");
+    TokArr n1c = net.GetChildren("PreviousHumanTurn");
+    TokArr n2c = net.GetChildren("CurrentHumanTurn");  
+
+//#ifdef PRINT_RESULT
+    printf("\nChildren\n");
+    printf("%s\n",String(n0c).c_str());
+    printf("%s\n",String(n1c).c_str());
+    printf("%s\n",String(n2c).c_str());
+//#endif    
+    
+    TokArr n0p = net.GetParents("PreviousCompTurn");
+    TokArr n1p = net.GetParents("PreviousHumanTurn");
+    TokArr n2p = net.GetParents("CurrentHumanTurn");  
+
+    printf("\nParents\n");
+    printf("%s\n",String(n0p).c_str());
+    printf("%s\n",String(n1p).c_str());
+    printf("%s\n",String(n2p).c_str());   
+
+    TokArr n0n = net.GetNeighbors("PreviousCompTurn");
+    TokArr n1n = net.GetNeighbors("PreviousHumanTurn");
+    TokArr n2n = net.GetNeighbors("CurrentHumanTurn");  
+
+    printf("\nNeighbors\n");
+    printf("%s\n",String(n0n).c_str());
+    printf("%s\n",String(n1n).c_str());
+    printf("%s\n",String(n2n).c_str());
+   
+    return res;
+}
+
+int testSaveLoad()
+{
+    int res = TRS_OK;
+	//Create a simple model
+    BayesNet net;
+    net.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+    net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
+	net.SaveNet("TempNet.csv");
+	net.LoadNet("TempNet.csv");
+    //Adding evidences
+	net.AddEvidToBuf("PreviousHumanTurn^Rock");
+	//JPD Request
+	net.GetJPD("CurrentHumanTurn");
+	return res;
+}
+
+int testGetProb()
+{
+    int res = TRS_OK;
+	//Create a simple model
+    BayesNet net;
+    net.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+    net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
+	
+	//Specify discributions;
+	net.SetPTabular("CurrentHumanTurn^Rock", "0.4", "PreviousHumanTurn^Rock PreviousCompTurn^Rock");
+	net.SetPTabular("CurrentHumanTurn^Paper", "0.2666666", "PreviousHumanTurn^Rock PreviousCompTurn^Rock");
+	net.SetPTabular("CurrentHumanTurn^Scissors", "0.5", "PreviousHumanTurn^Rock PreviousCompTurn^Paper");
+  	net.SetPTabular("CurrentHumanTurn^Paper", "0.1666666", "PreviousHumanTurn^Rock PreviousCompTurn^Paper");
+    
+	//Distributions requests
+    TokArr pctr = net.GetPTabular("PreviousCompTurn^Rock");
+	TokArr pctp = net.GetPTabular("PreviousCompTurn^Paper");
+	TokArr pcts = net.GetPTabular("PreviousCompTurn^Scissors");
+    
+	printf("\nPreviousCompTurn node distributions\n");
+    printf("Rock: %s\n",String(pctr).c_str());
+    printf("Paper: %s\n",String(pctp).c_str());
+    printf("Scissors: %s\n",String(pcts).c_str());
+
+	TokArr phtr = net.GetPTabular("PreviousHumanTurn^Rock");
+	TokArr phtp = net.GetPTabular("PreviousHumanTurn^Paper");
+	TokArr phts = net.GetPTabular("PreviousHumanTurn^Scissors");
+    
+	printf("\nPreviousHumanTurn node distributions\n");
+    printf("Rock: %s\n",String(phtr).c_str());
+    printf("Paper: %s\n",String(phtp).c_str());
+    printf("Scissors: %s\n",String(phts).c_str());
+
+    TokArr chtr = net.GetPTabular("CurrentHumanTurn^Rock","PreviousHumanTurn^Rock PreviousCompTurn^Rock");
+	TokArr chtp = net.GetPTabular("CurrentHumanTurn^Paper","PreviousHumanTurn^Rock PreviousCompTurn^Rock");
+	TokArr chts = net.GetPTabular("CurrentHumanTurn^Scissors","PreviousHumanTurn^Rock PreviousCompTurn^Paper");
+	TokArr chtp1 = net.GetPTabular("CurrentHumanTurn^Paper","PreviousHumanTurn^Rock PreviousCompTurn^Paper");
+    
+	printf("\CurrentHumanTurn node distributions\n");
+    printf("%s\n",String(phtr).c_str());
+    printf("%s\n",String(phtp).c_str());
+    printf("%s\n",String(phts).c_str());
+    
+	return res;
+}
+
+int testEvidencesManipulation()
+{
+    int res = TRS_OK;
+	//Create a simple model
+    BayesNet net;
+    net.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+    net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
+	//Evidences manipulation
+	net.EditEvidence("PreviousHumanTurn^Rock");
+	net.EditEvidence("CurrentHumanTurn^Paper PreviousHumanTurn^Scissors");
+	net.ClearEvid();
+
+	net.EditEvidence("PreviousHumanTurn^Rock");
+	net.EditEvidence("CurrentHumanTurn^Paper PreviousHumanTurn^Scissors");
+	net.CurEvidToBuf();
+	net.ClearEvidBuf();
+
+	net.EditEvidence("PreviousHumanTurn^Rock");
+	net.EditEvidence("CurrentHumanTurn^Paper PreviousHumanTurn^Scissors");
+	net.CurEvidToBuf();
+	TokArr res1 = net.GetJPD("PreviousHumanTurn");
+	net.ClearEvidBuf();
+    
+	net.AddEvidToBuf("PreviousHumanTurn^Rock");
+	net.AddEvidToBuf("CurrentHumanTurn^Paper PreviousHumanTurn^Scissors");
+	net.SaveEvidBuf("evbuff.csv");
+	net.ClearEvidBuf();
+	net.LoadEvidBuf("evbuff.csv");
+	TokArr res2 = net.GetJPD("PreviousHumanTurn");
+    
+	printf("%s\n",String(res1).c_str());
+    printf("%s\n",String(res2).c_str());
+	
+    return res;
+
+}
+
+int testNetProperties()
+{
+	int res = TRS_OK;
+    BayesNet net;
+	//Adding new network property
+	net.SetProperty("date","19july2005");
+	//Network proprty value request
+	String value = net.GetProperty("date");
+	printf("%s\n",value.c_str());
+	return res;
+}
+
+int testInference()
+{
+    int res = TRS_OK;
+	//Create a simple model
+    BayesNet net;
+    net.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+	net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
+
+	//Adding evidence
+	net.AddEvidToBuf("CurrentHumanTurn^Paper PreviousHumanTurn^Scissors");
+	//Inference requests
+	//1. default algorithm
+    String value1 = net.GetJPD("PreviousCompTurn");	
+	printf("%s\n",value1.c_str());
+    //2. Pearl 
+	net.SetProperty("Inference","pearl");
+    String value2 = net.GetJPD("PreviousCompTurn");
+	printf("%s\n",value2.c_str());
+	//3. Junction Tree 
+	net.SetProperty("Inference","jtree");
+    String value3 = net.GetJPD("PreviousCompTurn");
+	printf("%s\n",value3.c_str());
+	//4.Gibbs Sampling
+	net.SetProperty("Inference","gibbs");
+    String value4 = net.GetJPD("PreviousCompTurn");
+	printf("%s\n",value4.c_str());
+	//5. Naive
+	net.SetProperty("Inference","naive");
+    String value5 = net.GetJPD("PreviousCompTurn");
+	printf("%s\n",value5.c_str());
+
+	return res;
+
+}
+
+int testLearning()
+{
+    int res = TRS_OK;
+	//Create a simple model
+    BayesNet net;
+    net.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+	net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
+
+	net.GenerateEvidences(100);
+    // default algorithm
+	net.LearnParameters();
+	// EM algorithm
+    net.SetProperty("Learning","em");
+	net.LearnParameters();
+    float emval = net.GetEMLearningCriterionValue();
+    printf("%f\n",emval);
+	// bayes algorithm
+    net.SetProperty("Learning","bayes");
+	net.LearnParameters();
+	return res;
+}
+
+int testPNLObjectsRequests()
+{
+	int res = TRS_OK;
+	
+    BayesNet net;
+    net.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    net.AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+	net.AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
+
+	net.AddEvidToBuf("CurrentHumanTurn^Paper PreviousHumanTurn^Scissors");
+
+	pnl::CBNet& pnlNetwork = net.Model();
+	pnl::CInfEngine& pnlInference = net.Inference();
+	pnl::CLearningEngine& pnlLearning = net.Learning(); 
+	pnl::CEvidence* pnlEvidence = net.GetPNLEvidence();
+
+	return res;
+}
+
+int testStructuralLearning()
+{
+   	int res = TRS_OK;
+	//Create a simple model
+    BayesNet *net;
+	net = new BayesNet();
+    net->AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    net->AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    net->AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+	net->AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
+    
+	//Specify discributions;
+	net->SetPTabular("PreviousCompTurn^Rock","0.7");
+	net->SetPTabular("PreviousCompTurn^Paper","0.2");
+
+	net->SetPTabular("PreviousHumanTurn^Scissors","0.8");
+	net->SetPTabular("PreviousHumanTurn^Paper","0.1");
+
+	net->SetPTabular("CurrentHumanTurn^Rock", "0.4", "PreviousHumanTurn^Rock PreviousCompTurn^Rock");
+	net->SetPTabular("CurrentHumanTurn^Paper", "0.2666666", "PreviousHumanTurn^Rock PreviousCompTurn^Rock");
+	net->SetPTabular("CurrentHumanTurn^Scissors", "0.5", "PreviousHumanTurn^Rock PreviousCompTurn^Paper");
+  	net->SetPTabular("CurrentHumanTurn^Paper", "0.1666666", "PreviousHumanTurn^Rock PreviousCompTurn^Paper");
+    
+	//Generation observation
+    net->GenerateEvidences(100);
+	net->SaveEvidBuf("evsr.csv");
+	delete net;
+	//Creation new net
+	BayesNet clearNet;
+	clearNet.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    clearNet.AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    clearNet.AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+    clearNet.LoadEvidBuf("evsr.csv");
+    // 1. default learning
+	clearNet.LearnStructure();
+	// 2. using Maximized Likelyhood score method with BIC score function 
+    clearNet.SetProperty("LearningStructureMethod","MaxLh");
+    clearNet.SetProperty("LearningStructureScoreFun","BIC");
+	clearNet.LearnStructure();
+	// 3. using Maximized Likelyhood score method with AIC score function 
+    clearNet.SetProperty("LearningStructureMethod","MaxLh");
+    clearNet.SetProperty("LearningStructureScoreFun","AIC");
+	clearNet.LearnStructure();
+	// 4. using Predicting assesment score method with BIC score function 
+    clearNet.SetProperty("LearningStructureMethod","PreAs");
+    clearNet.SetProperty("LearningStructureScoreFun","BIC");
+	clearNet.LearnStructure();
+	// 5. using Predictive assesment score method with AIC score function 
+    clearNet.SetProperty("LearningStructureMethod","PreAs");
+    clearNet.SetProperty("LearningStructureScoreFun","AIC");
+	clearNet.LearnStructure();
+    // 6. using Marginal likelyhood score(BDe metric) method with Dirichlet priors
+    clearNet.SetProperty("LearningStructureMethod","PreAs");
+    clearNet.SetProperty("LearningStructureScoreFun","WithoutPenalty");
+    clearNet.SetProperty("LearningStructurePrior","Dirichlet");
+	clearNet.LearnStructure();
+	// 7. using Marginal likelyhood score(BDe metric) method with K2 priors
+    clearNet.SetProperty("LearningStructureMethod","PreAs");
+    clearNet.SetProperty("LearningStructureScoreFun","WithoutPenalty");
+    clearNet.SetProperty("LearningStructurePrior","K2");
+	clearNet.LearnStructure();
+	// 8. using Marginal likelyhood score(BDe metric) method with BDeu priors
+    clearNet.SetProperty("LearningStructureMethod","PreAs");
+    clearNet.SetProperty("LearningStructureScoreFun","WithoutPenalty");
+    clearNet.SetProperty("LearningStructurePrior","BDeu");
+	clearNet.LearnStructure();
+    return res;
+}
+
 int testTokens()
 {
 	int res = TRS_OK;
+	res = testDelArc() & res; 
+	res = testNodeNeigborsRequests() & res;
+	res = testSaveLoad() & res;
+	res = testGetProb() & res;
+	res = testEvidencesManipulation() & res;
+	res = testNetProperties() & res;
+	res = testPNLObjectsRequests() & res;
+	res = testInference() & res;
+	res = testLearning() & res; 
+	res = testStructuralLearning() & res;
 	res = TestResolve1() & res;
 	res = TestResolve2() & res;
 	res = TestResolve3() & res;
