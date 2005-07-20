@@ -56,6 +56,8 @@ int testDBNEvidences()
 	pDBN->AddNode(discrete ^ "Street-1", aChoice); 
 	pDBN->AddNode(discrete ^ "House-1", aChoice);
 	pDBN->AddNode(discrete ^ "Flat-1", aChoice);
+	pDBN->AddNode(discrete ^ "BadNode-0", aChoice);
+	pDBN->DelNode("BadNode-0");
 	// edges creation
 	
 	pDBN->AddArc("Street-0","House-0");
@@ -69,6 +71,10 @@ int testDBNEvidences()
 	// setting number of slices
 	pDBN->SetNumSlices(4);
 	// evidences creation
+    pDBN->EditEvidence("Street-0^True Flat-0^False");
+	pDBN->ClearEvid();
+	pDBN->GenerateEvidences("30 40 23 45");
+	pDBN->ClearEvidBuf();
 	pDBN->AddEvidToBuf("Street-0^True Flat-0^False");
 	pDBN->AddEvidToBuf("House-1^True Flat-1^False");
 	pDBN->AddEvidToBuf("Street-2^True Flat-2^False");
@@ -575,9 +581,152 @@ int testDBN()
     return result;
 } 
 
+int testNodeType()
+{
+    int result = TRS_OK;
+	// node values
+	TokArr aChoice = "True False MayBe";
+	// DBN creation
+	DBN *pDBN; 
+	pDBN = new DBN();
+	// prior slice nodes creation 
+	pDBN->AddNode(discrete ^ "Street-0", aChoice); 
+	pDBN->AddNode(discrete ^ "House-0", aChoice);
+	pDBN->AddNode(discrete ^ "Flat-0", aChoice);
+	// 1-st slice nodes creation 
+	pDBN->AddNode(discrete ^ "Street-1", aChoice); 
+	pDBN->AddNode(discrete ^ "House-1", aChoice);
+	pDBN->AddNode(discrete ^ "Flat-1", aChoice);
+	// edges creation
+	pDBN->AddArc("Street-0","House-0");
+	pDBN->AddArc("Street-0","Flat-0");
+	pDBN->AddArc("Street-1"," House-1");
+	pDBN->AddArc("Street-1","Flat-1");
+	pDBN->AddArc("Street-0","Street-1"); // setting interface nodes
+	// setting number of slices
+	pDBN->SetNumSlices(4);  
+    TokArr n0t = pDBN->GetNodeType("Street-0");
+    TokArr n1t = pDBN->GetNodeType("House-2");
+    TokArr n2t = pDBN->GetNodeType("Flat-1");
+    TokArr n3t = pDBN->GetNodeType("Street-3");
+    TokArr n5t = pDBN->GetNodeType("House-0");
+    TokArr n6t = pDBN->GetNodeType("Flat-3");
+
+    printf("\nNodes types\n");
+    printf("%s\n",  String(n0t).c_str());
+    printf("%s\n",String(n1t).c_str());
+    printf("%s\n",String(n2t).c_str());
+    printf("%s\n",String(n3t).c_str());
+    printf("%s\n",String(n5t).c_str());
+    printf("%s\n",String(n6t).c_str());
+     // free memory
+	delete pDBN;
+
+	return result;
+}
+
+int testUnRoll()
+{
+    int result = TRS_OK;
+	// node values
+	TokArr aChoice = "True False MayBe";
+	// DBN creation
+	DBN *pDBN; 
+	pDBN = new DBN();
+	// prior slice nodes creation 
+	pDBN->AddNode(discrete ^ "Street-0", aChoice); 
+	pDBN->AddNode(discrete ^ "House-0", aChoice);
+	pDBN->AddNode(discrete ^ "Flat-0", aChoice);
+	// 1-st slice nodes creation 
+	pDBN->AddNode(discrete ^ "Street-1", aChoice); 
+	pDBN->AddNode(discrete ^ "House-1", aChoice);
+	pDBN->AddNode(discrete ^ "Flat-1", aChoice);
+	// edges creation
+	pDBN->AddArc("Street-0","House-0");
+	pDBN->AddArc("Street-0","Flat-0");
+	pDBN->AddArc("Street-1"," House-1");
+	pDBN->AddArc("Street-1","Flat-1");
+	pDBN->AddArc("Street-0","Street-1"); // setting interface nodes
+	// setting number of slices
+	pDBN->SetNumSlices(4); 
+	
+	BayesNet *pBNet;
+    pBNet = pDBN->Unroll(); 
+
+	pBNet->AddEvidToBuf("Street-0^True");
+
+	TokArr jpdres = pBNet->GetJPD("House-0");
+
+    printf("%s",String(jpdres).c_str());
+	
+     // free memory
+	delete pDBN;
+	delete pBNet;
+
+	return result;
+}
+
+int testProperties()
+{
+	int res = TRS_OK;
+    DBN dbn;
+	//Adding new network property
+	dbn.SetProperty("date","20july2005");
+	//Network proprty value request
+	String value = dbn.GetProperty("date");
+	printf("\n%s\n",value.c_str());
+	return res;
+}
+
+
+int testPNLObjectsRequestsDBN()
+{
+    int result = TRS_OK;
+	// node values
+	TokArr aChoice = "True False MayBe";
+	// DBN creation
+	DBN *pDBN; 
+	pDBN = new DBN();
+	// prior slice nodes creation 
+	pDBN->AddNode(discrete ^ "Street-0", aChoice); 
+	pDBN->AddNode(discrete ^ "House-0", aChoice);
+	pDBN->AddNode(discrete ^ "Flat-0", aChoice);
+	// 1-st slice nodes creation 
+	pDBN->AddNode(discrete ^ "Street-1", aChoice); 
+	pDBN->AddNode(discrete ^ "House-1", aChoice);
+	pDBN->AddNode(discrete ^ "Flat-1", aChoice);
+	// edges creation
+	pDBN->AddArc("Street-0","House-0");
+	pDBN->AddArc("Street-0","Flat-0");
+	pDBN->AddArc("Street-1"," House-1");
+	pDBN->AddArc("Street-1","Flat-1");
+	pDBN->AddArc("Street-0","Street-1"); // setting interface nodes
+	// setting number of slices
+	pDBN->SetNumSlices(4); 
+
+	pDBN->AddEvidToBuf("Street-0^True Flat-0^False");
+	pDBN->AddEvidToBuf("House-1^True Flat-1^False");
+	pDBN->AddEvidToBuf("Street-2^True Flat-2^False");
+	pDBN->AddEvidToBuf("House-3^True Flat-3^False");
+
+	pnl::CDBN& pnlDBN = pDBN->Model();
+	pnl::CDynamicInfEngine& pnlInfEngine = pDBN->Inference();
+	pnl::CDynamicLearningEngine& pnlLearningEngine = pDBN->Learning();
+	pnl::pEvidencesVecVector pnlEvidences = pDBN->GetPNLEvidences();
+	 // free memory
+	delete pDBN;
+
+	return result;
+	
+}
+
 int testDBNWrappers()
 {
 	int res = TRS_OK;
+	res = testNodeType() & res;
+	res = testUnRoll() & res;
+	res = testProperties() & res;
+	res = testPNLObjectsRequestsDBN() & res;
 	res = testDBNTopologicalSort1() & res;
 	res = testDBNTopologicalSort2() & res;
 	res = testDBNEvidences() & res;

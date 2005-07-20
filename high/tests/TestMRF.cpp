@@ -324,11 +324,105 @@ void TestMRFGetJPD()
     cout << "TestMRFModelCreate is completed successfully" << endl;
 }
 
+void TestNodeType()
+{
+    MRF *net = SimpleMRFModel();
+	TokArr type = net->GetNodeType("node0");
+	printf("\n%s\n",String(type).c_str());
+	delete net;
+}
+
+void TestSaveLoadMRF()
+{
+   MRF *net = GridMRFModel();
+    
+	int numCliques = net->GetNumberOfCliques();
+    net->SaveNet("savedMRF.xml");
+    delete net;
+
+	MRF *newNet;
+	newNet->LoadNet("savedMRF.xml");
+	
+	newNet->SetProperty("Inference", "jtree");
+	newNet->AddEvidToBuf("node0^Value0 node1^Value1");
+    TokArr jJPD = newNet->GetJPD("node0");
+
+	printf("\n%s\n",String(jJPD).c_str());
+
+	delete newNet;	
+}
+
+void testEvidencesManipulation()
+{
+    MRF *net = SimpleMRFModel();
+	
+	net->EditEvidence("node0^Value0");
+	net->ClearEvid();
+	net->GenerateEvidences(100);
+	net->ClearEvidBuf();
+	net->AddEvidToBuf("node0^Value0");
+	TokArr jJPD = net->GetJPD("node1");
+
+	printf("\n%s\n",String(jJPD).c_str());
+    
+	delete net;
+
+}
+
+void testPropertiesMRF()
+{
+    MRF net;
+	//Adding new network property
+	net.SetProperty("date","20july2005");
+	//Network proprty value request
+	String value = net.GetProperty("date");
+	printf("\n%s\n",value.c_str());
+}
+
+void testLearningMRF()
+{
+	MRF *net = GridMRFModel(); 
+	net->GenerateEvidences(100);
+	//default learning
+	net->LearnParameters();
+	//1. EM learning algorithm
+	net->SetProperty("Learning","em");
+	net->SetProperty("EMMaxNumberOfIterations", "10");
+    net->SetProperty("EMTolerance", "1e-4");
+	net->LearnParameters();
+	//2. Bayes learning algorithm
+	net->SetProperty("Learning","bayes");
+	net->LearnParameters();
+
+	//memory free
+	delete net;
+}
+void testPNLObjectsRequests()
+{ 
+	MRF *net = SimpleMRFModel();
+	net->AddEvidToBuf("node0^Value0");
+
+	//requests
+	pnl::CMNet& pnlNet = net->Model();
+	pnl::CInfEngine& pnlInfEngine = net->Inference();
+	pnl::CStaticLearningEngine& pnlLearning = net->Learning();
+	pnl::CEvidence *pnlEvid = net->GetPNLEvidence(); 
+
+	//memory free 
+	delete net;
+}
+
 int testMRF()
 {
 	int ret = TRS_OK;
 	try 
-    {
+    {   
+		testPNLObjectsRequests();
+		testLearningMRF();
+		testPropertiesMRF();
+		testEvidencesManipulation();
+		TestSaveLoadMRF();
+		TestNodeType();
         TestMRFModelCreate();
         TestMRFGetJPD();
     }
