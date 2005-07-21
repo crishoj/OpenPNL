@@ -173,12 +173,12 @@ void TestPigs()
     net->SetValueCost("u4^Cost", "1000.0", "h4^False");
     net->SetValueCost("u4^Cost", "300.0", "h4^True");
 
-   /* net->SaveNet("pigs.xml");
+    net->SaveNet("pigs.xml");
 
     LIMID *newNet;
     newNet = new LIMID();
 
-    newNet->LoadNet("pigs.xml");*/
+    newNet->LoadNet("pigs.xml");
 
 
     TokArr exp;
@@ -193,6 +193,7 @@ void TestPigs()
     cout << politics;
     cout <<"\n";
 
+	delete newNet;
     delete net;
     cout << "LIMID PIGS is completed successfully" << endl;
 }
@@ -294,7 +295,7 @@ void testSaveLoadLIMID()
 
     net->SaveNet("pigs.xml");
  
-	delete net;
+	
 
     LIMID *newNet;
     newNet = new LIMID();
@@ -313,6 +314,8 @@ void testSaveLoadLIMID()
     politics = newNet->GetPolitics();
     cout << politics;
     cout <<"\n";
+
+	delete net;
 	delete newNet;
 }
 void testPNLObjectsRequestsLIMID()

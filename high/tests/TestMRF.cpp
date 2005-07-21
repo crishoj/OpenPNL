@@ -396,6 +396,23 @@ void testLearningMRF()
 
 	//memory free
 	delete net;
+
+    net = SimpleMRFModel(); 
+	net->GenerateEvidences(100);
+	//default learning
+	net->LearnParameters();
+	//1. EM learning algorithm
+	net->SetProperty("Learning","em");
+	net->SetProperty("EMMaxNumberOfIterations", "10");
+    net->SetProperty("EMTolerance", "1e-4");
+	net->LearnParameters();
+	//2. Bayes learning algorithm
+	net->SetProperty("Learning","bayes");
+	net->LearnParameters();
+
+	//memory free
+	delete net;
+
 }
 void testPNLObjectsRequests()
 { 
@@ -418,13 +435,13 @@ int testMRF()
 	try 
     {   
 		testPNLObjectsRequests();
-		testLearningMRF();
+		testLearningMRF();// it is not work yet
 		testPropertiesMRF();
 		testEvidencesManipulation();
-		TestSaveLoadMRF();
+		TestSaveLoadMRF();// it is not work yet
 		TestNodeType();
         TestMRFModelCreate();
-        TestMRFGetJPD();
+        TestMRFGetJPD();// it is not work yet
     }
     catch(pnl::CException e)
     {

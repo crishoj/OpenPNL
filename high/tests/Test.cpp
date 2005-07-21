@@ -1494,6 +1494,7 @@ int testStructuralLearning()
     net->GenerateEvidences(100);
 	net->SaveEvidBuf("evsr.csv");
 	delete net;
+
 	//Creation new net
 	BayesNet clearNet;
 	clearNet.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
@@ -1534,7 +1535,37 @@ int testStructuralLearning()
     clearNet.SetProperty("LearningStructureScoreFun","WithoutPenalty");
     clearNet.SetProperty("LearningStructurePrior","BDeu");
 	clearNet.LearnStructure();
+
     return res;
+}
+
+int testTwoNetsLoadEvidBuf()
+{
+   int res = TRS_OK;
+	//Create a simple model
+    BayesNet *net;
+	net = new BayesNet();
+    net->AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    net->AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    net->AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+	net->AddArc("PreviousHumanTurn PreviousCompTurn", "CurrentHumanTurn");
+    
+	//Generation observation
+    net->GenerateEvidences(100);
+	net->SaveEvidBuf("evsr1.csv");
+	
+	//Creation new net
+	BayesNet clearNet;
+	clearNet.AddNode("discrete^PreviousCompTurn", "Rock Paper Scissors");
+    clearNet.AddNode("discrete^PreviousHumanTurn", "Rock Paper Scissors");
+    clearNet.AddNode("discrete^CurrentHumanTurn", "Rock Paper Scissors");
+
+    clearNet.LoadEvidBuf("evsr1.csv");// fall here
+
+	delete net; 
+	
+	return res;
 }
 
 int testTokens()
@@ -1555,7 +1586,8 @@ int testTokens()
 	res = TestResolve3() & res;
 	res = TestResolve4() & res;
 	res = TestResolve4_5() & res;
-	res = testExtractTok() & res;
+	res = testTwoNetsLoadEvidBuf() & res;// it is not work yet
+	res = testExtractTok() & res; // it is not work yet
 	try 
     {
         SimpleModel();

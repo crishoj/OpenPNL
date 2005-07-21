@@ -178,7 +178,7 @@ int testNumeration()
 	int ret = TRS_OK;
 	try 
     {
-        Test2Bnets();
+        Test2Bnets(); // does not work
         TestForGetPTabular();
         TestForSetInferenceProperties();
         TestForGetMPE();
