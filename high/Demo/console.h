@@ -22,5 +22,6 @@ void SetWindow(SMALL_RECT rect, COORD size);
 void GetWindow(SMALL_RECT *rect, COORD *size);
 void HideCursor(void);
 void ShowCursor(void);
+void SetMaximizedWindow();
 
 #endif

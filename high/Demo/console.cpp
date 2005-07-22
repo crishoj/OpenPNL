@@ -231,3 +231,21 @@ void ShowCursor(void)
 
 //-----------------------------------------------------------------------------
 
+void SetMaximizedWindow()
+{
+  COORD w;
+  SMALL_RECT rect;
+  HANDLE Console = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (!Console)
+    return;
+
+  w = GetLargestConsoleWindowSize(Console);
+  w.X -= 2;
+  rect.Left = 0;
+  rect.Top = 0;
+  rect.Right = w.X - 1;
+  rect.Bottom = w.Y - 1;
+  SetConsoleScreenBufferSize(Console, w);
+  SetConsoleWindowInfo(Console, true, &rect);
+}
+//-----------------------------------------------------------------------------

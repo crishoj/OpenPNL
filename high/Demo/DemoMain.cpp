@@ -1,4 +1,5 @@
 #include "examples.h"
+#include "console.h"
 
 PNLW_USING
 
@@ -10,7 +11,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (strcmp(argv[1],"Crop") == 0)
+	SetMaximizedWindow();
+    
+	if (strcmp(argv[1],"Crop") == 0)
         CropDemo();
     else
         if (strcmp(argv[1],"Asia") == 0)
