@@ -48,14 +48,14 @@ struct {
     int testByDefault;
 } aFunction[] = {
   
-    FUNC_ENTITY(initTestsCondGaussian),                1,
     FUNC_ENTITY(initTestsSoftMax),		               1,
-    FUNC_ENTITY(initTestsNumeration),	               1,
-    FUNC_ENTITY(initTestsMRF),                         1,
-    FUNC_ENTITY(initTestsLIMID),                       1,
-    FUNC_ENTITY(initTestsGaussianBNet),                1,
-    FUNC_ENTITY(initTestsTokens),					   1,
     FUNC_ENTITY(initTestsDBNWrappers),				   1,
+	FUNC_ENTITY(initTestsLIMID),                       1,
+	FUNC_ENTITY(initTestsGaussianBNet),                1,
+	FUNC_ENTITY(initTestsNumeration),	               1,
+	FUNC_ENTITY(initTestsCondGaussian),                1,
+	FUNC_ENTITY(initTestsTokens),					   1,
+	FUNC_ENTITY(initTestsMRF),                         1,
 
     0, 0 // don't delete this line!
 };
@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
     try
     {
 	trsRun(argc, argv);
-    }
+   }
     
     catch(pnl::CException ex)
     {

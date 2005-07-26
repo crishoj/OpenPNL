@@ -203,6 +203,9 @@ void TestMRFModelCreate()
     }
 
     cout << "TestMRFModelCreate is completed successfully" << endl;
+
+	delete net;
+	delete netGrid;
 }
 
 bool bTokArrEqual(TokArr first, TokArr second, float eps)
@@ -322,6 +325,8 @@ void TestMRFGetJPD()
     */
     
     cout << "TestMRFModelCreate is completed successfully" << endl;
+
+	delete net;
 }
 
 void TestNodeType()
@@ -382,7 +387,9 @@ void testPropertiesMRF()
 
 void testLearningMRF()
 {
-	MRF *net = GridMRFModel(); 
+	MRF *net;
+
+    net = GridMRFModel(); 
 	net->GenerateEvidences(100);
 	//default learning
 	net->LearnParameters();
@@ -395,10 +402,9 @@ void testLearningMRF()
 	net->SetProperty("Learning","bayes");
 	net->LearnParameters();
 
-	//memory free
 	delete net;
 
-    net = SimpleMRFModel(); 
+	net = SimpleMRFModel(); 
 	net->GenerateEvidences(100);
 	//default learning
 	net->LearnParameters();
@@ -433,22 +439,22 @@ void testPNLObjectsRequests()
 int testMRF()
 {
 	int ret = TRS_OK;
-/*	try 
-    { */  
-	    TestSaveLoadMRF();// it is not work yet
+	try 
+    { 
+		TestMRFGetJPD();
+	    testLearningMRF();
+	    TestSaveLoadMRF();
 		testPNLObjectsRequests();
-	//	testLearningMRF();// it is not work yet
 		testPropertiesMRF();
 		testEvidencesManipulation();
 		TestNodeType();
         TestMRFModelCreate();
-        TestMRFGetJPD();// it is not work yet
-   /* }
+    }
     catch(pnl::CException e)
     {
         std::cout << e.GetMessage();
         ret = false;
-    }*/
+    }
 	return ret;
 
 }
