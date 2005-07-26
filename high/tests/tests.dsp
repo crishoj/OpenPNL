@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W4 /GR /GX /Zi /O2 /I "..\include" /I "..\..\c_pgmtk\include" /I "..\..\c_pgmtk\src\include" /I "..\..\cxcore\cxcore\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR /FD /c
+# ADD CPP /nologo /MD /W4 /GR /GX /Zi /O2 /I "..\include" /I "..\..\c_pgmtk\include" /I "..\..\c_pgmtk\src\include" /I "..\..\cxcore\cxcore\include" /I "..\..\trs\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x419 /d "NDEBUG"
 # ADD RSC /l 0x419 /d "NDEBUG"
