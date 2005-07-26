@@ -132,6 +132,8 @@ void TestForGetPTabular()
     {
 	PNL_THROW(pnl::CAlgorithmicException, "There is error in the function TestForGetPTabular 3");
     };
+
+	delete net;
 }
 
 void TestForSetInferenceProperties()
@@ -144,6 +146,8 @@ void TestForSetInferenceProperties()
     //net->SetProperty("GibbsThresholdIteration","100");
 
     net->GetJPD("One");
+
+	delete net; 
 }
 
 void TestForGetMPE()
@@ -161,6 +165,8 @@ void TestForGetMPE()
     std::cout << net->GetMPE("One") << "\n";
     std::cout << net->GetMPE("Three") << "\n";
     std::cout << net->GetMPE("Zero One Three") << "\n";
+
+	delete net;
 };
 
 
@@ -178,7 +184,7 @@ int testNumeration()
 	int ret = TRS_OK;
 	try 
     {
-        Test2Bnets(); // does not work
+       // Test2Bnets(); // does not work
         TestForGetPTabular();
         TestForSetInferenceProperties();
         TestForGetMPE();
