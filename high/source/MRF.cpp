@@ -509,13 +509,11 @@ void MRF::LearnParameters(TokArr aSample[], int nSample)
 
     SetParamLearningProperties();
     Learning().Learn();
-    for (i = 0; i < Net().Graph().iNodeMax(); i++)
+
+    for (i = 0; i < GetNumberOfCliques(); i++)
     {
-	if(Net().Graph().IsValidINode(i))
-	{
-	    Net().Distributions().ResetDistribution(i, *Net().Model().GetFactor(Net().Graph().IGraph(i)));
+		Net().Distributions().ResetDistribution(i, *Net().Model().GetFactor(i));
 	}
-    }
     DropEvidences(aEvidence);
 }
 
@@ -629,6 +627,7 @@ void MRF::LoadNet(const char *filename)
     }
 
     delete &Net();
+
     m_pNet = pNewNet;
     m_pNet->SetCallback(new MRFCallback());
 
