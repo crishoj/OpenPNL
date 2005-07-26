@@ -1353,7 +1353,7 @@ void WCondGaussianDistribFun::CreateDefaultDistribution()
 
     m_pDistrib = pnl::CCondGaussianDistribFun::Create( 0, NumberOfNodes, nodeTypes );
 
-#ifdef   OLD_CreateDefaultDistribution
+//#ifdef   OLD_CreateDefaultDistribution
     CMatrix<CGaussianDistribFun*>* pDistributions = m_pDistrib->GetMatrixWithDistribution();
 
     CMatrixIterator<CGaussianDistribFun*>* iter = pDistributions->InitIterator();
@@ -1365,10 +1365,10 @@ void WCondGaussianDistribFun::CreateDefaultDistribution()
 	m_pDistrib->SetDistribFun(pGDF, &(parentIndexes.front()));
 	delete pGDF;
     }
-#else
+/*#else
     m_pDistrib->CreateDefaultMatrices();
 
-#endif
+#endif*/
 
     delete nodeTypes;
 }
