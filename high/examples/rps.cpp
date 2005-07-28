@@ -407,14 +407,17 @@ int rpsMain()
 	}
 
 	net.EditEvidence(evidence);
+	net.SetProperty("Inference","naive");
 	TokArr prediction = net.GetMPE("CurrentHumanTurn");
 	    cout << "prediction = " << prediction << "\n";
 
+    printf("\n%s\n",String(prediction).c_str());
 	if(sMode & cShowPrediction)
 	{
 	    cout << "prediction = " << prediction << "\n";
 	}
 
+	prediction[0].Resolve();
 	round(&computer, 0, prediction[0].IntValue(), 0);
 	// variable 'computer' contains best answer for predicted human turn now
 
@@ -447,10 +450,11 @@ int rpsMain()
 	// Add real data to evidence - now all nodes are observed
 	evidence &= (Tok("CurrentHumanTurn") ^ human);
 
-        // Learn with data
-	net.EditEvidence(evidence);
-        net.CurEvidToBuf();
-        net.LearnParameters();
+    // Learn with data
+    net.SetProperty("Learning","bayes");
+    net.EditEvidence(evidence);
+    net.CurEvidToBuf();
+    net.LearnParameters();
     }
 
     cout << "Computer score: " << score[2] << " WINs, "
@@ -496,7 +500,6 @@ int main(int ac, char **av)
 {
     int result = -1;
     
-    CreateMRFModel();
 
     if(ac > 1 && av[1][0] == '-' && tolower(av[1][1]) == 's')
     {
