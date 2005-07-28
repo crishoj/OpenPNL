@@ -299,7 +299,7 @@ void CTreeDistribFun::_CreateCART()
 		m_pOptimalData = icxGetPruningData(m_pCART, 0);
     
 #ifdef _DEBUG
-    FILE* file = fopen("d:\\tree.log", "wt");
+    FILE* file = fopen("c:\\tree.log", "wt");
     cxDumpCART(file,m_pCART);
     fprintf(file, "Optimal pruning step : %d\n" , m_pOptimalData->step);
     fclose(file);

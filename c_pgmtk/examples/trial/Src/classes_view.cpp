@@ -116,7 +116,7 @@ int main()
 {
 //     pnl::CMRF2* pMRF2 = pnl::pnlExCreateBigMRF2( 1, 3, 3, 4, 2.5f, 2.5f );
 
-    CompareInferenceResults("d:\\log");
+    CompareInferenceResults("c:\\log");
 
 //    pnl::CJtreeInfEngine* pJTreeInfEng = pnl::CJtreeInfEngine::Create(pMRF2);
 //    pnl::CJtreeInfEngine* pJTreeInfEngCpy = pnl::CJtreeInfEngine::Copy(pJTreeInfEng);
