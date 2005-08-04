@@ -174,7 +174,7 @@ void Test2Bnets()
 {
     BayesNet *net1 = GetSimpleTabularModel();
     BayesNet *net2 = GetSimpleTabularModel();
-    cout << "2Bnets" << "\n";
+	std::cout << "2Bnets" << "\n";
     delete net1;
     delete net2;
 };

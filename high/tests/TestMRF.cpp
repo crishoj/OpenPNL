@@ -358,7 +358,7 @@ void TestSaveLoadMRF()
 	delete newNet;	
 }
 
-void testEvidencesManipulation()
+void testEvidencesManipulationMRF()
 {
     MRF *net = SimpleMRFModel();
 	
@@ -421,7 +421,7 @@ void testLearningMRF()
 	delete net;
 
 }
-void testPNLObjectsRequests()
+void testPNLObjectsRequestsMRF()
 { 
 	MRF *net = SimpleMRFModel();
 	net->AddEvidToBuf("node0^Value0");
@@ -444,9 +444,9 @@ int testMRF()
 		TestMRFGetJPD();
 	    testLearningMRF();
 	    TestSaveLoadMRF();
-		testPNLObjectsRequests();
+		testPNLObjectsRequestsMRF();
 		testPropertiesMRF();
-		testEvidencesManipulation();
+		testEvidencesManipulationMRF();
 		TestNodeType();
         TestMRFModelCreate();
     }

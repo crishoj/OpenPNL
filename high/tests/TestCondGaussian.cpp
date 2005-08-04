@@ -500,7 +500,7 @@ void TestsPnlHigh::TestCondGaussianGetMPE()
     #endif
 
     delete net;
-    cout << "TestCondGaussianGetMPE is completed successfully" << endl;
+	std::cout << "TestCondGaussianGetMPE is completed successfully" << std::endl;
 
 };
 

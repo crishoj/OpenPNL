@@ -151,7 +151,7 @@ void TestSetDistributionSoftMax()
     };
 
     delete net;
-    cout << "TestSetDistributionSoftMax is completed successfully" << endl;
+	std::cout << "TestSetDistributionSoftMax is completed successfully" << std::endl;
 
 }
 
@@ -240,7 +240,7 @@ void TestSetDistributionCondSoftMax()
     };
 
     delete net;
-    cout << "TestSetDistributionCondSoftMax is completed successfully" << endl;
+	std::cout << "TestSetDistributionCondSoftMax is completed successfully" << std::endl;
 }
 
 void CrashTestJtreeInferenceSoftMax()
@@ -249,7 +249,7 @@ void CrashTestJtreeInferenceSoftMax()
     
     net->SetProperty("Inference", "jtree");
     TokArr jpd5 = net->GetJPD("node5");
-    cout<< "jpd node5:\t"<<jpd5 << "\n";
+	std::cout<< "jpd node5:\t"<<jpd5 << "\n";
 
     delete net;
 }
@@ -265,10 +265,10 @@ void TestJtreeInferenceSoftMax1()
     
     net->SetProperty("Inference", "jtree");
     TokArr jpd5 = net->GetJPD("node5");
-    cout<< "jpd node5:\t"<<jpd5 << "\n";
+	std::cout<< "jpd node5:\t"<<jpd5 << "\n";
 
     delete net;
-    cout << "TestJtreeInferenceSoftMax1 is completed successfully" << endl;
+	std::cout << "TestJtreeInferenceSoftMax1 is completed successfully" << std::endl;
 
 }
 
@@ -283,13 +283,13 @@ void TestJtreeInferenceSoftMax2()
     net->SetProperty("Inference", "jtree");
 
     TokArr jpd0 = net->GetJPD("node0");
-    cout<< "jpd node0:\t"<<jpd0 << "\n";
+	std::cout<< "jpd node0:\t"<<jpd0 << "\n";
 
     TokArr jpd2 = net->GetJPD("node2");
-    cout<< "jpd node2:\t"<<jpd2 << "\n";
+	std::cout<< "jpd node2:\t"<<jpd2 << "\n";
 
     delete net;
-    cout << "TestJtreeInferenceSoftMax2 is completed successfully" << endl;
+	std::cout << "TestJtreeInferenceSoftMax2 is completed successfully" << std::endl;
 
 }
 
@@ -302,19 +302,19 @@ void TestGibbsInferenceSoftMax()
     net->SetProperty("Inference", "gibbs");
 
     TokArr jpd0 = net->GetJPD("node0");
-    cout<< "jpd node0:\t"<<jpd0 << "\n";
+	std::cout<< "jpd node0:\t"<<jpd0 << "\n";
 
     TokArr jpd1 = net->GetJPD("node1");
-    cout<< "jpd node1:\t"<<jpd1 << "\n";
+	std::cout<< "jpd node1:\t"<<jpd1 << "\n";
 
     TokArr jpd2 = net->GetJPD("node2");
-    cout<< "jpd node2:\t"<<jpd2 << "\n";
+	std::cout<< "jpd node2:\t"<<jpd2 << "\n";
 
     TokArr jpd5 = net->GetJPD("node5");
-    cout<< "jpd node5:\t"<<jpd5 << "\n";
+	std::cout<< "jpd node5:\t"<<jpd5 << "\n";
 
     delete net;
-    cout << "TestGibbsInferenceSoftMax is completed successfully" << endl;
+	std::cout << "TestGibbsInferenceSoftMax is completed successfully" << std::endl;
 
 }
 
@@ -331,16 +331,16 @@ void TestJtreeInferenceCondSoftMax1()
     net->SetProperty("Inference", "jtree");
 
     TokArr jpd3 = net->GetJPD("node3");
-    cout<< "jpd node3:\t"<<jpd3 << "\n";
+	std::cout<< "jpd node3:\t"<<jpd3 << "\n";
 
     TokArr jpd5 = net->GetJPD("node5");
-    cout<< "jpd node5:\t"<<jpd5 << "\n";
+	std::cout<< "jpd node5:\t"<<jpd5 << "\n";
     
     TokArr jpd6 = net->GetJPD("node6");
-    cout<< "jpd node6:\t"<<jpd6 << "\n";
+	std::cout<< "jpd node6:\t"<<jpd6 << "\n";
 
     delete net;
-    cout << "TestJtreeInferenceCondSoftMax1 is completed successfully" << endl;
+	std::cout << "TestJtreeInferenceCondSoftMax1 is completed successfully" << std::endl;
 
 }
 
@@ -357,13 +357,13 @@ void TestJtreeInferenceCondSoftMax2()
     net->SetProperty("Inference", "jtree");
 
     TokArr jpd0 = net->GetJPD("node0");
-    cout<< "jpd node0:\t"<<jpd0 << "\n";
+	std::cout<< "jpd node0:\t"<<jpd0 << "\n";
 
     TokArr jpd2 = net->GetJPD("node2");
-    cout<< "jpd node2:\t"<<jpd2 << "\n";
+	std::cout<< "jpd node2:\t"<<jpd2 << "\n";
 
     delete net;
-    cout << "TestJtreeInferenceCondSoftMax2 is completed successfully" << endl;
+	std::cout << "TestJtreeInferenceCondSoftMax2 is completed successfully" << std::endl;
 
 }
 
@@ -376,20 +376,20 @@ void TestGibbsInferenceCondSoftMax()
     net->SetProperty("Inference", "gibbs");
 
     TokArr jpd0 = net->GetJPD("node0");
-    cout<< "jpd node0:\t"<<jpd0 << "\n";
+	std::cout<< "jpd node0:\t"<<jpd0 << "\n";
 
 
     TokArr jpd1 = net->GetJPD("node1");
-    cout<< "jpd node1:\t"<<jpd1 << "\n";
+	std::cout<< "jpd node1:\t"<<jpd1 << "\n";
 
     TokArr jpd2 = net->GetJPD("node2");
-    cout<< "jpd node2:\t"<<jpd2 << "\n";
+	std::cout<< "jpd node2:\t"<<jpd2 << "\n";
 
     TokArr jpd5 = net->GetJPD("node5");
-    cout<< "jpd node5:\t"<<jpd5 << "\n";
+	std::cout<< "jpd node5:\t"<<jpd5 << "\n";
 
     delete net;
-    cout << "TestGibbsInferenceCondSoftMax is completed successfully" << endl;
+	std::cout << "TestGibbsInferenceCondSoftMax is completed successfully" << std::endl;
 
 }
 
@@ -445,7 +445,7 @@ void TestSoftMaxParamLearning(bool DeleteNet)
 	delete netToLearn;
     };
 
-    cout << "TestSoftMaxParamLearning is completed successfully" << endl;
+	std::cout << "TestSoftMaxParamLearning is completed successfully" << std::endl;
 }
 
 void TestCondSoftMaxParamLearning(bool DeleteNet)
@@ -499,7 +499,7 @@ void TestCondSoftMaxParamLearning(bool DeleteNet)
 	delete netToLearn;
     };
 
-    cout << "TestCondSoftMaxParamLearning is completed successfully" << endl;
+	std::cout << "TestCondSoftMaxParamLearning is completed successfully" << std::endl;
 }
 
 void TestSetDistributionSevenNodesModel()
@@ -635,7 +635,7 @@ void TestSetDistributionSevenNodesModel()
     };
 
     delete net;
-    cout << "TestSetDistributionSevenNodesModel is completed successfully" << endl;
+	std::cout << "TestSetDistributionSevenNodesModel is completed successfully" << std::endl;
 
 }
 
@@ -653,16 +653,16 @@ void TestJtreeInference1SevenNodesModel()
 
     net->SetProperty("Inference", "jtree");
     TokArr jpd3 = net->GetJPD("node3");
-    cout<< "jpd node3:\t"<<jpd3 << "\n";
+	std::cout<< "jpd node3:\t"<<jpd3 << "\n";
 
     TokArr jpd6 = net->GetJPD("node6");
-    cout<< "jpd node6:\t"<<jpd6 << "\n";
+	std::cout<< "jpd node6:\t"<<jpd6 << "\n";
 
     TokArr jpd2 = net->GetJPD("node2");
-    cout<< "jpd node2:\t"<<jpd2 << "\n";
+	std::cout<< "jpd node2:\t"<<jpd2 << "\n";
     
     delete net;
-    cout << "TestJtreeInference1SevenNodesModel is completed successfully" << endl;
+	std::cout << "TestJtreeInference1SevenNodesModel is completed successfully" << std::endl;
 
 }
 
@@ -681,13 +681,13 @@ void TestJtreeInference2SevenNodesModel()
     net->SetProperty("Inference", "jtree");
 
     TokArr jpd0 = net->GetJPD("node0");
-    cout<< "jpd node0:\t"<<jpd0 << "\n";
+	std::cout<< "jpd node0:\t"<<jpd0 << "\n";
 
     TokArr jpd5 = net->GetJPD("node1");
-    cout<< "jpd node5:\t"<<jpd5 << "\n";
+	std::cout<< "jpd node5:\t"<<jpd5 << "\n";
 
     delete net;
-    cout << "TestJtreeInference2SevenNodesModel is completed successfully" << endl;
+	std::cout << "TestJtreeInference2SevenNodesModel is completed successfully" << std::endl;
 
 }
 
@@ -709,17 +709,17 @@ void TestDelArc()
 
     net->SetProperty("Inference", "jtree");
     TokArr jpd3 = net->GetJPD("node3");
-    cout<< "jpd node3:\t"<<jpd3 << "\n";
+	std::cout<< "jpd node3:\t"<<jpd3 << "\n";
 
     TokArr jpd6 = net->GetJPD("node6");
-    cout<< "jpd node6:\t"<<jpd6 << "\n";
+	std::cout<< "jpd node6:\t"<<jpd6 << "\n";
 
     TokArr jpd2 = net->GetJPD("node2");
-    cout<< "jpd node2:\t"<<jpd2 << "\n";
+	std::cout<< "jpd node2:\t"<<jpd2 << "\n";
     
     delete net;
 
-    cout << "TestDelArc is completed successfully" << endl;
+	std::cout << "TestDelArc is completed successfully" << std::endl;
 
 }
 
@@ -741,17 +741,17 @@ void TestAddArc()
 
     net->SetProperty("Inference", "jtree");
     TokArr jpd3 = net->GetJPD("node3");
-    cout<< "jpd node3:\t"<<jpd3 << "\n";
+	std::cout<< "jpd node3:\t"<<jpd3 << "\n";
 
     TokArr jpd6 = net->GetJPD("node6");
-    cout<< "jpd node6:\t"<<jpd6 << "\n";
+	std::cout<< "jpd node6:\t"<<jpd6 << "\n";
 
     TokArr jpd2 = net->GetJPD("node2");
-    cout<< "jpd node2:\t"<<jpd2 << "\n";
+	std::cout<< "jpd node2:\t"<<jpd2 << "\n";
     
     delete net;
 
-    cout << "TestDelArc is completed successfully" << endl;
+	std::cout << "TestDelArc is completed successfully" << std::endl;
 
 }
 
@@ -770,14 +770,14 @@ void TestDelNode()
 
     net->SetProperty("Inference", "jtree");
     TokArr jpd3 = net->GetJPD("node3");
-    cout<< "jpd node3:\t"<<jpd3 << "\n";
+	std::cout<< "jpd node3:\t"<<jpd3 << "\n";
 
     TokArr jpd6 = net->GetJPD("node6");
-    cout<< "jpd node6:\t"<<jpd6 << "\n";
+	std::cout<< "jpd node6:\t"<<jpd6 << "\n";
 
     delete net;
 
-    cout << "TestDelArc is completed successfully" << endl;
+	std::cout << "TestDelArc is completed successfully" << std::endl;
 
 }
 

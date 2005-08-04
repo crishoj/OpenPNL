@@ -666,7 +666,7 @@ int testUnRoll()
 	return result;
 }
 
-int testProperties()
+int testPropertiesDBN()
 {
 	int res = TRS_OK;
     DBN dbn;
@@ -725,7 +725,7 @@ int testDBNWrappers()
 	int res = TRS_OK;
 	res = testNodeType() & res;
 	res = testUnRoll() & res;
-	res = testProperties() & res;
+	res = testPropertiesDBN() & res;
 	res = testPNLObjectsRequestsDBN() & res;
 	res = testDBNTopologicalSort1() & res;
 	res = testDBNTopologicalSort2() & res;
