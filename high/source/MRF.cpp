@@ -298,8 +298,6 @@ void MRF::SetInferenceProperties(TokArr &nodes)
     
     if(dynamic_cast<pnl::CGibbsSamplingInfEngine *>(infEngine) != NULL)
     {
-	infEngine = &Inference(true);
-
 	pnl::CGibbsSamplingInfEngine *infGibbs = static_cast<pnl::CGibbsSamplingInfEngine *>(infEngine);
 	Vector<int> queryVls;
 	pnl::intVecVector queries(1);
@@ -683,84 +681,92 @@ pnl::CInfEngine &MRF::Inference(bool Recreate)
 {
     if (Recreate)
     {
-	delete m_Inference;
-	m_Inference = 0;
+        delete m_Inference;
+        m_Inference = 0;
     };
 
     switch(PropertyAbbrev("Inference"))
     {
     case 'j': //Junction tree inference
-	if(m_Inference)
-	{
-	    pnl::CJtreeInfEngine *infJtree;
-	    infJtree = dynamic_cast<pnl::CJtreeInfEngine *>(m_Inference);
-	    if(!infJtree)
-	    {
-		delete m_Inference;
-		m_Inference = pnl::CJtreeInfEngine::Create(&Model());
-	    }
-	}
-	else
-	{
-	    m_Inference = pnl::CJtreeInfEngine::Create(&Model());
-	}
-	break;
-    case 'g': // Gibbs Sampling
-	if(m_Inference)
-	{
+    if(m_Inference)
+    {
+        pnl::CJtreeInfEngine *infJtree;
+        infJtree = dynamic_cast<pnl::CJtreeInfEngine *>(m_Inference);
+        if(!infJtree)
+        {
             delete m_Inference;
+            m_Inference = pnl::CJtreeInfEngine::Create(&Model());
         }
-	
+    }
+    else
+    {
+        m_Inference = pnl::CJtreeInfEngine::Create(&Model());
+    }
+    break;
+    case 'g': // Gibbs Sampling
+    if(m_Inference)
+    {
+        pnl::CGibbsSamplingInfEngine *infGibbs;
+        infGibbs = dynamic_cast<pnl::CGibbsSamplingInfEngine *>(m_Inference);
+        if (!infGibbs)
+        {
+            delete m_Inference;
+            m_Inference = pnl::CGibbsSamplingInfEngine::Create(&Model());
+        }
+    }
+    else
+    {
         m_Inference = pnl::CGibbsSamplingInfEngine::Create(&Model());
-	break;
+    }
+    break;
     case 'n': // Naive inference
-	if(m_Inference)
-	{
-	    pnl::CNaiveInfEngine *infNaive;
-	    infNaive = dynamic_cast<pnl::CNaiveInfEngine *>(m_Inference);
-	    if(!infNaive)
-	    {
-		delete m_Inference;
-		m_Inference = pnl::CNaiveInfEngine::Create(&Model());
-	    }
-	}
-	else
-	{
-	    m_Inference = pnl::CNaiveInfEngine::Create(&Model());
-	}
-	break;
+    if(m_Inference)
+    {
+        pnl::CNaiveInfEngine *infNaive;
+        infNaive = dynamic_cast<pnl::CNaiveInfEngine *>(m_Inference);
+        if(!infNaive)
+        {
+            delete m_Inference;
+            m_Inference = pnl::CNaiveInfEngine::Create(&Model());
+        }
+    }
+    else
+    {
+        m_Inference = pnl::CNaiveInfEngine::Create(&Model());
+    }
+    break;
     case 'p': // Pearl inference
-        if(m_Inference)
-	{
-	    pnl::CPearlInfEngine *infPearl;
-	    infPearl = dynamic_cast<pnl::CPearlInfEngine *>(m_Inference);
-	    if(!infPearl)
-	    {
-		delete m_Inference;
-		m_Inference = pnl::CPearlInfEngine::Create(&Model());
-	    }
-	}
-	else
-	{
-	    m_Inference = pnl::CPearlInfEngine::Create(&Model());
-	}
-	break;
+    if(m_Inference)
+    {
+        pnl::CPearlInfEngine *infPearl;
+        infPearl = dynamic_cast<pnl::CPearlInfEngine *>(m_Inference);
+        if(!infPearl)
+        {
+            delete m_Inference;
+            m_Inference = pnl::CPearlInfEngine::Create(&Model());
+        }
+    }
+    else
+    {
+        m_Inference = pnl::CPearlInfEngine::Create(&Model());
+    }
+    break;
     default: //default inference algorithm
-	if(m_Inference)
-	{
-	    pnl::CJtreeInfEngine *infJtree;
-	    infJtree = dynamic_cast<pnl::CJtreeInfEngine *>(m_Inference);
-	    if(!infJtree)
-	    {
-		delete m_Inference;
-		m_Inference = pnl::CJtreeInfEngine::Create(&Model());
-	    }
-	}
-	else
-	{
-	    m_Inference = pnl::CJtreeInfEngine::Create(&Model());
-	}
-	break;
+    if(m_Inference)
+    {
+        pnl::CJtreeInfEngine *infJtree;
+        infJtree = dynamic_cast<pnl::CJtreeInfEngine *>(m_Inference);
+        if(!infJtree)
+        {
+            delete m_Inference;
+            m_Inference = pnl::CJtreeInfEngine::Create(&Model());
+        }
+    }
+    else
+    {
+        m_Inference = pnl::CJtreeInfEngine::Create(&Model());
+    }
+    break;
     }
     
     return *m_Inference;

@@ -174,7 +174,7 @@ Vector<int> DistribFunDesc::GetValuesAsIndex(Tok &tok)
 	    ThrowUsingError("There is must be node", fname);
 	}
 
-	for(index = nNode(); index >= 0; --index)
+	for(index = nNode()-1; index >= 0; --index)
 	{
 	    if(aIdValue[i] == m_aNode[index])
 	    {
