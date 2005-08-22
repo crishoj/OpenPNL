@@ -874,7 +874,7 @@ name=decl_SetPGaussian>SetPGaussian</A></H3>
 <P class=Blurb>Sets parameters for gaussian variate. 
 </P>
 <font class="interface">
-void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr());
+void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr(), TokArr weight = TokArr(), TokArr tabParentValue = TokArr());
 </font>
 <H5>Arguments</H5>
 <DL>
@@ -885,7 +885,10 @@ void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr()
   <DT>variance
   <DD>Matrix of variance (for one-dimensional variate it is only one number).
   <DT>weight
-  <DD>Matrixes of weights. This parameter is needed only when the node has parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case" </DD></DL>
+  <DD>Matrixes of weights. This parameter is needed only when the node has parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case"
+  <DT>tabParentValue
+  <DD>Values of all tabular parents (for cond. Gaussian case only).
+</DD></DL>
 <H5>Discussion</H5>
 <p class="description">The function sets parameters for gaussian variate. 
 </p>
@@ -1504,12 +1507,15 @@ name=decl_GetGaussianMean>GetGaussianMean</A></H3>
 <P class=Blurb>Returns mean of gaussian distribution 
 </P>
 <font class="interface">
-TokArr GetGaussianMean(TokArr node);
+TokArr GetGaussianMean(TokArr node, TokArr tabParentValue = TokArr());
 </font>
 <H5>Arguments</H5>
 <DL>
   <DT>node
-  <DD>Name of node whose mean is needed</DD></DL>
+  <DD>Name of node whose mean is needed
+  <DT>tabParentValue
+  <DD>Values of all tabular parents (for cond. Gaussian case only)
+</DL>
 <H5>Discussion</H5>
 <p class="description">The function returns mean of gaussian distribution. 
 </p>
@@ -1527,12 +1533,14 @@ name=decl_GetGaussianCovar>GetGaussianCovar</A></H3>
 <P class=Blurb>Returns variance of gaussian distribution 
 </P>
 <font class="interface">
-TokArr GetGaussianCovar(TokArr node);
+TokArr GetGaussianCovar(TokArr node, TokArr tabParentValue = TokArr());
 </font>
 <H5>Arguments</H5>
 <DL>
   <DT>node
-  <DD>Name of node whose variance is needed. 
+  <DD>Name of node whose variance is needed
+  <DT>tabParentValue
+  <DD>Values of all tabular parents (for cond. Gaussian case only)
 </DL>
 <H5>Discussion</H5>
 <p class="description">The function returns variance of gaussian distribution. 
@@ -1550,7 +1558,7 @@ name=decl_GetGaussianWeights>GetGaussianWeights</A></H3>
 <P class=Blurb>Returns weights of gaussian distribution. 
 </P>
 <font class="interface">
-TokArr GetGaussianWeights(TokArr node, TokArr parent);
+TokArr GetGaussianWeights(TokArr node, TokArr parent, TokArr tabParentValue = TokArr());
 </font>
 <H5>Arguments</H5>
 <DL>
@@ -1558,6 +1566,8 @@ TokArr GetGaussianWeights(TokArr node, TokArr parent);
   <DD>Name of node whose weights are needed. 
   <DT>parent
   <DD>A parent of node which weights we are interested in. 
+  <DT>tabParentValue
+  <DD>Values of all tabular parents (for cond. Gaussian case only)
 </DL>
 <H5>Discussion</H5>
 <p class="description">The function returns weights of parent of specified node . 
@@ -3874,7 +3884,8 @@ void SetPGaussian(TokArr var, TokArr mean = TokArr(), TokArr variance = TokArr()
   <DT>variance
   <DD>Matrix of variance (for one-dimensional variate it is only one number).
   <DT>weight
-  <DD>Matrixes of weights. This parameter is needed only when the node has parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case" </DD></DL>
+  <DD>Matrixes of weights. This parameter is needed only when the node has parents. For more details about matrixes of weights see User Guide, chapter "Multivariate Gaussian case" 
+</DL>
 <H5>Discussion</H5>
 <p class="description">The function sets parameters for gaussian variate. 
 </p>
