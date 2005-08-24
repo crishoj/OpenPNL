@@ -1,0 +1,634 @@
+<table width="100%" border="0" cellspacing="0" cellpadding="2" bgcolor="#6a9bed">
+<tr><td ><center><i><font size="10">ParPNL: Reference Manual</font></i></center></td></tr>
+</table>
+<hr>
+<ul>
+<li><a href="#pr_name_CParJtreeInfEngine">CParJtreeInfEngine</a></li>
+ <ul>
+	<li><a href="#pr_jt_BalanceTree">BalanceTree</a></li>
+	<li><a href="#pr_jt_BuildRoutes">BuildRoutes</a></li>
+	<li><a href="#pr_jt_BuildWeightesOfNodes">BuildWeightesOfNodes</a></li>
+	<li><a href="#pr_jt_BuildWeightesOfSubTrees">BuildWeightesOfSubTrees</a></li>
+	<li><a href="#pr_jt_CollectCommCreate">CollectCommCreate</a></li>
+	<li><a href="#pr_jt_CollectEvidence">CollectEvidence</a></li>
+	<li><a href="#pr_jt_CollectEvidenceOMP">CollectEvidenceOMP</a></li>
+	<li><a href="#pr_jt_CollectEvidenceOMP_gau">CollectEvidenceOMP_gau</a></li>
+	<li><a href="#pr_jt_CollectFactorsOnProcess">CollectFactorsOnProcess</a></li>
+	<li><a href="#pr_jt_Create">Create</a></li>
+	<li><a href="#pr_jt_DistributeEvidence">DistributeEvidence</a></li>
+	<li><a href="#pr_jt_DistributeEvidenceOMP">DistributeEvidenceOMP</a></li>
+	<li><a href="#pr_jt_DivideNodes">DivideNodes</a></li>
+	<li><a href="#pr_jt_DivideNodesWithMinimumDeviationSearch">DivideNodesWithMinimumDeviationSearch</a></li>
+	<li><a href="#pr_jt_EnterEvidence">EnterEvidence</a></li>
+	<li><a href="#pr_jt_EnterEvidenceOMP">EnterEvidenceOMP</a></li>
+	<li><a href="#pr_jt_GetMaxTagForCollectEvidence">GetMaxTagForCollectEvidence</a></li>
+	<li><a href="#pr_jt_InitMPIConsts">InitMPIConsts</a></li>
+	<li><a href="#pr_jt_InitNodeConditions">InitNodeConditions</a></li>
+	<li><a href="#pr_jt_InitQueueNodes">InitQueueNodes</a></li>
+	<li><a href="#pr_jt_InitQueueNodesOMP">InitQueueNodesOMP</a></li>
+	<li><a href="#pr_jt_InitWeightArrays">InitWeightArrays</a></li>
+	<li><a href="#pr_jt_ProcessRoutes">ProcessRoutes</a></li>
+	<li><a href="#pr_jt_ShrinkObservedOMP">ShrinkObservedOMP</a></li>
+ </ul>
+<li><a href="#pr_name_CParPearlInfEngine">CParPearlInfEngine</a></li>
+ <ul>
+	<li><a href="#pr_lb_BuildWeightesOfNodes">BuildWeightesOfNodes</a></li>
+	<li><a href="#pr_lb_BuildWeightesOfSubTrees">BuildWeightesOfSubTrees</a></li>
+	<li><a href="#pr_lb_CollectBeliefsOnProcess">CollectBeliefsOnProcess</a></li>
+	<li><a href="#pr_lb_CollectBeliefsOnProcessContMPI">CollectBeliefsOnProcessContMPI</a></li>
+	<li><a href="#pr_lb_ComputeBelief">ComputeBelief</a></li>
+	<li><a href="#pr_lb_ComputeMessage">ComputeMessage</a></li>
+	<li><a href="#pr_lb_ComputeProductLambda">ComputeProductLambda</a></li>
+	<li><a href="#pr_lb_ComputeProductPi">ComputeProductPi</a></li>
+	<li><a href="#pr_lb_Create">Create</a></li>
+	<li><a href="#pr_lb_DivideNodes">DivideNodes</a></li>
+	<li><a href="#pr_lb_DivideNodesWithMinimumDeviationSearch">DivideNodesWithMinimumDeviationSearch</a></li>
+	<li><a href="#pr_lb_EnterEvidence">EnterEvidence</a></li>
+	<li><a href="#pr_lb_EnterEvidenceOMP">EnterEvidenceOMP</a></li>
+	<li><a href="#pr_lb_GetNodeWithMinimumDeviation">GetNodeWithMinimumDeviation</a></li>
+	<li><a href="#pr_lb_GetWeightOfSubTree">GetWeightOfSubTree</a></li>
+	<li><a href="#pr_lb_InitMPIConsts">InitMPIConsts</a></li>
+	<li><a href="#pr_lb_InitWeightArrays">InitWeightArrays</a></li>
+	<li><a href="#pr_lb_MarginalNodes">MarginalNodes</a></li>
+	<li><a href="#pr_lb_ParallelProtocol">ParallelProtocol</a></li>
+	<li><a href="#pr_lb_ParallelProtocolContMPI">ParallelProtocolContMPI</a></li>
+	<li><a href="#pr_lb_ParallelProtocolContOMP">ParallelProtocolContOMP</a></li>
+	<li><a href="#pr_lb_ParallelProtocolOMP">ParallelProtocolOMP</a></li>
+	<li><a href="#pr_lb_PickOutSkeleton">PickOutSkeleton</a></li>
+	<li><a href="#pr_lb_ProductLambdaMsgs">ProductLambdaMsgs</a></li>
+ </ul>
+<li><a href="#pr_name_CParEMLearningEngine">CParEMLearningEngine</a></li>
+ <ul>
+	<li><a href="#pr_em_Create">Create</a></li>
+	<li><a href="#pr_em_Learn">Learn</a></li>
+	<li><a href="#pr_em_LearnContMPI">LearnContMPI</a></li>
+	<li><a href="#pr_em_LearnOMP">LearnOMP</a></li>
+ </ul>
+</ul>
+
+
+
+
+<hr>
+<h2><u><a name="#pr_name_CParJtreeInfEngine">Class CParJtreeInfEngine</a></u></h2>
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_Create">Create</a></b></font>
+<p>Static functions of parallel Junction Tree Inference engine creation. Creates CParJtreeInfEngine class object.</p>
+<font face="courier"><b>static CParJtreeInfEngine* Create(const CStaticGraphicalModel *pGraphicalModelIn, const intVecVector& SubgrToConnectIn = intVecVector());</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pGraphicalModelIn</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to a model, for which inference algorithm is to be carried out.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">SubGrToConnect</font></td> </tr>
+ <tr><td></td><td></td><td>Nodes to be connected.</td></tr>
+</table>
+<br>
+<font face="courier"><b>static CParJtreeInfEngine* Create(const CStaticGraphicalModel *pGraphicalModelIn, int numOfSubGrToConnect, const int *SubGrToConnectSizesIn, const int **SubgrToConnectIn);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pGraphicalModelIn</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to a model, for which inference algorithm is to be carried out.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">numOfSubGrToConnect</font></td> </tr>
+ <tr><td></td><td></td><td>Number of subgraphs, which the user wants to use while Junction Tree inference is working.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">SubgrToConnectIn</font></td> </tr>
+ <tr><td></td><td></td><td>Nodes to be connected.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">SubGrToConnectSizesIn</font></td> </tr>
+ <tr><td></td><td></td><td>Sizes of the subgraphs, which the user wants to use connected.</td></tr>
+</table>
+<br>
+<font face="courier"><b>static CParJtreeInfEngine* Create(const CStaticGraphicalModel *pGraphicalModelIn, CJunctionTree *pJTreeIn);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pGraphicalModelIn</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to a model, for which inference algorithm is to be carried out.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">pJTree</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to the Junction tree.</td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_EnterEvidenceOMP">EnterEvidenceOMP</a></b></font>
+<p>This function starts inference in the graphical model. Function EnterEvidenceOMP realizes the OpenMP version of Junction Tree algorithm for continuous Bayesian networks.</p>
+<font face="courier"><b>void EnterEvidenceOMP(const CEvidence *pEvidenceIn, int maximize = 0, int sumOnMixtureNode = 1);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pEvidenceIn</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to a CEvidence object that contains the observed nodes and their values.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">maximize</font></td> </tr>
+ <tr><td></td><td></td><td>Optional parameter used in Junction Tree Inference for selection of message transmission type.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">sumOnMixtureNode</font></td> </tr>
+ <tr><td></td><td></td><td>Flag of summation on the mixture.</td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_CollectEvidenceOMP">CollectEvidenceOMP</a></b></font>
+<p>This function collects evidence. Only for discrete Bayesian networks.</p>
+<font face="courier"><b>void CollectEvidenceOMP();</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_CollectEvidenceOMP_gau">CollectEvidenceOMP_gau</a></b></font>
+<p>This function collects evidence. Only for continues Bayesian networks.</p>
+<font face="courier"><b>void CollectEvidenceOMP_gau();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_DistributeEvidenceOMP">DistributeEvidenceOMP</a></b></font>
+<p>Distribute Evidences.</p>
+<font face="courier"><b>void DistributeEvidenceOMP();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_ShrinkObservedOMP">ShrinkObservedOMP</a></b></font>
+<p>This function initializes a Junction tree using given evidence.</p>
+<font face="courier"><b>void ShrinkObservedOMP( const CEvidence *pEvidenceIn, int maximize = 0, int sumOnMixtureNode = 1, bool bRebuildJTree = true );</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pEvidenceIn</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to evidence.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">maximize</font></td> </tr>
+ <tr><td></td><td></td><td>Flag of maximization.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">sumOnMixtureNode</font></td> </tr>
+ <tr><td></td><td></td><td>Flag of summation on the mixture node.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">bRebuildJTree</font></td> </tr>
+ <tr><td></td><td></td><td>Flag of the Junction tree rebuilding.</td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_EnterEvidence">EnterEvidence</a></b></font>
+<p>This function starts MPI version of inference in the graphical model.</p>
+<font face="courier"><b>virtual void EnterEvidence(const CEvidence *pEvidenceIn, int maximize = 0, int sumOnMixtureNode = 1);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pEvidenceIn</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to a CEvidence object that contains the observed nodes and their values.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">maximize</font></td> </tr>
+ <tr><td></td><td></td><td>Optional parameter used in Junction Tree Inference for selection of message transmission type.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier">sumOnMixtureNode</font></td> </tr>
+ <tr><td></td><td></td><td>Flag of summation on the mixture node.</td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_CollectEvidence">CollectEvidence</a></b></font>
+<p>This function collects evidences using MPI.</p>
+<font face="courier"><b>virtual void CollectEvidence();</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_DistributeEvidence">DistributeEvidence</a></b></font>
+<p>This function distributes evidences using MPI.</p>
+<font face="courier"><b>virtual void DistributeEvidence();</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_DistributeEvidence">InitMPIConsts</a></b></font>
+<p>This function initializes constants from MPI framework.</p>
+<font face="courier"><b>void InitMPIConsts();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_InitWeightArrays">InitWeightArrays</a></b></font>
+<p>This function initializes  <font face="courier">m_pWeightesOfNodes</font> and <font face="courier">m_pWeightesOfSubTrees</font> arrays (the array pointers are set for NULL).</p>
+<font face="courier"><b>void InitWeightArrays();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_InitQueueNodes">InitQueueNodes</a></b></font>
+<p>Init queue for CollectEvidence.</p>
+<font face="courier"><b>void InitQueueNodes();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_CollectFactorsOnProcess">CollectFactorsOnProcess</a></b></font>
+<p>Collect parallel EnterEvidence results on choosen (<font face="courier">m_CollectRanks</font>) processes.</p>
+<font face="courier"><b>void CollectFactorsOnProcess(int MainProcNum);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier">MainProcNum</font></td> </tr>
+ <tr><td></td><td></td><td>Number of the main process.</td></tr>
+</table>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_GetMaxTagForCollectEvidence">GetMaxTagForCollectEvidence</a></b></font>
+<p>Calculate tag range for MPI send-receive operations.</p>
+<font face="courier"><b>int GetMaxTagForCollectEvidence();</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_DivideNodes">DivideNodes</a></b></font>
+<p>Divide cliques of the tree between processes.</p>
+<font face="courier"><b>void DivideNodes(int AglType = 2);</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_BuildWeightesOfNodes">BuildWeightesOfNodes</a></b></font>
+<p>This function builds the <font face="courier">m_pWeightesOfNodes</font> array (allocates memory and fills it with values).</p>
+<font face="courier"><b>void BuildWeightesOfNodes();</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_BuildWeightesOfSubTrees">BuildWeightesOfSubTrees</a></b></font>
+<p>This function builds the <font face="courier">m_pWeightesOfSubTrees</font> array (allocates memory and fills it with values).</p>
+<font face="courier"><b>void BuildWeightesOfSubTrees();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_DivideNodesWithMinimumDeviationSearch">DivideNodesWithMinimumDeviationSearch</a></b></font>
+<p>Divide nodes with minimum deviation search from all nodes.</p>
+<font face="courier"><b>void DivideNodesWithMinimumDeviationSearch();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_CollectCommCreate">CollectCommCreate</a></b></font>
+<p>Create MPI communicator for CollectEvidence.</p>
+<font face="courier"><b>void CollectCommCreate();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_BuildRoutes">BuildRoutes</a></b></font>
+<p>Build routes from root clique of the tree to root cliques of all subtrees.</p>
+<font face="courier"><b>void BuildRoutes();</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_ProcessRoutes">ProcessRoutes</a></b></font>
+<p>Process routes from root clique of the tree to root cliques of all subtrees.</p>
+<font face="courier"><b>void ProcessRoutes();</b></font>
+<br> 
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_BalanceTree">BalanceTree</a></b></font>
+<p>Move the main root in the tree to balance weights of subtrees  (used in case of two subtrees only).</p>
+<font face="courier"><b>void BalanceTree(); </b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_InitNodeConditions">InitNodeConditions</a></b></font>
+<p>Initialize some data structures for DistributeEvidenceOMP.</p>
+<font face="courier"><b>void InitNodeConditions(); </b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_jt_InitQueueNodesOMP">InitQueueNodesOMP</a></b></font>
+<p>Init queue for CollectEvidence.</p>
+<font face="courier"><b>void InitQueueNodesOMP(); </b></font>
+<br>
+<br>
+
+
+
+<hr>
+<h2><u><a name="#pr_name_CParPearlInfEngine">Class CParPearlInfEngine</a></u></h2>
+<hr>
+
+
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_Create">Create</a></b></font>
+<p>Creates CParPearlInfEngine class object.</p>
+<font face="courier"><b>static CParPearlInfEngine* Create(const CStaticGraphicalModel *pGrModel);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pGrModel</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to a model, for which inference algorithm is to be carried out. Note, that it can be either an MRF2 or a BNet.</td></tr>
+</table>
+<br>
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_EnterEvidence">EnterEvidence</a></b></font>
+<p>This function starts inference in the graphical model. Function EnterEvidence realizes the MPI version of Loopy Belief algorithm for discrete and continuous Bayesian networks.</p>
+<font face="courier"><b>void EnterEvidence(const CEvidence *evidence, int maximize = 0, int sumOnMixtureNode = 1);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >evidence</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to a CEvidence object that contains the observed nodes and their values.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >maximize</font></td> </tr>
+ <tr><td></td><td></td><td>Optional parameter, that is used in Pearl Inference for selection of message transmission type.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >sumOnMixtureNode</font></td> </tr>
+ <tr><td></td><td></td><td>Flag of summation on the mixture node.</td></tr>
+</table>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_EnterEvidenceOMP">EnterEvidenceOMP</a></b></font>
+<p>This function starts inference in the graphical model. Function EnterEvidence realizes the OpenMP version of Loopy Belief algorithm for discrete and continuous Bayesian networks.</p>
+<font face="courier"><b>void EnterEvidenceOMP(const CEvidence *evidence, int maximize = 0, int sumOnMixtureNode = 1);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >evidence</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to a CEvidence object that contains the observed nodes and their values.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >maximize</font></td> </tr>
+ <tr><td></td><td></td><td>Optional parameter, that is used in Pearl Inference for selection of message transmission type.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >sumOnMixtureNode</font></td> </tr>
+ <tr><td></td><td></td><td>Flag of summation on the mixture node.</td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_MarginalNodes">MarginalNodes</a></b></font>
+<p>This function calculates joint probability distribution for the specified nodes.</p>
+<font face="courier"><b>void MarginalNodes(const int* query, int querySize, int notExpandJPD = 0);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >query</font></td> </tr>
+ <tr><td></td><td></td><td>Array of node numbers for the joint probability distribution calculation.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >querySize</font></td> </tr>
+ <tr><td></td><td></td><td>Number of nodes for the joint probability distribution calculation.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >notExpandJPD</font></td> </tr>
+ <tr><td></td><td></td><td>Flag of the expand operation.</td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_ComputeMessage">ComputeMessage</a></b></font>
+<p>This function computes message and puts it into the corresponding element of <font face="courier">m_msgsFromNeighbors</font> array.</p>
+<font face="courier"><b>void ComputeMessage(int destination, int source);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >destination</font></td> </tr>
+ <tr><td></td><td></td><td>Destination node.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >source</font></td> </tr>
+ <tr><td></td><td></td><td>Source node.</td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_ComputeProductPi">ComputeProductPi</a></b></font>
+<p>This function computes pi by multiplying the allocation at node and the messages from neighbours and puts it into the corresponding element of m_productPi array.</p>
+<font face="courier"><b>void ComputeProductPi(int nodeNumber, int except = -1);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >nodeNumber</font></td> </tr>
+ <tr><td></td><td></td><td>Number of the node in the graphical model.</td></tr>
+</table>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_ComputeProductLambda">ComputeProductLambda</a></b></font>
+<p>This function computes lambda and puts it into the corresponding element of m_productLambda array.</p>
+<font face="courier"><b>void ComputeProductLambda(int nodeNumber, message lambda, CDistribFun * res, int except = -1);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >nodeNumber</font></td> </tr>
+ <tr><td></td><td></td><td>Number of the node in the graphical model.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >lambda</font></td> </tr>
+ <tr><td></td><td></td><td>Messages from neighbours.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >res</font></td> </tr>
+ <tr><td></td><td></td><td>Distribution on the node.</td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_ProductLambdaMsgs">ProductLambdaMsgs</a></b></font>
+<p>This function computes lambda and puts it into the corresponding element of m_productLambda array.</p>
+<font face="courier"><b>void ProductLambdaMsgs( int nodeNumber, int except = -1);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >nodeNumber</font></td> </tr>
+ <tr><td></td><td></td><td>Number of the node in the graphical model.</td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_ComputeBelief">ComputeBelief</a></b></font>
+<p>This function computes belief for nodeNumber.</p>
+<font face="courier"><b>void ComputeBelief(int nodeNumber);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >nodeNumber</font></td> </tr>
+ <tr><td></td><td></td><td>Number of the node in the graphical model.</td></tr>
+</table>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_ParallelProtocol">ParallelProtocol</a></b></font>
+<p>This function is intended for starting MPI version of Loopy Belief inference algorithm for discrete Bayesian networks.</p>
+<font face="courier"><b>void ParallelProtocol();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_ParallelProtocolContMPI">ParallelProtocolContMPI</a></b></font>
+<p>This function is intended for starting MPI version of Loopy Belief inference algorithm for continuous Bayesian networks.</p>
+<font face="courier"><b>void ParallelProtocolContMPI();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_ParallelProtocolOMP">ParallelProtocolOMP</a></b></font>
+<p>This function is intended for starting OpenMP version of Loopy Belief inference algorithm for discrete Bayesian networks.</p>
+<font face="courier"><b>void ParallelProtocolOMP();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_ParallelProtocolContOMP">ParallelProtocolContOMP</a></b></font>
+<p>This function is intended for starting OpenMP version of Loopy Belief inference algorithm for discrete Bayesian networks.</p>
+<font face="courier"><b>void ParallelProtocolContOMP();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_InitMPIConsts">InitMPIConsts</a></b></font>
+<p>Initialization of constants from MPI framework.</p>
+<font face="courier"><b>void InitMPIConsts();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_InitWeightArrays">InitWeightArrays</a></b></font>
+<p>Initialization of arrays m_pWeightesOfNodes m_pWeightesOfSubTrees (the array pointers are set to NULL).</p>
+<font face="courier"><b>void InitWeightArrays();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_DivideNodes">DivideNodes</a></b></font>
+<p>Divide nodes between processes.</p>
+<font face="courier"><b>void DivideNodes(const CEvidence *pEvidence, int AlgType = 2);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pEvidence</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to array of CEvidence objects</td></tr>
+</table>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_PickOutSkeleton">PickOutSkeleton</a></b></font>
+<p>Build skeleton of the graph.</p>
+<font face="courier"><b>void PickOutSkeleton();</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_GetWeightOfSubTree">GetWeightOfSubTree</a></b></font>
+<p>Get weight of subtree.</p>
+<font face="courier"><b>double GetWeightOfSubTree(int NumOfNode);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >NumOfNode</font></td> </tr>
+ <tr><td></td><td></td><td>Number of the nodes in the graphical model</td></tr>
+</table>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_BuildWeightesOfNodes">BuildWeightesOfNodes</a></b></font>
+<p>This function builds the <font face="courier">m_pWeightesOfNodes</font> array (allocates memory and fills it with values).</p>
+<font face="courier"><b>void BuildWeightesOfNodes();</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_BuildWeightesOfSubTrees">BuildWeightesOfSubTrees</a></b></font>
+<p>This function builds the <font face="courier">m_pWeightesOfSubTrees</font> array (allocates memory and fills it with values).</p>
+<font face="courier"><b>void BuildWeightesOfSubTrees();</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_GetNodeWithMinimumDeviation">GetNodeWithMinimumDeviation</a></b></font>
+<p>Return node with min deviation from W* (selected from all nodes).</p>
+<font face="courier"><b>int GetNodeWithMinimumDeviation(double WThreshold);</b></font>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_CollectBeliefsOnProcess">CollectBeliefsOnProcess</a></b></font>
+<p>Collect parallel EnterEvidence results on choosen processes.</p>
+<font face="courier"><b>void CollectBeliefsOnProcess(int MainProcNum);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >MainProcNum</font></td> </tr>
+ <tr><td></td><td></td><td>Number of the main process </td></tr>
+</table>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_lb_CollectBeliefsOnProcessContMPI">CollectBeliefsOnProcessContMPI</a></b></font>
+<p>Collect parallel EnterEvidence results on choosen processes. Only for continues Bayesian networks. </p>
+<font face="courier"><b>void CollectBeliefsOnProcessContMPI(int MainProcNum);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >MainProcNum</font></td> </tr>
+ <tr><td></td><td></td><td>Number of the main process </td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<h2><u><a name="#pr_name_CParEMLearningEngine">Class CParEMLearningEngine</a></u></h2>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_em_Create">Create</a></b></font>
+<p>Creates CParEMLearningEngine class object.</p>
+<font face="courier"><b>static CParEMLearningEngine* Create(CStaticGraphicalModel *pGrModelIn);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pGrModelIn</font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to a graphical model for which the learning engine is created. </td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_em_Learn">Learn</a></b></font>
+<p>This function trains a graphical model using the data set. In parameter learning the function updates factors using given evidences. Learn function realizes the MPI version of EmLearning algorithm for discrete Bayesian networks.</p>
+<font face="courier"><b>void Learn();</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_em_LearnContMPI">LearnContMPI</a></b></font>
+<p>This method is designed to carry out learning in continuous Bayesian networks.</p>
+<font face="courier"><b>void LearnContMPI();</b></font>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_em_LearnOMP">LearnOMP</a></b></font>
+<p>This function trains a graphical model using the data set. In parameter learning the function updates factors using given evidences. Learn function realizes the OpenMP version of EmLearning algorithm for discrete Bayesian networks.</p>
+<font face="courier"><b>void LearnOMP();</b></font>
+<br>

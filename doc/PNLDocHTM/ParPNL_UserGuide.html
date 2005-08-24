@@ -1,0 +1,344 @@
+<table width="100%" border="0" cellspacing="0" cellpadding="2" bgcolor="#6a9bed">
+<tr><td ><center><i><font size="10">ParPNL: User Guide</font></i></center></td></tr>
+</table>
+<hr>
+<ul>
+<li><a href="#ug_JTRee">Parallel Junction Tree</a></li>
+<li><a href="#ug_Loopy">Parallel Loopy Belief Propagation</a></li>
+<li><a href="#ug_Gibbs">Parallel Gibbs Sampling</a></li>
+<li><a href="#ug_EM">Parallel EM Learning algorythm</a></li>
+</ul>
+<hr>
+<u><h2><a name="#ug_JTree">Parallel Junction Tree</a></h2></u>
+<p>Junction Tree algorithm is constructed to carry out inference in Bayesian and Markov nets. On the base of initial net, the cliques tree (Junction Tree) is constructed. And then two steps of inference is carried out. The first step is information gathering from leaves to the root. The second step is information distribution from the root to the leaves.</p>
+<p>Functionality of algorithm is presented in the table below.</p>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" >
+ <tr>
+  <td></td><td colspan="3" align="center">Bnet</td><td rowspan="2" align="center">MNet</td>
+ </tr>
+ <tr>
+  <td></td><td align="center">Tabular</td><td align="center">Continuous</td><td align="center">Tabular+Continuous</td>
+ </tr>
+ <tr><td align="center">Junction Tree - sequential version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="green">Y</td><td align="center" bgcolor = "green">Y</td></tr>
+ <tr><td align="center">Junction Tree - OpenMP version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="#ff8800">N</td><td align="center" bgcolor = "green">Y</td></tr>
+ <tr><td align="center">Junction Tree - MPI version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="#ff8800">N</td><td align="center" bgcolor = "green">Y</td></tr>
+</table>
+<br>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr>
+  <td align="center" bgcolor = "green">Y</td><td>functionality is implemented</td>
+ </tr>
+ <tr>
+  <td align="center" bgcolor = "#ff8800">N</td><td>functionality is not implemented yet</td>
+ </tr>
+</table>
+<br>
+<p>The columns in this table present the types of networks:</p>
+<ol>
+<li><font face="courier">Tabular</font> is the Bayesian network with tabular nodes only;</li>
+<li><font face="courier">Continuous</font> is the Bayesian network with continuous nodes and perhaps tabular but there is no continuous nodes with discrete children;</li>
+<li><font face="courier">Tabular + Ñontinuous</font> is the Bayesian network with continuous and tabular nodes in random order;</li>
+<li><font face="courier">Mnet</font> is the Markov net.</li>
+</ol>
+<br>
+<h3>Initial Model</h3>
+<p>Creation of model is described in the following document in detail: <a href="pnl_refMan.htm ">PNL User Guide</a></p>
+<br>
+<h3>Junction Tree - MPI version</h3>
+<p>To start MPI version of Junction Tree algorithm for Bayesian and Markov networks it is necessary to execute a <b>EnterEvidence()</b>  method from class <b>CParJtreeInfEngine</b>. </p>
+
+<font face="courier"> <font color="green">// - Inference engine creation</font> <br>
+CParJtreeInfEngine *pParJTree;<br>
+pParJTree = CParJtreeInfEngine::Create(pBNet);<br>
+<font color="green">// - Run MPI version of inference engine </font><br>
+pParJTree -> EnterEvidence(pEvidence);<br> </font>
+
+<h3>Junction Tree - OpenMP version</h3>
+<p>To start OpenMP version of Junction Tree algorithm for Bayesian and Markov networks it is necessary to execute a EnterEvidenceOMP ()  method from class CParJtreeInfEngine. </p>
+
+<font face="courier"> <font color="green">// - Inference engine creation </font> <br>
+CParJtreeInfEngine *pParJTree;<br>
+pParJTree = CParJtreeInfEngine::Create(pBNet);<br>
+<font color="green">// - Run Open MP inference engine <br></font>
+pParJTree -> EnterEvidenceOMP(pEvidence);<br></font>
+
+<h3>Results of experiments</h3>
+<table width="100%" border="1" cellspacing="0" cellpadding="2">
+ <tr>
+  <td rowspan="3" align="center">Version</td><td colspan="4" align="center">Bnet</td><td rowspan="2" colspan="2" align="center">Mnet</td>
+ </tr>
+ <tr>
+  <td colspan="2" align="center">Tabular</td><td colspan="2" align="center">Continuous</td>
+ </tr>
+ <tr>
+  <td align="center">2 servers</td><td align="center">4 servers</td><td align="center">2 servers</td><td align="center">4 servers</td><td align="center">2 servers</td><td align="center">4 servers</td>
+ </tr>
+ <tr>
+  <td align="center">MPI</td><td align="center">0.88</td><td align="center">0.795</td><td align="center">1.149</td><td align="center">1.249</td><td></td><td></td>
+ </tr>
+ <tr>
+  <td align="center">OpenMP</td><td></td><td></td><td align="center">1.826</td><td align="center">3.332</td><td></td><td></td>
+ </tr>
+</table>
+
+
+
+
+
+
+
+<hr>
+<u><h2><a name="#ug_Loopy">Parallel Loopy Belief propagation</a></h2></u>
+<p>Loopy Belief Propagation is designed to carry out inference in Bayesian and Markov nets. The idea of this algorythm is the calculation of the component of belifs vector for every node. This algorithm gives the proximate result for networks with adirected cycles and the exact result for the networks without such cycles.</p>
+<p>Functionality of algorithm is presented in the table below.</p>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" >
+ <tr>
+  <td></td><td colspan="3" align="center">Bnet</td><td rowspan="2" align="center">MNet</td>
+ </tr>
+ <tr>
+  <td></td><td align="center">Tabular</td><td align="center">Continuous</td><td align="center">Tabular+Continuous</td>
+ </tr>
+ <tr><td align="center">Loopy Belief - sequential version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="#ff8800">N</td><td align="center" bgcolor = "green">Y</td></tr>
+ <tr><td align="center">Loopy Belief - OpenMP version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="#ff8800">N</td><td align="center" bgcolor = "green">Y</td></tr>
+ <tr><td align="center">Loopy Belief - MPI version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="#ff8800">N</td><td align="center" bgcolor = "green">Y</td></tr>
+</table>
+<br>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr>
+  <td align="center" bgcolor = "green">Y</td><td>functionality is implemented</td>
+ </tr>
+ <tr>
+  <td align="center" bgcolor = "#ff8800">N</td><td>functionality is not implemented yet</td>
+ </tr>
+</table>
+<br>
+<p>The columns in this table present the types of networks:</p>
+<ol>
+<li><font face="courier">Tabular</font> is the Bayesian network with tabular nodes only;</li>
+<li><font face="courier">Continuous</font> is the Bayesian network with continuous nodes and perhaps tabular but there is no continuous nodes with discrete children;</li>
+<li><font face="courier">Tabular + Ñontinuous</font> is the Bayesian network with continuous and tabular nodes in random order;</li>
+<li><font face="courier">Mnet</font> is the Markov net.</li>
+</ol>
+<br>
+<h3>Initial Model</h3>
+<p>Creation of model is described in the following document in detail: <a href="pnl_refMan.htm ">PNL User Guide</a></p>
+<br>
+<h3>Loopy Belief - MPI version</h3>
+<p>To start MPI version of Loopy Belief algorithm for Bayesian and Markov networks it is necessary to execute an <b>EnterEvidence()</b>  method from class <b>CParPearlInfEngine</b>. </p>
+
+<font face="courier"> <font color="green">// - Inference engine creation</font> <br>
+CParPearlInfEngine *pParInfEng;<br>
+pParInfEng = CParPearlInfEngine::Create(pBNet);<br>
+<font color="green">// - Run MPI version of inference engine </font><br>
+pParInfEng -> EnterEvidence(pEvidence);<br> </font>
+
+<h3>Loopy Belief - OpenMP version</h3>
+<p>To start OpenMP version of Loopy Belief   algorithm for Bayesian and Markov networks it is necessary to execute a <b>EnterEvidenceOMP()</b> method from class <b>CParPearlInfEngine</b>. </p>
+
+<font face="courier"> <font color="green">// - Inference engine creation </font> <br>
+CParPearlInfEngine *pParInfEng;<br>
+pParInfEng = CParPearlInfEngine::Create(pBNet);<br>
+<font color="green">// - Run Open MP inference engine <br></font>
+pParInfEng -> EnterEvidenceOMP(pEvidence);<br></font>
+
+<h3>Results of experiments</h3>
+<table width="100%" border="1" cellspacing="0" cellpadding="2">
+ <tr>
+  <td rowspan="3" align="center">Version</td><td colspan="4" align="center">Bnet</td><td rowspan="2" colspan="2" align="center">Mnet</td>
+ </tr>
+ <tr>
+  <td colspan="2" align="center">Tabular</td><td colspan="2" align="center">Continuous</td>
+ </tr>
+ <tr>
+  <td align="center">2 servers</td><td align="center">4 servers</td><td align="center">2 servers</td><td align="center">4 servers</td><td align="center">2 servers</td><td align="center">4 servers</td>
+ </tr>
+ <tr>
+  <td align="center">MPI</td><td align="center">2.176</td><td align="center">3.283</td><td align="center">2.176</td><td align="center">3.283</td><td align="center">1.96</td><td align="center">3.89</td>
+ </tr>
+ <tr>
+  <td align="center">OpenMP</td><td align="center">1.766</td><td align="center">3.731</td><td align="center">1.766</td><td align="center">3.731</td><td align="center">1.92</td><td align="center">3.76</td>
+ </tr>
+ 
+</table>
+
+
+
+
+
+
+
+<hr>
+<u><h2><a name="#ug_Gibbs">Parallel Gibbs Sampling</a></h2></u>
+<p>The goal of this algorithm is to get the marginal distribution on definite nodes on the base of some evidences. Distribution calculation is carried out by generating random samples.</p>
+<p>Functionality of algorithm is presented in the table below.</p>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" >
+ <tr>
+  <td></td><td colspan="3" align="center">Bnet</td><td rowspan="2" align="center">MNet</td>
+ </tr>
+ <tr>
+  <td></td><td align="center">Tabular</td><td align="center">Continuous</td><td align="center">Tabular+Continuous</td>
+ </tr>
+ <tr><td align="center">Gibbs Sampling - sequential version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="green">Y</td><td align="center" bgcolor = "green">Y</td></tr>
+ <tr><td align="center">Gibbs Sampling - OpenMP version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="green">Y</td><td align="center" bgcolor = "green">Y</td></tr>
+ <tr><td align="center">Gibbs Sampling - MPI version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="green">Y</td><td align="center" bgcolor = "green">Y</td></tr>
+</table>
+<br>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr>
+  <td align="center" bgcolor = "green">Y</td><td>functionality is implemented</td>
+ </tr>
+ <tr>
+  <td align="center" bgcolor = "#ff8800">N</td><td>functionality is not implemented yet</td>
+ </tr>
+</table>
+<br>
+<p>The columns in this table present the types of networks:</p>
+<ol>
+<li><font face="courier">Tabular</font> is the Bayesian network with tabular nodes only;</li>
+<li><font face="courier">Continuous</font> is the Bayesian network with continuous nodes and perhaps tabular but there is no continuous nodes with discrete children;</li>
+<li><font face="courier">Tabular + Ñontinuous</font> is the Bayesian network with continuous and tabular nodes in random order;</li>
+<li><font face="courier">Mnet</font> is the Markov net.</li>
+</ol>
+<br>
+<h3>Initial Model</h3>
+<p>Creation of model is described in the following document in detail: <a href="pnl_refMan.htm ">PNL User Guide</a></p>
+<br>
+<h3>Gibbs Sampling - MPI version</h3>
+<p>To start MPI version Gibbs Sampling algorithm for Bayesian networks it is necessary to execute a  <b>MarginalNodes()</b> method from class <b>CParGibbsSamplingInfEngine</b>.</p>
+
+<font face="courier"> <font color="green">// - Inference engine creation</font> <br>
+CGibbsSamplingInfEngine *pParInfEng; <br>
+pParInfEng = CParGibbsSamplingInfEngine::Create(pBNet);<br>
+intVecVector queries;<br>
+<br>
+queries.resize(2);<br>
+queries[0].resize(0);<br>
+queries[0].push_back(2);<br>
+<br>    
+queries[1].resize(0);<br>
+queries[1].push_back(1);<br>
+<br>
+int gibbs_max_time = 1000;<br>
+int gibbs_burnin = 100;<br>
+int gibbs_num_streams = 8; <font color="green">// more then number of MPI process</font> <br>
+
+<font color="green">// - Start inference procedure</font> <br>
+pParInfEng->SetQueries(queries);<br>
+pParInfEng->SetMaxTime(gibbs_max_time);<br>
+pParInfEng->SetBurnIn(gibbs_burnin);<br>
+pParInfEng->SetNumStreams(gibbs_num_streams);<br>
+<br>
+pParInfEng->EnterEvidence(pEvidence);<br>
+<br>
+<font color="green">// - Getting the marginals for a set of nodes for Parallel Gibbs --</font> <br>
+const int querySz = 1;    <br>
+const int query[] = {1};<br>
+pParInfEng->MarginalNodes( query,querySz ); <br></font>
+
+<h3>Gibbs Sampling - OpenMP version</h3>
+<p> --- QQQ --- </p>
+
+<h3>Results of experiments</h3>
+<table width="100%" border="1" cellspacing="0" cellpadding="2">
+ <tr>
+  <td rowspan="3" align="center">Version</td><td colspan="6" align="center">Bnet</td><td rowspan="2" colspan="2" align="center">Mnet</td>
+ </tr>
+ <tr>
+  <td colspan="2" align="center">Tabular</td><td colspan="2" align="center">Continuous</td><td colspan="2" align="center">Tabular+Continuous</td>
+ </tr>
+ <tr>
+  <td align="center">2 servers</td><td align="center">4 servers</td><td align="center">2 servers</td><td align="center">4 servers</td><td align="center">2 servers</td><td align="center">4 servers</td><td align="center">2 servers</td><td align="center">4 servers</td>
+ </tr>
+ <tr>
+  <td align="center">MPI</td><td align="center">1.928</td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td><td align="center"></td>
+ </tr>
+ <tr>
+  <td align="center">OpenMP</td><td align="center">1.961</td><td align="center">3.807</td><td align="center"></td><td align="center"></td><td align="center">1.98487</td><td align="center">3.89818</td><td align="center"></td><td align="center"></td>
+ </tr>
+ 
+</table>
+
+
+
+
+<hr>
+<u><h2><a name="#ug_EM">Parallel EM Learning algorythm</a></h2></u>
+<p>This algorithm is designed to carry out inference in Bayesian and Markov nets on the base of learning with definite samples. We propose that there are observable and hidden nodes in the net. Probability distributions on the nodes are unknown, but they belong to some class. On the base of evidences on observable nodes, the probability distributions on hidden nodes is calculated.</p>
+<p>Functionality of algorithm is presented in the table below.</p>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" >
+ <tr>
+  <td></td><td colspan="3" align="center">Bnet</td><td rowspan="2" align="center">MNet</td>
+ </tr>
+ <tr>
+  <td></td><td align="center">Tabular</td><td align="center">Continuous</td><td align="center">Tabular+Continuous</td>
+ </tr>
+ <tr><td align="center">EM Learning - sequential version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="green">Y</td><td align="center" bgcolor = "green">Y</td></tr>
+ <tr><td align="center">EM Learning - OpenMP version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor="#ff8800">N</td><td align="center" bgcolor = "green">Y</td></tr>
+ <tr><td align="center">EM Learning - MPI version</td><td align="center" bgcolor = "green">Y</td><td align="center" bgcolor = "#ff8800">N</td><td align="center" bgcolor="#ff8800">N</td><td align="center" bgcolor = "green">Y</td></tr>
+</table>
+<br>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr>
+  <td align="center" bgcolor = "green">Y</td><td>functionality is implemented</td>
+ </tr>
+ <tr>
+  <td align="center" bgcolor = "#ff8800">N</td><td>functionality is not implemented yet</td>
+ </tr>
+</table>
+<br>
+<p>The columns in this table present the types of networks:</p>
+<ol>
+<li><font face="courier">Tabular</font> is the Bayesian network with tabular nodes only;</li>
+<li><font face="courier">Continuous</font> is the Bayesian network with continuous nodes and perhaps tabular but there is no continuous nodes with discrete children;</li>
+<li><font face="courier">Tabular + Ñontinuous</font> is the Bayesian network with continuous and tabular nodes in random order;</li>
+<li><font face="courier">Mnet</font> is the Markov net.</li>
+</ol>
+<br>
+<h3>Initial Model</h3>
+<p>Creation of model is described in the following document in detail: <a href="pnl_refMan.htm ">PNL User Guide</a></p>
+<br>
+<h3>EM Learning - MPI version</h3>
+<p>To start MPI version of EmLearning algorithm for discrete Bayesian networks it is necessary to execute a <b>Learn()</b> method from class <b>CParEMLearningEngine</b>. </p>
+
+<font face="courier"> <font color="green">//Create learning process</font> <br>
+CParEMLearningEngine *pParLearn = CParEMLearningEngine::Create(pBNet);<br>
+<font color="green">//Start learning procedure </font><br>
+pParLearn -> Learn();<br> </font>
+<br>
+<p>To start MPI version of EmLearning algorithm for gaussian nets it is necessary to execute a <b>LearnContMPI()</b> method from class <b>CParEMLearningEngine.</b></p>
+
+<font face="courier"> <font color="green">//Create learning process</font><br>
+CParEMLearningEngine *pParLearn = CParEMLearningEngine::Create(pBNet);<br>
+<font color="green">//Start learning procedure</font><br>
+pParLearn -> LearnContMPI(); </font><br>
+
+
+<h3>EM Learning - OpenMP version</h3>
+<p>To run OpenMP version of EMlearning algorithm it is necessary to execute a <b>LearnOMP()</b> method from class <b>CParEMLearningEngine</b>. </p>
+
+<font face="courier"> <font color="green">//Create learning process</font><br>
+CParEMLearningEngine *pParLearn = CParEMLearningEngine::Create(pBNet);<br>
+<font color="green">//Start learning procedure</font><br>
+pParLearn -> LearnOMP ();</font><br>
+
+
+<h3>Results of experiments</h3>
+<table width="100%" border="1" cellspacing="0" cellpadding="2">
+ <tr>
+  <td rowspan="3" align="center">Version</td><td colspan="4" align="center">Bnet</td>
+ </tr>
+ <tr>
+  <td colspan="2" align="center">Tabular</td><td colspan="2" align="center">Continuous</td>
+ </tr>
+ <tr>
+  <td align="center">2 servers</td><td align="center">4 servers</td><td align="center">2 servers</td><td align="center">4 servers</td>
+ </tr>
+ <tr>
+  <td align="center">MPI</td><td align="center">1.9899</td><td align="center">3.9923</td><td align="center">1.880</td><td align="center">3.584</td>
+ </tr>
+ <tr>
+  <td align="center">OpenMP</td><td align="center">3.346</td><td align="center">6.473</td><td align="center" bgcolor="#ff8800">N</td><td align="center" bgcolor="#ff8800">N</td>
+ </tr>
+ 
+</table>
+

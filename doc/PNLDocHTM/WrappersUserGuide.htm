@@ -1,0 +1,1907 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html><head>
+<link rel="STYLESHEET" href="style.css" charset="ISO-8859-1" type="text/css">
+<title>PNL Wrappers: User Guide</title>
+</head><body>
+
+<center><table cellspacing=0 cellpadding=5 width="90%" bgcolor="#6a9bed" nosave >
+<tr nosave>
+<td nosave>
+<center><i><font color="#000000"><font size=+4>
+PNL Wrappers: User Guide
+</font></font></i></center>
+</td>
+</tr>
+</table></center>
+<HR>
+
+<P>
+  <h4>
+<UL>
+  <LI><A href="#Intro">Introduction</A> 
+  <UL>  
+      <LI><A href="#BayesNet_class">BayesNet class</A> 
+      <LI><A href="#DBN_class">DBN class</A> 
+      <LI><A href="#LIMID_class">LIMID class</A> 
+      <LI><A href="#MRF_class">MRF class</A> 
+  </UL>
+  <LI><A href="#Limitations">Limitations</A> 
+  <LI><A href="#DiscreteNet">Bayesian networks with discrete nodes</A> 
+  <UL>  
+      <LI><A href="#CreateNetDiscr">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesDiscr">Adding nodes</A> 
+          <LI><A href="#AddEdgesDiscr">Adding edges</A> 
+      </UL>
+      <LI><A href="#SpecProbDiscr">Specifying the conditional probabilities</A> 
+      <LI><A href="#AddObservDiscr">Adding observations</A> 
+      <LI><A href="#LearnDiscr">Learning the network</A> 
+      <UL>
+          <LI><A href="#ParamLearnDiscr">Parameters learning</A> 
+          <LI><A href="#StructLearnDiscr">Structure learning</A> 
+      </UL>
+      <LI><A href="#MPEandJPDDiscr">Getting the MPE and JPD</A> 
+  </UL>
+  <LI><A href="#Gaussian">Bayesian networks with continuous nodes</A> 
+  <UL>  
+      <LI><A href="#CreateNetGau">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesGau">Adding nodes</A> 
+          <LI><A href="#AddEdgesGau">Adding edges</A> 
+      </UL>
+      <LI><A href="#SpecProbGau">Specifying the conditional probabilities</A> 
+      <LI><A href="#AddObservGau">Adding observations</A> 
+      <LI><A href="#LearnGau">Learning the network</A> 
+      <LI><A href="#MPEandJPDGau">Getting the MPE and JPD</A> 
+      <LI><A href="#MultiGau">Multivariate Gaussian case</A> 
+      <UL>
+          <LI><A href="#CreateNetMultiGau">Creating the net</A> 
+          <LI><A href="#SpecProbMultiGau">Specifying the conditional 
+          probabilities</A> 
+	  <LI><A href="#AddObservMultiGau">Adding observations</A> 
+          <LI><A href="#ExampleMultiGau">An example</A> 
+      </UL>
+  </UL>
+<LI><A href="#DiscreteDBN">Dynamic Bayesian Networks with discrete nodes</A> 
+  <UL>  
+      <LI><A href="#CreateDBNDiscr">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesDiscrDBN">Adding nodes</A> 
+          <LI><A href="#AddEdgesDiscrDBN">Adding edges</A> 
+          <LI><A href="#SetNumSlicesD">Setting number of network slices</A> 
+      </UL>
+      <LI><A href="#SpecProbDiscrDBN">Specifying the conditional probabilities</A> 
+      <LI><A href="#AddObservDiscrDBN">Adding observations</A> 
+      <LI><A href="#ParamLearnDiscrDBN">Parameters learning</A> 
+      <LI><A href="#MPEandJPDDiscrDBN">Getting the MPE and JPD</A> 
+  </UL>
+  <LI><A href="#GaussianDBN">Dynamic Bayesian Networks with continuous nodes</A> 
+  <UL>  
+      <LI><A href="#CreateDBNGau">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesGauDBN">Adding nodes</A> 
+          <LI><A href="#AddEdgesGauDBN">Adding edges</A>
+          <LI><A href="#SetnumSlicesG">Setting number of network slices</A>  
+      </UL>
+      <LI><A href="#SpecProbGauDBN">Specifying the condtional probabilities</A> 
+      <LI><A href="#AddObservGauDBN">Adding observations</A> 
+      <LI><A href="#LearnGauDBN">Learning the network</A> 
+      <LI><A href="#MPEandJPDGauDBN">Getting the MPE and JPD</A> 
+</UL>
+  <LI><A href="#LIMID">LImited Memory Influence Diagrams</A> 
+  <UL>  
+      <LI><A href="#CreateLIMID">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesLIMID">Adding nodes</A> 
+          <LI><A href="#AddEdgesLIMID">Adding edges</A> 
+      </UL>
+      <LI><A href="#SpecProbLIMID">Specifying the conditional probabilities</A> 
+
+      <LI><A href="#Utility">Getting expected utility</A> 
+      <LI><A href="#Politics">Getting pure politics</A> 
+      <LI><A href="#SaveLIMID">Saving LIMID into the file</A> 
+      <LI><A href="#LoadLIMID">Loading LIMID from the file</A> 
+  </UL>
+  <LI><A href="#DiscreteMRF">Markov Random Fields</A> 
+  <UL>  
+      <LI><A href="#CreateNetMRFDiscr">Creating the net</A> 
+      <UL>
+          <LI><A href="#AddNodesMRFDiscr">Adding nodes</A> 
+          <LI><A href="#AddEdgesMRFDiscr">Adding edges</A> 
+      </UL>
+      <LI><A href="#SpecProbMRFDiscr">Specifying the probabilities</A> 
+      <LI><A href="#AddObservMRFDiscr">Adding observations</A> 
+      <LI><A href="#LearnMRFDiscr">Learning the network</A> 
+      <UL>
+          <LI><A href="#ParamLearnMRFDiscr">Parameters learning</A> 
+      </UL>
+      <LI><A href="#MPEandJPDMRFDiscr">Getting MPE and JPD</A> 
+  </UL>
+  <LI><a href="#HintsDiscr">TokArr Hints</a> 
+  <UL>
+      <LI><A href="#Operation1Discr">"^" operation</A> 
+      <LI><A href="#Operation2Discr">[ ] operation</A> 
+      <LI><A href="#StrAndFltMethodsDiscr">String and FltValue methods</A> 
+  </UL>
+</UL>
+  </h4>
+
+<P></P>
+<hr>
+<h1><a name="Intro">Intro</a>duction</h1>
+
+<P>
+This manual describes usage of PNL using the high-level API defined by the &quot;wrappers&quot;.
+<p>
+
+<h2><a name="BayesNet_class">BayesNet class</a></h2>
+It is BayesNet class, that is used for working with Bayesian networks in wrappers. 
+It is main class, all the operations are made by it. This class allows user 
+<UL>
+    <LI>to create new Bayesian network,</LI>
+    <LI>to specify probability distributions on the net nodes,</LI>
+    <LI>to assign observations (evidences),</LI>
+    <LI>to carry out learning process,</LI>
+    <LI>to get joint probability distribution (JPD) and maximum probability explanation (MPE) for network nodes,</LI>
+    <LI>to save Bayesian network and observations (evidences) as files and to load them from files,
+    <br>etc.</LI>
+</UL>
+With the help of BayesNet class methods, the user specifies and retrieve parameters of the network, 
+evidence and other net characteristics. When a task possesses several 
+implemented algorithms, the wrappers will defer to one by default, but will 
+provide an API for users to specify an alternative if he/she so chooses.
+<p>
+
+<h2><a name="DBN_class">DBN class</a></h2>
+It is DBN class, that is used for working with Dynamic Bayesian Networks(DBN) in wrappers. It is main class, all the operations are made by it. This class allows user
+<UL>
+  <LI>to create new Dynamic Bayesian Network,</LI>
+  <LI>to specify probability distributions on the net nodes of 0 and 1 slices,</LI>
+  <LI>to assign observations (evidences) on any slice,</LI>
+  <LI>to carry out learning process,</LI>
+  <LI>to get joint probability distribution (JPD) and maximum probability explanation (MPE) for network nodes,</LI>
+  <LI>to save Bayesian network and observations (evidences) as files and to load them from files, 
+<br>etc</LI>.
+</UL>
+<p>As a reminder, DBNs represent directed graphical models of stochastic processes that generalize Hidden Markov models (HMMs) 
+and Kalman Filter models (KFMs) by representing the hidden and the observed state in terms of state variables, which can have complex interdependencies. 
+A DBN is defined by the following characteristics: 
+<UL>
+  <LI>a prior, or initial, network (nodes defined at time-slice 0),</LI> 
+  <LI>a transition network frequently named two-slice temporal Bayesian Network (2TBN).</LI>
+</UL>
+A network has several properties that take default values. The structure of the prior slice may differ from the 
+structure of other slices. Therefore, during DBN creation, the user has to create 0-time 
+and 1-time models and connect them.
+<p>
+
+<h2><a name="LIMID_class">LIMID class</a></h2>
+It is LIMID class that is used for working with LImited Memory Influence Diagram (LIMID) in wrappers. This class allows user 
+<UL>
+	<LI>to create new LIMID,</LI>
+	<LI>to specify probability distributions and utility function on the net nodes,</LI>
+	<LI>to get expected utility,</LI>
+	<LI>to get pure politics,</LI>
+	<LI>to save LIMID as files and to load it from files, </LI>
+        <br>etc.
+</UL>
+<p> With the help of the LIMID class methods, the user can specify and retrieve parameters of LIMID.&nbsp; 
+The LIMID inference algorithm allows user to get only pure politics.  A pure policy for decision node d prescribes an alternative in the set of all possible values for each possible configuration of its parents.
+</p>
+At the moment inference for LIMIDs is implemented only for discrete nodes.<p>
+
+<h2><a name="MRF_class">MRF class</a></h2>
+It is MRF class, that is used for working with Markov Random Fields (MRF) in wrappers. 
+It is main class, all the operations are made by it. This class allows user 
+<UL>
+    <LI>to create new MRF,</LI>
+    <LI>to specify probability distributions on the cliques,</LI>
+    <LI>to assign observations (evidences),</LI>
+    <LI>to carry out learning process,</LI>
+    <LI>to get joint probability distribution (JPD) and maximum probability explanation (MPE) for network nodes,</LI>
+    <LI>to save MRF and observations (evidences) as files and to load them from files,
+    <br>etc.</LI>
+</UL>
+With the help of MRF class methods user specifies parameters of the network, evidences and other network 
+characteristics and demands desired results. Required algorithms are called automatically. Inference process
+can be carried out with the help of different PNL algorithms. User can specify definite algorithm that he want to use 
+to solve his task.
+<p>
+
+<hr>
+<h1><a name="Limitations">Limitations</a></h1>
+<P>
+Here we are going to discuss some limitations of work with Bayesian nets. 
+<UL>
+    <LI>Limitations of string nodes and node states names:
+    <ul>
+        <li>Name cannot contain characters '_', '^' and space character.
+        <li>The first character cannot be number.
+        <li>Names are case sensitive.
+    </ul>
+    <p>
+    <LI>Limitations of saving in file:
+    <ul>
+        <li>It is possible to save Bayes net to file if its graph is connected and it has more than one node only.
+        <li>If we save empty evidence buffer to file result file is empty. But loading evidence buffer from empty file is impossible.
+    </ul>
+    <p>
+    <li>Limitations of Structure Learning:
+    <ul>
+	    <li>Only the BIC score is implemented at present.
+    </ul>
+    <p>
+	<li>Limitations of Parameter Learning:
+	<ul>
+    	<li>No priors are implemented, so only the ML estimate is available at present (we expect to have simple Bayesian methods available soon).
+    </ul>
+    <p>
+    <li>Limitations to LIMIDs:
+    <ul>
+    	<li>Inference is available for discrete nodes only.
+    </ul>
+    <p>
+    <li>Current limitations that are planed to be removed:
+    <ul>
+        <li>Names of nodes may be only strings but cannot be integer numbers.
+        <li>Now nodes and edges must be added to net in such order that graph is topological sorted. That means that parents are added to graph before their children.
+        <li>Operation of nodes deleting may work incorrectly.
+    </ul>
+</UL>
+<p>
+
+<hr>
+
+<h1><a name="DiscreteNet">Bayesian networks with discrete nodes</a></h1>
+We are going to analyze the use of Bayesian network functionality by the well-known example of "water-sprinkler". 
+<br>The graph structure of the model and the parameters are all shown in Figure 1:
+</P>
+<hr>
+<h4><a name="figWaterSprinkler">Figure1. Water-sprinkler model</a></h4>
+<img align=center src="WSModel.gif">
+<p>
+All nodes are discrete and can take on two values: true or false.
+</p>
+<hr>
+
+<h2><a name="CreateNetDiscr">Creating the net</a></h2>
+<p>
+The first step is to create the Bayesian network.
+To do this we must create a BayesNet class object: 
+<p>
+<pre>BayesNet net;</pre>
+</p>
+At this point the network is empty, so we have to add nodes and edges.
+</p>
+<hr>
+
+<h3><a name="AddNodesDiscr">Adding nodes</a></h3>
+<p>
+The method AddNode is used to add new nodes to the network:
+<p>
+<pre>
+net.AddNode("discrete^Cloudy", "true false"); 
+net.AddNode("discrete^Sprinkler", "true false");
+net.AddNode("discrete^Rain", "true false");
+net.AddNode("discrete^WetGrass", "true false");
+</pre>
+</p>
+
+The first argument of this method is the type and name of the new node, while 
+the second argument defines the names (and implicitly, the number) of states of 
+the node. State names must be separated by a space and are subject to other 
+restrictions (see <a href="#Limitations">Limitations</a> for details).<br>
+In our example so far, all the nodes are discrete and can take on the same 
+values. So in fact, rather than making four calls to AddNode, we could have 
+created all of these nodes simultaneously with a single call:
+<p>
+<pre>
+net.AddNode(discrete^"Cloudy Sprinkler Rain WetGrass", "true false");
+</pre>
+</p>
+<hr>
+
+<h3><a name="AddEdgesDiscr">Adding edges</a></h3>
+<p>
+The
+AddArc method is used to add a new arc to the network:
+<p>
+<pre>
+net.AddArc("Cloudy", "Sprinkler");
+net.AddArc("Cloudy", "Rain");
+net.AddArc("Sprinkler", "WetGrass");
+net.AddArc("Rain", "WetGrass");
+</pre>
+</p>
+We can indicate several nodes as the beginning and end of the arc. In this case 
+every node from the beginning list will be connected with every node from the 
+end list. The example above could have been achieved with only two calls of AddArc 
+method:<p>
+<pre>
+net.AddArc("Cloudy", "Sprinkler Rain");
+net.AddArc("Sprinkler Rain", "WetGrass");
+</pre>
+</p>
+<hr>
+
+<h2><a name="SpecProbDiscr">Specifying the conditional probabilities</a></h2>
+<p>
+Now we can specify the conditional probability distributions (CPDs) of each node 
+state given its parents. The default CPD is uniform over all states and over all 
+parent configurations. The user can specify CPDs of discrete nodes with the SetPTabular 
+method.
+<br>
+In our example we are going to specify CPDs on the Cloudy and Sprinkler nodes.  We will leave 
+those on the other nodes uniform.
+<br>
+The CPD on the Cloudy node is conditional on the empty set since that node has 
+no parents:
+<p>
+<pre>
+net.SetPTabular("Cloudy^true", "0.6");
+net.SetPTabular("Cloudy^false", "0.4"); 
+</pre>
+</p>
+The first argument of this method specifies both the variable (e.g., &quot;Cloudy&quot;) 
+and state (e.g. &quot;true&quot;) whose CPD entry we wish to set. The second argument is the value of 
+CPD for this variable/state. It is possible to use the TokArr lists to set 
+several entries with a single call. the two entries above could be duplicated 
+with a single call:<p>
+<pre>
+net.SetPTabular("Cloudy^true Cloudy^false", "0.6 0.4");
+</pre>
+</p>
+The CPD for the Sprinkler node is conditional on the Cloudy node, so to set this 
+CPD we need to specify both the state of Sprinkler and the state for Cloudy:
+<p>
+<pre>
+net.SetPTabular("Sprinkler^true", "0.1", "Cloudy^true");
+net.SetPTabular("Sprinkler^false", "0.9", "Cloudy^true");
+net.SetPTabular("Sprinkler^true", "0.5", "Cloudy^false");
+net.SetPTabular("Sprinkler^false", "0.5", "Cloudy^false");
+</pre>
+</p>
+Note that two different versions of SetPTabular exist, one with two arguments 
+(when a node has no parents) and one with three arguments (when a node has 
+parents). This third argument specifies the parents' state configuration, the probability value is defined for the indicated state and indicated parents' configuration. The order of parents nodes in this list doesn't matter.
+Again, this function can be called in batch form:
+<p>
+<pre>
+net.SetPTabular("Sprinkler^true Sprinkler^false", "0.1 0.9", "Cloudy^true");
+net.SetPTabular("Sprinkler^true Sprinkler^false", "0.5 0.5", "Cloudy^false");
+
+net.SetPTabular("WetGrass^true WetGrass^false", "0.99 0.01", "Rain^true Sprinkler^true ");
+net.SetPTabular("WetGrass^true WetGrass^false", "0.9 0.1", "Sprinkler^true Rain^false");
+net.SetPTabular("WetGrass^true WetGrass^false", "0.9 0.1", "Sprinkler^false Rain^true");
+net.SetPTabular("WetGrass^true WetGrass^false", "0.0 1.0", "Sprinkler^false Rain^false");
+</pre>
+</p>
+
+<p>To get the probability distribution of the node we must call the GetPTabular method:
+<p>
+<pre>
+TokArr PCloudy = net.GetPTabular("Cloudy");
+</pre>
+</p>
+Now it is possible to represent this distribution as string or as float numbers: 
+<p>
+<pre>
+String PCloudyStr = String(PCloudy);
+float PCloudyTrueF = PCloudy[0].FltValue();
+float PCloudyFalseF = PCloudy[1].FltValue();
+</pre>
+</p>
+The following values are now stored in the variables:
+<p>
+<pre>
+PCloudyStr		"Cloudy^true^0.6 Cloudy^false^0.4"
+PCloudyTrueF		0.6
+PCloudyFalseF		0.4
+</pre>
+</p>
+For the conditional distribution it is possible to get probabilities for the indicated parents state configuration (or for the definite states of some parents):
+<p>
+<pre>
+TokArr PSprinkler = net.GetPTabular("Sprinkler", "Cloudy^true");
+String PSprinklerStr = String(PSprinkler);
+float PSprinklerTrue = PSprinkler[0].FltValue();
+float PSprinklerFalse = PSprinkler[1].FltValue();
+</pre>
+</p>
+The values of the variables are now:
+<p>
+<pre>
+PSprinklerStr		"Sprinkler^true^Cloudy^true^0.1 Sprinkler^false^Cloudy^true^0.9"
+PSprinklerTrue		0.1
+PSprinklerFalse		0.9
+</pre>
+</p>
+With the help of  the GetPTabular method the user can also get the CPD elements 
+of the variable states one-by-one:
+<p>
+<pre>
+TokArr PCloudyFalse = net.GetPTabular("Cloudy^false");
+</pre>
+</p>
+Now it is possible to represent this distribution  as string or as float number:
+<p>
+<pre>
+String PCloudyFalseStr = String(PCloudyFalse);
+float PCloudyFalseF = PCloudyFalse[0].FltValue();
+</pre>
+</p>
+The values of the variables are now:
+<p>
+<pre>
+PCloudyFalseStr		"Cloudy^false^0.4"
+PCloudyFalseF		0.4
+</pre>
+</p>
+<p>
+One important activity is to learn the maximum likelihood CPDs from data. In 
+order to do this, we have to specify observations (i.e., the data) first.
+</p>
+<hr>
+
+<h2><a name="AddObservDiscr">Adding observations</a></h2>
+<p>
+Here we will describe how to work with evidences using the wrappers. The BayesNet class allows users to work with 
+<i>current evidence</i> (one instantiation of the nodes in the network) and with 
+a <i>buffer of evidence</i> (a set of instantiations forming a database). The 
+current evidence is used to get joint and marginal probability distributions 
+over the non-evidence nodes (see <a href="#MPEandJPDDiscr">Getting the MPE and 
+JPD</a>). 
+The evidence buffer is used for learning (see <a href="#LearnDiscr">Learning the 
+network</a>). By default the current evidence is empty. The user can edit it with the EditEvidence method:
+<p>
+<pre>
+net.EditEvidence("Cloudy^false WetGrass^false");
+net.EditEvidence("Sprinkler^true Cloudy^true");
+</pre>
+</p>
+After these calls there are three observed nodes in the current evidence, they are Cloudy, Sprinkler (both are true) and WetGrass, which is false.
+<br>
+After editing, the user can copy current evidence to the evidence buffer with the help of 
+the CurEvidToBuf method:
+<p>
+<pre>
+net.CurEvidToBuf();
+</pre>
+</p>
+It is possible to clear the current evidence with the ClearEvid method:
+<p>
+<pre>
+net.ClearEvid();
+</pre>
+</p>
+The user can also put evidence onto the evidence buffer without editing by 
+calling the AddEvidToBuf method:
+<p>
+<pre>
+net.AddEvidToBuf("Rain^true WetGrass^true");
+</pre>
+</p>
+At the moment we have empty current evidence, and the evidence buffer contains 2 
+records. In the first record, which was copied from the current evidence, there are three observed nodes: Cloudy, Sprinkler (both are true) and WetGrass (false). In 
+the second record there are two observed nodes, Rain and WetGrass; both are true.
+<br>
+There are other useful operations that can be performed on the evidence buffer:
+<UL>
+    <LI>totally clearing the buffer by calling the ClearEvidBuf method,</LI>
+    <LI>saving the buffer to a file by calling SaveEvidBuffer, and loading the buffer from 
+    a file by calling LoadEvidBuffer (we support the csv file format), and</LI>
+    <LI>filling the evidence buffer with random values of observations by 
+    calling the GenerateEvidence method.
+    </LI>
+</UL>
+
+<hr>
+
+<h2><a name="LearnDiscr">Learning the network</a></h2>
+<p>
+The evidence buffer is used to learn structure and/or parameters of the network. 
+Parameter learning refers to the process of learning the maximum likelihood (ML) 
+or maximum a posteriori (MAP) estimate for the conditional distributions of each 
+node given its parents and given a set of data.&nbsp; Structure learning refers 
+to the process of learning network structure that maximizes some metric such as 
+the posterior probability of the structure given the data.
+</p>
+<hr>
+
+<h3><a name="ParamLearnDiscr">Parameters learning</a></h3>
+<p>
+The method LearnParameters will calculate the ML parameter estimate given the 
+current evidence buffer:
+<p>
+<pre>
+net.LearnParameters();
+</pre>
+</p>
+As a result, the CPDs on the nodes have been changed. To get the new CPDs call 
+the GetPTabular method:
+<p>
+<pre>
+TokArr PCloudy = net.GetPTabular("Cloudy");
+TokArr PSprinkler = net.GetPTabular("Sprinkler");
+TokArr PRain = net.GetPTabular("Sprinkler");
+TokArr PWetGrass = net.GetPTabular("WetGrass");
+</pre>
+</p>
+Now the distributions are presented as TokArr type objects. They can be converted into strings or float numbers, as shown earlier. They also can be used as arguments for other methods. 
+<br>
+The default learning algorithm is Expectation Maximization algorithm. You also can carry out learning using 
+the Bayesian approach. For more detailed description see "Bayesian Update" section in "PNL: User Guide".
+<br>
+You have to set “Learning” property to “bayes” by calling the SetProperty method:
+<p>
+<pre>
+net.SetProperty("Learning", "bayes");
+net.LearnParameters();
+</pre>
+</p>
+To run the EM learning algorithm set the “Learning” property to “em”:
+<p>
+<pre>
+net.SetProperty("Learning", "em");
+net.LearnParameters();
+</pre>
+</p>
+For EM Learning, a number of iterations and a precision (used to decide 
+convergence) must be specified. 
+The default number of iterations is 5 and the default precision is 0.001. 
+These parameters can be changed with SetProperty method, using the property names 
+&quot;EMMaxNumberOfIterations" and "EMTolerance", respectively. For example:
+<p>
+<pre>
+net.SetProperty("EMMaxNumberOfIterations", "10")
+net.SetProperty("EMTolerance", "1e-4")
+net.SetProperty("Learning", "em");
+net.LearnParameters();
+</pre>
+</p>The method LearnParameters has an overloaded version that takes two arguments: 
+an array of evidence and the number of evidence in this array:
+<p>
+<pre>
+TokArr evidence[] = {"Sprinkler^true WetGrass^false", "Cloudy^true WetGrass^false"};
+net.LearnParameters(evidence, 2);
+</pre>
+</p>
+In this case two new evidence instances will be added to evidence buffer, and the learning process will be carried out using all 
+evidence from the buffer.
+<p>
+<!--webbot bot="PurpleText" PREVIEW="Denver: You should use stl vectors everywhere instead of these arrays.  This requires the user to keep track of how many records are in the array." --></p>
+</p>
+<hr>
+
+<h3><a name="StructLearnDiscr">Structure learning</a></h3>
+<p>
+The method LearnStructure will calculate the network structure that is an 
+approximation to the ML structure (you can specify structure learning parameters using SetProperty method):<p>
+<pre>
+net.SetPropery("LearningStructureScoreFun","BIC");
+net.LearnStructure();
+</pre>
+</p>
+After calling this function, both the node CPDs and the network structure have been changed. 
+The new CPDs can be observed using the GetPTabular method. The new network structure 
+can be observed using the following methods: GetNeighbors, GetParents and GetChildren. For example:
+<p>
+<pre>
+TokArr SprinklerParents = net.GetParents("Sprinkler");
+TokArr SprinklerChildren = net.GetChildren("Sprinkler");
+</pre>
+</p>
+SprinklerParents and SprinklerChildren are the lists of Sprinkler node parents and children. They can be used as arguments for other methods, or can be converted to strings objects for displaying:
+<p>
+<pre>
+String SprinklerParentsStr = String(SprinklerParents);
+String SprinklerChildrenStr = String(SprinklerChildren);
+</pre>
+</p>
+Another way of getting the learning results is by saving the final net to file (SaveNet method).
+<br>
+The method LearnStructure() has an overloaded version that takes two arguments: 
+an array of evidence and the number of evidence in this array:
+<p>
+<pre>
+TokArr evidences[] = {"Sprinkler^true WetGrass^false", "Cloudy^true WetGrass^false"};
+net.LearnStructure(evidences, 2);
+</pre>
+</p>
+In this case two new evidence instances will be added to evidence buffer, and the learning process will be carried out using all 
+evidence from the buffer.
+
+<p>
+<hr>
+
+<h2><a name="MPEandJPDDiscr">Getting the MPE and JPD</a></h2>
+<p>
+If the Bayesian network and CPDs have been already defined, we can get the Joint Probability Distribution (JPD) and 
+the Most Probable Explanation (MPE).
+<br>
+For calculating the JPD and MPE, the current evidence is used. You can edit this evidence with the help of  
+the EditEvidence 
+method (see <a href="#AddObservDiscr">Adding observations</a>).
+<br>
+Use the GetJPD method to get the marginal probability distribution of the node:  
+<p>
+<pre>
+TokArr WetGrassMarg = net.GetJPD("WetGrass");
+</pre>
+</p>
+It is also possible to get the joint marginal distribution for the nodes 
+contained in a single family (a family is defined as the set consisting of a node 
+and his parents):
+<p>
+<pre>
+TokArr WetGrassAndSprinklerMarg = net.GetJPD("WetGrass Sprinkler");</pre>
+</p>
+You can use the GetMPE method to get the Most Probable Explanation for one node or for some set of nodes from one family:
+<p>
+<!--webbot bot="PurpleText" PREVIEW="Denver: MPE should not be restricted to a node's family.  It should be easy to get the MPE for an arbitrary subset of nodes 
+(its just the union of the MPE for each node individually)." --><pre>
+TokArr WetGrassMPE = net.GetMPE("WetGrass");
+TokArr WetGrassAndSprinklerMPE = net.GetMPE("WetGrass Sprinkler");
+</pre>
+</p>
+To calculate the JPD and the MPE, inference algorithms are used. There are four 
+implemented inference algorithms: Pearl (or Loopy Belief Propagation), Junction Tree, Gibbs Sampling and full summation, which in 
+PNL is called Naive inference (because it is the best method to use when the 
+network has the common <i>naive</i> structure). The Junction Tree and Naive Inference 
+algorithms are exact, whereas Pearl Inference and Gibbs Sampling are approximate (see PNL documentation for the full information).
+<br>
+The default inference algorithm is Pearl Inference. You can use other algorithms by setting 
+the “Inference” property with the SetProperty method. You must define the desired algrithm by its string name. 
+The possible choices are: “pearl”, “jtree”, “gibbs”, or “naive”. For example:
+<p>
+<pre>
+net.SetProperty("Inference", "jtree");
+TokArr WetGrassMPE = net.GetMPE("WetGrass");
+net.SetProperty("Inference", "gibbs");
+TokArr WetGrassMPE = net.GetMPE("WetGrass Sprinkler");
+</pre>
+</p>
+Pearl Inference and Gibbs Sampling Inference have some parameters that can be 
+set.<br>
+For Pearl Inference the number of iterations of the algorithm and the precision 
+of the calculation can be specified. 
+The default number of iterations is equal to number of nodes in the net and the default precision is 1e-6. 
+These parameters can be changed with SetProperty method, and the corresponding 
+property names are 
+"PearlMaxNumberOfIterations" and "PearlTolerance". For example:
+<p>
+<pre>
+net.SetProperty("PearlMaxNumberOfIterations", "10");
+net.SetProperty("PearlTolerance", "1e-5");
+net.SetProperty("Inference", "pearl");
+TokArr WetGrassJPD = net.GetJPD("WetGrass");
+</pre>
+</p>
+For Gibbs Sampling Inference, the number of iterations must be specified. The corresponding property name is "GibbsNumberOfIterations", 
+and the default number of iterations is 600. Gibbs Sampling Inference works by 
+producing a stream of evidence samples that approximate i.i.d. samples; however, 
+it requires an initialization period (a &quot;burn-in&quot;) at the beginning to allow the 
+samples to converge to the correct distribution. After a sufficiently long 
+burn-in period, samples will approximately be drawn from the correct 
+distribution. The number of samples to discard during the burn-in can be specified with 
+the property "GibbsThresholdIteration"
+(the default value is 10). You can also choose to generate more than one 
+independent stream of samples. The number of streams can be specified with the property "GibbsNumberOfStreams"
+(1 stream by default). For example:
+<p>
+<pre>
+net.SetProperty("GibbsNumberOfIterations", "1000");
+net.SetProperty("GibbsThresholdIteration", "20");
+net.SetProperty("GibbsNumberOfStreams", "2");
+net.SetProperty("Inference", "gibbs");
+TokArr WetGrassMPE = net.GetMPE("WetGrass Sprinkler");
+</pre>
+</p>
+</p>
+<hr>
+
+<P></P>
+<h1><a name="Gaussian">Bayesian networks with continuous nodes</a></h1><P>
+We will show the operations with Bayesian network, which consists of continuous nodes, by the example of Satnam Alag's PhD thesis, USB ME dept 1996 p. 48.
+<br>The graph structure of the model and the parameters are all shown in Figure 2:
+</p>
+<hr>
+<h4><a name="figModel">Figure 2. Simple model with continuous nodes</a></h4><img align=center src="GauModel.gif">
+<p>All nodes are continuous and have only one dimension.
+</p>
+<hr>
+
+<h2><a name="CreateNetGau">Creating the net</a></h2><p>
+The first step of operating the Bayesian network is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create BayesNet class object: 
+<p>
+<pre>BayesNet net;</pre></p>Now network is empty. We have to add nodes and edges.
+</p>
+<hr>
+
+<h3><a name="AddNodesGau">Adding nodes</a></h3><p>
+Method AddNode is used to add new node to the network:
+<p>
+<pre>
+net.AddNode("continuous^x0", "dim1");
+net.AddNode("continuous^x1", "dim1");
+net.AddNode("continuous^x2", "dim1");
+net.AddNode("continuous^x3", "dim1");
+net.AddNode("continuous^x4", "dim1");
+</pre></p>The first argument of this method is type and name of the new node.  The second argument is the name of dimension. In our example all nodes have only one dimension, and that is why the second argument is always the same – the name of single dimension. The name of dimension is essential only for user, it can be chosen at will.
+</p>
+If the node has only one dimension it is possible not to use name of dimension.<p>
+<pre>
+net.AddNode("continuous^x0"); 
+net.AddNode("continuous^x1"); 
+net.AddNode("continuous^x2"); 
+net.AddNode("continuous^x3"); 
+net.AddNode("continuous^x4");
+</pre>
+</p>
+<hr>
+
+<h3><a name="AddEdgesGau">Adding edges</a></h3><p>
+AddArc method is used to add a new arc to the network:
+<p>
+<pre>
+net.AddArc("x0", "x2");
+net.AddArc("x1", "x2");
+net.AddArc("x2", "x3");
+net.AddArc("x2", "x4");
+</pre></p>Adding new edges is similar to the discrete case.
+</p>
+<hr>
+
+<h2><a name="SpecProbGau">Specifying the conditional probabilities</a></h2><p>
+Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. If we know probability distributions on some of the network nodes, we can specify them with SetPGaussian method for the continuous nodes.
+<br>
+Let's set distributions on the nodes x0 and x1.
+<p>
+<pre>
+net.SetPGaussian("x0", "1.0", "4.0");
+net.SetPGaussian("x1", "1.0", "1.0");
+</pre>
+</p>
+The first argument of this function is the name of the node. The second is the mean of the corresponding variate, the third – dispersion.
+<br>The rest nodes have parents. To set probability distributions on these nodes we have to call SetPGaussian method with following parameters:
+<p>
+<pre>
+net.SetPGaussian("x2", "0.0", "2.0", "1.0 2.0");
+net.SetPGaussian("x3", "0.0", "4.0", "1.1");
+net.SetPGaussian("x4", "-0.8", "1.2", "2.0");
+</pre>
+</p>
+The last parameter defines weights. We must specify weight for every parent of the current node.<br>
+We can get the parameters of continuous distribution, that we have already specified, with the help of the following methods:
+<p>
+<pre>
+TokArr MeanX0 = net.GetGaussianMean("x0");
+</pre></p>This method will return the mean of the variate, which corresponds the x0 node.
+<p>
+<pre>
+TokArr CovarX0 = net.GetGaussianCovar("x0");
+</pre></p>This method will return the dispersion of the variate, which corresponds the x0 node.
+<p>We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+
+<h2><a name="AddObservGau">Adding observations</a></h2><p>
+Here we will describe the way of working with evidence in wrappers. BayesNet class allows user to work with current evidence and with the buffer of evidence.
+<br>Default current evidence is empty. User can edit it with the EditEvidence method:
+<p>
+<pre>
+net.EditEvidence("x0^0.4");
+</pre>
+</p>
+While defining the observation on the continuous node, it is necessary to specify the name of the node, the name of the dimension and the observed value. 
+<br>You can also put evidence to evidence buffer without editing. Call AddEvidToBuf method:
+<p>
+<pre>
+net.AddEvidToBuf("x0^0.4");
+</pre>
+</p>
+Usage of the other functions, which are calling to work with evidences (CurEvidToBuf, ClearEvid, ClearEvidBuf, SaveEvidBuffer, LoadEvidBuffer, GenerateEvidences), is similar to the discrete case.
+
+<p>
+<hr>
+
+<h2><a name="LearnGau">Learning the network</a></h2><p>
+Learning of continuous network is similar to learning the discrete one. To carry out learning process use the following calls: 
+<p> 
+<pre>
+net.LearnParameters();
+net.LearnStructure();
+</pre></p>To get the result distributions after learning user have to use GetGaussianMean and GetGaussianCovar methods:
+<p>
+<pre>
+TokArr MeanX2 = net.GetGaussianMean("x2");
+TokArr CovarX2 = net.GetGaussianCovar("x2");
+</pre></p><hr>
+
+<h2><a name="MPEandJPDGau">Getting the MPE and JPD</a></h2><p>
+If Bayesian network and probability distributions have been already defined, we can get Joint Probability Distribution (JPD) and Most Probable Explanation (MPE). 
+<br>This possibility is well described for the discrete networks. For the continuous networks it is the same.
+<p>
+<pre>
+TokArr X3Marg = net.GetJPD("x3");
+TokArr X3MPE = net.GetMPE("x3");
+</pre>
+<p>Now it is possible to represent marginal distribution as float numbers: 
+<p>
+<pre>
+Tok x3Mean = X3Marg[0];
+Tok x3Cov = X3Marg[1];
+<p>
+float x3M = x3Mean.FltValue(0).fl;
+float x3C = x3Cov.FltValue(0).fl;
+</pre>
+<p>The following values are now stored in the variables: 
+<p><pre>
+x3M	-0.924000	
+x3C	4.698897		
+</pre>
+</p>
+<p>
+It is possible to represent MPE as float number:
+</p>
+<pre>
+float x3MPE = X3MPE[0].FltValue(0).fl;
+</pre>
+
+<p>
+<hr>
+
+<h2><a name="MultiGau">Multivariate Gaussian case</a></h2><p>
+Each continuous node in Bayesian network can be multivariate. We have already discussed only one-dimensional case above.
+</p>
+<p>
+Multivariate Gaussian variable is a set of one-dimensional variables that are connected with each other via covariation matrix. Value of multivariate is a vector of values of one-dimensional variables. The number of variables in the set is the number of dimensions of multivariate.
+</p>
+<p>
+If multivariate Gaussian node without parents has n dimensions, then it is characterized by vector of averages of distribution E which has n elements and by squarte matrix (n*n) of covariations C. The element (i,j) of the matrix C is equal to
+</p>
+<img align=center src="Formula1.gif">
+<p>
+where M is a function for calculating average of distribution. If multivariate node has parents (we suppose that all nodes in the network are continuous) then the third parameter characterizing the node is a vector (W) of weights matrixes. Number of elements in the vector is equal to number of parents. The size of matrix for the k-th parent (W[k]) is NDimChild * NDimParent[k], where NDimChild is a number of dimensions of the child node, NDimParent[k] is a number of dimensions of the k-th parent. The covariation matrix C does not depent on values of parents by definition. But matrix of averages of distribution depends on them in the following way:
+</p>
+<img align=center src="Formula2.gif">
+
+<p>
+<hr>
+
+<h3><a name="CreateNetMultiGau">Creating the net</a></h3><p>
+The only difference between multivariate and one-dimensional case in creating the network is how we add new nodes to the network. You should list names for each dimension of multivariate. For example, if you want to add a continuous node x, which has 3 dimensions, you should write the command
+</p>
+<pre>
+net.AddNode("continuous^x", "First Second Third");
+</pre><p>
+The second parameter in the command is a list of names of dimensions.
+</p>
+<hr>
+
+<h3><a name="SpecProbMultiGau">Specifying the conditional probabilities</a></h3><p>
+Specifying the conditional probabilities is the same process as in the one-dimensional case. The only difference between them is specifying matrixes. Matrixes are specified by sequential row-wise specifying all elements separated by space gaps.
+</p>
+<p>
+For example the matrix
+</p>
+<pre>
+1 2
+3 4,
+</pre><p>
+will be written in the following way: 1 2 3 4.
+</p>
+<p>
+If you want to set the vector of matrixes (in the setting of weights) then you should set all matrixes one by one. For example two matrixes:
+</p>
+<pre>
+1 2&nbsp; 5&nbsp; 6&nbsp; 7
+3 4&nbsp; 8&nbsp; 9&nbsp; 10
+&nbsp;&nbsp;&nbsp;&nbsp; 11 12 13,
+</pre><p>
+will be written in the following way: 1 2 3 4 5 6 7 8 9 10 11 12 13.
+</p>
+<hr>
+
+<h3><a name="AddObservMultiGau">Adding observations</a></h3><p>
+You should set observations for each dimension of multivariate variable. For example, if you want to set observations on the node x, which has 3 dimentions, then you should write the command:
+</p>
+<pre>
+net.editEvidence("x^First^0.4 x^Second^0.6 y^Third^-17.34");
+</pre>
+
+<p>
+<hr>
+
+<h3><a name="ExampleMultiGau">An example</a></h3><p>
+In the example we create the network shown below:
+</p>
+<h4><a name="Formula3">Figure 3.</a></h4><img align=center src="Formula3.gif">
+<p>
+where x0 and z are one-dimensional variables, x has two dimensions, and x2 and y have 3 dimensions.
+</p>
+<pre>
+net.AddNode("continuous^x0", "dim1");
+net.AddNode("continuous^x", "dim1 dim2");
+net.AddNode("continuous^x2", "dim1 dim2 dim3");
+net.AddNode("continuous^y", "dim1 dim2 dim3");
+net.AddNode("continuous^z", "dim1");
+net.AddArc("x0 x x2", "y");
+net.AddArc("y", "z");
+net.SetPGaussian("x0", "0.5", "1.0");
+net.SetPGaussian("x", "0.5 1.5", "1.0 0.0 0.0 1.0");
+net.SetPGaussian("x2", "0.5 1.5 2.5", "1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0");
+net.SetPGaussian("y", "1.5 2.5 3.5", "2.0 1.0 0.0 1.0 3.0 0.0 0.0 0.0 0.5", "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8");
+net.SetPGaussian("z", "1.0", "1.5", "1.5 2.5 3.5");
+net.EditEvidence("x^dim1^-15.0");
+net.EditEvidence("x^dim2^5.0 z^dim1^15.67");
+net.GetJPD("y z");
+</pre>
+
+<p>
+<hr>
+
+<h1><a name="DiscreteDBN">Dynamic Bayesian Networks with discrete nodes</a></h1>We are going to analyze Dynamic Bayesian Network functioning by following example. 
+<br>The graph structure of the model  is shown in Figure 4:
+</P>
+<hr>
+<h4><a name="Street-House-Flat">Figure 4. Street - House - Flat model</a></h4><img align=center src="DBN.gif">
+<p>
+All nodes are discrete and can take on two values: true or false.
+</p>
+<hr>
+
+
+<h2><a name="CreateDBNDiscr">Creating the net</a></h2><p>
+The first step of operating the DBN network is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create DBN class object: 
+<p>
+<pre>DBN dbn;</pre></p>Now network is empty. We have to add nodes and edges.
+</p>
+
+<hr>
+
+<h3><a name="AddNodesDiscrDBN">Adding nodes</a></h3><p>
+Users has to create 0 and 1 slice topology and connect slices for DBN creation. (see Figure 5.)
+<p>
+<hr>
+<h4><a name="Street-House-Flat">Figure 5. 0 and 1 slices of Street - House - Flat model</a></h4><img align=center src="2slicesOfDBN.gif">
+<p>Method AddNode is used to add new node to the network:
+<p>
+<pre>
+dbn.AddNode("discrete^Street-0", "true false");
+dbn.AddNode("discrete^House-0", "true false");
+dbn.AddNode("discrete^Flat-0", "true false");
+
+dbn.AddNode("discrete^Street-1", "true false");
+dbn.AddNode("discrete^House-1", "true false");
+dbn.AddNode("discrete^Flat-1", "true false");
+
+</pre></p>DBN developers decided to consists nodes names as: "node name-slice number". User have to add 0 slice nodes then to add 1 slice nodes with 
+help of AddNode method until topology sorting not supported. Name Street-0 means, that node with name Street from slice 0 and name Flat-1 
+point to node Flat from slice 1. After 6 calls AddNode method we add nodes from 0 and 1 slices. 
+<br>
+In our example all the nodes are discrete and can take on the same values, so all the nodes can be 
+ added by the one or two calls of AddNode method:
+<h5>Variant 1.(adds nodes with 1 call)</h5><p>
+<pre>
+dbn.AddNode(discrete^”Street-0 House-0 Flat-0 Street-1 House-1 Flat-1", "true false");
+</pre></p><h5>Variant 2.(adds nodes with 2 calls)</h5><p>
+<pre>
+dbn.AddNode(discrete^”Street-0 House-0 Flat-0", "true false");
+dbn.AddNode(discrete^”Street-1 House-1 Flat-1", "true false");
+</pre></p>We have to add edges for creation 0 and 1 slice topology and slices connection.
+
+<p>
+<hr>
+
+<h3><a name="AddEdgesDiscrDBN">Adding edges</a></h3><p>
+AddArc method is used to add a new arc to the network:
+<p>
+<pre>
+dbn.AddArc("Street-0", "House-0");
+dbn.AddArc("Street-0", "Flat-0");
+dbn.AddArc("Street-0", "Street-1");
+dbn.AddArc("Street-1", "House-1");
+dbn.AddArc("Street-1", "Flat-1");
+dbn.AddArc("House-1", "Flat-1");
+</pre></p>We can indicate several nodes as the beginning and end of the arc. In this case every node from the beginning 
+list will be connected with every node from the end list. In our example three calls of AddArc method are enough:
+<p>
+<pre>
+dbn.AddArc("Street-0", "House-0 Flat-0 Street-1");
+dbn.AddArc("Street-1", "House-1");
+dbn.AddArc("Street-1 House-1", "Flat-1");
+</pre></p><hr>
+
+<h3><a name="SetNumSlicesD">Setting number of network slices </a></h3>
+<p>
+SetNumSlices method is used to set number of networks slices.
+<p>
+<pre>
+dbn.SetNumSlices(4);
+</pre></p>After this call user may use any slice (>1) nodes names as parameters of manage evidence methods or GetJPD (MPE) methods.
+
+<p>
+<hr>
+
+<h2><a name="SpecProbDiscrDBN">Specifying the conditional probabilities</a></h2><p>
+Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. If we know probability distributions on some of the network nodes, we can specify them with the SetPTabular method for the discrete nodes. 
+<br>
+Distributions on the all i-th slices (i>1) are the same as slice 1 that is why we specify distribution only on 0 and 1 slices.
+<br>
+In our example we are going to specify probability distributions on the "Street-0" and "House-1" nodes. We will leave the distributions on the other nodes uniform. 
+<br>
+Probability distribution on the Street-0 node is unconditional: 
+<p>
+<pre>
+dbn.SetPTabular("Street-0^true", "0.6");
+dbn.SetPTabular("Street-0^false", "0.4");
+</pre></p>The first argument of this method is the state of the variable; we define the probability for the node to take on this state. The second argument is the value of probability. It is possible to define the list of states and list of values:
+<p>
+<pre>
+dbn.SetPTabular("Street-0^true Street-0^false", "0.6 0.4");
+</pre></p>Probability distribution on the House-1 node is conditional: 
+<p>
+<pre>
+dbn.SetPTabular("House-1^true", "0.1", "Street-1^true");
+dbn.SetPTabular("House-1^false", "0.9", " Street-1^true");
+dbn.SetPTabular("House-1^true", "0.5", " Street-1^false");
+dbn.SetPTabular("House-1^false", "0.5", " Street-1^false");
+</pre></p>For the conditional distribution one new argument was added. This argument specifies the parents state configuration, the probability value is defined for the indicated state and indicated parent's configuration. The probabilities for the same parents configuration can be defined by the one call of SetPTabular method:
+<p>
+<pre>
+dbn.SetPTabular("House-1^true House-1^false", "0.1 0.9", " Street-1^true");
+dbn.SetPTabular("House-1^true House-1^false", "0.5 0.5", " Street-1^false");
+</pre></p>To get the probability distribution of the node we must call of GetPTabular method:
+<p>
+<pre>
+TokArr PSreet0 = dbn.GetPTabular("Street-0");
+</pre></p>Now it is possible to represent this distribution as string or as float numbers: 
+<p>
+<pre>
+String PSreet0Str= PSreet0.String();
+float PSreet0TrueF = PSreet0[0].FltValue(0);
+float PStreet0FalseF = PSreet0[1].FltValue().fl;
+</pre></p>The following values are now stored in the variables:
+<p>
+<pre>
+PSreet0Str		"Sreet-0^true^0.6 Street-0^false^0.4"
+PSreet0TrueF	0.6
+PStreet0FalseF	0.4
+</pre></p>For the conditional distribution it is possible to get probabilities for the indicated parents state configuration (or for the definite states of some parents):
+<p>
+<pre>
+TokArr PHouse1 = dbn.GetPTabular("House-1", "Street-1^true");
+String PHouse1Str = PHouse1.String();
+float PHouse1True = PHouse1[0].FltValue();
+float PHouse1False = PHouse1[1].FltValue();
+</pre></p>The values of the variables:
+<p>
+<pre>
+PHouse1Str	"House-1^true^Street-1^true^0.1 House-1^false^Street-1^true^0.9"
+PHouse1True	0.1
+PHouse1False	0.9
+</pre></p>With the help of  GetPTabular method user can also get the probability of some state of the variate:
+<p>
+<pre>
+TokArr PStreet0False = dbn.GetPTabular("Street-0^false");
+</pre></p>Now it is possible to represent this distribution  as string or as float number:
+<p>
+<pre>
+String PStreet0FalseStr = PStreet0False.String();
+float PStreet0FalseF = PStreet0False[0].FloatValue();
+</pre></p>The values of the variables:
+<p>
+<pre>
+PStreet0FalseStr	"Street-0^false^0.4"
+PStreet0FalseF	0.4
+
+</pre></p><p>
+We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+<h2><a name="AddObservDiscrDBN">Adding observations</a></h2><p>
+Here we will describe the way of working with evidence in wrappers. DBN class allows user to work with current evidence and with the buffer of evidence.
+<br>
+Default current evidence is empty. User can edit it with the EditEvidence method, DBN allows to create evidence for any slices:
+<p>
+<pre>
+dbn.EditEvidence(“Flat-3^true”);
+dbn.EditEvidence("Street-3^false House-3^false");
+</pre></p>After these calls there is three observed nodes in the current evidence, they are Street-3, House-3 (both are false) and Flat-3, which is true. 
+<br>
+After editing user can copy current evidence to the evidence buffer with the help of  CurEvidToBuf method:
+<p>
+<pre>
+dbn.CurEvidToBuf();
+</pre></p>It is possible to clear the current evidence with ClearEvid method:
+<p>
+<pre>
+dbn.ClearEvid();
+</pre></p>You can also put evidence-to-evidence buffer without editing. Call AddEvidToBuf method:
+<p>
+<pre>
+dbn.AddEvidToBuf("House-0^true Flat-0^true");
+</pre></p>At the moment we have empty current evidence. Evidence buffer contains 2 evidence. In the first evidence, which was copied from the current evidence, there are three observed nodes: Street-3, House-3 (both are false) and Flat-3 (true). In second evidence there are two observed nodes, House-0 and Flat-0, both are true. 
+<br>
+The main operations with evidence buffer are:
+<UL>
+    <LI>total clearance of the buffer with the help of  ClearEvidBuf method,</LI><LI>saving the buffer to file (SaveEvidBuffer) and loading buffer from file (LoadEvidBuffer). We support the csv file format,</LI><LI>filling the evidence buffer with random values of observations with the help of GenerateEvidence method.</LI></UL>Current evidence is used to get JPD and MPE, evidence buffer is used for learning.
+</p>
+<hr>
+
+<h2><a name="ParamLearnDiscrDBN">Parameters learning </a></h2>
+<p>
+To carry out learning process evidence from evidence buffer are used. 
+<br>
+It is possible to specify probability distributions on the net nodes with the help of learning. This setting of probabilities is named parameters learning. 
+</p>
+<p>
+If we are going to specify probability distributions for network nodes, then we will call LearnParameters method after filling the evidence buffer to learn the network:
+<p>
+<pre>
+dbn.LearnParameters();
+</pre></p>As a result, the probability distributions on the nodes have been changed. To get new distributions GetPTabular method is used:
+<p>
+<pre>
+TokArr PStreet0 = dbn.GetPTabular("Street-0");
+TokArr PFlat0 = dbn.GetPTabular("Flat-0");
+TokArr PStreet1 = dbn.GetPTabular("Street-1");
+TokArr PHouse1 = dbn.GetPTabular("House-1");
+</pre></p>Now distributions are presented as TokArr type objects. They can be converted into strings or float numbers, as it was shown earlier. They also can be used as arguments for other methods. 
+<br>
+Default learning algorithm is Expectation Maximization algorithm. 
+
+</p>
+<hr>
+
+<h2><a name="MPEandJPDDiscrDBN">Getting the MPE and JPD</a></h2><p>
+If Dynamic Bayesian Network and probability distributions have been already defined, we can get Joint Probability Distribution (JPD) and Most Probable Explanation (MPE).
+<br>
+For calculating JPD and MPE current evidence is used. You can edit this evidence with the help of  EditEvidence method (look through “Adding observations” section).
+<br>
+You can use GetJPD method to get the marginal probability distribution of the node:  
+<p>
+<pre>
+TokArr Street3Marg = dbn.GetJPD("Street-3");
+</pre></p>It is possible to get joint distribution for the nodes from one family (family is the set, which consists of node and node parents):
+<p>
+<pre>
+TokArr Street3AndHouse3Marg = dbn.GetJPD("Street-3 House-3");
+</pre></p>You can use GetMPE method to get Most Probable Explanation for one node or for some set of nodes from one family:
+<p>
+<pre>
+TokArr Street1MPE = dbn.GetMPE("Street-1");
+TokArr Street1AndFlat1MPE = dbn.GetMPE("Street-1 Flat-1 ");
+
+</pre></p>To calculate JPD and MPE inference algorithms are used. There are four DBN inference algorithm properties: Smoothing, Filtering, FixLagSmoothing and Viterbi, see PNL documentation for the full information. 
+<br>
+Default DBN inference algorithm property, which is used to calculate JPD, is Smoothing. For MPE calculation you must sets inference property by Viterbi. You can use other property by JPD calculation by setting “Inference” property with SetProperty method. You must define the desired properties by its string name: “smoth”, “filt”, “fix”, or “viter”. For example: 
+<p>
+<pre>
+dbn.SetProperty("Inference", "filt");
+TokArr House0MPE = dbn.GetJPD("House-0");
+dbn.SetProperty("Inference", "fix");
+TokArr Street0House0MPE = dbn.GetJPD("Street-0 House-0");
+</pre></p><hr>
+
+<P></P>
+<h1><a name="GaussianDBN">Dynamic Bayesian Networks with continuous nodes</a></h1><P>
+Consider the Dynamic Bayesian Network.
+</p>
+<hr>
+<h4><a name="DBN1">Figure 6. Simple model with continuous nodes</a></h4><img  src="DBN.gif">
+<p>All nodes are continuous and have only one dimension.
+</p>
+<hr>
+
+<h2><a name="CreateDBNGau">Creating the net</a></h2><p>
+The first step of operating the Dynamic Bayesian Network is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create DBN class object: 
+<p>
+<pre>DBN dbn;</pre></p>Now network is empty. We have to add nodes and edges.
+</p>
+<hr>
+
+<h3><a name="AddNodesGauDBN">Adding nodes</a></h3><p>
+Method AddNode is used to add new node to the network:
+<p>
+<pre>
+dbn.AddNode("continuous^Street-0", " dim1");
+dbn.AddNode("continuous^House-0", " dim1");
+dbn.AddNode("continuous^Flat-0", " dim1");
+
+dbn.AddNode("continuous^Street-1", " dim1");
+dbn.AddNode("continuous^House-1", " dim1");
+dbn.AddNode("continuous^Flat-1", " dim1");
+</pre></p>The first argument of this method is type and name of the new node.  The second argument is the name of dimension. In our example all nodes have only one dimension, and that is why the second argument is always the same – the name of single dimension. The name of dimension is essential only for user, it can be chosen at will.
+</p>
+<hr>
+
+<h3><a name="AddEdgesGauDBN">Adding edges</a></h3><p>
+AddArc method is used to add a new arc to the network:
+<p>
+<pre>
+dbn.AddArc("Street-0", "House-0");
+dbn.AddArc("Street-0", "Flat-0");
+dbn.AddArc("Street-0", "Street-1");
+dbn.AddArc("Street-1", "House-1");
+dbn.AddArc("Street-1", "Flat-1");
+dbn.AddArc("House-1", "Flat-1");
+</pre></p>Adding new edges is similar to the discrete case.
+</p>
+<hr>
+
+<h3><a name="SetNumSlicesG">Setting number of network slices </a></h3>
+<p>
+SetNumSlices method is used to set number of networks slices.
+<p>
+<pre>
+dbn.SetNumSlices(4);
+</pre></p>After this call user may use any slice (>1) nodes names as parameters of manage evidence methods or GetJPD (MPE) methods.
+
+<p>
+<hr>
+
+<h2><a name="SpecProbGauDBN">Specifying the conditional probabilities</a></h2><p>
+Now we can specify the probabilities on the network nodes. Default probability distribution is uniform. Distributions on the all i-th slices (i>1) are the same as slice 1 that is why we specify distribution only on 0 and 1 slices. If we know probability distributions on some of the network nodes, we can specify them with SetPGaussian method for the continuous nodes. 
+<br>
+Let’s set distributions on the node Sreet-0.
+<p>
+<pre>
+dbn.SetPGaussian("Street-0", "1.0", "4.0")
+</pre>
+</p>
+The first argument of this function is the name of the node. The second is the mean of the corresponding variate, the third – dispersion.
+<br>The rest nodes have parents. To set probability distributions on these nodes we have to call SetPGaussian method with following parameters:
+<p>
+<pre>
+dbn.SetPGaussian("House-0", "0.0", "2.0", "1.0");
+dbn.SetPGaussian("Flat-0", "0.0", "4.0", "1.1");
+dbn.SetPGaussian("Street-1", "-0.8", "1.2", "2.0");
+dbn.SetPGaussian("House-1", "0.1", "2.1", "3.0");
+dbn.SetPGaussian("Flat-1", "0.0", "2.0", "1.0 2.0");
+</pre>
+</p>
+The last parameter defines weights. We must specify weight for every parent of the current node.<br>
+We can get the parameters of continuous distribution, that we have already specified, with the help of the following methods:
+<p>
+<pre>
+TokArr MeanStreet0 = dbn.GetGaussianMean("Street-0");
+</pre></p>This method will return the mean of the variate, which corresponds the x0 node.
+<p>
+<pre>
+TokArr CovarStreet0 = dbn.GetGaussianCovar("Street-0");
+</pre></p>This method will return the dispersion of the variate, which corresponds the x0 node.
+<p>We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+
+<h2><a name="AddObservGauDBN">Adding observations</a></h2><p>
+Here we will describe the way of working with evidence in wrappers. BayesNet class allows user to work with current evidence and with the buffer of  evidence.
+<br>Default current evidence is empty. User can edit it with the EditEvidence method:
+<p>
+<pre>
+dbn.editEvidence("Flat-3^dim1^0.4");
+</pre></p>While defining the observation on the continuous node, it is necessary to specify the name of the node, the name of the dimension and the observed value. 
+<br>You can also put evidence to evidence buffer without editing. Call AddEvidToBuf method:
+<p>
+<pre>
+dbn.AddEvidToBuf("Flat-3^dim1^0.4");
+</pre></p>Usage of the other functions, which are calling to work with evidence (CurEvidToBuf, ClearEvid, ClearEvidBuf, SaveEvidBuffer, LoadEvidBuffer, GenerateEvidence), is similar to the discrete case.
+
+<p>
+<hr>
+
+<h2><a name="LearnGauDBN">Learning the network</a></h2><p>
+Learning of continuous network is similar to learning the discrete one. To carry out learning process use the following calls: 
+<p> 
+<pre>
+dbn.LearnParameters();
+dbn.LearnStructure();
+</pre></p>To get the result distributions after learning user have to use GetGaussianMean and GetGaussianCovar methods:
+<p>
+<pre>
+TokArr MeanHouse1 = dbn.GetGaussianMean("House-1");
+TokArr CovarHouse1 = dbn.GetGaussianCovar("House-1");
+</pre></p><hr>
+
+<h2><a name="MPEandJPDGauDBN">Getting the MPE and JPD</a></h2><p>
+If Bayesian network and probability distributions have been already defined, we can get Joint Probability Distribution (JPD) and Most Probable Explanation (MPE). 
+<br>This possibility is well described for the discrete networks. For the continuous networks it is the same.
+<p>
+<pre>
+dbn.SetProperty(“Inference”,”fix”);
+TokArr Flat3Marg = dbn.GetJPD("Flat-3");
+TokArr House0MPE = dbn.GetMPE("House-0");
+</pre></p><hr>
+
+<h1><a name="LIMID">LImited Memory Influence Diagrams</a></h1>We are going to analyze LIMID functionality by the well-known example of "PIGS" (Steffen L. Lauritzen, Dennis Nilsson Representing and Solving Decision Problems with Limited Information, 2001). <br>The graph structure of the model is shown in Figure 7:
+</P>
+<hr>
+<h4><a name="figWaterSprinkler">Figure 7. Model "Pigs"</a></h4><img align=center src="pigs.gif">
+<hr>
+
+<h2><a name="CreateLIMID">Creating the net</a></h2><p>
+The first step of operating LIMID is it's creation. No other actions can be carried out, while there is no LIMID.
+<br>
+To start LIMID building we must create LIMID class object: 
+<p>
+<pre>LIMID net;</pre></p>Now network is empty. We have to add nodes and edges.
+</p>
+<hr>
+
+<h3><a name="AddNodesLIMID">Adding nodes</a></h3><p>
+Method AddNode is used to add new node to the LIMID.
+<br>
+Every node has one of the following types: chance, decision or value.
+<p>
+<pre>
+net.AddNode(chance^"h1", "True False");
+net.AddNode(chance^"t1", "True False");
+net.AddNode(decision^"d1", "True False");
+net.AddNode(chance^"h2", "True False");
+net.AddNode(chance^"t2", "True False");
+net.AddNode(decision^"d2", "True False");
+net.AddNode(chance^"h3", "True False");
+net.AddNode(chance^"t3", "True False");
+net.AddNode(decision^"d3", "True False");
+net.AddNode(chance^"h4", "True False");
+net.AddNode(value^"u1", "cost");
+net.AddNode(value^"u2", "cost");
+net.AddNode(value^"u3", "cost");
+net.AddNode(value^"u4", "cost");
+</pre></p>The first argument of this method is type and name of the new node, second argument is the corresponding variate values list, and values are separated by the space.
+<br>It is possible to leave "chance" definition while adding chance node. For example:
+<p>
+<pre>
+net.AddNode("h1", "True False");
+</pre></p><hr>
+
+<h3><a name="AddEdgesLIMID">Adding edges</a></h3><p>
+AddArc method is used to add a new arc to the network:
+<p>
+<pre>
+net.AddArc("h1", "h2");
+net.AddArc("h1", "t1");
+net.AddArc("h2", "t2");
+net.AddArc("t1", "d1");
+net.AddArc("t2", "d2");
+net.AddArc("d1", "h2");
+net.AddArc("h3", "t3");
+net.AddArc("t3", "d3");
+net.AddArc("d2", "h3");
+net.AddArc("h2", "h3");
+net.AddArc("h3", "h4");
+net.AddArc("d3", "h4");
+net.AddArc("d1", "u1");
+net.AddArc("d2", "u2");
+net.AddArc("d3", "u3");
+net.AddArc("h4", "u4");
+</pre></p>We can indicate several nodes as the beginning and end of the arc. In this case every node from the beginning list will be connected with every node from the end list. In our example ten calls of AddArc method are enough:
+<p>
+<pre>
+net.AddArc("h1", "h2 t1");
+net.AddArc("h2", "h3 t2");
+net.AddArc("t1", "d1");
+net.AddArc("t2", "d2");
+net.AddArc("d1", "h2 u1");
+net.AddArc("h3", "h4 t3");
+net.AddArc("t3", "d3");
+net.AddArc("d2", "h3 u2");
+net.AddArc("d3", "h4 u3");
+net.AddArc("h4", "u4");
+</pre></p><hr>
+
+<h2><a name="SpecProbLIMID">Specifying the conditional probabilities</a></h2><p>
+Now we can specify the probabilities on the nodes. Default probability distribution for chance and decision nodes is uniform. Default utility function for value nodes is zero. 
+<br>If we know probability distributions on some of the LIMID nodes, we can specify them with the SetPChance, SetPDecision or SetValueCost methods. 
+SetPChance method allows to set probability distributions on the chance nodes. SetPDecision method allows to set distribution on the decision nodes. To set the utility function on the value nodes one can use SetValueCost method.
+<br>In our example nodes h1, t1, h2, t2, h3, t3, h4 are chance nodes. Let's set the probability distribution on them with the help of SetPChance function.
+<p>
+<pre>
+net.SetPChance("h1^False h1^True", "0.9 0.1");
+net.SetPChance("t1^False t1^True", "0.1 0.9", "h1^False");
+net.SetPChance("t1^False t1^True", "0.8 0.2", "h1^True");
+net.SetPChance("h2^False h2^True", "0.9 0.1", "h1^False d1^False");
+net.SetPChance("h2^False h2^True", "0.8 0.2", "h1^False d1^True");
+net.SetPChance("h2^False h2^True", "0.5 0.5", "h1^True d1^False");
+net.SetPChance("h2^False h2^True", "0.1 0.9", "h1^True d1^True");
+net.SetPChance("t2^False t2^True", "0.1 0.9", "h2^False");
+net.SetPChance("t2^False t2^True", "0.8 0.2", "h2^True");
+net.SetPChance("h3^False h3^True", "0.9 0.1", "h2^False d2^False");
+net.SetPChance("h3^False h3^True", "0.5 0.5", "h2^False d2^True");
+net.SetPChance("h3^False h3^True", "0.8 0.2", "h2^True d2^False");
+net.SetPChance("h3^False h3^True", "0.1 0.9", "h2^True d2^True");
+net.SetPChance("t3^False t3^True", "0.1 0.9", "h3^False");
+net.SetPChance("t3^False t3^True", "0.8 0.2", "h3^True");
+net.SetPChance("h4^False h4^True", "0.9 0.1", "h3^False d3^False");
+net.SetPChance("h4^False h4^True", "0.8 0.2", "h3^False d3^True");
+net.SetPChance("h4^False h4^True", "0.5 0.5", "h3^True d3^False");
+net.SetPChance("h4^False h4^True", "0.1 0.9", "h3^True d3^True");
+</pre></p>d1, d2, d3 are decision nodes, we are going to set theirs distribution using  SetPDecision function.
+<p>
+<pre>
+net.SetPDecision("d1^False d1^True", "0.5 0.5", "t1^False");
+net.SetPDecision("d1^False d1^True", "0.5 0.5", "t1^True");
+net.SetPDecision("d2^False d2^True", "0.5 0.5", "t2^False");
+net.SetPDecision("d2^False d2^True", "0.5 0.5", "t2^True");
+net.SetPDecision("d3^False d3^True", "0.5 0.5", "t3^False");
+net.SetPDecision("d3^False d3^True", "0.5 0.5", "t3^True");
+</pre></p>u1, u2, u3, u4 are value nodes. All value nodes have only one state. The number of parent's configurations determines number of values of value nodes. Let's define the utility with the help of SetValueCost method.
+<p>
+<pre>
+net.SetValueCost("u1^Cost", "-100.0", "d1^False");
+net.SetValueCost("u1^Cost", "0.0", "d1^True");
+net.SetValueCost("u2^Cost", "-100.0", "d2^False");
+net.SetValueCost("u2^Cost", "0.0", "d2^True");
+net.SetValueCost("u3^Cost", "-100.0", "d3^False");
+net.SetValueCost("u3^Cost", "0.0", "d3^True");
+net.SetValueCost("u4^Cost", "1000.0", "h4^False");
+net.SetValueCost("u4^Cost", "300.0", "h4^True");
+</pre></p>It is necessary to use GetPChance function to get the result probability distributions of the chance nodes:
+<p>
+<pre>
+TokArr Pt1 = net.GetPChance("t1");
+</pre></p>One has to use GetPDecision method to get the distributions for the decision node:
+<p>
+<pre>
+TokArr Pd1 = net.GetPDecision("d1");
+</pre></p>It is necessary to use GetValueCost method to get the result utility function of the value node: 
+<p>
+<pre>
+TokArr Pu1 = net.GetValueCost("u1");
+</pre></p><hr>
+
+<h2><a name="Utility">Getting expected utility</a></h2><p>
+If LIMID and probability distributions have been already defined, we can get expected utility.
+You can use GetExpectation() method to get expected utility: 
+<p>
+<pre>
+TokArr exp = net.GetExpectation();
+</pre></p>To calculate expected utility LIMID inference algorithm is launched.
+<p>
+<hr>
+
+<h2><a name="Politics">Getting pure politics</a></h2><p>
+If LIMID and probability distributions have been already defined, we can get pure politics.
+You can use GetPolitics() method to get pure politics:  
+<p>
+<pre>
+TokArr politics = net.GetPolitics();
+</pre></p>To calculate pure politics LIMID inference algorithm is launched.
+<p>
+<hr>
+
+<h2><a name="SaveLIMID">Saving LIMID into the file</a></h2><p>
+It is possible to save the LIMID, which has already been created, into the file of xml format. To do this user has to call the SaveNet function.  
+<p>
+<pre>
+Net.SaveNet("pigs.xml");
+</pre></p>The argument of this method is the file name, where LIMID will be stored.
+<p>
+<hr>
+
+<h2><a name="LoadLIMID">Loading LIMID from the file</a></h2><p>
+It is necessary to use LoadNet method to load the LIMID from the xml file. 
+<p>
+<pre>
+IDNet pigsFromFile;
+pigsFromFile.LoadNet("pigs.xml");
+</pre></p>pigs.xml - name of the file, where the desired LIMID is stored.
+<p>
+<hr>
+
+<h1><a name="DiscreteMRF">Markov Random Fields</a></h1>
+We are going to analyze Markov Random Fields (MRF) functioning by the simple example. 
+<br>The graph structure of the model and the parameters are all shown in Figure 8:
+
+<p>
+<hr>
+
+<h4><a name="figWaterSprinkler">Figure8. Simple example of MRF</a></h4>
+<img align=center src="mrfModel.gif">
+<p>
+All nodes are discrete and can take on two values: true or false.
+</p>
+
+<hr>
+
+<h2><a name="CreateNetMRFDiscr">Creating the net</a></h2>
+<p>
+The first step of operating the MRF is its creation. No other actions can be carried out, 
+while there is no network.
+<br>
+To start network building we must create MRF class object: 
+<p>
+<pre>MRF net;</pre>
+<p>
+Now network is empty. We have to add nodes and to form cliques.
+
+<p>
+<hr>
+
+<h3><a name="AddNodesMRFDiscr">Adding nodes</a></h3>
+<p>
+Method AddNode is used to add new node to the network:
+<p>
+<pre>
+<p>
+net.AddNode(&quot;discrete^X&quot;, &quot;true false&quot;); 
+net.AddNode(&quot;discrete^Y&quot;, &quot;true false&quot;);
+net.AddNode(&quot;discrete^Z&quot;, &quot;true false&quot;);
+net.AddNode(&quot;discrete^W&quot;, &quot;true false&quot;);
+</pre>
+
+The first argument of this method is type and name of the new node, second argument is the corresponding 
+variate values list, and values are separated by the space.
+<br>
+In our example all the nodes are discrete and can take on the same values, so all the nodes can be 
+added by the one call of AddNode method:
+<p>
+<pre>
+net.AddNode(discrete^&quot;X Y Z W&quot;, &quot;true false&quot;);
+</pre>
+
+<p>
+<hr>
+
+<h3><a name="SetCliqueMRFDiscr">Setting cliques</a></h3>
+<p>
+SetClique method is used to add a new arc to the network:
+<p>
+<pre>
+net.SetClique(&quot;X Y&quot;);
+net.SetClique(&quot;Y Z&quot;);
+net.SetClique(&quot;Z W&quot;);
+net.SetClique(&quot;X W&quot;);
+</pre>
+<p>
+After forming cliques with SetClique method distributions of probabilities on them are uniform. See in next paragraph 
+how they can be changed or how clique can be formed with nonuniform distribution.<p>
+</p>
+<hr>
+
+<h2><a name="SpecProbMRFDiscr">Specifying the probabilities</a></h2>
+<p>
+When we form cliques with SetClique method probability distributions on them are uniform. If we know probability 
+distributions on some of the cliques, we can specify them with the SetPTabular method for the discrete cliques.
+<br>
+In our example we are going to specify probability distributions on the clique of X and Y nodes. We will leave the 
+distributions on the other nodes uniform.
+<p>
+<pre>
+net.SetPTabular(&quot;X^true Y^true&quot;, &quot;0.1&quot;);
+net.SetPTabular(&quot;X^true Y^false&quot;, &quot;0.3&quot;); 
+net.SetPTabular(&quot;X^false Y^true&quot;, &quot;0.25&quot;);
+net.SetPTabular(&quot;X^false Y^false&quot;, &quot;0.35&quot;); 
+</pre>
+<p>
+The first argument of this method is the states of the variables; we define the probability for the clique to take on 
+this nodes states. The second argument is the value of probability.<br>
+It is possible to define probabilities for all of the values of the node in clique. Distribution on clique of 
+X and Y nodes may be set by the following code:
+<p>
+<pre>
+net.SetPTabular(&quot;X Y^true&quot;, &quot;0.1 0.25&quot;);
+net.SetPTabular(&quot;X Y^false&quot;, &quot;0.3 0.35&quot;); 
+</pre>
+<p>
+We have a chance to specify all matrix of probabilities for clique by one call of SetPTabular method:
+<p>
+<pre>
+net.SetPTabular(&quot;X Y&quot;, &quot;0.1 0.3 0.25 0.35&quot;);
+</pre>
+<p>
+In the last two cases of specifying the probabilities it is important order of enumeration of values for nodes in the
+AddNode method and order of enumeration of nodes in first parameter of the SetPTabular method.<p>
+Note also that if SetPTabular is called for nodes that are not in clique, it tries to create clique of these nodes. 
+If clique is not correct, error message will be generated.<br>
+</p>
+To get the probability distribution of the discrete clique we must call of GetPTabular method:
+<p>
+<pre>
+TokArr XY = net.GetPTabular(&quot;X Y&quot;);
+TokArr XtrueY = net.GetPTabular(&quot;X^true Y&quot;);
+TokArr XtrueYfalse = net.GetPTabular(&quot;X^true Y^false&quot;);
+</pre>
+<p>
+Now it is possible to represent this distribution as string or as float numbers: 
+<p>
+<pre>
+String PXYStr = String(XY);
+float PXtrueYtrue = XY[0].FltValue();
+float PXtrueYfalse = XY[1].FltValue();
+float PXfalseYtrue = XY[2].FltValue();
+float PXfalseYfalse = XY[3].FltValue();
+</pre>
+<p>
+The following values are now stored in the variables:
+<p>
+<pre>
+PXYStr			&quot;X^true^Y^true^0.1 X^true^Y^false^0.3 X^false^Y^true^0.25 X^false^Y^false^0.35&quot;
+PXtrueYtrue		0.1
+PXtrueYfalse		0.3
+PXfalseYtrue		0.25
+PXfalseYfalse		0.35
+</pre>
+<p>
+We can carry out Learning, i.e. to find out distributions on the network nodes with the help of one observation or some set of observations. We have to specify observations first.
+</p>
+<hr>
+
+<h2><a name="AddObservMRFDiscr">Adding observations</a></h2>
+<p>
+Here we will describe the way of working with evidences in wrappers. BayesNet class allows user to work with current evidence and with the buffer of evidences.
+<br>
+Default current evidence is empty. User can edit it with the EditEvidence method:
+<p>
+<pre>
+net.EditEvidence(&quot;X^false W^false&quot;);
+net.EditEvidence(&quot;Y^true X^true&quot;);
+</pre>
+<p>
+After these calls there is three observed nodes in the current evidence, they are X, Y (both are true) and W, which is false.
+<br>
+After editing user can copy current evidence to the evidence buffer with the help of  CurEvidToBuf method:
+<p>
+<pre>
+net.CurEvidToBuf();
+</pre>
+<p>
+It is possible to clear the current evidence with ClearEvid method:
+<p>
+<pre>
+net.ClearEvid();
+</pre>
+<p>
+You can also put evidence-to-evidence buffer without editing. Call AddEvidToBuf method:
+<p>
+<pre>
+net.AddEvidToBuf(&quot;Z^true W^true&quot;);
+</pre>
+<p>
+At the moment we have empty current evidence. Evidence buffer contains 2 evidences. In the first evidence, 
+which was copied from the current evidence, there are three observed nodes: X, Y (both are true) and W (false). 
+In second evidence there are two observed nodes, Z and W, both are true.
+<br>
+The main operations with evidence buffer are:
+<UL>
+    <LI>total clearance of the buffer with the help of  ClearEvidBuf method,</LI>
+    <LI>saving the buffer to file (SaveEvidBuffer) and loading buffer from file (LoadEvidBuffer). We support the csv file format,</LI>
+    <LI>filling the evidence buffer with random values of observations with the help of GenerateEvidences method.</LI>
+</UL>
+Current evidence is used to get JPD and MPE, evidence buffer is used for learning.
+
+<p>
+<hr>
+
+<h2><a name="LearnMRFDiscr">Learning the network</a></h2>
+<p>
+To carry out learning process evidences from evidence buffer are used. 
+<br>
+It is possible to specify probability distributions on the net nodes with the help of learning. This setting of 
+probabilities is named parameters learning.
+</p>
+<hr>
+
+<h3><a name="ParamLearnMRFDiscr">Parameters learning</a></h3>
+<p>
+If we are going to specify probability distributions for network nodes, then we will call LearnParameters method after 
+filling the evidence buffer to learn the network:
+<p>
+<pre>
+net.LearnParameters();
+</pre>
+<p>
+As a result, the probability distributions on the nodes have been changed. To get new distributions 
+GetPTabular method is used:
+<p>
+<pre>
+TokArr PX = net.GetPTabular(&quot;X&quot;);
+TokArr PY = net.GetPTabular(&quot;Y&quot;);
+TokArr PZ = net.GetPTabular(&quot;Z&quot;);
+TokArr PW = net.GetPTabular(&quot;W&quot;);
+</pre>
+<p>
+Now distributions are presented as TokArr type objects. They can be converted into strings or float numbers, as it was 
+shown earlier. They also can be used as arguments for other methods. 
+<p>
+Using learning algorithm is Expectation Maximization algorithm.
+</p>
+<p>
+For EM Learning number of iterations of algorithm work and precision that algorithm runs up to must be specified. 
+Default number of iterations is 5 and default precision is 0.001. 
+These parameters can be changed with SetProperty method. Corresponding properties names are 
+"EMMaxNumberOfIterations" and "EMTolerance". For example:
+</p>
+<p>
+<pre>
+net.SetProperty(&quot;EMMaxNumberOfIterations&quot;, &quot;10&quot;)
+net.SetProperty(&quot;EMTolerance&quot;, &quot;1e-4&quot;)
+net.SetProperty(&quot;Learning&quot;, &quot;em&quot;);
+net.LearnParameters();
+</pre>
+
+<p>
+<hr>
+
+<h2><a name="MPEandJPDMRFDiscr">Getting MPE and JPD</a></h2>
+<p>
+If Bayesian network and probability distributions have been already defined, we can get Joint Probability Distribution 
+(JPD) and Maximum Probability Explanation (MPE).
+<br>
+For calculating JPD and MPE current evidence is used. You can edit this evidence with the help of  EditEvidence method 
+(look through “Adding observations” section).
+<br>
+You can use GetJPD method to get the marginal probability distribution of the node:  
+<p>
+<pre>
+TokArr ZMarg = net.GetJPD(&quot;Z&quot;);
+</pre>
+<p>
+It is possible to get joint distribution for the nodes from one family (family is the set, which consists of node and node parents):
+<p>
+<pre>
+TokArr YZMarg = net.GetJPD(&quot;Z Y&quot;);
+</pre>
+<p>
+You can use GetMPE method to get Maximum Probability Explanation for one node or for some set of nodes from one family:
+<p>
+<pre>
+TokArr ZMPE = net.GetMPE(&quot;Z&quot;);
+TokArr YZMPE = net.GetMPE(&quot;Y Z&quot;);
+</pre>
+<p>
+To calculate JPD and MPE inference algorithms are used. For general MRF there are three inference algorithms: Junction 
+Tree, Gibbs Sampling and full summation, which is called PNL Naive inference. For MRF2 (MRF all whose cliques have size 2
+such as in our example) Pearl (or Loopy Belief Propagation) inference algorithm also can be used. We must mention, that 
+Junction Tree and Naive Inference are exact, Pearl Inference and Gibbs Sampling are approximate algorithms (see PNL 
+documentation for the full information).
+<br>
+Default inference algorithm, which is used to calculate MPE and JPD, is Junction Tree Inference. You can use other 
+algorithms by setting “Inference” property with SetProperty method. You must define the desired algrithm by its string 
+name: “pearl”, “jtree”, “gibbs”, or “naive”. For example:
+<p>
+<pre>
+net.SetProperty(&quot;Inference&quot;, &quot;pearl&quot;);
+TokArr ZMPE = net.GetMPE(&quot;Z&quot;);
+net.SetProperty(&quot;Inference&quot;, &quot;gibbs&quot;);
+TokArr ZWMPE = net.GetMPE(&quot;Z W&quot;);
+</pre>
+<p>
+Pearl Inference and Gibbs Sampling Inference have some parameters.<br>
+For Pearl Inference number of iterations of algorithm and precision that algorithm runs up to must be specified. 
+Default number of iterations is equal to number of nodes in net and default precision is 1e-6. 
+These parameters can be changed with SetProperty method. Corresponding properties names are 
+"PearlMaxNumberOfIterations" and "PearlTolerance". For example:
+<p>
+<pre>
+net.SetProperty(&quot;PearlMaxNumberOfIterations&quot;, &quot;10&quot;);
+net.SetProperty(&quot;PearlTolerance&quot;, &quot;1e-5&quot;);
+net.SetProperty(&quot;Inference&quot;, &quot;pearl&quot;);
+TokArr ZJPD = net.GetJPD(&quot;Z&quot;);
+</pre>
+<p>
+For Gibbs Sampling Inference number of iterations must be specified. Corresponding property name is "GibbsNumberOfIterations".
+Default number of iterations is 600. Gibbs Sampling Inference generate evidences (samples) during work. Number of first 
+itearation that use samples processing results of the previous iteration can be specified with property "GibbsThresholdIteration"
+(default value is 10). Number of streams that generate independent samples can be specified with property "GibbsNumberOfStreams"
+(1 stream by default). For example:
+<p>
+<pre>
+net.SetProperty(&quot;GibbsNumberOfIterations&quot;, &quot;1000&quot;);
+net.SetProperty(&quot;GibbsThresholdIteration&quot;, &quot;20&quot;);
+net.SetProperty(&quot;GibbsNumberOfStreams&quot;, &quot;2&quot;);
+net.SetProperty(&quot;Inference&quot;, &quot;gibbs&quot;);
+TokArr ZWMPE = net.GetMPE(&quot;Z W&quot;);
+</pre>
+
+<p>
+<hr>
+
+<h1><a name="HintsDiscr">TokArr Hints</a></h1>
+<p>
+Here we discuss some additional features of the TokArr class.
+</p>
+<hr>
+
+<h2><a name="Operation1Discr">"^" operation</a></h2>
+<p>
+If we use the "^" operation, we can make the parameters definition shorter. 
+<br>
+The following three pieces of code are equal:
+</p>
+<table width="100%">
+<tr>
+<td><pre>(1)</pre></td>
+<td>
+<pre>
+net.AddNode("discrete^Cloudy discrete^Sprinkler discrete^Rain discrete^WetGrass", "true false");
+</pre>
+</td>
+</tr>
+<tr>
+<td><pre>(2)</pre></td>
+<td>
+<pre>
+TokArr nodeType = "discrete";
+net.AddNode(nodeType^"Cloudy Sprinkler Rain WetGrass", "true false");
+</pre>
+</td>
+</tr>
+<tr>
+<td><pre>(3)</pre></td>
+<td>
+<pre>
+net.AddNode(discrete^"Cloudy Sprinkler Rain WetGrass", "true false");
+</pre>
+</td>
+</tr>
+</table>
+<p>
+When we compare pieces (1) and (2), we can see that the "^" operation carries out 
+the Cartesian product of two TokArr objects.
+<br>
+It is possible to use the (3) variant because global variables are defined of TokArr 
+type specifying all types of nodes. Currently&nbsp; there are only two types of 
+nodes defined:<p>
+<pre>
+extern TokArr discrete;
+extern TokArr continuous;
+</pre>
+</p>
+</p>
+<hr>
+
+<h2><a name="Operation2Discr">[ ] operation</a></h2>
+<p>
+If  the TokArr class object specifies some set of network nodes, then we can get every node with the help of  
+the [] operation. The result of this operation is a Tok class object, which specifies only one node (TokArr = array of Tok):
+<p>
+<pre>
+TokArr nodes = "Cloudy Sprinkler Rain WetGrass";
+Tok node0 = nodes[0];
+Tok node1 = nodes[1];
+Tok node2 = nodes[2];
+Tok node3 = nodes[3];
+</pre>
+</p>
+A
+Tok class object can be converted into a string. For example, the result of 
+converting node0 into a string ( node0.String() )  is "Cloudy".
+</p>
+<hr>
+
+<h2><a name="StrAndFltMethodsDiscr">String operator and FltValue method</a></h2>
+<p>
+To convert TokArr and Tok class objects into strings, the String method is used:
+<p>
+<pre>
+TokArr distribution = "Cloudy^true^0.6 Cloudy^false^0.4";
+Tok probabilityTrue = distribution[0];
+Tok probabilityFalse = distribution[1];
+</p><p>
+String distributionStr = String(distribution);
+String probabilityTrueStr = String(probabilityTrue);
+String probabilityFalseStr = String(probabilityFalse);
+</pre>
+</p>
+If Tok class variable contains the value of probability, then it is possible to get this value as a float number with the help of FltValue method:
+<p>
+<pre>
+float probabTrueF = probabilityTrue.FltValue();
+float probabFalseF = probabilityFalse.FltValue();
+</pre></p>The variables probabTrueF and probabFalseF will contain values 0.6 and 0.4 respectively.
+</p>
