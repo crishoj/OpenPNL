@@ -351,6 +351,9 @@ int CGraph::IsDAG() const;
 This member function returns 1, if the graph is a directed acyclic graph (DAG), and 0 otherwise.
 </p>
 
+<hr><h4><a name="declCGraph_IsBinaryTree">IsBinaryTree</a></h4>
+<p class="Blurb">Returns 1 if current graph is equal to a binary tree and 0 otherwise.</p>
+<pre>int IsBinaryTree() const;</pre>
 
 <hr><h4><a name="declCGraph_IsTopologicallySorted">IsTopologicallySorted</a></h4>
 <p class="Blurb">Checks if graph is topologically sorted.</p><pre>
@@ -1902,6 +1905,136 @@ ModelDomain* <EM CLASS="CodeItalic">pMD</EM>);
 <dt>pMD <dd>Model domain.
 </dl></p>
 
+<hr><h3><a name="decl_pnlClassCIDNet">Class CIDNet</a></h3>
+<hr><h4><a name="decl_pnlCIDNet_Create">Create</a></h4>
+<p class="Blurb">Returns CIDNet class object</p>
+static CIDNet* Create(int numberOfNodes, int numberOfNodeTypes, const CNodeType *nodeTypesIn, const int *nodeAssociationIn, CGraph *pGraphIn);
+
+<p><dl>  
+ Arguments 
+
+<dt>numberOfNodes  <dd>Number of nodes in new Influence Diagram. 
+<dt>numberOfNodeTypes <dd>Number of node types in new Influence Diagram 
+<dt>nodeTypesIn <dd>Pointer to the array of node types 
+<dt>nodeAssociationIn <dd>Pointer to the array of node associations. 
+<dt>pGraphIn <dd>Graph to be attached to the model. 
+</dl> </p>
+<p><b>Discussion  </b></p>
+<p>This function creates a CIDNet object from an input model and returns a pointer to it </p>
+
+<hr><h4><a name="decl_pnlCIDNet_GetUnValueNodes">GetUnValueNodes </a></h4>
+<p class="Blurb">Gets chance and decision nodes of the input object.</p>
+intVector* GetUnValueNodes() const;
+  
+<hr><h4><a name="decl_pnlCIDNet_GetDecisionNodes">GetDecisionNodes</a></h4>
+<p class="Blurb">Gets decision nodes of the input object</p>
+void GetDecisionNodes(intVector& decisionNodesOut) const;
+<p><dl>  
+ Arguments 
+<dt>decisionNodesOut <dd>Reference to an array where decision nodes will be stored 
+</dl></p>
+
+<hr><h4><a name="decl_pnlCIDNet_GetValueNodes">GetValueNodes</a></h4>
+<p class="Blurb">Gets utility nodes of the input object.</p>
+void GetValueNodes(intVector& valueNodesOut) const; 
+  
+<p><dl> 
+ Arguments 
+<dt>valueNodesOut <dd>Reference to an array where utility nodes will be stored 
+</dl></p> 
+
+<hr><h4><a name="decl_pnlCIDNet_IsLIMID">IsLIMID</a></h4>
+
+<p class = "Blurb">Checks whether the net is Limited Memory Influence Diagram or not</p>
+bool IsLIMID(void) const; 
+ 
+<p> <b>Discussion</b> </p>
+<p>This function Checks whether the net is Limited Memory Influence Diagram or not by checking influences between different decision nodes. </p>
+ 
+<hr><h3><a name="decl_pnlClassCDiagnostics">Class CDiagnostics</a></h3>
+<p>Class CDiagnostics carries out diagnostics using marginal approach.</p>
+
+<hr><h4><a name="decl_pnlCDiagnostics_Create">Create</a></h4>
+<p class="Blurb">Returns class object.</p>
+<pre>static CDiagnostics *Create(const CBNet *pBNet);</pre>
+<p><dl> 
+ Arguments 
+<dt>pBNet <dd>Pointer to the class CBNet. 
+</dl></p> 
+
+<hr><h4><a name="declCDiagnostics_SetTargetNodes">SetTargetNodes</a></h4>
+<p class="Blurb">Determine target nodes (hypothesis set).</p>
+<pre>void SetTargetNodes(intVector &targetNodes);</pre>
+<p><dl> 
+ Arguments 
+<dt>targetNodes <dd>list of target(hypothesis) nodes. 
+</dl></p> 
+
+<hr><h4><a name="declCDiagnostics_SetObservationNodes">SetObservationNodes</a></h4>
+<p class="Blurb">Determine test nodes.</p> 
+<pre>void SetObservationNodes(intVector &observationNodes);</pre>
+<p><dl> 
+ Arguments 
+<dt>observationNodes <dd>list of test nodes. 
+</dl></p> 
+
+<hr><h4><a name="declCDiagnostics_SetTargetState">SetTargetState</a></h4>
+<p class="Blurb">Allow to define target state for specific node.</p> 
+<pre>void SetTargetState(int node, int state);</pre>
+<p><dl> 
+ Arguments 
+<dt>node <dd>Number of target node. 
+<dt>state <dd>Target state value for it`s node. 
+</dl></p> 
+
+<hr><h4><a name="declCDiagnostics_SetTargetStates">SetTargetStates</a></h4>
+<p class="Blurb">Allow to define target state for list of nodes.</p>
+<pre>void SetTargetStates(int node, intVector &listStates);</pre>
+<p><dl> 
+ Arguments 
+<dt>node <dd>Number of target node. 
+<dt>listStates <dd>List of target state values for it`s node. 
+</dl></p> 
+
+<hr><h4><a name="declCDiagnostics_GetTestsList">GetTestsList</a></h4>
+<p class="Blurb">Return sorted vector of numbers test nodes in order of contraction Value Of Information function.</p>
+<pre>intVector GetTestsList(const intVector &pursuedHypNodes, const intVector &pursuedHypNodesState);</pre>
+<p><dl> 
+ Arguments 
+<dt>pursuedHypNodes <dd>List of pursued nodes. 
+<dt>pursuedHypNodesState <dd>List of pursued states of pursued nodes. 
+</dl></p> 
+
+<hr><h4><a name="declCDiagnostics_SetCost">SetCost</a></h4>
+<p class="Blurb">Set cost of observation for test node.</p>
+<pre>void SetCost(int node, float nodeCost);</pre>
+<p><dl> 
+ Arguments 
+<dt>node <dd>Number of node for which the cost is set. 
+<dt>nodeCost <dd>The cost value. 
+</dl></p> 
+
+<hr><h4><a name="declCDiagnostics_SetCostRatio">SetCostRatio</a></h4>
+<p class="Blurb">Set Value Of Information parameter.</p>
+<pre>void SetCostRatio(float costR);</pre>
+<p><dl> 
+ Arguments 
+<dt>costR <dd>The cost ratio value. 
+</dl></p> 
+
+<hr><h4><a name="declCDiagnostics_SetAlgorithm">SetAlgorithm</a></h4>
+<p class="Blurb">Allow to define diferent algorithms for calculation of Value Of Information.</p>
+<pre>void SetAlgorithm(int algNumber);</pre>
+<p><dl> 
+ Arguments 
+<dt>algNumber <dd> <pre>The algorithm number: 
+	0 - using Marginal Strength 1; 
+	1 - using Marginal Strength 2; </pre>
+</dl></p> 
+ 
+ 
+
+
 
 <hr><h3><a name="decl_pnlClassSFactorGraph">Class CFactorGraph</a></h3>
 
@@ -3323,6 +3456,597 @@ This function creates a new class object by copying the input object.
 </p>
 
 
+<hr><h4><a name="declTreeDistribFun_Copy">UpdateTree</a></h4>
+<p class="Blurb">Updates decision Tree structure for node distribution function.</p>
+ 
+<pre>void UpdateTree(const CGraph* pGraphTree, TreeNodeFields *fields);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pGraphTree <dd>Pointer to the class CGraph that will be used for creation a new decision tree. 
+<dt>fields <dd>Pointer to the array of the new decision Tree nodes properties. 
+</dl></p>
+ 
+<hr><h4><a name="declTreeDistribFun_ConvertGraphToTree">ConvertGraphToTree</a></h4>
+<p class="Blurb">Creates new decision Tree structure without filling tree nodes properties.</p>
+ 
+<pre>void ConvertGraphToTree(CxCART *pCart,CxCARTNode *node, const CGraph *pGraph, 
+	int nodeNum) const;
+</pre>
+<p></dl>  
+ Arguments 
+<dt>pCart <dd>Pointer to the structure that allows storing decision Tree. 
+<dt>node <dd>Pointer to the stucture that allows storing tree node properties. 
+<dt>pGraph <dd>Pointer to the class CGraph that will be used for creation a new decision tree. 
+<dt>nodeNum <dd>Current added node number. 
+ 
+
+<hr><h4><a name="declTreeDistribFun_FillTree">FillTree</a></h4>
+<p class="Blurb">Fills tree nodes properties.</p>
+
+<pre>void FillTree(CxCART *pCart,CxCARTNode *node, const CGraph *pGraph, 
+	TreeNodeFields *fields, int nodeNum) const;
+</pre>
+<p><dl>  
+ Arguments 
+<dt>pCart <dd>Pointer to the structure that allows storing decision Tree. 
+<dt>node <dd>Pointer to the stucture that allows storing tree node properties. 
+<dt>pGraph <dd>Pointer to the class CGraph that will be used for creation a new decision tree. 
+<dt>fields <dd>Pointer to the array of the new decision Tree nodes properties. 
+<dt>nodeNum <dd>Current added node number. 
+</dl></p>
+
+
+<hr><h4><a name="declTreeDistribFun_FillTree">SetDomain</a></h4>
+<p class="Blurb">Allows to define parents for current node.</p>
+ 
+<pre>void SetDomain(intVector domain );</pre>
+<p><dl>  
+ Arguments 
+<dt>domain  <dd>Node domain. 
+</dl></p> 
+
+
+<hr><h4><a name="declTreeDistribFun_GenerateSample">GenerateSample</a></h4>
+<p class="Blurb">Generates sample using current evidence.</p>
+ 
+<pre>void GenerateSample(CEvidence* evidence, int maximize) const;</pre>
+  
+<p><dl>
+Arguments 
+<dt>evidence <dd>Pointer to the current decision Tree parents evidence. 
+<dt>maximize <dd> <pre>Flag of the marginalization type: 
+	for discrete variables: 
+		0 stands for simple summation. 
+		1 stands for finding maximum value. 
+	for continuous variables: 
+		both are integration operations..  </pre>
+</dl></p> 
+ 
+
+<hr><h4><a name="declTreeDistribFun_GetAdjectives">GetAdjectives</a></h4>
+<p class="Blurb">In continuous case returns correspound expectation and covariance using current evidence.</p>
+ 
+<pre>int GetAdjectives(const CEvidence* pEv, float &expect, float &varian) const;</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pEv <dd>Pointer to the current decision Tree parents evidence. 
+<dt>expect <dd>decision Tree node expectation for current parents configuraion. 
+<dt>varian <dd>decision Tree node variance for current parents configuraion.. 
+</dl></p> 
+ 
+
+<hr><h4><a name="declTreeDistribFun_GetAdjectives">GetProbability</a></h4>
+<p class="Blurb">In discrete case returns correspound probability vector using current evidence.</p>
+ 
+<pre>floatVector GetProbability(const CEvidence* pEv) const;</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pEv <dd>Pointer to probability vector for current evidence. 
+</dl></p> 
+ 
+<hr><h3><a name="decl_pnlClassCSoftMaxDistribFun">Class CSoftMaxDistribFun</a></h3>
+<p>Class CSoftMaxDistribFun implements basic operations wiht distribution on SoftMax node when it has only continuous parents. In this case distribution can de defined by one matrix of weights and one offset vector.
+</p>
+
+<hr><h4><a name="declSoftMaxDistribFun_Clone">Clone</a></h4>
+<p class="Blurb">Clones SoftMaxDistribFun object and return pointer to it.</p>
+<pre>CDistribFun* Clone();</pre>
+
+<hr><h4><a name="declSoftMaxDistribFun_Create">Create</a></h4>
+<p class="Blurb">Returns class object</p>
+ 
+<pre>CSoftMaxDistribFun* Create(int NumberOfNodes, const CNodeType *const* NodeTypes, 
+	const float *dataWeight, const float *dataOffset)
+</pre>  
+
+<p><dl>
+ Arguments 
+<dt>NumberOfNodes <dd>Quantity of SoftMax node parents 
+<dt>NodeTypes <dd>Pointer to the array of parent nodes types. 
+<dt>dataWeight <dd>Pointer to float matrix of SoftMax node weights. 
+<dt>dataOffset <dd>Pointer to float vector of SoftMax node offsets. 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_CreateUnitFunctionDistribution">CreateUnitFunctionDistribution</a></h4>
+<p class="Blurb">Creates unit form of distribution.</p>
+ 
+<pre>CSoftMaxDistribFun* CreateUnitFunctionDistribution(int NumberOfNodes, 
+	const CNodeType *const* NodeTypes);
+</pre>
+<p><dl>
+ Arguments 
+<dt>NumberOfNodes <dd>Quantity of SoftMax node parents 
+<dt>NodeTypes <dd>Pointer to the array of parent nodes types. 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_Copy">Copy</a></h4>
+<p class="Blurb">Creates a copy of an input object and returns a pointer to it.</p>
+ 
+<pre>CSoftMaxDistribFun* Copy(const CSoftMaxDistribFun* pInpDistr);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pInpDistr <dd>Pointer to the SoftMaxDistribFun object. 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_IsValid">IsValid</a></h4>
+<p class="Blurb">Checks weather this distribution is a unit distribution.</p>
+ 
+<pre>bool IsValid(std::string* description) const;</pre>
+  
+<p><dl>
+ Arguments 
+<dt>description <dd>Output message. 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_CreateDefaultMatrices">CreateDefaultMatrices</a></h4>
+<p class="Blurb">Creates random  matrices for this distribution. </p>
+
+<pre>void CreateDefaultMatrices(int typeOfMatrices);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>typeOfMatrices <dt>We may think about different types of matricies, but now only random type is realized 
+</dl></p> 
+
+
+<hr><h4><a name="declSoftMaxDistribFun_AllocMatrix">AllocMatrix</a></h4>
+<p class="Blurb">Creates matrices and attaches them to this distribution. </p>
+ 
+<pre>void AllocMatrix(const float *data, EMatrixType mType, int numberOfWeightMatrix, 
+	const int *parentIndices);
+</pre>
+  
+<p><dl>
+ Arguments 
+<dt>data <dd>data for matrix creation 
+<dt>mType <dd>as there is only one type of matrix for SoftMax distribution, here you are to define Weight matrix. 
+<dt>numberOfWeightMatrix <dd>this parameter is not used here 
+<dt>parentIndices <dd>this parameter is not used here 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_AttachMatrix">AttachMatrix</a></h4>
+<p class="Blurb">Attaches definite matrix to distribution.</p>
+
+ 
+<pre>void AttachMatrix(CMatrix* pMatrix, EMatrixType mType, int numberOfWeightMatrix, 
+	const int *parentIndices);
+</pre>  
+<p><dl>
+ Arguments 
+<dt>pMatrix <dd>pointer to matrix, which you want to attach. 
+<dt>mType <dd>as there is only one type of matrix for SoftMax distribution, here you are to define Weight matrix. 
+<dt>numberOfWeightMatrix <dd>this parameter is not used here 
+<dt>parentIndices <dd>this parameter is not used here 
+</dl></p> 
+ 
+ 
+<hr><h4><a name="declSoftMaxDistribFun_AllocOffsetVector">AllocOffsetVector</a></h4>
+<p class="Blurb">Creates an offset vector and attaches it to a distribution</p>
+ 
+<pre>void AllocOffsetVector(const float *data);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>data <dd>a source data for vector creation 
+</dl></p> 
+ 
+
+<hr><h4><a name="declSoftMaxDistribFun_AttachOffsetVector">AttachOffsetVector</a></h4>
+<p class="Blurb">Attaches offset vector to a distribution.</p>
+ 
+<pre>void AttachOffsetVector(const floatVector *pVector);</pre>  
+
+<p><dl>
+ Arguments 
+<dt>pVector <dd>pointer to the offset vector, which you want to attach. 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_IsEqual">IsEqual</a></h4>
+<p class="Blurb">Compares current SoftMaxDistribFun object with input one.</p>
+ 
+<pre>int IsEqual(const CDistribFun *dataToCompare, float epsilon, int withCoeff, 
+	float* maxDifference) const;
+</pre>  
+<p><dl>
+ Arguments 
+<dt>dataToCompare <dd>SoftMaxDistribFun object to compare 
+<dt>epsilon <dd>accuracy of comparing 
+<dt>withCoeff <dd>this parameter is not used here 
+<dt>maxDifference <dd>an output value of maximum difference 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_GetMatrix">GetMatrix</a></h4>
+<p class="Blurb">Returns pointer to a SoftMax weight matrix.</p>
+ 
+<pre>CMatrix* GetMatrix(EMatrixType mType, int numWeightMat, const int *parentIndices) const;</pre>
+  
+<p><dl>
+ Arguments 
+<dt>mType <dd>as there is only one type of matrix for SoftMax distribution, here you are to define Weight matrix. 
+<dt>numWeightMat <dd>this parameter is not used here 
+<dt>parentIndices <dd>this parameter is not used here 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_GetOffsetVector">GetOffsetVector</a></h4>
+<p class="Blurb">Returns pointer to a SoftMax offset vector</p>
+ 
+<pre>floatVector* GetOffsetVector();</pre>
+
+<hr><h4><a name="declSoftMaxDistribFun_GetStatisticalMatrix">GetStatisticalMatrix</a></h4>
+<p class="Blurb">Returns pointer to a matrix, which had been produced while maximize Likelihood</p>
+ 
+<pre>CMatrix *GetStatisticalMatrix(EStatisticalMatrix mType, int *parentIndices) const;</pre>
+  
+<p><dl>
+ Arguments 
+<dt>mType <dd>as there is only one type of matrix for SoftMax distribution, here you are to define Weight matrix. 
+<dt>parentIndices <dd>this parameter is not used here 
+</dl></p> 
+ 
+
+<hr><h4><a name="declSoftMaxDistribFun_GetStatisticalOffsetVector">GetStatisticalOffsetVector</a></h4>
+<p class="Blurb">Returns pointer to a offset vector, which had been produced while maximize Likelihood</p>
+<pre>floatVector* GetStatisticalOffsetVector();</pre>
+
+<hr><h4><a name="declSoftMaxDistribFun_InitLearnData">InitLearnData</a></h4>
+<p class="Blurb">Copies a weight matrix and offset vector to statistical weight matrix and statistical offset vector.</p>
+<pre>void InitLearnData();</pre>
+  
+<hr><h4><a name="declSoftMaxDistribFun_CopyLearnDataToDistrib">CopyLearnDataToDistrib</a></h4>
+<p class="Blurb">Copies the results of learning process - statistical weight matrix and offset vector, to distribution parameters</p>
+<pre>void CopyLearnDataToDistrib();</pre>
+
+<hr><h4><a name="declSoftMaxDistribFun_Dump">Dump</a></h4>
+<p class="Blurb">Organizes convinient results output.</p> 
+<pre>void Dump() const;</pre>
+  
+<hr><h4><a name="declSoftMaxDistribFun_SetStatistics">SetStatistics</a></h4>
+<p class="Blurb">Fills statistical weight matrix of distribution.</p>
+
+<pre>void SetStatistics(const CMatrix *pMat, EStatisticalMatrix matrix, const int* parentsComb)</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pMat <dd>a data vector, which will be stored as statistical offset vector 
+<dt>matrix <dd>this parameter is not used here 
+<dt>parentsComb <dd>Discrete parents state combination. 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_SetOffsetStatistics">SetOffsetStatistics</a></h4>
+<p class="Blurb">Fills statistical offset vector.</p>
+
+<pre>void SetOffsetStatistics(const floatVector *pVec);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pVec <dd>a data vector, which will be stored as statistical offset vector 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_SetMaximizingMethod">SetMaximizingMethod</a></h4>
+<p class="Blurb">Sets method, which would be used for likelihood maximizing.</p>
+ 
+<pre>void SetMaximizingMethod (SMMaximizeMethod met);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>met <dd>Defines likelihood maximizing method, which you want to use. 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_GetMaximizingMethod">GetMaximizingMethod</a></h4>
+<p class="Blurb">Gets method, which is used for likelihood maximizing.</p>
+ 
+<pre>SMMaximizeMethod GetMaximizingMethod ();</pre>
+  
+<b> <p>Discussion</p> </b>
+<p>There are three possible maximizing methods. They are Gradient, Conjugate Gradient and Newton-Rafsen(using Hessian). </p>
+
+<hr><h4><a name="declSoftMaxDistribFun_MaximumLikelihood">MaximumLikelihood</a></h4>
+<p class="Blurb">Calls definite maximizing method, according to current value of Maximizing Method</p>
+ 
+<pre>void MaximumLikelihood(float **Observation, int NumberOfObservations, 
+	float Accuracy, float step);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>Observation <dd>Matrix of observations on SoftMax node and it's continous parents 
+<dt>NumberOfObservations <dd>Number of Observations. 
+<dt>Accuracy <dd>Maximizing method parameter, defines the stop condition. 
+<dt>step <dd>Maximizing method parameter, it is better to set the value between 0 and 1. 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_CalculateHessian">CalculateHessian</a></h4>
+<p class="Blurb">Calculates Hessian matrix for Likelihood function using Evidences</p>
+ 
+<pre>void CalculateHessian(float ** pContVectorEvidence, int NumberOfObservations);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pContVectorEvidence <dd>Matrix of observations on SoftMax node and it's continous parents 
+<dt>NumberOfObservations <dd>Number of Observations. 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_CalculateLikelihood">CalculateLikelihood</a></h4>
+<p class="Blurb">Calculates Likelihood using Evidences</p>
+ 
+<pre>float CalculateLikelihood(float **Observations, int NumOfObservations);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>Observations <dd>Matrix of observations on SoftMax node and it's continous parents 
+<dt>NumberOfObservations <dd>Number of Observations. 
+</dl></p> 
+
+<hr><h4><a name="declSoftMaxDistribFun_MaximumLikelihoodGradient">MaximumLikelihoodGradient</a></h4>
+<h4><a name="declSoftMaxDistribFun_MaximumLikelihoodConjugateGradient">MaximumLikelihoodConjugateGradient</a></h4>
+<h4><a name="declSoftMaxDistribFun_MaximumLikelihoodHessian">MaximumLikelihoodHessian</a></h4>
+<p class="Blurb">Functions for likelihood maximizing</p>
+ 
+<pre>void MaximumLikelihoodGradient(float **Observations, int NumOfObservations, 
+	float Accuracy, float step);
+void MaximumLikelihoodConjugateGradient(float **Observations, int NumOfObservations, 
+	float Accuracy, float step);
+void MaximumLikelihoodHessian(float ** Observations, int NumberOfObservations, 
+	float Accuracy, float step);
+</pre>
+  
+<p><dl>
+ Arguments 
+<dt>Observation <dd>Matrix of observations on SoftMax node and it's continous parents 
+<dt>NumberOfObservations <dd>Number of Observations. 
+<dt>Accuracy <dd>Maximizing method parameter, defines the stop condition. 
+<dt>step <dd>Maximizing method parameter, it is better to set the value between 0 and 1. 
+</dl></p> 
+
+<hr><h3><a name="decl_pnlClassCCondSoftMaxDistribFun">Class CCondSoftMaxDistribFun</a></h3>
+<p>Class CCondSoftMax implements basic operations wiht distribution on SoftMax node when it has both continuous and descrete parents. In this case distribution can be defined by number of SoftMaxDistribFun objects. Each of these objects corresponds to definite desrete parents state configuration.</p>
+
+<hr><h4><a name="declCondSoftMaxDistribFun_">Clone</a></h4>
+<h4><a name="declCondSoftMaxDistribFun_">CloneWithSharedMatrices</a></h4>
+<p class="Blurb">Creates a full copy of current CCondSoftMax object</p>
+ 
+<pre>CDistribFun* Clone() const;
+CDistribFun* CloneWithSharedMatrices();</pre>
+
+<hr><h4><a name="declCondSoftMaxDistribFun_Create">Create</a></h4>
+<p class="Blurb">Creates a CCondSoftMax class object and returns a pointer to it.</p>
+ 
+<pre>CCondSoftMaxDistribFun* Create(int nNodes, const CNodeType *const* nodeTypes, 
+	CSoftMaxDistribFun* const pDefaultDistr);</pre>
+
+<p><dl> 
+ Arguments 
+<dt>nNodes <dd>Number of nodes in domain 
+<dt>nodeTypes <dd>pointer to the array of node types. 
+<dt>pDefaultDistr <dd>--------------------------------------- 
+</dl></p> 
+
+
+<hr><h4><a name="declCondSoftMaxDistribFun_Copy">Copy</a></h4>
+<p class="Blurb">Creates a copy of input object and returns a pointer to it.</p>
+ 
+<pre>CCondSoftMaxDistribFun* Copy(const CCondSoftMaxDistribFun* pInpDistr);</pre>
+ 
+<p><dl> 
+ Arguments 
+<dt>pInpDistr <dd>an object of CCondSoftMaxDistribFun type, which you want to copy. 
+</dl></p> 
+
+
+<hr><h4><a name="declCondSoftMaxDistribFun_IsValid">IsValid</a></h4>
+<p class="Blurb">Chekes wheather this distribution is a unit one or not</p>
+ 
+<pre>bool IsValid(std::string* description) const;</pre>
+  
+<p><dl> 
+ Arguments 
+<dt>description <dd>an output message 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_InitLearnData">InitLearnData</a></h4>
+<p class="Blurb">Copies distribution parameters to statistical distribution parameters.</p>
+<pre>void InitLearnData();</pre>
+ 
+<hr><h4><a name="declCondSoftMaxDistribFun_CopyLearnDataToDistrib">CopyLearnDataToDistrib</a></h4>
+<p class="Blurb">Copies the result of learning prosess - statistical distribution parameters - to distribution.</p>
+<pre>void CopyLearnDataToDistrib();</pre>
+
+<hr><h4><a name="declCondSoftMaxDistribFun_CreateDefaultMatrices">CreateDefaultMatrices</a></h4>
+<p class="Blurb">Fill sdistribution matrices with random values.</p>
+ 
+<pre>void CreateDefaultMatrices(int typeOfMatrices);</pre>
+  
+<p><dl> 
+ Arguments 
+<dt>typeOfMatrices <dd>We may think about different types of matricies, but now only random type is realized 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_SetDistribFun">SetDistribFun</a></h4>
+<p class="Blurb">Sets definite Distribution function as distribution on SoftMax node with definite discrete parents state combination.</p>
+ 
+<pre>void SetDistribFun(CSoftMaxDistribFun* inputDistr, const int* discreteParentCombination);</pre>
+   
+<p><dl> 
+ Arguments 
+<dt>inputDistr <dd>pointer to SoftMaxDistribFun object 
+<dt>discreteParentCombination <dd>combination of discrete parents states. It defines a place, where SoftMaxDistribFun object will be stored 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_AllocDistribFun">AllocDistribFun</a></h4>
+<p class="Blurb">Creates CSoftMaxDistribFun  object for definite discrete parents state combination and attaches it to distribution. </p>
+
+<pre>void AllocDistribFun(const int* discreteParentCombination, int isUniform);</pre>
+ 
+<p><dl>
+ Arguments 
+<dt>discreteParentCombination <dd>defines a place, where SoftMaxDistribFun object will be stored 
+<dt>isUniform <dd>parameter, which defines weather distribution is unioform or not. 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_GetDistribution">GetDistribution</a></h4>
+<p class="Blurb">Returns pointer to CSoftMaxDistribFun object.</p>
+ 
+<pre>const CSoftMaxDistribFun* GetDistribution(const int* discrParentIndex)const;</pre> 
+ 
+<p><dl>
+ Arguments 
+<dt>discrParentIndex <dd>combination of discrete parents states.  
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_AllocMatrix">AllocMatrix</a></h4>
+<p class="Blurb">Creates  weight matrix and attaches it to distribution for definite discrete parents state combination.</p>
+ 
+<pre>void AllocMatrix(const float *data, EMatrixType mType,int numberOfWeightMatrix, 
+	const int *parentIndices);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>data <dd>a data to fill the matrix 
+<dt>mType <dd>as there is only one type of matrix for SoftMax distribution, here you are to define Weight matrix. 
+<dt>numberOfWeightMatrix <dd>this parameter is not  used here. 
+<dt>parentIndices <dd>discrete parents combination 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_AttachMatrix">AttachMatrix</a></h4>
+<p class="Blurb">Attaches weight matrix to distribution for definite discrete parents state combination.</p>
+ 
+<pre>void AttachMatrix(CMatrix* pMatrix, EMatrixType mType, int numberOfWeightMatrix, 
+	const int *parentIndices);</pre>
+ 
+<p><dl>
+ Arguments 
+<dt>pMatrix <dd>pointer to matrix 
+<dt>mType <dd>as there is only one type of matrix for SoftMax distribution, here you are to define Weight matrix. 
+<dt>numberOfWeightMatrix <dd>his parameter is not  used here. 
+<dt>parentIndices <dd>discrete parents combination 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_AllocOffsetVector">AllocOffsetVector</a></h4>
+<p class="Blurb">Creates offset vector and attaches it to distribution for definite discrete parents state combination.</p>
+ 
+<pre>void AllocOffsetVector(const float *data, const int *parentIndices);</pre>
+ 
+<p><dl>
+ Arguments 
+<dt>data <dd>data to fill a vector 
+<dt>parentIndices <dd>discrete parents combination 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_AttachOffsetVector">AttachOffsetVector</a></h4>
+<p class="Blurb">Attaches offset vector to distribution for definite discrete parents state combination.</p>
+ 
+<pre>void AttachOffsetVector(const floatVector *pVector, const int *parentIndices);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pVector <dd>pointer to vector 
+<dt>parentIndices <dd>discrete parents combination 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_IsEqual">IsEqual</a></h4>
+<p class="Blurb">Compares two CCondSoftMaxDistribFun objects.</p>
+
+<pre>int IsEqual(const CDistribFun *dataToCompare, float epsilon, int withCoeff, 
+	float* maxDifference) const;</pre>
+  
+<p><dl>
+ Arguments 
+<dt>dataToCompare <dd>an input CCondSoftMaxDistribFun object 
+<dt>epsilon <dd>accuracy of comparing 
+<dt>withCoeff <dd>this parameter is not used here 
+<dt>maxDifference <dd>an output value of maximum difference 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_GetMatrix">GetMatrix</a></h4>
+<p class="Blurb">Gets weight matrix.</p>
+ 
+<pre>CMatrix* GetMatrix(EMatrixType mType, int numWeightMat, const int *parentIndices) const;</pre>
+  
+<p><dl>
+ Arguments 
+<dt>mType <dd>as there is only one type of matrix for SoftMax distribution, here you are to define Weight matrix. 
+<dt>numWeightMat <dd>this peremeter is not used here. 
+<dt>parentIndices <dd>discrete parents combination 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_GetOffsetVector">GetOffsetVector</a></h4>
+<p class="Blurb">Gets offset vector</p>
+<pre>floatVector* GetOffsetVector(const int *parentIndices) const;</pre>
+
+<hr><h4><a name="declCondSoftMaxDistribFun_GetStatisticalMatrix">GetStatisticalMatrix</a></h4>
+<h4><a name="declCondSoftMaxDistribFun_GetStatisticalOffsetVector">GetStatisticalOffsetVector</a></h4>
+<p class="Blurb">Get statistical distribution parameters. </p>
+ 
+<pre>CMatrix *GetStatisticalMatrix(EStatisticalMatrix mType, int *parentIndices) const;
+floatVector* GetStatisticalOffsetVector(int *parentIndices) const;
+</pre>  
+ 
+<p><dl>
+ Arguments 
+<dt>parentIndices <dd>discrete parents combination 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_SetStatistics">SetStatistics</a></h4>
+<p class="Blurb">Fills statistical distribution parameters by definite values. </p>
+ 
+<pre>void SetStatistics(const CMatrix *pMat, EStatisticalMatrix matrix, const int* parentsComb);</pre>
+ 
+<p><dl>
+ Arguments 
+<dt>pMat <dd>pointer to matrix of values. 
+<dt>matrix <dd>this parameter is not used here 
+<dt>parentsComb <dd>discrete parents combination 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_SetMaximizingMethod">SetMaximizingMethod</a></h4>
+<p class="Blurb">Sets method which will be used for maximazing Likelihood in all internal CSoftMaxDistribFun objects.</p>
+ 
+<pre>void SetMaximizingMethod(CondMaximizeMethod met);</pre> 
+ 
+<p><dl>
+ Arguments 
+<dt>met <dd>Defines likelihood maximizind method, which you want to use. 
+</dl></p> 
+
+<hr><h4><a name="declCondSoftMaxDistribFun_MaximumLikelihood">MaximumLikelihood</a></h4>
+<p class="Blurb">Calls MaximumLikelihood method for every CSoftMaxDistribFun object.</p>
+ 
+<pre>void MaximumLikelihood(float ** Observation, int NumberOfObservations, float Accuracy, 
+	float step);
+</pre>  
+ 
+<p><dl>
+ Arguments 
+<dt>Observation <dd>Matrix of observations on SoftMax node and it's continous parents 
+<dt>NumberOfObservations <dd>Number of Observations. 
+<dt>Accuracy <dd>Maximizing method parameter, defines the stop condition. 
+<dt>step <dd>Maximizing method parameter, it is better to set the value between 0 and 1. 
+</dl></p> 
+
+
 <hr><h2><a name="decl_pnlFactors">Factors</a></h2>
 
 
@@ -3998,8 +4722,6 @@ This function returns the vector of probabilities of the mixture node.
 
 <hr><h3><a name="decl_pnlClassCTreeCPD">Class CTreeCPD</a></h3>
 
-
-
 <hr><h4><a name="declCTreeCPD_Create">Create</a></h4>
 <p class="Blurb">Returns class object.</p><pre>
 
@@ -4022,6 +4744,103 @@ static CTreeCPD* CTreeCPD::Copy( const CTreeCPD* <EM CLASS="CodeItalic">pCPD</EM
  Arguments
 <dt>pCPD<dd>  Pointer to the <EM CLASS="CodeReg">CTreeCPD</EM> object.
 </dl></p>
+
+<hr><h4><a name="declCTreeCPD_UpdateTree">UpdateTree</a></h4>
+<p class="Blurb">Updates decision Tree for current node distribution function.</p>
+ 
+<pre>void UpdateTree(const CGraph *pGraphTree, TreeNodeFields *fields);</pre>
+
+<p><dl>  
+ Arguments 
+<dt>pGraphTree <dd>Pointer to the class CGraph that will be used for creation a new decision Tree. 
+<dt>fields <dd>Pointer to the array of the new decision Tree nodes properties. 
+</dl></p> 
+
+<hr><h4><a name="declCTreeCPD_ConvertWithEvidenceToPotential">ConvertWithEvidenceToPotential</a></h4>
+<p class="Blurb">Creates new Tabular or Gaussian potential using current evidence on decision Tree parents.</p>
+ 
+<pre>CPotential* ConvertWithEvidenceToPotential(const CEvidence* pEvidence, 
+	int flagSumOnMixtureNode = 1) const; 
+</pre>  
+
+<p><dl>
+ Arguments 
+<dt>pEvidence <dd>Pointer to the current decision Tree parents evidence. 
+<dt>flagSumOnMixtureNode <dd>Flag of mixture node summation. 
+</dl></p> 
+ 
+<hr><h3><a name="decl_pnlClassCSoftMaxCPD">Class CSoftMaxCPD</a></h3>
+<p>Class CSoftMaxCPD containes implementations of Class CCPD virtual functions.</p>
+
+<hr><h4><a name="declCSoftMaxCPD_Create">Create</a></h4>
+<p class="Blurb">Returns class object</p>
+ 
+<pre>static CSoftMaxCPD* Create(const int *domain, int nNodes, CModelDomain* pMD);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>domain <dd>Pointer to the array of numbers of domain nodes. 
+<dt>nNodes <dd>Number of nodes in domain. 
+<dt>pMD <dd>pointer to model domain, which includes this factor 
+</dl></p> 
+
+<hr><h4><a name="declCSoftMaxCPD_Copy">Copy</a></h4>
+<p class="Blurb">Creates new SoftMax CPD as copy of the input object</p>
+ 
+<pre>static CSoftMaxCPD* Copy(const CSoftMaxCPD* pSMCPD);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pSMCPD <dd>Pointer to CSoftMaxCPD object. 
+</dl></p> 
+
+<hr><h4><a name="declCSoftMaxCPD_AllocDistribution">AllocDistribution</a></h4>
+<p class="Blurb">Allocates SoftMax distribution on SoftMax child node.</p>
+ 
+<pre>void AllocDistribution(const float* pWeights, const float* pOffsets, 
+	const int* parentCombination = NULL);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pWeights <dd>Pointer to SoftMax weight matrix. 
+<dt>pOffsets <dd>Pointer to SoftMax offset vector. 
+<dt>parentCombination <dd>Pointer to discontinous parents state combination. 
+</dl></p> 
+<p><b>Discussion </b></p>
+<p>This function allocates a SoftMax distribution on SoftMax child node with Gaussian parents and the given discrete parent combination. </p>
+ 
+<hr><h4><a name="declCSoftMaxCPD_GetMaximizingMethod">GetMaximizingMethod</a></h4>
+<p class="Blurb">Gets method, which is used for likelihood maximizing.</p>
+ 
+<pre>EMaximizeMethod GetMaximizingMethod();</pre>
+  
+<p><b> Discussion </b></p>
+<p>There are three possible methods for likelihood maximising. They are Gradient, ConjugateGradient and Hessian </p>
+
+<hr><h4><a name="declCSoftMaxCPD_SetMaximizingMethod">SetMaximizingMethod</a></h4>
+<p class="Blurb">Sets method, which is used for likelihood maximizing.</p>
+ 
+<pre>void SetMaximizingMethod(EMaximizeMethod met);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>met <dd>Defines Likelihood maximizing method, which you want to use. 
+</dl></p> 
+
+<hr><h4><a name="declCSoftMaxCPD_MaximumLikelihood">MaximumLikelihood</a></h4>
+<p class="Blurb">Maximizes likelihood using defined method.</p>
+ 
+<pre>void MaximumLikelihood(float ** Observation, int NumberOfObservations, float Accuracy, 
+	float step = 0.1);
+</pre>  
+<p><dl>
+ Arguments 
+<dt>Observation <dd>pointer to float matrix of observations on the SoftMax node family. 
+<dt>NumberOfObservations <dd>Defines quantity of observations 
+<dt>Accuracy <dd>parameter of maximizing method 
+<dt>Step <dd>parameter of maximizing method 
+</dl></p> 
+
 
 
 <hr><h3><a name="decl_pnlClassCPotential">Class CPotential</a></h3>
@@ -4331,11 +5150,114 @@ float CGaussianPotential::GetCoefficient( int <EM CLASS="CodeItalic">isforCanoni
 0 - moment form.
 </dl></p>
 
+<hr><h3><a name="decl_pnlClassCIDPotential">Class CIDPotential</a></h3>
 
+<hr><h4><a name="declCIDPotential_Combine">Combine</a></h4>
+<p class="Blurb">Combines two factors and returns product.</p>
+<pre>
+virtual CIDPotential* Combine(const CIDPotential *pOtherFactor, 
+    CIDPotential* output = NULL) const; 
+</pre>
+<p><dl>  
+ Arguments
+<dt>pOtherFactor <dd>Pointer to the multiplier factor 
+<dt>output <dd>If this argument is NULL, function creates a new CIDPotential object, else it only reloads factor. 
+</dl></p>
+<p><b>Discussion</b></p>
+ <p>This function returns pointer to a CIDPotential object, which is the product of two CIDPotential objects. </p>
+
+
+<hr>
+<h4><a name="declCIDPotential_Contraction">Contraction</a></h4>
+<p class="Blurb">Multiplies utility and probability parts of factor and returns the product</p>
+
+<pre> virtual CDenseMatrix &lt float &rt * Contraction(CDenseMatrix &lt float &rt * output = NULL) const; </pre>
+
+<p><dl>  
+ Arguments 
+<dt>output <dd>If this argument is NULL, function creates a new CDenseMatrix object and fills it with the result of contraction. 
+</dl></p> 
+<b> <p>Discussion  </p></b>
+<p>This function returns pointer to a CDenseMatrix object, which is the product of contraction  between utility and probability parts. </p>
+ 
+<hr>
+<h4><a name="declCIDPotential_DivideInSelf">DivideInSelf</a></h4>
+<p class="Blurb">Provides division and puts the result to potential. </p>
+ 
+<pre>virtual void DivideInSelf(const CCPD *pOtherFactor) const;</pre>
+  
+<p><dl>
+ Arguments 
+<dt>pOtherFactor <dd>Pointer to the divider factor 
+</dl></p>
+<p><b>Discussion</b></p> 
+<p>This function changes the object, for which it was called, by changing its data matrices.</p>
+
+
+<hr><h4><a name="declCIDPotential_InsertPoliticsInSelf">InsertPoliticsInSelf</a></h4>
+<p class = "Blurb">Inserts new politics to the current CIDPotential object </p>
+ 
+<pre>virtual void InsertPoliticsInSelf(const CCPD *pOtherFactor) const;</pre>
+
+<p><dl>  
+ Arguments 
+<dt>pOtherFactor <dd>Pointer to the factor, which contains new politics 
+</dl></p>
+<p><b>Discussion </b></p>
+<p>This function inserts new politics, which are described by argument, to current object </p>
+
+
+<hr><h4><a name="declCIDPotential_SetProbDistribFun">SetProbDistribFun </a></h4>
+<p class="Blurb">Sets the probability part of potential</p>
+
+<pre>void SetProbDistribFun(const CDistribFun* data);</pre> 
+  
+<p><dl>
+ Arguments 
+<dt>data <dd>Pointer to a CDistribFun object, which contains probability part of potential. 
+</dl></p>
+<p><b>Discussion  </b></p>
+<p>This function changes the object, for which it was called, by changing its data matrices.</p>
+
+
+<hr><h4><a name="declCIDPotential_SetUtilityDistribFun">SetUtilityDistribFun</a></h4>
+<p class="Blurb">Sets the utility part of potential.</p>
+ 
+<pre>void SetUtilityDistribFun(const CDistribFun* data);</pre>
+  
+<p><dl>
+ Arguments 
+<dt>data <dd>Pointer to a CDistribFun object, which contains probability part of potential. 
+</dl></p>
+<p><b>Discussion </b></p> 
+<p>This function changes the object, for which it was called, by changing its data matrices. </p>
+
+
+<hr><h3><a name="decl_pnlClassCIDTabularPotential">Class CIDTabularPotential</a></h3>
+
+
+<p>Class CIDTabularPotential contains implementations of class CIDPotential virtual functions. This class is used in inference algorithm for the nets, which are based on the Limited Memory Influence Diagram.</p>
+<hr><h4><a name="declCIDTabularPotential_Clone">Clone</a></h4>
+<p class="Blurb">Creates a new CFactor class object as copy of the input object</p> 
+
+<pre>virtual CFactor* Clone() const;</pre>
+
+<hr><h4><a name="declCIDTabularPotential_Create">Create</a></h4>
+<p class="Blurb">Returns class object</p>
+<pre>
+static CIDTabularPotential* Create(const int *domain, int nNodes, CModelDomain* pMD, 
+    const float* probData = NULL, const float* utilityData = NULL); </pre>
+<p><dl>  
+ Arguments 
+<dt>domain <dd>Pointer to the array of numbers of domain nodes. 
+<dt>nNodes <dd>Number of nodes in domain 
+<dt>pMD <dd>Graphical model which contains this potential 
+<dt>probData <dd>Pointer to the array of float values of probabilities 
+<dt>utilityData <dd>Pointer to the array of float values of utilities 
+</dl></p> 
+ 
 <hr><h3><a name="decl_pnlClassCFactorsl">Class CFactors</a></h3>
-
-
-
+ 
 <hr><h4><a name="decl_pnlCreate">Create</a></h4>
 <p class="Blurb">Creates <EM CLASS="CodeReg">CFactors</EM> class object.
 </p><pre>
@@ -5560,6 +6482,54 @@ This function initializes a Junction tree  using  given evidence.
 
 const *CPotential CJtreeInfEngine::QueryMPE() const;
 </pre>
+
+
+<hr><h3><a name="decl_pnlClassCLIMIDInfEngine">Class CLIMIDInfEngine</a></h3>
+
+<hr><h4><a name="declCLIMIDInfEngine_Create">Create</a></h4>
+<p class="Blurb">Returns CLIMIDInfEngine class object</p>
+<pre>static CLIMIDInfEngine* Create(const CStaticGraphicalModel *pGM);  </pre>
+<p><dl> 
+ Arguments  
+<dt>pGM <dd>Pointer to a model, for which inference algorithm is to be carried out. 
+</dl></p>
+<b><p>Discussion  </p></b>
+<p>This function creates a LIMID Inference algorithm object from an input graphical model and returns a pointer to it.</p>
+
+
+<hr><h4><a name="declCLIMIDInfEngine_Release">Release</a></h4>
+<p class="Blurb">Destroys the inference engine.</p>
+
+<pre>static void Release(CLIMIDInfEngine** pInfEng);  </pre>
+<p><dl> 
+ Arguments  
+<dt>pInfEngine <dd>Pointer to a CLIMIDInfEngine object, which we are going to destroy. 
+</dl></p> 
+
+<hr><h4><a name="declCLIMIDInfEngine_SetIterMax">SetIterMax</a></h4>
+<p class="Blurb">Sets maximum quantity of iterations</p>
+ 
+<pre>void SetIterMax(int IterMax);  </pre>
+<p><dl> 
+ Arguments  
+<dt>IterMax <dd>New value of maximum quantity of iterations. 
+</dl></p> 
+
+<hr><h4><a name="declCLIMIDInfEngine_DoInference">DoInference</a></h4>
+<p class="Blurb">Main method, which does inference in Limited Memory Influence Diagrams. </p>
+
+<pre>void DoInference();  </pre>
+
+
+<hr><h4><a name="declCLIMIDInfEngine_GetPolitics">GetPolitics</a></h4>
+<p class="Blurb">Get optimal politics after the inference. </p>
+
+<pre>pFactorVector* GetPolitics(void) const;  </pre>
+
+<hr><h4><a name="declCLIMIDInfEngine_GetExpectation">GetExpectation</a></h4>
+<p class="Blurb">Gets expectation after the inference. </p>
+ 
+<pre>float GetExpectation(); </pre>
 
 
 <hr><h3><a name="decl_pnlClassCExInfEngine">Class CExInfEngine</a></h3>

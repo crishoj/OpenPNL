@@ -35,6 +35,7 @@
 <li><a href="pnl_refText.htm#declCGraph_GetParents" TARGET="text">GetParents</a>
 <li><a href="pnl_refText.htm#declCGraph_GetChildren" TARGET="text">GetChildren</a>
 <li><a href="pnl_refText.htm#declCGraph_IsDAG" TARGET="text">IsDAG</a>
+<li><a href="pnl_refText.htm#declCGraph_IsBinaryTree" TARGET="text">IsBinaryTree</a>
 <li><a href="pnl_refText.htm#declCGraph_IsTopologicallySorted" TARGET="text">IsTopologicallySorted</a>
 <li><a href="pnl_refText.htm#declCGraph_NumberOfConnectivityComponents" TARGET="text">NumberOfConnectivityComponents</a>
 <li><a href="pnl_refText.htm#declCGraph_GetConnectivityComponents" TARGET="text">GetConnectivityComponents</a>
@@ -184,6 +185,29 @@
 <li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
 <li><a href="pnl_refText.htm#decl_pnlCMRF2_CreateWithRandomMatrices" TARGET="text">CreateWithRandomMatrices</a>
 </ul>
+
+<li><a href="pnl_refText.htm#decl_pnlClassCIDNet" TARGET="text">Class CIDNet</a>
+<ul>
+<li><a href="pnl_refText.htm#declCIDNet_Create" target="text">Create</a></li>
+<li><a href="pnl_refText.htm#declCIDNet_GetUnValueNodes" target="text">GetUnValueNodes</a></li>
+<li><a href="pnl_refText.htm#declCIDNet_GetDecisionNodes" target="text">GetDecisionNodes</a></li>
+<li><a href="pnl_refText.htm#declCIDNet_GetValueNodes" target="text">GetValueNodes</a></li>
+<li><a href="pnl_refText.htm#declCIDNet_IsLIMID" target="text">IsLIMID</a></li>
+</ul>
+
+<li><a href="pnl_refText.htm#decl_pnlClassCDiagnostics" TARGET="text">Class CDiagnostics</a>
+<ul>
+<li><a href="pnl_refText.htm#declCDiagnostics_Create" target="text">Create</a></li>
+<li><a href="pnl_refText.htm#declCDiagnostics_SetTargetNodes" target="text">SetTargetNodes</a></li>
+<li><a href="pnl_refText.htm#declCDiagnostics_SetObservationNodes" target="text">SetObservationNodes</a></li>
+<li><a href="pnl_refText.htm#declCDiagnostics_SetTargetState" target="text">SetTargetState</a></li>
+<li><a href="pnl_refText.htm#declCDiagnostics_SetTargetStates" target="text">SetTargetStates</a></li>
+<li><a href="pnl_refText.htm#declCDiagnostics_GetTestsList" target="text">GetTestsList</a></li>
+<li><a href="pnl_refText.htm#declCDiagnostics_SetCost" target="text">SetCost</a></li>
+<li><a href="pnl_refText.htm#declCDiagnostics_SetCostRatio" target="text">SetCostRatio</a></li>
+<li><a href="pnl_refText.htm#declCDiagnostics_SetAlgorithm" target="text">SetAlgorithm</a></li>
+</ul>
+
 <li><a href="pnl_refText.htm#decl_pnlClassSFactorGraph" TARGET="text">Class CFactorGraph</a>
 <ul>
 <li><a href="pnl_refText.htm#declCFactorGraph_Create" TARGET="text">Create</a>
@@ -198,6 +222,7 @@
 <li><a href="pnl_refText.htm#declCFactorGraph_GetNbrFactors" TARGET="text">GetNbrFactors</a>
 <li><a href="pnl_refText.htm#declCFactorGraph_GetNumNbrFactors" TARGET="text">GetNumNbrFactors</a>
 </ul>
+
 <li><a href="pnl_refText.htm#decl_pnlClassCJunctionTree" TARGET="text">Class CJunctionTree</a>
 <ul>
 <li><a href="pnl_refText.htm#declCJunctionTree_Create" TARGET="text">Create</a>
@@ -324,7 +349,76 @@
 <ul>
 <li><a href="pnl_refText.htm#declTreeDistribFun_Create" TARGET="text">Create</a>
 <li><a href="pnl_refText.htm#declTreeDistribFun_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declTreeDistribFun_UpdateTree" TARGET="text">UpdateTree</a></li>
+<li><a href="pnl_refText.htm#declTreeDistribFun_ConvertGraphToTree" TARGET="text">ConvertGraphToTree</a></li>
+<li><a href="pnl_refText.htm#declTreeDistribFun_FillTree" TARGET="text">FillTree</a></li>
+<li><a href="pnl_refText.htm#declTreeDistribFun_SetDomain" TARGET="text">SetDomain</a></li>
+<li><a href="pnl_refText.htm#declTreeDistribFun_GenerateSample" TARGET="text">GenerateSample</a></li>
+<li><a href="pnl_refText.htm#declTreeDistribFun_GetAdjectives" TARGET="text">GetAdjectives</a></li>
+<li><a href="pnl_refText.htm#declTreeDistribFun_GetProbability" TARGET="text">GetProbability</a></li>
 </ul>
+
+
+<li><a href="pnl_refText.htm#decl_pnlClassCSoftMaxDistribFun" TARGET="text">Class CSoftMaxDistribFun</a>
+<ul>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_Clone" TARGET="text">Clone</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_Create" TARGET="text">Create</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_CreateUnitFunctionDistribution" TARGET="text">CreateUnitFunctionDistribution</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_Copy" TARGET="text">Copy</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_IsValid" TARGET="text">IsValid</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_CreateDefaultMatrices" TARGET="text">CreateDefaultMatrices</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_AllocMatrix" TARGET="text">AllocMatrix</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_AttachMatrix" TARGET="text">AttachMatrix</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_AllocOffsetVector" TARGET="text">AllocOffsetVector</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_AttachOffsetVector" TARGET="text">AttachOffsetVector</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_IsEqual" TARGET="text">IsEqual</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_GetMatrix" TARGET="text">GetMatrix</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_GetOffsetVector" TARGET="text">GetOffsetVector</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_GetStatisticalMatrix" TARGET="text">GetStatisticalMatrix</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_GetStatisticalOffsetVector" TARGET="text">GetStatisticalOffsetVector</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_InitLearnData" TARGET="text">InitLearnData</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_CopyLearnDataToDistrib" TARGET="text">CopyLearnDataToDistrib</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_Dump" TARGET="text">Dump</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_SetStatistics" TARGET="text">SetStatistics</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_SetOffsetStatistics" TARGET="text">SetOffsetStatistics</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_SetMaximizingMethod" TARGET="text">SetMaximizingMethod</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_GetMaximizingMethod" TARGET="text">GetMaximizingMethod</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_MaximumLikelihood" TARGET="text">MaximumLikelihood</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_CalculateHessian" TARGET="text">CalculateHessian</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_CalculateLikelihood" TARGET="text">CalculateLikelihood</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_MaximumLikelihoodGradient" TARGET="text">MaximumLikelihoodGradient</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_MaximumLikelihoodConjugateGradient" TARGET="text">MaximumLikelihoodConjugateGradient</a></li>
+<li><a href="pnl_refText.htm#declSoftMaxDistribFun_MaximumLikelihoodHessian" TARGET="text">MaximumLikelihoodHessian</a></li>
+</ul>
+
+<li><a href="pnl_refText.htm#decl_pnlClassCCondSoftMaxDistribFun" TARGET="text">Class CCondSoftMaxDistribFun</a>
+<ul>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_pnl_refText.htm#declCondSoftMaxDistribFun_" TARGET="text" TARGET="text">Clone</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_CloneWithSharedMatrices" TARGET="text">CloneWithSharedMatrices</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_Create" TARGET="text">Create</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_Copy" TARGET="text">Copy</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_IsValid" TARGET="text">IsValid</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_InitLearnData" TARGET="text">InitLearnData</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_CopyLearnDataToDistrib" TARGET="text">CopyLearnDataToDistrib</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_CreateDefaultMatrices" TARGET="text">CreateDefaultMatrices</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_SetDistribFun" TARGET="text">SetDistribFun</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_AllocDistribFun" TARGET="text">AllocDistribFun</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_GetDistribution" TARGET="text">GetDistribution</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_AllocMatrix" TARGET="text">AllocMatrix</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_AttachMatrix" TARGET="text">AttachMatrix</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_AllocOffsetVector" TARGET="text">AllocOffsetVector</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_AttachOffsetVector" TARGET="text">AttachOffsetVector</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_IsEqual" TARGET="text">IsEqual</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_GetMatrix" TARGET="text">GetMatrix</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_GetOffsetVector" TARGET="text">GetOffsetVector</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_GetStatisticalMatrix" TARGET="text">GetStatisticalMatrix</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_GetStatisticalOffsetVector" TARGET="text">GetStatisticalOffsetVector</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_SetStatistics" TARGET="text">SetStatistics</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_SetMaximizingMethod" TARGET="text">SetMaximizingMethod</a></li>
+<li><a href="pnl_refText.htm#declCondSoftMaxDistribFun_MaximumLikelihood" TARGET="text">MaximumLikelihood</a></li>
+</ul>
+
+
 <!--<li><a href="pnl_refText.htm#decl_pnlFactors" TARGET="text">Factors</a>-->
 <li><a href="pnl_refText.htm#decl_pnlClassCFactor" TARGET="text">Class CFactor</a>
 <ul>
@@ -401,7 +495,21 @@
 <ul>
 <li><a href="pnl_refText.htm#declCTreeCPD_Create" TARGET="text">Create</a>
 <li><a href="pnl_refText.htm#declCTreeCPD_Copy" TARGET="text">Copy</a>
+<li><a href="pnl_refText.htm#declCTreeCPD_UpdateTree" TARGET="text">UpdateTree</a></li>
+<li><a href="pnl_refText.htm#declCTreeCPD_ConvertWithEvidenceToPotential" TARGET="text">ConvertWithEvidenceToPotential</a></li>
 </ul>
+
+<li><a href="pnl_refText.htm#decl_pnlClassCSoftMaxCPD" TARGET="text">Class CSoftMaxCPD</a>
+<ul>
+<li><a href="pnl_refText.htm#declCSoftMaxCPD_Create" TARGET="text">Create</a></li>
+<li><a href="pnl_refText.htm#declCSoftMaxCPD_Copy" TARGET="text">Copy</a></li>
+<li><a href="pnl_refText.htm#declCSoftMaxCPD_AllocDistribution" TARGET="text">AllocDistribution</a></li>
+<li><a href="pnl_refText.htm#declCSoftMaxCPD_GetMaximizingMethod" TARGET="text">GetMaximizingMethod</a></li>
+<li><a href="pnl_refText.htm#declCSoftMaxCPD_SetMaximizingMethod" TARGET="text">SetMaximizingMethod</a></li>
+<li><a href="pnl_refText.htm#declCSoftMaxCPD_MaximumLikelihood" TARGET="text">MaximumLikelihood</a></li>
+</ul>
+
+
 <li><a href="pnl_refText.htm#decl_pnlClassCPotential" TARGET="text">Class CPotential</a>
 <ul>
 <li><a href="pnl_refText.htm#declCPotential_Multiply" TARGET="text">Multiply</a>
@@ -431,6 +539,23 @@
 <li><a href="pnl_refText.htm#decl_pnlSetCoefficient" TARGET="text">SetCoefficient</a>
 <li><a href="pnl_refText.htm#declCGaussianPotential_GetCoefficient" TARGET="text">GetCoefficient</a>
 </ul>
+
+<li><a href="pnl_refText.htm#decl_pnlClassCIDPotential" TARGET="text">Class CIDPotential</a>
+<ul>
+<li><a href="pnl_refText.htm#declCIDPotential_Combine" TARGET="text">Combine</a>
+<li><a href="pnl_refText.htm#declCIDPotential_Contraction" TARGET="text">Contraction</a></li>
+<li><a href="pnl_refText.htm#declCIDPotential_DivideInSelf" TARGET="text">DivideInSelf</a></li>
+<li><a href="pnl_refText.htm#declCIDPotential_InsertPoliticsInSelf" TARGET="text">InsertPoliticsInSelf</a></li>
+<li><a href="pnl_refText.htm#declCIDPotential_SetProbDistribFun" TARGET="text">SetProbDistribFun</a></li>
+<li><a href="pnl_refText.htm#declCIDPotential_SetUtilityDistribFun" TARGET="text">SetUtilityDistribFun</a></li>
+</ul>
+
+<li><a href="pnl_refText.htm#decl_pnlClassCIDTabularPotential" TARGET="text">Class CIDTabularPotential</a>
+<ul>
+<li><a href="pnl_refText.htm#declCIDTabularPotential_Clone" TARGET="text">Clone</a></li>
+<li><a href="pnl_refText.htm#declCIDTabularPotential_Create" TARGET="text">Create</a></li>
+</ul>
+
 <li><a href="pnl_refText.htm#decl_pnlClassCFactorsl" TARGET="text">Class CFactors</a>
 <ul>
 <li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>
@@ -569,6 +694,17 @@
 <li><a href="pnl_refText.htm#declCJtreeInfEngine_ShrinkObserved" TARGET="text">ShrinkObserved</a>
 <li><a href="pnl_refText.htm#declCJtreeInfEngine_QueryMPE" TARGET="text">QueryMPE</a>
 </ul>
+
+<li><a href="pnl_refText.htm#decl_pnlClassCLIMIDInfEngine" TARGET="text">Class CLIMIDInfEngine</a>
+<ul>
+<li><a href="pnl_refText.htm#declCLIMIDInfEngine_Create" target="text">Create</a></li>
+<li><a href="pnl_refText.htm#declCLIMIDInfEngine_Release" target="text">Release</a></li>
+<li><a href="pnl_refText.htm#declCLIMIDInfEngine_SetIterMax" target="text">SetIterMax</a></li>
+<li><a href="pnl_refText.htm#declCLIMIDInfEngine_DoInference" target="text">DoInference</a></li>
+<li><a href="pnl_refText.htm#declCLIMIDInfEngine_GetPolitics" target="text">GetPolitics</a></li>
+<li><a href="pnl_refText.htm#declCLIMIDInfEngine_GetExpectation" target="text">GetExpectation</a></li>
+</ul>
+
 <li><a href="pnl_refText.htm#decl_pnlClassCExInfEngine" TARGET="text">Class CExInfEngine</a>
 <ul>
 <li><a href="pnl_refText.htm#decl_pnlCreate" TARGET="text">Create</a>

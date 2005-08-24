@@ -21,11 +21,23 @@ PNL: User Guide
 
 <li><a href="#ug_DGrM">Dynamic Graphical Models</a>
 
+<li><a href="#ug_LIMID">Influence Diagrams</a></li>
+
+<li><a href="#ug_Diagnostics">Diagnostic Networks</a></li>
+
+<li>Sophisticated Distributions</li>
+<ul>
+<li><a href="#ug_SoftMax">SoftMax Distribution</a></li>
+<li><a href="#ug_DTree">Decision Tree Distribution</a></li>
+</ul>
+
 <li><a href="#ug_Inf">Inference Algorithms for Bayesian and Markov Networks</a>
 
 <li><a href="#ug_PBInf">Particle-based Inference</a>
 
 <li><a href="#ug_InfDBN">Inference Algorithms for DBNs</a>
+
+<li><a href="#ug_InfLIMID">Inference Algorithm for LIMIDs</a></li>
 
 <li><a href="#ug_Learning">Learning for Bayesian and Markov Network</a>
 <ul>
@@ -297,6 +309,296 @@ CBNet *pBNet = CBNet::CreateWithRandomMatrices( pGraph, pMD );
 CDBN *pDBN = CDBN::Create( pBNet );
 </pre>
 
+<hr><h3><a name="ug_LIMID">Influence Diagrams</a></h3>
+
+<p>Influence diagrams are compact representations of decision problems under uncertainty. We will observe diagrams of ‘no forgetting’, i.e. that values of observed variables and decisions that have been taken are remembered at all later times. Such diagrams we will call Influence Diagrams (ID). We will contrast them with LIMIDs (LImited Memory Influence Diagrams). </p>
+
+<p><b>Example 1 (PIGS) </b></p>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr>
+  <td width="50"></td>
+  <td>
+	<p>A pig breeder is growing pigs for a period of four months and subsequently selling them. During this period the pig may or may not develop a certain disease. If the pig has the disease at the time when it must be sold, the pig must be sold for slaughtering and its expected market price is then 300 DKK (Danish kroner). If it is disease free, its expected market price as a breeding animal is 1000 DKK. </p>
+	<p>Once a month, a veterinary doctor sees the pig and makes a test for presence of the disease. If the pig is ill, the test will indicate this with probability .80, and if the pig is healthy, the test will indicate this with probability .90. At each monthly visit, the doctor may or may not treat the pig for the disease by injecting a certain drug. The cost of an injection is 100 DKK.</p>
+	<p>A pig has the disease in the first month with probability .10. A healthy pig develops the disease in the subsequent month with probability .20 without injection, whereas a healthy and treated pig develops the disease with probability .10, so the injection has some preventive effect. An untreated pig which is unhealthy will remain so in the subsequent month with probability .90, whereas the similar probability is .50 for an unhealthy pig which is treated. Thus spontaneous cure is possible but treatment is beneficial on average.</p>
+  </td>
+ </tr>
+</table>
+
+<p>The story now continues in two versions. In the traditional influence diagram (ID) version, the pig breeder will at all times know whether the pig has been treated earlier and also the previous test results. If we extend the story to continue for many months or to have weekly or daily examinations with potential injections associated, the complexity of finding an optimal treatment strategy becomes forbidding.</p>
+<hr><h4>Figure 2-4. LIMID representation of the ID version of PIGS</h4>
+<img src="LIMID_files\figure_1.gif">
+
+<p>In the LIMID version of the story, the pig breeder does not keep individual records for his pigs and has to make his decision knowing only the test result for the given month and the age of the pig. The memory has been limited to the extreme of only remembering the present.</p>
+<hr><h4>Figure 2-5. LIMID version of PIGS</h4>
+<img src="LIMID_files\figure_2.gif">
+
+<p>LIMIDs are represented by directed acyclic graphs (DAGs) with three types of nodes. Chance nodes, displayed as circles, represent random variables. Decision nodes, displayed as squares, correspond to alternative choices available to the decision maker. Finally value nodes, displayed as diamonds, represent additive components of the joint utility function. We assume that the joint utility of a configuration of the chance and decision variables can be represented as the sum of the local utility functions associated with the value nodes.</p>
+<p>A LIMID can be viewed as a special type of Bayesian network, where the state of each decision variable is to be imposed from the decision maker to meet an optimization objective, and where the variables at the value nodes are completely determined from its parent configurations. A LIMID differs from a traditional ID representation of a decision problem in two ways:</p>
+<ol>
+  <li>The sequence in which decisions are to be taken is not specified other than through it being compatible with the partial order induced by the DAG, i.e. if d2 is a descendant of _the d1 decision d1 must be taken before d2 . </li>
+  <li>The parents of a decision node d represent exactly the variables whose values are known and taken into consideration when d is to be taken. In traditional IDs, this relation is more complicated and varies somewhat between authors. </li>
+</ol>
+<p>Thus, LIMIDs allow for multiple or forgetful decision makers.</p>
+
+<hr><h4>Example 2-3. Creation of "PIGS" LIMID</h4>
+<p>Consider the following network:</p>
+<img src="model.gif">
+<p>In this picture circles describe chance nodes. Each chance node has it’s probability distribution, which is shown near circles.</p>
+<p>Squares describe decision nodes. We want to find out probability distributions for this nodes. That is why fields near the nodes are lived blank.</p>
+<p>Diamonds describe utility nodes and the tables near the nodes show the distribution of the income.</p>
+<p>To load this model you may use the following function:</p>
+
+<pre>
+CIDNet* CreatePigsLIMID()
+{
+    const int nnodes = 14;
+    const int numberOfNodeTypes = 14;
+
+    int i;
+
+    CGraph *pGraph = CGraph::Create(0, NULL, NULL, NULL);
+    pGraph->AddNodes(nnodes);
+    pGraph->AddEdge(0,1,1);
+    pGraph->AddEdge(0,3,1);
+    pGraph->AddEdge(1,2,1);
+    pGraph->AddEdge(2,3,1);
+    pGraph->AddEdge(3,4,1);
+    pGraph->AddEdge(3,6,1);
+    pGraph->AddEdge(4,5,1);
+    pGraph->AddEdge(5,6,1);
+    pGraph->AddEdge(6,7,1);
+    pGraph->AddEdge(6,9,1);
+    pGraph->AddEdge(7,8,1);
+    pGraph->AddEdge(8,9,1);
+    pGraph->AddEdge(2,10,1);
+    pGraph->AddEdge(5,11,1);
+    pGraph->AddEdge(8,12,1);
+    pGraph->AddEdge(9,13,1);
+
+    CNodeType *nodeTypes = new CNodeType [numberOfNodeTypes];
+
+    nodeTypes[0].SetType(1, 2, nsChance);
+    nodeTypes[1].SetType(1, 2, nsChance);
+    nodeTypes[2].SetType(1, 2, nsDecision);
+    nodeTypes[3].SetType(1, 2, nsChance);
+    nodeTypes[4].SetType(1, 2, nsChance);
+    nodeTypes[5].SetType(1, 2, nsDecision);
+    nodeTypes[6].SetType(1, 2, nsChance);
+    nodeTypes[7].SetType(1, 2, nsChance);
+    nodeTypes[8].SetType(1, 2, nsDecision);
+    nodeTypes[9].SetType(1, 2, nsChance);
+    nodeTypes[10].SetType(1, 1, nsValue);
+    nodeTypes[11].SetType(1, 1, nsValue);
+    nodeTypes[12].SetType(1, 1, nsValue);
+    nodeTypes[13].SetType(1, 1, nsValue);
+
+    int *nodeAssociation = new int[nnodes];
+    for ( i = 0; i < nnodes; i++ )
+    {
+      nodeAssociation[i] = i;
+    }
+
+    CIDNet *pIDNet = CIDNet::Create( nnodes, numberOfNodeTypes, nodeTypes,
+    nodeAssociation, pGraph );
+
+    CModelDomain* pMD = pIDNet->GetModelDomain();
+    
+//number of parameters is the same as number of nodes - one CPD per node   
+    CFactor **myParams = new CFactor*[nnodes];
+    int *nodeNumbers = new int [nnodes];
+    
+    int domain0[] = { 0 };
+    nodeNumbers[0] =  1;
+    int domain1[] = { 0, 1 };
+    nodeNumbers[1] =  2;
+    int domain2[] = { 1, 2 };
+    nodeNumbers[2] =  2;
+    int domain3[] = { 2, 10 };
+    nodeNumbers[3] =  2;
+    int domain4[] = { 0, 2, 3 };
+    nodeNumbers[4] =  3;
+    int domain5[] = { 3, 4 };
+    nodeNumbers[5] =  2;
+    int domain6[] = { 4, 5 };
+    nodeNumbers[6] =  2;
+    int domain7[] = { 5, 11 };
+    nodeNumbers[7] =  2;
+    int domain8[] = { 3, 5, 6 };
+    nodeNumbers[8] =  3;
+    int domain9[] = { 6, 7 };
+    nodeNumbers[9] =  2;
+    int domain10[] = { 7, 8 };
+    nodeNumbers[10] =  2;
+    int domain11[] = { 8, 12 };
+    nodeNumbers[11] =  2;
+    int domain12[] = { 6, 8, 9 };
+    nodeNumbers[12] =  3;
+    int domain13[] = { 9, 13 };
+    nodeNumbers[13] =  2;
+
+    int *domains[] = { domain0, domain1, domain2, domain3, domain4,
+    domain5, domain6, domain7, domain8, domain9, domain10, domain11, 
+    domain12, domain13 };
+
+    pIDNet->AllocFactors();
+
+    for( i = 0; i < nnodes; i++ )
+    {
+      myParams[i] = CTabularCPD::Create( domains[i], nodeNumbers[i], pMD);
+    }
+    
+// data creation for all CPDs of the model    
+    float data0[] = {0.9f, 0.1f};
+    float data1[] = {0.1f, 0.9f, 0.8f, 0.2f};
+    float data2[] = {0.5f, 0.5f, 0.5f, 0.5f};
+    float data3[] = {-100.0f, 0.000000f};
+    float data4[] = {0.9f, 0.1f, 0.8f, 0.2f, 0.5f, 0.5f, 0.1f, 0.9f};
+    float data5[] = {0.1f, 0.9f, 0.8f, 0.2f};
+    float data6[] = {0.5f, 0.5f, 0.5f, 0.5f};
+    float data7[] = {-100.0f, 0.0f};
+    float data8[] = {0.9f, 0.1f, 0.8f, 0.2f, 0.5f, 0.5f, 0.1f, 0.9f};
+    float data9[] = {0.1f, 0.9f, 0.8f, 0.2f};
+    float data10[] = {0.5f, 0.5f, 0.5f, 0.5f};
+    float data11[] = {-100.0f, 0.0f};
+    float data12[] = {0.9f, 0.1f, 0.8f, 0.2f, 0.5f, 0.5f, 0.1f, 0.9f};
+    float data13[] = {1000.0f, 300.0f};
+
+    float *data[] = { data0, data1, data2, data3, data4,
+                      data5, data6, data7, data8, data9,
+                      data10, data11, data12, data13 };
+
+    for( i = 0; i < nnodes; i++ )
+    {
+        myParams[i]->AllocMatrix(data[i], matTable);
+        pIDNet->AttachFactor(myParams[i]);
+    }
+
+    delete [] nodeTypes;
+    delete [] nodeAssociation;
+
+    return pIDNet;
+}
+</pre>
+
+<hr><h3><a name="ug_Diagnostics">Diagnostic Networks</a></h3>
+<p>Diagnosis is the process of identifying the disease or disorder of a patient or a machine by considering its history of symptoms and other signs. In general, diagnostics includes two types of problems. The first task is to determine the true cause or when multiple causes may occur simultaneously the combination of true causes. The second task is to reduce the uncertainty about the true cause by obtaining more information about the state of the world. Possible information sources are symptoms, results of tests, or historic data. Using this information several assumptions are made: </p>
+<ul>
+<li>The information is perfect, i.e., there is no possibility that the information is either wrong or incomplete.</li>
+<li>The information never increases uncertainty. </li>
+</ul>
+<p>Now for supporting diagnostics you can use Bayesian networks. All nodes in Bayesian network can be divided into 3 groups: </p>
+<ul>
+<li>Target nodes (hypothesis variable) - each hypothesis state of hypothesis variable may represent a possible disease, fault in a system, or any other discomfort. </li>
+<li>Observation nodes (test variable)- each test state of test variable may represent an observation, physical sign, indicant, symptom or laboratory result. </li>
+<li>Other. </li>
+</ul>
+<p>For performance of diagnostics the network should have a minimum one target node and minimum one test node. For each test node it is necessary to set cost of carrying out of the test. </p>
+<table width = "100%">
+	<tr><td><p>The algorithm of diagnostics consists in calculating a priority of performing a tests for reduction of uncertainty of the diagnosis. For that it is necessary to define a list of target nodes.
+The following algorithm solves that problem. The input parameters are:
+    <ul type=disc>
+	<li>The list of target nodes for which it is necessary to reduce uncertainty.
+	<li>The list of target states for these nodes.
+	</ul>
+At the output parameter is the list of test nodes in ascending order.
+Because small and large joint probabilities are only possible when the marginal probabilities are either small or large. 
+Generally it is necessary to estimate benefit of performing each set of test nodes. We suppose that only one test is available now because in the other case it`s computational impracticable problem. Benefit of performing a test is estimated by the following formula: 
+ <img src="formulas\Ts_eb_ev.gif" align="left" >
+ <br><br><p>&nbsp;<p>, where K is a parameter set by user, 
+<br>Cost(T) is cost of performing a test (observation) T. 
+<br>V(Pr(H)) is a value function. 
+<br><br><br><br> <p>&nbsp;<p><tr><td> In PNL library two diferent value functions are realized.
+<br> <img src="formulas\MS1 & MS2.gif" align="left" width="528" height="345">
+<br><br><br><br><br><br><br><p>&nbsp;<p>, where F is set of target nodes.
+    </td></tr>
+    </td></tr>
+</table>
+
+<hr><h4>Example 2-4. Diagnostics with Bayesian networks</h4>
+<p>Consider the following network:</p>
+<img src="LIMID_files\asia.gif">
+		To start diagnostics with this network you may use the following source code.
+		<pre>
+int main(int argc, char* argv[])
+{
+<font color="green">/*---- Network creation -----------------------------------------------------*/</font>
+    const CBNet* pBNet;
+    pBNet = pnlExCreateAsiaBNet();  <font color="green"> // load standart model example </font>
+
+<font color="green">/*---- Diagnostics creation -------------------------------------------------*/</font>
+    CDiagnostics *pDiag = CDiagnostics::Create(pBNet);
+    pDiag->SetCostRatio(1); <font color="green">         // set parameter for VOI function</font>
+
+<font color="green">/*---- Setting of target nodes ----------------------------------------------*/</font>
+    intVector tarN;
+    tarN.push_back(2);
+    tarN.push_back(3);
+    tarN.push_back(4);
+    pDiag->SetTargetNodes(tarN);
+
+<font color="green">/*---- Setting of test nodes ------------------------------------------------*/</font>
+    intVector testN;
+    testN.push_back(0);
+    testN.push_back(1);
+    testN.push_back(6);
+    testN.push_back(7);
+    pDiag->SetObservationNodes(testN);
+    pDiag->SetCost(0,1);             <font color="green">// set cost of observation for 0 node</font>
+    pDiag->SetCost(1,1);             <font color="green">// set cost of observation for 1 node</font>
+
+<font color="green">/*---- Setting of target states ---------------------------------------------*/</font>
+    pDiag->SetTargetState(2,1);
+    pDiag->SetTargetState(3,1);
+    pDiag->SetTargetState(4,1);
+
+<font color="green">/*---- Choosing of selecting function ---------------------------------------*/</font>
+    pDiag->SetAlgorithm(0); 
+
+<font color="green">/*---- Vector of pursued node creation --------------------------------------*/</font>
+    intVector purN;
+    purN.push_back(2);
+    purN.push_back(3);
+    purN.push_back(4);
+    intVector purS;
+    purS.push_back(1);
+    purS.push_back(1);
+    purS.push_back(1);
+<font color="green">/*---- Diagnostics execution ------------------------------------------------*/</font>
+    intVector resVOI, resTests;
+    resVOI.resize(0);
+    resTests.resize(0); 
+    pDiag->GetTestsList(purN, purS, resTests, resVOI);
+<font color="green">/*---- Result output --------------------------------------------------------*/</font>
+    int i;
+    for( i = 0; i < resVOI.size(); ++i )
+    {
+        printf("%d\t%d\n", resTests[i],resVOI[i]);
+    }
+    return 0;
+}
+</pre>
+
+<hr><h3><a name="ug_SoftMax">SoftMax Distribution</a></h3>
+<p>The SoftMax node (the node with softmax probability distribution) is a discrete node, which has continuous parents. Let SoftMax nodeY has m possible values. We define <br> <img src="formulas\formula_1.gif" align="center"> <br> where <i>b</i> and <i>W</i> is a parameters of SoftMax distribution. <i>W</i> is called weight matrix. It is two-dimensional matrix, it’s size is (Number of continuous parents)X(Number of SoftMax node states = <i>m</i>). In weight matrix columns are not independent. It is known that if we subtract last column from all, we’ll get <i>(m-1)</i> independent columns. That is why in our formula only first columns are used (<i>W<sub>j</sub></i> is a column of this matrix after subtraction). <i>b</i> is an offset vector. It has <i>m</i> elements, but they are not independent, to overcome dependences we have to subtract last offset vector element from all others. <p>When Softmax node has both discrete and continuous parents, we define probability distribution with weight matrix and offset vector r 		every possible state combination of discrete parents. Such distribution is called conditional SoftMax.</p>
+
+<hr><h3><a name="ug_DTree">Decision Tree Distribution</a></h3>
+<p>Decision tree is a binary tree in which each node (except leaves – terminal nodes) contains a question with two possible answer: yes or no. For example, question may be: X is equal 5, or Y is greater than 2.5. Terminal node contains some “decision” that is taken when a descent on decision tree is finished in this node from the root through some questions. Decision tree may be effectively used in Bayesian networks to represent conditional discrete or continuous nodes, which really depend on a part of their parents or some parents configurations. This way lets to reduce amount of memory usage for such nodes and to compute nodes that have more than 400 parents. Of course, a list of possible questions, that may be used in decision tree node, must be specified and a necessary methods to form a tree in such node must be realized. </p>
+<p><b>Simple examble</b></p>
+<img src="LIMID_Files\bnet.gif" align="left"> <br>Consider a net that contains two discrete nodes d1, d2 and one tree node t1. Node sizes are 2, 3 and 2. <br>Nodes d1 and d2 are discrete parents of discrete tree node t1. 
+Discrete node t1 has tree:	
+ <img src="LIMID_Files\dt.gif" > Nodes n1, n2, and n5 are non-terminal nodes, n3, n4, n6 and n7 are terminal nodes.
+		<br>Node n1 question is d1 = 0.
+		<br>Node n2 question is d2 >= 1.
+		<br>Node n5 question is d2 = 0.
+		<br>Node n3 distribution is 0.5, 0.5.
+		<br>Node n4 distribution is 0.7, 0.3.
+		<br>Node n6 distribution is 0.4, 0.6.
+		<br>Node n7 distribution is 0.3, 0.7.
+
+
+
 <hr><h3><a name="ug_Inf">Inference Algorithms for Bayesian and Markov Networks</a></h3>
 
 <p>
@@ -328,10 +630,10 @@ multiplication these conditional and unconditional distributions should be
 adjusted to the values of observed nodes of the network. The final step is to
 sum up the resulting values. This description fully applies to the <tt>CNaiveInfEngine.</tt>
 See Creation of inference engine for water srinkler BNet of call of such
-inference engine for the "water-sprinkler" model (<a href="#exInfWS">Example 2-3</a>).
+inference engine for the "water-sprinkler" model (<a href="#exInfWS">Example 2-5</a>).
 </p>
 
-<hr><h4><a name="exInfWS">Example 2-3. Creation of inference engine for water srinkler BNet</a></h4>
+<hr><h4><a name="exInfWS">Example 2-5. Creation of inference engine for water srinkler BNet</a></h4>
 
 <pre>
 //create Water - Sprinkler BNet
@@ -549,7 +851,7 @@ approach involves the following steps:
 This algorithm can perform on-line inference with no preliminarily specified T
 max. Inference procedure consists of two steps, which are the forward and the
 backward operation. They are the same as the steps in the classical inference
-algorithm for HMM. See <a href="#exInfDNM">Example 2-4.</a>
+algorithm for HMM. See <a href="#exInfDNM">Example 2-6.</a>
 </p></p>
 Besides exact inferences described above there are different variants of
 approximate inferences. One of them is the Boyen-Koller inference (BK). BK
@@ -562,7 +864,7 @@ Note that the exact 1.5 Slice Junction tree inference is the special case of BK
 inference.
 </p>
 
-<hr><h4><a name="exInfDNM">Example 2-4. Creation of inference engine for DBN</a></h4>
+<hr><h4><a name="exInfDNM">Example 2-6. Creation of inference engine for DBN</a></h4>
 
 <pre>
 CBNet *pBNetForArHMM = pnlExCreateRndArHMM();
@@ -707,6 +1009,118 @@ slices is acquired from the current <i>i-th</i> slice and the preceding slice <i
 this query node numbers <i>n...2n-1</i> correspond to the nodes of the current slice,
 while node numbers <i>0...n-1</i> correspond to the nodes of the preceding slice.
 </p>
+
+<hr><h3><a name="ug_InfLIMID">Inference Algorithms for LIMIDs</a></h3>
+<table width = "100%">
+	<tr><td><p><h4>Policies and strategies</h4></p>
+		<p>A pure policy for decision node <i>d</i> prescribes an alternative in the set of all possible values for each possible configuration of its parents <i>pa(d)</i>.The designation for a node <i>d</i> policy is <img src="formulas/1.gif">.  To allow for possible randomization we consider more general policies represented by functions on the set of all possible values of node <i>d</i> and set of all possible configurations of it’s parents <i>pa(d)</i> Cartesian product. This function represent a probability distribution over alternative choices of d  for each possible configuration of <i>pa(d)</i>.</p>
+		<p>A <i>strategy</i> for a LIMID is a set of policies for each decision node. A pure strategy is a set of pure policies. If a strategy is not pure it is called <i>random</i>.</p>
+		<p>A <i>global maximum strategy Q</i> is a strategy which satisfies <i>E(U(Q)) >= E(U(q))</i> for all strategies <i>q</i>.</p>
+		<p>If our main goal is to maximize the mathematical expectation of the income, we have to find a strategy which satisfies <i>E(U(Q)) >= E(U(q))</i> for all strategies <i>q</i>. </p>
+		<p><h4>Local maximum strategy and income expectation</h4></p>
+		<p>For each strategy <img src="formulas/2.gif"> and any decision node <i>d0</i> we will define <img src="formulas/3.gif">. Now let <img src="formulas/4.gif"> (we simply changed policy <img src="formulas/5.gif"> to policy <img src="formulas/6.gif">)</p>
+		<p>A <i>local maximum policy</i> for a strategy <i>q</i> at <i>d</i> decision node is a policy <img src="formulas/7.gif"> which satisfies</p>
+		<p><img src="formulas/8.gif"></p>
+		<p>A strategy <img src="formulas/9.gif"> is said to be a local maximum strategy if all its policies are local maximum policies, i.e. if for all decision nodes <i>d</i> and all policies <img src="formulas/1.gif"> we have <img src="formulas/10.gif">.</p>
+		<p><h4>Single policy updating</h4></p>
+		<p>This subsection describes an iterative procedure for improving strategies within LIMIDs termed <i>Single Policy Updating (SPU)</i>. From an initial strategy <i>q<sup>0</sup></i>  it updates each policy in some order.</p>
+		<p>Assume that the current strategy is <i>q<sup>l</sup></i> and that the policy for <i>d<sub>0</sub></i> is to be updated. Then the next strategy <i>q<sup>l+1</sup></i> only differs from <i>q<sup>l</sup></i> on the policy for <i>d<sub>0</sub></i> and it is generated by finding a local maximum policy <img src="formulas/11.gif"> for <i>q<sup>l</sup></i> and <i>d<sub>0</sub></i> at and letting <img src="formulas/12.gif">.</p>
+		<p>When all the policies have been updated once we say that one <i>cycle</i> has been performed. The algorithm stops if the expected utility of strategies generated in two successive cycles is unaltered.</p>
+		<p>A few comments are in place here:</p>
+		<ul>
+			<li>The initial strategy <i>q<sup>0</sup></i>  may be random and it is typically advantageous to choose it as such</li>
+			<li>There is always a pure local maximum policy <img src="formulas/11.gif">, however it may not be unique.</li>
+		</ul>
+		<p>If we always choose a pure local maximum policy in each step, the algorithm eventually reaches a local maximum strategy at which no progress is made. This holds because there is only a finite number of pure strategies and the expected utility increases at each cycle. These observations are stated formally below.</p>
+		<p><b>Iterative improvement</b><i> SPU is an iterative improvement algorithm: after each cycle, the expected utility of the current strategy has increased or is unaltered. In the latter case, the algorithm has reached a local maximum strategy.</i></p>
+		<p><b>Convergence</b><i> SPU converges to a local maximum strategy if we always choose a pure policy in each updating step. In this case the algorithm converges in a finite number of cycles.</i></p>	
+		<p>We shall later discuss how to choose initial strategies, updating sequences, and give conditions ensuring local maximum strategies to be global maximum strategies.</p>
+		<p><h4>Potentials and their operations</h4></p>
+		<p>In our local computation algorithms we represent the quantitative elements of a LIMID through entities called potentials. Each such potential has two parts as detailed below.</p>
+		<p>Let <i>W</i> be a subset of chance and decision nodes. Then a Potential on <i>W</i> is a pair <img src="formulas/13.gif"> of real-valued functions on the set of all values of nodes from set <i>W</i>,  and <i>p<sub>w</sub></i> is non-negative.</p>
+		<p>The first part <i>p<sub>w</sub></i> of the potential is called the <i>probability part</i>, and the second part <i>u<sub>w</sub></i> is called the <i>utility part</i>. We call the probability part vacuous if it is equal to unity, and the utility part is vacuous if it is identically equal to zero.</p>
+		<p>We identity two potentials <img src="formulas/14.gif"> and <img src="formulas/15.gif"> on <i>W</i> and write <img src="formulas/16.gif"> if <img src="formulas/17.gif"> and <img src="formulas/18.gif"> whenever <img src="formulas/19.gif">, i.e. two potentials are considered equal if they have identical probability parts and their utility parts agree almost surely with respect to the probability parts.</p>
+		<p>Let <img src="formulas/20.gif"> and <img src="formulas/21.gif"> be two potentials on <i>W<sub>1</sub></i> and <i>W<sub>2</sub></i> respectively. The combination <img src="formulas/22.gif"> of <img src="formulas/23.gif"> and <img src="formulas/24.gif"> is the potential on <img src="formulas/25.gif"> given by</p>
+		<p><img src="formulas/26.gif"></p>
+		<p>Let <img src="formulas/13.gif"> be a potential on <i>W</i>, and let <img src="formulas/27.gif">. The marginalization <img src="formulas/28.gif"> of <img src="formulas/29.gif"> onto <i>W<sub>1</sub></i>  is the potential on <i>W<sub>1</sub></i> given by </p>
+		<p><img src="formulas/30.gif"></p>
+		<p>The division operation in the utility part is necessary to preserve expected utilities. The convention 0/0=0  has been used here and throughout.</p>
+		<p><h4>Inference engine based on Junction tree</h4></p>
+		<p>As mentioned, our algorithm proceeds by message passing in a suitable computational structure known as a junction tree. In the present subsection we describe how to construct this junction tree.</p>
+		<p>As for similar local computation algorithms the construction involves first a moralization process, in which an undirected graph is constructed, then a triangulation, where additional edges are added, and finally the organization of the cliques of the triangulated graph into a junction tree.</p>
+		<p>The transformation from the LIMID <i>L</i> to an undirected graph is made by first adding undirected edges between all nodes with a common child (including children that are value nodes). As value nodes do not have children, only edges between chance or decision nodes are added. Then we drop the directions on all arcs and finally remove all value nodes. The resulting ‘moral’ graph is denoted by <i>L<sup>m</sup></i>.</p>
+		<p>Next, edges are added to the undirected graph <i>L<sup>m</sup></i> to form a triangulated graph <img src="formulas/31.gif">. The moral graph is triangulated so no additional edges are needed.</p>
+		<p><img src="LIMID_files\figure_3.gif"></p>
+		<p>After the moralization, we have to delete all utility nodes from graph.</p>
+		<p>Finally the cliques <i>C</i> of <img src="formulas/31.gif"> are organized into a junction tree <i>T</i> having the property that for any node from the set of chance and division nodes, the collection of all cliques containing this node correspond to a connected subtree of <i>T</i>. </p>
+		
+		<p><h4>Steps of algorithm</h4></p>
+		<p><b>Initialization</b></p>
+		<p>Suppose we are given a LIMID <i>L</i> and the initial strategy <img src="formulas/2.gif">. To initialize the junction tree <i>T</i> one first associates a vacuous potential to each clique <img src="formulas/32.gif">. Then for each chance node <i>r</i> in <i>L</i>, <i>p<sub>r</sub></i> is multiplied onto the probability part of the potential of an arbitrary clique containing <i>fa(r)</i>. When this has been done, one takes each value node u and adds <i>U<sub>u</sub></i> to the utility part of the potential of any clique containing <i>pa(u)</i>.</p>
+		<p>Let <img src="formulas/33.gif"> be the potential on clique <i>C</i> after these operations have been performed. The joint potential is equal to the combination of all the clique potentials and satisfies</p>
+		<p><img src="formulas/34.gif"></p>
+		<p>where ? - set of chance nodes, <img src="formulas/35.gif"> - set of decision nodes, <img src="formulas/36.gif"> - set of utility nodes.</p>
+		<p><b>Collect propagation</b></p>
+		<p>Let <img src="formulas/37.gif"> be a collection of potentials on the junction tree <i>T</i>. Let <img src="formulas/38.gif"> and suppose we wish to find the marginal <img src="formulas/39.gif"> for some clique <img src="formulas/40.gif">.</p>
+		<p>To achieve our purpose we direct all the edges in <i>T</i> towards the ‘root-clique’ <img src="formulas/41.gif">. Then each clique passes a message to its child after having received messages from all its other neighbours. The structure of a message <img src="formulas/42.gif"> from clique <i>C<sub>1</sub></i> to its neighbor <i>C<sub>2</sub></i> is given by</p>
+		<p><img src="formulas/43.gif"></p>
+		<p><b>Local optimization</b></p>
+		<p>Let <img src="formulas/13.gif"> be a potential. The contraction of <img src="formulas/29.gif"> is given as <img src="formulas/44.gif">. </p>
+		<p><b>Theorem:</b> For a potential <img src="formulas/13.gif"> on <i>W</i> and <img src="formulas/27.gif"> we have </p>
+		<p><img src="formulas/45.gif"></p>
+		<p><b>Corollary:</b> Let the joint potential <img src="formulas/46.gif"> on the junction tree be given by</p>
+		<p><img src="formulas/47.gif"></p>
+		<p>where <img src="formulas/2.gif"> is a strategy. Then the expected utility of <i>q</i> is <img src="formulas/48.gif"></p>
+		<p><br>So, a local maximum policy for strategy q at d can be found by carrying out the following steps:</p>
+		<ol>
+			<li><b>Retract:</b> Retract the policy for d from the potential on <i>R</i> to obtain <img src="formulas/49.gif">.</li>
+			<li><b>Collect:</b> Collect to <i>R</i> to obtain <img src="formulas/50.gif">.</li>
+			<li><b>Marginalize:</b> Compute <img src="formulas/51.gif">.</li>
+			<li><b>Contract:</b> Compute the contraction <i>c<sub>fa(d)</sub></i> of <img src="formulas/52.gif">.</li>
+			<li><b>Optimize:</b> For each <img src="formulas/53.gif">, find a point <img src="formulas/54.gif"> satisfying <img src="formulas/55.gif"> and define <img src="formulas/56.gif"> as the distribution degenerate at <img src="formulas/54.gif">. Add <img src="formulas/57.gif"> to the potential on <i>R</i> to get <img src="formulas/58.gif">.</li>
+		</ol>
+	</td></tr>
+</table>
+
+<hr><h4>Example 2-7. Running the inference on LIMID</h4>
+<p>To start inference with LIMID Inference Engine you may use the following source code. </p>
+<pre>
+int main()
+{
+    pPigs->GetGraph()->Dump();
+
+<font color="green">// - LIMID creation ---------------------------------------------------------</font>
+  CIDNet* pPigs;
+  pPigs = CreatePigsLIMID();
+  
+  <font color="green">// - Inference engine creation --------------------------------------------      </font>
+  CLIMIDInfEngine *pInfEng = NULL;
+  pInfEng = CLIMIDInfEngine::Create(pPigs);
+
+<font color="green"> // - Run inference engine -------------------------------------------------</font>
+  pInfEng->DoInference();
+
+<font color="green">// - Get politics -----------------------------------------------------------</font>
+    pFactorVector *Vec = pInfEng->GetPolitics();
+    printf("\n=====================\nPolitics are:\n");
+    for (int i = 0; i < Vec->size(); i++)
+    {
+      (*Vec)[i]->GetDistribFun()->Dump();
+    }
+    
+<font color="green">// - Get expectation --------------------------------------------------------</font>
+   float res = pInfEng->GetExpectation();
+    printf("\nNumber of iterations is %d", pInfEng->GetIterNum());
+    printf("\nExpectation is %.3f", res);
+
+<font color="green">// - Free the memory --------------------------------------------------------</font>
+  CLIMIDInfEngine::Release(&pInfEng);
+  delete pPigs;
+
+  return 0;
+}
+</pre>
+
 
 <hr><h3><a name="ug_Learning">Learning for Bayesian and Markov Network</a></h3>
 
@@ -975,7 +1389,7 @@ creating an instance of inference engine, which is a junction tree engine by
 default.
 </p>
 
-<hr><h4><a name="exLearnWS">Example 2-5. Creation of learning engine for water-sprinkler BNet</a></h4>
+<hr><h4><a name="exLearnWS">Example 2-8. Creation of learning engine for water-sprinkler BNet</a></h4>
 
 <pre>
 CBNet* pWSBnet = pnlExCreateWaterSprinklerBNet();
@@ -1040,7 +1454,7 @@ the following two ways:
 implement the variant.
 </p>
 
-<hr><h4><a name="exLearnWSOption1">Example 2-6. Entering New Datat</a></h4>
+<hr><h4><a name="exLearnWSOption1">Example 2-9. Entering New Datat</a></h4>
 
 <pre>
 // entering new data and clear accumulated information.
@@ -1060,7 +1474,7 @@ learning data.
 implement the variant.
 </p>
 
-<hr><h4><a name="exLearnWSOption2">Example 2-6. Using data from previous learning</a></h4>
+<hr><h4><a name="exLearnWSOption2">Example 2-10. Using data from previous learning</a></h4>
 
 <pre>
 pLearn-&gt;AppendData( newNumOfCases, pEvNew )
@@ -1113,7 +1527,7 @@ The following example considers structure learning for a Bayesian network using
 <tt>CBICLearningEngine.</tt> This class is used for learning networks with discrete
 parents only.
 </p>
-<hr><h4><a name="exLearnStruct">Example 2-8. Structure learning for Bayesian network using PNL</a></h4>
+<hr><h4><a name="exLearnStruct">Example 2-11. Structure learning for Bayesian network using PNL</a></h4>
 
 <pre>
 // create an empty graph with number of nodes numOfNds
@@ -1165,7 +1579,7 @@ may be modelled and the initial state of the dynamic system may be learned
 independently of the transition matrix. The expected sufficient statistics
 should be pooled for all the nodes that share the same parameters.
 <p>
-<hr><h4><a name="exLearnDBN">Example 2-9. Learning for DBN</a></h4>
+<hr><h4><a name="exLearnDBN">Example 2-12. Learning for DBN</a></h4>
 
 <pre>
 CBNet *pBNetForArHMM = pnlExCreateRndArHMM();
@@ -1247,7 +1661,7 @@ When a <em>Log</em> object is created it is automatically attached to the multip
 the object is destroyed it is automatically detached from it.
 </p>
 
-<hr><h4><a name="exCode10">Example 2-10. Code example</a></h4>
+<hr><h4><a name="exCode10">Example 2-13. Code example</a></h4>
 <pre>
 Class Point {
     double x, y, z;
@@ -1278,7 +1692,7 @@ When a driver is created it is automatically attached to the multiplexor. When a
 is destroyed it is automatically detached from the multiplexor.
 In the current version of PNL only one driver writes to std::ostream:LogDrvStream.
 </p>
-<hr><h4><a name="exCode10">Example 2-10. Code example</a></h4>
+<hr><h4><a name="exCode10">Example 2-14. Code example</a></h4>
 <pre>
 {
 LogDrvStream tempStream(“c:\\pnl_add.log”, eLOG_RESULT| eLOG_SYSERR|eLOG_PROGERR,eLOGSRV_ALL);
