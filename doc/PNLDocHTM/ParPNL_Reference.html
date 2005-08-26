@@ -57,6 +57,18 @@
 	<li><a href="#pr_lb_PickOutSkeleton">PickOutSkeleton</a></li>
 	<li><a href="#pr_lb_ProductLambdaMsgs">ProductLambdaMsgs</a></li>
  </ul>
+<li><a href="#pr_name_CParGibbsSamplingInfEngine">CParGibbsSamplingInfEngine</a></li>
+ <ul>
+	<li><a href="#pr_gs_Create">Create</a></li>
+	<li><a href="#pr_gs_CreateQueryFactors">CreateQueryFactors</a></li>
+	<li><a href="#pr_gs_CreateSamplingPotentials">CreateSamplingPotentials</a></li>
+	<li><a href="#pr_gs_EnterEvidence">EnterEvidence</a></li>
+	<li><a href="#pr_gs_InitIPCConsts">InitIPCConsts</a></li>
+	<li><a href="#pr_gs_RecvGaussianStatisticsViaMpi">RecvGaussianStatisticsViaMpi</a></li>
+	<li><a href="#pr_gs_RecvPotentialsViaMpi">RecvPotentialsViaMpi</a></li>
+	<li><a href="#pr_gs_Sampling">Sampling</a></li>
+	<li><a href="#pr_gs_SendMyGaussianStatisticsViaMpi">SendMyGaussianStatisticsViaMpi</a></li>
+ </ul>
 <li><a href="#pr_name_CParEMLearningEngine">CParEMLearningEngine</a></li>
  <ul>
 	<li><a href="#pr_em_Create">Create</a></li>
@@ -588,6 +600,98 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
  <tr> <td></td><td colspan="2"><font face="courier" >MainProcNum</font></td> </tr>
  <tr><td></td><td></td><td>Number of the main process </td></tr>
+</table>
+<br>
+
+<hr>
+<h2><u><a name="#pr_name_CParGibbsSamplingInfEngine">Class CParGibbsSamplingInfEngine</a></u></h2>
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_gs_Create">Create</a></b></font>
+<p>Static functions of parallel Gibss Sampling creation. Creates class object.</p>
+<font face="courier"><b>static CParGibbsSamplingInfEngine* Create(const CStaticGraphicalModel *pGraphicalModelIn);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pGraphicalModelIn </font></td> </tr>
+ <tr><td></td><td></td><td>Pointer to a model, for which inference algorithm is to be carried out.  </td></tr>
+</table>
+<br>
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_gs_EnterEvidence">EnterEvidence</a></b></font>
+<p>This function starts inference in the graphical model.</p>
+<font face="courier"><b>void EnterEvidence( const CEvidence *pEvidenceIn, int maximize = 0, int sumOnMixtureNode = 1 );</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pEvidenceIn </font></td> </tr>
+ <tr><td></td><td></td><td>a CEvidence object that contains the observed nodes and their values.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >maximize</font></td> </tr>
+ <tr><td></td><td></td><td>parameter used in Gibbs Sampling for selection of message transmission type.</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >sumOnMixtureNode</font></td> </tr>
+ <tr><td></td><td></td><td>Flag of summation on the mixture</td></tr>
+</table>
+<br>
+
+
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_gs_Sampling">Sampling</a></b></font>
+<p>Generator of samples.</p>
+<font face="courier"><b>void Sampling( int statTime, int endTime );</b></font>
+<br>
+<p><b>Arguments</b></p>
+<br>
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_gs_InitIPCConsts">InitIPCConsts</a></b></font>
+<p>Initialization consts from mpi framework (in case MPI) or default (without MPI).</p>
+<font face="courier"><b>void InitIPCConsts();</b></font>
+<br>
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_gs_RecvPotentialsViaMpi">RecvPotentialsViaMpi</a></b></font>
+<p>Receive potentials from other processes.</p>
+<font face="courier"><b>void RecvPotentialsViaMpi(intVector *pNumberOfSamples, floatVecVector *pProbDistrib);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pNumberOfSamples </font></td> </tr>
+ <tr><td></td><td></td><td>Number of samples</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >pProbDistrib</font></td> </tr>
+ <tr><td></td><td></td><td>----------</td></tr>
+</table>
+<br>
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_gs_SendMyGaussianStatisticsViaMpi">SendMyGaussianStatisticsViaMpi</a></b></font>
+<p>This function must be called on every process but 0 in the group MPI_COMM_WORLD. It sends <b>LearnMean</b> and <b>LearnCov</b> matrixes to 0 process. Besides it sends number of samples, which were generated on the process.</p>
+<font face="courier"><b>void SendMyGaussianStatisticsViaMpi(int NumberOfFactor);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >NumberOfFactor </font></td> </tr>
+ <tr><td></td><td></td><td>Number of factor</td></tr>
+</table>
+<br>
+
+<hr>
+<font face="arial" size="4" color="blue"><b><a name="#pr_gs_RecvGaussianStatisticsViaMpi">RecvGaussianStatisticsViaMpi</a></b></font>
+<p>This function must be called on 0 process to receive <b>LearnMean</b> and <b>LearnCov</b> matrixes from all others processes and set them to arrays <b>pLearnMean</b> and <b>pLearnCov</b>.</p>
+<font face="courier"><b>void RecvGaussianStatisticsViaMpi(intVector *pNumberOfSamples, floatVecVector *pLearnMean, floatVecVector *pLearnCov, int NumberOfFactor);</b></font>
+<br>
+<p><b>Arguments</b></p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+ <tr> <td></td><td colspan="2"><font face="courier" >pNumberOfSamples </font></td> </tr>
+ <tr><td></td><td></td><td>Number of sample</td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >pLearnMean</font></td> </tr>
+ <tr><td></td><td></td><td>matrix of averages of distribution from all others processes and set them to arrays <b>pLearnMean</b></td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >pLearnCov </font></td> </tr>
+ <tr><td></td><td></td><td>matrix of covariation from all others processes and set them to arrays  <b>pLearnCov</b></td></tr>
+ <tr> <td></td><td colspan="2"><font face="courier" >NumberOfFactor</font></td> </tr>
+ <tr><td></td><td></td><td>Number of factor</td></tr>
 </table>
 <br>
 
