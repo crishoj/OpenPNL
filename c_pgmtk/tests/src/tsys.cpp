@@ -175,7 +175,7 @@ struct {
     FUNC_ENTITY(initAExLearnEngine),                   1,
     FUNC_ENTITY(initACondSoftMaxAndSoftMaxInfAndLearn),1,
     FUNC_ENTITY(initStructLearnEngWithJTreeInf), 1,
-    //FUNC_ENTITY(initA_LIMIDinfEngine), 1,
+    FUNC_ENTITY(initA_LIMIDinfEngine), 1,
 
     0, 0 // don't delete this line!
 };

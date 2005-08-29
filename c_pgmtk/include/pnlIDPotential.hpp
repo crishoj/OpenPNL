@@ -30,7 +30,7 @@
 
 PNL_BEGIN
 
-class PNL_API CIDPotential : protected CFactor
+class PNL_API CIDPotential : public CFactor
 {
 public:
   virtual CFactor* Clone() const = 0;
