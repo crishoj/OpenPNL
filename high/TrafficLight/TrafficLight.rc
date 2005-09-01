@@ -1,0 +1,495 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\TrafficLight.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP1             BITMAP  DISCARDABLE     "res\\TLight.bmp"
+IDB_BITMAP2             BITMAP  DISCARDABLE     "res\\Road.bmp"
+IDB_BITMAP3             BITMAP  DISCARDABLE     "res\\network.bmp"
+IDB_BITMAP4             BITMAP  DISCARDABLE     "res\\formula.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 155, 78
+STYLE DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
+CAPTION "Please wait"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,49,47,50,14
+    LTEXT           "Learning is in progress... Please wait. This may take a few minutes...",
+                    IDC_STATIC,7,18,141,19
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DIALOG1, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 148
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 71
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 593, 409
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Smart traffic light"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         132,IDC_STATIC,"Static",SS_BITMAP,7,7,42,39
+    LTEXT           "Copyright (C) PNL, 2005",IDC_STATIC,55,23,77,8
+    DEFPUSHBUTTON   "OK",IDOK,536,7,50,14,WS_GROUP
+    LTEXT           "Here we describe several common ideas of system that provides smart traffic light. ",
+                    IDC_STATIC,7,59,259,8
+    CONTROL         134,IDC_STATIC,"Static",SS_BITMAP,451,20,135,54
+    CONTROL         135,IDC_STATIC,"Static",SS_BITMAP,7,150,285,80
+    LTEXT           "In our simple case all networks node are discrete. Node Car Stream 1 describes carpool on first road, node Car Stream 2 - on second road. For examlpe, nodes Car Stream 1 and Car Stream 2 may take 4 values. First value means that carpool less than 5 cars. S",
+                    IDC_STATIC_3,7,231,579,73
+    LTEXT           "\tProblem description\nLet in the city N there is crossroad with traffic light, which shows red, green and yellow signals by turns. Lets call sequence of showing red, green and yellow signals as cycle of traffic light. Cycle time and time of lighting yellow ",
+                    IDC_STATIC_2,7,69,579,79
+    CONTROL         141,IDC_STATIC,"Static",SS_BITMAP,9,303,331,51
+    LTEXT           "Optimal RedTime and GreenTime values we can find with excess because there are several variants of lighting distributions. So, we have new evidence with all observed nodes (Hour, Weather, Day Car Stream 1 and Car Stream 2)\nÂ) Learning network. With help of",
+                    IDC_STATIC_4,7,354,579,48
+END
+
+IDD_INFOPANEL DIALOG DISCARDABLE  0, 0, 120, 366
+STYLE DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Weather:",IDC_STATIC,7,130,30,8
+    LTEXT           "Day:",IDC_STATIC,7,96,16,8
+    CONTROL         "Workday",IDC_RADIO_WORKDAY,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,7,106,45,10
+    CONTROL         "Holiday",IDC_RADIO_HOLIDAY,"Button",BS_AUTORADIOBUTTON,
+                    7,118,39,10
+    LTEXT           "Time:",IDC_STATIC,7,7,18,8
+    LTEXT           "12:00 AM",IDC_STATIC_TIME,7,17,32,8
+    CONTROL         "Slider1",IDC_SLIDER_TIME,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,7,28,100,15
+    LTEXT           "Traffic light:",IDC_STATIC,7,188,39,8
+    CONTROL         "Smart",IDC_RADIO_SMART,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,7,198,34,10
+    CONTROL         "Ordinary",IDC_RADIO_ORDINARY,"Button",
+                    BS_AUTORADIOBUTTON,7,210,42,10
+    LTEXT           "Simulation",IDC_STATIC,7,222,33,8
+    PUSHBUTTON      "Stop",IDC_BUTTON_STOP,58,234,50,14
+    PUSHBUTTON      "Start",IDC_BUTTON_START,7,234,50,14
+    CONTROL         "Sunny",IDC_RADIO_SUNNY,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,7,140,36,10
+    CONTROL         "Foggy",IDC_RADIO_FOGGY,"Button",BS_AUTORADIOBUTTON,7,
+                    151,35,10
+    CONTROL         "Rainy",IDC_RADIO_CLOUDY,"Button",BS_AUTORADIOBUTTON,7,
+                    163,34,10
+    CONTROL         "Auto",IDC_RADIO_AUTO_WEATHER,"Button",
+                    BS_AUTORADIOBUTTON,7,175,31,10
+    LTEXT           "Traffic light distribution (for black):",IDC_STATIC,7,
+                    251,106,8
+    LTEXT           "Red",IDC_STATIC,7,261,14,8
+    LTEXT           "0.4",IDC_STATIC_RED,43,261,33,8
+    LTEXT           "Yellow",IDC_STATIC,7,271,22,8
+    LTEXT           "0.2",IDC_STATIC_YELLOW,43,271,46,8
+    LTEXT           "Green",IDC_STATIC,7,281,20,8
+    LTEXT           "0.4",IDC_STATIC_GREEN,43,281,43,8
+    LTEXT           "Statistics",IDC_STATIC,7,292,29,8
+    LTEXT           "Number of black",IDC_STATIC,7,302,53,8
+    LTEXT           "Number of blue",IDC_STATIC,7,312,49,8
+    LTEXT           "0",IDC_STATIC_CARS,77,302,36,8
+    LTEXT           "0",IDC_STATIC_humans,77,312,36,8
+    LTEXT           "Speed of black",IDC_STATIC,7,322,49,8
+    LTEXT           "Speed of blue",IDC_STATIC,7,332,57,8
+    LTEXT           "Black per tic",IDC_STATIC,7,342,40,8
+    LTEXT           "Blue per tic",IDC_STATIC,7,351,36,8
+    LTEXT           "0",IDC_STATIC_SCARS,77,322,36,8
+    LTEXT           "0",IDC_STATIC_SHUMANS,77,332,36,8
+    LTEXT           "0",IDC_STATIC_CARST,77,342,36,8
+    LTEXT           "0",IDC_STATIC_HUMANST,77,351,36,8
+    CONTROL         "Observed",IDC_CHECK_TIME,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,49,7,47,10
+    CONTROL         "Observed",IDC_CHECK_DAY,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,49,96,47,10
+    CONTROL         "Observed",IDC_CHECK_WEATHER,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,49,129,47,10
+    LTEXT           "Time is divided into 3 groups:\nEarly morning: 6am-8am\nMorning:         8am-11am\nAfternoon:      11am-4pm\nEverning:       4pm-9pm\nNight:             9pm-6am",
+                    IDC_STATIC,7,46,106,50
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 586
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 402
+    END
+
+    IDD_INFOPANEL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 113
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 359
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\TrafficLight.ico"
+IDR_TRAFFITYPE          ICON    DISCARDABLE     "res\\TrafficLightDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR DISCARDABLE  16, 15
+BEGIN
+    BUTTON      ID_APP_ABOUT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About TrafficLight...",      ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+BEGIN
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "TrafficLight MFC Application\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "TrafficLight\0"
+            VALUE "LegalCopyright", "Copyright (C) 2005\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "TrafficLight.EXE\0"
+            VALUE "ProductName", "TrafficLight Application\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    IDR_MAINFRAME           "PNL Demonstration\nTraffic light"
+END
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "TrafficLight"
+    AFX_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW             "Create a new document\nNew"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_CLOSE           "Close the active document\nClose"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
+    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
+    ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
+    ID_FILE_PRINT           "Print the active document\nPrint"
+    ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\TrafficLight.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
