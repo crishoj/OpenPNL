@@ -208,7 +208,7 @@ BEGIN
                     WS_TABSTOP,49,96,47,10
     CONTROL         "Observed",IDC_CHECK_WEATHER,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,49,129,47,10
-    LTEXT           "Time is divided into 3 groups:\nEarly morning: 6am-8am\nMorning:         8am-11am\nAfternoon:      11am-4pm\nEverning:       4pm-9pm\nNight:             9pm-6am",
+    LTEXT           "Time is divided into 5 groups:\nEarly morning: 6am-8am\nMorning:         8am-11am\nAfternoon:      11am-4pm\nEverning:       4pm-9pm\nNight:             9pm-6am",
                     IDC_STATIC,7,46,106,50
 END
 
