@@ -592,11 +592,14 @@ void COptimalTrafficLight::TeachYourSelf(float SpeedHumanAppearance[2][5][3], fl
 		    DistribCars.SetLambda(SpeedCarAppearance[d1][t][weather]);
 		    DistribHumans.SetLambda(SpeedHumanAppearance[d1][t][weather]);
 
-		    for (int l = 0; l < FullCycleLength; l++)
-		    {             
-			NumberOfCars += DistribCars.getPuassonValue();
-			NumberOfHumans += DistribHumans.getPuassonValue();
-		    };
+		    //for (int l = 0; l < FullCycleLength; l++)
+		    //{             
+			//NumberOfCars += DistribCars.getPuassonValue();
+			//NumberOfHumans += DistribHumans.getPuassonValue();
+		    //};
+
+                    NumberOfCars += FullCycleLength * SpeedCarAppearance[d1][t][weather];
+                    NumberOfHumans += FullCycleLength * SpeedHumanAppearance[d1][t][weather];
 
 		    AddingNewEvidence(NumberOfCars, NumberOfHumans);
 		    curIter++;

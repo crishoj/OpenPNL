@@ -52,7 +52,7 @@ CNature::CNature(float SpeedCarAppearance[2][5][3], float SpeedHumanAppearance[2
     m_Paused = false;
     pInfoPanel = NULL;
 
-    m_pOptimalTLight = new COptimalTrafficLight(cd, 5, TrafficLightVariants, 5, 96, CCar::GetDefaultSpeed(), CHuman::GetDefaultSpeed(), 100, 0.2, 
+    m_pOptimalTLight = new COptimalTrafficLight(cd, 5, TrafficLightVariants, 5, 96, CCar::GetDefaultSpeed(), CHuman::GetDefaultSpeed(), 10, 0.2, 
 	6, 3);
 }
 
