@@ -21,5 +21,22 @@
 	<p>B. Learning network. We learn network with help of EM learning algorithm on the base of evidence samples.</p>
 	<h2>3. Model exploitation</h2>
 	<p>System does not use information about situation on the roads for choosing lighting variant after the network is trained. Now traffic light gets only values of nodes: Hour, Weather, Day from center of traffic controlling. Then system choose the most probable value of nodes Car Stream 1 and Car Stream 2 and use these values for calculation optimal lighting distribution. </p>
+	<h1>How to work with the application</h1>
+	<p>When program starts it shows you the crossroad with traffic lights and moving cars and humans on it (the cars are shown with black cubes, the humans are shown with blue ones). Time, days and weather are changing continuously.</p>
+	<p>To change parameters you should press button “Stop”. You can change time, day, weather and type of using traffic light. Time, day and weather influence on the rate of cars and humans appearance.</p>
+	<p>Time is divided into 5 groups:</p>
+<pre>
+Early morning:  6am-8am
+Morning:        8am-11am
+Afternoon:      11am-4pm
+Everning:       4pm-9pm
+Night:          9pm-6am
+</pre>
+	<p>You can change the time moving the slider on the top of the right panel.</p>
+	<p>You can change the day clicking either on Workday (Monday, Tuesday, Wednesday, Thursday, Friday) or Holiday (Saturday, Sunday) radio button.</p>
+	<p>You can change the weather clicking either on Sunny or Foggy or Rainy radio button.</p>
+	<p>You can select the current traffic light by clicking either on Smart (a traffic light which uses the Bayesian network) or Ordinary (a traffic light which always uses uniform distribution) radio button.</p>
+	<p>If you uncheck any of 3 check buttons labeled “Observed” the corresponding parameters (time, day or weather) will not be observed for the smart traffic light (it will not take them into account). This feature demonstrates how the Bayesian network works when not all nodes are observed.</p>
+	<p>When you change all parameters as you want you should press Start button to apply changes and proceed with the emulation.</p>
 	</body>
 </html>
