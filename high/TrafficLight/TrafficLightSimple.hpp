@@ -7,15 +7,13 @@
 class CTrafficLight
 {
 protected:
-	double carSpeed1; // скорость движения машин в первом потоке
-	double carSpeed2; // скорость движения машин во втором потоке
-	double intervalTime; // время время горения одного цикла светофора 
-	                     // т.е. красный + зеленый. Время горения желтого 
-	                     // есть постоянная величина и в данной ситуации 
-	                     // не учитывается
-	double *lightingParts; // заданные варианты деления времен цикла горения 
-	                       // светофора. Это число (0,1).
-	int numLightParts; // число выше описанных вариантов.
+	double carSpeed1; 
+	double carSpeed2; 
+	double intervalTime; 
+	                     
+	double *lightingParts; 
+	                       
+	int numLightParts; 
 public:
     CTrafficLight(double* lightParts, int numlightparts, double intervaltime, double speedStream1, double speedStream2)
 	{ 

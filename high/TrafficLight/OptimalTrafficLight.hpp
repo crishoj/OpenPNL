@@ -15,14 +15,14 @@ class COptimalTrafficLight: public CTrafficLight
 {
 protected:
 	
-	int learningTime; // число итераций обучения
-	int curIter; // текущая итерация
-	BayesNet *pNet; // Байесова сеть, соответствующая данному светофору.
+	int learningTime; 
+	int curIter; 
+	BayesNet *pNet; 
 	DayType dType;
 	Times hType;
 	Weather wType;
-	int optimalValue; // номер элемента из массива lightingParts
-	double waitedCars; // число машин оставшихся у перекрестка после данной итерации у светофора
+	int optimalValue; 
+	double waitedCars; 
 	double waitedS1;
 	double waitedS2;
 
@@ -35,8 +35,8 @@ protected:
 	String GetWeatherValue();
 	String GetCarValue(int numCars);
 	bool IsLearning();
-	int* carsDivision; // массив из значений колличеств автомобилей для формирования значений вершин: потоки машин.
-	int numCarsDivision; // число значений вершины
+	int* carsDivision; 
+	int numCarsDivision; 
 	double m_PercentOfYellow;
 
 	int m_NumberOfStreams1;
