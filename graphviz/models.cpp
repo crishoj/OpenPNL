@@ -1,21 +1,316 @@
+/* Version 1.01.  Mar 11, 2006 */
+/* For documentation and updates go to www.DataOnStage.com. */
+
 /* This file is derived from the file models.cpp provided in 
    directory PNL/high/DEMO of PNL Release 1.0.
 
-   The only changes made were to eliminate Windows-specific commands in 
-   order for the file to compile easily also on other platforms.
+   The following changes were made:
+
+   * A few commands in the existing models were changed to eliminate 
+     Windows-specific commands in order for the file to compile easily 
+     also on other platforms.
+
+   * The Asia Model was corrected in two ways and is now called 
+     AsiaModelCorrected:
+     1) Two CPT values were corrected for P(Bronchitis|Smoking)
+     2) Order of node definition was changed to make it topologically sorted.
+     Details of these changes are given below (directly before model).
+
+   * New models were added at the beginning of the file to demonstrate
+     link and connection strengths.
+
 */
 
 #include "pnlHigh.hpp"
-//#include <conio.h>
-//#include "console.h"
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <string>
 
 #define textcolor(x)
 #define _sleep(x)
 #define getch() getchar()
 PNLW_BEGIN
 
-BayesNet *AsiaModel()
-{ 
+
+
+
+//--------------------------------------------------------------------
+// New models to demonstrate link and connection strengths
+//--------------------------------------------------------------------
+
+//--------------------------------------------------------------------
+// Two-node Network with parameters for probabilities
+//    Two binary nodes: A,B.
+//    One arc: A->B
+//    Probabilities:  
+//       P(A=True) = a
+//       P(B=True| A=True)  = b1
+//       P(B=True| A=False) = b2
+//   
+BayesNet * TwoNode_example(double a, double b1, double b2)
+{
+    BayesNet *net;
+    net = new BayesNet();
+
+    // nodes
+    net->AddNode(discrete^"A", "True False"); 
+    printf("\n net->AddNode(discrete^\"A\", \"True False\");");
+
+    net->AddNode(discrete^"B", "True False"); 
+    printf("\n net->AddNode(discrete^\"B\", \"True False\");");
+
+    // arcs
+    net->AddArc("A", "B");
+    printf("\n net->AddArc(\"A\", \"B\");");
+
+    printf("\t\t\tAdding of distributions is in process....\n\n");
+    // A has no parents
+
+    // create string of the form "a 1-a"
+    char probability_str[80];
+    sprintf(probability_str, "%f %f", a, 1-a);
+    // printf(probability_str);  
+    net->SetPTabular("A^True A^False", probability_str);
+
+    // net->SetPTabular("A^True A^False", "0.5 0.5");
+    // B has parent A
+    sprintf(probability_str, "%f %f", b1, 1-b1);
+    net->SetPTabular("B^True B^False", probability_str, "A^True");
+
+    sprintf(probability_str, "%f %f", b2, 1-b2);
+    net->SetPTabular("B^True B^False", probability_str, "A^False");
+
+    return net;
+}
+
+//--------------------------------------------------------------------
+
+//--------------------------------------------------------------------
+// Example of strong/weak link connection from Figure 1 of manual.
+//    Three nodes: A,B,C. 
+//    Strong connection from X to Z, and from Z to Y.
+//    Weak connection from X to Y.
+BayesNet * Strong_Weak_example()
+{
+    BayesNet *net;
+    net = new BayesNet();
+
+    // nodes
+    net->AddNode(discrete^"X", "True False"); 
+    printf("\n net->AddNode(discrete^\"X\", \"True False\");");
+
+    net->AddNode(discrete^"Y", "True False"); 
+    printf("\n net->AddNode(discrete^\"Y\", \"True False\");");
+
+    net->AddNode(discrete^"Z", "True False"); 
+    printf("\n net->AddNode(discrete^\"Z\", \"True False\");");
+    printf("\n ......All nodes are added....\n");
+
+    // arcs
+    net->AddArc("X", "Y Z");
+    printf("\n net->AddArc(\"X\", \"Y Z\");");
+
+    net->AddArc("Z", "Y");
+    printf("\n net->AddArc(\"Z\", \"Y\");");
+    printf("\n ......All arcs are added....\n");
+
+    printf("\t\t\tAdding of distributions is in process....\n\n");
+    // X has no parents
+    net->SetPTabular("X^True X^False", "0.5 0.5");
+    // Z has parent X
+    net->SetPTabular("Z^True Z^False", "0.9 0.1", "X^True");
+    net->SetPTabular("Z^True Z^False", "0.1 0.9", "X^False");
+    // Y has parents X and Z
+    net->SetPTabular("Y^True Y^False", "0.9 0.1", "X^True Z^True");
+    net->SetPTabular("Y^True Y^False", "0.89 0.11", "X^False Z^True");
+    net->SetPTabular("Y^True Y^False", "0.1 0.9", "X^True Z^False");
+    net->SetPTabular("Y^True Y^False", "0.11 0.89", "X^False Z^False");
+
+    return net;
+}
+
+//--------------------------------------------------------------------
+// Example to test code on nodes with more than 2 states.
+//    Three nodes: A,B,C. 
+//    A has 4 states.  B has 2 states.  C has 3 states. 
+//    
+BayesNet * States_4_2_3_example()
+{
+    BayesNet *net;
+    net = new BayesNet();
+
+    // nodes
+    net->AddNode(discrete^"A", "a1 a2 a3 a4"); 
+    printf("\n net->AddNode(discrete^\"A\", \"a1 a2 a3 a4\");");
+
+    net->AddNode(discrete^"B", "b1 b2"); 
+    printf("\n net->AddNode(discrete^\"B\", \"b1 b2\");");
+
+    net->AddNode(discrete^"C", "c1 c2 c3"); 
+    printf("\n net->AddNode(discrete^\"C\", \"c1 c2 c3\");");
+    printf("\n ......All nodes are added....\n");
+
+    // arcs
+    net->AddArc("A", "B C");
+    printf("\n net->AddArc(\"A\", \"B C\");");
+
+    net->AddArc("B", "C");
+    printf("\n net->AddArc(\"B\", \"C\");");
+    printf("\n ......All arcs are added....\n");
+
+
+    printf("\t\t\tAdding of distributions is in process....\n\n");
+    // A has no parents
+    net->SetPTabular("A^a1 A^a2 A^a3 A^a4", "0.2 0.1 0.55 0.15");
+
+
+    // B has parent A
+    net->SetPTabular("B^b1 B^b2", "0.1 0.9", "A^a1");
+    net->SetPTabular("B^b1 B^b2", "0.2 0.8", "A^a2");
+    net->SetPTabular("B^b1 B^b2", "0.8 0.2", "A^a3");
+    net->SetPTabular("B^b1 B^b2", "0.7 0.3", "A^a4");
+
+
+    // C has parents A and B
+    net->SetPTabular("C^c1 C^c2 C^c3", "0.2 0.3 0.5", "A^a1 B^b1");
+    net->SetPTabular("C^c1 C^c2 C^c3", "0.4 0.5 0.1", "A^a1 B^b2");
+
+    net->SetPTabular("C^c1 C^c2 C^c3", "0.6 0.2 0.2", "A^a2 B^b1");
+    net->SetPTabular("C^c1 C^c2 C^c3", "0.5 0.3 0.2", "A^a2 B^b2");
+
+    net->SetPTabular("C^c1 C^c2 C^c3", "0.1 0.5 0.4", "A^a3 B^b1");
+    net->SetPTabular("C^c1 C^c2 C^c3", "0.0 0.4 0.6", "A^a3 B^b2");
+
+    net->SetPTabular("C^c1 C^c2 C^c3", "0.4 0.3 0.3", "A^a4 B^b1");
+    net->SetPTabular("C^c1 C^c2 C^c3", "0.9 0.1 0.0", "A^a4 B^b2");
+#if 0
+#endif
+ 
+    return net;
+}
+
+//--------------------------------------------------------------------
+// OR function (deterministic function)
+//    Four-node model: A,B,C,D.  Each with two states: True, False.
+//    D = A or B or C.
+//
+BayesNet * Deterministic_OR_model()
+{
+    BayesNet *net;
+    net = new BayesNet();
+
+    // nodes
+    net->AddNode(discrete^"A", "True False"); 
+    printf("\n net->AddNode(discrete^\"A\", \"True False\");");
+
+    net->AddNode(discrete^"B", "True False"); 
+    printf("\n net->AddNode(discrete^\"B\", \"True False\");");
+
+    net->AddNode(discrete^"C", "True False"); 
+    printf("\n net->AddNode(discrete^\"C\", \"True False\");");
+
+    net->AddNode(discrete^"D", "True False"); 
+    printf("\n net->AddNode(discrete^\"D\", \"True False\");");
+    printf("\n ......All nodes are added....\n");
+
+    // arcs: from A,B,C to D
+    net->AddArc("A B C", "D");
+    printf("\n net->AddArc(\"A B C\", \"D\");");
+    printf("\n ......All arcs are added....\n");
+
+    printf("\t\t\tAdding of distributions is in process....\n\n");
+    // A,B,C have no parents
+    net->SetPTabular("A^True A^False", "0.5 0.5");
+    net->SetPTabular("B^True B^False", "0.5 0.5");
+    net->SetPTabular("C^True C^False", "0.5 0.5");
+    // D has parents A,B,C:  D = A v B v C
+    net->SetPTabular("D^True D^False", "1.0 0.0", "A^True B^True C^True");
+    net->SetPTabular("D^True D^False", "1.0 0.0", "A^True B^True C^False");
+    net->SetPTabular("D^True D^False", "1.0 0.0", "A^True B^False C^True");
+    net->SetPTabular("D^True D^False", "1.0 0.0", "A^True B^False C^False");
+
+    net->SetPTabular("D^True D^False", "1.0 0.0", "A^False B^True C^True");
+    net->SetPTabular("D^True D^False", "1.0 0.0", "A^False B^True C^False");
+    net->SetPTabular("D^True D^False", "1.0 0.0", "A^False B^False C^True");
+    net->SetPTabular("D^True D^False", "0.0 1.0", "A^False B^False C^False");
+    return net;
+}
+
+//--------------------------------------------------------------------
+// Max function (deterministic function)
+//    Three nodes: A,B,D.  Each with 3 ordered states: S0 < S1 < S2.
+//    D = max(A,B).
+//
+BayesNet * Deterministic_MAX_model()
+{
+    BayesNet *net;
+    net = new BayesNet();
+
+    // nodes
+    net->AddNode(discrete^"A", "S0 S1 S2"); 
+    printf("\n net->AddNode(discrete^\"A\", \"S0 S1 S2\");");
+
+    net->AddNode(discrete^"B", "S0 S1 S2"); 
+    printf("\n net->AddNode(discrete^\"B\", \"S0 S1 S2\");");
+
+    net->AddNode(discrete^"D", "S0 S1 S2"); 
+    printf("\n net->AddNode(discrete^\"D\", \"S0 S1 S2\");");
+    printf("\n ......All nodes are added....\n");
+
+    // arcs: from A,B to D
+    net->AddArc("A B", "D");
+    printf("\n net->AddArc(\"A B\", \"D\");");
+    printf("\n ......All arcs are added....\n");
+
+    printf("\t\t\tAdding of distributions is in process....\n\n");
+    // A,B have no parents
+
+    net->SetPTabular("A^S0 A^S1 A^S2", "0.333 0.333 0.334");
+    net->SetPTabular("B^S0 B^S1 B^S2", "0.333 0.333 0.334");
+
+    // D has parents A,B:  D = max(A,B)
+    net->SetPTabular("D^S0 D^S1 D^S2", "1.0 0.0 0.0", "A^S0 B^S0");
+    net->SetPTabular("D^S0 D^S1 D^S2", "0.0 1.0 0.0", "A^S0 B^S1");
+    net->SetPTabular("D^S0 D^S1 D^S2", "0.0 0.0 1.0", "A^S0 B^S2");
+
+    net->SetPTabular("D^S0 D^S1 D^S2", "0.0 1.0 0.0", "A^S1 B^S0");
+    net->SetPTabular("D^S0 D^S1 D^S2", "0.0 1.0 0.0", "A^S1 B^S1");
+    net->SetPTabular("D^S0 D^S1 D^S2", "0.0 0.0 1.0", "A^S1 B^S2");
+
+    net->SetPTabular("D^S0 D^S1 D^S2", "0.0 0.0 1.0", "A^S2 B^S0");
+    net->SetPTabular("D^S0 D^S1 D^S2", "0.0 0.0 1.0", "A^S2 B^S1");
+    net->SetPTabular("D^S0 D^S1 D^S2", "0.0 0.0 1.0", "A^S2 B^S2");
+
+    return net;
+}
+
+//--------------------------------------------------------------------
+//  Models from PNLHigh distribution (from PNL/high/DEMO/models.h):
+//
+//   Only changes made here were to eliminate Windows-specific commands in 
+//   order for the file to compile easily also on other platforms
+//   and the correction of node order and the CPT for Bronchitis in AsiaModel,
+//   which is now called AsiaModelCorrected.
+//--------------------------------------------------------------------
+
+
+/*
+   The Asia Model was corrected in two ways (to correct errors in existing model):
+   1) Two CPT Values corrected for P(Bronchitis|Smoking)
+      P(Bronchitis=True |Smoking=True)=0.6
+      P(Bronchitis=False|Smoking=True)=0.4
+
+   2) Correction of node order:
+      The order of definition of node Dyspnoea and CancerOrTuberculosis was 
+      switched, because otherwise the model is not topologically sorted, which 
+      can cause problems in particular when using he SaveNet function:
+      Now CancerOrTuberculosis comes BEFORE Dyspnoea, since it's 
+      a parent of that node.
+*/
+
+BayesNet *AsiaModelCorrected()
+{  
     BayesNet *net;
     net = new BayesNet();
 
@@ -45,21 +340,22 @@ BayesNet *AsiaModel()
     printf("\n net->AddNode(discrete^\"Tuberculosis\", \"True False\");");
     _sleep(1000);
 
+    // Move definition of CancerOrTuberculosis BEFORE Dyspnoea (Mar 10, 06)
+    net->AddNode(discrete^"CancerOrTuberculosis", "True False");
+    printf("\n net->AddNode(discrete^\"CancerOrTuberculosis\", \"True False\");");
+    _sleep(1000);
+     
     net->AddNode(discrete^"Dyspnoea", "True False"); 
     printf("\n net->AddNode(discrete^\"Dyspnoea\", \"True False\");");
     _sleep(1000);
 
-    net->AddNode(discrete^"CancerOrTuberculosis", "True False");
-    printf("\n net->AddNode(discrete^\"CancerOrTuberculosis\", \"True False\");");
-    _sleep(1000);
-    
     net->AddNode(discrete^"XRayPositive", "True False");
     printf("\n net->AddNode(discrete^\"XRayPositive\", \"True False\");");
     _sleep(1000);
 
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
-    getchar();
+    //getchar();
 
     // arcs
     textcolor(WHITE);
@@ -89,7 +385,7 @@ BayesNet *AsiaModel()
 
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
-    getchar();
+    //getchar();
     // distributions
     textcolor(WHITE);
     net->SetPTabular("Smoking^True Smoking^False", "0.5 0.5");
@@ -112,12 +408,14 @@ BayesNet *AsiaModel()
     printf("\n net->SetPTabular(\"Bronchitis^False\", \"0.7\", \"Smoking^False\");");
     _sleep(1000);
 
-    net->SetPTabular("Bronchitis^True", "0.4", "Smoking^True");
-    printf("\n net->SetPTabular(\"Bronchitis^True\", \"0.4\", \"Smoking^True\");");
+    // This value was 0.4.  Corrected to 0.6. (I. Ebert-Uphoff, Jan 14, 2006)
+    net->SetPTabular("Bronchitis^True", "0.6", "Smoking^True");
+    printf("\n net->SetPTabular(\"Bronchitis^True\", \"0.6\", \"Smoking^True\");");
     _sleep(1000);
 
-    net->SetPTabular("Bronchitis^False", "0.6", "Smoking^True");
-    printf("\n net->SetPTabular(\"Bronchitis^False\", \"0.6\", \"Smoking^True\");");
+    // This value was 0.6.  Corrected to 04.  (I. Ebert-Uphoff, Jan 14, 2006)
+    net->SetPTabular("Bronchitis^False", "0.4", "Smoking^True");
+    printf("\n net->SetPTabular(\"Bronchitis^False\", \"0.4\", \"Smoking^True\");");
     _sleep(1000);
 
     net->SetPTabular("LungCancer^True", "0.01","Smoking^False");
@@ -199,7 +497,7 @@ BayesNet *AsiaModel()
     textcolor(LIGHTGREEN);
     printf("\n ......All distributions are added....\n");
     textcolor(WHITE);
-    getchar();
+    //getchar();
     return net;
 }
 
@@ -261,7 +559,7 @@ LIMID *PigsModel()
 
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
-    getch();
+    //getch();
 
     // arcs
     textcolor(WHITE);
@@ -311,7 +609,7 @@ LIMID *PigsModel()
 
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
-    getch();
+    //getch();
 
     // distributions
     textcolor(WHITE);
@@ -454,7 +752,7 @@ LIMID *PigsModel()
     textcolor(LIGHTGREEN);
     printf("\n ......All distributions are added....\n");
     textcolor(WHITE);
-    getch();
+    //getch();
 
     return net;
 }
@@ -486,7 +784,7 @@ BayesNet *ScalarGaussianBNetModel()
 
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
-    getch();
+    //getch();
 
     // arcs
     textcolor(WHITE);
@@ -505,7 +803,7 @@ BayesNet *ScalarGaussianBNetModel()
 
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
-    getch();
+    //getch();
     // distributions
     textcolor(WHITE);
 
@@ -533,7 +831,7 @@ BayesNet *ScalarGaussianBNetModel()
     printf("\n net->SetPGaussian(\"NodeE\", \"-0.8\", \"1.2\", \"2.0\");");
     textcolor(LIGHTGREEN);
     printf("\n ......All distributions are added....\n");
-    getch();
+    //getch();
     textcolor(WHITE);
 
     return net;
@@ -570,7 +868,7 @@ BayesNet *WasteModel()
     
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
-    getch();
+    //getch();
 
     // arcs
     textcolor(WHITE);
@@ -604,7 +902,7 @@ BayesNet *WasteModel()
     _sleep(1000);
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
-    getch();
+    //getch();
     // distributions
     textcolor(WHITE);
     
@@ -685,7 +983,7 @@ BayesNet *WasteModel()
     _sleep(1000);
     textcolor(LIGHTGREEN);
     printf("\n ......All distributions are added....\n");
-    getch();
+    //getch();
     textcolor(WHITE);
 
     return net;
@@ -713,7 +1011,7 @@ DBN* KjaerulfsBNetModel()
     
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
-    getch();
+    //getch();
     
     // arcs
     textcolor(WHITE);
@@ -769,7 +1067,7 @@ DBN* KjaerulfsBNetModel()
     printf("\n net->AddArc(\"node7-0\", \"node7-1\");");
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
-    getch();
+    //getch();
     // distributions
     textcolor(WHITE);
 
@@ -957,7 +1255,7 @@ BayesNet* CropModel()
 
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
-    getch();
+    //getch();
     
     // arcs
     textcolor(WHITE);
@@ -973,7 +1271,7 @@ BayesNet* CropModel()
     printf("\n net->AddArc(\"Price\", \"Buy\");");
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
-    getch();
+    //getch();
     
     // distributions
     textcolor(WHITE);
@@ -1003,7 +1301,7 @@ BayesNet* CropModel()
 
     textcolor(LIGHTGREEN);
     printf("\n ......All distributions are added....\n");
-    getch();
+    //getch();
     textcolor(WHITE);
 
     return net;
@@ -1042,7 +1340,7 @@ BayesNet* FraudModel()
     printf("\n ......All nodes are added....\n");
     textcolor(WHITE);
 
-    getch();
+    //getch();
     
 /*    net->AddArc("Fraud Age Sex", "Jewelry");
     net->AddArc("Fraud", "Gas");
@@ -1116,7 +1414,7 @@ DBN* DBNModel()
     printf("\n net->AddNode(discrete^\"Rain-1 Umbrella-1\", \"True False\");");
     textcolor(LIGHTGREEN);
     printf("\n ......All nodes are added....\n");
-    getch();
+    //getch();
     
     // arcs
     textcolor(WHITE);
@@ -1135,7 +1433,7 @@ DBN* DBNModel()
     printf("\n net->AddArc(\"Rain-1\", \"Umbrella-1\");");
     textcolor(LIGHTGREEN);
     printf("\n ......All arcs are added....\n");
-    getch();
+    //getch();
     
     // distributions
     textcolor(WHITE);
@@ -1170,7 +1468,7 @@ DBN* DBNModel()
     printf("\n net->SetPTabular(\"Umbrella-1^True Umbrella-1^False\", \"0.2 0.8\", \"Rain-1^False\");");
     textcolor(LIGHTGREEN);
     printf("\n ......All distributions are added....\n");
-    getch();
+    //getch();
     textcolor(WHITE);
 
     return net;

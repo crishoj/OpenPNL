@@ -1,5 +1,7 @@
+/* Version 1.01.  Mar 11, 2006 */
+/* For documentation and updates go to www.DataOnStage.com. */
 /*
- * Copyright (c) 2005 Imme Ebert-Uphoff
+ * Copyright (c) 2005, 2006 Imme Ebert-Uphoff
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,34 +36,37 @@ using namespace std;
 
 PNLW_USING
 
-
 int main(int argc, char* argv[])
 {
-    // Load pre-defined model, then write Graphviz representation to file.
 
     if (argc <= 1)
     {
 	cout << endl << "Please call with a model number [1-9] as argument!";
 	cout << endl << endl; 
-        cout << "Example:       \"SampleUse 2\"";
+        cout << "Example:       \"SampleUsePTG 2\"";
 	cout << endl << endl;
         cout << "Models are from models.cpp of PNL/high/Demo of PNL";
 	cout << "Release 1.0." << endl << endl;
 
         cout << "--- Model Numbers ---" << endl;
         cout << "Discrete BNs:" << endl;
-        cout << "  AsiaModel (1)  FraudModel (2)" << endl << endl;
+        cout << "  (1) Corrected AsiaModel" << endl;
+        cout << "  (2) FraudModel" << endl << endl;
         cout << "Continuous BNs:" << endl;
-        cout << "  ScalarGaussianBNetModel (3)" << endl <<endl;
+        cout << "  (3) ScalarGaussianBNetModel" << endl <<endl;
         cout << "Mixed Discrete-Continuous BN:" << endl;
-        cout << "  WasteModel (4)  CropModel (5)" << endl << endl;
+        cout << "  (4) WasteModel" << endl;
+        cout << "  (5) CropModel" << endl << endl;
         cout << "Dynamic Bayesian Network (DBN):" << endl;
-        cout << "  KjaerulfsBNetModel (6)  DBNModel (7)" << endl << endl;
+        cout << "  (6) KjaerulfsBNetModel" << endl;
+        cout << "  (7) DBNModel" << endl << endl;
         cout << "Influence Diagram (LIMID):" << endl;
-        cout << "  PigsModel (8)" << endl << endl;
+        cout << "  (8) PigsModel" << endl << endl;
         cout << "Example of Customizing Node Shape:" << endl;
-        cout << "  WasteModel (9)" << endl << endl;
-	cout << endl;
+        cout << "  (9) WasteModel" << endl;
+        cout << endl << "Examples of graphs with link strengths and";
+        cout << " connection strengths:" << endl;
+        cout << "  Included in SampleUseLCS!" << endl << endl;
 
 	return 1;
     }
@@ -72,18 +77,19 @@ int main(int argc, char* argv[])
     cout << "---------------------------------- " << endl;
     cout << "Models are from models.cpp of PNL/high/Demo of PNL ";
     cout << "Release 1.0." << endl;
-    cout << "Always press Enter to continue." << endl;
     cout << "---------------------------------- " << endl << endl;
 
     BayesNet * Bnet;
     DBN      * DBnet;
     LIMID    * LIMIDnet;
 
+    // Load pre-defined model, then write Graphviz representation to file.
+
  switch (n) { 
     // ********** Discrete BNs **********
     case 1:
        cout << "Example of discrete BN: AsiaModel." << endl;
-       Bnet =  AsiaModel(); 
+       Bnet =  AsiaModelCorrected(); 
        PNLtoGraphviz( Bnet, "AsiaModel.dot" );
        break;
 
@@ -123,10 +129,11 @@ int main(int argc, char* argv[])
        DBnet = KjaerulfsBNetModel();  // large net
        cout << "Print DBN as DBN (standard)" << endl;
        PNLtoGraphviz( DBnet, "KjaerulfsBNetModel.dot" );
-       // slight misuse of interface: writes DBN as BayesNet
+
+       // now misuse interface: writes DBN as BayesNet
        // This type of use is NOT recommended !!!
-       cout << "Print DBN as BayesNet !" << endl;
-       PNLtoGraphviz( DBnet->Net(), "KjaerulfsBNetModel2.dot", "BayesNet" );
+       // cout << "Print DBN as BayesNet !" << endl;
+       // PNLtoGraphviz( DBnet->Net(), "KjaerulfsBNetModel2.dot", "BayesNet" );
        break;
     
     case 7:       
