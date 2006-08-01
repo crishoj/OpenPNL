@@ -400,7 +400,11 @@ void CParEMLearningEngine::LearnOMP()
     PNL_CHECK_LEFT_BORDER(GetNumEv() - GetNumberProcEv() , 1);
 
     //omp_set_num_threads(2);
+#ifdef _CLUSTER_OPENMP
+    int numberOfThreads = omp_get_max_threads();
+#else
     int numberOfThreads = omp_get_num_procs();
+#endif
     //CParPearlInfEngine **pCurrentInfEng = new CParPearlInfEngine*[numberOfThreads];
     CJtreeInfEngine **pCurrentInfEng = new CJtreeInfEngine*[numberOfThreads];
     for (int i = 0; i < numberOfThreads; i++)
@@ -476,8 +480,13 @@ void CParEMLearningEngine::LearnOMP()
             {
                 if (!pCurrentInfEng[Num_thread])
                 {
+#ifdef _CLUSTER_OPENMP
+                    pCurrentInfEng[Num_thread] = CJtreeInfEngine::Create(
+                        (const CStaticGraphicalModel *)pGrModel,0,0,0);
+#else
                     pCurrentInfEng[Num_thread] = CJtreeInfEngine::Create(
                         (const CStaticGraphicalModel *)pGrModel);
+#endif
                 }
                 pCurrentInfEng[Num_thread]->EnterEvidence(pCurrentEvid, bMaximize,
                     bSumOnMixtureNode);
@@ -587,7 +596,7 @@ void CParEMLearningEngine::LearnOMP()
 
     delete [] pCurrentInfEng;
 
-    //Удаление дополнительных факторов
+    //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     for (factor = numberOfParameters; factor < numberOfParameters * numberOfThreads;
     factor++)
     {

@@ -786,6 +786,8 @@ void CJunctionTree::InitChargeOMP( const CStaticGraphicalModel *pGrModel,
     PNL_CHECK_IS_NULL_POINTER(pEvidence);
     // bad-args check end
 
+
+
     AssignFactorsToClqOMP(pGrModel);
 
     SetNodeTypes( pGrModel, pEvidence );
@@ -1477,11 +1479,17 @@ void CJunctionTree::InitNodePotsFromBNetOMP( const CBNet* pBNet,
     intVector::iterator factAssToClq_begin = m_factAssignToClq.begin(),
                         factAssToClq_end   = m_factAssignToClq.end();
 
+#ifdef _CLUSTER_OPENMP
+    int nProcs = omp_get_max_threads();
+#endif
+
 #pragma omp parallel
 {
     int i;
-    int nProcs = omp_get_num_procs();
     int threadNum = omp_get_thread_num();
+#ifndef _CLUSTER_OPENMP
+    int nProcs = omp_get_num_threads();
+#endif
     int nNdsOfProc = m_numberOfNodes / nProcs;
     int leftBound = threadNum * nNdsOfProc;
     int rightBound = leftBound + nNdsOfProc;
@@ -1889,7 +1897,6 @@ void CJunctionTree::InitSeparatorsPots( const CStaticGraphicalModel
     m_separatorPots.resize(m_numberOfNodes);
     
     int i = 0;
-    
     for( ; i < m_numberOfNodes; ++i )
     {
         bool bSparseUnitFunction = false;

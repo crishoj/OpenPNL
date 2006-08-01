@@ -382,6 +382,8 @@ CParJtreeInfEngine* CParJtreeInfEngine::Copy(const CParJtreeInfEngine *pJTreeInf
 void CParJtreeInfEngine::EnterEvidenceOMP(const CEvidence *pEvidence,
     int maximize, int sumOnMixtureNode)
 {
+
+
     // bad-args check
     PNL_CHECK_IS_NULL_POINTER(pEvidence);
     PNL_CHECK_RANGES( maximize, 0, 2 );
@@ -397,10 +399,14 @@ void CParJtreeInfEngine::EnterEvidenceOMP(const CEvidence *pEvidence,
 
     if (GetModel()->GetModelType() == mtBNet)
     {
+
         ShrinkObservedOMP( pEvidence, maximize, sumOnMixtureNode );
+
         CJunctionTree *jtree = GetJTree();
         int nNodes = jtree->GetNumberOfNodes();
         EDistributionType isJtDiscr = GetJTreeType();
+
+
         
         if (isJtDiscr == dtTabular)
         {
@@ -415,7 +421,6 @@ void CParJtreeInfEngine::EnterEvidenceOMP(const CEvidence *pEvidence,
                 return;
 
             DistributeEvidenceOMP();
-
         #pragma omp parallel for schedule(dynamic) private(i)
         for (i = 0; i < nNodes; i++)
         {
@@ -1243,9 +1248,12 @@ void CParJtreeInfEngine::DoPropagateOMP(
     }
 
 // --- Main Loop (marg) -------------------------------------------------------
-    int NumOfProcs = omp_get_num_procs();
+#ifdef _CLUSTER_OPENMP
+    int NumOfProcs = omp_get_max_threads();
     float *sum_par = new float [NumOfProcs];
-
+#else
+    float *sum_par = new float [omp_get_max_threads()];
+#endif
     int src_steps[MAX_SIZE];
     src_steps[0] = 1;
     for (j = 1; j < num_dims_to_keep; j++)
@@ -1254,6 +1262,10 @@ void CParJtreeInfEngine::DoPropagateOMP(
     }
 #pragma omp parallel
     {
+#ifndef _CLUSTER_OPENMP
+	int NumOfProcs = omp_get_num_threads();
+#endif
+
         int threadNum = omp_get_thread_num();
         
         int numDstElemOfProc = dst_bulk_size / NumOfProcs;

@@ -46,7 +46,11 @@
 #define PAR_OMP_FAKE_NUM_THREADS 0
 
 #ifdef PAR_OMP
-#define PAR_OMP_NUM_THREADS             omp_get_num_procs()
+#ifdef _CLUSTER_OPENMP
+	#define PAR_OMP_NUM_THREADS             omp_get_max_threads()
+#else
+	#define PAR_OMP_NUM_THREADS             omp_get_num_procs()
+#endif
 #define PAR_OMP_SET_NUM_THREADS(__val)  omp_set_num_threads(__val)
 #define PAR_OMP_NUM_CURR_THREAD         omp_get_thread_num()
 #else
