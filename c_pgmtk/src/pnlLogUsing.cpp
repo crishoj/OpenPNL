@@ -42,6 +42,9 @@ public:
 };
 
 static LogUsing logUsing;
+#ifdef _CLUSTER_OPENMP
+#pragma intel omp sharable (logUsing)
+#endif
 
 void SetDump(const char *fname)
 {
