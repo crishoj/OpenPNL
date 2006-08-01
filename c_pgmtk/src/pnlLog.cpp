@@ -56,6 +56,9 @@ SavedSignature::reset(const std::string &signature, const std::string &prefix, i
 
 struct SavedSignature defaultSignature("", "", 0, 0);
 static std::list<struct SavedSignature> signList;
+#ifdef _CLUSTER_OPENMP
+#pragma intel omp sharable (signList)
+#endif
 
 void
 Log::Register(const char *signature) const
