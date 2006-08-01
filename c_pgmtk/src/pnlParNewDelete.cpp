@@ -21,9 +21,11 @@
 
 #ifdef PAR_USE_OMP_ALLOCATOR
 
-#include <windows.h>
 #include <omp.h>
 
+#if defined(WIN32)
+
+#include <windows.h>
 #define NUMBER_OF_HEAPS 256
 
 HANDLE HeapsArray[NUMBER_OF_HEAPS] =
@@ -101,6 +103,25 @@ void operator delete (void *pPointer)
     if (HeapsArray[myheap]!=NULL)
         HeapFree(HeapsArray[myheap], 0, reinterpret_cast<void*>(pCharPointer));
 }
+
+#elif defined(_CLUSTER_OPENMP)
+
+#include <kmp_sharable.h>
+
+void *operator new(size_t Size)
+{
+    return kmp_sharable_malloc(Size);
+}
+// ----------------------------------------------------------------------------
+
+void operator delete (void *pPointer)
+{
+    if (pPointer == NULL)
+        return;
+    kmp_sharable_free(pPointer);
+}
+
+#endif //_CLUSTER_OPENMP
 
 #endif // PAR_USE_OMP_ALLOCATOR
 
