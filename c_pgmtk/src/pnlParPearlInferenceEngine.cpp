@@ -1754,7 +1754,7 @@ void CParPearlInfEngine::CollectBeliefsOnProcess(int MainProcNum)
           lastUsedIndex+=RecvMatrix->GetRawDataLength();
         }
       } //for (int node =0; node<NumberOfN...
-      //Удаление памяти pDataForReceiving
+      //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ pDataForReceiving
       delete pDataForReceiving;
     } //for (i=0; i<m_NumberOfUsedProcesses-1...
   }
@@ -2071,18 +2071,18 @@ void CParPearlInfEngine::InitEngine(const CEvidence* pEvidence)
   EDistributionType dtWithoutEv = pnlDetermineDistributionType(
     numOfNdsInModel, 0, &ReallyObsNodes.front(), &nodeTypes.front());
   
-  intVector& connNodes = GetConnectedNodes();
+  intVector& CONNNODES = GetConnectedNodes();
 
   switch (dtWithoutEv)
   {
     //create vector of connected nodes
     case dtTabular: case dtGaussian:
     {
-      connNodes = intVector(numOfNdsInModel);
+      CONNNODES = intVector(numOfNdsInModel);
 
       for (i = 0; i < numOfNdsInModel; ++i)
       {
-        connNodes[i] = i;
+        CONNNODES[i] = i;
       }
       break;
     }
@@ -2098,7 +2098,7 @@ void CParPearlInfEngine::InitEngine(const CEvidence* pEvidence)
         if ((loc < ReallyObsNodes.size())&&
           (nodeTypes[ReallyObsNodes[loc]]->IsDiscrete()))
         {
-          connNodes.push_back(i);
+          CONNNODES.push_back(i);
         }
       }
       break;
@@ -2660,7 +2660,7 @@ void CParPearlInfEngine::ParallelProtocol()
   int iter = 0;
 
   const CGraph *pGraph = m_pGraphicalModel->GetGraph();
-  intVector& connNodes = GetConnectedNodes();
+  intVector& CONNNODES = GetConnectedNodes();
   intVector& areReallyObserved = GetSignsOfReallyObserved();
   
   int nAllMes = GetCurMsgsFromNeighbors()->size();
@@ -2696,7 +2696,7 @@ void CParPearlInfEngine::ParallelProtocol()
     int Count = m_NodesOfProcess.size();
     for (i = 0; i < Count; i++)
     {
-      pGraph->GetNeighbors(connNodes[m_NodesOfProcess[i]], 
+      pGraph->GetNeighbors(CONNNODES[m_NodesOfProcess[i]], 
         &numOfNeighb, &neighbors, &orientation);
       for (j = 0; j < numOfNeighb; j++)
       {
@@ -2782,12 +2782,12 @@ void CParPearlInfEngine::ParallelProtocol()
 
     for (i = 0; i < m_NodesOfProcess.size(); i++)
     {
-      if (!areReallyObserved[connNodes[m_NodesOfProcess[i]]])
+      if (!areReallyObserved[CONNNODES[m_NodesOfProcess[i]]])
       {
-        ComputeBelief(connNodes[m_NodesOfProcess[i]]);
+        ComputeBelief(CONNNODES[m_NodesOfProcess[i]]);
         changed += 
-          !(GetOldBeliefs())[connNodes[m_NodesOfProcess[i]]]->IsEqual(
-          (GetCurBeliefs())[connNodes[m_NodesOfProcess[i]]], GetTolerance());
+          !(GetOldBeliefs())[CONNNODES[m_NodesOfProcess[i]]]->IsEqual(
+          (GetCurBeliefs())[CONNNODES[m_NodesOfProcess[i]]], GetTolerance());
       }
     }
 
@@ -2842,7 +2842,7 @@ void CParPearlInfEngine::ParallelProtocolContMPI()
   const int *neighbors;
   const ENeighborType *orientation;
 
-  intVector& connNodes = GetConnectedNodes();
+  intVector& CONNNODES = GetConnectedNodes();
   intVector& areReallyObserved = GetSignsOfReallyObserved();
 
   CGaussianDistribFun* msg;
@@ -3179,12 +3179,12 @@ void CParPearlInfEngine::ParallelProtocolContMPI()
    
     for(i = 0; i < m_NodesOfProcess.size(); i++)
     {
-      if(!areReallyObserved[connNodes[m_NodesOfProcess[i]]])
+      if(!areReallyObserved[CONNNODES[m_NodesOfProcess[i]]])
       {
         message tempBel = CPearlInfEngine::GetCurBeliefs()[m_NodesOfProcess[i]];  
-        CPearlInfEngine::ComputeBelief(connNodes[m_NodesOfProcess[i]]);
+        CPearlInfEngine::ComputeBelief(CONNNODES[m_NodesOfProcess[i]]);
         changed += !tempBel->IsEqual(CPearlInfEngine::
-          GetCurBeliefs()[connNodes[m_NodesOfProcess[i]]], CPearlInfEngine::GetTolerance());
+          GetCurBeliefs()[CONNNODES[m_NodesOfProcess[i]]], CPearlInfEngine::GetTolerance());
         delete tempBel;         
       }
     }
@@ -3239,15 +3239,24 @@ void CParPearlInfEngine::ParallelProtocolOMP()
   const int *neighbors;
   const ENeighborType *orientation;
 
+#ifdef _CLUSTER_OPENMP
+  intVector *connNodes = &(GetConnectedNodes());
+  intVector *areReallyObserved = &(GetSignsOfReallyObserved());
+#define CONNNODES (*connNodes)
+#define AREREALLYOBSERVED (*areReallyObserved)
+#else
   intVector& connNodes = GetConnectedNodes();
   intVector& areReallyObserved = GetSignsOfReallyObserved();
+#define CONNNODES connNodes
+#define AREREALLYOBSERVED areReallyObserved
+#endif
 
   while ((!converged) && (iter < GetMaxNumberOfIterations()))
   {
     #pragma omp parallel for schedule(dynamic) private(i, j, numOfNeighb, neighbors, orientation)
     for (i = 0; i < Count; i++)
     {
-      pGraph->GetNeighbors(connNodes[i], 
+      pGraph->GetNeighbors(CONNNODES[i], 
         &numOfNeighb, &neighbors, &orientation);
       for (j = 0; j < numOfNeighb; j++)
       {
@@ -3261,15 +3270,15 @@ void CParPearlInfEngine::ParallelProtocolOMP()
     #pragma omp parallel for schedule(dynamic) private(i)// reduction(+:changed)
     for (i = 0; i < Count; i++)
     {
-      if (!areReallyObserved[connNodes[i]])
+      if (!AREREALLYOBSERVED[CONNNODES[i]])
       {
-        ComputeBelief(connNodes[i]);
+        ComputeBelief(CONNNODES[i]);
         if(!changed)
         {
             omp_set_lock(&change_lock);
             changed += 
-                !(GetOldBeliefs())[connNodes[i]]->IsEqual(
-                (GetCurBeliefs())[connNodes[i]], GetTolerance());
+                !(GetOldBeliefs())[CONNNODES[i]]->IsEqual(
+                (GetCurBeliefs())[CONNNODES[i]], GetTolerance());
             omp_unset_lock(&change_lock);
         }
       }
