@@ -1,6 +1,6 @@
 
 ------------------------------------------------------------------
- PNL -- Probabilistic Networks Library. Release 1.0.  31-July-2006
+ PNL -- Probabilistic Networks Library. Beta 2.0.    30-March-2004
 ------------------------------------------------------------------
 
 Requirements
@@ -10,9 +10,8 @@ Requirements
   Compiler:
     Visual C++ 6.0 (Intel Compiler 7.0 may used as compiler
     for a Visual Studio Environment)
-    gcc 3.x.x, 4.x.x
+    gcc 3.x.x
     icc 8.x
-    icc 9.0, 9.1
 
 Directory tree.
 ---------------
@@ -128,7 +127,5 @@ Notes:
    - If you want to compile pnl with parallel functionality (OpenMP parallel 
      mode of pnl) you have to define CXXFLAGS variable as '-openmp' and define 
      BUILD_OMP in pnlParConfig.hpp as macro of preprocessor
-   - If you want to compile pnl with parallel functionality (Cluster OpemMP
-     parallel mode of pnl) you have to define CXXFLAGS variable as '-cluster-openmp'
    - If you have some error during compiling or if you want to view compiling
      message later, run 'make 2>&1 | tee compiling.log' instead  of 'make'
