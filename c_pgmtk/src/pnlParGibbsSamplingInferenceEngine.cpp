@@ -443,7 +443,18 @@ void CParGibbsSamplingInfEngine::RecvPotentialsViaMpi(
 void CParGibbsSamplingInfEngine::
 Sampling( int statTime, int endTime )
 {
+#ifndef PAR_DYNAMIC_THREADS
     PAR_OMP_CORRECT_NUM_THREADS(m_NumberOfThreads);
+#else
+ if (PAR_OMP_FAKE_NUM_THREADS == m_NumberOfThreads) 
+{
+#pragma omp parallel
+	{
+		#pragma omp master
+		m_NumberOfThreads = omp_get_num_threads();
+	}
+}
+#endif
 
     intVector ndsForSampling;
     GetNdsForSampling( &ndsForSampling );
@@ -564,7 +575,18 @@ Sampling( int statTime, int endTime )
 void CParGibbsSamplingInfEngine::
 CreateSamplingPotentials( potsPVector* potsToSampling )
 {
+#ifndef PAR_DYNAMIC_THREADS
     PAR_OMP_CORRECT_NUM_THREADS(m_NumberOfThreads);
+#else
+ if (PAR_OMP_FAKE_NUM_THREADS == m_NumberOfThreads) 
+{
+#pragma omp parallel
+	{
+		#pragma omp master
+		m_NumberOfThreads = omp_get_num_threads();
+	}
+}
+#endif
 
     CModelDomain *pMD = GetModel()->GetModelDomain();
 
@@ -1015,7 +1037,16 @@ void CParGibbsSamplingInfEngine::EnterEvidence( const CEvidence *pEvidenceIn,
 
 void CParGibbsSamplingInfEngine::CreateQueryFactors()
 {
+#ifdef PAR_DYNAMIC_THREADS
+	int NumThreads;
+	#pragma omp parallel
+	{
+		#pragma omp master
+		NumThreads = PAR_OMP_NUM_THREADS;
+	}
+#else
     int NumThreads = PAR_OMP_NUM_THREADS;
+#endif
 
     pConstNodeTypeVector ntVec;
     const CNodeType *nt;

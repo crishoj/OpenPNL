@@ -403,7 +403,16 @@ void CParEMLearningEngine::LearnOMP()
 #ifdef _CLUSTER_OPENMP
     int numberOfThreads = omp_get_max_threads();
 #else
+#ifdef PAR_DYNAMIC_THREADS
+	int numberOfThreads;
+	#pragma omp parallel
+	{
+		#pragma omp master
+		numberOfThreads = omp_get_num_threads();
+	}
+#else
     int numberOfThreads = omp_get_num_procs();
+#endif
 #endif
     //CParPearlInfEngine **pCurrentInfEng = new CParPearlInfEngine*[numberOfThreads];
     CJtreeInfEngine **pCurrentInfEng = new CJtreeInfEngine*[numberOfThreads];
