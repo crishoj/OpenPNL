@@ -7,8 +7,9 @@
 //#define BUILD_MPI
 #endif
 
-#ifdef BUILD_OMP
+#if defined(BUILD_OMP) || defined(_CLUSTER_OPENMP)
 #define PAR_OMP
+#define PAR_DYNAMIC_THREADS
 #else
 #undef PAR_OMP
 #endif // BUILD_OMP
@@ -41,7 +42,7 @@
 #endif
 #endif
 
-#if defined(PAR_OMP) && defined(WIN32)
+#if (defined(PAR_OMP) && defined(WIN32)) || defined(_CLUSTER_OPENMP)
 #define PAR_USE_OMP_ALLOCATOR
 #endif
 
