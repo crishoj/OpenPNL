@@ -17,7 +17,8 @@
 PNL_USING
 using namespace std;
 
-const string nameOfModel = "Model";
+//const string nameOfModel = "Model";
+const string nameOfModel = "RandomGraphicalModel";
 const string nameOfEvidence = "my_ev";
 
 CGraphicalModel* LoadGrModelFromXML(const string& xmlname, vector<CEvidence*>* pEv)
