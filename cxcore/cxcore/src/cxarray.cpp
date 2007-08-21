@@ -661,8 +661,8 @@ cxCreateSparseMat( int dims, const int* sizes, int type )
     arr->total = 0;
     memcpy( arr->size, sizes, dims*sizeof(sizes[0]));
 
-    arr->valoffset = (sizeof(void*) + sizeof(int) + pix_size1 - 1) & -pix_size1;
-    arr->idxoffset = (arr->valoffset + pix_size + sizeof(int) - 1) & -(int)sizeof(int);
+    arr->valoffset = (int)cxAlign(sizeof(CxSparseNode), pix_size1);
+    arr->idxoffset = (int)cxAlign(arr->valoffset + pix_size, sizeof(int));
     size = (arr->idxoffset + dims*sizeof(int) + sizeof(CxSetElem) - 1) &
            -(int)sizeof(CxSetElem);
 
