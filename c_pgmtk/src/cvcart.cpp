@@ -6692,7 +6692,7 @@ CART_IMPL float cxScanNodeCategoricBestSplitClassification( CxRootedCARTBase* ca
     {
 	int path_len = 0;
 	int* path = NULL;
-	BOOL use_priors = (BOOL)(cart->params->priors);
+	BOOL use_priors = (cart->params->priors != NULL);
 
 	/* Get the path to traverse all binary sequences with last 0, this is
 	a sequence of numbers, each number means which cluster to move to
@@ -7023,7 +7023,7 @@ CART_IMPL float cxFindNodeCategoricClusteringBestSplit( CxRootedCARTBase* cart,
     float ff = cxCalcImpurityChangeCategoric(cart,node,split);
 }*/
 #endif
-    BOOL use_priors = (BOOL)(cart->params->priors);
+    BOOL use_priors = (cart->params->priors != NULL);
     if (impurity > eps_weight)
     {
 	int path_len;
@@ -9527,7 +9527,7 @@ CART_IMPL BOOL cxCreatePruningStorage(CxCART* cart)
 	return FALSE;
     }
     pruning_storage.pruned_nodes = (CxCARTNode**)(pruning_storage.buf + size);
-    return (BOOL)(pruning_storage.buf);
+    return (pruning_storage.buf != NULL);
 }
 
 CART_IMPL BOOL cxCreateCrossValStorage(CxCART* cart , int V)
@@ -9600,7 +9600,7 @@ CART_IMPL void cxAssertNodeValid(CxCART* cart , CxCARTNode* node )
     }
     CxCARTLevel& level = node_storage.levels[depth];
 
-    assert( (unsigned)node - (unsigned)level.buf_nodes < unsigned( (1 << depth) * node_storage.node_size));
+    assert( (uintptr_t)node - (uintptr_t)level.buf_nodes < unsigned( (1 << depth) * node_storage.node_size));
     assert( node->shrunk_fallen_idx == 0 || node->shrunk_fallen_idx == level.buf_shrunk_idx + node->offset );
     int num_resp = icxGetVarNumStates(cart->response_type);
     int total = 0;
