@@ -92,8 +92,8 @@ protected:
 
     
    
-    inline const int* CBKInfEngine::GetOutgoingNds( bool is1_5Slice) const;
-    inline const int* CBKInfEngine::GetIngoingNds() const;
+    inline const int* GetOutgoingNds( bool is1_5Slice) const;
+    inline const int* GetIngoingNds() const;
     inline int GetNumOfClusters() const;
     void RemoveUnitClusters(intVecVector &clustersIn, intVecVector *clustersOut);
     void DestroyData();

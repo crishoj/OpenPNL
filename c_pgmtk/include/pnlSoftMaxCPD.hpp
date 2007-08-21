@@ -47,7 +47,7 @@ public:
 	void BuildCurrentEvidenceMatrix(float ***full_evid, 
 			float ***evid,intVector family,int numEv);
 
-	virtual	void CSoftMaxCPD::CreateAllNecessaryMatrices( int typeOfMatrices );
+	virtual	void CreateAllNecessaryMatrices( int typeOfMatrices );
     
     virtual CFactor* CloneWithSharedMatrices();
     

@@ -99,7 +99,7 @@ protected:
     bool IsAllNdsTab() const;
     void FindCurrentNdsForSampling(boolVector *flags) const;
     inline CPotential* GetPotToSampling(int i) const;
-    inline potsPVector* CSamplingInfEngine::GetPotsToSampling();
+    inline potsPVector* GetPotsToSampling();
     void DestroyCurrentEvidences();
     void SetSamplingNdsFlags(boolVector &flags);
     void GetSamplingNdsFlags(boolVector* flags) const;

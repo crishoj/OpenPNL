@@ -174,7 +174,7 @@ public:
 
   virtual int GetNumberOfFreeParameters() const;
 
-  CCondSoftMaxDistribFun::~CCondSoftMaxDistribFun();
+  ~CCondSoftMaxDistribFun();
 
   void SetMaximizingMethod(EMaximizingMethod met);
 

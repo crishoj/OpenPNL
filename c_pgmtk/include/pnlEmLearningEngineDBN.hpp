@@ -51,7 +51,7 @@ public:
 protected:
     CEMLearningEngineDBN(CDynamicGraphicalModel *pGrModel, ELearningTypes LearnType, 
 	CDynamicInfEngine *pInfEngine );
-    CEvidence* CEMLearningEngineDBN::CreateEvIfDomainObserved(int nnodes,
+    CEvidence* CreateEvIfDomainObserved(int nnodes,
 	const int* domain, const pConstEvidenceVector* pEvidences,
 	int slice, CDynamicGraphicalModel* pGrModel);
     bool IsDomainObserved(int nnodes, const int* domain,

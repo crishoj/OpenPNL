@@ -42,7 +42,7 @@ template <class Type> class C2DNumericDenseMatrix;
 class PNL_API CTreeDistribFun : public CDistribFun
 {
 public:
-    virtual CTreeDistribFun::~CTreeDistribFun();
+    virtual ~CTreeDistribFun();
     static CTreeDistribFun* Create( int NodeNumber, const CNodeType *const* NodeTypes, const SCARTParams* params = 0);
     static  CTreeDistribFun* Copy( const CTreeDistribFun* pInpDistr );
     virtual CDistribFun& operator =( const CDistribFun& pInputDistr );
@@ -150,7 +150,7 @@ public:
 #endif
 
 protected:
-    CTreeDistribFun::CTreeDistribFun(int NodeNumber, 
+    CTreeDistribFun(int NodeNumber, 
         const CNodeType *const* NodeTypes,
         const SCARTParams* params = 0);
     CTreeDistribFun( const CTreeDistribFun & inpDistr );

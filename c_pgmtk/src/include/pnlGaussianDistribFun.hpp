@@ -163,7 +163,7 @@ public:
 
     virtual void Dump() const;
     
-    CGaussianDistribFun::~CGaussianDistribFun();
+    ~CGaussianDistribFun();
     
     //compute probability for given variable vector
     double ComputeProbability( const C2DNumericDenseMatrix<float>* pMatVariable , int asLog = 1,
