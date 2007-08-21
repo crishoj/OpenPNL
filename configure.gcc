@@ -5,7 +5,7 @@ cd $SRCROOT
 tar xjf conf.tbz 2>/dev/null
 cd $OBJROOT
 rm -f libtool
-sh ${SRCROOT}/configure 
+sh ${SRCROOT}/configure $@
 echo "
 - run 'make' to compile sources
 - run 'make check' to compile and launch test suite (optionally)

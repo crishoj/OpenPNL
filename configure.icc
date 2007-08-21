@@ -9,7 +9,7 @@ rm -f libtool
 CC=icc
 CXX=icpc
 export CC CXX
-sh ${SRCROOT}/configure
+sh ${SRCROOT}/configure $@
 sed 's/predep_objects="\/.*$/predep_objects=""/' libtool >libtool.ed
 mv -f libtool.ed libtool
 echo "
