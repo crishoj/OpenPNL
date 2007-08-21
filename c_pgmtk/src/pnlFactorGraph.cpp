@@ -354,7 +354,7 @@ CFactorGraph* CFactorGraph::Shrink( const CEvidence* pEvidence)const
     int numAllFactors = GetNumberOfFactors();
     numsOfShrinkedFactors.reserve(numAllFactors + 1);
     int numObsNds = obsNodes.size();
-    intVector::iterator locInShrinked = intVector::iterator(0);
+    intVector::iterator locInShrinked = intVector::iterator();
     for( i = 0; i < numObsNds; i++ )
     {
         int nodeNum = obsNodes[i];

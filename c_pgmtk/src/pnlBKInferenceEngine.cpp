@@ -453,7 +453,7 @@ void CBKInfEngine::Forward(const CEvidence *pEvidence, int maximize )
     intVecVector::iterator clustersItTo = m_clusters1_5Sl.begin();
     intVector::iterator JTreeNdsIt = m_clqs1_5Sl.begin();
     
-    distrPVector::iterator sepIt = distrPVector::iterator(0);
+    distrPVector::iterator sepIt = distrPVector::iterator();
     if(m_CRingDistrOnSep.size())
     {
 	sepIt = (*m_CDistrOnSepIter).begin();
