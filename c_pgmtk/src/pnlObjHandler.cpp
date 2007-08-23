@@ -32,8 +32,12 @@ CObjHandlerForPersistence::CallByName(pnlString &name, CPNLBase *pObj, CContext 
     if(pPersist)
     {
         Run(pPersist, pObj, pContext);
+    } else 
+    {
+	pnlString msg;
+	msg << "No saver/loader has been created with signature: " << name;
+	PNL_THROW(CBadArg, msg);
     }
-    // else throw?
 }
 
 bool CObjHandlerForPersistence::GetClassName(pnlString *pName, CPNLBase *pObj)
