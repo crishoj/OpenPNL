@@ -14,6 +14,18 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+/*
+ * If you wish to specify which tests to run, use the command line flag: 
+ *        -s <filename> 
+ * This works only if it's the *first* command line flag: otherwise, it's 
+ * passed to the testing subsystem (TRS), which interprets it as specifying 
+ * an output file.  The file <filename> should contain a list of tests to 
+ * run, one per line.  The test names are the names of the "init" functions 
+ * below; the "init" itself is optional.  Lines beginning with # are 
+ * treated as comments.  
+ */
+
+
 #include "trsapi.h"
 #include <stdlib.h>
 #include <string.h>
