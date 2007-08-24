@@ -1030,8 +1030,8 @@ void CDenseMatrix<Type>::Index( CMatrixIterator<Type>* current,
 
 #define PNL_MULTIDMATRIX_EXPECTED_MAX_DIM 16
 
-#define PNL_MARG_INIT_STEPS( RANGES, NUM_DIMS, STEPS, BACK_STEPS )   \
-    for ( STEPS[i = NUM_DIMS - 1] = sizeof( float ); i > 0; --i )    \
+#define PNL_MARG_INIT_STEPS( T, RANGES, NUM_DIMS, STEPS, BACK_STEPS )\
+    for ( STEPS[i = NUM_DIMS - 1] = sizeof( T ); i > 0; --i )    \
     {                                                                \
         BACK_STEPS[i] = STEPS[i - 1] = STEPS[i] * RANGES[i];         \
     }                                                                \
@@ -1197,7 +1197,7 @@ pnl::CMatrix<T> *pnl::CDenseMatrix<T>::FixDims( int const *dims_to_fix,
     PNL_DEMAND_AUTOBUF( src_steps, num_dims );
     PNL_DEMAND_AUTOBUF( src_back_steps, num_dims );
 
-    PNL_MARG_INIT_STEPS( src_ranges, num_dims, src_steps, src_back_steps );
+    PNL_MARG_INIT_STEPS( T, src_ranges, num_dims, src_steps, src_back_steps );
 
     src_bulk_size = src_back_steps[0] / sizeof( T );
     if ( safe_bulk_size < src_bulk_size )

@@ -1262,7 +1262,8 @@ CMatrix<T> *iCNumericDenseMatrix<T>::Marg_plain( int const *dims_to_keep,
     PNL_DEMAND_AUTOBUF( src_steps, src_num_dims );
     PNL_DEMAND_AUTOBUF( src_back_steps, src_num_dims );
 
-    PNL_MARG_INIT_STEPS( src_ranges, src_num_dims, src_steps, src_back_steps );
+    PNL_MARG_INIT_STEPS( T, src_ranges, src_num_dims, src_steps, 
+			 src_back_steps );
 
     src_bulk_size = src_back_steps[0] / sizeof( T );
     if ( safe_bulk_size < src_bulk_size )
@@ -1294,7 +1295,8 @@ CMatrix<T> *iCNumericDenseMatrix<T>::Marg_plain( int const *dims_to_keep,
         }
     }
 
-    PNL_MARG_INIT_STEPS( dst_ranges, num_dims_to_keep, dst_steps, dst_back_steps );
+    PNL_MARG_INIT_STEPS( T, dst_ranges, num_dims_to_keep, dst_steps, 
+			 dst_back_steps );
 
 #if 1
     num_blocked_dims = margBlockize( dims_to_margout, PNL_AUTOSTACK_SIZE( dims_to_margout ), src_ranges, block_size,
@@ -1531,7 +1533,8 @@ CMatrix<T> *iCNumericDenseMatrix<T>::Marg_omp( int const *dims_to_keep,
     PNL_DEMAND_AUTOBUF( src_steps, src_num_dims );
     PNL_DEMAND_AUTOBUF( src_back_steps, src_num_dims );
 
-    PNL_MARG_INIT_STEPS( src_ranges, src_num_dims, src_steps, src_back_steps );
+    PNL_MARG_INIT_STEPS( T, src_ranges, src_num_dims, src_steps, 
+			 src_back_steps );
 
     src_bulk_size = src_back_steps[0] / sizeof( T );
     if ( safe_bulk_size < src_bulk_size )
@@ -1594,7 +1597,8 @@ CMatrix<T> *iCNumericDenseMatrix<T>::Marg_omp( int const *dims_to_keep,
         corr[dims_to_keep[i]] = i;
     }
 
-    PNL_MARG_INIT_STEPS( dst_ranges, num_dims_to_keep, dst_steps, dst_back_steps );
+    PNL_MARG_INIT_STEPS( T, dst_ranges, num_dims_to_keep, dst_steps, 
+			 dst_back_steps );
 
 #if 1
     num_blocked_dims = margBlockize(dims_to_margout, PNL_AUTOSTACK_SIZE( dims_to_margout ), src_ranges, block_size,
@@ -1798,7 +1802,7 @@ CMatrix<T> *iCNumericDenseMatrix<T>::FixDims( int const *dims_to_fix,
     PNL_DEMAND_AUTOBUF( src_steps, num_dims );
     PNL_DEMAND_AUTOBUF( src_back_steps, num_dims );
 
-    PNL_MARG_INIT_STEPS( src_ranges, num_dims, src_steps, src_back_steps );
+    PNL_MARG_INIT_STEPS( T, src_ranges, num_dims, src_steps, src_back_steps );
 
     src_bulk_size = src_back_steps[0] / sizeof( T );
     if ( safe_bulk_size < src_bulk_size )
@@ -2335,8 +2339,10 @@ void iCNumericDenseMatrix< T >::MultiplyInSelf_plain( CMatrix< T > const *mat,
     PNL_DEMAND_AUTOBUF( corr_back_steps, big_num_dims );
     PNL_DEMAND_AUTOBUF( mask, big_num_dims );
 
-    PNL_MARG_INIT_STEPS( big_ranges, big_num_dims, big_steps, big_back_steps );
-    PNL_MARG_INIT_STEPS( smal_ranges, smal_num_dims, smal_steps, smal_back_steps );
+    PNL_MARG_INIT_STEPS( T, big_ranges, big_num_dims, big_steps, 
+			 big_back_steps );
+    PNL_MARG_INIT_STEPS( T, smal_ranges, smal_num_dims, smal_steps, 
+			 smal_back_steps );
 
     big_bulk_size = big_back_steps[0] / sizeof( T );
 
@@ -2519,8 +2525,10 @@ void iCNumericDenseMatrix< T >::MultiplyInSelf_omp( CMatrix< T > const *mat,
     PNL_DEMAND_AUTOBUF( mask, big_num_dims );
     PNL_DEMAND_AUTOSTACK( par_dims, smal_num_dims );
 
-    PNL_MARG_INIT_STEPS( big_ranges, big_num_dims, big_steps, big_back_steps );
-    PNL_MARG_INIT_STEPS( smal_ranges, smal_num_dims, smal_steps, smal_back_steps );
+    PNL_MARG_INIT_STEPS( T, big_ranges, big_num_dims, big_steps, 
+			 big_back_steps );
+    PNL_MARG_INIT_STEPS( T, smal_ranges, smal_num_dims, smal_steps, 
+			 smal_back_steps );
 
     big_bulk_size = big_back_steps[0] / sizeof( T );
 
