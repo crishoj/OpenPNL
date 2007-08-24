@@ -75,7 +75,6 @@ private:
 
     int m_iUpdate;// If this index != saved index (see .cpp) then perform rescan
     Map m_aFuncMap;// storage for CPersistence objects. We search CPersistence objects by typename
-    bool m_bUnregister;// false if inside destructor and mustn't handle Unregister
 };
 
 PNL_END

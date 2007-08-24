@@ -83,35 +83,36 @@ CPersistence::~CPersistence()
 
 CPersistenceZoo *GetZoo()
 {
+    static CGraphPersistence graphSaveLoader;
+    static CPersistNodeType nodeTypeSaveLoader;
+    static CPersistNodeValues nodeValuesSaveLoader;
+    static CPersistNumericVector<int> vectorIntSaveLoader("int");
+    static CPersistNumericVector<float> vectorFloatSaveLoader("float");
+    static CPersistNumericVecVector<int> vecVectorIntSaveLoader("int");
+    static CPersistValueVector valueVectorSaveLoader;
+    static CPersistGaussianDistribFun gaussianDistribFunSaveLoader;
+    static CPersistTabularDistribFun tabularDistribFunSaveLoader;
+    static CPersistSoftMaxDistribFun softMaxDistribFunSaveLoader;
+    static CPersistCondGaussianDistribFun condGaussianDistribFunSaveLoader;
+    static CPersistCondSoftMaxDistribFun condSoftMaxDistribFunSaveLoader;
+    static CPersistScalarDistribFun scalarDistribFunSaveLoader;
+    static CPersistModelDomain modelDomainSaveLoader;
+    static CPersistDBN dbnSaveLoader;
+    static CPersistBNet bnetSaveLoader;
+    static CPersistIDNet idnetSaveLoader;
+    static CPersistMNet mnetSaveLoader;
+    static CPersistMRF2 mrf2SaveLoader;
+    static CPersistFactor factorSaveLoader;
+    static CPersistNodeTypeVector nodeTypeVectorSaveLoader;
+    static CPersistPNodeTypeVector pNodeTypeVectorSaveLoader;
+    static CPersistMatrixFlt matrixFltSaveLoader;
+    static CPersistMatrixDistribFun matrixDistribFunSaveLoader;
+    static CPersistEvidence evidenceSaveLoader;
+    static CPersistGroup groupSaveLoader;
+
     if(!persistenceZooHolder.m_pZoo)
     {
         persistenceZooHolder.m_pZoo = new CPersistenceZoo;
-        new CGraphPersistence();
-        new CPersistNodeType();
-        new CPersistNodeValues();
-        new CPersistNumericVector<int>("int");
-        new CPersistNumericVector<float>("float");
-        new CPersistNumericVecVector<int>("int");
-        new CPersistValueVector();
-        new CPersistGaussianDistribFun();
-        new CPersistTabularDistribFun();
-        new CPersistSoftMaxDistribFun();
-        new CPersistCondGaussianDistribFun();
-        new CPersistCondSoftMaxDistribFun();
-        new CPersistScalarDistribFun();
-        new CPersistModelDomain();
-        new CPersistDBN();
-        new CPersistBNet();
-        new CPersistIDNet();
-        new CPersistMNet();
-        new CPersistMRF2();
-        new CPersistFactor();
-        new CPersistNodeTypeVector();
-        new CPersistPNodeTypeVector();
-        new CPersistMatrixFlt();
-        new CPersistMatrixDistribFun();
-        new CPersistEvidence();
-	new CPersistGroup();
     }
 
     return persistenceZooHolder.m_pZoo;
@@ -126,10 +127,6 @@ void CPersistenceZoo::Unregister(CPersistence *pPersist, bool bDTOR)
 {
     Map::iterator it;
 
-    if(m_bUnregister == false)
-    {
-	return;
-    }
     if(bDTOR)
     {
 	for(it = m_aFuncMap.begin(); it != m_aFuncMap.end(); it++)
@@ -194,15 +191,6 @@ void CPersistenceZoo::RescanIfNeed()
     }
 }
 
-CPersistenceZoo::~CPersistenceZoo()
-{
-    Map::const_iterator it = m_aFuncMap.begin();
+CPersistenceZoo::~CPersistenceZoo() { }
 
-    m_bUnregister = false;
-    for(; it != m_aFuncMap.end(); ++it)
-    {
-	delete it->second;
-    }
-}
-
-CPersistenceZoo::CPersistenceZoo(): m_bUnregister(true), m_iUpdate(0) {}
+CPersistenceZoo::CPersistenceZoo(): m_iUpdate(0) {}
