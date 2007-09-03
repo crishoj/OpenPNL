@@ -1987,7 +1987,7 @@ CMatrix<T> *iCNumericDenseMatrix<T>::ReduceOp( int const *dims_of_interest,
     j += steps[k];
 
 #define PNL_REDUCEOP_LOOP_CHECK( RANGES, NUM_STATS )  \
-    for ( k = NUM_STATS - 1; stats[k] == RANGES[k]; ) \
+    for ( k = NUM_STATS - 1; k >= 0 && stats[k] == RANGES[k]; ) \
     {                                                 \
         stats[k] = 0;                                 \
         j -= backsteps[k--];                          \
