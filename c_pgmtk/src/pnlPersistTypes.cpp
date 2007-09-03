@@ -15,6 +15,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "pnlConfig.hpp"
+#include "pnlMatrix_impl.hpp" // since we'll use CMatrix<CDistribFun*>
 #include <ctype.h>
 #include <sstream>
 #include "pnlContext.hpp"

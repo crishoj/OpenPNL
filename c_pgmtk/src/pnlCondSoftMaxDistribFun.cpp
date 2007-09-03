@@ -18,6 +18,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "pnlConfig.hpp"
+#include "pnlMatrix_impl.hpp" // since we'll use CMatrix<CSoftMaxDistribFun*>
 #include "pnlCondSoftMaxDistribFun.hpp"
 #include "pnlSoftMaxDistribFun.hpp"
 #include "pnlLog.hpp"

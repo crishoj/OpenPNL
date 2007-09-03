@@ -14,6 +14,7 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 #include "pnlConfig.hpp"
+#include "pnlMatrix_impl.hpp" // since we'll use CMatrix<CGaussianDistribFun*>
 #include "pnlCondGaussianDistribFun.hpp"
 #include "pnlSparseMatrix.hpp"
 #include "pnlDenseMatrix.hpp"

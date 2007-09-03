@@ -144,6 +144,9 @@ public:
     virtual int IsValueHere( CMatrixIterator<Type>* current ) const = 0;
     virtual void Index( CMatrixIterator<Type>* current, intVector* index ) const = 0;
 
+    // dump to output
+    virtual void Dump() const;  // defined in pnlMatrix_impl.hpp
+
 #ifdef PNL_RTTI
     virtual const CPNLType &GetTypeInfo() const
     {

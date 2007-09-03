@@ -20,8 +20,16 @@
 
 #include "pnlConfig.hpp"
 #include "pnlMatrix.hpp"
+#include "pnlMatrix_impl.hpp"
 
 PNL_USING
+
+// Explicit instantiation of commonly used CMatrix classes.  These lines 
+// ensure that the code in pnlMatrix_impl.hpp is compiled for these classes, 
+// eliminating the need to #include pnlMatrix_impl.hpp in every file where 
+// these classes are used.  
+template class CMatrix<int>;
+template class CMatrix<float>;
 
 #ifdef PNL_RTTI
 template<>
