@@ -2127,7 +2127,6 @@ PNL_API CBNet* pnlExCreateRandomBNet( int nnodes, int numEdges, int nContNds,
     int dim = 2;
     int ranges[] = {nnodes, nnodes};
     CSparseMatrix<int> *pAdjMat;
-    pAdjMat = CSparseMatrix<int>:: Create( dim, ranges, 0 );
     intVector nodesToConnect;
     
     int ind[2];
@@ -2155,6 +2154,7 @@ PNL_API CBNet* pnlExCreateRandomBNet( int nnodes, int numEdges, int nContNds,
     }
 
 newSample:
+    pAdjMat = CSparseMatrix<int>:: Create( dim, ranges, 0 );
     std::random_shuffle( allNds.begin(), allNds.end() );
     for( i = 0; i < nContNds; i++ )
     {
