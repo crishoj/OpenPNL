@@ -59,19 +59,25 @@ BayesNet::BayesNet(): m_Inference(0), m_Learning(0), m_nLearnedEvidence(0)
     m_pNet = new ProbabilisticNet();
     SpyTo(m_pNet);
     m_pNet->SetCallback(new BayesNetCallback());
-    m_pNet->Token().AddProperty("Inference", aInference,
-	sizeof(aInference)/sizeof(aInference[0]));
-	m_pNet->Token().AddProperty("Learning", aLearning,
-	sizeof(aLearning)/sizeof(aLearning[0]));
-    m_pNet->Token().AddProperty("LearningStructureMethod", aLearning,
-	sizeof(aLearningStructMethod)/sizeof(aLearningStructMethod[0]));
-	m_pNet->Token().AddProperty("LearningStructureScoreFun", aLearning,
-	sizeof(aLearningStructScoreFun)/sizeof(aLearningStructScoreFun[0]));
-	m_pNet->Token().AddProperty("LearningStructurePrior", aLearning,
-	sizeof(aLearningStructPriorType)/sizeof(aLearningStructPriorType[0]));
-
-	m_pNet->Token().AddProperty("LearningStructureK2PriorVal", aLearning,
-	sizeof(aLearningStructK2PriorVal)/sizeof(aLearningStructK2PriorVal[0]));
+    m_pNet->Token().AddProperty
+	("Inference", aInference,
+	 sizeof(aInference)/sizeof(aInference[0]));
+    m_pNet->Token().AddProperty
+	("Learning", aLearning,
+	 sizeof(aLearning)/sizeof(aLearning[0]));
+    m_pNet->Token().AddProperty
+	("LearningStructureMethod", aLearningStructMethod,
+	 sizeof(aLearningStructMethod)/sizeof(aLearningStructMethod[0]));
+    m_pNet->Token().AddProperty
+	("LearningStructureScoreFun", aLearningStructScoreFun, 
+	 sizeof(aLearningStructScoreFun)/sizeof(aLearningStructScoreFun[0]));
+    m_pNet->Token().AddProperty
+	("LearningStructurePrior", aLearningStructPriorType,
+	 sizeof(aLearningStructPriorType)/sizeof(aLearningStructPriorType[0]));
+    m_pNet->Token().AddProperty
+	("LearningStructureK2PriorVal", aLearningStructK2PriorVal,
+	 sizeof(aLearningStructK2PriorVal)
+	 /sizeof(aLearningStructK2PriorVal[0]));
 
 }
 
