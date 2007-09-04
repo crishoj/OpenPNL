@@ -499,6 +499,7 @@ void WDistributions::FillData(TokArr &value, TokArr &probability,
     static const char fname[] = "FillData";
 
     PNL_CHECK_FOR_ZERO(value.size());
+    Token().Resolve(value);
 
     int index = Token().iNode(value[0]);
 
