@@ -1322,7 +1322,7 @@ int testGetProb()
 	TokArr chts = net.GetPTabular("CurrentHumanTurn^Scissors","PreviousHumanTurn^Rock PreviousCompTurn^Paper");
 	TokArr chtp1 = net.GetPTabular("CurrentHumanTurn^Paper","PreviousHumanTurn^Rock PreviousCompTurn^Paper");
     
-	printf("\CurrentHumanTurn node distributions\n");
+	printf("\nCurrentHumanTurn node distributions\n");
     printf("%s\n",String(phtr).c_str());
     printf("%s\n",String(phtp).c_str());
     printf("%s\n",String(phts).c_str());

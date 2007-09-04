@@ -490,13 +490,13 @@ void TestGetLogLik(bool DeleteNet)
 	// point parts with tolerance eps
 
 	int exp1 = 0;
-	while(floor(abs(logLikRes)) > 0)
+	while(floor(fabs(logLikRes)) > 0)
 	{
 	    logLikRes /= 10.0;
 	    exp1++;
 	}
 	int exp2 = 0;
-	while(floor(abs(logLikBest)) > 0)
+	while(floor(fabs(logLikBest)) > 0)
 	{
 	    logLikBest /= 10.0;
 	    exp2++;
