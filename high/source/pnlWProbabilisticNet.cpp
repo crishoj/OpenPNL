@@ -425,7 +425,7 @@ int ProbabilisticNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mo
 	{
 	    continue;
 	}
-	TokIdNode *node = Tok(colName).Node();
+	TokIdNode *node = Tok(colName).Node(Token().Root());
 
 	if(node->tag == eTagNetNode || node->tag == eTagValue)
 	{
@@ -441,6 +441,11 @@ int ProbabilisticNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mo
     TokArr tmpTokArr;
     if(columns.size())
     {
+	if( columns.size() > nCol )
+	{
+	    ThrowUsingError("Not enough columns in loaded file", funName);
+	}
+
 	for(iCol = 0; iCol < columns.size(); iCol++)
 	{
 	    if(columns[iCol] != "")
@@ -451,6 +456,13 @@ int ProbabilisticNet::LoadEvidBuf(const char *filename, NetConst::ESavingType mo
 	    }
 	}
 	header = columns;
+
+	/* if there are more columns than columns.size() in the file
+	 * pad header with ""s so the extra columns are not read*/
+	for (iCol = columns.size(); iCol < nCol; iCol++)
+	{
+	    header.push_back("");
+	}
     }
 
     if(nColInUse == 0)
