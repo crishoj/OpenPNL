@@ -137,19 +137,20 @@ Log::printf(const char* pFmt, ...)
     
     va_list varg;
     
-    va_start(varg, pFmt);
-    
     char buf[1024];
     char *ptr = buf;
     int outSz, ptrSz = sizeof(buf);
     
     for(;;)
     {
+	va_start(varg, pFmt);    
 #ifdef _WIN32
         outSz = _vsnprintf(ptr, ptrSz, pFmt, varg);
 #else
         outSz = vsnprintf(ptr, ptrSz, pFmt, varg);
 #endif
+	va_end(varg);
+
         if(outSz < ptrSz - 2 && outSz != -1)
             break;
         ptrSz = (outSz > 0) ? outSz + 3 : ptrSz*2;
@@ -160,7 +161,6 @@ Log::printf(const char* pFmt, ...)
     WriteString(ptr);
     if(ptr != buf)
         delete[] ptr;
-    va_end(varg);
 }
 
 void
