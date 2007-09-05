@@ -327,12 +327,12 @@ CART_INLINE BOOL icxIsVarSplitLeft(CxCARTBase* cart, CxCARTSplit* split, CxClass
 	if (icxIsClassifierVarNumeric(type))
 	{
 #if FLOAT_ONLY
-		go_left = (split->value.fl >= var.fl) ;
+		go_left = (split->boundary.value.fl >= var.fl) ;
 #else
 		if (icxIsClassifierVar32f(type))
-			go_left = (split->value.fl >= var.fl) ;
+			go_left = (split->boundary.value.fl >= var.fl) ;
 		else
-			go_left =  (split->value.i >= var.i) ;
+			go_left =  (split->boundary.value.i >= var.i) ;
 #endif
 	}
 	else
@@ -343,7 +343,7 @@ CART_INLINE BOOL icxIsVarSplitLeft(CxCARTBase* cart, CxCARTSplit* split, CxClass
 		int i = icxIsClassifierVar32f(type) ? cxRound(var.fl) : var.i;
 #endif
 		assert((i >=0) && (i < cart->num_classes[feature]));
-		char c = ((char*)split->value.ptr)[i];
+		char c = ((char*)split->boundary.ptr)[i];
 		assert(c >= 0 && c < 3);
 		go_left = c&1;
 	}
@@ -355,6 +355,27 @@ CART_INLINE BOOL icxIsVarSplitLeft(CxCARTBase* cart, CxCARTSplit* split, CxClass
 CART_INLINE BOOL icxIsVarSplitLeft(CxCART* cart, CxCARTSplit* split, CxClassifierVar var)
 {
 	return icxIsVarSplitLeft((CxCARTBase*)cart, split, var);
+}
+
+CART_INLINE CxSplitBoundary 
+icxGetHalfwayBetween(CxClassifierVar val1, CxClassifierVar val2, BOOL floating)
+{
+    CxSplitBoundary boundary;
+
+    if (floating) {
+	boundary.value.fl = (val1.fl + val2.fl) * 0.5f;
+
+        // Idiotic but nessesary check!!!
+	if (boundary.value.fl >= val2.fl) { 
+	    boundary.value.fl = val1.fl;
+	}
+    } else {
+	// Use truncation rather than ceil because icxIsVarSplitLeft uses 
+	// boundary.value.i >= var.i, and f >= i iff floor(f) >= i.
+	boundary.value.i = (int)((val1.i + val2.i) * 0.5f);
+    }
+
+    return boundary;
 }
 
 ///// Iterates through all sequences of 0 and 1 of given length /////////
@@ -1172,7 +1193,7 @@ CART_INLINE BOOL cxIsStringSplitLeft( CxCARTBase* cart,
 		if (!missed_mask || (*(missed_mask + missed_mask_step * feature) == 0))
 		{
 			CxClassifierVar var = (*(CxClassifierVar*)((char *)features + features_step * feature));
-			if (icxIsClassifierVarCategoric(cart->feature_type[feature]) && (((char*)used_split->value.ptr)[icxVarToInt(var)] == 2))
+			if (icxIsClassifierVarCategoric(cart->feature_type[feature]) && (((char*)used_split->boundary.ptr)[icxVarToInt(var)] == 2))
 				used_split = used_split->next_surrogate;
 			else
 				return icxIsVarSplitLeft(cart, used_split , var);
@@ -1559,8 +1580,8 @@ CART_INLINE CxCARTSplit* icxCopySplit(CxCART* cart, CxCARTSplit* split)
 	memcpy(split_new , split , sizeof(CxCARTSplit));
 	if (n > 0)
 	{
-		split_new->value.ptr = split_new + 1;
-		memcpy ( split_new->value.ptr , split->value.ptr , n);
+		split_new->boundary.ptr = split_new + 1;
+		memcpy ( split_new->boundary.ptr , split->boundary.ptr , n);
 	}
 	return split_new;
 }

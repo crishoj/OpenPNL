@@ -178,6 +178,7 @@ void func_name( T* array, int length, user_data_type aux )		\
 #include "cart/cvcart.h"
 #include <math.h>
 #include <malloc.h>
+#include <iostream>
 
 #define DATA_TO_FILE1 0 // Numeric split resgression
 #define DATA_TO_FILE2 0 // Numeric split clasiification
@@ -718,12 +719,12 @@ CART_IMPL CxCARTSplit* cxCARTSplit( CxCART* cart, int feature_idx , BOOL use_cal
 	if (numeric)
 	{
 	    if (var32s)
-		split->value.i = 0;//value.i;
+		split->boundary.value.i = 0;//value.i;
 	    else
-		split->value.fl = 0.0;//value.fl;
+		split->boundary.value.fl = 0.0;//value.fl;
 	}
 	else
-	    split->value.ptr = (split + 1);
+	    split->boundary.ptr = (split + 1);
     }
     split->revert = FALSE;
     return split;
@@ -748,10 +749,10 @@ CART_IMPL CxCARTSplit* cxCARTBaseSplit( CxCARTBase* cart, int feature_idx )
     split->next_surrogate = NULL;
     if (numeric)
     {
-	split->value.i = 0;//value.i;
+	split->boundary.value.i = 0;//value.i;
     }
     else
-	split->value.ptr = (split + 1);
+	split->boundary.ptr = (split + 1);
 
     split->revert = FALSE;
     return split;
@@ -4357,12 +4358,12 @@ CART_IMPL int cxFindNumericSplitProportion(CxCART *cart,
     CxCARTSubj* subj = node->subj;
     int retval = 0;
 
-    int cmp = icxCompareVars( icxGetSubjFeature(subj,idx[left],feature) , split->value , type);
+    int cmp = icxCompareVars( icxGetSubjFeature(subj,idx[left],feature) , split->boundary.value , type);
     if (cmp > 0)
 	retval = 0;
     else
     {
-	cmp = icxCompareVars(icxGetSubjFeature(subj,idx[right],feature), split->value , type);
+	cmp = icxCompareVars(icxGetSubjFeature(subj,idx[right],feature), split->boundary.value , type);
 	if (cmp <= 0)
 	    retval =  right + 1 ;
 	else
@@ -4370,7 +4371,7 @@ CART_IMPL int cxFindNumericSplitProportion(CxCART *cart,
 	    while ( right - left > 1)
 	    {
 		int middle = (left + right) >> 1;
-		cmp = icxCompareVars(icxGetSubjFeature(subj,idx[middle],feature), split->value , type);
+		cmp = icxCompareVars(icxGetSubjFeature(subj,idx[middle],feature), split->boundary.value , type);
 		if (cmp <= 0)
 		    left = middle;
 		else
@@ -4596,7 +4597,7 @@ CART_IMPL float cxFindCARTNodeNumericSurrogate( CxCART *cart,
     // If they ask us for surrogate split on the SAME variable, return primary split
     if (feature_old == feature)
     {
-	split->value = node->split->value;
+	split->boundary = node->split->boundary;
 	EXIT_FUNC(cxFindCARTNodeNumericSurrogate);
 	return 1.0;
     }
@@ -4807,9 +4808,7 @@ CART_IMPL float cxFindCARTNodeNumericSurrogate( CxCART *cart,
 	CxClassifierVar val2 = (!mem_economy_mode) ? feature_vals_init[next_to_best] :
 	icxGetSubjFeature(subj , idx[next_to_best] , feature);
 	assert(!icxCompareVarsSimple(val1 , val2));
-	split->value.fl = floating ? (val1.fl + val2.fl) * 0.5f : (val1.i + val2.i) * 0.5f;
-	if (floating && (split->value.fl >= val2.fl)) // Idiotic but nessesary check!!!
-	    split->value.fl = val1.fl;
+	split->boundary = icxGetHalfwayBetween(val1, val2, floating);
     }
     split->weight = best_assoc; // !!!!!!!!!!!!! For sorting
     split->revert = best_revert;
@@ -4842,7 +4841,7 @@ CART_IMPL float cxFindCARTNodeCategoricSurrogate( CxCART *cart,
 
     if (feature_old == feature)
     {
-	memcpy(split->value.ptr , node->split->value.ptr , n2);
+	memcpy(split->boundary.ptr , node->split->boundary.ptr , n2);
 	return 1.0;
     }
 
@@ -4974,7 +4973,7 @@ CART_IMPL float cxFindCARTNodeCategoricSurrogate( CxCART *cart,
 	double min = ((float)MIN(left_right_prob[0] , left_right_prob[1])) * inv_real_prob;
 	double inv_min = 1.0f/min;
 
-	char* ptr = (char*)split->value.ptr;
+	char* ptr = (char*)split->boundary.ptr;
 
 	float predicted = 0.0;
 	/*	 Calculate predictive association for split and it's missing categories.
@@ -5222,12 +5221,12 @@ CART_IMPL float cxFindNodeNumericBestSplitRegression( CxCART *cart,
     int eff_feature = cart->features_corr[feature];
     assert( eff_feature >= 0 && eff_feature < cart->eff_num_features );
     int* idx = node->fallen_idx + node->num_fallens * eff_feature;
-    split->value.i = 0;
+    split->boundary.value.i = 0;
     int num_fallens = node->num_fallens;
     //	double sum1 = 0.0;
     double sum2 = 0.0;
     double sum_sq2 = 0.0;
-    BOOL floating = icxIsClassifierVar32f(cart->response_type);
+    BOOL floating = icxIsClassifierVar32f(cart->feature_type[feature]);
     assert(cart && cart->root);
     int total = cart->root->num_fallens;
     double inv_total = 1.0/total;
@@ -5483,10 +5482,7 @@ exit_loop2 :
     int next_to_best = MIN( num_not_missed - 1 , best_i+1);
     CxClassifierVar val1 = feature_vals[best_i];
     CxClassifierVar val2 = feature_vals[next_to_best];
-
-    split->value.fl = (floating ? (val1.fl + val2.fl) * 0.5f : (val1.i + val2.i) * 0.5f);
-    if (floating && (split->value.fl >= val2.fl)) // Idiotic but nessesary check!!!
-	split->value.fl = val1.fl;
+    split->boundary = icxGetHalfwayBetween(val1, val2, floating);
 
     split->weight = (float)best_weight;
 #if DATA_TO_FILE1
@@ -5509,7 +5505,7 @@ exit_loop2 :
     }
     fwrite(&best_weight, sizeof(double), 1, file1);
     fwrite(&best_i, sizeof(int), 1, file1);
-    double d = split->value.fl;
+    double d = split->boundary.value.fl;
     fwrite(&d, sizeof(double), 1, file1);
 
     //// Write as floats
@@ -5520,7 +5516,7 @@ exit_loop2 :
     fwrite(responses, sizeof(float), subj->size, file2);
     fwrite(&best_weight, sizeof(double), 1, file2);
     fwrite(&best_i, sizeof(int), 1, file2);
-    fwrite(&(split->value), sizeof(float), 1, file2);
+    fwrite(&(split->boundary.value), sizeof(float), 1, file2);
 
     fclose(file1);
     fclose(file2);
@@ -6206,10 +6202,10 @@ CART_IMPL float cxFindNodeNumericBestSplitClassification( CxCART* cart,
     int eff_feature = cart->features_corr[feature];
     assert( eff_feature >= 0 && eff_feature < cart->eff_num_features );
     int* idx = node->fallen_idx + node->num_fallens * eff_feature;
-    split->value.i = 0;
+    split->boundary.value.i = 0;
     int num_fallens = node->num_fallens;
 
-    BOOL floating = icxIsClassifierVar32f(cart->response_type);
+    BOOL floating = icxIsClassifierVar32f(cart->feature_type[feature]);
     assert((long)cart->params->splitting_rule <= CxCARTEntropyCriterion);
 
     // Exit if unsuficcient number of cases in node to split it.
@@ -6266,10 +6262,7 @@ CART_IMPL float cxFindNodeNumericBestSplitClassification( CxCART* cart,
     int next_to_best = MIN( num_not_missed - 1 , best_i+1);
     CxClassifierVar val1 = feature_vals[best_i];
     CxClassifierVar val2 = feature_vals[next_to_best];
-
-    split->value.fl = (floating ? (val1.fl + val2.fl) * 0.5f : (val1.i + val2.i) * 0.5f);
-    if (floating && (split->value.fl >= val2.fl)) // Idiotic but nessesary check!!!
-	split->value.fl = val1.fl;
+    split->boundary = icxGetHalfwayBetween(val1, val2, floating);
 
 #if DATA_TO_FILE2
     FILE* file1 = fopen("d:\\CART\\AlamereTest\\num_split_classd.dat", "wb");
@@ -6293,7 +6286,7 @@ CART_IMPL float cxFindNodeNumericBestSplitClassification( CxCART* cart,
     //// Results
     fwrite(&best_weight, sizeof(double), 1, file1);
     fwrite(&best_i, sizeof(int), 1, file1);
-    double d = split->value.fl;
+    double d = split->boundary.value.fl;
     fwrite(&d, sizeof(double), 1, file1);
     fclose(file1);
 
@@ -6498,7 +6491,7 @@ CART_IMPL float cxFindNodeCategoricBestSplitRegression( CxCART* cart,
     int eff_feature = cart->features_corr[feature];
     assert( eff_feature >= 0 && eff_feature < cart->eff_num_features);
     split->feature_idx = feature;
-    char* ptr = (char*)split->value.ptr;
+    char* ptr = (char*)split->boundary.ptr;
     assert(icxIsClassifierVarNumeric(cart->response_type));
     assert(icxIsClassifierVarCategoric(cart->feature_type[feature]));
 
@@ -6909,7 +6902,7 @@ CART_IMPL float cxFindNodeCategoricBestSplitClassification( CxCART* cart,
     int eff_feature = cart->features_corr[feature];
     assert( eff_feature >= 0 && eff_feature < cart->eff_num_features);
     split->feature_idx = feature;
-    char* ptr = (char*)split->value.ptr;
+    char* ptr = (char*)split->boundary.ptr;
     /// Exit if we cannot do any split
     int num_not_missed = node->num_fallens - node->num_missed[eff_feature];
     int min_points = MAX(cart->params->split_min_points,1);
@@ -7163,7 +7156,7 @@ CART_IMPL float cxFindNodeCategoricClusteringBestSplit( CxRootedCARTBase* cart,
 		}
 #endif
 		///	  Finally set current split to the best split
-		char* split_ptr = (char*)split->value.ptr;
+		char* split_ptr = (char*)split->boundary.ptr;
 		for (i = 0 ; i < num_clusters ; i++)
 		{
 		    CxVarCategory* cat = cluster_array[i]->first_cat;
@@ -8136,13 +8129,22 @@ CART_IMPL void _DumpSplit(FILE* file, CxCARTBase* cart, CxCARTSplit* split, ESpl
     if (icxIsClassifierVarCategoric(type))
     {
 	fprintf(file , "split on %d feature at " , feature_idx);
-	char* ptr = (char*)split->value.ptr;
+	char* ptr = (char*)split->boundary.ptr;
 	for (int i = 0 ; i < cart->num_classes[feature_idx] ; i++)
 	    fputc('0' + ptr[i], file);
     }
     else
     {
-	fprintf(file , "split on %d feature at %.10g" , feature_idx, split->value.fl);
+	if (icxIsClassifierVar32f(type)) 
+	{
+	    fprintf(file , "split on %d feature at %.10g" , feature_idx, 
+		    split->boundary.value.fl); 
+	}
+	else 
+	{
+	    fprintf(file, "split on %d feature being <= %d", feature_idx, 
+		    split->boundary.value.i);
+	}
 	assert(ferror(file) == 0);
 	clearerr(file);
     }
@@ -8568,15 +8570,23 @@ CART_IMPL BOOL cxReadSplit(FILE* file, CxCARTBase* cart, CxCARTSplit*& split, ES
 		return FALSE;
 	    int feat_type = cart->feature_type[split->feature_idx];
 	    eat_white(file);
-	    if (icxIsClassifierVarNumeric(feat_type))
-		fscanf(file, "%g", &split->value.fl);
+	    if (icxIsClassifierVarNumeric(feat_type)) {
+		if (icxIsClassifierVar32f(feat_type)) 
+		{
+		    fscanf(file, "%g", &split->boundary.value.fl);
+		} 
+		else 
+		{
+		    fscanf(file, "%d", &split->boundary.value.i);
+		}
+	    }
 	    else
 	    {
-		split->value.ptr = split + 1;
+		split->boundary.ptr = split + 1;
 		for (int i = 0 ; i < cart->num_classes[split->feature_idx]; i++)
 		{
 		    char c = (char)fgetc(file);
-		    ((char*)split->value.ptr)[i] = (char)((c == 'L') ? 1 :
+		    ((char*)split->boundary.ptr)[i] = (char)((c == 'L') ? 1 :
 		    (c == '-') ? 2 : 0);
 		}
 	    }
@@ -8602,12 +8612,17 @@ CART_IMPL void cxWriteSplit(FILE* file, CxCARTBase* cart, CxCARTSplit*& split, E
 
     int feat_type = cart->feature_type[split->feature_idx];
     if (icxIsClassifierVarNumeric(feat_type))
-	fprintf(file, "%.10g\n", ((double)split->value.fl) );
+    {
+	if (icxIsClassifierVar32f(feat_type)) 
+	    fprintf(file, "%.10g\n", ((double)split->boundary.value.fl) );
+	else 
+	    fprintf(file, "%d\n", split->boundary.value.i);
+    }
     else
     {
 	for (int i = 0 ; i < cart->num_classes[split->feature_idx]; i++)
 	{
-	    char dir = ((char*)split->value.ptr)[i];
+	    char dir = ((char*)split->boundary.ptr)[i];
 	    char c = (dir == 0) ? 'R' : (dir == 1) ? 'L' : '-';
 	    fputc(c, file);
 	}
@@ -9306,7 +9321,7 @@ CART_IMPL void cxInitSplitBuffer(CxCART* cart, void* buf)
 
 	if (icxIsClassifierVarCategoric(real_feature_idx))
 	{
-	    split->value.ptr = split_ptr;
+	    split->boundary.ptr = split_ptr;
 	    int n = cart->num_classes[real_feature_idx];
 	    split_ptr += n;
 	}
@@ -9335,8 +9350,8 @@ CART_IMPL void cxAddNodeSplits(CxCART* cart , CxCARTNode* node ,
 
 	if (icxIsClassifierVarCategoric(cart->feature_type[feature_idx]))
 	{
-	    new_split->value.ptr = new_split + 1;
-	    memcpy ( new_split->value.ptr , split->value.ptr , n);
+	    new_split->boundary.ptr = new_split + 1;
+	    memcpy ( new_split->boundary.ptr , split->boundary.ptr , n);
 	    split_area += n;
 	}
 	new_split->next_competitor = new_split->next_surrogate = NULL;

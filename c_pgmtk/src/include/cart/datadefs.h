@@ -186,8 +186,16 @@ typedef union CxClassifierVar
 {
     int i;
     float fl;
-	void *ptr;
 } CxClassifierVar;
+
+typedef union CxSplitBoundary
+{
+    CxClassifierVar value;
+
+    // Array of one-byte direction indicators, one per possible value of 
+    // categoric variable: 0 = right, 1 = left, 2 = use surrogate split.
+    void *ptr; 
+} CxSplitBoundary;
 
 typedef enum CxMARTLossFunction
 {
@@ -499,7 +507,7 @@ typedef struct CxCARTTrainParams
     struct CxCARTSplit* next_competitor;       \
 	struct CxCARTSplit* next_surrogate;        \
     int feature_idx;                           \
-    CxClassifierVar value;                     \
+    CxSplitBoundary boundary;                     \
     float weight;							   \
 	BOOL revert;                               \
 
