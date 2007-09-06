@@ -1236,7 +1236,7 @@ CBNet *CreateTestTabularNetWithDecTreeNodeBNet()
 
     int nnodesInChilddom = nnodes;
 	int *domainChild; 
-	domainChild = new int[ nnodes - 1];
+	domainChild = new int[ nnodes ];
 
 		for( i = 0; i < nnodes; i++ )
 		{
