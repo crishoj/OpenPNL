@@ -643,8 +643,10 @@ CPotential* CGaussianPotential::ConvertStatisticToPot(int numOfSamples) const
             value = pLearnMatrixCov->GetElementByIndexes(indexes)/numOfSamples;
             value -= meanSquare->GetElementByIndexes(indexes);
             pMatrixCov->SetElementByIndexes(value, indexes);
-            indexes[0]^=indexes[1]^=indexes[0]^=indexes[1];
-            pMatrixCov->SetElementByIndexes(value, indexes);
+            
+	    indexes[0] = j;
+	    indexes[1] = i;
+	    pMatrixCov->SetElementByIndexes(value, indexes);
         }
     }
     

@@ -862,16 +862,17 @@ CPotential* CGaussianCPD::ConvertStatisticToPot(int numOfSamples) const
     int i, j;
     for( i = 0 ; i < numOfVls; i++ )
     {
-	indexes[0] = i;
 	for(j = i; j < numOfVls; j++)
 	{
+	    indexes[0] = i;
 	    indexes[1] = j;
 	    value = pLearnMatrixCov->GetElementByIndexes(indexes)/numOfSamples;
 	    value -= meanSquare->GetElementByIndexes(indexes);
 	    pMatrixCov->SetElementByIndexes(value, indexes);
-	    indexes[0]^=indexes[1]^=indexes[0]^=indexes[1];
-	    pMatrixCov->SetElementByIndexes(value, indexes);
 
+	    indexes[0] = j;
+	    indexes[1] = i;
+	    pMatrixCov->SetElementByIndexes(value, indexes);
 	}
     }
 

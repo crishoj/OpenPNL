@@ -5844,8 +5844,9 @@ float CGaussianDistribFun::ProcessingStatisticalData( float numEvidences )
                 {
                     indexes[1] = j;
                     notClExpPrts->SetElementByIndexes( notClPrtsData[i], indexes );
-                    indexes[0]^=indexes[1]^=indexes[0]^=indexes[1];
-                    notClExpPrts->SetElementByIndexes( notClPrtsData[i], indexes );
+		    indexes[0] = j;
+		    indexes[1] = i;
+		    notClExpPrts->SetElementByIndexes( notClPrtsData[i], indexes );
                 }
                 
             }
@@ -6019,16 +6020,16 @@ float CGaussianDistribFun::ProcessingStatisticalData( float numEvidences )
         {
             for( i = 0 ; i < chldSize; i++ )
             {
-                //indexes[0] = i;
                 for(j = i; j < chldSize; j++)
                 {
                     indexes[0] = i;
                     indexes[1] = j;
                     value = matYY->GetElementByIndexes(indexes)/numEvidences;
                     m_pMatrixCov->SetElementByIndexes(value, indexes);
-                    indexes[0]^=indexes[1]^=indexes[0]^=indexes[1];
-                    m_pMatrixCov->SetElementByIndexes(value, indexes);
-                    
+
+		    indexes[0] = j;
+		    indexes[1] = i;
+		    m_pMatrixCov->SetElementByIndexes(value, indexes);
                 }
             }
 	    int isIllMatrix = m_pMatrixCov->IsIllConditioned();
@@ -6116,7 +6117,9 @@ float CGaussianDistribFun::ProcessingStatisticalData( float numEvidences )
                     value = m_pLearnMatrixCov->GetElementByIndexes(indexes)/numEvidences;
                     value -= meanSquare->GetElementByIndexes(indexes);
                     pVirtMatrixCov->SetElementByIndexes(value, indexes);
-                    indexes[0]^=indexes[1]^=indexes[0]^=indexes[1];
+                    
+		    indexes[0] = j;
+		    indexes[1] = i;
                     pVirtMatrixCov->SetElementByIndexes(value, indexes);
                     
                 }
@@ -6136,12 +6139,16 @@ float CGaussianDistribFun::ProcessingStatisticalData( float numEvidences )
                     indexes[1] = j;
                     value = m_pLearnMatrixCov->GetElementByIndexes(indexes);
                     value -= prod->GetElementByIndexes(indexes);
-                    indexes[0]^=indexes[1]^=indexes[0]^=indexes[1];
+ 
+		    indexes[0] = j;
+		    indexes[1] = i;
                     value -= prod->GetElementByIndexes(indexes);
                     value /= numEvidences;
                     value += meanSquare->GetElementByIndexes(indexes);
                     pVirtMatrixCov->SetElementByIndexes(value, indexes);
-                    indexes[0]^=indexes[1]^=indexes[0]^=indexes[1];
+
+		    indexes[0] = i;
+		    indexes[1] = j;
                     pVirtMatrixCov->SetElementByIndexes(value, indexes);
                     
                 }
@@ -7288,7 +7295,8 @@ C2DNumericDenseMatrix<float> * CGaussianDistribFun::FormXX( intVector& unclumped
 	
 	matXX->SetElementByIndexes( val, ind );
         
-	ind[0]^=ind[1]^=ind[0]^=ind[1];	
+	ind[0] = i;
+	ind[1] = ranges[0] - 1;
 	matXX->SetElementByIndexes( val, ind );
     }
     
@@ -7452,20 +7460,22 @@ C2DNumericDenseMatrix<float> * CGaussianDistribFun::FormCov(intVector& nsVec, fl
     float num = 0.5f/nEv;
     for( i = 0; i < sz; i++ )
     {
-	ind[0] = i;
 	for( j = i; j < sz; j++ )
 	{
-	    
+	    ind[0] = i;
 	    ind[1] = j;
 	    val = matYY->GetElementByIndexes(ind);
-	    ind[0]^=ind[1]^=ind[0]^=ind[1];
+
+	    ind[0] = j;
+	    ind[1] = i;
 	    val += matYY->GetElementByIndexes(ind);
 	    val *= num;
 	    
 	    val += matMuMu->GetElementByIndexes(ind);
 	    
 	    matYY->SetElementByIndexes(val, ind);
-	    ind[0]^=ind[1]^=ind[0]^=ind[1];
+	    ind[0] = i;
+	    ind[0] = j;
 	    matYY->SetElementByIndexes(val, ind);
 	}
 	
