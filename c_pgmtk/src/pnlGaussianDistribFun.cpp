@@ -1859,14 +1859,18 @@ int CGaussianDistribFun::CheckMomentFormValidity()
             if( det < 0 )
             {
                 PNL_THROW( CInconsistentType,
-                    "covariance matrix must be positive semidifinite" );
+                    "covariance matrix must be positive semidefinite" );
             }
             int isIllMatrix = m_pMatrixCov->IsIllConditioned();
             if( isIllMatrix )
             {
                 PNL_THROW( CInconsistentType,
-                "covariance matrix is is ill-ocnditioned, it should be delte distribution");
+                "covariance matrix is is ill-conditioned, it should be delta distribution");
             }
+	    if( !m_pMatrixCov->IsSymmetric(1e-3f) )
+	    {
+		PNL_THROW( CInvalidOperation, "covariance isn't symmetric" );
+	    }
         }
         if(( m_bPotential )||( !m_bPotential && (m_NumberOfNodes == 1) ))
         {
@@ -7008,6 +7012,7 @@ float CGaussianDistribFun::ProcessingStatisticalData( float nEv )
 	    m_bDeltaFunction = 0;
             m_normCoeff = 0;
             AttachMatrix(matCovVirt, matCovariance );
+	    CheckMomentFormValidity();
         }
        else
        {
@@ -7475,7 +7480,7 @@ C2DNumericDenseMatrix<float> * CGaussianDistribFun::FormCov(intVector& nsVec, fl
 	    
 	    matYY->SetElementByIndexes(val, ind);
 	    ind[0] = i;
-	    ind[0] = j;
+	    ind[1] = j;
 	    matYY->SetElementByIndexes(val, ind);
 	}
 	
