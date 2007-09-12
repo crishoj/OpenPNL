@@ -57,8 +57,8 @@ void pnl::CMatrix<Type>::Dump() const
 
     intVector indices;
     const Type *value;
-    for (CMatrixIterator<Type> *matIter = InitIterator(); 
-	 IsValueHere(matIter); Next(matIter)) 
+    CMatrixIterator<Type> *matIter = InitIterator();
+    for (; IsValueHere(matIter); Next(matIter)) 
     {
 	dump << "    ";
 
@@ -72,6 +72,7 @@ void pnl::CMatrix<Type>::Dump() const
 	value = Value(matIter);
        	dump << ": " << *value << "\n";
     }
+    delete matIter;
 }
 
 #endif //__PNLMATRIX_IMPL_HPP__
