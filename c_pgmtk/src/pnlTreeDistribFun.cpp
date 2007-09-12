@@ -62,11 +62,11 @@ void CTreeDistribFun::Clear()
     if (m_pSample)
     {
 		CxClassifierSampleChunk* chunk = m_pSample->chunk[0];
-		cxReleaseMat( &m_response_mat );
+		cvReleaseMat( &m_response_mat );
 		if (m_terms_mat)
-			cxReleaseMat( &m_terms_mat );
+			cvReleaseMat( &m_terms_mat );
 		if (m_missed_mask)
-			cxReleaseMat( &m_missed_mask );
+			cvReleaseMat( &m_missed_mask );
 		
 		delete[] chunk->indices_of_interest;
 		cxReleaseClassifierSample( &m_pSample ); 
@@ -199,21 +199,21 @@ void CTreeDistribFun::_CreateCART()
     assert(m_domain);
     
     int nEvidences = m_vecAllEvidences.size();
-    CxMat* priors_mat = m_Params.priors;
+    CvMat* priors_mat = m_Params.priors;
     int num_samples_learn = m_Params.is_cross_val ? nEvidences :
     (int)(nEvidences * m_Params.learn_sample_part);
     int num_samples_test = nEvidences - num_samples_learn;
     int* samples_of_interest = rand_perm( nEvidences );
     int total_vars = m_NodeTypes.size() - 1;
     
-    m_response_mat  = cxCreateMat( 1, nEvidences, CX_32FC1 );
-    CxMat* type_mask     = cxCreateMat( total_vars + 1, 1, CX_32SC1 );
-    CxMat* features_of_interest = 0;
+    m_response_mat  = cvCreateMat( 1, nEvidences, CV_32FC1 );
+    CvMat* type_mask     = cvCreateMat( total_vars + 1, 1, CV_32SC1 );
+    CvMat* features_of_interest = 0;
     if ( total_vars > 0)
     {
-		m_terms_mat     = cxCreateMat( total_vars, nEvidences, CX_32FC1 );
-		m_missed_mask   = cxCreateMat( total_vars, nEvidences, CX_8UC1 );
-		features_of_interest = cxCreateMat( total_vars  , 1, CX_32SC1 );
+		m_terms_mat     = cvCreateMat( total_vars, nEvidences, CV_32FC1 );
+		m_missed_mask   = cvCreateMat( total_vars, nEvidences, CV_8UC1 );
+		features_of_interest = cvCreateMat( total_vars  , 1, CV_32SC1 );
 		for (int  i = 0; i < total_vars; i++ )
 			((int *)features_of_interest->data.ptr)[i] = i;
     }
@@ -305,7 +305,7 @@ void CTreeDistribFun::_CreateCART()
     fclose(file);
 #endif	
     if (type_mask)
-	cxReleaseMat( &type_mask );
+	cvReleaseMat( &type_mask );
 }
 
 float CTreeDistribFun::ProcessingStatisticalData( float numEvidences ) 
@@ -409,7 +409,7 @@ float CTreeDistribFun::GetLogLik( const CEvidence* pEv ) const
     }
     else
     {
-		int resp = cxRound(response);
+		int resp = cvRound(response);
 		float prob = node->fallen_stats[resp]/(float)node->num_fallens;
 		delete[] features;
 		return (float)log(prob);
@@ -719,11 +719,11 @@ void CTreeDistribFun::UpdateTree(const CGraph* pGraphTree, TreeNodeFields *field
         CxClassifierVarType *feature_type;
         feature_type = ( CxClassifierVarType*)malloc( s );
         memset(feature_type, 0, s);
-        CxMat* type_mask     = cxCreateMat(total_vars+1, 1, CX_32SC1 );
+        CvMat* type_mask     = cvCreateMat(total_vars+1, 1, CV_32SC1 );
         type_step = (type_mask->rows == 1) ? sizeof(int) : type_mask->step;
         response_type = *(CxClassifierVarType *)(type_mask->data.ptr + type_step * num_features);
         
-        CxMat* features_of_interest = cxCreateMat(1, num_features, CX_32SC1 );
+        CvMat* features_of_interest = cvCreateMat(1, num_features, CV_32SC1 );
         
         int tmp = 0; 
         for( i = 0; i< pGraphTree->GetNumberOfNodes(); i++)
@@ -742,7 +742,7 @@ void CTreeDistribFun::UpdateTree(const CGraph* pGraphTree, TreeNodeFields *field
             };
         };
         
-        CxMat* priors_mat = m_Params.priors;
+        CvMat* priors_mat = m_Params.priors;
         //creation params
         CxCARTTrainParams*  train_params = 
         cxCARTTrainParams( features_of_interest,   // features_of_interest 
@@ -931,7 +931,7 @@ void CTreeDistribFun::FillTree(CxCART *pCart,CxCARTNode *node,
         split->feature_idx = fields[nodeNum].node_index;
         if( fields[nodeNum].Question == 1)
         {
-            split->value.fl = fields[nodeNum].questionValue;
+            split->boundary.value.fl = fields[nodeNum].questionValue;
         }
         else
         {
@@ -957,7 +957,7 @@ void CTreeDistribFun::FillTree(CxCART *pCart,CxCARTNode *node,
             for( i= 0; i < nodeSize; i++ )
                 strQuestion[i] = 0;
             strQuestion[tmpQuestionVal] = 1;
-            split->value.ptr = (void*)strQuestion;
+            split->boundary.ptr = (void*)strQuestion;
         }
         node->split= split;
         split->revert = 0;

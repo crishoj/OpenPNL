@@ -43,45 +43,62 @@
 #define  XY_SHIFT  16
 #define  XY_ONE    (1 << XY_SHIFT)
 
-typedef struct CxPolyEdge
+#define CV_DRAWING_STORAGE_BLOCK ((1 << 12) - 256)
+
+typedef struct CvPolyEdge
 {
     int x, dx;
     union
     {
-        struct CxPolyEdge *next;
+        struct CvPolyEdge *next;
         int y0;
     };
     int y1;
 }
-CxPolyEdge;
+CvPolyEdge;
 
 static void
-icxCollectPolyEdges( CxMat* img, CxSeq* v, CxContour* edges, const void* color );
+icvCollectPolyEdges( CvMat* img, CvSeq* v, CvContour* edges,
+                     const void* color, int line_type,
+                     int shift, CvPoint offset=cvPoint(0,0) );
 
 static void
-icxFillEdgeCollection( CxMat* img, CxContour* edges, const void* color );
+icvFillEdgeCollection( CvMat* img, CvContour* edges, const void* color );
 
 static void
-icxPolyLineAA( CxMat* img, CxPoint *v, int count, int closed,
-               int scale, const void* color );
+icvPolyLine( CvMat* img, CvPoint *v, int count, int closed,
+             const void* color, int thickness, int line_type, int shift );
 
 static void
-icxPolyLine( CxMat* img, CxPoint *v, int count, int closed,
-             int thickness, const void* color, int connectivity = 8 );
-
-static void
-icxFillConvexPoly( CxMat* img, CxPoint* v,
-                   int npts, const void* color );
+icvFillConvexPoly( CvMat* img, CvPoint* v, int npts,
+                   const void* color, int line_type, int shift );
 
 /****************************************************************************************\
 *                                   Lines                                                *
 \****************************************************************************************/
 
-int icxClipLine( int right, int bottom, CxPoint* pt1, CxPoint* pt2 )
+CV_IMPL int
+cvClipLine( CvSize img_size, CvPoint* pt1, CvPoint* pt2 )
 {
-    int x1 = pt1->x, y1 = pt1->y, x2 = pt2->x, y2 = pt2->y;
-    int c1 = (x1 < 0) + (x1 > right) * 2 + (y1 < 0) * 4 + (y1 > bottom) * 8;
-    int c2 = (x2 < 0) + (x2 > right) * 2 + (y2 < 0) * 4 + (y2 > bottom) * 8;
+    int result = 0;
+
+    CV_FUNCNAME( "cvClipLine" );
+
+    __BEGIN__;
+
+    int x1, y1, x2, y2;
+    int c1, c2;
+    int right = img_size.width-1, bottom = img_size.height-1;
+
+    if( !pt1 || !pt2 )
+        CV_ERROR( CV_StsNullPtr, "One of point pointers is NULL" );
+
+    if( right < 0 || bottom < 0 )
+        CV_ERROR( CV_StsOutOfRange, "Image width or height are negative" );
+
+    x1 = pt1->x; y1 = pt1->y; x2 = pt2->x; y2 = pt2->y;
+    c1 = (x1 < 0) + (x1 > right) * 2 + (y1 < 0) * 4 + (y1 > bottom) * 8;
+    c2 = (x2 < 0) + (x2 > right) * 2 + (y2 < 0) * 4 + (y2 > bottom) * 8;
 
     if( (c1 & c2) == 0 && (c1 | c2) != 0 )
     {
@@ -127,36 +144,50 @@ int icxClipLine( int right, int bottom, CxPoint* pt1, CxPoint* pt2 )
         pt2->y = y2;
     }
 
-    return ( c1 | c2 ) == 0;
+    result = ( c1 | c2 ) == 0;
+
+    __END__;
+
+    return result;
 }
-
-
-typedef struct CxLineIterator
-{
-    uchar* ptr;
-    int  err;
-    int  plus_delta;
-    int  minus_delta;
-    int  plus_step;
-    int  minus_step;
-} CxLineIterator;
 
 
 /* 
    Initializes line iterator.
    Returns number of points on the line or negative number if error.
 */
-static int
-icxInitLineIterator( const CxMat* mat, CxPoint pt1, CxPoint pt2,
-                     CxLineIterator* iterator, int connectivity,
-                     int left_to_right )
+CV_IMPL int
+cvInitLineIterator( const CvArr* img, CvPoint pt1, CvPoint pt2,
+                    CvLineIterator* iterator, int connectivity,
+                    int left_to_right )
 {
+    int count = -1;
+    
+    CV_FUNCNAME( "cvInitLineIterator" );
+
+    __BEGIN__;
+    
+    CvMat stub, *mat = (CvMat*)img;
     int dx, dy, s;
     int bt_pix, bt_pix0, step;
 
-    assert( connectivity == 4 || connectivity == 8 );
+    if( !CV_IS_MAT(mat) )
+        CV_CALL( mat = cvGetMat( mat, &stub ));
 
-    bt_pix0 = bt_pix = icxPixSize[CX_MAT_TYPE(mat->type)];
+    if( !iterator )
+        CV_ERROR( CV_StsNullPtr, "Pointer to the iterator state is NULL" );
+
+    if( connectivity != 8 && connectivity != 4 )
+        CV_ERROR( CV_StsBadArg, "Connectivity must be 8 or 4" );
+
+    if( (unsigned)pt1.x >= (unsigned)(mat->width) ||
+        (unsigned)pt2.x >= (unsigned)(mat->width) ||
+        (unsigned)pt1.y >= (unsigned)(mat->height) ||
+        (unsigned)pt2.y >= (unsigned)(mat->height) )
+        CV_ERROR( CV_StsBadPoint,
+            "One of the ending points is outside of the image, use cvClipLine" );
+
+    bt_pix0 = bt_pix = CV_ELEM_SIZE(mat->type);
     step = mat->step;
 
     dx = pt2.x - pt1.x;
@@ -202,7 +233,7 @@ icxInitLineIterator( const CxMat* mat, CxPoint pt1, CxPoint pt2,
         iterator->minus_delta = -(dy + dy);
         iterator->plus_step = step;
         iterator->minus_step = bt_pix;
-        s = dx + 1;
+        count = dx + 1;
     }
     else /* connectivity == 4 */
     {
@@ -213,56 +244,56 @@ icxInitLineIterator( const CxMat* mat, CxPoint pt1, CxPoint pt2,
         iterator->minus_delta = -(dy + dy);
         iterator->plus_step = step - bt_pix;
         iterator->minus_step = bt_pix;
-        s = dx + dy + 1;
+        count = dx + dy + 1;
     }
 
-    return s;
-}
+    __END__;
 
-#define CX_NEXT_LINE_POINT( iterator )                                          \
-{                                                                               \
-    int mask =  (iterator).err < 0 ? -1 : 0;                                    \
-    (iterator).err += (iterator).minus_delta + ((iterator).plus_delta & mask);  \
-    (iterator).ptr += (iterator).minus_step + ((iterator).plus_step & mask);    \
+    return count;
 }
-
 
 static void
-icxLine( CxMat* mat, CxPoint pt1, CxPoint pt2,
+icvLine( CvMat* mat, CvPoint pt1, CvPoint pt2,
          const void* color, int connectivity = 8 )
 {
-    if( icxClipLine( mat->width - 1, mat->height - 1, &pt1, &pt2 ))
+    if( cvClipLine( cvGetMatSize(mat), &pt1, &pt2 ))
     {
-        CxLineIterator iterator;
-        int i, count = icxInitLineIterator( mat, pt1, pt2, &iterator, connectivity, 1 );
-        int pix_size = icxPixSize[CX_MAT_TYPE(mat->type)];
+        CvLineIterator iterator;
+        int pix_size = CV_ELEM_SIZE(mat->type);
+        int i, count;
+        
+        if( connectivity == 0 )
+            connectivity = 8;
+        if( connectivity == 1 )
+            connectivity = 4;
+        
+        count = cvInitLineIterator( mat, pt1, pt2, &iterator, connectivity, 1 );
 
         for( i = 0; i < count; i++ )
         {
-            memcpy( iterator.ptr, color, pix_size );
-            CX_NEXT_LINE_POINT( iterator );
+            CV_MEMCPY_AUTO( iterator.ptr, color, pix_size );
+            CV_NEXT_LINE_POINT( iterator );
         }
     }
 }
 
 
-/* Correction table depended on slope */
-static const uchar icxSlopeCorrTable[] = {
+/* Correction table depent on the slope */
+static const uchar icvSlopeCorrTable[] = {
     181, 181, 181, 182, 182, 183, 184, 185, 187, 188, 190, 192, 194, 196, 198, 201,
     203, 206, 209, 211, 214, 218, 221, 224, 227, 231, 235, 238, 242, 246, 250, 254
 };
 
 /* Gaussian for antialiasing filter */
-static const int icxFilterTable[] = {
+static const int icvFilterTable[] = {
     168, 177, 185, 194, 202, 210, 218, 224, 231, 236, 241, 246, 249, 252, 254, 254,
     254, 254, 252, 249, 246, 241, 236, 231, 224, 218, 210, 202, 194, 185, 177, 168,
     158, 149, 140, 131, 122, 114, 105, 97, 89, 82, 75, 68, 62, 56, 50, 45,
     40, 36, 32, 28, 25, 22, 19, 16, 14, 12, 11, 9, 8, 7, 5, 5
 };
 
-
 static void
-icxLineAA( CxMat* img, CxPoint pt1, CxPoint pt2,
+icvLineAA( CvMat* img, CvPoint pt1, CvPoint pt2,
            const void* color )
 {
     int dx, dy;
@@ -274,17 +305,23 @@ icxLineAA( CxMat* img, CxPoint pt1, CxPoint pt2,
     int ep_table[9];
     int cb = ((uchar*)color)[0], cg = ((uchar*)color)[1], cr = ((uchar*)color)[2];
     int _cb, _cg, _cr;
-    int nch = CX_MAT_CN( img->type );
+    int nch = CV_MAT_CN( img->type );
     uchar* ptr = (uchar*)(img->data.ptr);
     int step = img->step;
-    CxSize size = cxGetMatSize( img );
+    CvSize size = cvGetMatSize( img );
 
-    assert( img && (nch == 1 || nch == 3) && CX_MAT_DEPTH(img->type) == CX_8U );
+    assert( img && (nch == 1 || nch == 3) && CV_MAT_DEPTH(img->type) == CV_8U );
 
-    size.width <<= XY_SHIFT;
-    size.height <<= XY_SHIFT;
+    pt1.x -= XY_ONE*2;
+    pt1.y -= XY_ONE*2;
+    pt2.x -= XY_ONE*2;
+    pt2.y -= XY_ONE*2;
+    ptr += img->step*2 + 2*nch;
 
-    if( !icxClipLine( size.width - XY_ONE, size.height - XY_ONE, &pt1, &pt2 ))
+    size.width = ((size.width - 5) << XY_SHIFT) + 1;
+    size.height = ((size.height - 5) << XY_SHIFT) + 1;
+
+    if( !cvClipLine( size, &pt1, &pt2 ))
         return;
 
     dx = pt2.x - pt1.x;
@@ -344,7 +381,7 @@ icxLineAA( CxMat* img, CxPoint pt1, CxPoint pt2,
         j = (pt2.y >> (XY_SHIFT - 7)) & 0x78;
     }
 
-    slope = (slope & 0x20) ? 0x100 : icxSlopeCorrTable[slope];
+    slope = (slope & 0x20) ? 0x100 : icvSlopeCorrTable[slope];
 
     /* Calc end point correction table */
     {
@@ -364,14 +401,14 @@ icxLineAA( CxMat* img, CxPoint pt1, CxPoint pt2,
 
     if( nch == 3 )
     {
-        #define  ICX_PUT_POINT()            \
+        #define  ICV_PUT_POINT()            \
         {                                   \
             _cb = tptr[0];                  \
-            _cb += (cb - _cb)*a >> 8;       \
+            _cb += ((cb - _cb)*a + 127)>> 8;\
             _cg = tptr[1];                  \
-            _cg += (cg - _cg)*a >> 8;       \
+            _cg += ((cg - _cg)*a + 127)>> 8;\
             _cr = tptr[2];                  \
-            _cr += (cr - _cr)*a >> 8;       \
+            _cr += ((cr - _cr)*a + 127)>> 8;\
             tptr[0] = (uchar)_cb;           \
             tptr[1] = (uchar)_cg;           \
             tptr[2] = (uchar)_cr;           \
@@ -388,16 +425,19 @@ icxLineAA( CxMat* img, CxPoint pt1, CxPoint pt2,
                                        (((ecount >= 2) + 1) & (ecount | 2))];
                 int a, dist = (pt1.y >> (XY_SHIFT - 5)) & 31;
 
-                a = (ep_corr * icxFilterTable[dist + 32] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[dist + 32] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 tptr += step;
-                a = (ep_corr * icxFilterTable[dist] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 tptr += step;
-                a = (ep_corr * icxFilterTable[63 - dist] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[63 - dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 pt1.y += y_step;
                 ptr += 3;
@@ -417,16 +457,19 @@ icxLineAA( CxMat* img, CxPoint pt1, CxPoint pt2,
                                        (((ecount >= 2) + 1) & (ecount | 2))];
                 int a, dist = (pt1.x >> (XY_SHIFT - 5)) & 31;
 
-                a = (ep_corr * icxFilterTable[dist + 32] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[dist + 32] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 tptr += 3;
-                a = (ep_corr * icxFilterTable[dist] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 tptr += 3;
-                a = (ep_corr * icxFilterTable[63 - dist] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[63 - dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 pt1.x += x_step;
                 ptr += step;
@@ -434,15 +477,15 @@ icxLineAA( CxMat* img, CxPoint pt1, CxPoint pt2,
                 ecount--;
             }
         }
-#undef ICX_PUT_POINT
+        #undef ICV_PUT_POINT
     }
     else
     {
-#define  ICX_PUT_POINT()       \
-        {                                \
-            _cb = tptr[0];               \
-            _cb += (cb - _cb)*a >> 8;    \
-            tptr[0] = (uchar)_cb;        \
+        #define  ICV_PUT_POINT()            \
+        {                                   \
+            _cb = tptr[0];                  \
+            _cb += ((cb - _cb)*a + 127)>> 8;\
+            tptr[0] = (uchar)_cb;           \
         }
 
         if( ax > ay )
@@ -457,16 +500,19 @@ icxLineAA( CxMat* img, CxPoint pt1, CxPoint pt2,
                                        (((ecount >= 2) + 1) & (ecount | 2))];
                 int a, dist = (pt1.y >> (XY_SHIFT - 5)) & 31;
 
-                a = (ep_corr * icxFilterTable[dist + 32] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[dist + 32] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 tptr += step;
-                a = (ep_corr * icxFilterTable[dist] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 tptr += step;
-                a = (ep_corr * icxFilterTable[63 - dist] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[63 - dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 pt1.y += y_step;
                 ptr++;
@@ -486,16 +532,19 @@ icxLineAA( CxMat* img, CxPoint pt1, CxPoint pt2,
                                        (((ecount >= 2) + 1) & (ecount | 2))];
                 int a, dist = (pt1.x >> (XY_SHIFT - 5)) & 31;
 
-                a = (ep_corr * icxFilterTable[dist + 32] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[dist + 32] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 tptr++;
-                a = (ep_corr * icxFilterTable[dist] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 tptr++;
-                a = (ep_corr * icxFilterTable[63 - dist] >> 8) & 0xff;
-                ICX_PUT_POINT();
+                a = (ep_corr * icvFilterTable[63 - dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
 
                 pt1.x += x_step;
                 ptr += step;
@@ -503,16 +552,211 @@ icxLineAA( CxMat* img, CxPoint pt1, CxPoint pt2,
                 ecount--;
             }
         }
-#undef ICX_PUT_POINT
+        #undef ICV_PUT_POINT
+    }
+}
+
+
+static void
+icvLine2( CvMat* img, CvPoint pt1, CvPoint pt2, const void* color )
+{
+    int dx, dy;
+    int ecount;
+    int ax, ay;
+    int i, j;
+    int x_step, y_step;
+    int cb = ((uchar*)color)[0];
+    int cg = ((uchar*)color)[1];
+    int cr = ((uchar*)color)[2];
+    int pix_size = CV_ELEM_SIZE( img->type );
+    uchar *ptr = (uchar*)(img->data.ptr), *tptr;
+    int step = img->step;
+    CvSize size = cvGetMatSize( img );
+
+    //assert( img && (nch == 1 || nch == 3) && CV_MAT_DEPTH(img->type) == CV_8U );
+
+    pt1.x -= XY_ONE*2;
+    pt1.y -= XY_ONE*2;
+    pt2.x -= XY_ONE*2;
+    pt2.y -= XY_ONE*2;
+    ptr += img->step*2 + 2*pix_size;
+
+    size.width = ((size.width - 5) << XY_SHIFT) + 1;
+    size.height = ((size.height - 5) << XY_SHIFT) + 1;
+
+    if( !cvClipLine( size, &pt1, &pt2 ))
+        return;
+
+    dx = pt2.x - pt1.x;
+    dy = pt2.y - pt1.y;
+
+    j = dx < 0 ? -1 : 0;
+    ax = (dx ^ j) - j;
+    i = dy < 0 ? -1 : 0;
+    ay = (dy ^ i) - i;
+
+    if( ax > ay )
+    {
+        dx = ax;
+        dy = (dy ^ j) - j;
+        pt1.x ^= pt2.x & j;
+        pt2.x ^= pt1.x & j;
+        pt1.x ^= pt2.x & j;
+        pt1.y ^= pt2.y & j;
+        pt2.y ^= pt1.y & j;
+        pt1.y ^= pt2.y & j;
+
+        x_step = XY_ONE;
+        y_step = (int) (((int64) dy << XY_SHIFT) / (ax | 1));
+        ecount = (pt2.x - pt1.x) >> XY_SHIFT;
+    }
+    else
+    {
+        dy = ay;
+        dx = (dx ^ i) - i;
+        pt1.x ^= pt2.x & i;
+        pt2.x ^= pt1.x & i;
+        pt1.x ^= pt2.x & i;
+        pt1.y ^= pt2.y & i;
+        pt2.y ^= pt1.y & i;
+        pt1.y ^= pt2.y & i;
+
+        x_step = (int) (((int64) dx << XY_SHIFT) / (ay | 1));
+        y_step = XY_ONE;
+        ecount = (pt2.y - pt1.y) >> XY_SHIFT;
+    }
+
+    pt1.x += (XY_ONE >> 1);
+    pt1.y += (XY_ONE >> 1);
+
+    if( pix_size == 3 )
+    {
+        #define  ICV_PUT_POINT()    \
+        {                           \
+            tptr[0] = (uchar)cb;    \
+            tptr[1] = (uchar)cg;    \
+            tptr[2] = (uchar)cr;    \
+        }
+        
+        tptr = ptr + ((pt2.x + (XY_ONE >> 1))>> XY_SHIFT)*3 +
+            ((pt2.y + (XY_ONE >> 1)) >> XY_SHIFT)*step;
+        ICV_PUT_POINT();
+        
+        if( ax > ay )
+        {
+            ptr += (pt1.x >> XY_SHIFT) * 3;
+
+            while( ecount >= 0 )
+            {
+                tptr = ptr + (pt1.y >> XY_SHIFT) * step;
+                ICV_PUT_POINT();
+                pt1.y += y_step;
+                ptr += 3;
+                ecount--;
+            }
+        }
+        else
+        {
+            ptr += (pt1.y >> XY_SHIFT) * step;
+
+            while( ecount >= 0 )
+            {
+                tptr = ptr + (pt1.x >> XY_SHIFT) * 3;
+                ICV_PUT_POINT();
+                pt1.x += x_step;
+                ptr += step;
+                ecount--;
+            }
+        }
+
+        #undef ICV_PUT_POINT
+    }
+    else if( pix_size == 1 )
+    {
+        #define  ICV_PUT_POINT()            \
+        {                                   \
+            tptr[0] = (uchar)cb;            \
+        }
+
+        tptr = ptr + ((pt2.x + (XY_ONE >> 1))>> XY_SHIFT) +
+            ((pt2.y + (XY_ONE >> 1)) >> XY_SHIFT)*step;
+        ICV_PUT_POINT();
+
+        if( ax > ay )
+        {
+            ptr += (pt1.x >> XY_SHIFT);
+
+            while( ecount >= 0 )
+            {
+                tptr = ptr + (pt1.y >> XY_SHIFT) * step;
+                ICV_PUT_POINT();
+                pt1.y += y_step;
+                ptr++;
+                ecount--;
+            }
+        }
+        else
+        {
+            ptr += (pt1.y >> XY_SHIFT) * step;
+
+            while( ecount >= 0 )
+            {
+                tptr = ptr + (pt1.x >> XY_SHIFT);
+                ICV_PUT_POINT();
+                pt1.x += x_step;
+                ptr += step;
+                ecount--;
+            }
+        }
+        #undef ICV_PUT_POINT
+    }
+    else
+    {
+        #define  ICV_PUT_POINT()                \
+            for( j = 0; j < pix_size; j++ )     \
+                tptr[j] = ((uchar*)color)[j];
+
+        tptr = ptr + ((pt2.x + (XY_ONE >> 1))>> XY_SHIFT)*pix_size +
+            ((pt2.y + (XY_ONE >> 1)) >> XY_SHIFT)*step;
+        ICV_PUT_POINT();
+        
+        if( ax > ay )
+        {
+            ptr += (pt1.x >> XY_SHIFT) * pix_size;
+
+            while( ecount >= 0 )
+            {
+                tptr = ptr + (pt1.y >> XY_SHIFT) * step;
+                ICV_PUT_POINT();
+                pt1.y += y_step;
+                ptr += pix_size;
+                ecount--;
+            }
+        }
+        else
+        {
+            ptr += (pt1.y >> XY_SHIFT) * step;
+
+            while( ecount >= 0 )
+            {
+                tptr = ptr + (pt1.x >> XY_SHIFT) * pix_size;
+                ICV_PUT_POINT();
+                pt1.x += x_step;
+                ptr += step;
+                ecount--;
+            }
+        }
+
+        #undef ICV_PUT_POINT
     }
 }
 
 
 /****************************************************************************************\
-*                   Antialiazed Elliptic Arcs through Antialiazed Lines                  *
+*                   Antialiazed Elliptic Arcs via Antialiazed Lines                      *
 \****************************************************************************************/
 
-static const float icxSinTable[] =
+static const float icvSinTable[] =
     { 0.0000000f, 0.0174524f, 0.0348995f, 0.0523360f, 0.0697565f, 0.0871557f,
     0.1045285f, 0.1218693f, 0.1391731f, 0.1564345f, 0.1736482f, 0.1908090f,
     0.2079117f, 0.2249511f, 0.2419219f, 0.2588190f, 0.2756374f, 0.2923717f,
@@ -591,31 +835,27 @@ static const float icxSinTable[] =
     1.0000000f
 };
 
-void
-icxSinCos( int angle, float *cosval, float *sinval )
+
+static void
+icvSinCos( int angle, float *cosval, float *sinval )
 {
     angle += (angle < 0 ? 360 : 0);
-    *sinval = icxSinTable[angle];
-    *cosval = icxSinTable[450 - angle];
+    *sinval = icvSinTable[angle];
+    *cosval = icvSinTable[450 - angle];
 }
 
 /* 
    constructs polygon that represents elliptic arc.
 */
-static int
-icxEllipse2Poly( CxPoint center, CxSize axes,
-                 int angle, int arc_start, int arc_end, CxPoint * pts, int delta )
+CV_IMPL int
+cvEllipse2Poly( CvPoint center, CvSize axes, int angle,
+                int arc_start, int arc_end, CvPoint* pts, int delta )
 {
     float alpha, beta;
-    float size_a = (float) axes.width, size_b = (float) axes.height;
-    float arc_al, arc_be;
-    float da, db;
-    float cx, cy;
-    CxPoint *pts_origin = pts;
+    double size_a = axes.width, size_b = axes.height;
+    double cx = center.x, cy = center.y;
+    CvPoint *pts_origin = pts;
     int i;
-
-    cx = (float) center.x;
-    cy = (float) center.y;
 
     while( angle < 0 )
         angle += 360;
@@ -643,110 +883,82 @@ icxEllipse2Poly( CxPoint center, CxSize axes,
         arc_start = 0;
         arc_end = 360;
     }
+    icvSinCos( angle, &alpha, &beta );
 
-    icxSinCos( angle, &alpha, &beta );
-
-    icxSinCos( arc_start, &arc_al, &arc_be );
-    icxSinCos( delta, &da, &db );
-
-    for( i = arc_start; i < arc_end + delta; i += delta, pts++ )
+    for( i = arc_start; i < arc_end + delta; i += delta )
     {
-        float x, y;
-
-        if( i > arc_end )
-        {
-            icxSinCos( arc_end, &arc_al, &arc_be );
-        }
-
-        x = size_a * arc_al;
-        y = size_b * arc_be;
-        pts->x = cxRound( cx + x * alpha - y * beta );
-        pts->y = cxRound( cy - x * beta - y * alpha );
-
-        x = arc_al * da - arc_be * db;
-        arc_be = arc_al * db + arc_be * da;
-        arc_al = x;
+        double x, y;
+        angle = i;
+        if( angle > arc_end )
+            angle = arc_end;
+        if( angle < 0 )
+            angle += 360;
+        
+        x = size_a * icvSinTable[450-angle];
+        y = size_b * icvSinTable[angle];
+        pts->x = cvRound( cx + x * alpha - y * beta );
+        pts->y = cvRound( cy - x * beta - y * alpha );
+        pts += i == arc_start || pts->x != pts[-1].x || pts->y != pts[-1].y;
     }
 
-    return pts - pts_origin;
+    i = (int)(pts - pts_origin);
+    for( ; i < 2; i++ )
+        pts_origin[i] = pts_origin[i-1];
+    return i;
 }
 
 
-typedef enum CxEllipseKind
-{
-    Ellipse_Antialiazed = -1,
-    Ellipse_Filled = 0,
-    Ellipse_Simple = 1
-} CxEllipseKind;
-
-
 static void
-icxEllipseEx( CxMat* mat, CxPoint center, CxSize axes,
+icvEllipseEx( CvMat* img, CvPoint center, CvSize axes,
               int angle, int arc_start, int arc_end,
-              CxEllipseKind kind, int scale,
-              int thickness, const void* color )
+              const void* color, int thickness, int line_type )
 {
-    CxMemStorage* st = 0;
+    CvMemStorage* st = 0;
 
-    CX_FUNCNAME( "icxEllipseEx" );
+    CV_FUNCNAME( "icvEllipseEx" );
     
     __BEGIN__;
 
-    CxPoint pts[1 << 8];
-    int npts;
+    CvPoint v[1 << 8];
+    int count, delta;
 
-    if( (axes.width | axes.height) < 0 )
-        CX_ERROR( CX_StsBadSize, "" );
-    if( (unsigned)scale > XY_SHIFT )
-        CX_ERROR( CX_StsBadFlag, "" );
-    if( thickness < 0 )
-        CX_ERROR( CX_StsBadFlag, "" );
+    if( axes.width < 0 || axes.height < 0 )
+        CV_ERROR( CV_StsBadSize, "" );
 
-    assert( kind == Ellipse_Antialiazed || scale == 0 );
+    delta = (MAX(axes.width,axes.height)+(XY_ONE>>1))>>XY_SHIFT;
+    delta = delta < 3 ? 90 : delta < 10 ? 30 : delta < 15 ? 18 : 5;
 
-    npts = icxEllipse2Poly( center, axes, angle, arc_start, arc_end,
-                            pts, kind == Ellipse_Filled ? 2 : 2 );
+    count = cvEllipse2Poly( center, axes, angle, arc_start, arc_end, v, delta );
 
-    switch (kind)
+    if( thickness >= 0 )
     {
-    case Ellipse_Simple:
-        CX_CALL( icxPolyLine( mat, pts, npts, 0, thickness, color ));
-        break;
-    case Ellipse_Filled:
-        if( arc_end - arc_start >= 360 )
-        {
-            CX_CALL( icxFillConvexPoly( mat, pts, npts, color ));
-        }
-        else
-        {
-            CxContour* edges;
-            CxSeq vtx;
-            CxSeqBlock block;
-            
-            CX_CALL( st = cxCreateMemStorage( (1<<12) - 128 ));
-            CX_CALL( edges = (CxContour*)cxCreateSeq( 0, sizeof(CxContour),
-                                                      sizeof(CxPolyEdge), st ));
+        icvPolyLine( img, v, count, 0, color, thickness, line_type, XY_SHIFT );
+    }
+    else if( arc_end - arc_start >= 360 )
+    {
+        icvFillConvexPoly( img, v, count, color, line_type, XY_SHIFT );
+    }
+    else
+    {
+        CvContour* edges;
+        CvSeq vtx;
+        CvSeqBlock block;
+        
+        CV_CALL( st = cvCreateMemStorage( CV_DRAWING_STORAGE_BLOCK ));
+        CV_CALL( edges = (CvContour*)cvCreateSeq( 0, sizeof(CvContour), sizeof(CvPolyEdge), st ));
+        v[count++] = center;
 
-            pts[npts++] = center;
+        CV_CALL( cvMakeSeqHeaderForArray( CV_32SC2, sizeof(CvSeq), sizeof(CvPoint),
+                                          v, count, &vtx, &block ));
 
-            CX_CALL( cxMakeSeqHeaderForArray( 0, sizeof(CxSeq), sizeof(CxPoint),
-                                              pts, npts, &vtx, &block ));
-
-            CX_CALL( icxCollectPolyEdges( mat, &vtx, edges, color ));
-            CX_CALL( icxFillEdgeCollection( mat, edges, color ));
-        }
-        break;
-    case Ellipse_Antialiazed:
-        CX_CALL( icxPolyLineAA( mat, pts, npts, 0, scale, color ));
-        break;
-    default:
-        CX_ERROR( CX_StsBadFlag, "" );
+        CV_CALL( icvCollectPolyEdges( img, &vtx, edges, color, line_type, XY_SHIFT ));
+        CV_CALL( icvFillEdgeCollection( img, edges, color ));
     }
 
     __END__;
 
     if( st )
-        cxReleaseMemStorage( &st );
+        cvReleaseMemStorage( &st );
 }
 
 
@@ -755,7 +967,7 @@ icxEllipseEx( CxMat* mat, CxPoint center, CxSize axes,
 \****************************************************************************************/
 
 /* helper macros: filling horizontal row */
-#define ICX_HLINE( ptr, xl, xr, color, pix_size )            \
+#define ICV_HLINE( ptr, xl, xr, color, pix_size )            \
 {                                                            \
     uchar* hline_ptr = (uchar*)(ptr) + (xl)*(pix_size);      \
     uchar* hline_max_ptr = (uchar*)(ptr) + (xr)*(pix_size);  \
@@ -773,11 +985,8 @@ icxEllipseEx( CxMat* mat, CxPoint center, CxSize axes,
 
 /* filling convex polygon. v - array of vertices, ntps - number of points */
 static void
-icxFillConvexPoly( CxMat* img, CxPoint *v, int npts, const void* color )
+icvFillConvexPoly( CvMat* img, CvPoint *v, int npts, const void* color, int line_type, int shift )
 {
-    const int scale = 16;
-    const int delta = 1 << (scale - 1);
-
     struct
     {
         int idx, di;
@@ -785,78 +994,117 @@ icxFillConvexPoly( CxMat* img, CxPoint *v, int npts, const void* color )
     }
     edge[2];
 
+    int delta = shift ? 1 << (shift - 1) : 0;
     int i, y, imin = 0, left = 0, right = 1, x1, x2;
     int edges = npts;
-    int xmin = SHRT_MAX, ymin = xmin, xmax = SHRT_MIN, ymax = xmax;
+    int xmin, xmax, ymin, ymax;
     uchar* ptr = img->data.ptr;
-    CxSize size = cxGetMatSize( img );
-    int pix_size = icxPixSize[CX_MAT_TYPE(img->type)];
-    CxPoint p0;
+    CvSize size = cvGetMatSize( img );
+    int pix_size = CV_ELEM_SIZE(img->type);
+    CvPoint p0;
+    int delta1, delta2;
+
+    if( line_type < CV_AA )
+        delta1 = delta2 = XY_ONE >> 1;
+        //delta1 = 0, delta2 = XY_ONE - 1;
+    else
+        delta1 = XY_ONE - 1, delta2 = 0;
 
     p0 = v[npts - 1];
+    p0.x <<= XY_SHIFT - shift;
+    p0.y <<= XY_SHIFT - shift;
 
-    //icxPolyLine( img, v, npts, 0, 1, color );
+    assert( 0 <= shift && shift <= XY_SHIFT );
+    xmin = xmax = v[0].x;
+    ymin = ymax = v[0].y;
 
     for( i = 0; i < npts; i++ )
     {
-        CxPoint p = v[i];
-        int mask = p.y < ymin ? -1 : 0;
+        CvPoint p = v[i];
+        if( p.y < ymin )
+        {
+            ymin = p.y;
+            imin = i;
+        }
 
-        imin ^= (imin ^ i) & mask;
-        ymin ^= (ymin ^ p.y) & mask;
+        ymax = MAX( ymax, p.y );
+        xmax = MAX( xmax, p.x );
+        xmin = MIN( xmin, p.x );
 
-        ymax = CX_MAX( ymax, p.y );
-        xmax = CX_MAX( xmax, p.x );
-        xmin = CX_MIN( xmin, p.x );
+        p.x <<= XY_SHIFT - shift;
+        p.y <<= XY_SHIFT - shift;
 
-        icxLine( img, p0, p, color, 8 );
-
+        if( line_type <= 8 )
+        {
+            if( shift == 0 )
+            {
+                CvPoint pt0, pt1;
+                pt0.x = p0.x >> XY_SHIFT;
+                pt0.y = p0.y >> XY_SHIFT;
+                pt1.x = p.x >> XY_SHIFT;
+                pt1.y = p.y >> XY_SHIFT;
+                icvLine( img, pt0, pt1, color, line_type );
+            }
+            else
+                icvLine2( img, p0, p, color );
+        }
+        else
+            icvLineAA( img, p0, p, color );
         p0 = p;
     }
 
-    if( npts < 3 || (ymax | xmax) < 0 || ymin >= size.height || xmin >= size.width )
+    xmin = (xmin + delta) >> shift;
+    xmax = (xmax + delta) >> shift;
+    ymin = (ymin + delta) >> shift;
+    ymax = (ymax + delta) >> shift;
+
+    if( npts < 3 || xmax < 0 || ymax < 0 || xmin >= size.width || ymin >= size.height )
         return;
 
-    ymax = CX_MIN( ymax, size.height - 1 );
-
+    ymax = MIN( ymax, size.height - 1 );
     edge[0].idx = edge[1].idx = imin;
 
-    y = v[imin].y;
-
-    edge[0].ye = edge[1].ye = y;
+    edge[0].ye = edge[1].ye = y = ymin;
     edge[0].di = 1;
     edge[1].di = npts - 1;
 
-    ptr += img->step * y;
+    ptr += img->step*y;
 
     do
     {
-        for( i = 0; i < 2; i++ )
+        if( line_type < CV_AA || y < ymax || y == ymin )
         {
-            if( y == edge[i].ye )
+            for( i = 0; i < 2; i++ )
             {
-                int idx = edge[i].idx, di = edge[i].di;
-                int xs = 0, xe, ye;
-
-                while( y >= v[idx].y && edges > 0 )
+                if( y >= edge[i].ye )
                 {
-                    xs = v[idx].x;
-                    idx += di;
-                    idx -= ((idx < npts) - 1) & npts;   /* idx -= idx >= npts ? npts : 0 */
-                    edges--;
+                    int idx = edge[i].idx, di = edge[i].di;
+                    int xs = 0, xe, ye, ty = 0;
+
+                    for(;;)
+                    {
+                        ty = (v[idx].y + delta) >> shift;
+                        if( ty > y || edges == 0 )
+                            break;
+                        xs = v[idx].x;
+                        idx += di;
+                        idx -= ((idx < npts) - 1) & npts;   /* idx -= idx >= npts ? npts : 0 */
+                        edges--;
+                    }
+
+                    ye = ty;
+                    xs <<= XY_SHIFT - shift;
+                    xe = v[idx].x << (XY_SHIFT - shift);
+
+                    /* no more edges */
+                    if( y >= ye )
+                        return;
+
+                    edge[i].ye = ye;
+                    edge[i].dx = ((xe - xs)*2 + (ye - y)) / (2 * (ye - y));
+                    edge[i].x = xs;
+                    edge[i].idx = idx;
                 }
-
-                ye = v[idx].y;
-                xe = v[idx].x;
-
-                /* no more edges */
-                if( y >= ye )
-                    return;
-
-                edge[i].ye = ye;
-                edge[i].dx = (((xe - xs) << (scale + 1)) + (ye - y)) / (2 * (ye - y));
-                edge[i].x = xs << scale;
-                edge[i].idx = idx;
             }
         }
 
@@ -871,8 +1119,8 @@ icxFillConvexPoly( CxMat* img, CxPoint *v, int npts, const void* color )
 
         if( y >= 0 )
         {
-            int xx1 = (x1 + delta) >> scale;
-            int xx2 = (x2 + delta) >> scale;
+            int xx1 = (x1 + delta1) >> XY_SHIFT;
+            int xx2 = (x2 + delta2) >> XY_SHIFT;
 
             if( xx2 >= 0 && xx1 < size.width )
             {
@@ -880,7 +1128,7 @@ icxFillConvexPoly( CxMat* img, CxPoint *v, int npts, const void* color )
                     xx1 = 0;
                 if( xx2 >= size.width )
                     xx2 = size.width - 1;
-                ICX_HLINE( ptr, xx1, xx2, color, pix_size );
+                ICV_HLINE( ptr, xx1, xx2, color, pix_size );
             }
         }
 
@@ -898,216 +1146,115 @@ icxFillConvexPoly( CxMat* img, CxPoint *v, int npts, const void* color )
 /******** Arbitrary polygon **********/
 
 static void
-icxCollectPolyEdges( CxMat* img, CxSeq* v, CxContour* edges, const void* color )
+icvCollectPolyEdges( CvMat* img, CvSeq* v, CvContour* edges,
+                     const void* color, int line_type, int shift,
+                     CvPoint offset )
 {
     int  i, count = v->total;
-    CxRect bounds = edges->rect;
+    CvRect bounds = edges->rect;
+    int delta = offset.y + (shift ? 1 << (shift - 1) : 0);
+    int elem_type = CV_MAT_TYPE(v->flags);
 
-    CxSeqReader reader;
-    CxSeqWriter writer;
+    CvSeqReader reader;
+    CvSeqWriter writer;
 
-    cxStartReadSeq( v, &reader );
-    cxStartAppendToSeq( (CxSeq*)edges, &writer );
+    cvStartReadSeq( v, &reader );
+    cvStartAppendToSeq( (CvSeq*)edges, &writer );
 
     for( i = 0; i < count; i++ )
     {
-        CxPoint pt0, pt1;
-        CxPolyEdge edge;
+        CvPoint pt0, pt1, t0, t1;
+        CvPolyEdge edge;
+        CV_READ_EDGE( pt0, pt1, reader );
         
-        CX_READ_EDGE( pt0, pt1, reader );
+        if( elem_type == CV_32SC2 )
+        {
+            pt0.x = (pt0.x + offset.x) << (XY_SHIFT - shift);
+            pt0.y = (pt0.y + delta) >> shift;
+            pt1.x = (pt1.x + offset.x) << (XY_SHIFT - shift);
+            pt1.y = (pt1.y + delta) >> shift;
+        }
+        else
+        {
+            Cv32suf x, y;
+            assert( shift == 0 );
 
-        icxLine( img, pt0, pt1, color );
+            x.i = pt0.x; y.i = pt0.y;
+            pt0.x = cvRound((x.f + offset.x) * XY_ONE);
+            pt0.y = cvRound(y.f + offset.y);
+            x.i = pt1.x; y.i = pt1.y;
+            pt1.x = cvRound((x.f + offset.x) * XY_ONE);
+            pt1.y = cvRound(y.f + offset.y);
+        }
+
+        if( line_type < CV_AA )
+        {
+            t0.y = pt0.y; t1.y = pt1.y;
+            t0.x = (pt0.x + (XY_ONE >> 1)) >> XY_SHIFT;
+            t1.x = (pt1.x + (XY_ONE >> 1)) >> XY_SHIFT;
+            icvLine( img, t0, t1, color, line_type );
+        }
+        else
+        {
+            t0.x = pt0.x; t1.x = pt1.x;
+            t0.y = pt0.y << XY_SHIFT;
+            t1.y = pt1.y << XY_SHIFT;
+            icvLineAA( img, t0, t1, color );
+        }
 
         if( pt0.y == pt1.y )
             continue;
 
         if( pt0.y > pt1.y )
-        {
-            CxPoint t;
-            CX_SWAP( pt0, pt1, t );
-        }
+            CV_SWAP( pt0, pt1, t0 );
 
-        bounds.y = CX_MIN( bounds.y, pt0.y );
-        bounds.height = CX_MAX( bounds.height, pt1.y );
+        bounds.y = MIN( bounds.y, pt0.y );
+        bounds.height = MAX( bounds.height, pt1.y );
 
         if( pt0.x < pt1.x )
         {
-            bounds.x = CX_MIN( bounds.x, pt0.x );
-            bounds.width = CX_MAX( bounds.width, pt1.x );
+            bounds.x = MIN( bounds.x, pt0.x );
+            bounds.width = MAX( bounds.width, pt1.x );
         }
         else
         {
-            bounds.x = CX_MIN( bounds.x, pt1.x );
-            bounds.width = CX_MAX( bounds.width, pt0.x );
+            bounds.x = MIN( bounds.x, pt1.x );
+            bounds.width = MAX( bounds.width, pt0.x );
         }
 
         edge.y0 = pt0.y;
         edge.y1 = pt1.y;
-        edge.x = pt0.x << 16;
-        edge.dx = ((pt1.x - pt0.x) << 16) / (pt1.y - pt0.y);
+        edge.x = pt0.x;
+        edge.dx = (pt1.x - pt0.x) / (pt1.y - pt0.y);
+        assert( edge.y0 < edge.y1 );
 
-        CX_WRITE_SEQ_ELEM( edge, writer );
+        CV_WRITE_SEQ_ELEM( edge, writer );
     }
 
     edges->rect = bounds;
-    cxEndWriteSeq( &writer );
+    cvEndWriteSeq( &writer );
 }
 
-
-#define ICX_CMP_EDGES( e1, e2 ) \
-    ((e1).y0 < (e2).y0 || (e1).y0 == (e2).y0 && \
-    ((e1).x < (e2).x || (e1).x == (e2).x && (e1).dx <= (e2).dx))
-
+static int
+icvCmpEdges( const void* _e1, const void* _e2, void* /*userdata*/ )
+{
+    CvPolyEdge *e1 = (CvPolyEdge*)_e1, *e2 = (CvPolyEdge*)_e2;
+    return e1->y0 - e2->y0 ? e1->y0 - e2->y0 :
+           e1->x - e2->x ? e1->x - e2->x : e1->dx - e2->dx;
+}
 
 /**************** helper macros and functions for sequence/contour processing ***********/
 
-#define CX_IMPLEMENT2_SEQ_QSORT( func_name, T, less_than, user_data_type )       \
-void func_name( CxSeq* seq, user_data_type aux )                                 \
-{                                                                                \
-    const int bubble_level = 8;                                                  \
-    const int elem_size = sizeof(T);                                             \
-                                                                                 \
-    struct                                                                       \
-    {                                                                            \
-        int lb, ub;                                                              \
-    }                                                                            \
-    stack[48];                                                                   \
-    int sp = 0;                                                                  \
-    int length = seq->total;                                                     \
-                                                                                 \
-    CxSeqReader r_i, r_j;                                                        \
-    T t;                                                                         \
-                                                                                 \
-    cxStartReadSeq( seq, &r_i );                                                 \
-    cxStartReadSeq( seq, &r_j );                                                 \
-                                                                                 \
-    stack[0].lb = 0;                                                             \
-    stack[0].ub = length - 1;                                                    \
-                                                                                 \
-    aux = aux;                                                                   \
-                                                                                 \
-    while( sp >= 0 )                                                             \
-    {                                                                            \
-        int lb = stack[sp].lb;                                                   \
-        int ub = stack[sp--].ub;                                                 \
-                                                                                 \
-        for(;;)                                                                  \
-        {                                                                        \
-            int diff = ub - lb;                                                  \
-            if( diff < bubble_level )                                            \
-            {                                                                    \
-                int i, j;                                                        \
-                cxSetSeqReaderPos( &r_i, lb );                                   \
-                                                                                 \
-                for( i = diff; i > 0; i-- )                                      \
-                {                                                                \
-                    int f = 0;                                                   \
-                    r_j.ptr = r_i.ptr;                                           \
-                    r_j.block_min = r_i.block_min;                               \
-                    r_j.block_max = r_i.block_max;                               \
-                    r_j.block = r_i.block;                                       \
-                                                                                 \
-                    T* curr = (T*)(r_j.ptr);                                     \
-                                                                                 \
-                    for( j = 0; j < i; j++ )                                     \
-                    {                                                            \
-                        CX_NEXT_SEQ_ELEM( elem_size, r_j );                      \
-                        T* next = (T*)(r_j.ptr);                                 \
-                                                                                 \
-                        if( less_than( *next, *curr ))                           \
-                        {                                                        \
-                            CX_SWAP( *curr, *next, t );                          \
-                            f = 1;                                               \
-                        }                                                        \
-                        curr = next;                                             \
-                    }                                                            \
-                    if( !f ) break;                                              \
-                }                                                                \
-                break;                                                           \
-            }                                                                    \
-            else                                                                 \
-            {                                                                    \
-                /* select pivot and exchange with 1st element */                 \
-                int  m = lb + (diff >> 1);                                       \
-                int  i = lb + 1, j = ub;                                         \
-                                                                                 \
-                cxSetSeqReaderPos( &r_i, lb );                                   \
-                T* lb_ptr = (T*)r_i.ptr;                                         \
-                                                                                 \
-                cxSetSeqReaderPos( &r_j, m );                                    \
-                                                                                 \
-                T lb_val = *(T*)(r_j.ptr);                                       \
-                *(T*)(r_j.ptr) = *(T*)(r_i.ptr);                                 \
-                                                                                 \
-                CX_NEXT_SEQ_ELEM( elem_size, r_i );                              \
-                cxSetSeqReaderPos( &r_j, ub );                                   \
-                                                                                 \
-                /* partition into two segments */                                \
-                for(;;)                                                          \
-                {                                                                \
-                    for( ; i < j && less_than( *(T*)(r_i.ptr), lb_val ); i++ )   \
-                    {                                                            \
-                        CX_NEXT_SEQ_ELEM( elem_size, r_i );                      \
-                    }                                                            \
-                                                                                 \
-                    for( ; j >= i && less_than( lb_val, *(T*)(r_j.ptr) ); j-- )  \
-                    {                                                            \
-                        CX_PREV_SEQ_ELEM( elem_size, r_j );                      \
-                    }                                                            \
-                                                                                 \
-                    if( i >= j ) break;                                          \
-                    CX_SWAP( *(T*)(r_i.ptr), *(T*)(r_j.ptr), t );                \
-                    CX_NEXT_SEQ_ELEM( elem_size, r_i );                          \
-                    CX_PREV_SEQ_ELEM( elem_size, r_j );                          \
-                    i++, j--;                                                    \
-                }                                                                \
-                                                                                 \
-                /* pivot belongs in A[j] */                                      \
-                *lb_ptr = *(T*)(r_j.ptr);                                        \
-                *(T*)(r_j.ptr) = lb_val;                                         \
-                                                                                 \
-                /* keep processing smallest segment, and stack largest*/         \
-                if( j - lb <= ub - j )                                           \
-                {                                                                \
-                    if( j + 1 < ub )                                             \
-                    {                                                            \
-                        stack[++sp].lb   = j + 1;                                \
-                        stack[sp].ub = ub;                                       \
-                    }                                                            \
-                    ub = j - 1;                                                  \
-                }                                                                \
-                else                                                             \
-                {                                                                \
-                    if( j - 1 > lb)                                              \
-                    {                                                            \
-                        stack[++sp].lb = lb;                                     \
-                        stack[sp].ub = j - 1;                                    \
-                    }                                                            \
-                    lb = j + 1;                                                  \
-                }                                                                \
-            }                                                                    \
-        }                                                                        \
-    }                                                                            \
-}
-
-
-#define CX_IMPLEMENT_SEQ_QSORT( func_name, T, less_than )  \
-    CX_IMPLEMENT2_SEQ_QSORT( func_name, T, less_than, int )
-
-static
-CX_IMPLEMENT_SEQ_QSORT( icxSortPolyEdges, CxPolyEdge, ICX_CMP_EDGES );
-
-
 static void
-icxFillEdgeCollection( CxMat* img, CxContour* edges, const void* color )
+icvFillEdgeCollection( CvMat* img, CvContour* edges, const void* color )
 {
-    CxPolyEdge tmp;
+    CvPolyEdge tmp;
     int i, y, total = edges->total;
-    CxSeqReader reader;
-    CxSize size = cxGetMatSize(img);
-    CxPolyEdge* e;
+    CvSeqReader reader;
+    CvSize size = cvGetMatSize(img);
+    CvPolyEdge* e;
     int y_max = INT_MIN;
-    int pix_size = icxPixSize[CX_MAT_TYPE(img->type)];
+    int pix_size = CV_ELEM_SIZE(img->type);
 
     __BEGIN__;
     
@@ -1118,9 +1265,8 @@ icxFillEdgeCollection( CxMat* img, CxContour* edges, const void* color )
         edges->rect.width < 0 || edges->rect.x >= size.width )
         EXIT;
 
-    icxSortPolyEdges( (CxSeq*)edges, 0 );
-
-    cxStartReadSeq( (CxSeq*)edges, &reader );
+    cvSeqSort( (CvSeq*)edges, icvCmpEdges, 0 );
+    cvStartReadSeq( (CvSeq*)edges, &reader );
 
 #ifdef _DEBUG
     e = &tmp;
@@ -1129,33 +1275,30 @@ icxFillEdgeCollection( CxMat* img, CxContour* edges, const void* color )
 
     for( i = 0; i < total; i++ )
     {
-        CxPolyEdge* e1 = (CxPolyEdge*)(reader.ptr);
+        CvPolyEdge* e1 = (CvPolyEdge*)(reader.ptr);
 
 #ifdef _DEBUG
-        assert( ICX_CMP_EDGES( *e, *e1 ) != 0 );
+        assert( e1->y0 < e1->y1 && (i == 0 || icvCmpEdges( e, e1, 0 ) <= 0) );
         e = e1;
 #endif
-        y_max = CX_MAX( y_max, e1->y1 );
+        y_max = MAX( y_max, e1->y1 );
 
-        CX_NEXT_SEQ_ELEM( sizeof(CxPolyEdge), reader );
+        CV_NEXT_SEQ_ELEM( sizeof(CvPolyEdge), reader );
     }
-
-    if( y_max >= size.height )
-        y_max = size.height - 1;
 
     /* start drawing */
     tmp.y0 = INT_MAX;
-    cxSeqPush( (CxSeq*)edges, &tmp );
+    cvSeqPush( (CvSeq*)edges, &tmp );
 
     i = 0;
     tmp.next = 0;
-    cxStartReadSeq( (CxSeq*)edges, &reader );
-    e = (CxPolyEdge*)(reader.ptr);
-    y = e->y0;
+    cvStartReadSeq( (CvSeq*)edges, &reader );
+    e = (CvPolyEdge*)(reader.ptr);
+    y_max = MIN( y_max, size.height );
 
-    do
+    for( y = e->y0; y < y_max; y++ )
     {
-        CxPolyEdge *last, *prelast, *keep_prelast;
+        CvPolyEdge *last, *prelast, *keep_prelast;
         int sort_flag = 0;
         int draw = 0;
         int clipline = y < 0;
@@ -1184,8 +1327,8 @@ icxFillEdgeCollection( CxMat* img, CxContour* edges, const void* color )
                 prelast->next = e;
                 e->next = last;
                 prelast = e;
-                CX_NEXT_SEQ_ELEM( edges->elem_size, reader );
-                e = (CxPolyEdge*)(reader.ptr);
+                CV_NEXT_SEQ_ELEM( edges->elem_size, reader );
+                e = (CvPolyEdge*)(reader.ptr);
                 i++;
             }
             else
@@ -1208,8 +1351,8 @@ icxFillEdgeCollection( CxMat* img, CxContour* edges, const void* color )
                         x2 = t;
                     }
 
-                    x1 = (x1 + (1 << 15)) >> 16;
-                    x2 = (x2 + (1 << 15)) >> 16;
+                    x1 = (x1 + XY_ONE - 1) >> XY_SHIFT;
+                    x2 = x2 >> XY_SHIFT;
 
                     /* clip and draw the line */
                     if( x1 < size.width && x2 >= 0 )
@@ -1218,7 +1361,7 @@ icxFillEdgeCollection( CxMat* img, CxContour* edges, const void* color )
                             x1 = 0;
                         if( x2 >= size.width )
                             x2 = size.width - 1;
-                        ICX_HLINE( timg, x1, x2, color, pix_size );
+                        ICV_HLINE( timg, x1, x2, color, pix_size );
                     }
                 }
                 keep_prelast->x += keep_prelast->dx;
@@ -1237,7 +1380,7 @@ icxFillEdgeCollection( CxMat* img, CxContour* edges, const void* color )
 
             while( last != keep_prelast && last->next != 0 )
             {
-                CxPolyEdge *te = last->next;
+                CvPolyEdge *te = last->next;
 
                 /* swap edges */
                 if( last->x > te->x )
@@ -1258,94 +1401,140 @@ icxFillEdgeCollection( CxMat* img, CxContour* edges, const void* color )
         }
         while( sort_flag && keep_prelast != tmp.next && keep_prelast != &tmp );
     }
-    while( (++y) < y_max );
 
     __END__;
 }
 
 
-/* draws simple circle */
+/* draws simple or filled circle */
 static void
-icxCircle( CxMat* img, CxPoint center, int radius, const void* color )
+icvCircle( CvMat* img, CvPoint center, int radius, const void* color, int fill )
 {
-    CxSize size = cxGetMatSize( img );
+    CvSize size = cvGetMatSize( img );
     int step = img->step;
-    int pix_size = icxPixSize[CX_MAT_TYPE(img->type)];
+    int pix_size = CV_ELEM_SIZE(img->type);
     uchar* ptr = (uchar*)(img->data.ptr);
     int err = 0, dx = radius, dy = 0, plus = 1, minus = (radius << 1) - 1;
     int inside = center.x >= radius && center.x < size.width - radius &&
         center.y >= radius && center.y < size.height - radius;
 
-    #define ICX_PUT_POINT( ptr, x )   \
-        memcpy( (ptr) + (x)*pix_size, color, pix_size )
+    #define ICV_PUT_POINT( ptr, x )     \
+        CV_MEMCPY_CHAR( ptr + (x)*pix_size, color, pix_size );
 
     while( dx >= dy )
     {
         int mask;
         int y11 = center.y - dy, y12 = center.y + dy, y21 = center.y - dx, y22 = center.y + dx;
-
         int x11 = center.x - dx, x12 = center.x + dx, x21 = center.x - dy, x22 = center.x + dy;
 
         if( inside )
         {
             uchar *tptr0 = ptr + y11 * step;
             uchar *tptr1 = ptr + y12 * step;
-
-            ICX_PUT_POINT( tptr0, x11 );
-            ICX_PUT_POINT( tptr1, x11 );
-            ICX_PUT_POINT( tptr0, x12 );
-            ICX_PUT_POINT( tptr1, x12 );
+            
+            if( !fill )
+            {
+                ICV_PUT_POINT( tptr0, x11 );
+                ICV_PUT_POINT( tptr1, x11 );
+                ICV_PUT_POINT( tptr0, x12 );
+                ICV_PUT_POINT( tptr1, x12 );
+            }
+            else
+            {
+                ICV_HLINE( tptr0, x11, x12, color, pix_size );
+                ICV_HLINE( tptr1, x11, x12, color, pix_size );
+            }
 
             tptr0 = ptr + y21 * step;
             tptr1 = ptr + y22 * step;
 
-            ICX_PUT_POINT( tptr0, x21 );
-            ICX_PUT_POINT( tptr1, x21 );
-            ICX_PUT_POINT( tptr0, x22 );
-            ICX_PUT_POINT( tptr1, x22 );
+            if( !fill )
+            {
+                ICV_PUT_POINT( tptr0, x21 );
+                ICV_PUT_POINT( tptr1, x21 );
+                ICV_PUT_POINT( tptr0, x22 );
+                ICV_PUT_POINT( tptr1, x22 );
+            }
+            else
+            {
+                ICV_HLINE( tptr0, x21, x22, color, pix_size );
+                ICV_HLINE( tptr1, x21, x22, color, pix_size );
+            }
         }
         else if( x11 < size.width && x12 >= 0 && y21 < size.height && y22 >= 0 )
         {
-            if( (unsigned) y11 < (unsigned) size.height )
+            if( fill )
+            {
+                x11 = MAX( x11, 0 );
+                x12 = MIN( x12, size.width - 1 );
+            }
+            
+            if( (unsigned)y11 < (unsigned)size.height )
             {
                 uchar *tptr = ptr + y11 * step;
 
-                if( x11 >= 0 )
-                    ICX_PUT_POINT( tptr, x11 );
-                if( x12 < size.width )
-                    ICX_PUT_POINT( tptr, x12 );
+                if( !fill )
+                {
+                    if( x11 >= 0 )
+                        ICV_PUT_POINT( tptr, x11 );
+                    if( x12 < size.width )
+                        ICV_PUT_POINT( tptr, x12 );
+                }
+                else
+                    ICV_HLINE( tptr, x11, x12, color, pix_size );
             }
 
-            if( (unsigned) y12 < (unsigned) size.height )
+            if( (unsigned)y12 < (unsigned)size.height )
             {
                 uchar *tptr = ptr + y12 * step;
 
-                if( x11 >= 0 )
-                    ICX_PUT_POINT( tptr, x11 );
-                if( x12 < size.width )
-                    ICX_PUT_POINT( tptr, x12 );
+                if( !fill )
+                {
+                    if( x11 >= 0 )
+                        ICV_PUT_POINT( tptr, x11 );
+                    if( x12 < size.width )
+                        ICV_PUT_POINT( tptr, x12 );
+                }
+                else
+                    ICV_HLINE( tptr, x11, x12, color, pix_size );
             }
 
             if( x21 < size.width && x22 >= 0 )
             {
-                if( (unsigned) y21 < (unsigned) size.height )
+                if( fill )
+                {
+                    x21 = MAX( x21, 0 );
+                    x22 = MIN( x22, size.width - 1 );
+                }
+
+                if( (unsigned)y21 < (unsigned)size.height )
                 {
                     uchar *tptr = ptr + y21 * step;
 
-                    if( x21 >= 0 )
-                        ICX_PUT_POINT( tptr, x21 );
-                    if( x22 < size.width )
-                        ICX_PUT_POINT( tptr, x22 );
+                    if( !fill )
+                    {
+                        if( x21 >= 0 )
+                            ICV_PUT_POINT( tptr, x21 );
+                        if( x22 < size.width )
+                            ICV_PUT_POINT( tptr, x22 );
+                    }
+                    else
+                        ICV_HLINE( tptr, x21, x22, color, pix_size );
                 }
 
-                if( (unsigned) y22 < (unsigned) size.height )
+                if( (unsigned)y22 < (unsigned)size.height )
                 {
                     uchar *tptr = ptr + y22 * step;
 
-                    if( x21 >= 0 )
-                        ICX_PUT_POINT( tptr, x21 );
-                    if( x22 < size.width )
-                        ICX_PUT_POINT( tptr, x22 );
+                    if( !fill )
+                    {
+                        if( x21 >= 0 )
+                            ICV_PUT_POINT( tptr, x21 );
+                        if( x22 < size.width )
+                            ICV_PUT_POINT( tptr, x22 );
+                    }
+                    else
+                        ICV_HLINE( tptr, x21, x22, color, pix_size );
                 }
             }
         }
@@ -1360,230 +1549,134 @@ icxCircle( CxMat* img, CxPoint center, int radius, const void* color )
         minus -= mask & 2;
     }
 
-    #undef  ICX_PUT_POINT
-}
-
-
-/****************************************************************************************\
-*                      Cicle drawing using direct Bresenham algorithm                    *
-\****************************************************************************************/
-
-/* draws filled circle */
-static void
-icxFillCircle( CxMat* img, CxPoint center, int radius, const void* color )
-{
-    CxSize size = cxGetMatSize( img );
-    int step = img->step;
-    int pix_size = icxPixSize[CX_MAT_TYPE(img->type)];
-    uchar* ptr = (uchar*)(img->data.ptr);
-    int err = 0, dx = radius, dy = 0, plus = 1, minus = (radius << 1) - 1;
-    int inside = center.x >= radius && center.x < size.width - radius &&
-        center.y >= radius && center.y < size.height - radius;
-
-    while( dx >= dy )
-    {
-        int mask;
-        int y11 = center.y - dy, y12 = center.y + dy, y21 = center.y - dx, y22 = center.y + dx;
-        int x11 = center.x - dx, x12 = center.x + dx, x21 = center.x - dy, x22 = center.x + dy;
-
-        if( inside )
-        {
-            uchar *tptr0 = ptr + y11 * step;
-            uchar *tptr1 = ptr + y12 * step;
-
-            ICX_HLINE( tptr0, x11, x12, color, pix_size );
-            ICX_HLINE( tptr1, x11, x12, color, pix_size );
-
-            tptr0 = ptr + y21 * step;
-            tptr1 = ptr + y22 * step;
-
-            ICX_HLINE( tptr0, x21, x22, color, pix_size );
-            ICX_HLINE( tptr1, x21, x22, color, pix_size );
-        }
-        else if( x11 < size.width && x12 >= 0 && y21 < size.height && y22 >= 0 )
-        {
-            x11 = CX_MAX( x11, 0 );
-            x12 = CX_MIN( x12, size.width - 1 );
-
-            if( (unsigned) y11 < (unsigned) size.height )
-            {
-                uchar *tptr = ptr + y11 * step;
-                ICX_HLINE( tptr, x11, x12, color, pix_size );
-            }
-
-            if( (unsigned) y12 < (unsigned) size.height )
-            {
-                uchar *tptr = ptr + y12 * step;
-                ICX_HLINE( tptr, x11, x12, color, pix_size );
-            }
-
-            if( x21 < size.width && x22 >= 0 )
-            {
-                x21 = CX_MAX( x21, 0 );
-                x22 = CX_MIN( x22, size.width - 1 );
-
-                if( (unsigned) y21 < (unsigned) size.height )
-                {
-                    uchar *tptr = ptr + y21 * step;
-                    ICX_HLINE( tptr, x21, x22, color, pix_size );
-                }
-
-                if( (unsigned) y22 < (unsigned) size.height )
-                {
-                    uchar *tptr = ptr + y22 * step;
-                    ICX_HLINE( tptr, x21, x22, color, pix_size );
-                }
-            }
-        }
-        dy++;
-        err += plus;
-        plus += 2;
-
-        mask = (err <= 0) - 1;
-
-        err -= minus & mask;
-        dx += mask;
-        minus -= mask & 2;
-    }
-}
-
-
-/* helper function for thick lines */
-static CxPoint
-icxCalcWPT( CxPoint p1, CxPoint p2, int lr )
-{
-    int dx = p1.x - p2.x, dy = p2.y - p1.y;
-    double r = dx * dx + dy * dy;
-    CxPoint dp = { 0, 0 };
-
-    if( r )
-    {
-        r = lr * cxInvSqrt( (float) r );
-        dp.x = cxRound( dy * r );
-        dp.y = cxRound( dx * r );
-    }
-    return dp;
+    #undef  ICV_PUT_POINT
 }
 
 
 static void
-icxThickLine( CxMat* img, CxPoint pt1, CxPoint pt2,
-              int thickness, const void* color,
-              int connectivity = 8 )
+icvThickLine( CvMat* img, CvPoint p0, CvPoint p1, const void* color,
+              int thickness, int line_type, int flags, int shift )
 {
-    thickness >>= 1;
+    static const double INV_XY_ONE = 1./XY_ONE;
 
-    if( connectivity == 0 )
-        connectivity = 8;
+    p0.x <<= XY_SHIFT - shift;
+    p0.y <<= XY_SHIFT - shift;
+    p1.x <<= XY_SHIFT - shift;
+    p1.y <<= XY_SHIFT - shift;
 
-    if( thickness <= 0 )
+    if( thickness <= 1 )
     {
-        icxLine( img, pt1, pt2, color, connectivity );
+        if( line_type < CV_AA )
+        {
+            if( line_type == 1 || line_type == 4 || shift == 0 )
+            {
+                p0.x = (p0.x + (XY_ONE>>1)) >> XY_SHIFT;
+                p0.y = (p0.y + (XY_ONE>>1)) >> XY_SHIFT;
+                p1.x = (p1.x + (XY_ONE>>1)) >> XY_SHIFT;
+                p1.y = (p1.y + (XY_ONE>>1)) >> XY_SHIFT;
+                icvLine( img, p0, p1, color, line_type );
+            }
+            else
+                icvLine2( img, p0, p1, color );
+        }
+        else
+            icvLineAA( img, p0, p1, color );
     }
     else
     {
-        CxPoint pt[4];
-        CxPoint dp = icxCalcWPT( pt1, pt2, thickness );
+        CvPoint pt[4], dp = {0,0};
+        double dx = (p0.x - p1.x)*INV_XY_ONE, dy = (p1.y - p0.y)*INV_XY_ONE;
+        double r = dx * dx + dy * dy;
+        int i;
+        thickness <<= XY_SHIFT - 1;
 
-        pt[0].x = pt1.x + dp.x;
-        pt[0].y = pt1.y + dp.y;
-        pt[1].x = pt1.x - dp.x;
-        pt[1].y = pt1.y - dp.y;
-        pt[2].x = pt2.x - dp.x;
-        pt[2].y = pt2.y - dp.y;
-        pt[3].x = pt2.x + dp.x;
-        pt[3].y = pt2.y + dp.y;
+        if( fabs(r) > DBL_EPSILON )
+        {
+            r = thickness * cvInvSqrt( (float) r );
+            dp.x = cvRound( dy * r );
+            dp.y = cvRound( dx * r );
+        }
 
-        icxFillConvexPoly( img, pt, 4, color );
-        icxFillCircle( img, pt1, thickness, color );
-        icxFillCircle( img, pt2, thickness, color );
+        pt[0].x = p0.x + dp.x;
+        pt[0].y = p0.y + dp.y;
+        pt[1].x = p0.x - dp.x;
+        pt[1].y = p0.y - dp.y;
+        pt[2].x = p1.x - dp.x;
+        pt[2].y = p1.y - dp.y;
+        pt[3].x = p1.x + dp.x;
+        pt[3].y = p1.y + dp.y;
+
+        icvFillConvexPoly( img, pt, 4, color, line_type, XY_SHIFT );
+
+        for( i = 0; i < 2; i++ )
+        {
+            if( flags & (i+1) )
+            {
+                if( line_type < CV_AA )
+                {
+                    CvPoint center;
+                    center.x = (p0.x + (XY_ONE>>1)) >> XY_SHIFT;
+                    center.y = (p0.y + (XY_ONE>>1)) >> XY_SHIFT;
+                    icvCircle( img, center, thickness >> XY_SHIFT, color, 1 ); 
+                }
+                else
+                {
+                    icvEllipseEx( img, p0, cvSize(thickness, thickness),
+                                  0, 0, 360, color, -1, line_type );
+                }
+            }
+            p0 = p1;
+        }
     }
 }
 
 
 static void
-icxPolyLine( CxMat* img, CxPoint *v, int count, int closed,
-             int thickness, const void* color, int connectivity )
+icvPolyLine( CvMat* img, CvPoint *v, int count, int is_closed,
+             const void* color, int thickness,
+             int line_type, int shift )
 {
-    CX_FUNCNAME("icxPolyLine");
+    CV_FUNCNAME("icvPolyLine");
 
     __BEGIN__;
     
-    int i0 = closed ? count - 1 : 0, i;
-
-    assert( img && thickness >= 0 ); 
-    assert( v && count >= 0 );
-
-    if( !v )
-        CX_ERROR( CX_StsNullPtr, "" );
-
     if( count > 0 )
     {
-        for( i = !closed; i < count; i0 = i, i++ )
+        int i = is_closed ? count - 1 : 0;
+        int flags = 2 + !is_closed;
+        CvPoint p0;
+        assert( 0 <= shift && shift <= XY_SHIFT );
+        assert( img && thickness >= 0 ); 
+        assert( v && count >= 0 );
+
+        if( !v )
+            CV_ERROR( CV_StsNullPtr, "" );
+
+        p0 = v[i];
+        for( i = !is_closed; i < count; i++ )
         {
-            icxThickLine( img, v[i0], v[i], thickness, color, connectivity );
+            CvPoint p = v[i];
+            icvThickLine( img, p0, p, color, thickness, line_type, flags, shift );
+            p0 = p;
+            flags = 2;
         }
     }
 
     __END__;
 }
-
-
-static void
-icxPolyLineAA( CxMat* img, CxPoint *v, int count, int closed,
-               int scale, const void* color )
-{
-    CX_FUNCNAME("icxPolyLineAA");
-
-    __BEGIN__;
-    
-    CxMat mat = *img;
-    int i0 = closed ? count - 1 : 0, i;
-
-    assert( img && (unsigned) scale <= XY_SHIFT ); 
-
-    if( !v )
-        CX_ERROR( CX_StsNullPtr, "" );
-
-    if( CX_MAT_DEPTH( img->type ) != CX_8U )
-        CX_ERROR( CX_BadDepth, cxUnsupportedFormat );
-
-    if( CX_MAT_CN( img->type ) != 1 && CX_MAT_CN( img->type ) != 3 )
-        CX_ERROR( CX_BadNumChannels, cxUnsupportedFormat );
-
-    mat.width -= 4;
-    mat.height -= 4;
-
-    if( mat.width > 0 && mat.height > 0 )
-    {
-        mat.data.ptr += (mat.step + CX_MAT_CN(mat.type)) * 2;
-
-        for( i = !closed; i < count; i0 = i, i++ )
-        {
-            icxLineAA( &mat,
-                       cxPoint( (v[i0].x << (XY_SHIFT - scale)) - 2 * XY_ONE,
-                                (v[i0].y << (XY_SHIFT - scale)) - 2 * XY_ONE ),
-                       cxPoint( (v[i].x << (XY_SHIFT - scale)) - 2 * XY_ONE,
-                                (v[i].y << (XY_SHIFT - scale)) - 2 * XY_ONE ), color );
-        }
-    }
-
-    __END__;
-}
-
 
 /****************************************************************************************\
 *                              External functions                                        *
 \****************************************************************************************/
 
-CX_IMPL CxScalar cxColorToScalar( double color, int type )
+CV_IMPL CvScalar cvColorToScalar( double packed_color, int type )
 {
-    CxScalar scalar;
+    CvScalar scalar;
     
-    if( CX_MAT_DEPTH( type ) == CX_8U )
+    if( CV_MAT_DEPTH( type ) == CV_8U )
     {
-        int icolor = cxRound( color );
-        if( CX_MAT_CN( type ) > 1 )
+        int icolor = cvRound( packed_color );
+        if( CV_MAT_CN( type ) > 1 )
         {
             scalar.val[0] = icolor & 255;
             scalar.val[1] = (icolor >> 8) & 255;
@@ -1592,14 +1685,14 @@ CX_IMPL CxScalar cxColorToScalar( double color, int type )
         }
         else
         {
-            scalar.val[0] = CX_CAST_8U( icolor );
+            scalar.val[0] = CV_CAST_8U( icolor );
             scalar.val[1] = scalar.val[2] = scalar.val[3] = 0;
         }
     }
-    else if( CX_MAT_DEPTH( type ) == CX_8S )
+    else if( CV_MAT_DEPTH( type ) == CV_8S )
     {
-        int icolor = cxRound( color );
-        if( CX_MAT_CN( type ) > 1 )
+        int icolor = cvRound( packed_color );
+        if( CV_MAT_CN( type ) > 1 )
         {
             scalar.val[0] = (char)icolor;
             scalar.val[1] = (char)(icolor >> 8);
@@ -1608,29 +1701,30 @@ CX_IMPL CxScalar cxColorToScalar( double color, int type )
         }
         else
         {
-            scalar.val[0] = CX_CAST_8S( icolor );
+            scalar.val[0] = CV_CAST_8S( icolor );
             scalar.val[1] = scalar.val[2] = scalar.val[3] = 0;
         }
     }
     else
     {
-        int cn = CX_MAT_CN( type );
+        int cn = CV_MAT_CN( type );
         switch( cn )
         {
         case 1:
-            scalar.val[0] = color;
+            scalar.val[0] = packed_color;
             scalar.val[1] = scalar.val[2] = scalar.val[3] = 0;
             break;
         case 2:
-            scalar.val[0] = scalar.val[1] = color;
+            scalar.val[0] = scalar.val[1] = packed_color;
             scalar.val[2] = scalar.val[3] = 0;
             break;
         case 3:
-            scalar.val[0] = scalar.val[1] = scalar.val[2] = color;
+            scalar.val[0] = scalar.val[1] = scalar.val[2] = packed_color;
             scalar.val[3] = 0;
             break;
         default:
-            scalar.val[0] = scalar.val[1] = scalar.val[2] = scalar.val[3] = color;
+            scalar.val[0] = scalar.val[1] =
+                scalar.val[2] = scalar.val[3] = packed_color;
             break;
         }
     }
@@ -1639,684 +1733,721 @@ CX_IMPL CxScalar cxColorToScalar( double color, int type )
 }
 
 
-static void
-icxExtractColor( double color, int type, void* buffer )
+CV_IMPL void
+cvLine( void* img, CvPoint pt1, CvPoint pt2, CvScalar color,
+        int thickness, int line_type, int shift )
 {
-    CxScalar scalar = cxColorToScalar( color, type );
-    cxScalarToRawData( &scalar, buffer, type, 0 );
-}
-
-
-CX_IMPL void
-cxLine( void* img, CxPoint pt1, CxPoint pt2, double color,
-        int thickness, int connectivity )
-{
-    CX_FUNCNAME( "cxLine" );
+    CV_FUNCNAME( "cvLine" );
 
     __BEGIN__;
 
     int coi = 0;
-    CxMat stub, *mat = (CxMat*)img;
+    CvMat stub, *mat = (CvMat*)img;
     double buf[4];
 
-    CX_CALL( mat = cxGetMat( img, &stub, &coi ));
+    CV_CALL( mat = cvGetMat( img, &stub, &coi ));
+
+    if( line_type == CV_AA && CV_MAT_DEPTH(mat->type) != CV_8U )
+        line_type = 8;
 
     if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
+        CV_ERROR( CV_BadCOI, cvUnsupportedFormat );
 
     if( (unsigned)thickness > 255  )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+        CV_ERROR( CV_StsOutOfRange, "" );
 
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
-    icxThickLine( mat, pt1, pt2, thickness, buf, connectivity );
+    if( shift < 0 || XY_SHIFT < shift )
+        CV_ERROR( CV_StsOutOfRange, "shift must be between 0 and 16" );
+
+    CV_CALL( cvScalarToRawData( &color, buf, mat->type, 0 ));
+    icvThickLine( mat, pt1, pt2, buf, thickness, line_type, 3, shift ); 
 
     __END__;
 }
 
 
-
-CX_IMPL void
-cxLineAA( void *img, CxPoint pt1, CxPoint pt2, double color, int scale )
+CV_IMPL void
+cvRectangle( void* img, CvPoint pt1, CvPoint pt2,
+             CvScalar color, int thickness,
+             int line_type, int shift )
 {
-    CX_FUNCNAME( "cxLineAA" );
+    CvPoint pt[4];
+
+    CV_FUNCNAME("cvRectangle");
 
     __BEGIN__;
 
-    int coi = 0, cn;
-    CxMat stub, *mat = (CxMat*)img;
+    int coi = 0;
+    CvMat stub, *mat = (CvMat*)img;
     double buf[4];
 
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
+    if( thickness < -1 || thickness > 255 )
+        CV_ERROR( CV_StsOutOfRange, "" );
 
-    if( mat != &stub )
-    {
-        stub = *mat;
-        mat = &stub;
-    }
+    CV_CALL( mat = cvGetMat( img, &stub, &coi ));
+
+    if( line_type == CV_AA && CV_MAT_DEPTH(mat->type) != CV_8U )
+        line_type = 8;
 
     if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
+        CV_ERROR( CV_BadCOI, cvUnsupportedFormat );
 
-    if( scale < 0 || scale > XY_SHIFT )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+    if( shift < 0 || XY_SHIFT < shift )
+        CV_ERROR( CV_StsOutOfRange, "shift must be between 0 and 16" );
 
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
+    CV_CALL( cvScalarToRawData( &color, buf, mat->type, 0 ));
 
-    cn = CX_MAT_CN( mat->type );
-
-    if( CX_MAT_DEPTH( mat->type) != CX_8U )
-        CX_ERROR( CX_BadDepth, cxUnsupportedFormat );
-
-    if( cn != 1 && cn != 3 )
-        CX_ERROR( CX_BadNumChannels, cxUnsupportedFormat );
-
-    /* shrink window because antialiased line is 3-pixel width */
-    mat->width -= 4;
-    mat->height -= 4;
-    mat->data.ptr += (mat->step + cn)*2;
-
-    if( mat->width > 0 && mat->height > 0 )
-    {
-        pt1.x = (pt1.x << (XY_SHIFT - scale)) - 2 * XY_ONE;
-        pt1.y = (pt1.y << (XY_SHIFT - scale)) - 2 * XY_ONE;
-        pt2.x = (pt2.x << (XY_SHIFT - scale)) - 2 * XY_ONE;
-        pt2.y = (pt2.y << (XY_SHIFT - scale)) - 2 * XY_ONE;
-
-        icxLineAA( mat, pt1, pt2, buf );
-    }
-
-    __END__;
-}
-
-
-CX_IMPL void
-cxRectangle( void* img, CxPoint pt1, CxPoint pt2,
-             double color, int thickness )
-{
-    CxPoint pt_arr[4];
-    CxPoint *pt = pt_arr;
-    int count = 4;
-
-    CX_FUNCNAME("cxRectangle");
-
-    __BEGIN__;
-
-    if( thickness < -1 || thickness > 255 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
-    pt_arr[0] = pt1;
-    pt_arr[1].x = pt2.x;
-    pt_arr[1].y = pt1.y;
-    pt_arr[2] = pt2;
-    pt_arr[3].x = pt1.x;
-    pt_arr[3].y = pt2.y;
+    pt[0] = pt1;
+    pt[1].x = pt2.x;
+    pt[1].y = pt1.y;
+    pt[2] = pt2;
+    pt[3].x = pt1.x;
+    pt[3].y = pt2.y;
 
     if( thickness >= 0 )
+        icvPolyLine( mat, pt, 4, 1, buf, thickness, line_type, shift );
+    else
+        icvFillConvexPoly( mat, pt, 4, buf, line_type, shift );
+
+    __END__;
+}
+
+
+CV_IMPL void
+cvCircle( void *img, CvPoint center, int radius,
+          CvScalar color, int thickness, int line_type, int shift )
+{
+    CV_FUNCNAME( "cvCircle" );
+
+    __BEGIN__;
+
+    int coi = 0;
+    CvMat stub, *mat = (CvMat*)img;
+    double buf[4];
+
+    CV_CALL( mat = cvGetMat( mat, &stub, &coi ));
+
+    if( line_type == CV_AA && CV_MAT_DEPTH(mat->type) != CV_8U )
+        line_type = 8;
+
+    if( coi != 0 )
+        CV_ERROR( CV_BadCOI, cvUnsupportedFormat );
+
+    if( radius < 0 )
+        CV_ERROR( CV_StsOutOfRange, "" );
+
+    if( thickness < -1 || thickness > 255 )
+        CV_ERROR( CV_StsOutOfRange, "" );
+
+    if( shift < 0 || XY_SHIFT < shift )
+        CV_ERROR( CV_StsOutOfRange, "shift must be between 0 and 16" );
+
+    CV_CALL( cvScalarToRawData( &color, buf, mat->type, 0 ));
+
+    if( thickness > 1 || line_type >= CV_AA )
     {
-        cxPolyLine( img, &pt, &count, 1, 1, color, thickness );
+        center.x <<= XY_SHIFT - shift;
+        center.y <<= XY_SHIFT - shift;
+        radius <<= XY_SHIFT - shift;
+        icvEllipseEx( mat, center, cvSize( radius, radius ),
+                      0, 0, 360, buf, thickness, line_type );
     }
     else
     {
-        cxFillConvexPoly( img, pt, count, color );
+        icvCircle( mat, center, radius, buf, thickness < 0 );
     }
 
     __END__;
 }
 
 
-CX_IMPL void
-cxCircle( void *img, CxPoint center, int radius, double color, int thickness )
+CV_IMPL void
+cvEllipse( void *img, CvPoint center, CvSize axes,
+           double angle, double start_angle, double end_angle,
+           CvScalar color, int thickness, int line_type, int shift )
 {
-    CX_FUNCNAME( "cxCircle" );
+    CV_FUNCNAME( "cvEllipse" );
 
     __BEGIN__;
 
     int coi = 0;
-    CxMat stub, *mat = (CxMat*)img;
+    CvMat stub, *mat = (CvMat*)img;
     double buf[4];
 
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
+    CV_CALL( mat = cvGetMat( mat, &stub, &coi ));
+
+    if( line_type == CV_AA && CV_MAT_DEPTH(mat->type) != CV_8U )
+        line_type = 8;
 
     if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
-
-    if( radius < 0 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
-    if( thickness < -1 || thickness > 255 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
-
-    if( thickness > 1 )
-    {
-        icxEllipseEx( mat, center, cxSize( radius, radius ), 0, 0, 360,
-                      Ellipse_Simple, 0, thickness, buf );
-    }
-    else if( thickness >= 0 )
-    {
-        icxCircle( mat, center, radius, buf );
-    }
-    else
-    {
-        icxFillCircle( mat, center, radius, buf );
-    }
-
-    __END__;
-}
-
-
-
-CX_IMPL void
-cxCircleAA( void *img, CxPoint center, int radius,
-            double color, int scale )
-{
-    CX_FUNCNAME( "cxCircleAA" );
-
-    __BEGIN__;
-
-    int coi = 0;
-    CxMat stub, *mat = (CxMat*)img;
-    double buf[4];
-
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
-
-    if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
-
-    if( radius < 0 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
-
-    if( radius < 0 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
-    if( scale < 0 || scale > XY_SHIFT )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
-    CX_CALL( icxEllipseEx( mat, center, cxSize( radius , radius ),
-                           0, 0, 360, Ellipse_Antialiazed, scale,
-                           1, buf ));
-
-    __END__;
-}
-
-
-
-CX_IMPL void
-cxEllipse( void *img, CxPoint center, CxSize axes,
-           double angle, double startAngle, double endAngle,
-           double color, int thickness )
-{
-    CX_FUNCNAME( "cxEllipse" );
-
-    __BEGIN__;
-
-    int coi = 0;
-    CxMat stub, *mat = (CxMat*)img;
-    double buf[4];
-
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
-
-    if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
+        CV_ERROR( CV_BadCOI, cvUnsupportedFormat );
 
     if( axes.width < 0 || axes.height < 0 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+        CV_ERROR( CV_StsOutOfRange, "" );
 
     if( thickness < -1 || thickness > 255 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+        CV_ERROR( CV_StsOutOfRange, "" );
 
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
+    if( shift < 0 || XY_SHIFT < shift )
+        CV_ERROR( CV_StsOutOfRange, "shift must be between 0 and 16" );
+
+    CV_CALL( cvScalarToRawData( &color, buf, mat->type, 0 ));
 
     {
-        CxEllipseKind kind = Ellipse_Simple;
-        if( thickness < 0 )
-        {
-            kind = Ellipse_Filled;
-            thickness = 1;
-        }
+        int _angle = cvRound(angle);
+        int _start_angle = cvRound(start_angle);
+        int _end_angle = cvRound(end_angle);
+        center.x <<= XY_SHIFT - shift;
+        center.y <<= XY_SHIFT - shift;
+        axes.width <<= XY_SHIFT - shift;
+        axes.height <<= XY_SHIFT - shift;
 
-        CX_CALL( icxEllipseEx( mat, center, axes, cxRound( angle ),
-                               cxRound( startAngle ), cxRound( endAngle ),
-                               kind, 0, thickness, buf ));
+        CV_CALL( icvEllipseEx( mat, center, axes, _angle, _start_angle,
+                               _end_angle, buf, thickness, line_type ));
     }
 
     __END__;
 }
 
 
-CX_IMPL void
-cxEllipseAA( void *img, CxPoint center, CxSize axes,
-             double angle, double startAngle, double endAngle,
-             double color, int scale )
+CV_IMPL void
+cvFillConvexPoly( void *img, CvPoint *pts, int npts, CvScalar color, int line_type, int shift )
 {
-    CX_FUNCNAME( "cxEllipseAA" );
+    CV_FUNCNAME( "cvFillConvexPoly" );
 
     __BEGIN__;
 
     int coi = 0;
-    CxMat stub, *mat = (CxMat*)img;
+    CvMat stub, *mat = (CvMat*)img;
     double buf[4];
 
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
+    CV_CALL( mat = cvGetMat( mat, &stub, &coi ));
+
+    if( line_type == CV_AA && CV_MAT_DEPTH(mat->type) != CV_8U )
+        line_type = 8;
 
     if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
-
-    if( scale < 0 || scale > XY_SHIFT )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
-    if( axes.width < 0 || axes.height < 0 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
-
-    CX_CALL( icxEllipseEx( mat, center, axes, cxRound( angle ),
-                           cxRound( startAngle ), cxRound( endAngle ),
-                           Ellipse_Antialiazed, scale, 1, buf ));
-
-    __END__;
-}
-
-
-CX_IMPL void
-cxFillConvexPoly( void *img, CxPoint *pts, int npts, double color )
-{
-    CX_FUNCNAME( "cxFillConvexPoly" );
-
-    __BEGIN__;
-
-    int coi = 0;
-    CxMat stub, *mat = (CxMat*)img;
-    double buf[4];
-
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
-
-    if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
+        CV_ERROR( CV_BadCOI, cvUnsupportedFormat );
 
     if( !pts )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( npts <= 0 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+        CV_ERROR( CV_StsOutOfRange, "" );
 
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
+    if( shift < 0 || XY_SHIFT < shift )
+        CV_ERROR( CV_StsOutOfRange, "shift must be between 0 and 16" );
 
-    icxFillConvexPoly( mat, pts, npts, buf );
+    CV_CALL( cvScalarToRawData( &color, buf, mat->type, 0 ));
+    icvFillConvexPoly( mat, pts, npts, buf, line_type, shift );
 
     __END__;
 }
 
 
-CX_IMPL void
-cxFillPoly( void *img, CxPoint **pts, int *npts, int contours, double color )
+CV_IMPL void
+cvFillPoly( void *img, CvPoint **pts, int *npts, int contours,
+            CvScalar color, int line_type, int shift )
 {
-    CxMemStorage* st = 0;
+    CvMemStorage* st = 0;
     
-    CX_FUNCNAME( "cxFillPoly" );
+    CV_FUNCNAME( "cvFillPoly" );
 
     __BEGIN__;
 
     int coi = 0;
-    CxMat stub, *mat = (CxMat*)img;
+    CvMat stub, *mat = (CvMat*)img;
     double buf[4];
 
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
+    CV_CALL( mat = cvGetMat( mat, &stub, &coi ));
+
+    if( line_type == CV_AA && CV_MAT_DEPTH(mat->type) != CV_8U )
+        line_type = 8;
 
     if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
+        CV_ERROR( CV_BadCOI, cvUnsupportedFormat );
 
     if( contours <= 0 )
-        CX_ERROR( CX_StsBadArg, "" );
+        CV_ERROR( CV_StsBadArg, "" );
 
     if( !pts )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( npts <= 0 )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
+    if( shift < 0 || XY_SHIFT < shift )
+        CV_ERROR( CV_StsOutOfRange, "shift must be between 0 and 16" );
+
+    CV_CALL( cvScalarToRawData( &color, buf, mat->type, 0 ));
 
     {
-        CxContour* edges = 0;
-        CxSeq vtx;
-        CxSeqBlock block;
+        CvContour* edges = 0;
+        CvSeq vtx;
+        CvSeqBlock block;
 
-        CX_CALL( st = cxCreateMemStorage( (1<<12) - 128 ));
-        CX_CALL( edges = (CxContour*)cxCreateSeq( 0, sizeof(CxContour),
-                                                  sizeof(CxPolyEdge), st ));
+        CV_CALL( st = cvCreateMemStorage( CV_DRAWING_STORAGE_BLOCK ));
+        CV_CALL( edges = (CvContour*)cvCreateSeq( 0, sizeof(CvContour),
+                                                  sizeof(CvPolyEdge), st ));
 
         for( int i = 0; i < contours; i++ )
         {
             if( !pts[i] )
-                CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+                CV_ERROR( CV_StsNullPtr, "" );
 
             if( npts[i] < 0 )
-                CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+                CV_ERROR( CV_StsOutOfRange, "" );
             
-            cxMakeSeqHeaderForArray( 0, sizeof(CxSeq), sizeof(CxPoint),
+            cvMakeSeqHeaderForArray( CV_32SC2, sizeof(CvSeq), sizeof(CvPoint),
                                      pts[i], npts[i], &vtx, &block );
 
-            CX_CALL( icxCollectPolyEdges( mat, &vtx, edges, buf ));
+            CV_CALL( icvCollectPolyEdges( mat, &vtx, edges, buf, line_type, shift ));
         }
 
-        CX_CALL( icxFillEdgeCollection( mat, edges, buf ));
+        CV_CALL( icvFillEdgeCollection( mat, edges, buf ));
     }
 
     __END__;
 
-    cxReleaseMemStorage( &st );
+    cvReleaseMemStorage( &st );
 }
 
 
 
-CX_IMPL void
-cxPolyLine( void *img, CxPoint **pts, int *npts,
-            int contours, int closed, double color,
-            int thickness, int connectivity )
+CV_IMPL void
+cvPolyLine( void *img, CvPoint **pts, int *npts,
+            int contours, int closed, CvScalar color,
+            int thickness, int line_type, int shift )
 {
-    CX_FUNCNAME( "cxPolyLine" );
+    CV_FUNCNAME( "cvPolyLine" );
 
     __BEGIN__;
 
     int coi = 0, i;
-    CxMat stub, *mat = (CxMat*)img;
+    CvMat stub, *mat = (CvMat*)img;
     double buf[4];
 
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
+    CV_CALL( mat = cvGetMat( mat, &stub, &coi ));
+
+    if( line_type == CV_AA && CV_MAT_DEPTH(mat->type) != CV_8U )
+        line_type = 8;
 
     if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
+        CV_ERROR( CV_BadCOI, cvUnsupportedFormat );
 
     if( contours <= 0 )
-        CX_ERROR( CX_StsBadArg, "" );
+        CV_ERROR( CV_StsBadArg, "" );
 
     if( thickness < -1 || thickness > 255 )
-        CX_ERROR( CX_StsBadArg, "" );
+        CV_ERROR( CV_StsBadArg, "" );
 
     if( !pts )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( npts <= 0 )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
+    if( shift < 0 || XY_SHIFT < shift )
+        CV_ERROR( CV_StsOutOfRange, "shift must be between 0 and 16" );
+
+    CV_CALL( cvScalarToRawData( &color, buf, mat->type, 0 ));
 
     for( i = 0; i < contours; i++ )
-    {
-        CX_CALL( icxPolyLine( mat, pts[i], npts[i], closed, thickness,
-                              buf, connectivity ));
-    }
+        icvPolyLine( mat, pts[i], npts[i], closed, buf, thickness, line_type, shift );
 
     __END__;
 }
 
 
-CX_IMPL void
-cxPolyLineAA( void * img, CxPoint **pts, int *npts,
-              int contours, int closed, double color, int scale )
+#define CV_FONT_SIZE_SHIFT     8
+#define CV_FONT_ITALIC_ALPHA   (1 << 8)
+#define CV_FONT_ITALIC_DIGIT   (2 << 8)
+#define CV_FONT_ITALIC_PUNCT   (4 << 8)
+#define CV_FONT_ITALIC_BRACES  (8 << 8)
+#define CV_FONT_HAVE_GREEK     (16 << 8)
+#define CV_FONT_HAVE_CYRILLIC  (32 << 8)
+
+static const int icvHersheyPlain[] = {
+(5 + 4*16) + CV_FONT_HAVE_GREEK,
+199, 214, 217, 233, 219, 197, 234, 216, 221, 222, 228, 225, 211, 224, 210, 220,
+200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 212, 213, 191, 226, 192,
+215, 190, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 193, 84,
+194, 85, 86, 87, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126,
+195, 223, 196, 88 };
+
+static const int icvHersheyPlainItalic[] = {
+(5 + 4*16) + CV_FONT_ITALIC_ALPHA + CV_FONT_HAVE_GREEK,
+199, 214, 217, 233, 219, 197, 234, 216, 221, 222, 228, 225, 211, 224, 210, 220,
+200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 212, 213, 191, 226, 192,
+215, 190, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 193, 84,
+194, 85, 86, 87, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161,
+162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
+195, 223, 196, 88 };
+
+static const int icvHersheyComplexSmall[] = {
+(6 + 7*16) + CV_FONT_HAVE_GREEK,
+1199, 1214, 1217, 1275, 1274, 1271, 1272, 1216, 1221, 1222, 1219, 1232, 1211, 1231, 1210, 1220,
+1200, 1201, 1202, 1203, 1204, 1205, 1206, 1207, 1208, 1209, 1212, 2213, 1241, 1238, 1242,
+1215, 1273, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013,
+1014, 1015, 1016, 1017, 1018, 1019, 1020, 1021, 1022, 1023, 1024, 1025, 1026, 1223, 1084,
+1224, 1247, 586, 1249, 1101, 1102, 1103, 1104, 1105, 1106, 1107, 1108, 1109, 1110, 1111,
+1112, 1113, 1114, 1115, 1116, 1117, 1118, 1119, 1120, 1121, 1122, 1123, 1124, 1125, 1126,
+1225, 1229, 1226, 1246 };
+
+static const int icvHersheyComplexSmallItalic[] = {
+(6 + 7*16) + CV_FONT_ITALIC_ALPHA + CV_FONT_HAVE_GREEK,
+1199, 1214, 1217, 1275, 1274, 1271, 1272, 1216, 1221, 1222, 1219, 1232, 1211, 1231, 1210, 1220,
+1200, 1201, 1202, 1203, 1204, 1205, 1206, 1207, 1208, 1209, 1212, 1213, 1241, 1238, 1242,
+1215, 1273, 1051, 1052, 1053, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063,
+1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073, 1074, 1075, 1076, 1223, 1084,
+1224, 1247, 586, 1249, 1151, 1152, 1153, 1154, 1155, 1156, 1157, 1158, 1159, 1160, 1161,
+1162, 1163, 1164, 1165, 1166, 1167, 1168, 1169, 1170, 1171, 1172, 1173, 1174, 1175, 1176,
+1225, 1229, 1226, 1246 };
+
+static const int icvHersheySimplex[] = {
+(9 + 12*16) + CV_FONT_HAVE_GREEK,
+2199, 714, 717, 733, 719, 697, 734, 716, 721, 722, 728, 725, 711, 724, 710, 720,
+700, 701, 702, 703, 704, 705, 706, 707, 708, 709, 712, 713, 691, 726, 692,
+715, 690, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513,
+514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 693, 584,
+694, 2247, 586, 2249, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611,
+612, 613, 614, 615, 616, 617, 618, 619, 620, 621, 622, 623, 624, 625, 626,
+695, 723, 696, 2246 };
+
+static const int icvHersheyDuplex[] = {
+(9 + 12*16) + CV_FONT_HAVE_GREEK,
+2199, 2714, 2728, 2732, 2719, 2733, 2718, 2727, 2721, 2722, 2723, 2725, 2711, 2724, 2710, 2720,
+2700, 2701, 2702, 2703, 2704, 2705, 2706, 2707, 2708, 2709, 2712, 2713, 2730, 2726, 2731,
+2715, 2734, 2501, 2502, 2503, 2504, 2505, 2506, 2507, 2508, 2509, 2510, 2511, 2512, 2513,
+2514, 2515, 2516, 2517, 2518, 2519, 2520, 2521, 2522, 2523, 2524, 2525, 2526, 2223, 2084,
+2224, 2247, 587, 2249, 2601, 2602, 2603, 2604, 2605, 2606, 2607, 2608, 2609, 2610, 2611,
+2612, 2613, 2614, 2615, 2616, 2617, 2618, 2619, 2620, 2621, 2622, 2623, 2624, 2625, 2626,
+2225, 2229, 2226, 2246 };
+
+static const int icvHersheyComplex[] = {
+(9 + 12*16) + CV_FONT_HAVE_GREEK + CV_FONT_HAVE_CYRILLIC,
+2199, 2214, 2217, 2275, 2274, 2271, 2272, 2216, 2221, 2222, 2219, 2232, 2211, 2231, 2210, 2220,
+2200, 2201, 2202, 2203, 2204, 2205, 2206, 2207, 2208, 2209, 2212, 2213, 2241, 2238, 2242,
+2215, 2273, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013,
+2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2223, 2084,
+2224, 2247, 587, 2249, 2101, 2102, 2103, 2104, 2105, 2106, 2107, 2108, 2109, 2110, 2111,
+2112, 2113, 2114, 2115, 2116, 2117, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 2126,
+2225, 2229, 2226, 2246 };
+
+static const int icvHersheyComplexItalic[] = {
+(9 + 12*16) + CV_FONT_ITALIC_ALPHA + CV_FONT_ITALIC_DIGIT + CV_FONT_ITALIC_PUNCT +
+CV_FONT_HAVE_GREEK + CV_FONT_HAVE_CYRILLIC,
+2199, 2764, 2778, 2782, 2769, 2783, 2768, 2777, 2771, 2772, 2219, 2232, 2211, 2231, 2210, 2220,
+2750, 2751, 2752, 2753, 2754, 2755, 2756, 2757, 2758, 2759, 2212, 2213, 2241, 2238, 2242,
+2765, 2273, 2051, 2052, 2053, 2054, 2055, 2056, 2057, 2058, 2059, 2060, 2061, 2062, 2063,
+2064, 2065, 2066, 2067, 2068, 2069, 2070, 2071, 2072, 2073, 2074, 2075, 2076, 2223, 2084,
+2224, 2247, 587, 2249, 2151, 2152, 2153, 2154, 2155, 2156, 2157, 2158, 2159, 2160, 2161,
+2162, 2163, 2164, 2165, 2166, 2167, 2168, 2169, 2170, 2171, 2172, 2173, 2174, 2175, 2176,
+2225, 2229, 2226, 2246 };
+
+static const int icvHersheyTriplex[] = {
+(9 + 12*16) + CV_FONT_HAVE_GREEK,
+2199, 3214, 3228, 3232, 3219, 3233, 3218, 3227, 3221, 3222, 3223, 3225, 3211, 3224, 3210, 3220,
+3200, 3201, 3202, 3203, 3204, 3205, 3206, 3207, 3208, 3209, 3212, 3213, 3230, 3226, 3231,
+3215, 3234, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010, 3011, 3012, 3013,
+2014, 3015, 3016, 3017, 3018, 3019, 3020, 3021, 3022, 3023, 3024, 3025, 3026, 2223, 2084,
+2224, 2247, 587, 2249, 3101, 3102, 3103, 3104, 3105, 3106, 3107, 3108, 3109, 3110, 3111,
+3112, 3113, 3114, 3115, 3116, 3117, 3118, 3119, 3120, 3121, 3122, 3123, 3124, 3125, 3126,
+2225, 2229, 2226, 2246 };
+
+static const int icvHersheyTriplexItalic[] = {
+(9 + 12*16) + CV_FONT_ITALIC_ALPHA + CV_FONT_ITALIC_DIGIT +
+CV_FONT_ITALIC_PUNCT + CV_FONT_HAVE_GREEK,
+2199, 3264, 3278, 3282, 3269, 3233, 3268, 3277, 3271, 3272, 3223, 3225, 3261, 3224, 3260, 3270,
+3250, 3251, 3252, 3253, 3254, 3255, 3256, 3257, 3258, 3259, 3262, 3263, 3230, 3226, 3231,
+3265, 3234, 3051, 3052, 3053, 3054, 3055, 3056, 3057, 3058, 3059, 3060, 3061, 3062, 3063,
+2064, 3065, 3066, 3067, 3068, 3069, 3070, 3071, 3072, 3073, 3074, 3075, 3076, 2223, 2084,
+2224, 2247, 587, 2249, 3151, 3152, 3153, 3154, 3155, 3156, 3157, 3158, 3159, 3160, 3161,
+3162, 3163, 3164, 3165, 3166, 3167, 3168, 3169, 3170, 3171, 3172, 3173, 3174, 3175, 3176,
+2225, 2229, 2226, 2246 };
+
+static const int icvHersheyScriptSimplex[] = {
+(9 + 12*16) + CV_FONT_ITALIC_ALPHA + CV_FONT_HAVE_GREEK,
+2199, 714, 717, 733, 719, 697, 734, 716, 721, 722, 728, 725, 711, 724, 710, 720,
+700, 701, 702, 703, 704, 705, 706, 707, 708, 709, 712, 713, 691, 726, 692,
+715, 690, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563,
+564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 693, 584,
+694, 2247, 586, 2249, 651, 652, 653, 654, 655, 656, 657, 658, 659, 660, 661,
+662, 663, 664, 665, 666, 667, 668, 669, 670, 671, 672, 673, 674, 675, 676,
+695, 723, 696, 2246 };
+
+static const int icvHersheyScriptComplex[] = {
+(9 + 12*16) + CV_FONT_ITALIC_ALPHA + CV_FONT_ITALIC_DIGIT + CV_FONT_ITALIC_PUNCT + CV_FONT_HAVE_GREEK,
+2199, 2764, 2778, 2782, 2769, 2783, 2768, 2777, 2771, 2772, 2219, 2232, 2211, 2231, 2210, 2220,
+2750, 2751, 2752, 2753, 2754, 2755, 2756, 2757, 2758, 2759, 2212, 2213, 2241, 2238, 2242,
+2215, 2273, 2551, 2552, 2553, 2554, 2555, 2556, 2557, 2558, 2559, 2560, 2561, 2562, 2563,
+2564, 2565, 2566, 2567, 2568, 2569, 2570, 2571, 2572, 2573, 2574, 2575, 2576, 2223, 2084,
+2224, 2247, 586, 2249, 2651, 2652, 2653, 2654, 2655, 2656, 2657, 2658, 2659, 2660, 2661,
+2662, 2663, 2664, 2665, 2666, 2667, 2668, 2669, 2670, 2671, 2672, 2673, 2674, 2675, 2676,
+2225, 2229, 2226, 2246 };
+
+
+CV_IMPL void
+cvPutText( void *img, const char *text, CvPoint org, const CvFont *font, CvScalar color )
 {
-    CX_FUNCNAME( "cxPolyLineAA" );
+    CV_FUNCNAME( "cvPutText" );
 
     __BEGIN__;
 
-    int coi = 0, i;
-    CxMat stub, *mat = (CxMat*)img;
-    double buf[4];
-
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
-
-    if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
-
-    if( contours <= 0 )
-        CX_ERROR( CX_StsBadArg, "" );
-
-    if( scale < 0 || scale > XY_SHIFT )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
-    if( !pts )
-        CX_ERROR( CX_StsNullPtr, "" );
-
-    if( npts <= 0 )
-        CX_ERROR( CX_StsNullPtr, "" );
-
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
-
-    for( i = 0; i < contours; i++ )
-    {
-        CX_CALL( icxPolyLineAA( mat, pts[i], npts[i], closed, scale, buf ));
-    }
-
-    __END__;
-}
-
-
-CX_IMPL void
-cxPutText( void *img, const char *text, CxPoint org, CxFont *font, double color )
-{
-    CX_FUNCNAME( "cxPutText" );
-
-    __BEGIN__;
-
+    int view_x, view_y;
     int coi = 0;
-    int top_bottom = 0;
-    CxMat stub, *mat = (CxMat*)img;
+    int top_bottom = 0, base_line;
+    int hscale, vscale, default_shear, italic_shear;
+    int thickness, line_type;
+    CvMat stub, *mat = (CvMat*)img;
     double buf[4];
+    CvPoint pt[1 << 10];
+    int count;
 
-    const int shift = CX_TXT_FONT_SHIFT + CX_TXT_SIZE_SHIFT;
-    const int delta = 1 << (shift - 1);
+    int i;
+    const char **faces = icvHersheyGlyphs;
 
-    int i, font_height, max_code;
-    const short *faces;
-
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
+    CV_CALL( mat = cvGetMat( mat, &stub, &coi ));
 
     if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
+        CV_ERROR( CV_BadCOI, cvUnsupportedFormat );
 
-    if( CX_IS_IMAGE_HDR(img) && ((IplImage*)img)->origin )
+    if( CV_IS_IMAGE_HDR(img) && ((IplImage*)img)->origin )
         top_bottom = 1;
 
-    if( !text || !font || !font->data )
-        CX_ERROR( CX_StsNullPtr, "" );
+    if( !text || !font || !font->ascii )
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    if( !font->data[2] && !font->data[3] )
-        CX_ERROR( CX_StsNullPtr, "" );
+    CV_CALL( cvScalarToRawData( &color, buf, mat->type, 0 ));
+    base_line = -(font->ascii[0] & 15);
+    hscale = cvRound(font->hscale*XY_ONE);
+    vscale = cvRound(font->vscale*XY_ONE);
+    default_shear = cvRound(font->shear*font->vscale*XY_ONE);
+    italic_shear = !(font->font_face & CV_FONT_ITALIC) ? 0 : cvRound(font->vscale*.25*XY_ONE);
+    thickness = font->thickness;
+    line_type = font->line_type;
 
-    CX_CALL( icxExtractColor( color, mat->type, buf ));
-
-    faces = (const short *)(((ulong)font->data[3] << sizeof(int)*8*
-                             (sizeof(long)>sizeof(int))) + (ulong)font->data[2]);
-    max_code = font->data[4];
-
-    font_height = font->size.height;
+    if( line_type == CV_AA && CV_MAT_DEPTH(mat->type) != CV_8U )
+        line_type = 8;
 
     if( top_bottom )
-    {
-        org.y -= (font->data[1] * font_height + delta) >> shift;
-        font_height = -font_height;
-    }
+        vscale = -vscale;
+
+    view_x = org.x << XY_SHIFT;
+    view_y = (org.y << XY_SHIFT) + base_line*vscale;
 
     for( i = 0; text[i] != '\0'; i++ )
     {
-        int idx = ((uchar)text[i]) * 4;
-        int w;
-        const short *letter;
-        CxPoint pt0 = org;
+        int c = (uchar)text[i];
+        int dx, shear = default_shear;
+        const char* ptr;
+        CvPoint p;
 
-        if( idx >= max_code * 4 || font->data[idx + CX_FONT_HDR_SIZE] < 0 )
-            idx = 127 * 4;
-        idx += CX_FONT_HDR_SIZE;
-        letter = faces + font->data[idx];
+        if( c > 128 || c < ' ' )
+            c = '?';
 
-        w = (font->data[idx + 1] * font->size.width + delta) >> shift;
-
-        for( ;; )
+        if( italic_shear )
         {
-            CxPoint pt;
-            int new_fl, end_fl;
-
-            pt.x = letter[0];
-            pt.y = letter[1];
-            new_fl = (pt.x & 1);
-            end_fl = (pt.y & 1);
-            letter += 2;
-
-            if( pt.x == SHRT_MIN )
-                break;
-
-            pt.x = org.x + ((pt.x * font->size.width +
-                             pt.y * font->italic_scale + delta) >> shift);
-            pt.y = org.y - ((pt.y * font_height + delta) >> shift);
-
-            if( !new_fl )
+            if( ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z'))
             {
-                icxThickLine( mat, pt0, pt, font->thickness, buf );
+                if( !(font->ascii[0] & CV_FONT_ITALIC_ALPHA) )
+                    shear += italic_shear;
             }
-            pt0 = pt;
-            if( end_fl )
-                break;
+            else if( '0' <= c && c <= '9' )
+            {
+                if( !(font->ascii[0] & CV_FONT_ITALIC_DIGIT) )
+                    shear += italic_shear;
+            }
+            else if( c < 'A' )
+            {
+                if( !(font->ascii[0] & CV_FONT_ITALIC_PUNCT) )
+                    shear += italic_shear;
+            }
+            else
+            {
+                shear += italic_shear;
+            }
         }
 
-        org.x += w + font->dx;
+        ptr = faces[font->ascii[(c-' ')+1]];
+        p.x = (unsigned char)ptr[0] - 'R';
+        p.y = (unsigned char)ptr[1] - 'R';
+        dx = p.y*hscale;
+        view_x -= p.x*hscale;
+        count = 0;
+
+        for( ptr += 2;; )
+        {
+            if( *ptr == ' ' || !*ptr )
+            {
+                if( count > 1 )
+                    icvPolyLine( mat, pt, count, 0, buf, thickness, line_type, XY_SHIFT ); 
+                if( !*ptr++ )
+                    break;
+                count = 0;
+            }
+            else
+            {
+                p.x = (unsigned char)ptr[0] - 'R';
+                p.y = (unsigned char)ptr[1] - 'R';
+                ptr += 2;
+                pt[count].x = p.x*hscale - p.y*shear + view_x;
+                pt[count++].y = p.y*vscale + view_y;
+            }
+        }
+        view_x += dx;
     }
 
     __END__;
 }
 
-
-CX_IMPL void
-cxInitFont( CxFont *font, int font_face,
-            double hscale, double vscale,
-            double italic_scale, int thickness )
+CV_IMPL void
+cvInitFont( CvFont *font, int font_face, double hscale, double vscale,
+            double shear, int thickness, int line_type )
 {
-    CX_FUNCNAME( "cxInitFont" );
+    CV_FUNCNAME( "cvInitFont" );
 
     __BEGIN__;
 
-    const int shift = CX_TXT_FONT_SHIFT + CX_TXT_SIZE_SHIFT;
-    const int delta = 1 << (shift - 1);
+    int is_italic = font_face & CV_FONT_ITALIC;
 
     if( !font )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
-    if( font_face != CX_FONT_VECTOR0 || hscale <= 0 || vscale <= 0 || thickness < 0 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    font->data = icxTextHdrsFn0;
-    font->size.width = cxRound( hscale * (1 << CX_TXT_SIZE_SHIFT) );
-    font->size.height = cxRound( vscale * (1 << CX_TXT_SIZE_SHIFT) );
-    font->italic_scale = cxRound( italic_scale * vscale * (1 << CX_TXT_SIZE_SHIFT) );
-    font->thickness = thickness;
-    font->dx = ((font->size.width * font->data[0] + delta * 4) >>
-                (shift + 2)) + font->thickness;
+    if( hscale <= 0 || vscale <= 0 || thickness < 0 )
+        CV_ERROR( CV_StsOutOfRange, "" );
 
-    __END__;
-}
-
-
-CX_IMPL void
-cxGetTextSize( const char *text_string, CxFont *font, CxSize *text_size, int *_ymin )
-{
-    const int shift = CX_TXT_FONT_SHIFT + CX_TXT_SIZE_SHIFT;
-    const int delta = 1 << (shift - 1);
-
-    int i, max_code, width = 0, height = 0, ymin = 0;
-
-    CX_FUNCNAME( "cxGetTextSize" );
-
-    __BEGIN__;
-
-    if( !font || !font->data || !text_string || !text_size || !_ymin )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
-
-    max_code = font->data[4];
-
-    for( i = 0; text_string[i] != '\0'; i++ )
+    switch( (font_face & 7) )
     {
-        int idx = ((uchar) text_string[i]) * 4;
-        int yplus, yminus;
-
-        if( idx >= max_code * 4 || font->data[idx + CX_FONT_HDR_SIZE] < 0 )
-            idx = 127 * 4;
-        idx += CX_FONT_HDR_SIZE;
-
-        width += font->dx + ((font->data[idx + 1] * font->size.width + delta) >> shift);
-        yplus = (font->data[idx + 2] * font->size.height + delta) >> shift;
-        yminus = (font->data[idx + 3] * font->size.height + delta) >> shift;
-
-        height = CX_IMAX( height, yplus );
-        ymin = CX_IMIN( ymin, yminus );
+    case CV_FONT_HERSHEY_SIMPLEX:
+        font->ascii = icvHersheySimplex;
+        break;
+    case CV_FONT_HERSHEY_PLAIN:
+        font->ascii = !is_italic ? icvHersheyPlain : icvHersheyPlainItalic;
+        break;
+    case CV_FONT_HERSHEY_DUPLEX:
+        font->ascii = icvHersheyDuplex;
+        break;
+    case CV_FONT_HERSHEY_COMPLEX:
+        font->ascii = !is_italic ? icvHersheyComplex : icvHersheyComplexItalic;
+        break;
+    case CV_FONT_HERSHEY_TRIPLEX:
+        font->ascii = !is_italic ? icvHersheyTriplex : icvHersheyTriplexItalic;
+        break;
+    case CV_FONT_HERSHEY_COMPLEX_SMALL:
+        font->ascii = !is_italic ? icvHersheyComplexSmall : icvHersheyComplexSmallItalic;
+        break;
+    case CV_FONT_HERSHEY_SCRIPT_SIMPLEX:
+        font->ascii = icvHersheyScriptSimplex;
+        break;
+    case CV_FONT_HERSHEY_SCRIPT_COMPLEX:
+        font->ascii = icvHersheyScriptComplex;
+        break;
+    default:
+        CV_ERROR( CV_StsOutOfRange, "Unknown font type" );
     }
 
-    text_size->width = width;
-    text_size->height = height;
-    *_ymin = ymin;
+    font->font_face = font_face;
+    font->hscale = (float)hscale;
+    font->vscale = (float)vscale;
+    font->thickness = thickness;
+    font->shear = (float)shear;
+    font->greek = font->cyrillic = 0;
+    font->line_type = line_type;
 
     __END__;
 }
 
-/*F///////////////////////////////////////////////////////////////////////////////////////
-//    Name: cxDrawContours
-//    Purpose:
-//      Draws one or more contours on the image
-//    Context:
-//    Parameters:
-//      img      - destination three-channel image
-//      step     - its full width in bytes
-//      size     - width and height of the image in pixels
-//      contour  - pointer to drawn contour(s).
-//      external_color - color to draw external contours with
-//      hole_color - color to draw hole contours with
-//      max_level  - max level of the tree (starting from contour pointer) to draw.
-//                   if it is 0, draw single contour, if 1 - draw the contour and
-//                   other contours at the same level, 2 - draw two levels etc.
-//    Returns:
-//      CX_OK or error code
-//    Notes:
-//F*/
-static const CxPoint icxCodeDeltas[8] =
+
+CV_IMPL void
+cvGetTextSize( const char *text, const CvFont *font, CvSize *size, int *_base_line )
+{
+    CV_FUNCNAME( "cvGetTextSize" );
+
+    __BEGIN__;
+    
+    float view_x = 0;
+    int base_line, cap_line;
+
+    int i;
+    const char **faces = icvHersheyGlyphs;
+
+    if( !text || !font || !font->ascii || !size )
+        CV_ERROR( CV_StsNullPtr, "" );
+
+    base_line = (font->ascii[0] & 15);
+    cap_line = (font->ascii[0] >> 4) & 15;
+    if( _base_line )
+        *_base_line = cvRound(base_line*font->vscale);
+    size->height = cvRound((cap_line + base_line)*font->vscale + font->thickness);
+
+    for( i = 0; text[i] != '\0'; i++ )
+    {
+        int c = (uchar)text[i];
+        const char* ptr;
+        CvPoint p;
+
+        if( c > 128 || c < ' ' )
+            c = '?';
+
+        ptr = faces[font->ascii[(c-' ')+1]];
+        p.x = (unsigned char)ptr[0] - 'R';
+        p.y = (unsigned char)ptr[1] - 'R';
+        view_x += (p.y - p.x)*font->hscale;
+    }
+
+    size->width = cvRound(view_x + font->thickness);
+
+    __END__;
+}
+
+
+static const CvPoint icvCodeDeltas[8] =
 { {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1} };
 
-#define CX_ADJUST_EDGE_COUNT( count, seq )  \
-    ((count) -= ((count) == (seq)->total && !CX_IS_SEQ_CLOSED(seq)))
+#define CV_ADJUST_EDGE_COUNT( count, seq )  \
+    ((count) -= ((count) == (seq)->total && !CV_IS_SEQ_CLOSED(seq)))
 
-CX_IMPL void
-cxDrawContours( void*  img,  CxSeq*  contour,
-                double externalColor, double holeColor, 
-                int  maxLevel, int thickness, int connectivity )
+CV_IMPL void
+cvDrawContours( void*  img,  CvSeq*  contour,
+                CvScalar externalColor, CvScalar holeColor, 
+                int  maxLevel, int thickness,
+                int line_type, CvPoint offset )
 {
-    CxSeq *contour0 = contour, *h_next = 0;
-    CxMemStorage* st = 0;
-    CxSeq* tseq = 0;
-    CxContour* edges = 0;
-    CxSeqWriter writer;
-    CxTreeNodeIterator iterator;
+    CvSeq *contour0 = contour, *h_next = 0;
+    CvMemStorage* st = 0;
+    CvSeq* tseq = 0;
+    CvContour* edges = 0;
+    CvSeqWriter writer;
+    CvTreeNodeIterator iterator;
 
-    CX_FUNCNAME( "cxDrawContours" );
+    CV_FUNCNAME( "cvDrawContours" );
 
     __BEGIN__;
 
     int coi = 0;
-    CxMat stub, *mat = (CxMat*)img;
+    CvMat stub, *mat = (CvMat*)img;
     double ext_buf[4], hole_buf[4];
 
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
+    CV_CALL( mat = cvGetMat( mat, &stub, &coi ));
+
+    if( line_type == CV_AA && CV_MAT_DEPTH(mat->type) != CV_8U )
+        line_type = 8;
 
     if( !contour )
         EXIT;
 
     if( coi != 0 )
-        CX_ERROR( CX_BadCOI, cxUnsupportedFormat );
+        CV_ERROR( CV_BadCOI, cvUnsupportedFormat );
 
     if( thickness < -1 || thickness > 255 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+        CV_ERROR( CV_StsOutOfRange, "" );
 
-    CX_CALL( icxExtractColor( externalColor, mat->type, ext_buf ));
-    CX_CALL( icxExtractColor( holeColor, mat->type, hole_buf ));
+    CV_CALL( cvScalarToRawData( &externalColor, ext_buf, mat->type, 0 ));
+    CV_CALL( cvScalarToRawData( &holeColor, hole_buf, mat->type, 0 ));
 
     if( maxLevel < 0 )
     {
@@ -2328,42 +2459,46 @@ cxDrawContours( void*  img,  CxSeq*  contour,
     if( thickness < 0 )
     {
         if( contour->storage )
-            st = cxCreateChildMemStorage( contour->storage );
+            st = cvCreateChildMemStorage( contour->storage );
         else
-            st = cxCreateMemStorage();
-        tseq = cxCreateSeq( 0, sizeof(CxContour), sizeof(CxPoint), st );
-        edges = (CxContour*)cxCreateSeq( 0, sizeof(CxContour), sizeof(CxPolyEdge), st );
+            st = cvCreateMemStorage( CV_DRAWING_STORAGE_BLOCK );
+        tseq = cvCreateSeq( 0, sizeof(CvContour), sizeof(CvPoint), st );
+        edges = (CvContour*)cvCreateSeq( 0, sizeof(CvContour), sizeof(CvPolyEdge), st );
     }
 
     memset( &writer, 0, sizeof(writer));
 
-    cxInitTreeNodeIterator( &iterator, contour, maxLevel );
+    cvInitTreeNodeIterator( &iterator, contour, maxLevel );
     
-    while( (contour = (CxSeq*)cxNextTreeNode( &iterator )) != 0 )
+    while( (contour = (CvSeq*)cvNextTreeNode( &iterator )) != 0 )
     {
-        CxSeqReader reader;
+        CvSeqReader reader;
         int i, count = contour->total;
-        void* clr = (contour->flags & CX_SEQ_FLAG_HOLE) == 0 ? ext_buf : hole_buf;
+        int elem_type = CV_MAT_TYPE(contour->flags);
+        void* clr = (contour->flags & CV_SEQ_FLAG_HOLE) == 0 ? ext_buf : hole_buf;
 
-        cxStartReadSeq( contour, &reader, 0 );
+        cvStartReadSeq( contour, &reader, 0 );
 
-        if( CX_IS_SEQ_CHAIN_CONTOUR( contour ))
+        if( CV_IS_SEQ_CHAIN_CONTOUR( contour ))
         {
-            CxPoint pt = ((CxChain*)contour)->origin;
-            CxPoint prev_pt = pt;
+            CvPoint pt = ((CvChain*)contour)->origin;
+            CvPoint prev_pt = pt;
             char prev_code = reader.ptr ? reader.ptr[0] : '\0';
 
             if( thickness < 0 )
             {
-                cxClearSeq( tseq );
-                cxStartAppendToSeq( tseq, &writer );
-                CX_WRITE_SEQ_ELEM( pt, writer );
+                cvClearSeq( tseq );
+                cvStartAppendToSeq( tseq, &writer );
+                CV_WRITE_SEQ_ELEM( pt, writer );
             }
+
+            prev_pt.x += offset.x;
+            prev_pt.y += offset.y;
 
             for( i = 0; i < count; i++ )
             {
                 char code;
-                CX_READ_SEQ_ELEM( code, reader );
+                CV_READ_SEQ_ELEM( code, reader );
 
                 assert( (code & ~7) == 0 );
 
@@ -2372,60 +2507,83 @@ cxDrawContours( void*  img,  CxSeq*  contour,
                     prev_code = code;
                     if( thickness >= 0 )
                     {
-                        icxThickLine( mat, prev_pt, pt, thickness, clr, connectivity );
+                        icvThickLine( mat, prev_pt, pt, clr, thickness, line_type, 2, 0 );
                     }
                     else
                     {
-                        CX_WRITE_SEQ_ELEM( pt, writer );
+                        CV_WRITE_SEQ_ELEM( pt, writer );
                     }
                     prev_pt = pt;
                 }
             
-                pt.x += icxCodeDeltas[code].x;
-                pt.y += icxCodeDeltas[code].y;
+                pt.x += icvCodeDeltas[(int)code].x;
+                pt.y += icvCodeDeltas[(int)code].y;
             }
 
             if( thickness >= 0 )
             {
-                icxThickLine( mat, prev_pt, ((CxChain*)contour)->origin,
-                              thickness, clr, connectivity );
+                icvThickLine( mat, prev_pt, ((CvChain*)contour)->origin,
+                              clr, thickness, line_type, 2, 0 );
             }
             else
             {
-                CX_WRITE_SEQ_ELEM( pt, writer );
-                cxEndWriteSeq( &writer );
-                CX_CALL( icxCollectPolyEdges( mat, tseq, edges, ext_buf ));
+                CV_WRITE_SEQ_ELEM( pt, writer );
+                cvEndWriteSeq( &writer );
+                CV_CALL( icvCollectPolyEdges( mat, tseq, edges, ext_buf, line_type, 0 ));
             }
         }
-        else if( CX_IS_SEQ_POLYLINE( contour ))
+        else if( CV_IS_SEQ_POLYLINE( contour ))
         {
             if( thickness >= 0 )
             {
-                CxPoint pt1, pt2;
-                CX_ADJUST_EDGE_COUNT( count, contour );
-
-                /* scroll the reader by 1 point */
-                CX_READ_EDGE( pt1, pt2, reader );
+                CvPoint pt1, pt2;
+                int shift = 0;
+                
+                count -= !CV_IS_SEQ_CLOSED(contour);
+                if( elem_type == CV_32SC2 )
+                {
+                    CV_READ_SEQ_ELEM( pt1, reader );
+                    pt1.x += offset.x;
+                    pt1.y += offset.y;
+                }
+                else
+                {
+                    CvPoint2D32f pt1f;
+                    CV_READ_SEQ_ELEM( pt1f, reader );
+                    pt1.x = cvRound( (pt1f.x + offset.x) * XY_ONE );
+                    pt1.y = cvRound( (pt1f.y + offset.y) * XY_ONE );
+                    shift = XY_SHIFT;
+                }
 
                 for( i = 0; i < count; i++ )
                 {
-                    CX_READ_EDGE( pt1, pt2, reader );
-
-                    /*assert( pt1.x != 0 && pt1.y != 0 && pt2.x != 0 && pt2.y != 0 );*/
-
-                    icxThickLine( mat, pt1, pt2, thickness, clr, connectivity );
+                    if( elem_type == CV_32SC2 )
+                    {
+                        CV_READ_SEQ_ELEM( pt2, reader );
+                        pt2.x += offset.x;
+                        pt2.y += offset.y;
+                    }
+                    else
+                    {
+                        CvPoint2D32f pt2f;
+                        CV_READ_SEQ_ELEM( pt2f, reader );
+                        pt2.x = cvRound( pt2f.x * XY_ONE );
+                        pt2.y = cvRound( pt2f.y * XY_ONE );
+                    }
+                    icvThickLine( mat, pt1, pt2, clr, thickness, line_type, 2, shift );
+                    pt1 = pt2;
                 }
             }
             else
             {
-                CX_CALL( icxCollectPolyEdges( mat, contour, edges, ext_buf ));
+                CV_CALL( icvCollectPolyEdges( mat, contour, edges, ext_buf, line_type, 0, offset ));
             }
         }
     }
 
     if( thickness < 0 )
     {
-        CX_CALL( icxFillEdgeCollection( mat, edges, ext_buf ));
+        CV_CALL( icvFillEdgeCollection( mat, edges, ext_buf ));
     }
 
     __END__;
@@ -2433,7 +2591,7 @@ cxDrawContours( void*  img,  CxSeq*  contour,
     if( h_next && contour0 )
         contour0->h_next = h_next;
 
-    cxReleaseMemStorage( &st );
+    cvReleaseMemStorage( &st );
 }
 
 /* End of file. */

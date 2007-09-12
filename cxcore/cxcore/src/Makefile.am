@@ -11,8 +11,10 @@ libcxcore_a_SOURCES = \
      cxdrawing.cpp     \
      cxdxt.cpp     \
      cxerror.cpp     \
+     cximage.cpp     \
      cxjacobieigens.cpp     \
      cxlogic.cpp     \
+     cxlut.cpp     \
      cxmathfuncs.cpp     \
      cxmatmul.cpp     \
      cxmatrix.cpp     \

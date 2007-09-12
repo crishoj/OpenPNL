@@ -226,15 +226,15 @@ Contributed and maintained by Denis Lagno <dlagno@msu.nstl.nnov.ru>
 CART_IMPL CxClassifierSampleChunk *
 cxGetClassifierSampleChunk( CxClassifierSample *sample, int index )
 {
-    CX_FUNCNAME( "cxGetClassifierSampleChunk" );
+    CV_FUNCNAME( "cxGetClassifierSampleChunk" );
     __BEGIN__;
     if ( sample == 0 )
     {
-	CX_ERROR( CX_StsNullPtr, "null sample pointer" );
+	CV_ERROR( CV_StsNullPtr, "null sample pointer" );
     }
     if ( index >= sample->num_chunks )
     {
-	CX_ERROR( CX_StsBadArg, "index out of bounds" );
+	CV_ERROR( CV_StsBadArg, "index out of bounds" );
     }
     return sample->chunk[index]->is_loaded
 	? sample->chunk[index] : (*sample->load_chunk)( sample, index );
@@ -248,16 +248,16 @@ cxLockClassifierSampleChunk( CxClassifierSample *sample, int index )
 {
     CxClassifierSampleChunk *chunk = 0;
 
-    CX_FUNCNAME( "cxLockClassifierSampleChunk" );
+    CV_FUNCNAME( "cxLockClassifierSampleChunk" );
     __BEGIN__;
 
     if ( sample == 0 )
     {
-	CX_ERROR( CX_StsNullPtr, "" );
+	CV_ERROR( CV_StsNullPtr, "" );
     }
     if (index >= sample->num_chunks )
     {
-	CX_ERROR( CX_StsBadArg, "index out of bounds" );
+	CV_ERROR( CV_StsBadArg, "index out of bounds" );
     }
     if ( sample->lock_chunk )
     {
@@ -276,18 +276,18 @@ cxLockClassifierSampleChunk( CxClassifierSample *sample, int index )
 
 CART_IMPL void cxUnlockClassifierSampleChunk( CxClassifierSample *sample, int index )
 {
-    CX_FUNCNAME( "cxUnlockClassifierSampleChunk" );
+    CV_FUNCNAME( "cxUnlockClassifierSampleChunk" );
     __BEGIN__;
 
     CxClassifierSampleChunk *chunk;
 
     if ( sample == 0 )
     {
-	CX_ERROR( CX_StsNullPtr, "" );
+	CV_ERROR( CV_StsNullPtr, "" );
     }
     if ( index >= sample->num_chunks )
     {
-	CX_ERROR( CX_StsBadArg, "index out of bounds" );
+	CV_ERROR( CV_StsBadArg, "index out of bounds" );
     }
     if ( sample->unlock_chunk )
     {
@@ -311,12 +311,12 @@ static void cxReleaseSample( CxClassifierSample *sample )
 
 CART_IMPL void cxReleaseClassifierSample( CxClassifierSample **sample )
 {
-    CX_FUNCNAME( "cxReleaseClassifierSample" );
+    CV_FUNCNAME( "cxReleaseClassifierSample" );
     __BEGIN__;
 
     if ( sample == 0 || *sample == 0 )
     {
-	CX_ERROR( CX_StsNullPtr, "" );
+	CV_ERROR( CV_StsNullPtr, "" );
     }
     if ( (*sample)->release )
     {
@@ -330,12 +330,12 @@ CART_IMPL void cxReleaseClassifierSample( CxClassifierSample **sample )
 
 CART_IMPL void cxReleaseClassifier( CxClassifier **cfer )
 {
-    CX_FUNCNAME( "cxReleaseClassifier" );
+    CV_FUNCNAME( "cxReleaseClassifier" );
     __BEGIN__;
 
     if ( cfer == 0 || *cfer == 0 )
     {
-	CX_ERROR( CX_StsNullPtr, "" );
+	CV_ERROR( CV_StsNullPtr, "" );
     }
     if ( (*cfer)->vftbl->release )
 	 (*((*cfer)->vftbl->release))( *cfer );
@@ -348,14 +348,14 @@ CART_IMPL void cxReleaseClassifier( CxClassifier **cfer )
 
 
 CART_IMPL CxClassifierSample *
-cxCreateClassifierSampleHeader(CxMat *train_data, int tflag,
-			       CxMat* train_responses, CxMat* type_mask,
-			       CxMat* missed_mask, int* samples_of_interest,
+cxCreateClassifierSampleHeader(CvMat *train_data, int tflag,
+			       CvMat* train_responses, CvMat* type_mask,
+			       CvMat* missed_mask, int* samples_of_interest,
 			       int num_samples_of_interest)
 {
     CxClassifierSample *sample = 0;
 
-    CX_FUNCNAME( "cxCreateClassifierSampleHeader" );
+    CV_FUNCNAME( "cxCreateClassifierSampleHeader" );
     __BEGIN__;
     assert(num_samples_of_interest >= 0);
     CxClassifierSampleChunk *chunk;
@@ -367,30 +367,30 @@ cxCreateClassifierSampleHeader(CxMat *train_data, int tflag,
 
     if ( train_responses == 0 )
     {
-	CX_ERROR( CX_StsNullPtr, "" );
+	CV_ERROR( CV_StsNullPtr, "" );
     }
-    if ( train_data && CX_MAT_TYPE( train_data->type ) != CX_32FC1 )
+    if ( train_data && CV_MAT_TYPE( train_data->type ) != CV_32FC1 )
     {
-	CX_ERROR( CX_StsUnsupportedFormat, "train_data must be of type CX_32FC1" );
+	CV_ERROR( CV_StsUnsupportedFormat, "train_data must be of type CV_32FC1" );
     }
-    if ( CX_MAT_TYPE( train_responses->type ) != CX_32FC1 )
+    if ( CV_MAT_TYPE( train_responses->type ) != CV_32FC1 )
     {
-	CX_ERROR( CX_StsUnsupportedFormat, "train_responses must be of type CX_32FC1" );
+	CV_ERROR( CV_StsUnsupportedFormat, "train_responses must be of type CV_32FC1" );
     }
     if ( missed_mask )
     {
-	if ( !CX_IS_MASK_ARR( missed_mask ) )
+	if ( !CV_IS_MASK_ARR( missed_mask ) )
 	{
-	    CX_ERROR( CX_StsBadMask, "missed_mask must be of type CX_8UC1" );
+	    CV_ERROR( CV_StsBadMask, "missed_mask must be of type CX_8UC1" );
 	}
 	if(!train_data)
 	{
-	    CX_ERROR( CX_StsNullPtr, "train_data must be non-zero if missed_mask is non-zero" );
+	    CV_ERROR( CV_StsNullPtr, "train_data must be non-zero if missed_mask is non-zero" );
 	}
 	else if (train_data->rows != missed_mask->rows
 	     || train_data->cols != missed_mask->cols )
 	{
-	    CX_ERROR( CX_StsBadSize,
+	    CV_ERROR( CV_StsBadSize,
 		      "train_data and missed_mask have different sizes" );
 	}
     }
@@ -406,26 +406,26 @@ cxCreateClassifierSampleHeader(CxMat *train_data, int tflag,
 
     if ( train_responses->rows != 1 && train_responses->cols != 1 )
     {
-	CX_ERROR( CX_StsBadSize, "train_responses must be either a row or a column" );
+	CV_ERROR( CV_StsBadSize, "train_responses must be either a row or a column" );
     }
     if ( train_responses->cols + train_responses->rows != num_samples + 1 )
     {
-	CX_ERROR( CX_StsBadSize,
+	CV_ERROR( CV_StsBadSize,
 		  "train_responses must have length equal to number of samples" );
     }
     if ( type_mask )
     {
-	if ( CX_MAT_TYPE( type_mask->type ) != CX_32SC1 )
+	if ( CV_MAT_TYPE( type_mask->type ) != CV_32SC1 )
 	{
-	    CX_ERROR( CX_StsBadMask, "type_mask must be of type CX_32SC1" );
+	    CV_ERROR( CV_StsBadMask, "type_mask must be of type CV_32SC1" );
 	}
 	if ( type_mask->rows != 1 && type_mask->cols != 1 )
 	{
-	    CX_ERROR( CX_StsBadSize, "type_mask must be either a row or a column" );
+	    CV_ERROR( CV_StsBadSize, "type_mask must be either a row or a column" );
 	}
 	if ( type_mask->rows + type_mask->cols != num_features + 2 )
 	{
-	    CX_ERROR( CX_StsBadSize,
+	    CV_ERROR( CV_StsBadSize,
 		      "type_mask must have length equal to number of features plus one" );
 	}
 	type_step = (type_mask->rows == 1) ? sizeof(int) : type_mask->step;
@@ -524,13 +524,13 @@ cxCreateClassifierSampleHeader(CxMat *train_data, int tflag,
 
 CART_IMPL void cxReleaseCART( CxCART **cart )
 {
-    CX_FUNCNAME( "cxReleaseCART" );
+    CV_FUNCNAME( "cxReleaseCART" );
     __BEGIN__;
     {
 	CxCART* _cart = *cart;
 	if ( cart == 0 || _cart == 0 )
 	{
-	    CX_ERROR( CX_StsNullPtr, "" );
+	    CV_ERROR( CV_StsNullPtr, "" );
 	}
 	if (_cart->features_corr)
 	{
@@ -573,11 +573,11 @@ CART_IMPL void cxReleaseTrainParams( CxCARTTrainParams* params)
     {
 	if (params->features_of_interest_mat)
 	{
-	    cxReleaseMat(&(params->features_of_interest_mat));
+	    cvReleaseMat(&(params->features_of_interest_mat));
 	}
 	if (params->priors_mat)
 	{
-	    cxReleaseMat(&(params->priors_mat));
+	    cvReleaseMat(&(params->priors_mat));
 	}
 	if (params->cost_mat)
 	{
@@ -596,7 +596,7 @@ static void release_cart( CxClassifier *cart )
 
 
 CART_IMPL CxCARTTrainParams *
-cxCARTTrainParams(CxMat *features_of_interest, CxMat *priors,
+cxCARTTrainParams(CvMat *features_of_interest, CvMat *priors,
 		  CxCARTSplitCriterion splitting_rule, int num_competitors,
 		  float competitor_threshold, int num_surrogates,
 		  float surrogate_threshold,  int tree_max_depth,
@@ -605,7 +605,7 @@ cxCARTTrainParams(CxMat *features_of_interest, CxMat *priors,
 {
     CxCARTTrainParams *params = 0;
 
-    CX_FUNCNAME( "cxCARTTrainParams" );
+    CV_FUNCNAME( "cxCARTTrainParams" );
     __BEGIN__;
 
     assert( mem_economy_mode == 0 || mem_economy_mode == 1);
@@ -619,26 +619,26 @@ cxCARTTrainParams(CxMat *features_of_interest, CxMat *priors,
 
     if ( features_of_interest )
     {
-	if ( CX_MAT_TYPE( features_of_interest->type ) != CX_32SC1 )
+	if ( CV_MAT_TYPE( features_of_interest->type ) != CV_32SC1 )
 	{
-	    CX_ERROR( CX_StsUnsupportedFormat,
-		      "features_of_interest must be of type CX_32SC1" );
+	    CV_ERROR( CV_StsUnsupportedFormat,
+		      "features_of_interest must be of type CV_32SC1" );
 	}
 	if ( features_of_interest->rows != 1 && features_of_interest->cols != 1 )
 	{
-	    CX_ERROR( CX_StsBadSize, "features_of_interest must be either a row or a column" );
+	    CV_ERROR( CV_StsBadSize, "features_of_interest must be either a row or a column" );
 	}
     }
 
     if ( priors )
     {
-	if ( CX_MAT_TYPE( priors->type ) != CX_32FC1 )
+	if ( CV_MAT_TYPE( priors->type ) != CV_32FC1 )
 	{
-	    CX_ERROR( CX_StsUnsupportedFormat, "priors must be of type CX_32FC1" );
+	    CV_ERROR( CV_StsUnsupportedFormat, "priors must be of type CV_32FC1" );
 	}
 	if ( priors->rows != 1 && priors->cols != 1 )
 	{
-	    CX_ERROR( CX_StsBadSize, "priors must be either a row or a column" );
+	    CV_ERROR( CV_StsBadSize, "priors must be either a row or a column" );
 	}
     }
     params = (CxCARTTrainParams *) malloc( size );
@@ -691,16 +691,16 @@ CART_IMPL CxCARTSplit* cxCARTSplit( CxCART* cart, int feature_idx , BOOL use_cal
     BOOL var32s = icxIsClassifierVar32s(type);
     CxCARTSplit* split = NULL;
 
-     CX_FUNCNAME( "cxCARTSplit" );
+     CV_FUNCNAME( "cxCARTSplit" );
     __BEGIN__;
 
     if ( cart == 0 )//|| cart->root == 0 )
     {
-	CX_ERROR( CX_StsNullPtr, "" );
+	CV_ERROR( CV_StsNullPtr, "" );
     }
     if ( feature_idx >= cart->num_features )
     {
-	CX_ERROR( CX_StsBadSize, "bad feature index" );
+	CV_ERROR( CV_StsBadSize, "bad feature index" );
     }
 
     if (use_calc_storage)
@@ -760,7 +760,7 @@ CART_IMPL CxCARTSplit* cxCARTBaseSplit( CxCARTBase* cart, int feature_idx )
 
 CART_IMPL void cxBuildCARTNodeResponse( CxRootedCARTBase* cart, CxForestNode *node )
 {
-    CX_FUNCNAME( "cxBuildCARTNodeResponse" );
+    CV_FUNCNAME( "cxBuildCARTNodeResponse" );
     __BEGIN__;
     assert(cart && node && node->subj);
 
@@ -873,7 +873,7 @@ CART_IMPL void cxBuildCARTNodeResponse( CxRootedCARTBase* cart, CxForestNode *no
 
 CART_IMPL void cxBuildCARTNodeFallenStats( CxCARTBase* cart, CxForestNode* node )
 {
-    CX_FUNCNAME( "icxBuildCARTNodeFallenStats" );
+    CV_FUNCNAME( "icxBuildCARTNodeFallenStats" );
     __BEGIN__;
     CxClassifierVarType type = cart->response_type;
     if (icxIsClassifierVarNumeric(type))
@@ -1093,7 +1093,7 @@ CART_IMPL void cxBuildNodeFallenIdxFromExtraInfo(CxCART* cart,
 #ifdef _DEBUG
 				    int cat1 = icxVarToInt(feature_vals_init[idx]);
 				    assert( cat1 >= 0 && cat1 < num_classes);
-				    int feat_val = cxRound(icxGetSubjFeature(subj, subj_idx, real_var).fl);
+				    int feat_val = cvRound(icxGetSubjFeature(subj, subj_idx, real_var).fl);
 				    assert( feat_val == cat1 );
 				    assert( cat1 == cat );
 #endif
@@ -1116,7 +1116,7 @@ CART_IMPL void cxBuildNodeFallenIdxFromExtraInfo(CxCART* cart,
 				int cat = icxVarToInt(feature_vals_init[idx]);
 				assert( cat >= 0 && cat < num_classes);
 #ifdef _DEBUG
-				int feat_val = cxRound(icxGetSubjFeature(subj, subj_idx, real_var).fl);
+				int feat_val = cvRound(icxGetSubjFeature(subj, subj_idx, real_var).fl);
 				assert( feat_val == cat );
 #endif
 				cat_proportions[cat]++;
@@ -1541,7 +1541,7 @@ CART_IMPL void cxCheckNodeFallenIdx(CxCART* cart, CxCARTNode* node)
 		int* cat_proportions1 =(int*)calloc(num_classes , sizeof(int));
 		for (int j = 0 ; j < nonmissed; j++)
 		{
-		    int feat_val = cxRound(icxGetSubjFeature(subj, idx[j] , real_feature).fl);
+		    int feat_val = cvRound(icxGetSubjFeature(subj, idx[j] , real_feature).fl);
 		    cat_proportions1[feat_val]++;
 		}
 		for (int cat = 0 ; cat < num_classes ; cat++)
@@ -1600,7 +1600,7 @@ CART_IMPL void cxBuildCARTNodeMasterFallenIdx( CxCART *cart,
 					      BOOL use_calc_storage)
 {
 
-    CX_FUNCNAME( "cxBuildCARTNodeMasterFallenIdx" );
+    CV_FUNCNAME( "cxBuildCARTNodeMasterFallenIdx" );
     __BEGIN__;
 
     CX_CART_MAKE_LOCAL( CxCARTSubj *, node, subj );
@@ -1846,7 +1846,7 @@ CART_IMPL BOOL cxBuildCARTSubj( CxCART* cart,  CxCARTNode* node ,
 			       int copy_features, int max_num_samples,
 			       int gulp_chunk)
 {
-    CX_FUNCNAME( "cxBuildCARTSubj" );
+    CV_FUNCNAME( "cxBuildCARTSubj" );
     __BEGIN__;
     {
 
@@ -1857,11 +1857,11 @@ CART_IMPL BOOL cxBuildCARTSubj( CxCART* cart,  CxCARTNode* node ,
 
 	if ( cart == 0 || sample == 0 )
 	{
-	    CX_ERROR( CX_StsNullPtr, "" );
+	    CV_ERROR( CV_StsNullPtr, "" );
 	}
 	if ( sample->num_features < cart->num_features )
 	{
-	    CX_ERROR( CX_StsBadSize, "incompatible sample" );
+	    CV_ERROR( CV_StsBadSize, "incompatible sample" );
 	}
 
 	int num_chunks = copy_features ? 1 : sample->num_chunks;
@@ -1904,7 +1904,7 @@ CART_IMPL void cxPropagateCARTSubj( CxCART* cart, CxCARTNode* node,
 				   BOOL shrink_idx, BOOL use_calc_storage )
 				   //int max_depth, int min_num_samples, int replace_valid, int propagate_to_competitors,
 {
-    CX_FUNCNAME( "cxPropagateCARTSubj" );
+    CV_FUNCNAME( "cxPropagateCARTSubj" );
     __BEGIN__;
 
 
@@ -1914,7 +1914,7 @@ CART_IMPL void cxPropagateCARTSubj( CxCART* cart, CxCARTNode* node,
 
     if ( cart == 0 || cart->root == 0 )
     {
-	//CX_ERROR( CX_StsNullPtr, "" );
+	//CV_ERROR( CV_StsNullPtr, "" );
 	assert(0);
     }
 
@@ -2135,7 +2135,7 @@ CART_IMPL void cxPropagateCARTSubj( CxCART* cart, CxCARTNode* node,
 				int side = cur_split_directions[str_num];
 #ifdef _DEBUG
 				CxClassifierVar feat_var = icxGetSubjFeature(subj , str_num , cur_feature);
-				assert( cxRound(feat_var.fl) == k);
+				assert( cvRound(feat_var.fl) == k);
 #endif
 				sum[side]++;
 
@@ -2183,9 +2183,9 @@ CART_IMPL void cxPropagateCARTSubj( CxCART* cart, CxCARTNode* node,
 				    int side = cur_split_directions[str_num];
 #ifdef _DEBUG
 				    CxClassifierVar feat_var = icxGetSubjFeature(subj , str_num , cur_feature);
-				    assert( cxRound(feat_var.fl) == k);
+				    assert( cvRound(feat_var.fl) == k);
 				    CxClassifierVar resp_var = icxGetSubjResponse(subj , str_num);
-				    assert( cxRound(resp_var.fl) == resp);
+				    assert( cvRound(resp_var.fl) == resp);
 #endif
 				    sum[side]++;
 				    (*(cur_child_fallen_idx[side]++)) = str_num;
@@ -2323,7 +2323,7 @@ CART_IMPL CxCARTSplit* cxFindCARTNodeGoodSplits( CxCART *cart,
 						int num_splits,
 						float threshold)
 {
-    CX_FUNCNAME( "cxFindCARTNodeGoodSplits" );
+    CV_FUNCNAME( "cxFindCARTNodeGoodSplits" );
     __BEGIN__;
 
     int i;
@@ -2469,7 +2469,7 @@ CART_IMPL BOOL cxInitCARTBase(CxCARTBase* cart,
 			      int response_type,
 			      CxCARTTrainParams* params)
 {
-    CX_FUNCNAME( "cxInitCARTBase" );
+    CV_FUNCNAME( "cxInitCARTBase" );
     __BEGIN__;
     {
 	assert(cart);
@@ -2477,11 +2477,11 @@ CART_IMPL BOOL cxInitCARTBase(CxCARTBase* cart,
 	    return FALSE;
 	if ( num_features < 0 )
 	{
-	    CX_ERROR( CX_StsBadArg, "invalid number of features" );
+	    CV_ERROR( CV_StsBadArg, "invalid number of features" );
 	}
 	if ( feature_type == 0 )
 	{
-	    CX_ERROR( CX_StsNullPtr, "" );
+	    CV_ERROR( CV_StsNullPtr, "" );
 	}
 	assert( params );
 	BOOL classification = icxIsClassifierVarCategoric(response_type);
@@ -2633,7 +2633,7 @@ CART_IMPL CxCART* cxCreateCART(int num_features,
 			       CxCARTTrainParams* params,
 			       CxCART* cart)
 {
-    CX_FUNCNAME( "cxCreateCART" );
+    CV_FUNCNAME( "cxCreateCART" );
     __BEGIN__;
     {
 	if (!cart)
@@ -2664,14 +2664,14 @@ CART_IMPL CxCART* cxBuildVirginCART( CxClassifierSample *sample,
 				    CxCARTTrainParams *params,
 				    CxExtCARTInfo* ext_info)
 {
-    CX_FUNCNAME( "cxBuildVirginCART" );
+    CV_FUNCNAME( "cxBuildVirginCART" );
     __BEGIN__;
     ENTER_FUNC("CART","cxBuildVirginCART");
 
     {
 	if ( sample == 0 )
 	{
-	    CX_ERROR( CX_StsNullPtr, "" );
+	    CV_ERROR( CV_StsNullPtr, "" );
 	}
 
 	CxCART* cart = cxCreateCART(sample->num_features, sample->feature_type,
@@ -2767,7 +2767,7 @@ typedef double my_type ;
 CART_IMPL BOOL cxSplitCARTLeaf( CxCART* cart, CxCARTNode* node,
 			       CxCARTSplit* split , BOOL not_shrink_idx)
 {
-    CX_FUNCNAME( "cxSplitCARTLeaf" );
+    CV_FUNCNAME( "cxSplitCARTLeaf" );
     __BEGIN__;
     //	*((int*)0) = 0;
 
@@ -2934,7 +2934,7 @@ CART_IMPL CxCARTNode* cxTrySplitLeaf( CxCART *cart,
 				     CxCARTSplit* split )
 
 {
-    CX_FUNCNAME( "cxTrySplitLeaf" );
+    CV_FUNCNAME( "cxTrySplitLeaf" );
     __BEGIN__;
 
     CxCARTNode* copy = cxCopyNode(node);
@@ -2965,7 +2965,7 @@ CART_IMPL BOOL cxSplitCARTLeafFull (CxCART *cart,
 				    CxCARTSplit* split,
 				    BOOL not_shrink_idx )
 {
-    CX_FUNCNAME( "cxSplitCARTLeafFull" );
+    CV_FUNCNAME( "cxSplitCARTLeafFull" );
     __BEGIN__;
     ENTER_FUNC( "CART", "cxSplitCARTLeafFull");
     int depth = node->depth;
@@ -2995,7 +2995,7 @@ CART_IMPL CxCART* cxBuildCART( CxClassifierSample *sample,
 {
 
 
-    CX_FUNCNAME( "cxBuildCART" );
+    CV_FUNCNAME( "cxBuildCART" );
     __BEGIN__;
     CxCART* cart = cxBuildVirginCART( sample, params, ext_info);
     if (cart && (cart->error.code == 0) && cart->eff_num_features)
@@ -3155,7 +3155,7 @@ CART_IMPL void  cxCalcBranchErrorAndComplexity(CxCART *cart,
 					       int& terminal_nodes,
 					       int prune_step)
 {
-    CX_FUNCNAME( "cxCalcBranchErrorAndComplexity" );
+    CV_FUNCNAME( "cxCalcBranchErrorAndComplexity" );
     __BEGIN__;
 
     if (!node)
@@ -3204,7 +3204,7 @@ CART_IMPL double  cxCalcNodeError(CxCART *cart,
 
 
 {
-    CX_FUNCNAME( "cxCalcNodeError" );
+    CV_FUNCNAME( "cxCalcNodeError" );
     __BEGIN__;
 
     //	BOOL floating = icxIsClassifierVar32f(cart->response_type);
@@ -3230,7 +3230,7 @@ CART_IMPL double  cxCalcNodeError(CxCART *cart,
     else // Categoric
     {
 	//// Misclassification rate
-	int response = cxRound(node->response.fl);
+	int response = cvRound(node->response.fl);
 	int num_resp = cart->num_response_classes;
 	assert( response >= 0 && response < num_resp);
 	int stat = node->fallen_stats[response];
@@ -3269,7 +3269,7 @@ CART_IMPL double  cxCalcNodeError(CxCART *cart,
 
 CART_IMPL CxCARTNode* cxGetNextNode(CxCARTNode* node, int prune_step )
 {
-    CX_FUNCNAME( "cxGetNextNode" );
+    CV_FUNCNAME( "cxGetNextNode" );
     __BEGIN__;
 
     assert (node);
@@ -3297,7 +3297,7 @@ CART_IMPL CxCARTNode* cxGetNextNode(CxCARTNode* node, int prune_step )
 
 CART_IMPL CxForestNode* cxGetNextForestNode(CxForestNode* node )
 {
-    CX_FUNCNAME( "cxGetNextNode" );
+    CV_FUNCNAME( "cxGetNextNode" );
     __BEGIN__;
 
     assert (node);
@@ -3325,7 +3325,7 @@ CART_IMPL CxForestNode* cxGetNextForestNode(CxForestNode* node )
 
 CART_IMPL void icxInitNode(CxCARTNode *node)
 {
-    CX_FUNCNAME( "icxInitNode" );
+    CV_FUNCNAME( "icxInitNode" );
     __BEGIN__;
     memset(node,0,sizeof(CxCARTNode));
     __CLEANUP__;
@@ -3337,7 +3337,7 @@ CART_IMPL float cxFindWeakestLinks(CxCART *cart,
 				   int& num_nodes,
 				   int prune_step)
 {
-    CX_FUNCNAME( "cxFindWeakestLinks" );
+    CV_FUNCNAME( "cxFindWeakestLinks" );
     __BEGIN__;
 
     assert(weakest_links_list);
@@ -3391,7 +3391,7 @@ CART_IMPL float cxFindWeakestLinks(CxCART *cart,
 CART_IMPL int cxPrePruneTree(CxCART *cart,
 			     CxCARTNode** nodes_seq)
 {
-    CX_FUNCNAME( "cxPrePruneTree" );
+    CV_FUNCNAME( "cxPrePruneTree" );
     __BEGIN__;
 
     assert (nodes_seq);
@@ -3424,7 +3424,7 @@ CART_IMPL void cxPruneNodes(CxCARTNode** nodes_seq,
 			    int num_nodes ,
 			    int prune_step)
 {
-    CX_FUNCNAME( "cxPruneNodes" );
+    CV_FUNCNAME( "cxPruneNodes" );
     __BEGIN__;
 
     assert(nodes_seq);
@@ -3451,7 +3451,7 @@ CART_IMPL void cxPruneNodes(CxCARTNode** nodes_seq,
 
 CART_IMPL void cxRecalcSampleErrors(CxPruningData* data)
 {
-    CX_FUNCNAME( "cxRecalcSampleErrors" );
+    CV_FUNCNAME( "cxRecalcSampleErrors" );
     __BEGIN__;
     CxCARTNode** nodes_seq = data->nodes_seq;
     assert(nodes_seq);
@@ -3477,7 +3477,7 @@ CART_IMPL void cxRecalcSampleErrors(CxPruningData* data)
 
 CART_IMPL void cxPruneCART(CxCART *cart)
 {
-    CX_FUNCNAME( "cxPruneCART" );
+    CV_FUNCNAME( "cxPruneCART" );
     __BEGIN__;
 
     double branch_error = 0.0;
@@ -3543,7 +3543,7 @@ CART_IMPL CxClassifierVar cxCARTEvalFeatures( CxCART* cart,
 					     char* missed_mask ,
 					     int missed_mask_step  )
 {
-    CX_FUNCNAME( "cxCARTEvalFeatures" );
+    CV_FUNCNAME( "cxCARTEvalFeatures" );
     __BEGIN__;
     CxCARTNode* node = cart->root;
     assert(node);
@@ -3561,7 +3561,7 @@ CART_IMPL CxClassifierVar cxCARTEvalFeatures( CxCART* cart,
 CART_IMPL void  cxCalcSampleNodeErrorAndDeviation(CxCART *cart,
 						  CxClassifierSample *sample)
 {
-    CX_FUNCNAME( "cxCalcSampleNodeErrorAndDeviation" );
+    CV_FUNCNAME( "cxCalcSampleNodeErrorAndDeviation" );
     __BEGIN__;
     if (!cart || !cart->root)
 	return;
@@ -3734,7 +3734,7 @@ CART_IMPL double cxCalcCARTSampleErrorAndPrediction( CxCART* cart,
 						    float* prediction,
 						    double* err_deviation)
 {
-    CX_FUNCNAME( "cxCalcSampleErrorAndPrediction" );
+    CV_FUNCNAME( "cxCalcSampleErrorAndPrediction" );
     __BEGIN__;
     int i,j;
     int sample_size = 0;
@@ -3899,7 +3899,7 @@ CART_IMPL void cxCalcCARTTestErrorsAndPredictions( CxCART* cart,
 
 CART_IMPL void cxCalcCARTTestErrors( CxCART *cart , CxClassifierSample* sample)
 {
-    CX_FUNCNAME( "cxCalcCARTTestErrors" );
+    CV_FUNCNAME( "cxCalcCARTTestErrors" );
     __BEGIN__;
     int size = icxGetPruningDataCount(cart);
     if (size == 0)
@@ -3940,7 +3940,7 @@ CART_IMPL void cxCalcCARTTestErrors( CxCART *cart , CxClassifierSample* sample)
 
 CART_IMPL void cxCalcCrossValidationErrors( CxCART *cart , CxClassifierSample* sample , int V)
 {
-    CX_FUNCNAME( "cxCalcCrossValidationErrors" );
+    CV_FUNCNAME( "cxCalcCrossValidationErrors" );
     __BEGIN__;
     int i , j;
 
@@ -4096,7 +4096,7 @@ CART_IMPL void cxCalcCrossValidationErrors( CxCART *cart , CxClassifierSample* s
 CART_IMPL CxPruningData* cxFindOptimalData(CxCARTPruningStorage& pruning_storage,
 					   BOOL use_1SE_rule)
 {
-    CX_FUNCNAME( "cxFindBestSubtree" );
+    CV_FUNCNAME( "cxFindBestSubtree" );
     __BEGIN__;
     int size = pruning_storage.size;
     if (size == 0)
@@ -4133,7 +4133,7 @@ CART_IMPL CxPruningData* cxFindBestSubtree( CxCART *cart ,
 					   BOOL use_1SE_rule )
 {
 
-    CX_FUNCNAME( "cxFindBestSubtree" );
+    CV_FUNCNAME( "cxFindBestSubtree" );
     __BEGIN__;
     cxCalcCARTTestErrors(cart , sample);
     icxFinalizePruningStorage( cart->pruning_storage );
@@ -4148,7 +4148,7 @@ CART_IMPL CxPruningData* cxFindBestSubtreeCrossValidation( CxCART *cart ,
 							  BOOL use_1SE_rule)
 {
 
-    CX_FUNCNAME( "cxFindBestSubtreeCrossValidation" );
+    CV_FUNCNAME( "cxFindBestSubtreeCrossValidation" );
     __BEGIN__;
 
     cxCalcCrossValidationErrors(cart , sample , V);
@@ -4165,7 +4165,7 @@ CART_IMPL void icxInitPruneData(CxPruningData* data,
 				int num_pruned_nodes ,
 				CxCARTNode** pruned_seq)
 {
-    CX_FUNCNAME( "icxInitPruneData" );
+    CV_FUNCNAME( "icxInitPruneData" );
     __BEGIN__;
     data->step = step;
     data->alpha = alpha;
@@ -4184,7 +4184,7 @@ CART_IMPL float cxCalcImpurityChangeAny(CxRootedCARTBase* cart,
 					CxForestNode* node,
 					CxCARTSplit* split)
 {
-    CX_FUNCNAME( "cxCalcImpurityChangeCategoric" );
+    CV_FUNCNAME( "cxCalcImpurityChangeCategoric" );
     __BEGIN__;
     assert(cart && node && node->subj);
     if (!node->subj)
@@ -4342,7 +4342,7 @@ CART_IMPL int cxFindNumericSplitProportion(CxCART *cart,
 					   CxCARTSplit* split,
 					   int* left_nonmissing)
 {
-    CX_FUNCNAME( "cxFindNumericSplitProportion" );
+    CV_FUNCNAME( "cxFindNumericSplitProportion" );
     __BEGIN__;
     assert(node->is_idx_expanded);
     int feature = split->feature_idx;
@@ -4395,7 +4395,7 @@ CART_IMPL int cxFindCategoricSplitProportion(CxCART *cart,
 					     CxCARTSplit* split,
 					     int* left_nonmissing)
 {
-    CX_FUNCNAME( "cxFindCategoricSplitProportion" );
+    CV_FUNCNAME( "cxFindCategoricSplitProportion" );
     __BEGIN__;
     assert(node->is_idx_expanded);
 #ifdef _DEBUG
@@ -4472,7 +4472,7 @@ CART_IMPL int cxFindAnySplitProportion(CxCART* cart,
 				       CxCARTSplit* split,
 				       int* left_nonmissing)
 {
-    CX_FUNCNAME( "cxFindAnySplitProportion" );
+    CV_FUNCNAME( "cxFindAnySplitProportion" );
     __BEGIN__;
 #ifdef _DEBUG
     int feature = split->feature_idx;
@@ -4523,7 +4523,7 @@ CART_IMPL float cxFindSplitAssoc(CxCART *cart,
 				 CxCARTSplit* split1,
 				 CxCARTSplit* split2)
 {
-    CX_FUNCNAME( "cxFindSplitAssoc" );
+    CV_FUNCNAME( "cxFindSplitAssoc" );
     __BEGIN__;
     int feature1 = split1->feature_idx;
     int feature2 = split2->feature_idx;
@@ -4579,7 +4579,7 @@ CART_IMPL float cxFindCARTNodeNumericSurrogate( CxCART *cart,
 					       int feature,
 					       CxCARTSplit* split)
 {
-    CX_FUNCNAME( "cxFindCARTNodeNumericSurrogate" );
+    CV_FUNCNAME( "cxFindCARTNodeNumericSurrogate" );
     __BEGIN__;
     int i;
     START_FUNC(cxFindCARTNodeNumericSurrogate);
@@ -4823,7 +4823,7 @@ CART_IMPL float cxFindCARTNodeCategoricSurrogate( CxCART *cart,
 						 int feature,
 						 CxCARTSplit* split)
 {
-    CX_FUNCNAME( "cxFindCARTNodeCategoricSurrogate" );
+    CV_FUNCNAME( "cxFindCARTNodeCategoricSurrogate" );
     __BEGIN__;
 
     int n2 = cart->num_classes[feature];
@@ -5016,7 +5016,7 @@ CART_IMPL void cxFindCARTNodeSurrogates( CxCART *cart, CxCARTNode *node,
 					int num_surrogates ,
 					float threshold)
 {
-    CX_FUNCNAME( "cxFindCARTNodeSurrogates" );
+    CV_FUNCNAME( "cxFindCARTNodeSurrogates" );
     __BEGIN__;
     {
 	int i;
@@ -5026,7 +5026,7 @@ CART_IMPL void cxFindCARTNodeSurrogates( CxCART *cart, CxCARTNode *node,
 	if ( cart == 0 || cart->root == 0 || node == 0 )
 	{
 	    assert(0);
-	    CX_ERROR( CX_StsNullPtr, "" );
+	    CV_ERROR( CV_StsNullPtr, "" );
 	}
 	if ( num_surrogates <= 0 )
 	    return ;
@@ -5125,7 +5125,7 @@ CxCARTSplit* cxSelectNodeSurrogate( CxCARTNode *node,
 
 CART_IMPL float cxCalcCARTVariableImportance(CxCART* cart, int feature, int pruning_step)
 {
-    CX_FUNCNAME( "cxCalcCARTVariableImportance" );
+    CV_FUNCNAME( "cxCalcCARTVariableImportance" );
     __BEGIN__;
 
     int eff_feature = cart->features_corr[feature];
@@ -5209,7 +5209,7 @@ CART_IMPL float cxFindNodeNumericBestSplitRegression( CxCART *cart,
 						     int feature,
 						     CxCARTSplit* split)
 {
-    CX_FUNCNAME( "cxFindNodeNumericBestSplitRegression" );
+    CV_FUNCNAME( "cxFindNodeNumericBestSplitRegression" );
     __BEGIN__;
     assert(icxIsClassifierVarNumeric(cart->feature_type[feature]));
     assert(icxIsClassifierVarNumeric(cart->response_type));
@@ -5699,7 +5699,7 @@ CART_IMPL int  cxScanNumericBestSplitGiniIndex( CxRootedCARTBase* cart,
     if (no_priors)
     {
 	//// Simplest case - no priors, no cost matrix
-	int i_sum2init = cxRound(sum2);
+	int i_sum2init = cvRound(sum2);
 	int i_sum2 = i_sum2init;
 #ifdef _DEBUG
 	int i_sum1 = 0;
@@ -6075,7 +6075,7 @@ CART_IMPL int  cxScanNumericBestSplitEntropy(CxRootedCARTBase* cart,
     if (no_priors)
     {
 	//// Simplest case - no priors, no cost matrix
-	int i_sum2init = cxRound(sum2);
+	int i_sum2init = cvRound(sum2);
 	int i_sum2 = i_sum2init;
 
 	for (int i = 0; i < upper_limit; )
@@ -6192,7 +6192,7 @@ CART_IMPL float cxFindNodeNumericBestSplitClassification( CxCART* cart,
 							 int feature,
 							 CxCARTSplit* split)
 {
-    CX_FUNCNAME( "cxFindNodeNumericBestSplitClassification" );
+    CV_FUNCNAME( "cxFindNodeNumericBestSplitClassification" );
     __BEGIN__;
     assert(icxIsClassifierVarCategoric(cart->response_type));
     assert(icxIsClassifierVarNumeric(cart->feature_type[feature]));
@@ -6479,7 +6479,7 @@ CART_IMPL float cxFindNodeCategoricBestSplitRegression( CxCART* cart,
 						       int feature,
 						       CxCARTSplit* split)
 {
-    CX_FUNCNAME( "cxFindNodeCategoricBestSplitRegression" );
+    CV_FUNCNAME( "cxFindNodeCategoricBestSplitRegression" );
     __BEGIN__;
 
     int n = cart->num_classes[feature];
@@ -6546,7 +6546,7 @@ CART_IMPL float cxFindNodeCategoricBestSplitRegression( CxCART* cart,
     for (int ii = 0 ; ii < num_not_missed; ii++)
     {
 	CxClassifierVar var = icxGetSubjFeature(subj , fallen_idx[ii] , feature);
-	np[ cxRound(var.fl) ] ++;
+	np[ cvRound(var.fl) ] ++;
     }
     assert(memcmp(np , cat_proportions , n * sizeof(int)) == 0);
     free(np);
@@ -6889,7 +6889,7 @@ CART_IMPL float cxFindNodeCategoricBestSplitClassification( CxCART* cart,
 							   int feature,
 							   CxCARTSplit* split)
 {
-    CX_FUNCNAME( "cxFindNodeCategoricBestSplitClassification" );
+    CV_FUNCNAME( "cxFindNodeCategoricBestSplitClassification" );
     __BEGIN__;
 
     //	*((int*)0)=0;
@@ -7829,7 +7829,7 @@ CART_IMPL int cxGetBranchWeight(CxCARTNode* node)
 
 CART_IMPL void cxFreeNodeInternals( CxCARTNode* node)
 {
-    CX_FUNCNAME( "cxFreeNodeInternals" );
+    CV_FUNCNAME( "cxFreeNodeInternals" );
     __BEGIN__;
 
     if (node->fallen_stats)
@@ -7999,7 +7999,7 @@ CART_IMPL void cxAllocNodeInternals(CxCART* cart, CxCARTNode* node,
 				    BOOL expanded_idx ,
 				    BOOL use_calc_storage )
 {
-    CX_FUNCNAME( "cxAllocNodeInternals" );
+    CV_FUNCNAME( "cxAllocNodeInternals" );
     __BEGIN__;
     int eff_num_features = cart->eff_num_features;
     int num_resp = cart->num_response_classes;
@@ -8059,7 +8059,7 @@ CART_IMPL void cxAllocNodeInternals(CxCART* cart, CxCARTNode* node,
 
 CART_IMPL void cxFreeSplit(CxCARTSplit* split)
 {
-    CX_FUNCNAME( "cxFreeSplit" );
+    CV_FUNCNAME( "cxFreeSplit" );
     __BEGIN__;
     if (!split)
 	return;
@@ -8085,7 +8085,7 @@ CART_IMPL void cxFreeSplit(CxCARTSplit* split)
 
 CART_IMPL void cxFreeNode( CxCARTNode* node)
 {
-    CX_FUNCNAME( "cxFreeNode" );
+    CV_FUNCNAME( "cxFreeNode" );
     __BEGIN__;
     assert(node);
     if (!node->is_copy)
@@ -8099,7 +8099,7 @@ CART_IMPL void cxFreeNode( CxCARTNode* node)
 
 CART_IMPL void cxFreeBranch(CxCARTNode* node , BOOL free_root)
 {
-    CX_FUNCNAME( "cxFreeBranch" );
+    CV_FUNCNAME( "cxFreeBranch" );
     __BEGIN__;
     if (icxIsNodeSplit(node))
     {
@@ -8751,14 +8751,14 @@ CART_IMPL BOOL cxReadCARTTrainParams(FILE* file,
 				     CxCARTTrainParams*& params,
 				     int num_response_classes, char* buf)
 {
-    CxMat* features_of_interest = NULL;
+    CvMat* features_of_interest = NULL;
     if (!cxSkipBegin(file,buf))
 	return FALSE;
 
     params = NULL;
     int num_features_of_interest = -1;
     BOOL ok = TRUE;
-    CxMat* priors_mat = (num_response_classes > 0) ? cxCreateMat( 1, num_response_classes, CX_32FC1) : NULL;
+    CvMat* priors_mat = (num_response_classes > 0) ? cvCreateMat( 1, num_response_classes, CV_32FC1) : NULL;
 
     while ( cxReadTag(file, buf, BUF_SIZE) && (strcmp(buf, SECTION_END) != 0) && ok )
     {
@@ -8766,7 +8766,7 @@ CART_IMPL BOOL cxReadCARTTrainParams(FILE* file,
 	{
 	    fscanf(file , "%d", &num_features_of_interest);
 	    if (num_features_of_interest > 0)
-		features_of_interest = cxCreateMat( num_features_of_interest , 1, CX_32SC1 );
+		features_of_interest = cvCreateMat( num_features_of_interest , 1, CV_32SC1 );
 	    params = cxCARTTrainParams( features_of_interest, /* features_of_interest */
 		priors_mat, /*priors */
 		CxCARTGiniCriterion,
@@ -9637,7 +9637,7 @@ CART_IMPL void cxAssertNodeValid(CxCART* cart , CxCARTNode* node )
 CART_IMPL CxProgressData* cxFindOptimalStep(CxClassifier* cfer,
 					    BOOL use_1SE_rule)
 {
-    CX_FUNCNAME( "cxFindOptimalStep" );
+    CV_FUNCNAME( "cxFindOptimalStep" );
     __BEGIN__;
     int size = cfer->progress_info.progress_data_size;
     int step = cfer->progress_info.progress_data_step;

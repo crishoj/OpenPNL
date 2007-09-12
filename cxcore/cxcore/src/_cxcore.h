@@ -42,19 +42,18 @@
 #ifndef _CXCORE_INTERNAL_H_
 #define _CXCORE_INTERNAL_H_
 
-#if _MSC_VER >= 1200
+#if defined _MSC_VER && _MSC_VER >= 1200
     /* disable warnings related to inline functions */
     #pragma warning( disable: 4711 4710 4514 )
 #endif
 
-typedef unsigned short ushort;
 typedef unsigned long ulong;
 
 #ifdef __BORLANDC__
     #define     WIN32
-    #define     CX_DLL
-    #undef      _CX_ALWAYS_PROFILE_
-    #define     _CX_ALWAYS_NO_PROFILE_
+    #define     CV_DLL
+    #undef      _CV_ALWAYS_PROFILE_
+    #define     _CV_ALWAYS_NO_PROFILE_
 #endif
 
 #include "cxcore.h"
@@ -69,219 +68,279 @@ typedef unsigned long ulong;
 #include <float.h>
 
 // -128.f ... 255.f
-extern const float icx8x32fTab[];
-#define CX_8TO32F(x)  icx8x32fTab[(x)+128]
+extern const float icv8x32fTab[];
+#define CV_8TO32F(x)  icv8x32fTab[(x)+128]
 
-#define CX_TXT_FONT_SHIFT     9
-#define CX_TXT_SIZE_SHIFT     8
-#define CX_TXT_BASE_WIDTH     (12 << CX_TXT_FONT_SHIFT)
-#define CX_TXT_BASE_HEIGHT    (24 << CX_TXT_FONT_SHIFT)
-#define CX_FONT_HDR_SIZE       5
+extern const ushort icv8x16uSqrTab[];
+#define CV_SQR_8U(x)  icv8x16uSqrTab[(x)+255]
 
-extern const short icxTextFacesFn0[];
-extern const int icxTextHdrsFn0[];
+extern const char* icvHersheyGlyphs[];
 
-extern const int icxPixSize[];
-extern const char icxDepthToType[];
-extern const int icxTypeToDepth[];
+extern const signed char icvDepthToType[];
 
-#define icxIplToCxDepth( depth ) \
-    icxDepthToType[(((depth) & 255) >> 2) + ((depth) < 0)]
+#define icvIplToCvDepth( depth ) \
+    icvDepthToType[(((depth) & 255) >> 2) + ((depth) < 0)]
 
-#define icxCxToIplDepth( type )  \
-    icxTypeToDepth[(type)]
+extern const uchar icvSaturate8u[];
+#define CV_FAST_CAST_8U(t)   (assert(-256 <= (t) && (t) <= 512), icvSaturate8u[(t)+256])
+#define CV_MIN_8U(a,b)       ((a) - CV_FAST_CAST_8U((a) - (b)))
+#define CV_MAX_8U(a,b)       ((a) + CV_FAST_CAST_8U((b) - (a)))
 
-typedef CxFunc2D_3A1I CxArithmBinMaskFunc2D;
-typedef CxFunc2D_2A1P1I CxArithmUniMaskFunc2D;
+typedef CvFunc2D_3A1I CvArithmBinMaskFunc2D;
+typedef CvFunc2D_2A1P1I CvArithmUniMaskFunc2D;
 
 
 /****************************************************************************************\
 *                                   Complex arithmetics                                  *
 \****************************************************************************************/
 
-struct CxComplex32f;
-struct CxComplex64f;
+struct CvComplex32f;
+struct CvComplex64f;
 
-struct CxComplex32f
+struct CvComplex32f
 {
     float re, im;
 
-    CxComplex32f( float _re, float _im=0 ) : re(_re), im(_im) {}
-    CxComplex32f() : re(0), im(0) {}
-    operator CxComplex64f() const;
+    CvComplex32f() {}
+    CvComplex32f( float _re, float _im=0 ) : re(_re), im(_im) {}
+    explicit CvComplex32f( const CvComplex64f& v );
+    //CvComplex32f( const CvComplex32f& v ) : re(v.re), im(v.im) {}
+    //CvComplex32f& operator = (const CvComplex32f& v ) { re = v.re; im = v.im; return *this; }
+    operator CvComplex64f() const;
 };
 
-struct CxComplex64f
+struct CvComplex64f
 {
     double re, im;
 
-    CxComplex64f( double _re, double _im=0 ) : re(_re), im(_im) {}
-    CxComplex64f() : re(0), im(0) {}
-    operator CxComplex32f() const;
+    CvComplex64f() {}
+    CvComplex64f( double _re, double _im=0 ) : re(_re), im(_im) {}
+    explicit CvComplex64f( const CvComplex32f& v );
+    //CvComplex64f( const CvComplex64f& v ) : re(v.re), im(v.im) {}
+    //CvComplex64f& operator = (const CvComplex64f& v ) { re = v.re; im = v.im; return *this; }
+    operator CvComplex32f() const;
 };
 
-inline CxComplex32f operator + (CxComplex32f a, CxComplex32f b)
+inline CvComplex32f::CvComplex32f( const CvComplex64f& v ) : re((float)v.re), im((float)v.im) {}
+inline CvComplex64f::CvComplex64f( const CvComplex32f& v ) : re(v.re), im(v.im) {}
+
+inline CvComplex32f operator + (CvComplex32f a, CvComplex32f b)
 {
-    return CxComplex32f( a.re + b.re, a.im + b.im );
+    return CvComplex32f( a.re + b.re, a.im + b.im );
 }
 
-inline CxComplex32f& operator += (CxComplex32f& a, CxComplex32f b)
+inline CvComplex32f& operator += (CvComplex32f& a, CvComplex32f b)
 {
     a.re += b.re;
     a.im += b.im;
     return a;
 }
 
-inline CxComplex32f operator - (CxComplex32f a, CxComplex32f b)
+inline CvComplex32f operator - (CvComplex32f a, CvComplex32f b)
 {
-    return CxComplex32f( a.re - b.re, a.im - b.im );
+    return CvComplex32f( a.re - b.re, a.im - b.im );
 }
 
-inline CxComplex32f& operator -= (CxComplex32f& a, CxComplex32f b)
+inline CvComplex32f& operator -= (CvComplex32f& a, CvComplex32f b)
 {
     a.re -= b.re;
     a.im -= b.im;
     return a;
 }
 
-inline CxComplex32f operator - (CxComplex32f a)
+inline CvComplex32f operator - (CvComplex32f a)
 {
-    return CxComplex32f( -a.re, -a.im );
+    return CvComplex32f( -a.re, -a.im );
 }
 
-inline CxComplex32f operator * (CxComplex32f a, CxComplex32f b)
+inline CvComplex32f operator * (CvComplex32f a, CvComplex32f b)
 {
-    return CxComplex32f( a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re );
+    return CvComplex32f( a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re );
 }
 
-inline double abs(CxComplex32f a)
+inline double abs(CvComplex32f a)
 {
     return sqrt( (double)a.re*a.re + (double)a.im*a.im );
 }
 
-inline CxComplex32f conj(CxComplex32f a)
+inline CvComplex32f conj(CvComplex32f a)
 {
-    return CxComplex32f( a.re, -a.im );
+    return CvComplex32f( a.re, -a.im );
 }
 
 
-inline CxComplex32f operator / (CxComplex32f a, CxComplex32f b)
+inline CvComplex32f operator / (CvComplex32f a, CvComplex32f b)
 {
     double t = 1./((double)b.re*b.re + (double)b.im*b.im);
-    return CxComplex32f( (float)((a.re*b.re + a.im*b.im)*t),
+    return CvComplex32f( (float)((a.re*b.re + a.im*b.im)*t),
                          (float)((-a.re*b.im + a.im*b.re)*t) );
 }
 
-inline CxComplex32f operator * (double a, CxComplex32f b)
+inline CvComplex32f operator * (double a, CvComplex32f b)
 {
-    return CxComplex32f( (float)(a*b.re), (float)(a*b.im) );
+    return CvComplex32f( (float)(a*b.re), (float)(a*b.im) );
 }
 
-inline CxComplex32f operator * (CxComplex32f a, double b)
+inline CvComplex32f operator * (CvComplex32f a, double b)
 {
-    return CxComplex32f( (float)(a.re*b), (float)(a.im*b) );
+    return CvComplex32f( (float)(a.re*b), (float)(a.im*b) );
 }
 
-inline CxComplex32f::operator CxComplex64f() const
+inline CvComplex32f::operator CvComplex64f() const
 {
-    return CxComplex64f(re,im);
+    return CvComplex64f(re,im);
 }
 
 
-inline CxComplex64f operator + (CxComplex64f a, CxComplex64f b)
+inline CvComplex64f operator + (CvComplex64f a, CvComplex64f b)
 {
-    return CxComplex64f( a.re + b.re, a.im + b.im );
+    return CvComplex64f( a.re + b.re, a.im + b.im );
 }
 
-inline CxComplex64f& operator += (CxComplex64f& a, CxComplex64f b)
+inline CvComplex64f& operator += (CvComplex64f& a, CvComplex64f b)
 {
     a.re += b.re;
     a.im += b.im;
     return a;
 }
 
-inline CxComplex64f operator - (CxComplex64f a, CxComplex64f b)
+inline CvComplex64f operator - (CvComplex64f a, CvComplex64f b)
 {
-    return CxComplex64f( a.re - b.re, a.im - b.im );
+    return CvComplex64f( a.re - b.re, a.im - b.im );
 }
 
-inline CxComplex64f& operator -= (CxComplex64f& a, CxComplex64f b)
+inline CvComplex64f& operator -= (CvComplex64f& a, CvComplex64f b)
 {
     a.re -= b.re;
     a.im -= b.im;
     return a;
 }
 
-inline CxComplex64f operator - (CxComplex64f a)
+inline CvComplex64f operator - (CvComplex64f a)
 {
-    return CxComplex64f( -a.re, -a.im );
+    return CvComplex64f( -a.re, -a.im );
 }
 
-inline CxComplex64f operator * (CxComplex64f a, CxComplex64f b)
+inline CvComplex64f operator * (CvComplex64f a, CvComplex64f b)
 {
-    return CxComplex64f( a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re );
+    return CvComplex64f( a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re );
 }
 
-inline double abs(CxComplex64f a)
+inline double abs(CvComplex64f a)
 {
     return sqrt( (double)a.re*a.re + (double)a.im*a.im );
 }
 
-inline CxComplex64f operator / (CxComplex64f a, CxComplex64f b)
+inline CvComplex64f operator / (CvComplex64f a, CvComplex64f b)
 {
     double t = 1./((double)b.re*b.re + (double)b.im*b.im);
-    return CxComplex64f( (a.re*b.re + a.im*b.im)*t,
+    return CvComplex64f( (a.re*b.re + a.im*b.im)*t,
                          (-a.re*b.im + a.im*b.re)*t );
 }
 
-inline CxComplex64f operator * (double a, CxComplex64f b)
+inline CvComplex64f operator * (double a, CvComplex64f b)
 {
-    return CxComplex64f( a*b.re, a*b.im );
+    return CvComplex64f( a*b.re, a*b.im );
 }
 
-inline CxComplex64f operator * (CxComplex64f a, double b)
+inline CvComplex64f operator * (CvComplex64f a, double b)
 {
-    return CxComplex64f( a.re*b, a.im*b );
+    return CvComplex64f( a.re*b, a.im*b );
 }
 
-inline CxComplex64f::operator CxComplex32f() const
+inline CvComplex64f::operator CvComplex32f() const
 {
-    return CxComplex32f((float)re,(float)im);
+    return CvComplex32f((float)re,(float)im);
 }
 
-inline CxComplex64f conj(CxComplex64f a)
+inline CvComplex64f conj(CvComplex64f a)
 {
-    return CxComplex64f( a.re, -a.im );
+    return CvComplex64f( a.re, -a.im );
 }
 
-inline CxComplex64f operator + (CxComplex64f a, CxComplex32f b)
+inline CvComplex64f operator + (CvComplex64f a, CvComplex32f b)
 {
-    return CxComplex64f( a.re + b.re, a.im + b.im );
+    return CvComplex64f( a.re + b.re, a.im + b.im );
 }
 
-inline CxComplex64f operator + (CxComplex32f a, CxComplex64f b)
+inline CvComplex64f operator + (CvComplex32f a, CvComplex64f b)
 {
-    return CxComplex64f( a.re + b.re, a.im + b.im );
+    return CvComplex64f( a.re + b.re, a.im + b.im );
 }
 
-inline CxComplex64f operator - (CxComplex64f a, CxComplex32f b)
+inline CvComplex64f operator - (CvComplex64f a, CvComplex32f b)
 {
-    return CxComplex64f( a.re - b.re, a.im - b.im );
+    return CvComplex64f( a.re - b.re, a.im - b.im );
 }
 
-inline CxComplex64f operator - (CxComplex32f a, CxComplex64f b)
+inline CvComplex64f operator - (CvComplex32f a, CvComplex64f b)
 {
-    return CxComplex64f( a.re - b.re, a.im - b.im );
+    return CvComplex64f( a.re - b.re, a.im - b.im );
 }
 
-inline CxComplex64f operator * (CxComplex64f a, CxComplex32f b)
+inline CvComplex64f operator * (CvComplex64f a, CvComplex32f b)
 {
-    return CxComplex64f( a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re );
+    return CvComplex64f( a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re );
 }
 
-inline CxComplex64f operator * (CxComplex32f a, CxComplex64f b)
+inline CvComplex64f operator * (CvComplex32f a, CvComplex64f b)
 {
-    return CxComplex64f( a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re );
+    return CvComplex64f( a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re );
+}
+
+
+typedef CvStatus (CV_STDCALL * CvCopyMaskFunc)(const void* src, int src_step,
+                                               void* dst, int dst_step, CvSize size,
+                                               const void* mask, int mask_step);
+
+CvCopyMaskFunc icvGetCopyMaskFunc( int elem_size );
+
+CvStatus CV_STDCALL icvSetZero_8u_C1R( uchar* dst, int dststep, CvSize size );
+
+CvStatus CV_STDCALL icvScale_32f( const float* src, float* dst, int len, float a, float b );
+CvStatus CV_STDCALL icvScale_64f( const double* src, double* dst, int len, double a, double b );
+
+CvStatus CV_STDCALL icvLUT_Transform8u_8u_C1R( const uchar* src, int srcstep, uchar* dst,
+                                               int dststep, CvSize size, const uchar* lut );
+CvStatus CV_STDCALL icvLUT_Transform8u_16u_C1R( const uchar* src, int srcstep, ushort* dst,
+                                                int dststep, CvSize size, const ushort* lut );
+CvStatus CV_STDCALL icvLUT_Transform8u_32s_C1R( const uchar* src, int srcstep, int* dst,
+                                                int dststep, CvSize size, const int* lut );
+CvStatus CV_STDCALL icvLUT_Transform8u_64f_C1R( const uchar* src, int srcstep, double* dst,
+                                                int dststep, CvSize size, const double* lut );
+
+CvStatus CV_STDCALL icvLUT_Transform8u_8u_C2R( const uchar* src, int srcstep, uchar* dst,
+                                               int dststep, CvSize size, const uchar* lut );
+CvStatus CV_STDCALL icvLUT_Transform8u_8u_C3R( const uchar* src, int srcstep, uchar* dst,
+                                               int dststep, CvSize size, const uchar* lut );
+CvStatus CV_STDCALL icvLUT_Transform8u_8u_C4R( const uchar* src, int srcstep, uchar* dst,
+                                               int dststep, CvSize size, const uchar* lut );
+
+typedef CvStatus (CV_STDCALL * CvLUT_TransformFunc)( const void* src, int srcstep, void* dst,
+                                                     int dststep, CvSize size, const void* lut );
+
+CV_INLINE CvStatus
+icvLUT_Transform8u_8s_C1R( const uchar* src, int srcstep, char* dst,
+                            int dststep, CvSize size, const char* lut )
+{
+    return icvLUT_Transform8u_8u_C1R( src, srcstep, (uchar*)dst,
+                                      dststep, size, (const uchar*)lut );
+}
+
+CV_INLINE CvStatus
+icvLUT_Transform8u_16s_C1R( const uchar* src, int srcstep, short* dst,
+                            int dststep, CvSize size, const short* lut )
+{
+    return icvLUT_Transform8u_16u_C1R( src, srcstep, (ushort*)dst,
+                                       dststep, size, (const ushort*)lut );
+}
+
+CV_INLINE CvStatus
+icvLUT_Transform8u_32f_C1R( const uchar* src, int srcstep, float* dst,
+                            int dststep, CvSize size, const float* lut )
+{
+    return icvLUT_Transform8u_32s_C1R( src, srcstep, (int*)dst,
+                                       dststep, size, (const int*)lut );
 }
 
 #endif /*_CXCORE_INTERNAL_H_*/

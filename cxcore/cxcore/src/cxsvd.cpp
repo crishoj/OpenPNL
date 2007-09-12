@@ -44,9 +44,7 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-#define CX_SWAP( a, b, t ) ((t) = (a), (a) = (b), (b) = (t))
-
-#define icxGivens_64f( n, x, y, c, s ) \
+#define icvGivens_64f( n, x, y, c, s ) \
 {                                      \
     int _i;                            \
     double* _x = (x);                  \
@@ -61,8 +59,10 @@
     }                                  \
 }
 
+
+/* y[0:m,0:n] += diag(a[0:1,0:m]) * x[0:m,0:n] */
 static  void
-icxMatrAXPY_64f( int m, int n, const double* x, int dx,
+icvMatrAXPY_64f( int m, int n, const double* x, int dx,
                  const double* a, double* y, int dy )
 {
     int i, j;
@@ -88,8 +88,10 @@ icxMatrAXPY_64f( int m, int n, const double* x, int dx,
 }
 
 
+/* y[1:m,-1] = h*y[1:m,0:n]*x[0:1,0:n]'*x[-1]  (this is used for U&V reconstruction)
+   y[1:m,0:n] += h*y[1:m,0:n]*x[0:1,0:n]'*x[0:1,0:n] */
 static void
-icxMatrAXPY3_64f( int m, int n, const double* x, int l, double* y, double h )
+icvMatrAXPY3_64f( int m, int n, const double* x, int l, double* y, double h )
 {
     int i, j;
 
@@ -124,7 +126,7 @@ icxMatrAXPY3_64f( int m, int n, const double* x, int l, double* y, double h )
 }
 
 
-#define icxGivens_32f( n, x, y, c, s ) \
+#define icvGivens_32f( n, x, y, c, s ) \
 {                                      \
     int _i;                            \
     float* _x = (x);                   \
@@ -140,7 +142,7 @@ icxMatrAXPY3_64f( int m, int n, const double* x, int l, double* y, double h )
 }
 
 static  void
-icxMatrAXPY_32f( int m, int n, const float* x, int dx,
+icvMatrAXPY_32f( int m, int n, const float* x, int dx,
                  const float* a, float* y, int dy )
 {
     int i, j;
@@ -168,7 +170,7 @@ icxMatrAXPY_32f( int m, int n, const float* x, int dx,
 
 
 static void
-icxMatrAXPY3_32f( int m, int n, const float* x, int l, float* y, double h )
+icvMatrAXPY3_32f( int m, int n, const float* x, int l, float* y, double h )
 {
     int i, j;
 
@@ -201,6 +203,7 @@ icxMatrAXPY3_32f( int m, int n, const float* x, int l, float* y, double h )
     }
 }
 
+/* accurate hypotenuse calculation */
 static double
 pythag( double a, double b )
 {
@@ -225,11 +228,12 @@ pythag( double a, double b )
 
 #define MAX_ITERS  30
 
-void icxSVD_64f( double* a, int lda, int m, int n,
-                 double* w,
-                 double* uT, int lduT, int nu,
-                 double* vT, int ldvT,
-                 double* buffer )
+static void
+icvSVD_64f( double* a, int lda, int m, int n,
+            double* w,
+            double* uT, int lduT, int nu,
+            double* vT, int ldvT,
+            double* buffer )
 {
     double* e;
     double* temp;
@@ -237,16 +241,15 @@ void icxSVD_64f( double* a, int lda, int m, int n,
     double *hv;
     double ku0 = 0, kv0 = 0;
     double anorm = 0;
-    double *a1 = a, *u0 = uT, *v0 = vT;
+    double *a1, *u0 = uT, *v0 = vT;
     double scale, h;
     int i, j, k, l;
     int nm, m1, n1;
     int nv = n;
     int iters = 0;
-    double* hv0 = (double*)alloca( (m+1)*sizeof(hv0[0])); 
+    double* hv0 = (double*)cvStackAlloc( (m+2)*sizeof(hv0[0])) + 1; 
 
     e = buffer;
-
     w1 = w;
     e1 = e + 1;
     nm = n;
@@ -259,6 +262,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
     m1 = m;
     n1 = n;
 
+    /* transform a to bi-diagonal form */
     for( ;; )
     {
         int update_u;
@@ -268,15 +272,12 @@ void icxSVD_64f( double* a, int lda, int m, int n,
             break;
 
         scale = h = 0;
-
         update_u = uT && m1 > m - nu;
-
-        a = a1;
         hv = update_u ? uT : hv0;
 
-        for( j = 0; j < m1; j++, a += lda )
+        for( j = 0, a1 = a; j < m1; j++, a1 += lda )
         {
-            double t = a[0];
+            double t = a1[0];
             scale += fabs( hv[j] = t );
         }
 
@@ -299,14 +300,12 @@ void icxSVD_64f( double* a, int lda, int m, int n,
 
             memset( temp, 0, n1 * sizeof( temp[0] ));
 
-            a = a1;
-
             /* calc temp[0:n-i] = a[i:m,i:n]'*hv[0:m-i] */
-            icxMatrAXPY_64f( m1, n1 - 1, a + 1, lda, hv, temp + 1, 0 );
+            icvMatrAXPY_64f( m1, n1 - 1, a + 1, lda, hv, temp + 1, 0 );
             for( k = 1; k < n1; k++ ) temp[k] *= h;
 
             /* modify a: a[i:m,i:n] = a[i:m,i:n] + hv[0:m-i]*temp[0:n-i]' */
-            icxMatrAXPY_64f( m1, n1 - 1, temp + 1, 0, hv, a + 1, lda );
+            icvMatrAXPY_64f( m1, n1 - 1, temp + 1, 0, hv, a + 1, lda );
             *w1 = g*scale;
         }
         w1++;
@@ -320,7 +319,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
                 hv[-1] = h;
         }
 
-        a1++;
+        a++;
         n1--;
         if( vT )
             vT += ldvT + 1;
@@ -331,7 +330,6 @@ void icxSVD_64f( double* a, int lda, int m, int n,
         scale = h = 0;
         update_v = vT && n1 > n - nv;
 
-        a = a1;
         hv = update_v ? vT : hv0;
 
         for( j = 0; j < n1; j++ )
@@ -356,9 +354,10 @@ void icxSVD_64f( double* a, int lda, int m, int n,
                 g = -g;
             hv[0] = f - g;
             h = 1. / (f * g - s);
+            hv[-1] = 0.;
 
             /* update a[i:m:i+1:n] = a[i:m,i+1:n] + (a[i:m,i+1:n]*hv[0:m-i])*... */
-            icxMatrAXPY3_64f( m1, n1, hv, lda, a, h );
+            icvMatrAXPY3_64f( m1, n1, hv, lda, a, h );
 
             *e1 = g*scale;
         }
@@ -373,7 +372,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
                 hv[-1] = h;
         }
 
-        a1 += lda;
+        a += lda;
         m1--;
         if( uT )
             uT += lduT + 1;
@@ -395,7 +394,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
 
         for( i = m1 - 1; i >= 0; i-- )
         {
-            double h, s;
+            double s;
             int lh = nu - i;
 
             l = m - i;
@@ -408,7 +407,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
             if( h != 0 )
             {
                 uT = hv;
-                icxMatrAXPY3_64f( lh, l-1, hv+1, lduT, uT+1, h );
+                icvMatrAXPY3_64f( lh, l-1, hv+1, lduT, uT+1, h );
 
                 s = hv[0] * h;
                 for( k = 0; k < l; k++ ) hv[k] *= s;
@@ -439,7 +438,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
 
         for( i = n1 - 1; i >= 0; i-- )
         {
-            double h, s;
+            double s;
             int lh = nv - i;
 
             l = n - i;
@@ -451,7 +450,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
             if( h != 0 )
             {
                 vT = hv;
-                icxMatrAXPY3_64f( lh, l-1, hv+1, ldvT, vT+1, h );
+                icvMatrAXPY3_64f( lh, l-1, hv+1, ldvT, vT+1, h );
 
                 s = hv[0] * h;
                 for( k = 0; k < l; k++ ) hv[k] *= s;
@@ -471,7 +470,8 @@ void icxSVD_64f( double* a, int lda, int m, int n,
 
     for( i = 0; i < nm; i++ )
     {
-        double tnorm = fabs( w[i] ) + fabs( e[i] );
+        double tnorm = fabs( w[i] );
+        tnorm += fabs( e[i] );
 
         if( anorm < tnorm )
             anorm = tnorm;
@@ -487,7 +487,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
 
         for( ;; )               /* do iterations */
         {
-            double c, s, f, g, h, x, y;
+            double c, s, f, g, x, y;
             int flag = 0;
 
             /* test for splitting */
@@ -510,7 +510,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
 
                 for( i = l; i <= k; i++ )
                 {
-                    double f = s * e[i];
+                    f = s * e[i];
 
                     e[i] *= c;
 
@@ -524,7 +524,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
                     s = -f / h;
 
                     if( uT )
-                        icxGivens_64f( m, uT + lduT * (i - 1), uT + lduT * i, c, s );
+                        icvGivens_64f( m, uT + lduT * (l - 1), uT + lduT * i, c, s );
                 }
             }
 
@@ -561,7 +561,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
                 y *= c;
 
                 if( vT )
-                    icxGivens_64f( n, vT + ldvT * (i - 1), vT + ldvT * i, c, s );
+                    icvGivens_64f( n, vT + ldvT * (i - 1), vT + ldvT * i, c, s );
 
                 z = pythag( f, h );
                 w[i - 1] = z;
@@ -576,7 +576,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
                 x = -s * g + c * y;
 
                 if( uT )
-                    icxGivens_64f( m, uT + lduT * (i - 1), uT + lduT * i, c, s );
+                    icvGivens_64f( m, uT + lduT * (i - 1), uT + lduT * i, c, s );
             }
 
             e[l] = 0;
@@ -598,7 +598,7 @@ void icxSVD_64f( double* a, int lda, int m, int n,
         }
     }                           /* end of diagonalization loop */
 
-    /* sort singular values */
+    /* sort singular values and corresponding values */
     for( i = 0; i < nm; i++ )
     {
         k = i;
@@ -608,27 +608,27 @@ void icxSVD_64f( double* a, int lda, int m, int n,
 
         if( k != i )
         {
-            /* swap i & k values */
             double t;
-            CX_SWAP( w[i], w[k], t );
+            CV_SWAP( w[i], w[k], t );
 
             if( vT )
                 for( j = 0; j < n; j++ )
-                    CX_SWAP( vT[j + ldvT*k], vT[j + ldvT*i], t );
+                    CV_SWAP( vT[j + ldvT*k], vT[j + ldvT*i], t );
 
             if( uT )
                 for( j = 0; j < m; j++ )
-                    CX_SWAP( uT[j + lduT*k], uT[j + lduT*i], t );
+                    CV_SWAP( uT[j + lduT*k], uT[j + lduT*i], t );
         }
     }
 }
 
 
-void icxSVD_32f( float* a, int lda, int m, int n,
-                 float* w,
-                 float* uT, int lduT, int nu,
-                 float* vT, int ldvT,
-                 float* buffer )
+static void
+icvSVD_32f( float* a, int lda, int m, int n,
+            float* w,
+            float* uT, int lduT, int nu,
+            float* vT, int ldvT,
+            float* buffer )
 {
     float* e;
     float* temp;
@@ -636,13 +636,13 @@ void icxSVD_32f( float* a, int lda, int m, int n,
     float *hv;
     double ku0 = 0, kv0 = 0;
     double anorm = 0;
-    float *a1 = a, *u0 = uT, *v0 = vT;
+    float *a1, *u0 = uT, *v0 = vT;
     double scale, h;
     int i, j, k, l;
     int nm, m1, n1;
     int nv = n;
     int iters = 0;
-    float* hv0 = (float*)alloca( (m+1)*sizeof(hv0[0]));
+    float* hv0 = (float*)cvStackAlloc( (m+2)*sizeof(hv0[0])) + 1;
 
     e = buffer;
 
@@ -658,6 +658,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
     m1 = m;
     n1 = n;
 
+    /* transform a to bi-diagonal form */
     for( ;; )
     {
         int update_u;
@@ -669,13 +670,11 @@ void icxSVD_32f( float* a, int lda, int m, int n,
         scale = h = 0;
 
         update_u = uT && m1 > m - nu;
-
-        a = a1;
         hv = update_u ? uT : hv0;
 
-        for( j = 0; j < m1; j++, a += lda )
+        for( j = 0, a1 = a; j < m1; j++, a1 += lda )
         {
-            double t = a[0];
+            double t = a1[0];
             scale += fabs( hv[j] = (float)t );
         }
 
@@ -698,15 +697,13 @@ void icxSVD_32f( float* a, int lda, int m, int n,
 
             memset( temp, 0, n1 * sizeof( temp[0] ));
 
-            a = a1;
-
             /* calc temp[0:n-i] = a[i:m,i:n]'*hv[0:m-i] */
-            icxMatrAXPY_32f( m1, n1 - 1, a + 1, lda, hv, temp + 1, 0 );
+            icvMatrAXPY_32f( m1, n1 - 1, a + 1, lda, hv, temp + 1, 0 );
 
             for( k = 1; k < n1; k++ ) temp[k] = (float)(temp[k]*h);
 
             /* modify a: a[i:m,i:n] = a[i:m,i:n] + hv[0:m-i]*temp[0:n-i]' */
-            icxMatrAXPY_32f( m1, n1 - 1, temp + 1, 0, hv, a + 1, lda );
+            icvMatrAXPY_32f( m1, n1 - 1, temp + 1, 0, hv, a + 1, lda );
             *w1 = (float)(g*scale);
         }
         w1++;
@@ -720,7 +717,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
                 hv[-1] = (float)h;
         }
 
-        a1++;
+        a++;
         n1--;
         if( vT )
             vT += ldvT + 1;
@@ -730,8 +727,6 @@ void icxSVD_32f( float* a, int lda, int m, int n,
 
         scale = h = 0;
         update_v = vT && n1 > n - nv;
-
-        a = a1;
         hv = update_v ? vT : hv0;
 
         for( j = 0; j < n1; j++ )
@@ -756,9 +751,10 @@ void icxSVD_32f( float* a, int lda, int m, int n,
                 g = -g;
             hv[0] = (float)(f - g);
             h = 1. / (f * g - s);
+            hv[-1] = 0.f;
 
             /* update a[i:m:i+1:n] = a[i:m,i+1:n] + (a[i:m,i+1:n]*hv[0:m-i])*... */
-            icxMatrAXPY3_32f( m1, n1, hv, lda, a, h );
+            icvMatrAXPY3_32f( m1, n1, hv, lda, a, h );
 
             *e1 = (float)(g*scale);
         }
@@ -773,7 +769,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
                 hv[-1] = (float)h;
         }
 
-        a1 += lda;
+        a += lda;
         m1--;
         if( uT )
             uT += lduT + 1;
@@ -795,7 +791,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
 
         for( i = m1 - 1; i >= 0; i-- )
         {
-            double h, s;
+            double s;
             int lh = nu - i;
 
             l = m - i;
@@ -808,7 +804,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
             if( h != 0 )
             {
                 uT = hv;
-                icxMatrAXPY3_32f( lh, l-1, hv+1, lduT, uT+1, h );
+                icvMatrAXPY3_32f( lh, l-1, hv+1, lduT, uT+1, h );
 
                 s = hv[0] * h;
                 for( k = 0; k < l; k++ ) hv[k] = (float)(hv[k]*s);
@@ -839,7 +835,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
 
         for( i = n1 - 1; i >= 0; i-- )
         {
-            double h, s;
+            double s;
             int lh = nv - i;
 
             l = n - i;
@@ -851,7 +847,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
             if( h != 0 )
             {
                 vT = hv;
-                icxMatrAXPY3_32f( lh, l-1, hv+1, ldvT, vT+1, h );
+                icvMatrAXPY3_32f( lh, l-1, hv+1, ldvT, vT+1, h );
 
                 s = hv[0] * h;
                 for( k = 0; k < l; k++ ) hv[k] = (float)(hv[k]*s);
@@ -871,7 +867,8 @@ void icxSVD_32f( float* a, int lda, int m, int n,
 
     for( i = 0; i < nm; i++ )
     {
-        double tnorm = fabs( w[i] ) + fabs( e[i] );
+        double tnorm = fabs( w[i] );
+        tnorm += fabs( e[i] );
 
         if( anorm < tnorm )
             anorm = tnorm;
@@ -887,7 +884,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
 
         for( ;; )               /* do iterations */
         {
-            double c, s, f, g, h, x, y;
+            double c, s, f, g, x, y;
             int flag = 0;
 
             /* test for splitting */
@@ -910,8 +907,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
 
                 for( i = l; i <= k; i++ )
                 {
-                    double f = s * e[i];
-
+                    f = s * e[i];
                     e[i] = (float)(e[i]*c);
 
                     if( anorm + fabs( f ) == anorm )
@@ -924,7 +920,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
                     s = -f / h;
 
                     if( uT )
-                        icxGivens_32f( m, uT + lduT * (i - 1), uT + lduT * i, c, s );
+                        icvGivens_32f( m, uT + lduT * (l - 1), uT + lduT * i, c, s );
                 }
             }
 
@@ -961,7 +957,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
                 y *= c;
 
                 if( vT )
-                    icxGivens_32f( n, vT + ldvT * (i - 1), vT + ldvT * i, c, s );
+                    icvGivens_32f( n, vT + ldvT * (i - 1), vT + ldvT * i, c, s );
 
                 z = pythag( f, h );
                 w[i - 1] = (float)z;
@@ -976,7 +972,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
                 x = -s * g + c * y;
 
                 if( uT )
-                    icxGivens_32f( m, uT + lduT * (i - 1), uT + lduT * i, c, s );
+                    icvGivens_32f( m, uT + lduT * (i - 1), uT + lduT * i, c, s );
             }
 
             e[l] = 0;
@@ -998,7 +994,7 @@ void icxSVD_32f( float* a, int lda, int m, int n,
         }
     }                           /* end of diagonalization loop */
 
-    /* sort singular values */
+    /* sort singular values and corresponding vectors */
     for( i = 0; i < nm; i++ )
     {
         k = i;
@@ -1008,24 +1004,23 @@ void icxSVD_32f( float* a, int lda, int m, int n,
 
         if( k != i )
         {
-            /* swap i & k values */
             float t;
-            CX_SWAP( w[i], w[k], t );
+            CV_SWAP( w[i], w[k], t );
 
             if( vT )
                 for( j = 0; j < n; j++ )
-                    CX_SWAP( vT[j + ldvT*k], vT[j + ldvT*i], t );
+                    CV_SWAP( vT[j + ldvT*k], vT[j + ldvT*i], t );
 
             if( uT )
                 for( j = 0; j < m; j++ )
-                    CX_SWAP( uT[j + lduT*k], uT[j + lduT*i], t );
+                    CV_SWAP( uT[j + lduT*k], uT[j + lduT*i], t );
         }
     }
 }
 
 
 static void
-icxSVBkSb_64f( int m, int n, const double* w,
+icvSVBkSb_64f( int m, int n, const double* w,
                const double* uT, int lduT,
                const double* vT, int ldvT,
                const double* b, int ldb, int nb,
@@ -1056,18 +1051,23 @@ icxSVBkSb_64f( int m, int n, const double* w,
             if( nb == 1 )
             {
                 double s = 0;
-                if( ldb == 1 )
+                if( b )
                 {
-                    for( j = 0; j <= m - 4; j += 4 )
-                        s += uT[j]*b[j] + uT[j+1]*b[j+1] + uT[j+2]*b[j+2] + uT[j+3]*b[j+3];
-                    for( ; j < m; j++ )
-                        s += uT[j]*b[j];
+                    if( ldb == 1 )
+                    {
+                        for( j = 0; j <= m - 4; j += 4 )
+                            s += uT[j]*b[j] + uT[j+1]*b[j+1] + uT[j+2]*b[j+2] + uT[j+3]*b[j+3];
+                        for( ; j < m; j++ )
+                            s += uT[j]*b[j];
+                    }
+                    else
+                    {
+                        for( j = 0; j < m; j++ )
+                            s += uT[j]*b[j*ldb];
+                    }
                 }
                 else
-                {
-                    for( j = 0; j < m; j++ )
-                        s += uT[j]*b[j*ldb];
-                }
+                    s = uT[0];
                 s *= wi;
                 if( ldx == 1 )
                 {
@@ -1097,7 +1097,7 @@ icxSVBkSb_64f( int m, int n, const double* w,
                 if( b )
                 {
                     memset( buffer, 0, nb*sizeof(buffer[0]));
-                    icxMatrAXPY_64f( m, nb, b, ldb, uT, buffer, 0 );
+                    icvMatrAXPY_64f( m, nb, b, ldb, uT, buffer, 0 );
                     for( j = 0; j < nb; j++ )
                         buffer[j] *= wi;
                 }
@@ -1106,7 +1106,7 @@ icxSVBkSb_64f( int m, int n, const double* w,
                     for( j = 0; j < nb; j++ )
                         buffer[j] = uT[j]*wi;
                 }
-                icxMatrAXPY_64f( n, nb, buffer, 0, vT, x, ldx );
+                icvMatrAXPY_64f( n, nb, buffer, 0, vT, x, ldx );
             }
         }
     }
@@ -1114,7 +1114,7 @@ icxSVBkSb_64f( int m, int n, const double* w,
 
 
 static void
-icxSVBkSb_32f( int m, int n, const float* w,
+icvSVBkSb_32f( int m, int n, const float* w,
                const float* uT, int lduT,
                const float* vT, int ldvT,
                const float* b, int ldb, int nb,
@@ -1125,8 +1125,6 @@ icxSVBkSb_32f( int m, int n, const float* w,
 
     if( !b )
         nb = m;
-
-    memset( x, 0, nb*n*sizeof(x[0]));
 
     for( i = 0; i < n; i++ )
         memset( x + i*ldx, 0, nb*sizeof(x[0]));
@@ -1194,7 +1192,7 @@ icxSVBkSb_32f( int m, int n, const float* w,
                 if( b )
                 {
                     memset( buffer, 0, nb*sizeof(buffer[0]));
-                    icxMatrAXPY_32f( m, nb, b, ldb, uT, buffer, 0 );
+                    icvMatrAXPY_32f( m, nb, b, ldb, uT, buffer, 0 );
                     for( j = 0; j < nb; j++ )
                         buffer[j] = (float)(buffer[j]*wi);
                 }
@@ -1203,45 +1201,46 @@ icxSVBkSb_32f( int m, int n, const float* w,
                     for( j = 0; j < nb; j++ )
                         buffer[j] = (float)(uT[j]*wi);
                 }
-                icxMatrAXPY_32f( n, nb, buffer, 0, vT, x, nb );
+                icvMatrAXPY_32f( n, nb, buffer, 0, vT, x, ldx );
             }
         }
     }
 }
 
 
-CX_IMPL  void
-cxSVD( CxArr* aarr, CxArr* warr, CxArr* uarr, CxArr* varr, int flags )
+CV_IMPL  void
+cvSVD( CvArr* aarr, CvArr* warr, CvArr* uarr, CvArr* varr, int flags )
 {
     uchar* buffer = 0;
     int local_alloc = 0;
 
-    CX_FUNCNAME( "cxSVD" );
+    CV_FUNCNAME( "cvSVD" );
 
     __BEGIN__;
 
-    CxMat astub, *a = (CxMat*)aarr;
-    CxMat wstub, *w = (CxMat*)warr;
-    CxMat ustub, *u;
-    CxMat vstub, *v;
-    CxMat tmat;
+    CvMat astub, *a = (CvMat*)aarr;
+    CvMat wstub, *w = (CvMat*)warr;
+    CvMat ustub, *u;
+    CvMat vstub, *v;
+    CvMat tmat;
     uchar* tw = 0;
     int type;
     int a_buf_offset = 0, u_buf_offset = 0, buf_size, pix_size;
-    int temp_u = 0, // temporary storage for U is needed
-        t_svd; // special case: a->rows < a->cols
+    int temp_u = 0, /* temporary storage for U is needed */
+        t_svd; /* special case: a->rows < a->cols */
     int m, n;
     int w_rows, w_cols;
     int u_rows = 0, u_cols = 0;
+    int w_is_mat = 0;
 
-    if( !CX_IS_MAT( a ))
-        CX_CALL( a = cxGetMat( a, &astub ));
+    if( !CV_IS_MAT( a ))
+        CV_CALL( a = cvGetMat( a, &astub ));
 
-    if( !CX_IS_MAT( w ))
-        CX_CALL( w = cxGetMat( w, &wstub ));
+    if( !CV_IS_MAT( w ))
+        CV_CALL( w = cvGetMat( w, &wstub ));
 
-    if( !CX_ARE_TYPES_EQ( a, w ))
-        CX_ERROR( CX_StsUnmatchedFormats, "" );
+    if( !CV_ARE_TYPES_EQ( a, w ))
+        CV_ERROR( CV_StsUnmatchedFormats, "" );
 
     if( a->rows >= a->cols )
     {
@@ -1253,11 +1252,11 @@ cxSVD( CxArr* aarr, CxArr* warr, CxArr* uarr, CxArr* varr, int flags )
     }
     else
     {
-        CxArr* t;
-        CX_SWAP( uarr, varr, t );
+        CvArr* t;
+        CV_SWAP( uarr, varr, t );
 
-        flags = (flags & CX_SVD_U_T ? CX_SVD_V_T : 0)|
-                (flags & CX_SVD_V_T ? CX_SVD_U_T : 0);
+        flags = (flags & CV_SVD_U_T ? CV_SVD_V_T : 0)|
+                (flags & CV_SVD_V_T ? CV_SVD_U_T : 0);
         m = a->cols;
         n = a->rows;
         w_rows = w->cols;
@@ -1265,19 +1264,20 @@ cxSVD( CxArr* aarr, CxArr* warr, CxArr* uarr, CxArr* varr, int flags )
         t_svd = 1;
     }
 
-    u = (CxMat*)uarr;
-    v = (CxMat*)varr;
+    u = (CvMat*)uarr;
+    v = (CvMat*)varr;
 
-    if( (w_cols == 1 || w_rows == 1) &&
-        CX_IS_MAT_CONT(w->type) && w_cols + w_rows - 1 == n )
+    w_is_mat = w_cols > 1 && w_rows > 1;
+
+    if( !w_is_mat && CV_IS_MAT_CONT(w->type) && w_cols + w_rows - 1 == n )
         tw = w->data.ptr;
 
     if( u )
     {
-        if( !CX_IS_MAT( u ))
-            CX_CALL( u = cxGetMat( u, &ustub ));
+        if( !CV_IS_MAT( u ))
+            CV_CALL( u = cvGetMat( u, &ustub ));
 
-        if( !(flags & CX_SVD_U_T) )
+        if( !(flags & CV_SVD_U_T) )
         {
             u_rows = u->rows;
             u_cols = u->cols;
@@ -1288,16 +1288,18 @@ cxSVD( CxArr* aarr, CxArr* warr, CxArr* uarr, CxArr* varr, int flags )
             u_cols = u->rows;
         }
 
-        if( !CX_ARE_TYPES_EQ( a, u ))
-            CX_ERROR( CX_StsUnmatchedFormats, "" );
+        if( !CV_ARE_TYPES_EQ( a, u ))
+            CV_ERROR( CV_StsUnmatchedFormats, "" );
 
         if( u_rows != m || (u_cols != m && u_cols != n))
-            CX_ERROR( CX_StsUnmatchedSizes, "U matrix has unappropriate size" );
+            CV_ERROR( CV_StsUnmatchedSizes, !t_svd ? "U matrix has unappropriate size" :
+                                                     "V matrix has unappropriate size" );
             
-        temp_u = (u_rows != u_cols && !(flags & CX_SVD_U_T)) || u->data.ptr==a->data.ptr;
+        temp_u = (u_rows != u_cols && !(flags & CV_SVD_U_T)) || u->data.ptr==a->data.ptr;
 
-        if( tw == 0 && u_cols != w_rows )
-            CX_ERROR( CX_StsUnmatchedSizes, "U and W have incompatible sizes" );
+        if( w_is_mat && u_cols != w_rows )
+            CV_ERROR( CV_StsUnmatchedSizes, !t_svd ? "U and W have incompatible sizes" :
+                                                     "V and W have incompatible sizes" );
     }
     else
     {
@@ -1310,10 +1312,10 @@ cxSVD( CxArr* aarr, CxArr* warr, CxArr* uarr, CxArr* varr, int flags )
     {
         int v_rows, v_cols;
 
-        if( !CX_IS_MAT( v ))
-            CX_CALL( v = cxGetMat( v, &vstub ));
+        if( !CV_IS_MAT( v ))
+            CV_CALL( v = cvGetMat( v, &vstub ));
 
-        if( !(flags & CX_SVD_V_T) )
+        if( !(flags & CV_SVD_V_T) )
         {
             v_rows = v->rows;
             v_cols = v->cols;
@@ -1324,14 +1326,16 @@ cxSVD( CxArr* aarr, CxArr* warr, CxArr* uarr, CxArr* varr, int flags )
             v_cols = v->rows;
         }
 
-        if( !CX_ARE_TYPES_EQ( a, v ))
-            CX_ERROR( CX_StsUnmatchedFormats, "" );
+        if( !CV_ARE_TYPES_EQ( a, v ))
+            CV_ERROR( CV_StsUnmatchedFormats, "" );
 
         if( v_rows != n || v_cols != n )
-            CX_ERROR( CX_StsUnmatchedSizes, "V matrix has unappropriate size" );
+            CV_ERROR( CV_StsUnmatchedSizes, t_svd ? "U matrix has unappropriate size" :
+                                                    "V matrix has unappropriate size" );
 
-        if( tw == 0 && w_cols != v_cols )
-            CX_ERROR( CX_StsUnmatchedSizes, "V and W have incompatible sizes" );
+        if( w_is_mat && w_cols != v_cols )
+            CV_ERROR( CV_StsUnmatchedSizes, t_svd ? "U and W have incompatible sizes" :
+                                                    "V and W have incompatible sizes" );
     }
     else
     {
@@ -1340,11 +1344,11 @@ cxSVD( CxArr* aarr, CxArr* warr, CxArr* uarr, CxArr* varr, int flags )
         v->step = 0;
     }
 
-    type = CX_MAT_TYPE( a->type );
-    pix_size = icxPixSize[type];
+    type = CV_MAT_TYPE( a->type );
+    pix_size = CV_ELEM_SIZE(type);
     buf_size = n*2 + m;
 
-    if( !(flags & CX_SVD_MODIFY_A) )
+    if( !(flags & CV_SVD_MODIFY_A) )
     {
         a_buf_offset = buf_size;
         buf_size += a->rows*a->cols;
@@ -1358,106 +1362,107 @@ cxSVD( CxArr* aarr, CxArr* warr, CxArr* uarr, CxArr* varr, int flags )
 
     buf_size *= pix_size;
 
-    if( buf_size <= CX_MAX_LOCAL_SIZE )
+    if( buf_size <= CV_MAX_LOCAL_SIZE )
     {
-        buffer = (uchar*)alloca( buf_size );
+        buffer = (uchar*)cvStackAlloc( buf_size );
         local_alloc = 1;
     }
     else
     {
-        CX_CALL( buffer = (uchar*)cxAlloc( buf_size ));
+        CV_CALL( buffer = (uchar*)cvAlloc( buf_size ));
     }
     
-    if( !(flags & CX_SVD_MODIFY_A) )
+    if( !(flags & CV_SVD_MODIFY_A) )
     {
-        cxInitMatHeader( &tmat, m, n, type,
+        cvInitMatHeader( &tmat, m, n, type,
                          buffer + a_buf_offset*pix_size );
         if( !t_svd )
-            cxCopy( a, &tmat );
+            cvCopy( a, &tmat );
         else
-            cxT( a, &tmat );
+            cvT( a, &tmat );
         a = &tmat;
     }
 
     if( temp_u )
     {
-        cxInitMatHeader( &ustub, u_cols, u_rows, type, buffer + u_buf_offset*pix_size );
+        cvInitMatHeader( &ustub, u_cols, u_rows, type, buffer + u_buf_offset*pix_size );
         u = &ustub;
     }
 
     if( !tw )
         tw = buffer + (n + m)*pix_size;
 
-    if( type == CX_32FC1 )
+    if( type == CV_32FC1 )
     {
-        icxSVD_32f( a->data.fl, a->step/sizeof(float), a->rows, a->cols,
+        icvSVD_32f( a->data.fl, a->step/sizeof(float), a->rows, a->cols,
                    (float*)tw, u->data.fl, u->step/sizeof(float), u_cols,
                    v->data.fl, v->step/sizeof(float), (float*)buffer );
     }
-    else if( type == CX_64FC1 )
+    else if( type == CV_64FC1 )
     {
-        icxSVD_64f( a->data.db, a->step/sizeof(double), a->rows, a->cols,
+        icvSVD_64f( a->data.db, a->step/sizeof(double), a->rows, a->cols,
                     (double*)tw, u->data.db, u->step/sizeof(double), u_cols,
                     v->data.db, v->step/sizeof(double), (double*)buffer );
     }
     else
     {
-        CX_ERROR( CX_StsUnsupportedFormat, "" );
+        CV_ERROR( CV_StsUnsupportedFormat, "" );
     }
 
     if( tw != w->data.ptr )
     {
-        cxSetZero( w );
-        if( type == CX_32FC1 )
+        int shift = w->cols != 1;
+        cvSetZero( w );
+        if( type == CV_32FC1 )
             for( int i = 0; i < n; i++ )
-                ((float*)(w->data.ptr + i*w->step))[i] = ((float*)tw)[i];
+                ((float*)(w->data.ptr + i*w->step))[i*shift] = ((float*)tw)[i];
         else
             for( int i = 0; i < n; i++ )
-                ((double*)(w->data.ptr + i*w->step))[i] = ((double*)tw)[i];
+                ((double*)(w->data.ptr + i*w->step))[i*shift] = ((double*)tw)[i];
     }
 
     if( uarr )
     {
-        if( !(flags & CX_SVD_U_T))
-            cxT( u, uarr );
+        if( !(flags & CV_SVD_U_T))
+            cvT( u, uarr );
         else if( temp_u )
-            cxCopy( u, uarr );
-        /*CX_CHECK_NANS( uarr );*/
+            cvCopy( u, uarr );
+        /*CV_CHECK_NANS( uarr );*/
     }
 
     if( varr )
     {
-        if( !(flags & CX_SVD_V_T))
-            cxT( v, varr );
-        /*CX_CHECK_NANS( varr );*/
+        if( !(flags & CV_SVD_V_T))
+            cvT( v, varr );
+        /*CV_CHECK_NANS( varr );*/
     }
 
-    CX_CHECK_NANS( w );
+    CV_CHECK_NANS( w );
 
     __END__;
 
     if( buffer && !local_alloc )
-        cxFree( (void**)&buffer );
+        cvFree( &buffer );
 }
 
 
-CX_IMPL void
-cxSVBkSb( const CxArr* warr, const CxArr* uarr,
-          const CxArr* varr, const CxArr* barr,
-          CxArr* xarr, int flags )
+CV_IMPL void
+cvSVBkSb( const CvArr* warr, const CvArr* uarr,
+          const CvArr* varr, const CvArr* barr,
+          CvArr* xarr, int flags )
 {
     uchar* buffer = 0;
     int local_alloc = 0;
 
-    CX_FUNCNAME( "cxSVBkSb" );
+    CV_FUNCNAME( "cvSVBkSb" );
 
     __BEGIN__;
 
-    CxMat wstub, *w = (CxMat*)warr;
-    CxMat bstub, *b = (CxMat*)barr;
-    CxMat xstub, *x = (CxMat*)xarr;
-    CxMat ustub, ustub2, *u = (CxMat*)uarr;
-    CxMat vstub, vstub2, *v = (CxMat*)varr;
+    CvMat wstub, *w = (CvMat*)warr;
+    CvMat bstub, *b = (CvMat*)barr;
+    CvMat xstub, *x = (CvMat*)xarr;
+    CvMat ustub, ustub2, *u = (CvMat*)uarr;
+    CvMat vstub, vstub2, *v = (CvMat*)varr;
     uchar* tw = 0;
     int type;
     int temp_u = 0, temp_v = 0;
@@ -1467,25 +1472,25 @@ cxSVBkSb( const CxArr* warr, const CxArr* uarr,
     int u_rows, u_cols;
     int v_rows, v_cols;
 
-    if( !CX_IS_MAT( w ))
-        CX_CALL( w = cxGetMat( w, &wstub ));
+    if( !CV_IS_MAT( w ))
+        CV_CALL( w = cvGetMat( w, &wstub ));
 
-    if( !CX_IS_MAT( u ))
-        CX_CALL( w = cxGetMat( u, &ustub ));
+    if( !CV_IS_MAT( u ))
+        CV_CALL( u = cvGetMat( u, &ustub ));
 
-    if( !CX_IS_MAT( v ))
-        CX_CALL( v = cxGetMat( v, &vstub ));
+    if( !CV_IS_MAT( v ))
+        CV_CALL( v = cvGetMat( v, &vstub ));
 
-    if( !CX_IS_MAT( x ))
-        CX_CALL( x = cxGetMat( x, &xstub ));
+    if( !CV_IS_MAT( x ))
+        CV_CALL( x = cvGetMat( x, &xstub ));
 
-    if( !CX_ARE_TYPES_EQ( w, u ) || !CX_ARE_TYPES_EQ( w, v ) || !CX_ARE_TYPES_EQ( w, x ))
-        CX_ERROR( CX_StsUnmatchedFormats, "All matrices must have the same type" );
+    if( !CV_ARE_TYPES_EQ( w, u ) || !CV_ARE_TYPES_EQ( w, v ) || !CV_ARE_TYPES_EQ( w, x ))
+        CV_ERROR( CV_StsUnmatchedFormats, "All matrices must have the same type" );
 
-    type = CX_MAT_TYPE( w->type );
-    pix_size = icxPixSize[type];
+    type = CV_MAT_TYPE( w->type );
+    pix_size = CV_ELEM_SIZE(type);
 
-    if( !(flags & CX_SVD_U_T) )
+    if( !(flags & CV_SVD_U_T) )
     {
         temp_u = 1;
         u_buf_offset = buf_size;
@@ -1499,7 +1504,7 @@ cxSVBkSb( const CxArr* warr, const CxArr* uarr,
         u_cols = u->rows;
     }
 
-    if( !(flags & CX_SVD_V_T) )
+    if( !(flags & CV_SVD_V_T) )
     {
         temp_v = 1;
         v_buf_offset = buf_size;
@@ -1518,30 +1523,35 @@ cxSVBkSb( const CxArr* warr, const CxArr* uarr,
     nm = MIN(n,m);
 
     if( (u_rows != u_cols && v_rows != v_cols) || x->rows != v_rows )
-        CX_ERROR( CX_StsBadSize, "V or U matrix must be square" );
+        CV_ERROR( CV_StsBadSize, "V or U matrix must be square" );
 
-    if( (w->rows == 1 || w->cols == 1) && CX_IS_MAT_CONT(w->type) &&
-        w->rows + w->cols - 1 == MIN( m, n ))
+    if( (w->rows == 1 || w->cols == 1) && w->rows + w->cols - 1 == nm )
     {
-        tw = w->data.ptr;
+        if( CV_IS_MAT_CONT(w->type) )
+            tw = w->data.ptr;
+        else
+        {
+            w_buf_offset = buf_size;
+            buf_size += nm*pix_size;
+        }
     }
     else
     {
         if( w->cols != v_cols || w->rows != u_cols )
-            CX_ERROR( CX_StsBadSize, "W must be 1d array of MIN(m,n) elements or "
+            CV_ERROR( CV_StsBadSize, "W must be 1d array of MIN(m,n) elements or "
                                     "matrix which size matches to U and V" );
         w_buf_offset = buf_size;
-        buf_size += n*pix_size;
+        buf_size += nm*pix_size;
     }
 
     if( b )
     {
-        if( !CX_IS_MAT( b ))
-            CX_CALL( b = cxGetMat( b, &bstub ));
-        if( !CX_ARE_TYPES_EQ( w, b ))
-            CX_ERROR( CX_StsUnmatchedFormats, "All matrices must have the same type" );
+        if( !CV_IS_MAT( b ))
+            CV_CALL( b = cvGetMat( b, &bstub ));
+        if( !CV_ARE_TYPES_EQ( w, b ))
+            CV_ERROR( CV_StsUnmatchedFormats, "All matrices must have the same type" );
         if( b->cols != x->cols || b->rows != m )
-            CX_ERROR( CX_StsUnmatchedSizes, "b matrix must have (m x x->cols) size" );
+            CV_ERROR( CV_StsUnmatchedSizes, "b matrix must have (m x x->cols) size" );
     }
     else
     {
@@ -1550,49 +1560,49 @@ cxSVBkSb( const CxArr* warr, const CxArr* uarr,
     }
 
     t_buf_offset = buf_size;
-    buf_size += MAX(m,n)*pix_size;
+    buf_size += (MAX(m,n) + b->cols)*pix_size;
 
-    if( buf_size <= CX_MAX_LOCAL_SIZE )
+    if( buf_size <= CV_MAX_LOCAL_SIZE )
     {
-        buffer = (uchar*)alloca( buf_size );
+        buffer = (uchar*)cvStackAlloc( buf_size );
         local_alloc = 1;
     }
     else
-        CX_CALL( buffer = (uchar*)cxAlloc( buf_size ));
+        CV_CALL( buffer = (uchar*)cvAlloc( buf_size ));
 
     if( temp_u )
     {
-        cxInitMatHeader( &ustub2, u_cols, u_rows, type, buffer + u_buf_offset );
-        cxT( u, &ustub2 );
+        cvInitMatHeader( &ustub2, u_cols, u_rows, type, buffer + u_buf_offset );
+        cvT( u, &ustub2 );
         u = &ustub2;
     }
 
     if( temp_v )
     {
-        cxInitMatHeader( &vstub2, v_cols, v_rows, type, buffer + v_buf_offset );
-        cxT( v, &vstub2 );
+        cvInitMatHeader( &vstub2, v_cols, v_rows, type, buffer + v_buf_offset );
+        cvT( v, &vstub2 );
         v = &vstub2;
     }
 
     if( !tw )
     {
-        int i;
+        int i, shift = w->cols > 1 ? pix_size : 0;
         tw = buffer + w_buf_offset;
         for( i = 0; i < nm; i++ )
-            memcpy( tw + i*pix_size, w->data.ptr + i*(w->step + pix_size), pix_size );
+            memcpy( tw + i*pix_size, w->data.ptr + i*(w->step + shift), pix_size );
     }
 
-    if( type == CX_32FC1 )
+    if( type == CV_32FC1 )
     {
-        icxSVBkSb_32f( m, n, (float*)tw, u->data.fl, u->step/sizeof(float),
+        icvSVBkSb_32f( m, n, (float*)tw, u->data.fl, u->step/sizeof(float),
                        v->data.fl, v->step/sizeof(float),
                        b->data.fl, b->step/sizeof(float), b->cols,
                        x->data.fl, x->step/sizeof(float),
                        (float*)(buffer + t_buf_offset) );
     }
-    else if( type == CX_64FC1 )
+    else if( type == CV_64FC1 )
     {
-        icxSVBkSb_64f( m, n, (double*)tw, u->data.db, u->step/sizeof(double),
+        icvSVBkSb_64f( m, n, (double*)tw, u->data.db, u->step/sizeof(double),
                        v->data.db, v->step/sizeof(double),
                        b->data.db, b->step/sizeof(double), b->cols,
                        x->data.db, x->step/sizeof(double),
@@ -1600,13 +1610,13 @@ cxSVBkSb( const CxArr* warr, const CxArr* uarr,
     }
     else
     {
-        CX_ERROR( CX_StsUnsupportedFormat, "" );
+        CV_ERROR( CV_StsUnsupportedFormat, "" );
     }
 
     __END__;
 
     if( buffer && !local_alloc )
-        cxFree( (void**)&buffer );
+        cvFree( &buffer );
 }
 
 /* End of file. */

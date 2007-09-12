@@ -47,145 +47,140 @@
 #define HAVE_IPL
 #endif
 
-#ifdef _CV_H_
-#define HAVE_IPL
-#endif 
-
-#if defined(_CH_)
-#pragma package <opencx>
-#include <chdl.h>
-LOAD_CHDL_CODE(cx,Cx)
-#endif
-
-#if defined HAVE_IPL && !defined __IPL_H__ && !defined _CV_H_
-#ifndef _INC_WINDOWS
-    #define CX_PRETEND_WINDOWS
-    #define _INC_WINDOWS
-    typedef struct tagBITMAPINFOHEADER BITMAPINFOHEADER;
-    typedef int BOOL;
-#endif
-#ifdef WIN32
-#include "ipl.h"
-#else
-#include "ipl/ipl.h"
-#endif
-#ifdef CX_PRETEND_WINDOWS
-    #undef _INC_WINDOWS
-#endif
-#endif
+#ifndef SKIP_INCLUDES
+  #if defined HAVE_IPL && !defined __IPL_H__
+    #ifndef _INC_WINDOWS
+        #define CV_PRETEND_WINDOWS
+        #define _INC_WINDOWS
+        typedef struct tagBITMAPINFOHEADER BITMAPINFOHEADER;
+        typedef int BOOL;
+    #endif
+    #if defined WIN32 || defined WIN64
+      #include "ipl.h"
+    #else
+      #include "ipl/ipl.h"
+    #endif
+    #ifdef CV_PRETEND_WINDOWS
+        #undef _INC_WINDOWS
+    #endif
+  #endif
+#endif // SKIP_INCLUDES
 
 #include "cxtypes.h"
 #include "cxerror.h"
-
-#ifndef CXCOREAPI
-#if defined WIN32 && defined CXCORE_DLL
-    #define CXCOREAPI __declspec(dllexport)
-#else
-    #define CXCOREAPI
-#endif
-#endif
+#include "cvver.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /****************************************************************************************\
-*                                     Allocation/deallocation                            *
+*          Array allocation, deallocation, initialization and access to elements         *
 \****************************************************************************************/
 
 /* <malloc> wrapper.
-   If there is no enough memory the function
-   (as well as other OpenCX functions that call cxAlloc)
+   If there is no enough memory, the function
+   (as well as other OpenCV functions that call cvAlloc)
    raises an error. */
-CXCOREAPI  void*  cxAlloc( size_t size );
+CVAPI(void*)  cvAlloc( size_t size );
 
 /* <free> wrapper.
    Here and further all the memory releasing functions
-   (that all call cxFree) take double pointer which is used
-   to clear user pointer to the data after releasing it.
+   (that all call cvFree) take double pointer in order to
+   to clear pointer to the data after releasing it.
    Passing pointer to NULL pointer is Ok: nothing happens in this case
 */
-CXCOREAPI  void   cxFree( void** ptr );
+CVAPI(void)   cvFree_( void* ptr );
+#define cvFree(ptr) (cvFree_(*(ptr)), *(ptr)=0)
 
 /* Allocates and initializes IplImage header */
-CXCOREAPI  IplImage*  cxCreateImageHeader( CxSize size, int depth, int channels );
+CVAPI(IplImage*)  cvCreateImageHeader( CvSize size, int depth, int channels );
 
 /* Inializes IplImage header */
-CXCOREAPI IplImage* cxInitImageHeader( IplImage* image, CxSize size, int depth,
-                                       int channels, int origin CX_DEFAULT(0),
-                                       int align CX_DEFAULT(4));
+CVAPI(IplImage*) cvInitImageHeader( IplImage* image, CvSize size, int depth,
+                                   int channels, int origin CV_DEFAULT(0),
+                                   int align CV_DEFAULT(4));
 
 /* Creates IPL image (header and data) */
-CXCOREAPI  IplImage*  cxCreateImage( CxSize size, int depth, int channels );
+CVAPI(IplImage*)  cvCreateImage( CvSize size, int depth, int channels );
 
 /* Releases (i.e. deallocates) IPL image header */
-CXCOREAPI  void  cxReleaseImageHeader( IplImage** image );
+CVAPI(void)  cvReleaseImageHeader( IplImage** image );
 
 /* Releases IPL image header and data */
-CXCOREAPI  void  cxReleaseImage( IplImage** image );
+CVAPI(void)  cvReleaseImage( IplImage** image );
 
 /* Creates a copy of IPL image (widthStep may differ) */
-CXCOREAPI IplImage* cxCloneImage( const IplImage* image );
+CVAPI(IplImage*) cvCloneImage( const IplImage* image );
 
 /* Sets a Channel Of Interest (only a few functions support COI) - 
-   use cxCopy to extract the selected channel and/or put it back */
-CXCOREAPI  void  cxSetImageCOI( IplImage* image, int coi );
+   use cvCopy to extract the selected channel and/or put it back */
+CVAPI(void)  cvSetImageCOI( IplImage* image, int coi );
 
 /* Retrieves image Channel Of Interest */
-CXCOREAPI  int  cxGetImageCOI( IplImage* image );
+CVAPI(int)  cvGetImageCOI( const IplImage* image );
 
 /* Sets image ROI (region of interest) (COI is not changed) */
-CXCOREAPI  void  cxSetImageROI( IplImage* image, CxRect rect );
+CVAPI(void)  cvSetImageROI( IplImage* image, CvRect rect );
 
 /* Resets image ROI and COI */
-CXCOREAPI  void  cxResetImageROI( IplImage* image );
+CVAPI(void)  cvResetImageROI( IplImage* image );
 
 /* Retrieves image ROI */
-CXCOREAPI  CxRect cxGetImageROI( const IplImage* image );
+CVAPI(CvRect) cvGetImageROI( const IplImage* image );
 
-/* Allocates and initalizes CxMat header */
-CXCOREAPI  CxMat*  cxCreateMatHeader( int rows, int cols, int type );
+/* Allocates and initalizes CvMat header */
+CVAPI(CvMat*)  cvCreateMatHeader( int rows, int cols, int type );
 
-#define CX_AUTOSTEP  0x7fffffff
+#define CV_AUTOSTEP  0x7fffffff
 
-/* Initializes CxMat header */
-CXCOREAPI CxMat* cxInitMatHeader( CxMat* mat, int rows, int cols,
-                                  int type, void* data CX_DEFAULT(NULL),
-                                  int step CX_DEFAULT(CX_AUTOSTEP) );
+/* Initializes CvMat header */
+CVAPI(CvMat*) cvInitMatHeader( CvMat* mat, int rows, int cols,
+                              int type, void* data CV_DEFAULT(NULL),
+                              int step CV_DEFAULT(CV_AUTOSTEP) );
 
-/* Allocates and initializes CxMat header and allocates data */
-CXCOREAPI  CxMat*  cxCreateMat( int rows, int cols, int type );
+/* Allocates and initializes CvMat header and allocates data */
+CVAPI(CvMat*)  cvCreateMat( int rows, int cols, int type );
 
-/* Releases CxMat header and deallocates matrix data
+/* Releases CvMat header and deallocates matrix data
    (reference counting is used for data) */
-CXCOREAPI  void  cxReleaseMat( CxMat** mat );
+CVAPI(void)  cvReleaseMat( CvMat** mat );
 
-/* Decrements CxMat data reference counter and deallocates the data if
+/* Decrements CvMat data reference counter and deallocates the data if
    it reaches 0 */
-CX_INLINE  void  cxDecRefData( CxArr* arr );
-CX_INLINE  void  cxDecRefData( CxArr* arr )
+CV_INLINE  void  cvDecRefData( CvArr* arr )
 {
-    if( CX_IS_MAT( arr ) || CX_IS_MATND( arr ))
+    if( CV_IS_MAT( arr ))
     {
-        CxMat* mat = (CxMat*)arr; /* the first few fields of CxMat and CxMatND are the same */
+        CvMat* mat = (CvMat*)arr;
         mat->data.ptr = NULL;
         if( mat->refcount != NULL && --*mat->refcount == 0 )
-        {
-            uchar* data = (uchar*)mat->refcount + 2*sizeof(mat->refcount);
-            cxFree( (void**)&data );
-        }
+            cvFree( &mat->refcount );
+        mat->refcount = NULL;
+    }
+    else if( CV_IS_MATND( arr ))
+    {
+        CvMatND* mat = (CvMatND*)arr;
+        mat->data.ptr = NULL;
+        if( mat->refcount != NULL && --*mat->refcount == 0 )
+            cvFree( &mat->refcount );
         mat->refcount = NULL;
     }
 }
 
-/* Increments CxMat data reference counter */
-CX_INLINE  int  cxIncRefData( CxArr* arr );
-CX_INLINE  int  cxIncRefData( CxArr* arr )
+/* Increments CvMat data reference counter */
+CV_INLINE  int  cvIncRefData( CvArr* arr )
 {
     int refcount = 0;
-    if( CX_IS_MAT( arr ) || CX_IS_MATND( arr ))
+    if( CV_IS_MAT( arr ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
+        if( mat->refcount != NULL )
+            refcount = ++*mat->refcount;
+    }
+    else if( CV_IS_MATND( arr ))
+    {
+        CvMatND* mat = (CvMatND*)arr;
         if( mat->refcount != NULL )
             refcount = ++*mat->refcount;
     }
@@ -194,208 +189,205 @@ CX_INLINE  int  cxIncRefData( CxArr* arr )
 
 
 /* Creates an exact copy of the input matrix (except, may be, step value) */
-CXCOREAPI CxMat* cxCloneMat( const CxMat* mat );
+CVAPI(CvMat*) cvCloneMat( const CvMat* mat );
 
 
 /* Makes a new matrix from <rect> subrectangle of input array.
    No data is copied */
-CXCOREAPI CxMat* cxGetSubRect( const CxArr* arr, CxMat* submat, CxRect rect );
-#define cxGetSubArr cxGetSubRect
+CVAPI(CvMat*) cvGetSubRect( const CvArr* arr, CvMat* submat, CvRect rect );
+#define cvGetSubArr cvGetSubRect
 
 /* Selects row span of the input array: arr(start_row:delta_row:end_row,:)
     (end_row is not included into the span). */
-CXCOREAPI CxMat* cxGetRows( const CxArr* arr, CxMat* submat,
-                            int start_row, int end_row,
-                            int delta_row CX_DEFAULT(1));
+CVAPI(CvMat*) cvGetRows( const CvArr* arr, CvMat* submat,
+                        int start_row, int end_row,
+                        int delta_row CV_DEFAULT(1));
 
-CX_INLINE  void  cxGetRow( const CxArr* arr, CxMat* submat, int row );
-CX_INLINE  void  cxGetRow( const CxArr* arr, CxMat* submat, int row )
+CV_INLINE  CvMat*  cvGetRow( const CvArr* arr, CvMat* submat, int row )
 {
-    cxGetRows( arr, submat, row, row + 1, 1 );
+    return cvGetRows( arr, submat, row, row + 1, 1 );
 }
 
 
 /* Selects column span of the input array: arr(:,start_col:end_col)
    (end_col is not included into the span) */
-CXCOREAPI CxMat* cxGetCols( const CxArr* arr, CxMat* submat,
-                            int start_col, int end_col );
+CVAPI(CvMat*) cvGetCols( const CvArr* arr, CvMat* submat,
+                        int start_col, int end_col );
 
-CX_INLINE  void  cxGetCol( const CxArr* arr, CxMat* submat, int col );
-CX_INLINE  void  cxGetCol( const CxArr* arr, CxMat* submat, int col )
+CV_INLINE  CvMat*  cvGetCol( const CvArr* arr, CvMat* submat, int col )
 {
-    cxGetCols( arr, submat, col, col + 1 );
+    return cvGetCols( arr, submat, col, col + 1 );
 }
 
 /* Select a diagonal of the input array.
    (diag = 0 means the main diagonal, >0 means a diagonal above the main one,
    <0 - below the main one).
    The diagonal will be represented as a column (nx1 matrix). */
-CXCOREAPI CxMat* cxGetDiag( const CxArr* arr, CxMat* submat,
-                            int diag CX_DEFAULT(0));
+CVAPI(CvMat*) cvGetDiag( const CvArr* arr, CvMat* submat,
+                            int diag CV_DEFAULT(0));
 
 /* low-level scalar <-> raw data conversion functions */
-CXCOREAPI void cxScalarToRawData( const CxScalar* scalar, void* data, int type,
-                                  int extend_to_12 CX_DEFAULT(0) );
+CVAPI(void) cvScalarToRawData( const CvScalar* scalar, void* data, int type,
+                              int extend_to_12 CV_DEFAULT(0) );
 
-CXCOREAPI void cxRawDataToScalar( const void* data, int type, CxScalar* scalar );
+CVAPI(void) cvRawDataToScalar( const void* data, int type, CvScalar* scalar );
 
-/* Allocates and initializes CxMatND header */
-CXCOREAPI  CxMatND*  cxCreateMatNDHeader( int dims, const int* sizes, int type );
+/* Allocates and initializes CvMatND header */
+CVAPI(CvMatND*)  cvCreateMatNDHeader( int dims, const int* sizes, int type );
 
-/* Allocates and initializes CxMatND header and allocates data */
-CXCOREAPI  CxMatND*  cxCreateMatND( int dims, const int* sizes, int type );
+/* Allocates and initializes CvMatND header and allocates data */
+CVAPI(CvMatND*)  cvCreateMatND( int dims, const int* sizes, int type );
 
-/* Initializes preallocated CxMatND header */
-CXCOREAPI  CxMatND*  cxInitMatNDHeader( CxMatND* mat, int dims, const int* sizes,
-                                        int type, void* data CX_DEFAULT(NULL) );
+/* Initializes preallocated CvMatND header */
+CVAPI(CvMatND*)  cvInitMatNDHeader( CvMatND* mat, int dims, const int* sizes,
+                                    int type, void* data CV_DEFAULT(NULL) );
 
-/* Releases CxMatND */
-CX_INLINE  void  cxReleaseMatND( CxMatND** mat );
-CX_INLINE  void  cxReleaseMatND( CxMatND** mat )
+/* Releases CvMatND */
+CV_INLINE  void  cvReleaseMatND( CvMatND** mat )
 {
-    cxReleaseMat( (CxMat**)mat );
+    cvReleaseMat( (CvMat**)mat );
 }
 
-/* Creates a copy of CxMatND (except, may be, steps) */
-CXCOREAPI  CxMatND* cxCloneMatND( const CxMatND* mat );
+/* Creates a copy of CvMatND (except, may be, steps) */
+CVAPI(CvMatND*) cvCloneMatND( const CvMatND* mat );
 
-/* Allocates and initializes CxSparseMat header and allocates data */
-CXCOREAPI  CxSparseMat*  cxCreateSparseMat( int dims, const int* sizes, int type );
+/* Allocates and initializes CvSparseMat header and allocates data */
+CVAPI(CvSparseMat*)  cvCreateSparseMat( int dims, const int* sizes, int type );
 
-/* Releases CxSparseMat */
-CXCOREAPI  void  cxReleaseSparseMat( CxSparseMat** mat );
+/* Releases CvSparseMat */
+CVAPI(void)  cvReleaseSparseMat( CvSparseMat** mat );
 
-/* Creates a copy of CxSparseMat (except, may be, zero items) */
-CXCOREAPI  CxSparseMat* cxCloneSparseMat( const CxSparseMat* mat );
+/* Creates a copy of CvSparseMat (except, may be, zero items) */
+CVAPI(CvSparseMat*) cvCloneSparseMat( const CvSparseMat* mat );
 
 /* Initializes sparse array iterator
    (returns the first node or NULL if the array is empty) */
-CXCOREAPI  CxSparseNode* cxInitSparseMatIterator( const CxSparseMat* mat,
-                                                  CxSparseMatIterator* matIterator );
+CVAPI(CvSparseNode*) cvInitSparseMatIterator( const CvSparseMat* mat,
+                                              CvSparseMatIterator* mat_iterator );
 
 // returns next sparse array node (or NULL if there is no more nodes)
-CX_INLINE CxSparseNode* cxGetNextSparseNode( CxSparseMatIterator* matIterator );
-CX_INLINE CxSparseNode* cxGetNextSparseNode( CxSparseMatIterator* matIterator )
+CV_INLINE CvSparseNode* cvGetNextSparseNode( CvSparseMatIterator* mat_iterator )
 {
-    if( matIterator->node->next )
-        return matIterator->node = matIterator->node->next;
+    if( mat_iterator->node->next )
+        return mat_iterator->node = mat_iterator->node->next;
     else
     {
         int idx;
-        for( idx = ++matIterator->curidx; idx < matIterator->mat->hashsize; idx++ )
+        for( idx = ++mat_iterator->curidx; idx < mat_iterator->mat->hashsize; idx++ )
         {
-            CxSparseNode* node = (CxSparseNode*)matIterator->mat->hashtable[idx];
+            CvSparseNode* node = (CvSparseNode*)mat_iterator->mat->hashtable[idx];
             if( node )
             {
-                matIterator->curidx = idx;
-                return matIterator->node = node;
+                mat_iterator->curidx = idx;
+                return mat_iterator->node = node;
             }
         }
         return NULL;
     }
 }
 
+/**************** matrix iterator: used for n-ary operations on dense arrays *********/
 
-#define CX_MAX_ARR 10
+#define CV_MAX_ARR 10
 
-typedef struct CxNArrayIterator
+typedef struct CvNArrayIterator
 {
     int count; /* number of arrays */
     int dims; /* number of dimensions to iterate */
-    CxSize size; /* maximal common linear size: { width = size, height = 1 } */
-    uchar* ptr[CX_MAX_ARR]; /* pointers to the array slices */
-    int stack[CX_MAX_DIM]; /* for internal use */
-    CxMatND* hdr[CX_MAX_ARR]; /* pointers to the headers of the
+    CvSize size; /* maximal common linear size: { width = size, height = 1 } */
+    uchar* ptr[CV_MAX_ARR]; /* pointers to the array slices */
+    int stack[CV_MAX_DIM]; /* for internal use */
+    CvMatND* hdr[CV_MAX_ARR]; /* pointers to the headers of the
                                  matrices that are processed */
 }
-CxNArrayIterator;
+CvNArrayIterator;
 
-#define CX_NO_DEPTH_CHECK     1
-#define CX_NO_CN_CHECK        2
-#define CX_NO_SIZE_CHECK      4
+#define CV_NO_DEPTH_CHECK     1
+#define CV_NO_CN_CHECK        2
+#define CV_NO_SIZE_CHECK      4
 
 /* initializes iterator that traverses through several arrays simulteneously
-   (the function together with cxNextArraySlice is used for
+   (the function together with cvNextArraySlice is used for
     N-ari element-wise operations) */
-CXCOREAPI int cxInitNArrayIterator( int count, CxArr** arrs,
-                                    const CxArr* mask, CxMatND* stubs,
-                                    CxNArrayIterator* arrayIterator,
-                                    int flags CX_DEFAULT(0) );
+CVAPI(int) cvInitNArrayIterator( int count, CvArr** arrs,
+                                 const CvArr* mask, CvMatND* stubs,
+                                 CvNArrayIterator* array_iterator,
+                                 int flags CV_DEFAULT(0) );
 
 /* returns zero value if iteration is finished, non-zero (slice length) otherwise */
-CXCOREAPI int cxNextNArraySlice( CxNArrayIterator* arrayIterator );
+CVAPI(int) cvNextNArraySlice( CvNArrayIterator* array_iterator );
 
 
 /* Returns type of array elements:
-   CX_8UC1 ... CX_64FC4 ... */
-CXCOREAPI  int cxGetElemType( const CxArr* arr );
+   CV_8UC1 ... CV_64FC4 ... */
+CVAPI(int) cvGetElemType( const CvArr* arr );
 
 /* Retrieves number of an array dimensions and
    optionally sizes of the dimensions */
-CXCOREAPI  int cxGetDims( const CxArr* arr, int* sizes CX_DEFAULT(NULL) );
+CVAPI(int) cvGetDims( const CvArr* arr, int* sizes CV_DEFAULT(NULL) );
 
 
 /* Retrieves size of a particular array dimension.
-   For 2d arrays cxGetDimSize(arr,0) returns number of rows (image height)
-   and cxGetDimSize(arr,1) returns number of columns (image width) */
-CXCOREAPI  int cxGetDimSize( const CxArr* arr, int index );
+   For 2d arrays cvGetDimSize(arr,0) returns number of rows (image height)
+   and cvGetDimSize(arr,1) returns number of columns (image width) */
+CVAPI(int) cvGetDimSize( const CvArr* arr, int index );
 
 
-/* ptr = &arr(idx1,idx2,...). All indexes are zero-based,
+/* ptr = &arr(idx0,idx1,...). All indexes are zero-based,
    the major dimensions go first (e.g. (y,x) for 2D, (z,y,x) for 3D */
-CXCOREAPI uchar* cxPtr1D( const CxArr* arr, int idx1, int* type CX_DEFAULT(NULL));
-CXCOREAPI uchar* cxPtr2D( const CxArr* arr, int idx1, int idx2, int* type CX_DEFAULT(NULL) );
-CXCOREAPI uchar* cxPtr3D( const CxArr* arr, int idx1, int idx2, int idx3,
-                          int* type CX_DEFAULT(NULL));
+CVAPI(uchar*) cvPtr1D( const CvArr* arr, int idx0, int* type CV_DEFAULT(NULL));
+CVAPI(uchar*) cvPtr2D( const CvArr* arr, int idx0, int idx1, int* type CV_DEFAULT(NULL) );
+CVAPI(uchar*) cvPtr3D( const CvArr* arr, int idx0, int idx1, int idx2,
+                      int* type CV_DEFAULT(NULL));
 
-/* For CxMat or IplImage number of indices should be 2
+/* For CvMat or IplImage number of indices should be 2
    (row index (y) goes first, column index (x) goes next).
-   For CxMatND or CxSparseMat number of infices should match number of <dims> and
+   For CvMatND or CvSparseMat number of infices should match number of <dims> and
    indices order should match the array dimension order. */
-CXCOREAPI uchar* cxPtrND( const CxArr* arr, int* idx, int* type CX_DEFAULT(NULL),
-                          int create_node CX_DEFAULT(1),
-                          unsigned* precalc_hashval CX_DEFAULT(NULL));
+CVAPI(uchar*) cvPtrND( const CvArr* arr, const int* idx, int* type CV_DEFAULT(NULL),
+                      int create_node CV_DEFAULT(1),
+                      unsigned* precalc_hashval CV_DEFAULT(NULL));
 
-/* value = arr(idx1,idx2,...) */
-CXCOREAPI CxScalar cxGet1D( const CxArr* arr, int idx1 );
-CXCOREAPI CxScalar cxGet2D( const CxArr* arr, int idx1, int idx2 );
-CXCOREAPI CxScalar cxGet3D( const CxArr* arr, int idx1, int idx2, int idx3 );
-CXCOREAPI CxScalar cxGetND( const CxArr* arr, int* idx );
-
-/* for 1-channel arrays */
-CXCOREAPI double cxGetReal1D( const CxArr* arr, int idx1 );
-CXCOREAPI double cxGetReal2D( const CxArr* arr, int idx1, int idx2 );
-CXCOREAPI double cxGetReal3D( const CxArr* arr, int idx1, int idx2, int idx3 );
-CXCOREAPI double cxGetRealND( const CxArr* arr, int* idx );
-
-/* arr(idx1,idx2,...) = value */
-CXCOREAPI void cxSet1D( CxArr* arr, int idx1, CxScalar value );
-CXCOREAPI void cxSet2D( CxArr* arr, int idx1, int idx2, CxScalar value );
-CXCOREAPI void cxSet3D( CxArr* arr, int idx1, int idx2, int idx3, CxScalar value );
-CXCOREAPI void cxSetND( CxArr* arr, int* idx, CxScalar value );
+/* value = arr(idx0,idx1,...) */
+CVAPI(CvScalar) cvGet1D( const CvArr* arr, int idx0 );
+CVAPI(CvScalar) cvGet2D( const CvArr* arr, int idx0, int idx1 );
+CVAPI(CvScalar) cvGet3D( const CvArr* arr, int idx0, int idx1, int idx2 );
+CVAPI(CvScalar) cvGetND( const CvArr* arr, const int* idx );
 
 /* for 1-channel arrays */
-CXCOREAPI void cxSetReal1D( CxArr* arr, int idx1, double value );
-CXCOREAPI void cxSetReal2D( CxArr* arr, int idx1, int idx2, double value );
-CXCOREAPI void cxSetReal3D( CxArr* arr, int idx1,
-                            int idx2, int idx3, double value );
-CXCOREAPI void cxSetRealND( CxArr* arr, int* idx, double value );
+CVAPI(double) cvGetReal1D( const CvArr* arr, int idx0 );
+CVAPI(double) cvGetReal2D( const CvArr* arr, int idx0, int idx1 );
+CVAPI(double) cvGetReal3D( const CvArr* arr, int idx0, int idx1, int idx2 );
+CVAPI(double) cvGetRealND( const CvArr* arr, const int* idx );
+
+/* arr(idx0,idx1,...) = value */
+CVAPI(void) cvSet1D( CvArr* arr, int idx0, CvScalar value );
+CVAPI(void) cvSet2D( CvArr* arr, int idx0, int idx1, CvScalar value );
+CVAPI(void) cvSet3D( CvArr* arr, int idx0, int idx1, int idx2, CvScalar value );
+CVAPI(void) cvSetND( CvArr* arr, const int* idx, CvScalar value );
+
+/* for 1-channel arrays */
+CVAPI(void) cvSetReal1D( CvArr* arr, int idx0, double value );
+CVAPI(void) cvSetReal2D( CvArr* arr, int idx0, int idx1, double value );
+CVAPI(void) cvSetReal3D( CvArr* arr, int idx0,
+                        int idx1, int idx2, double value );
+CVAPI(void) cvSetRealND( CvArr* arr, const int* idx, double value );
 
 /* clears element of ND dense array,
-   in case of sparse arrays deletes the specified node */
-CXCOREAPI void cxClearND( CxArr* arr, int* idx );
+   in case of sparse arrays it deletes the specified node */
+CVAPI(void) cvClearND( CvArr* arr, const int* idx );
 
-/* Converts CxArr (IplImage or CxMat,...) to CxMat.
+/* Converts CvArr (IplImage or CvMat,...) to CvMat.
    If the last parameter is non-zero, function can
-   convert multi(>2)-dimensional array to CxMat as long as
+   convert multi(>2)-dimensional array to CvMat as long as
    the last array's dimension is continous. The resultant
    matrix will be have appropriate (a huge) number of rows */
-CXCOREAPI CxMat* cxGetMat( const CxArr* src, CxMat* header,
-                           int* coi CX_DEFAULT(NULL),
-                           int allowND CX_DEFAULT(0));
+CVAPI(CvMat*) cvGetMat( const CvArr* arr, CvMat* header,
+                       int* coi CV_DEFAULT(NULL),
+                       int allowND CV_DEFAULT(0));
 
-/* Converts CxArr (IplImage or CxMat) to IplImage */
-CXCOREAPI IplImage* cxGetImage( const CxArr* arr, IplImage* img );
+/* Converts CvArr (IplImage or CvMat) to IplImage */
+CVAPI(IplImage*) cvGetImage( const CvArr* arr, IplImage* image_header );
 
 
 /* Changes a shape of multi-dimensional array.
@@ -404,226 +396,230 @@ CXCOREAPI IplImage* cxGetImage( const CxArr* arr, IplImage* img );
    (unless they need to be changed to set the new number of channels)
    if new_dims == 1, there is no need to specify new dimension sizes
    The resultant configuration should be achievable w/o data copying.
-   If the resultant array is sparse, CxSparseMat header should be passed
+   If the resultant array is sparse, CvSparseMat header should be passed
    to the function else if the result is 1 or 2 dimensional,
-   CxMat header should be passed to the function
-   else CxMatND header should be passed */
-CXCOREAPI CxArr* cxReshapeMatND( const CxArr* arr,
-                                 int sizeof_header, CxArr* header,
-                                 int new_cn, int new_dims, int* new_sizes );
+   CvMat header should be passed to the function
+   else CvMatND header should be passed */
+CVAPI(CvArr*) cvReshapeMatND( const CvArr* arr,
+                             int sizeof_header, CvArr* header,
+                             int new_cn, int new_dims, int* new_sizes );
 
-#define cxReshapeND( arr, header, new_cn, new_dims, new_sizes )   \
-      cxReshapeMatND( (arr), sizeof(*(header)), (header),         \
+#define cvReshapeND( arr, header, new_cn, new_dims, new_sizes )   \
+      cvReshapeMatND( (arr), sizeof(*(header)), (header),         \
                       (new_cn), (new_dims), (new_sizes))
 
-CXCOREAPI CxMat* cxReshape( const CxArr* arr, CxMat* header,
-                            int new_cn, int new_rows CX_DEFAULT(0) );
+CVAPI(CvMat*) cvReshape( const CvArr* arr, CvMat* header,
+                        int new_cn, int new_rows CV_DEFAULT(0) );
 
 /* Repeats source 2d array several times in both horizontal and
-   vertical direction to fit destination array */
-CXCOREAPI void cxRepeat( const CxArr* src, CxArr* dst );
+   vertical direction to fill destination array */
+CVAPI(void) cvRepeat( const CvArr* src, CvArr* dst );
 
 /* Allocates array data */
-CXCOREAPI  void  cxCreateData( CxArr* arr );
+CVAPI(void)  cvCreateData( CvArr* arr );
 
 /* Releases array data */
-CXCOREAPI  void  cxReleaseData( CxArr* arr );
+CVAPI(void)  cvReleaseData( CvArr* arr );
 
 /* Attaches user data to the array header. The step is reffered to
    the pre-last dimension. That is, all the planes of the array
    must be joint (w/o gaps) */
-CXCOREAPI  void  cxSetData( CxArr* arr, void* data, int step );
+CVAPI(void)  cvSetData( CvArr* arr, void* data, int step );
 
-/* Retrieves raw data of CxMat, IplImage or CxMatND.
+/* Retrieves raw data of CvMat, IplImage or CvMatND.
    In the latter case the function raises an error if
    the array can not be represented as a matrix */
-CXCOREAPI void cxGetRawData( const CxArr* arr, uchar** data,
-                             int* step CX_DEFAULT(NULL),
-                             CxSize* roi_size CX_DEFAULT(NULL));
+CVAPI(void) cvGetRawData( const CvArr* arr, uchar** data,
+                         int* step CV_DEFAULT(NULL),
+                         CvSize* roi_size CV_DEFAULT(NULL));
 
 /* Returns width and height of array in elements */
-CXCOREAPI  CxSize cxGetSize( const CxArr* arr );
+CVAPI(CvSize) cvGetSize( const CvArr* arr );
 
 /* Copies source array to destination array */
-CXCOREAPI  void  cxCopy( const CxArr* src, CxArr* dst,
-                         const CxArr* mask CX_DEFAULT(NULL) );
+CVAPI(void)  cvCopy( const CvArr* src, CvArr* dst,
+                     const CvArr* mask CV_DEFAULT(NULL) );
 
 /* Sets all or "masked" elements of input array
-   to the same <scalar> value*/
-CXCOREAPI  void  cxSet( CxArr* arr, CxScalar scalar,
-                        const CxArr* mask CX_DEFAULT(NULL) );
+   to the same value*/
+CVAPI(void)  cvSet( CvArr* arr, CvScalar value,
+                    const CvArr* mask CV_DEFAULT(NULL) );
 
 /* Clears all the array elements (sets them to 0) */
-CXCOREAPI  void  cxSetZero( CxArr* mat );
-#define cxZero  cxSetZero
+CVAPI(void)  cvSetZero( CvArr* arr );
+#define cvZero  cvSetZero
 
 
 /* Splits a multi-channel array into the set of single-channel arrays or
    extracts particular [color] plane */
-CXCOREAPI  void  cxCxtPixToPlane( const void *src, void *dst0, void *dst1,
-                                  void *dst2, void *dst3 );
+CVAPI(void)  cvSplit( const CvArr* src, CvArr* dst0, CvArr* dst1,
+                      CvArr* dst2, CvArr* dst3 );
 
 /* Merges a set of single-channel arrays into the single multi-channel array
    or inserts one particular [color] plane to the array */
-CXCOREAPI  void  cxCxtPlaneToPix( const void *src0, const void *src1,
-                                  const void *src2, const void *src3,
-                                  void *dst );
+CVAPI(void)  cvMerge( const CvArr* src0, const CvArr* src1,
+                      const CvArr* src2, const CvArr* src3,
+                      CvArr* dst );
+
+/* Copies several channels from input arrays to
+   certain channels of output arrays */
+CVAPI(void)  cvMixChannels( const CvArr** src, int src_count,
+                            CvArr** dst, int dst_count,
+                            const int* from_to, int pair_count );
 
 /* Performs linear transformation on every source array element:
    dst(x,y,c) = scale*src(x,y,c)+shift.
    Arbitrary combination of input and output array depths are allowed
    (number of channels must be the same), thus the function can be used
    for type conversion */
-CXCOREAPI  void  cxConvertScale( const CxArr *src, CxArr *dst,
-                                 double scale CX_DEFAULT(1),
-                                 double shift CX_DEFAULT(0) );
-#define cxCxtScale cxConvertScale
-#define cxScale  cxConvertScale
-#define cxConvert( src, dst )  cxConvertScale( (src), (dst), 1, 0 )
+CVAPI(void)  cvConvertScale( const CvArr* src, CvArr* dst,
+                             double scale CV_DEFAULT(1),
+                             double shift CV_DEFAULT(0) );
+#define cvCvtScale cvConvertScale
+#define cvScale  cvConvertScale
+#define cvConvert( src, dst )  cvConvertScale( (src), (dst), 1, 0 )
 
 
 /* Performs linear transformation on every source array element,
    stores absolute value of the result:
    dst(x,y,c) = abs(scale*src(x,y,c)+shift).
    destination array must have 8u type.
-   In other cases one may use cxConvertScale + cxAbsDiffS */
-CXCOREAPI  void  cxConvertScaleAbs( const void *src, void *dst,
-                                    double scale CX_DEFAULT(1),
-                                    double shift CX_DEFAULT(0) );
-#define cxCxtScaleAbs  cxConvertScaleAbs
+   In other cases one may use cvConvertScale + cvAbsDiffS */
+CVAPI(void)  cvConvertScaleAbs( const CvArr* src, CvArr* dst,
+                                double scale CV_DEFAULT(1),
+                                double shift CV_DEFAULT(0) );
+#define cvCvtScaleAbs  cvConvertScaleAbs
 
-
-/* Finds minimum rectangle containing two given rectangles */
-CXCOREAPI  CxRect  cxMaxRect( const CxRect* rect1, const CxRect* rect2 );
-
-/* Finds coordinates of the box vertices */
-CXCOREAPI  void cxBoxPoints( CxBox2D box, CxPoint2D32f pt[4] );
 
 /* checks termination criteria validity and
    sets eps to default_eps (if it is not set),
-   maxIter to default_max_iters (if it is not set)
+   max_iter to default_max_iters (if it is not set)
 */
-CXCOREAPI  CxTermCriteria cxCheckTermCriteria( CxTermCriteria criteria,
-                                               double default_eps,
-                                               int default_max_iters );
+CVAPI(CvTermCriteria) cvCheckTermCriteria( CvTermCriteria criteria,
+                                           double default_eps,
+                                           int default_max_iters );
 
 /****************************************************************************************\
 *                   Arithmetic, logic and comparison operations                          *
 \****************************************************************************************/
 
-/* dst(mask) = srcA(mask) + srcB(mask) */
-CXCOREAPI  void  cxAdd( const CxArr* srcA, const CxArr* srcB, CxArr* dst,
-                        const CxArr* mask CX_DEFAULT(NULL));
+/* dst(mask) = src1(mask) + src2(mask) */
+CVAPI(void)  cvAdd( const CvArr* src1, const CvArr* src2, CvArr* dst,
+                    const CvArr* mask CV_DEFAULT(NULL));
 
 /* dst(mask) = src(mask) + value */
-CXCOREAPI  void  cxAddS( const CxArr* src, CxScalar value, CxArr* dst,
-                         const CxArr* mask CX_DEFAULT(NULL));
+CVAPI(void)  cvAddS( const CvArr* src, CvScalar value, CvArr* dst,
+                     const CvArr* mask CV_DEFAULT(NULL));
 
-/* dst(mask) = srcA(mask) - srcB(mask) */
-CXCOREAPI  void  cxSub( const CxArr* srcA, const CxArr* srcB, CxArr* dst,
-                        const CxArr* mask CX_DEFAULT(NULL));
+/* dst(mask) = src1(mask) - src2(mask) */
+CVAPI(void)  cvSub( const CvArr* src1, const CvArr* src2, CvArr* dst,
+                    const CvArr* mask CV_DEFAULT(NULL));
 
 /* dst(mask) = src(mask) - value = src(mask) + (-value) */
-CX_INLINE  void  cxSubS( const CxArr* src, CxScalar value, CxArr* dst,
-                         const CxArr* mask CX_DEFAULT(NULL));
-CX_INLINE  void  cxSubS( const CxArr* src, CxScalar value, CxArr* dst,
-                         const CxArr* mask )
+CV_INLINE  void  cvSubS( const CvArr* src, CvScalar value, CvArr* dst,
+                         const CvArr* mask CV_DEFAULT(NULL))
 {
-    cxAddS( src, cxScalar( -value.val[0], -value.val[1], -value.val[2], -value.val[3]),
+    cvAddS( src, cvScalar( -value.val[0], -value.val[1], -value.val[2], -value.val[3]),
             dst, mask );
 }
 
 /* dst(mask) = value - src(mask) */
-CXCOREAPI  void  cxSubRS( const CxArr* src, CxScalar value, CxArr* dst,
-                          const CxArr* mask CX_DEFAULT(NULL));
+CVAPI(void)  cvSubRS( const CvArr* src, CvScalar value, CvArr* dst,
+                      const CvArr* mask CV_DEFAULT(NULL));
 
-/* dst(idx) = srcA(idx) * srcB(idx) * scale
+/* dst(idx) = src1(idx) * src2(idx) * scale
    (scaled element-wise multiplication of 2 arrays) */
-CXCOREAPI  void  cxMul( const CxArr* srcA, const CxArr* srcB,
-                        CxArr* dst, double scale CX_DEFAULT(1) );
+CVAPI(void)  cvMul( const CvArr* src1, const CvArr* src2,
+                    CvArr* dst, double scale CV_DEFAULT(1) );
 
 /* element-wise division/inversion with scaling: 
-    dst(idx) = srcA(idx) * scale / srcB(idx)
-    or dst(idx) = scale / srcB(idx) if srcA == 0 */
-CXCOREAPI  void  cxDiv( const CxArr* srcA, const CxArr* srcB,
-                        CxArr* dst, double scale CX_DEFAULT(1));
+    dst(idx) = src1(idx) * scale / src2(idx)
+    or dst(idx) = scale / src2(idx) if src1 == 0 */
+CVAPI(void)  cvDiv( const CvArr* src1, const CvArr* src2,
+                    CvArr* dst, double scale CV_DEFAULT(1));
 
-/* dst = srcA * scale + srcB */
-CXCOREAPI  void  cxScaleAdd( const CxArr* srcA, CxScalar scale,
-                             const CxArr* srcB, CxArr* dst );
-#define cxAXPY( A, real_scalar, B, C ) cxScaleAdd(A, cxRealScalar(real_scalar), B, C)
+/* dst = src1 * scale + src2 */
+CVAPI(void)  cvScaleAdd( const CvArr* src1, CvScalar scale,
+                         const CvArr* src2, CvArr* dst );
+#define cvAXPY( A, real_scalar, B, C ) cvScaleAdd(A, cvRealScalar(real_scalar), B, C)
 
-/* dst = srcA * alpha + srcB * beta + gamma */
-CXCOREAPI  void  cxAddWeighted( const CxArr* srcA, double alpha,
-                                const CxArr* srcB, double beta,
-                                double gamma, CxArr* dst );
+/* dst = src1 * alpha + src2 * beta + gamma */
+CVAPI(void)  cvAddWeighted( const CvArr* src1, double alpha,
+                            const CvArr* src2, double beta,
+                            double gamma, CvArr* dst );
 
-/* result = Re sum_i(srcA(i) * srcB*(i))  (srcB is conjugated) */
-CXCOREAPI  double  cxDotProduct( const CxArr* srcA, const CxArr* srcB );
+/* result = sum_i(src1(i) * src2(i)) (results for all channels are accumulated together) */
+CVAPI(double)  cvDotProduct( const CvArr* src1, const CvArr* src2 );
 
 /* dst(idx) = src1(idx) & src2(idx) */
-CXCOREAPI void cxAnd( const CxArr* src1, const CxArr* src2,
-                      CxArr* dst, const CxArr* mask CX_DEFAULT(NULL));
+CVAPI(void) cvAnd( const CvArr* src1, const CvArr* src2,
+                  CvArr* dst, const CvArr* mask CV_DEFAULT(NULL));
 
 /* dst(idx) = src(idx) & value */
-CXCOREAPI void cxAndS( const CxArr* src, CxScalar value,
-                       CxArr* dst, const CxArr* mask CX_DEFAULT(NULL));
+CVAPI(void) cvAndS( const CvArr* src, CvScalar value,
+                   CvArr* dst, const CvArr* mask CV_DEFAULT(NULL));
 
 /* dst(idx) = src1(idx) | src2(idx) */
-CXCOREAPI void cxOr( const CxArr* src1, const CxArr* src2,
-                     CxArr* dst, const CxArr* mask CX_DEFAULT(NULL));
+CVAPI(void) cvOr( const CvArr* src1, const CvArr* src2,
+                 CvArr* dst, const CvArr* mask CV_DEFAULT(NULL));
 
 /* dst(idx) = src(idx) | value */
-CXCOREAPI void cxOrS( const CxArr* src, CxScalar value,
-                      CxArr* dst, const CxArr* mask CX_DEFAULT(NULL));
+CVAPI(void) cvOrS( const CvArr* src, CvScalar value,
+                  CvArr* dst, const CvArr* mask CV_DEFAULT(NULL));
 
 /* dst(idx) = src1(idx) ^ src2(idx) */
-CXCOREAPI void cxXor( const CxArr* src1, const CxArr* src2,
-                      CxArr* dst, const CxArr* mask CX_DEFAULT(NULL));
+CVAPI(void) cvXor( const CvArr* src1, const CvArr* src2,
+                  CvArr* dst, const CvArr* mask CV_DEFAULT(NULL));
 
 /* dst(idx) = src(idx) ^ value */
-CXCOREAPI void cxXorS( const CxArr* src, CxScalar value,
-                       CxArr* dst, const CxArr* mask CX_DEFAULT(NULL));
+CVAPI(void) cvXorS( const CvArr* src, CvScalar value,
+                   CvArr* dst, const CvArr* mask CV_DEFAULT(NULL));
 
 /* dst(idx) = ~src(idx) */
-CXCOREAPI void cxNot( const CxArr* src, CxArr* dst );
+CVAPI(void) cvNot( const CvArr* src, CvArr* dst );
 
 /* dst(idx) = lower(idx) <= src(idx) < upper(idx) */
-CXCOREAPI void cxInRange( const CxArr* src, const CxArr* lower,
-                          const CxArr* upper, CxArr* dst );
+CVAPI(void) cvInRange( const CvArr* src, const CvArr* lower,
+                      const CvArr* upper, CvArr* dst );
 
 /* dst(idx) = lower <= src(idx) < upper */
-CXCOREAPI void cxInRangeS( const CxArr* src, CxScalar lower,
-                           CxScalar upper, CxArr* dst );
+CVAPI(void) cvInRangeS( const CvArr* src, CvScalar lower,
+                       CvScalar upper, CvArr* dst );
 
-#define CX_CMP_EQ   0
-#define CX_CMP_GT   1
-#define CX_CMP_GE   2
-#define CX_CMP_LT   3
-#define CX_CMP_LE   4
-#define CX_CMP_NE   5
+#define CV_CMP_EQ   0
+#define CV_CMP_GT   1
+#define CV_CMP_GE   2
+#define CV_CMP_LT   3
+#define CV_CMP_LE   4
+#define CV_CMP_NE   5
 
 /* The comparison operation support single-channel arrays only.
    Destination image should be 8uC1 or 8sC1 */
 
 /* dst(idx) = src1(idx) _cmp_op_ src2(idx) */
-CXCOREAPI void cxCmp( const CxArr* src1, const CxArr* src2, CxArr* dst, int cmpOp );
+CVAPI(void) cvCmp( const CvArr* src1, const CvArr* src2, CvArr* dst, int cmp_op );
 
-/* dst(idx) = src1(idx) _cmp_op_ scalar */
-CXCOREAPI void cxCmpS( const CxArr* src1, double scalar, CxArr* dst, int cmpOp );
+/* dst(idx) = src1(idx) _cmp_op_ value */
+CVAPI(void) cvCmpS( const CvArr* src, double value, CvArr* dst, int cmp_op );
 
 /* dst(idx) = min(src1(idx),src2(idx)) */
-CXCOREAPI void cxMin( const CxArr* src1, const CxArr* src2, CxArr* dst );
+CVAPI(void) cvMin( const CvArr* src1, const CvArr* src2, CvArr* dst );
 
 /* dst(idx) = max(src1(idx),src2(idx)) */
-CXCOREAPI void cxMax( const CxArr* src1, const CxArr* src2, CxArr* dst );
+CVAPI(void) cvMax( const CvArr* src1, const CvArr* src2, CvArr* dst );
 
-/* dst(idx) = min(src(idx),scalar) */
-CXCOREAPI void cxMinS( const CxArr* src, double scalar, CxArr* dst );
+/* dst(idx) = min(src(idx),value) */
+CVAPI(void) cvMinS( const CvArr* src, double value, CvArr* dst );
 
-/* dst(idx) = max(src(idx),scalar) */
-CXCOREAPI void cxMaxS( const CxArr* src, double scalar, CxArr* dst );
+/* dst(idx) = max(src(idx),value) */
+CVAPI(void) cvMaxS( const CvArr* src, double value, CvArr* dst );
 
+/* dst(x,y,c) = abs(src1(x,y,c) - src2(x,y,c)) */
+CVAPI(void) cvAbsDiff( const CvArr* src1, const CvArr* src2, CvArr* dst );
+
+/* dst(x,y,c) = abs(src(x,y,c) - value(c)) */
+CVAPI(void) cvAbsDiffS( const CvArr* src, CvArr* dst, CvScalar value );
+#define cvAbs( src, dst ) cvAbsDiffS( (src), (dst), cvScalarAll(0))
 
 /****************************************************************************************\
 *                                Math operations                                         *
@@ -631,884 +627,933 @@ CXCOREAPI void cxMaxS( const CxArr* src, double scalar, CxArr* dst );
 
 /* Does cartesian->polar coordinates conversion.
    Either of output components (magnitude or angle) is optional */
-CXCOREAPI  void  cxCartToPolar( const CxArr* x, const CxArr* y,
-                                CxArr* magnitude, CxArr* angle CX_DEFAULT(NULL),
-                                int angle_in_degrees CX_DEFAULT(0));
+CVAPI(void)  cvCartToPolar( const CvArr* x, const CvArr* y,
+                            CvArr* magnitude, CvArr* angle CV_DEFAULT(NULL),
+                            int angle_in_degrees CV_DEFAULT(0));
 
 /* Does polar->cartesian coordinates conversion.
    Either of output components (magnitude or angle) is optional.
    If magnitude is missing it is assumed to be all 1's */
-CXCOREAPI  void  cxPolarToCart( const CxArr* magnitude, const CxArr* angle,
-                                CxArr* x, CxArr* y,
-                                int angle_in_degrees CX_DEFAULT(0));
+CVAPI(void)  cvPolarToCart( const CvArr* magnitude, const CvArr* angle,
+                            CvArr* x, CvArr* y,
+                            int angle_in_degrees CV_DEFAULT(0));
 
 /* Does powering: dst(idx) = src(idx)^power */
-CXCOREAPI  void  cxPow( const CxArr* src, CxArr* dst, double power );
+CVAPI(void)  cvPow( const CvArr* src, CvArr* dst, double power );
 
 /* Does exponention: dst(idx) = exp(src(idx)).
    Overflow is not handled yet. Underflow is handled.
    Maximal relative error is ~7e-6 for single-precision input */
-CXCOREAPI  void  cxExp( const CxArr* src, CxArr* dst );
+CVAPI(void)  cvExp( const CvArr* src, CvArr* dst );
 
 /* Calculates natural logarithms: dst(idx) = log(abs(src(idx))).
    Logarithm of 0 gives large negative number(~-700)
    Maximal relative error is ~3e-7 for single-precision output
 */
-CXCOREAPI  void  cxLog( const CxArr* src, CxArr* dst );
+CVAPI(void)  cvLog( const CvArr* src, CvArr* dst );
 
 /* Fast arctangent calculation */
-CXCOREAPI  float cxFastArctan( float y, float x );
+CVAPI(float) cvFastArctan( float y, float x );
+
+/* Fast cubic root calculation */
+CVAPI(float)  cvCbrt( float value );
 
 /* Checks array values for NaNs, Infs or simply for too large numbers
-   (if CX_CHECK_RANGE is set). If CX_CHECK_QUIET is set,
+   (if CV_CHECK_RANGE is set). If CV_CHECK_QUIET is set,
    no runtime errors is raised (function returns zero value in case of "bad" values).
-   Otherwise cxError is called */ 
-#define  CX_CHECK_RANGE    1
-#define  CX_CHECK_QUIET    2
-CXCOREAPI  int  cxCheckArr( const CxArr* arr, int flags CX_DEFAULT(0),
-                            double minVal CX_DEFAULT(0), double maxVal CX_DEFAULT(0));
-#define cxCheckArray cxCheckArr
+   Otherwise cvError is called */ 
+#define  CV_CHECK_RANGE    1
+#define  CV_CHECK_QUIET    2
+CVAPI(int)  cvCheckArr( const CvArr* arr, int flags CV_DEFAULT(0),
+                        double min_val CV_DEFAULT(0), double max_val CV_DEFAULT(0));
+#define cvCheckArray cvCheckArr
 
-/* RNG state */
-typedef struct CxRandState
-{
-    uint64    state;    /* RNG state (the current seed and carry)*/
-    int       disttype; /* distribution type */
-    CxScalar  param[2]; /* parameters of RNG */
-}
-CxRandState;
+#define CV_RAND_UNI      0
+#define CV_RAND_NORMAL   1
+CVAPI(void) cvRandArr( CvRNG* rng, CvArr* arr, int dist_type,
+                      CvScalar param1, CvScalar param2 );
 
-/* Initalized RNG state */
-#define CX_RAND_UNI      0
-#define CX_RAND_NORMAL   1
-CXCOREAPI  void  cxRandInit( CxRandState* state, double param1,
-                             double param2, int seed,
-                             int disttype CX_DEFAULT(CX_RAND_UNI));
+CVAPI(void) cvRandShuffle( CvArr* mat, CvRNG* rng,
+                           double iter_factor CV_DEFAULT(1.));
 
-/* Changes RNG range while preserving RNG state */
-CXCOREAPI  void  cxRandSetRange( CxRandState* state, double param1, double param2,
-                                 int index CX_DEFAULT(-1));
-
-/* Fills array with random numbers */
-CXCOREAPI  void  cxRand( CxRandState* state, CxArr* arr );
-
-/* Returns 32-bit random number (ranges are not used)
-   and updates RNG state */
-CX_INLINE  unsigned  cxRandNext( CxRandState* state );
-CX_INLINE  unsigned  cxRandNext( CxRandState* state )
-{
-    uint64 temp = state->state;
-    temp = (uint64)(unsigned)temp*1554115554 + (temp >> 32);
-    state->state = temp;
-
-    return (unsigned)temp;
-}
-
+/* Finds real roots of a cubic equation */
+CVAPI(int) cvSolveCubic( const CvMat* coeffs, CvMat* roots );
 
 /****************************************************************************************\
 *                                Matrix operations                                       *
 \****************************************************************************************/
 
 /* Calculates cross product of two 3d vectors */
-CXCOREAPI  void  cxCrossProduct( const CxArr* srcA, const CxArr* srcB, CxArr* dst );
+CVAPI(void)  cvCrossProduct( const CvArr* src1, const CvArr* src2, CvArr* dst );
 
 /* Matrix transform: dst = A*B + C, C is optional */
-CXCOREAPI  void  cxMatMulAdd( const CxArr* srcA, const CxArr* srcB,
-                              const CxArr* srcC, CxArr* dst );
-#define cxMatMul( srcA, srcB, dst )  cxMatMulAdd( (srcA), (srcB), NULL, (dst))
+#define cvMatMulAdd( src1, src2, src3, dst ) cvGEMM( (src1), (src2), 1., (src3), 1., (dst), 0 )
+#define cvMatMul( src1, src2, dst )  cvMatMulAdd( (src1), (src2), NULL, (dst))
 
-#define CX_GEMM_A_T 1
-#define CX_GEMM_B_T 2
-#define CX_GEMM_C_T 4
+#define CV_GEMM_A_T 1
+#define CV_GEMM_B_T 2
+#define CV_GEMM_C_T 4
 /* Extended matrix transform:
    dst = alpha*op(A)*op(B) + beta*op(C), where op(X) is X or X^T */
-CXCOREAPI  void  cxGEMM( const CxArr* srcA, const CxArr* srcB, double alpha,
-                         const CxArr* srcC, double beta, CxArr* dst,
-                         int tABC CX_DEFAULT(0));
-#define cxMatMulAddEx cxGEMM
+CVAPI(void)  cvGEMM( const CvArr* src1, const CvArr* src2, double alpha,
+                     const CvArr* src3, double beta, CvArr* dst,
+                     int tABC CV_DEFAULT(0));
+#define cvMatMulAddEx cvGEMM
 
 /* Transforms each element of source array and stores
    resultant vectors in destination array */
-CXCOREAPI  void  cxMatMulAddS( const CxArr* src, CxArr* dst,
-                               const CxMat* transform,
-                               const CxMat* shiftvec CX_DEFAULT(NULL));
-#define cxTransform cxMatMulAddS
+CVAPI(void)  cvTransform( const CvArr* src, CvArr* dst,
+                          const CvMat* transmat,
+                          const CvMat* shiftvec CV_DEFAULT(NULL));
+#define cvMatMulAddS cvTransform
+
+/* Does perspective transform on every element of input array */
+CVAPI(void)  cvPerspectiveTransform( const CvArr* src, CvArr* dst,
+                                     const CvMat* mat );
 
 /* Calculates (A-delta)*(A-delta)^T (order=0) or (A-delta)^T*(A-delta) (order=1) */
-CXCOREAPI void cxMulTransposed( const CxArr* src, CxArr* dst, int order,
-                                const CxArr* delta CX_DEFAULT(NULL) );
+CVAPI(void) cvMulTransposed( const CvArr* src, CvArr* dst, int order,
+                             const CvArr* delta CV_DEFAULT(NULL),
+                             double scale CV_DEFAULT(1.) );
 
 /* Tranposes matrix. Square matrices can be transposed in-place */
-CXCOREAPI  void  cxTranspose( const CxArr* src, CxArr* dst );
-#define cxT cxTranspose
+CVAPI(void)  cvTranspose( const CvArr* src, CvArr* dst );
+#define cvT cvTranspose
 
 
 /* Mirror array data around horizontal (flip=0),
    vertical (flip=1) or both(flip=-1) axises:
-   cxFlip(src) flips images vertically and sequences horizontally (inplace) */
-CXCOREAPI  void  cxFlip( const CxArr* src, CxArr* dst CX_DEFAULT(NULL),
-                         int flip_mode CX_DEFAULT(0));
-#define cxMirror cxFlip
+   cvFlip(src) flips images vertically and sequences horizontally (inplace) */
+CVAPI(void)  cvFlip( const CvArr* src, CvArr* dst CV_DEFAULT(NULL),
+                     int flip_mode CV_DEFAULT(0));
+#define cvMirror cvFlip
 
 
-#define CX_SVD_MODIFY_A   1
-#define CX_SVD_U_T        2
-#define CX_SVD_V_T        4
+#define CV_SVD_MODIFY_A   1
+#define CV_SVD_U_T        2
+#define CV_SVD_V_T        4
 
 /* Performs Singular Value Decomposition of a matrix */
-CXCOREAPI  void   cxSVD( CxArr* A, CxArr* W CX_DEFAULT(NULL),
-                         CxArr* U CX_DEFAULT(NULL),
-                         CxArr* V CX_DEFAULT(NULL),
-                         int flags CX_DEFAULT(0));
+CVAPI(void)   cvSVD( CvArr* A, CvArr* W, CvArr* U CV_DEFAULT(NULL),
+                     CvArr* V CV_DEFAULT(NULL), int flags CV_DEFAULT(0));
 
-/* Performs Singular Value Back Substitution:
-   flags must be the same as in cxSVD */
-CXCOREAPI  void   cxSVBkSb( const CxArr* warr, const CxArr* uarr,
-                            const CxArr* varr, const CxArr* barr,
-                            CxArr* xarr, int flags );
+/* Performs Singular Value Back Substitution (solves A*X = B):
+   flags must be the same as in cvSVD */
+CVAPI(void)   cvSVBkSb( const CvArr* W, const CvArr* U,
+                        const CvArr* V, const CvArr* B,
+                        CvArr* X, int flags );
 
-#define CX_LU  0
-#define CX_SVD 1
+#define CV_LU  0
+#define CV_SVD 1
+#define CV_SVD_SYM 2
 /* Inverts matrix */
-CXCOREAPI  double  cxInvert( const CxArr* src, CxArr* dst,
-                             int method CX_DEFAULT(CX_LU));
-#define cxInv cxInvert
+CVAPI(double)  cvInvert( const CvArr* src, CvArr* dst,
+                         int method CV_DEFAULT(CV_LU));
+#define cvInv cvInvert
 
-/* Solves linear system Ax = b
-   (returns 0 if A is singular and CX_LU method is chosen) */
-CXCOREAPI  int  cxSolve( const CxArr* A, const CxArr* b, CxArr* x,
-                         int method CX_DEFAULT(CX_LU));
+/* Solves linear system (src1)*(dst) = (src2)
+   (returns 0 if src1 is a singular and CV_LU method is used) */
+CVAPI(int)  cvSolve( const CvArr* src1, const CvArr* src2, CvArr* dst,
+                     int method CV_DEFAULT(CV_LU));
 
 /* Calculates determinant of input matrix */
-CXCOREAPI  double cxDet( const CxArr* mat );
+CVAPI(double) cvDet( const CvArr* mat );
 
 /* Calculates trace of the matrix (sum of elements on the main diagonal) */
-CXCOREAPI  CxScalar cxTrace( const CxArr* mat );
+CVAPI(CvScalar) cvTrace( const CvArr* mat );
 
 /* Finds eigen values and vectors of a symmetric matrix */
-CXCOREAPI  void  cxEigenVV( CxArr* src, CxArr* evects,
-                            CxArr* evals, double eps CX_DEFAULT(0));
+CVAPI(void)  cvEigenVV( CvArr* mat, CvArr* evects,
+                        CvArr* evals, double eps CV_DEFAULT(0));
 
 /* Makes an identity matrix (mat_ij = i == j) */
-CXCOREAPI  void  cxSetIdentity( CxArr* mat, CxScalar value CX_DEFAULT(cxScalar(1)) );
+CVAPI(void)  cvSetIdentity( CvArr* mat, CvScalar value CV_DEFAULT(cvRealScalar(1)) );
+
+/* Fills matrix with given range of numbers */
+CVAPI(CvArr*)  cvRange( CvArr* mat, double start, double end );
 
 /* Calculates covariation matrix for a set of vectors */
 /* transpose([v1-avg, v2-avg,...]) * [v1-avg,v2-avg,...] */
-#define CX_COVAR_SCRAMBLED 0
+#define CV_COVAR_SCRAMBLED 0
 
 /* [v1-avg, v2-avg,...] * transpose([v1-avg,v2-avg,...]) */
-#define CX_COVAR_NORMAL    1
+#define CV_COVAR_NORMAL    1
 
 /* do not calc average (i.e. mean vector) - use the input vector instead
    (useful for calculating covariance matrix by parts) */
-#define CX_COVAR_USE_AVG   2
+#define CV_COVAR_USE_AVG   2
 
 /* scale the covariance matrix coefficients by number of the vectors */
-#define CX_COVAR_SCALE     4
+#define CV_COVAR_SCALE     4
 
-CXCOREAPI  void  cxCalcCovarMatrix( const CxArr** vects, CxArr* covarMatrix,
-                                    CxArr* avg, int count, int flags );
+/* all the input vectors are stored in a single matrix, as its rows */
+#define CV_COVAR_ROWS      8
+
+/* all the input vectors are stored in a single matrix, as its columns */
+#define CV_COVAR_COLS     16
+
+CVAPI(void)  cvCalcCovarMatrix( const CvArr** vects, int count,
+                                CvArr* cov_mat, CvArr* avg, int flags );
+
+#define CV_PCA_DATA_AS_ROW 0 
+#define CV_PCA_DATA_AS_COL 1
+#define CV_PCA_USE_AVG 2
+CVAPI(void)  cvCalcPCA( const CvArr* data, CvArr* mean,
+                        CvArr* eigenvals, CvArr* eigenvects, int flags );
+
+CVAPI(void)  cvProjectPCA( const CvArr* data, const CvArr* mean,
+                           const CvArr* eigenvects, CvArr* result );
+
+CVAPI(void)  cvBackProjectPCA( const CvArr* proj, const CvArr* mean,
+                               const CvArr* eigenvects, CvArr* result );
 
 /* Calculates Mahalanobis(weighted) distance */
-CXCOREAPI  double  cxMahalanobis( const CxArr* srcA, const CxArr* srcB, CxArr* mat );
-#define cxMahalonobis  cxMahalanobis
+CVAPI(double)  cvMahalanobis( const CvArr* vec1, const CvArr* vec2, CvArr* mat );
+#define cvMahalonobis  cvMahalanobis
 
 /****************************************************************************************\
 *                                    Array Statistics                                    *
 \****************************************************************************************/
 
 /* Finds sum of array elements */
-CXCOREAPI  CxScalar  cxSum( const CxArr* arr );
+CVAPI(CvScalar)  cvSum( const CvArr* arr );
 
 /* Calculates number of non-zero pixels */
-CXCOREAPI  int  cxCountNonZero( const CxArr* arr );
+CVAPI(int)  cvCountNonZero( const CvArr* arr );
 
 /* Calculates mean value of array elements */
-CXCOREAPI  CxScalar  cxAvg( const CxArr* arr, const CxArr* mask CX_DEFAULT(NULL) );
+CVAPI(CvScalar)  cvAvg( const CvArr* arr, const CvArr* mask CV_DEFAULT(NULL) );
 
 /* Calculates mean and standard deviation of pixel values */
-CXCOREAPI  void  cxAvgSdv( const CxArr* arr, CxScalar* mean, CxScalar* std_dev,
-                           const CxArr* mask CX_DEFAULT(NULL) );
+CVAPI(void)  cvAvgSdv( const CvArr* arr, CvScalar* mean, CvScalar* std_dev,
+                       const CvArr* mask CV_DEFAULT(NULL) );
 
-/* Finds global minimum, maximum among the input array elements and positions
-   of the extremums */
-CXCOREAPI  void  cxMinMaxLoc( const CxArr* arr, double* min_val, double* max_val,
-                              CxPoint* min_loc CX_DEFAULT(NULL),
-                              CxPoint* max_loc CX_DEFAULT(NULL),
-                              const CxArr* mask CX_DEFAULT(NULL) );
+/* Finds global minimum, maximum and their positions */
+CVAPI(void)  cvMinMaxLoc( const CvArr* arr, double* min_val, double* max_val,
+                          CvPoint* min_loc CV_DEFAULT(NULL),
+                          CvPoint* max_loc CV_DEFAULT(NULL),
+                          const CvArr* mask CV_DEFAULT(NULL) );
 
 /* types of array norm */
-#define CX_C            1
-#define CX_L1           2
-#define CX_L2           4
-#define CX_NORM_MASK    7
-#define CX_RELATIVE     8
-#define CX_DIFF         16
+#define CV_C            1
+#define CV_L1           2
+#define CV_L2           4
+#define CV_NORM_MASK    7
+#define CV_RELATIVE     8
+#define CV_DIFF         16
+#define CV_MINMAX       32
 
-#define CX_DIFF_C       (CX_DIFF | CX_C)
-#define CX_DIFF_L1      (CX_DIFF | CX_L1)
-#define CX_DIFF_L2      (CX_DIFF | CX_L2)
-#define CX_RELATIVE_C   (CX_RELATIVE | CX_C)
-#define CX_RELATIVE_L1  (CX_RELATIVE | CX_L1)
-#define CX_RELATIVE_L2  (CX_RELATIVE | CX_L2)
+#define CV_DIFF_C       (CV_DIFF | CV_C)
+#define CV_DIFF_L1      (CV_DIFF | CV_L1)
+#define CV_DIFF_L2      (CV_DIFF | CV_L2)
+#define CV_RELATIVE_C   (CV_RELATIVE | CV_C)
+#define CV_RELATIVE_L1  (CV_RELATIVE | CV_L1)
+#define CV_RELATIVE_L2  (CV_RELATIVE | CV_L2)
 
-/* Finds norm, difference norm or relative difference norm for an array (two arrays) */
-CXCOREAPI  double  cxNorm( const CxArr* arrA, const CxArr* arrB CX_DEFAULT(NULL),
-                           int normType CX_DEFAULT(CX_L2),
-                           const CxArr* mask CX_DEFAULT(NULL) );
+/* Finds norm, difference norm or relative difference norm for an array (or two arrays) */
+CVAPI(double)  cvNorm( const CvArr* arr1, const CvArr* arr2 CV_DEFAULT(NULL),
+                       int norm_type CV_DEFAULT(CV_L2),
+                       const CvArr* mask CV_DEFAULT(NULL) );
+
+CVAPI(void)  cvNormalize( const CvArr* src, CvArr* dst,
+                          double a CV_DEFAULT(1.), double b CV_DEFAULT(0.),
+                          int norm_type CV_DEFAULT(CV_L2),
+                          const CvArr* mask CV_DEFAULT(NULL) );
+
+
+#define CV_REDUCE_SUM 0
+#define CV_REDUCE_AVG 1
+#define CV_REDUCE_MAX 2
+#define CV_REDUCE_MIN 3
+
+CVAPI(void)  cvReduce( const CvArr* src, CvArr* dst, int dim CV_DEFAULT(-1),
+                       int op CV_DEFAULT(CV_REDUCE_SUM) );
 
 /****************************************************************************************\
-*                                 Spectral Transforms                                    *
+*                      Discrete Linear Transforms and Related Functions                  *
 \****************************************************************************************/
 
-#define CX_DXT_FORWARD  0
-#define CX_DXT_INVERSE  1
-#define CX_DXT_SCALE    2 /* divide result by size of array */
-#define CX_DXT_INV_SCALE (CX_DXT_INVERSE + CX_DXT_SCALE)
-#define CX_DXT_INVERSE_SCALE CX_DXT_INV_SCALE
+#define CV_DXT_FORWARD  0
+#define CV_DXT_INVERSE  1
+#define CV_DXT_SCALE    2 /* divide result by size of array */
+#define CV_DXT_INV_SCALE (CV_DXT_INVERSE + CV_DXT_SCALE)
+#define CV_DXT_INVERSE_SCALE CV_DXT_INV_SCALE
+#define CV_DXT_ROWS     4 /* transform each row individually */
+#define CV_DXT_MUL_CONJ 8 /* conjugate the second argument of cvMulSpectrums */
 
 /* Discrete Fourier Transform:
     complex->complex,
     real->ccs (forward),
     ccs->real (inverse) */
-CXCOREAPI  void  cxDFT( const CxArr* src, CxArr* dst, int flags );
-#define cxFFT cxDFT
+CVAPI(void)  cvDFT( const CvArr* src, CvArr* dst, int flags,
+                    int nonzero_rows CV_DEFAULT(0) );
+#define cvFFT cvDFT
 
-/* Multiply results of real DFT:
-   ReA(0) * ReB(0), ReA(N/2)*ReB(N/2), A(1)*B*(1), ..., A(N/2-1)*B*(N/2-1) */
-CXCOREAPI  void  cxMulCcs( const CxArr* srcA, const CxArr* srcB, CxArr* dst );
+/* Multiply results of DFTs: DFT(X)*DFT(Y) or DFT(X)*conj(DFT(Y)) */
+CVAPI(void)  cvMulSpectrums( const CvArr* src1, const CvArr* src2,
+                             CvArr* dst, int flags );
+
+/* Finds optimal DFT vector size >= size0 */
+CVAPI(int)  cvGetOptimalDFTSize( int size0 );
 
 /* Discrete Cosine Transform */
-CXCOREAPI  void  cxDCT( const CxArr* src, CxArr* dst, int flags );
+CVAPI(void)  cvDCT( const CvArr* src, CvArr* dst, int flags );
 
 /****************************************************************************************\
 *                              Dynamic data structures                                   *
 \****************************************************************************************/
 
 /* Calculates length of sequence slice (with support of negative indices). */
-CXCOREAPI  int cxSliceLength( CxSlice slice, CxSeq* seq );
+CVAPI(int) cvSliceLength( CvSlice slice, const CvSeq* seq );
 
 
 /* Creates new memory storage.
    block_size == 0 means that default,
    somewhat optimal size, is used (currently, it is 64K) */
-CXCOREAPI  CxMemStorage*  cxCreateMemStorage( int block_size CX_DEFAULT(0));
+CVAPI(CvMemStorage*)  cvCreateMemStorage( int block_size CV_DEFAULT(0));
 
 
 /* Creates a memory storage that will borrow memory blocks from parent storage */
-CXCOREAPI  CxMemStorage*  cxCreateChildMemStorage( CxMemStorage* parent );
+CVAPI(CvMemStorage*)  cvCreateChildMemStorage( CvMemStorage* parent );
 
 
 /* Releases memory storage. All the children of a parent must be released before
    the parent. A child storage returns all the blocks to parent when it is released */
-CXCOREAPI  void  cxReleaseMemStorage( CxMemStorage** storage );
+CVAPI(void)  cvReleaseMemStorage( CvMemStorage** storage );
 
 
-/* Clears memory storage. This is the only way(!!!) (besides cxRestoreMemStoragePos)
-   to reuse memory allocated for the storage - cxClearSeq,cxClearSet ...
+/* Clears memory storage. This is the only way(!!!) (besides cvRestoreMemStoragePos)
+   to reuse memory allocated for the storage - cvClearSeq,cvClearSet ...
    do not free any memory.
    A child storage returns all the blocks to the parent when it is cleared */
-CXCOREAPI  void  cxClearMemStorage( CxMemStorage* storage );
+CVAPI(void)  cvClearMemStorage( CvMemStorage* storage );
 
 /* Remember a storage "free memory" position */
-CXCOREAPI  void  cxSaveMemStoragePos( const CxMemStorage* storage, CxMemStoragePos* pos );
+CVAPI(void)  cvSaveMemStoragePos( const CvMemStorage* storage, CvMemStoragePos* pos );
 
 /* Restore a storage "free memory" position */
-CXCOREAPI  void  cxRestoreMemStoragePos( CxMemStorage* storage, CxMemStoragePos* pos );
+CVAPI(void)  cvRestoreMemStoragePos( CvMemStorage* storage, CvMemStoragePos* pos );
 
 /* Allocates continuous buffer of the specified size in the storage */
-CXCOREAPI  void* cxMemStorageAlloc( CxMemStorage* storage, int size );
+CVAPI(void*) cvMemStorageAlloc( CvMemStorage* storage, size_t size );
+
+/* Allocates string in memory storage */
+CVAPI(CvString) cvMemStorageAllocString( CvMemStorage* storage, const char* ptr,
+                                        int len CV_DEFAULT(-1) );
 
 /* Creates new empty sequence that will reside in the specified storage */
-CXCOREAPI  CxSeq*  cxCreateSeq( int seq_flags, int header_size,
-                             int elem_size, CxMemStorage* storage );
+CVAPI(CvSeq*)  cvCreateSeq( int seq_flags, int header_size,
+                            int elem_size, CvMemStorage* storage );
 
 /* Changes default size (granularity) of sequence blocks.
    The default size is ~1Kbyte */
-CXCOREAPI  void  cxSetSeqBlockSize( CxSeq* seq, int delta_elements );
+CVAPI(void)  cvSetSeqBlockSize( CvSeq* seq, int delta_elems );
 
 
 /* Adds new element to the end of sequence. Returns pointer to the element */
-CXCOREAPI  char*  cxSeqPush( CxSeq* seq, void* element CX_DEFAULT(NULL));
+CVAPI(char*)  cvSeqPush( CvSeq* seq, void* element CV_DEFAULT(NULL));
 
 
 /* Adds new element to the beginning of sequence. Returns pointer to it */
-CXCOREAPI  char*  cxSeqPushFront( CxSeq* seq, void* element CX_DEFAULT(NULL));
+CVAPI(char*)  cvSeqPushFront( CvSeq* seq, void* element CV_DEFAULT(NULL));
 
 
 /* Removes the last element from sequence and optionally saves it */
-CXCOREAPI  void  cxSeqPop( CxSeq* seq, void* element CX_DEFAULT(NULL));
+CVAPI(void)  cvSeqPop( CvSeq* seq, void* element CV_DEFAULT(NULL));
 
 
 /* Removes the first element from sequence and optioanally saves it */
-CXCOREAPI  void  cxSeqPopFront( CxSeq* seq, void* element CX_DEFAULT(NULL));
+CVAPI(void)  cvSeqPopFront( CvSeq* seq, void* element CV_DEFAULT(NULL));
 
 
-#define CX_FRONT 1
-#define CX_BACK 0
+#define CV_FRONT 1
+#define CV_BACK 0
 /* Adds several new elements to the end of sequence */
-CXCOREAPI  void  cxSeqPushMulti( CxSeq* seq, void* elements,
-                                 int count, int in_front CX_DEFAULT(0) );
+CVAPI(void)  cvSeqPushMulti( CvSeq* seq, void* elements,
+                             int count, int in_front CV_DEFAULT(0) );
 
 /* Removes several elements from the end of sequence and optionally saves them */
-CXCOREAPI  void  cxSeqPopMulti( CxSeq* seq, void* elements,
-                                int count, int in_front CX_DEFAULT(0) );
+CVAPI(void)  cvSeqPopMulti( CvSeq* seq, void* elements,
+                            int count, int in_front CV_DEFAULT(0) );
 
 /* Inserts a new element in the middle of sequence.
-   cxSeqInsert(seq,0,elem) == cxSeqPushFront(seq,elem) */
-CXCOREAPI  char*  cxSeqInsert( CxSeq* seq, int before_index,
-                               void* element CX_DEFAULT(NULL));
+   cvSeqInsert(seq,0,elem) == cvSeqPushFront(seq,elem) */
+CVAPI(char*)  cvSeqInsert( CvSeq* seq, int before_index,
+                           void* element CV_DEFAULT(NULL));
 
 /* Removes specified sequence element */
-CXCOREAPI  void  cxSeqRemove( CxSeq* seq, int index );
+CVAPI(void)  cvSeqRemove( CvSeq* seq, int index );
 
 
 /* Removes all the elements from the sequence. The freed memory
-   can be reused later only by the same sequence unless cxClearMemStorage
-   or cxRestoreMemStoragePos is called */
-CXCOREAPI  void  cxClearSeq( CxSeq* seq );
+   can be reused later only by the same sequence unless cvClearMemStorage
+   or cvRestoreMemStoragePos is called */
+CVAPI(void)  cvClearSeq( CvSeq* seq );
 
 
 /* Retrives pointer to specified sequence element.
    Negative indices are supported and mean counting from the end
    (e.g -1 means the last sequence element) */
-CXCOREAPI  char*  cxGetSeqElem( CxSeq* seq, int index, CxSeqBlock** block CX_DEFAULT(NULL) );
-
+CVAPI(char*)  cvGetSeqElem( const CvSeq* seq, int index );
 
 /* Calculates index of the specified sequence element.
    Returns -1 if element does not belong to the sequence */
-CXCOREAPI int  cxSeqElemIdx( const CxSeq* seq, const void* element,
-                             CxSeqBlock** block CX_DEFAULT(NULL) );
+CVAPI(int)  cvSeqElemIdx( const CvSeq* seq, const void* element,
+                         CvSeqBlock** block CV_DEFAULT(NULL) );
 
 /* Initializes sequence writer. The new elements will be added to the end of sequence */
-CXCOREAPI  void  cxStartAppendToSeq( CxSeq* seq, CxSeqWriter* writer );
+CVAPI(void)  cvStartAppendToSeq( CvSeq* seq, CvSeqWriter* writer );
 
 
-/* Combination of cxCreateSeq and cxStartAppendToSeq */
-CXCOREAPI  void  cxStartWriteSeq( int seq_flags, int header_size,
-                                  int elem_size, CxMemStorage* storage,
-                                  CxSeqWriter* writer );
+/* Combination of cvCreateSeq and cvStartAppendToSeq */
+CVAPI(void)  cvStartWriteSeq( int seq_flags, int header_size,
+                              int elem_size, CvMemStorage* storage,
+                              CvSeqWriter* writer );
 
 /* Closes sequence writer, updates sequence header and returns pointer
    to the resultant sequence
-   (which may be useful if the sequence was created using cxStartWriteSeq))
+   (which may be useful if the sequence was created using cvStartWriteSeq))
 */
-CXCOREAPI  CxSeq*  cxEndWriteSeq( CxSeqWriter* writer );
+CVAPI(CvSeq*)  cvEndWriteSeq( CvSeqWriter* writer );
 
 
 /* Updates sequence header. May be useful to get access to some of previously
-   written elements via cxGetSeqElem or sequence reader */
-CXCOREAPI  void   cxFlushSeqWriter( CxSeqWriter* writer );
+   written elements via cvGetSeqElem or sequence reader */
+CVAPI(void)   cvFlushSeqWriter( CvSeqWriter* writer );
 
 
 /* Initializes sequence reader.
    The sequence can be read in forward or backward direction */
-CXCOREAPI void cxStartReadSeq( const CxSeq* seq, CxSeqReader* reader,
-                               int reverse CX_DEFAULT(0) );
+CVAPI(void) cvStartReadSeq( const CvSeq* seq, CvSeqReader* reader,
+                           int reverse CV_DEFAULT(0) );
 
 
 /* Returns current sequence reader position (currently observed sequence element) */
-CXCOREAPI  int  cxGetSeqReaderPos( CxSeqReader* reader );
+CVAPI(int)  cvGetSeqReaderPos( CvSeqReader* reader );
 
 
 /* Changes sequence reader position. It may seek to an absolute or
    to relative to the current position */
-CXCOREAPI  void   cxSetSeqReaderPos( CxSeqReader* reader, int index,
-                                     int is_relative CX_DEFAULT(0));
+CVAPI(void)   cvSetSeqReaderPos( CvSeqReader* reader, int index,
+                                 int is_relative CV_DEFAULT(0));
 
-/* Copies sequence content to an array */
-CXCOREAPI  void*  cxCxtSeqToArray( CxSeq* seq, CxArr* arr,
-                                   CxSlice slice CX_DEFAULT(CX_WHOLE_SEQ) );
+/* Copies sequence content to a continuous piece of memory */
+CVAPI(void*)  cvCvtSeqToArray( const CvSeq* seq, void* elements,
+                               CvSlice slice CV_DEFAULT(CV_WHOLE_SEQ) );
 
 /* Creates sequence header for array.
    After that all the operations on sequences that do not alter the content
    can be applied to the resultant sequence */
-CXCOREAPI  CxSeq* cxMakeSeqHeaderForArray( int seq_type, int header_size,
-                                           int elem_size, void* elements, int total,
-                                           CxSeq* seq, CxSeqBlock* block );
+CVAPI(CvSeq*) cvMakeSeqHeaderForArray( int seq_type, int header_size,
+                                       int elem_size, void* elements, int total,
+                                       CvSeq* seq, CvSeqBlock* block );
 
-/* Extracts sequence slice (with or without copying sequence elements */
-CXCOREAPI CxSeq* cxSeqSlice( CxSeq* seq, CxSlice slice,
-                             CxMemStorage* storage CX_DEFAULT(NULL),
-                             int copy_data CX_DEFAULT(0));
+/* Extracts sequence slice (with or without copying sequence elements) */
+CVAPI(CvSeq*) cvSeqSlice( const CvSeq* seq, CvSlice slice,
+                         CvMemStorage* storage CV_DEFAULT(NULL),
+                         int copy_data CV_DEFAULT(0));
 
-CX_INLINE CxSeq* cxCloneSeq( CxSeq* seq, CxMemStorage* storage CX_DEFAULT(NULL));
-CX_INLINE CxSeq* cxCloneSeq( CxSeq* seq, CxMemStorage* storage )
+CV_INLINE CvSeq* cvCloneSeq( const CvSeq* seq, CvMemStorage* storage CV_DEFAULT(NULL))
 {
-    return cxSeqSlice( seq, CX_WHOLE_SEQ, storage, 1 );
+    return cvSeqSlice( seq, CV_WHOLE_SEQ, storage, 1 );
 }
 
 /* Removes sequence slice */
-CXCOREAPI  void  cxSeqRemoveSlice( CxSeq* seq, CxSlice slice );
+CVAPI(void)  cvSeqRemoveSlice( CvSeq* seq, CvSlice slice );
 
 /* Inserts a sequence or array into another sequence */
-CXCOREAPI  void  cxSeqInsertSlice( CxSeq* seq, int index, const CxArr* from_arr );
+CVAPI(void)  cvSeqInsertSlice( CvSeq* seq, int before_index, const CvArr* from_arr );
 
 /* a < b ? -1 : a > b ? 1 : 0 */
-CX_EXTERN_C_FUNCPTR( int (CX_CDECL* CxCmpFunc)
-                     (const void* a, const void* b, void* userdata ));
+typedef int (CV_CDECL* CvCmpFunc)(const void* a, const void* b, void* userdata );
 
 /* Sorts sequence in-place given element comparison function */
-CXCOREAPI  void cxSeqSort( CxSeq* seq, CxCmpFunc func, void* userdata );
+CVAPI(void) cvSeqSort( CvSeq* seq, CvCmpFunc func, void* userdata CV_DEFAULT(NULL) );
+
+/* Finds element in a [sorted] sequence */
+CVAPI(char*) cvSeqSearch( CvSeq* seq, const void* elem, CvCmpFunc func,
+                          int is_sorted, int* elem_idx,
+                          void* userdata CV_DEFAULT(NULL) );
 
 /* Reverses order of sequence elements in-place */
-CXCOREAPI  void cxSeqInvert( CxSeq* seq );
+CVAPI(void) cvSeqInvert( CvSeq* seq );
 
-/* Splits sequence into set of equivalency classes
-   using specified equivalency criteria */
-CXCOREAPI  int  cxPartitionSeq( CxSeq* seq, CxMemStorage* storage, CxSeq** comps,
-                                CxCmpFunc is_equal, void* userdata, int is_set );
+/* Splits sequence into one or more equivalence classes using the specified criteria */
+CVAPI(int)  cvSeqPartition( const CvSeq* seq, CvMemStorage* storage,
+                            CvSeq** labels, CvCmpFunc is_equal, void* userdata );
 
 /************ Internal sequence functions ************/
-CXCOREAPI  void  cxChangeSeqBlock( CxSeqReader* reader, int direction );
-CXCOREAPI  void  cxCreateSeqBlock( CxSeqWriter* writer );
+CVAPI(void)  cvChangeSeqBlock( void* reader, int direction );
+CVAPI(void)  cvCreateSeqBlock( CvSeqWriter* writer );
 
 
 /* Creates a new set */
-CXCOREAPI  CxSet*  cxCreateSet( int set_flags, int header_size,
-                                int elem_size, CxMemStorage* storage );
+CVAPI(CvSet*)  cvCreateSet( int set_flags, int header_size,
+                            int elem_size, CvMemStorage* storage );
 
 /* Adds new element to the set and returns pointer to it */
-CXCOREAPI  int  cxSetAdd( CxSet* set_header, CxSetElem* element CX_DEFAULT(NULL),
-                          CxSetElem** inserted_element CX_DEFAULT(NULL) );
+CVAPI(int)  cvSetAdd( CvSet* set_header, CvSetElem* elem CV_DEFAULT(NULL),
+                      CvSetElem** inserted_elem CV_DEFAULT(NULL) );
 
-/* Fast variant of cxSetAdd */
-CX_INLINE  CxSetElem* cxSetNew( CxSet* set_header );
-CX_INLINE  CxSetElem* cxSetNew( CxSet* set_header )
+/* Fast variant of cvSetAdd */
+CV_INLINE  CvSetElem* cvSetNew( CvSet* set_header )
 {
-    CxSetElem* elem = set_header->free_elems;
+    CvSetElem* elem = set_header->free_elems;
     if( elem )
     {
         set_header->free_elems = elem->next_free;
-        elem->flags = elem->flags & CX_SET_ELEM_IDX_MASK;
+        elem->flags = elem->flags & CV_SET_ELEM_IDX_MASK;
+        set_header->active_count++;
     }
     else
-        cxSetAdd( set_header, NULL, (CxSetElem**)&elem );
+        cvSetAdd( set_header, NULL, (CvSetElem**)&elem );
     return elem;
 }
 
 /* Removes set element given its pointer */
-CX_INLINE  void cxSetRemoveByPtr( CxSet* set_header, void* _elem );
-CX_INLINE  void cxSetRemoveByPtr( CxSet* set_header, void* _elem )
+CV_INLINE  void cvSetRemoveByPtr( CvSet* set_header, void* elem )
 {
-    CxSetElem* elem = (CxSetElem*)_elem;
-    assert( elem->flags >= 0 /*&& (elem->flags & CX_SET_ELEM_IDX_MASK) < set_header->total*/ );
-    elem->next_free = set_header->free_elems;
-    elem->flags = (elem->flags & CX_SET_ELEM_IDX_MASK) | CX_SET_ELEM_FREE_FLAG;
-    set_header->free_elems = elem;
+    CvSetElem* _elem = (CvSetElem*)elem;
+    assert( _elem->flags >= 0 /*&& (elem->flags & CV_SET_ELEM_IDX_MASK) < set_header->total*/ );
+    _elem->next_free = set_header->free_elems;
+    _elem->flags = (_elem->flags & CV_SET_ELEM_IDX_MASK) | CV_SET_ELEM_FREE_FLAG;
+    set_header->free_elems = _elem;
+    set_header->active_count--;
 }
 
-
 /* Removes element from the set by its index  */
-CXCOREAPI  void   cxSetRemove( CxSet* set_header, int index );
-
+CVAPI(void)   cvSetRemove( CvSet* set_header, int index );
 
 /* Returns a set element by index. If the element doesn't belong to the set,
    NULL is returned */
-CXCOREAPI  CxSetElem*  cxGetSetElem( CxSet* set_header, int index );
-
+CV_INLINE CvSetElem* cvGetSetElem( const CvSet* set_header, int index )
+{
+    CvSetElem* elem = (CvSetElem*)cvGetSeqElem( (CvSeq*)set_header, index );
+    return elem && CV_IS_SET_ELEM( elem ) ? elem : 0;
+}
 
 /* Removes all the elements from the set */
-CXCOREAPI  void  cxClearSet( CxSet* set_header );
-
+CVAPI(void)  cvClearSet( CvSet* set_header );
 
 /* Creates new graph */
-CXCOREAPI  CxGraph*   cxCreateGraph( int graph_flags, int header_size,
-                                  int vtx_size, int edge_size,
-                                  CxMemStorage* storage );
+CVAPI(CvGraph*)  cvCreateGraph( int graph_flags, int header_size,
+                                int vtx_size, int edge_size,
+                                CvMemStorage* storage );
 
 /* Adds new vertex to the graph */
-CXCOREAPI  int  cxGraphAddVtx( CxGraph* graph, CxGraphVtx* vertex CX_DEFAULT(NULL),
-                               CxGraphVtx** inserted_vertex CX_DEFAULT(NULL) );
+CVAPI(int)  cvGraphAddVtx( CvGraph* graph, const CvGraphVtx* vtx CV_DEFAULT(NULL),
+                           CvGraphVtx** inserted_vtx CV_DEFAULT(NULL) );
 
 
 /* Removes vertex from the graph together with all incident edges */
-CXCOREAPI  int  cxGraphRemoveVtx( CxGraph* graph, int index );
-CXCOREAPI  int  cxGraphRemoveVtxByPtr( CxGraph* graph, CxGraphVtx* vtx );
+CVAPI(int)  cvGraphRemoveVtx( CvGraph* graph, int index );
+CVAPI(int)  cvGraphRemoveVtxByPtr( CvGraph* graph, CvGraphVtx* vtx );
 
 
 /* Link two vertices specifed by indices or pointers if they
    are not connected or return pointer to already existing edge
    connecting the vertices.
    Functions return 1 if a new edge was created, 0 otherwise */
-CXCOREAPI  int  cxGraphAddEdge( CxGraph* graph,
-                                int start_idx, int end_idx,
-                                CxGraphEdge* edge CX_DEFAULT(NULL),
-                                CxGraphEdge** inserted_edge CX_DEFAULT(NULL) );
+CVAPI(int)  cvGraphAddEdge( CvGraph* graph,
+                            int start_idx, int end_idx,
+                            const CvGraphEdge* edge CV_DEFAULT(NULL),
+                            CvGraphEdge** inserted_edge CV_DEFAULT(NULL) );
 
-CXCOREAPI  int  cxGraphAddEdgeByPtr( CxGraph* graph,
-                               CxGraphVtx* start_vtx, CxGraphVtx* end_vtx,
-                               CxGraphEdge* edge CX_DEFAULT(NULL),
-                               CxGraphEdge** inserted_edge CX_DEFAULT(NULL) );
+CVAPI(int)  cvGraphAddEdgeByPtr( CvGraph* graph,
+                               CvGraphVtx* start_vtx, CvGraphVtx* end_vtx,
+                               const CvGraphEdge* edge CV_DEFAULT(NULL),
+                               CvGraphEdge** inserted_edge CV_DEFAULT(NULL) );
 
 /* Remove edge connecting two vertices */
-CXCOREAPI  void  cxGraphRemoveEdge( CxGraph* graph, int start_idx, int end_idx );
-CXCOREAPI  void  cxGraphRemoveEdgeByPtr( CxGraph* graph, CxGraphVtx* start_vtx,
-                                         CxGraphVtx* end_vtx );
+CVAPI(void)  cvGraphRemoveEdge( CvGraph* graph, int start_idx, int end_idx );
+CVAPI(void)  cvGraphRemoveEdgeByPtr( CvGraph* graph, CvGraphVtx* start_vtx,
+                                     CvGraphVtx* end_vtx );
 
 /* Find edge connecting two vertices */
-CXCOREAPI  CxGraphEdge*  cxFindGraphEdge( CxGraph* graph, int start_idx, int end_idx );
-CXCOREAPI  CxGraphEdge*  cxFindGraphEdgeByPtr( CxGraph* graph, CxGraphVtx* start_vtx,
-                                               CxGraphVtx* end_vtx );
-#define cxGraphFindEdge cxFindGraphEdge
-#define cxGraphFindEdgeByPtr cxFindGraphEdgeByPtr
+CVAPI(CvGraphEdge*)  cvFindGraphEdge( const CvGraph* graph, int start_idx, int end_idx );
+CVAPI(CvGraphEdge*)  cvFindGraphEdgeByPtr( const CvGraph* graph,
+                                           const CvGraphVtx* start_vtx,
+                                           const CvGraphVtx* end_vtx );
+#define cvGraphFindEdge cvFindGraphEdge
+#define cvGraphFindEdgeByPtr cvFindGraphEdgeByPtr
 
 /* Remove all vertices and edges from the graph */
-CXCOREAPI  void  cxClearGraph( CxGraph* graph );
+CVAPI(void)  cvClearGraph( CvGraph* graph );
 
 
 /* Count number of edges incident to the vertex */
-CXCOREAPI  int  cxGraphVtxDegree( CxGraph* graph, int vtx_idx );
-CXCOREAPI  int  cxGraphVtxDegreeByPtr( CxGraph* graph, CxGraphVtx* vtx );
+CVAPI(int)  cvGraphVtxDegree( const CvGraph* graph, int vtx_idx );
+CVAPI(int)  cvGraphVtxDegreeByPtr( const CvGraph* graph, const CvGraphVtx* vtx );
 
 
 /* Retrieves graph vertex by given index */
-#define cxGetGraphVtx( graph, idx ) (CxGraphVtx*)cxGetSetElem((CxSet*)(graph), (idx))
+#define cvGetGraphVtx( graph, idx ) (CvGraphVtx*)cvGetSetElem((CvSet*)(graph), (idx))
 
 /* Retrieves index of a graph vertex given its pointer */
-#define cxGraphVtxIdx( graph, vtx ) ((vtx)->flags & CX_SET_ELEM_IDX_MASK)
+#define cvGraphVtxIdx( graph, vtx ) ((vtx)->flags & CV_SET_ELEM_IDX_MASK)
 
 /* Retrieves index of a graph edge given its pointer */
-#define cxGraphEdgeIdx( graph, edge ) ((edge)->flags & CX_SET_ELEM_IDX_MASK)
+#define cvGraphEdgeIdx( graph, edge ) ((edge)->flags & CV_SET_ELEM_IDX_MASK)
 
+#define cvGraphGetVtxCount( graph ) ((graph)->active_count)
+#define cvGraphGetEdgeCount( graph ) ((graph)->edges->active_count)
 
-#define  CX_GRAPH_VERTEX        1
-#define  CX_GRAPH_TREE_EDGE     2
-#define  CX_GRAPH_BACK_EDGE     4
-#define  CX_GRAPH_FORWARD_EDGE  8
-#define  CX_GRAPH_CROSS_EDGE    16
-#define  CX_GRAPH_ANY_EDGE      30
-#define  CX_GRAPH_NEW_TREE      32
-#define  CX_GRAPH_BACKTRACKING  64
-#define  CX_GRAPH_OVER          -1
+#define  CV_GRAPH_VERTEX        1
+#define  CV_GRAPH_TREE_EDGE     2
+#define  CV_GRAPH_BACK_EDGE     4
+#define  CV_GRAPH_FORWARD_EDGE  8
+#define  CV_GRAPH_CROSS_EDGE    16
+#define  CV_GRAPH_ANY_EDGE      30
+#define  CV_GRAPH_NEW_TREE      32
+#define  CV_GRAPH_BACKTRACKING  64
+#define  CV_GRAPH_OVER          -1
 
-#define  CX_GRAPH_ALL_ITEMS    -1
+#define  CV_GRAPH_ALL_ITEMS    -1
 
 /* flags for graph vertices and edges */
-#define  CX_GRAPH_ITEM_VISITED_FLAG  (1 << 30)
-#define  CX_IS_GRAPH_VERTEX_VISITED(vtx) \
-    (((CxGraphVtx*)(vtx))->flags & CX_GRAPH_ITEM_VISITED_FLAG)
-#define  CX_IS_GRAPH_EDGE_VISITED(edge) \
-    (((CxGraphEdge*)(edge))->flags & CX_GRAPH_ITEM_VISITED_FLAG)
-#define  CX_GRAPH_SEARCH_TREE_NODE_FLAG   (1 << 29)
-#define  CX_GRAPH_FORWARD_EDGE_FLAG       (1 << 28)
+#define  CV_GRAPH_ITEM_VISITED_FLAG  (1 << 30)
+#define  CV_IS_GRAPH_VERTEX_VISITED(vtx) \
+    (((CvGraphVtx*)(vtx))->flags & CV_GRAPH_ITEM_VISITED_FLAG)
+#define  CV_IS_GRAPH_EDGE_VISITED(edge) \
+    (((CvGraphEdge*)(edge))->flags & CV_GRAPH_ITEM_VISITED_FLAG)
+#define  CV_GRAPH_SEARCH_TREE_NODE_FLAG   (1 << 29)
+#define  CV_GRAPH_FORWARD_EDGE_FLAG       (1 << 28)
 
-typedef struct CxGraphScanner
+typedef struct CvGraphScanner
 {
-    CxGraphVtx* vtx;       /* current graph vertex (or current edge origin) */
-    CxGraphVtx* dst;       /* current graph edge destination vertex */
-    CxGraphEdge* edge;     /* current edge */
+    CvGraphVtx* vtx;       /* current graph vertex (or current edge origin) */
+    CvGraphVtx* dst;       /* current graph edge destination vertex */
+    CvGraphEdge* edge;     /* current edge */
 
-    CxGraph* graph;        /* the graph */
-    CxSeq*   stack;        /* the graph vertex stack */
+    CvGraph* graph;        /* the graph */
+    CvSeq*   stack;        /* the graph vertex stack */
     int      index;        /* the lower bound of certainly visited vertices */
     int      mask;         /* event mask */
 }
-CxGraphScanner;
+CvGraphScanner;
 
-/* Initializes graph traversal process.
-   <mask> indicates what events one wants to handle. */
-CXCOREAPI void  cxStartScanGraph( CxGraph* graph, CxGraphScanner* scanner,
-                                  CxGraphVtx* vtx CX_DEFAULT(NULL),
-                                  int mask CX_DEFAULT(CX_GRAPH_ALL_ITEMS));
+/* Creates new graph scanner. */
+CVAPI(CvGraphScanner*)  cvCreateGraphScanner( CvGraph* graph,
+                                             CvGraphVtx* vtx CV_DEFAULT(NULL),
+                                             int mask CV_DEFAULT(CV_GRAPH_ALL_ITEMS));
 
-/* Initializes graph traversal process.
-   <mask> indicates what events one wants to handle. */
-CXCOREAPI void  cxEndScanGraph( CxGraphScanner* scanner );
+/* Releases graph scanner. */
+CVAPI(void) cvReleaseGraphScanner( CvGraphScanner** scanner );
 
 /* Get next graph element */
-CXCOREAPI int  cxNextGraphItem( CxGraphScanner* scanner );
+CVAPI(int)  cvNextGraphItem( CvGraphScanner* scanner );
 
 /* Creates a copy of graph */
-CXCOREAPI CxGraph* cxCloneGraph( const CxGraph* graph, CxMemStorage* storage );
+CVAPI(CvGraph*) cvCloneGraph( const CvGraph* graph, CvMemStorage* storage );
 
 /****************************************************************************************\
 *                                     Drawing                                            *
 \****************************************************************************************/
 
 /****************************************************************************************\
-*       Drawing functions work with arbitrary 8-bit images or single-channel images      *
-*       with larger depth: 16s, 32s, 32f, 64f                                            *
+*       Drawing functions work with images/matrices of arbitrary type.                   *
+*       For color images the channel order is BGR[A]                                     *
+*       Antialiasing is supported only for 8-bit image now.                              *
 *       All the functions include parameter color that means rgb value (that may be      *
-*       constructed with CX_RGB macro) for color images and brightness                   *
+*       constructed with CV_RGB macro) for color images and brightness                   *
 *       for grayscale images.                                                            *
-*       If a drawn figure is partially or completely outside the image, it is clipped.   *
+*       If a drawn figure is partially or completely outside of the image, it is clipped.*
 \****************************************************************************************/
 
-#define CX_RGB( r, g, b )  (int)((uchar)(b) + ((uchar)(g) << 8) + ((uchar)(r) << 16))
-#define CX_FILLED -1
+#define CV_RGB( r, g, b )  cvScalar( (b), (g), (r), 0 )
+#define CV_FILLED -1
 
-/* Draws 4-connected or 8-connected line segment connecting two points */
-CXCOREAPI  void  cxLine( CxArr* arr, CxPoint pt1, CxPoint pt2,
-                         double color, int thickness CX_DEFAULT(1),
-                         int connectivity CX_DEFAULT(8) );
+#define CV_AA 16
 
-/* Draws 8-connected line segment connecting two points with antialiazing.
-   Ending coordinates may be specified with sub-pixel accuracy
-   (scale is number of fractional bits in the coordinates) */
-CXCOREAPI  void  cxLineAA( CxArr* arr, CxPoint pt1, CxPoint pt2,
-                           double color, int scale CX_DEFAULT(0));
+/* Draws 4-connected, 8-connected or antialiased line segment connecting two points */
+CVAPI(void)  cvLine( CvArr* img, CvPoint pt1, CvPoint pt2,
+                     CvScalar color, int thickness CV_DEFAULT(1),
+                     int line_type CV_DEFAULT(8), int shift CV_DEFAULT(0) );
 
 /* Draws a rectangle given two opposite corners of the rectangle (pt1 & pt2),
-   if thickness<0 (e.g. thickness == CX_FILLED), the filled box is drawn */
-CXCOREAPI  void  cxRectangle( CxArr* arr, CxPoint pt1, CxPoint pt2,
-                              double color, int thickness CX_DEFAULT(1));
+   if thickness<0 (e.g. thickness == CV_FILLED), the filled box is drawn */
+CVAPI(void)  cvRectangle( CvArr* img, CvPoint pt1, CvPoint pt2,
+                          CvScalar color, int thickness CV_DEFAULT(1),
+                          int line_type CV_DEFAULT(8),
+                          int shift CV_DEFAULT(0));
 
 /* Draws a circle with specified center and radius.
-   Thickness works in the same way as with cxRectangle */
-CXCOREAPI  void  cxCircle( CxArr* arr, CxPoint center, int radius,
-                           double color, int thickness CX_DEFAULT(1));
-
-/* Draws antialiazed circle with specified center and radius.
-   Both the center and radius can be specified with sub-pixel accuracy */
-CXCOREAPI  void  cxCircleAA( CxArr* arr, CxPoint center, int radius,
-                             double color, int scale CX_DEFAULT(0) );
+   Thickness works in the same way as with cvRectangle */
+CVAPI(void)  cvCircle( CvArr* img, CvPoint center, int radius,
+                       CvScalar color, int thickness CV_DEFAULT(1),
+                       int line_type CV_DEFAULT(8), int shift CV_DEFAULT(0));
 
 /* Draws ellipse outline, filled ellipse, elliptic arc or filled elliptic sector,
-   depending on <thickness>, <startAngle> and <endAngle> parameters. The resultant figure
+   depending on <thickness>, <start_angle> and <end_angle> parameters. The resultant figure
    is rotated by <angle>. All the angles are in degrees */
-CXCOREAPI  void  cxEllipse( CxArr* arr, CxPoint center, CxSize axes,
-                            double angle, double startAngle, double endAngle,
-                            double color, int thickness CX_DEFAULT(1));
+CVAPI(void)  cvEllipse( CvArr* img, CvPoint center, CvSize axes,
+                        double angle, double start_angle, double end_angle,
+                        CvScalar color, int thickness CV_DEFAULT(1),
+                        int line_type CV_DEFAULT(8), int shift CV_DEFAULT(0));
 
-CX_INLINE  void  cxEllipseBox( CxArr* arr, CxBox2D box,
-                               double color, int thickness CX_DEFAULT(1));
-CX_INLINE  void  cxEllipseBox( CxArr* arr, CxBox2D box,
-                               double color, int thickness )
+CV_INLINE  void  cvEllipseBox( CvArr* img, CvBox2D box, CvScalar color,
+                               int thickness CV_DEFAULT(1),
+                               int line_type CV_DEFAULT(8), int shift CV_DEFAULT(0) )
 {
-    CxSize axes;
-    axes.width = cxRound(box.size.height*0.5);
-    axes.height = cxRound(box.size.width*0.5);
+    CvSize axes;
+    axes.width = cvRound(box.size.height*0.5);
+    axes.height = cvRound(box.size.width*0.5);
     
-    cxEllipse( arr, cxPointFrom32f( box.center ), axes,
-               box.angle*180/CX_PI, 0, 360, color, thickness );
+    cvEllipse( img, cvPointFrom32f( box.center ), axes, box.angle,
+               0, 360, color, thickness, line_type, shift );
 }
 
+/* Fills convex or monotonous polygon. */
+CVAPI(void)  cvFillConvexPoly( CvArr* img, CvPoint* pts, int npts, CvScalar color,
+                               int line_type CV_DEFAULT(8), int shift CV_DEFAULT(0));
 
-/* Draws the whole ellipse or elliptic arc with antialiazing */
-CXCOREAPI  void  cxEllipseAA( CxArr* arr, CxPoint center, CxSize axes,
-                              double angle, double startAngle,
-                              double endAngle, double color,
-                              int scale CX_DEFAULT(0) );
-
-/* Fills convex or monotonous (every horizontal line intersects the polygon twice at the most,
-   except, may be, horizontal sides) polygon. Connectivity or monotony is not checked */
-CXCOREAPI  void  cxFillConvexPoly( CxArr* arr, CxPoint* pts, int npts, double color );
-
-
-/* Fills an area bounded by one or more arbitrary polygons (with possible intersections or
-   self-intersections */
-CXCOREAPI  void  cxFillPoly( CxArr* arr, CxPoint** pts,
-                             int* npts, int contours, double color );
+/* Fills an area bounded by one or more arbitrary polygons */
+CVAPI(void)  cvFillPoly( CvArr* img, CvPoint** pts, int* npts, int contours, CvScalar color,
+                         int line_type CV_DEFAULT(8), int shift CV_DEFAULT(0) );
 
 /* Draws one or more polygonal curves */
-CXCOREAPI  void  cxPolyLine( CxArr* arr, CxPoint** pts, int* npts, int contours,
-                             int closed, double color,
-                             int thickness CX_DEFAULT(1),
-                             int connectivity CX_DEFAULT(8));
+CVAPI(void)  cvPolyLine( CvArr* img, CvPoint** pts, int* npts, int contours,
+                         int is_closed, CvScalar color, int thickness CV_DEFAULT(1),
+                         int line_type CV_DEFAULT(8), int shift CV_DEFAULT(0) );
 
-/* Draws one or more antialiazed polygonal curves */
-CXCOREAPI  void  cxPolyLineAA( CxArr* arr, CxPoint** pts, int* npts, int contours,
-                               int closed, double color, int scale CX_DEFAULT(0) );
+#define cvDrawRect cvRectangle
+#define cvDrawLine cvLine
+#define cvDrawCircle cvCircle
+#define cvDrawEllipse cvEllipse
+#define cvDrawPolyLine cvPolyLine
 
-/* Font metrics and structure */
-#define CX_FONT_VECTOR0  0
+/* Clips the line segment connecting *pt1 and *pt2
+   by the rectangular window
+   (0<=x<img_size.width, 0<=y<img_size.height). */
+CVAPI(int) cvClipLine( CvSize img_size, CvPoint* pt1, CvPoint* pt2 );
 
-typedef struct CxFont
-{
-    const int*  data; /* font data and metrics */
-    CxSize      size; /* horizontal and vertical scale factors,
-                         (8:8) fix-point numbers */
-    int         italic_scale; /* slope coefficient: 0 - normal, >0 - italic */
-    int         thickness; /* letters thickness */
-    int         dx; /* horizontal interval between letters */
+/* Initializes line iterator. Initially, line_iterator->ptr will point
+   to pt1 (or pt2, see left_to_right description) location in the image.
+   Returns the number of pixels on the line between the ending points. */
+CVAPI(int)  cvInitLineIterator( const CvArr* image, CvPoint pt1, CvPoint pt2,
+                                CvLineIterator* line_iterator,
+                                int connectivity CV_DEFAULT(8),
+                                int left_to_right CV_DEFAULT(0));
+
+/* Moves iterator to the next line point */
+#define CV_NEXT_LINE_POINT( line_iterator )                     \
+{                                                               \
+    int _line_iterator_mask = (line_iterator).err < 0 ? -1 : 0; \
+    (line_iterator).err += (line_iterator).minus_delta +        \
+        ((line_iterator).plus_delta & _line_iterator_mask);     \
+    (line_iterator).ptr += (line_iterator).minus_step +         \
+        ((line_iterator).plus_step & _line_iterator_mask);      \
 }
-CxFont;
 
-/* Initializes font structure used further in cxPutText */
-CXCOREAPI  void  cxInitFont( CxFont* font, int font_face,
-                             double hscale, double vscale,
-                             double italic_scale CX_DEFAULT(0),
-                             int thickness CX_DEFAULT(1) );
+
+/* basic font types */
+#define CV_FONT_HERSHEY_SIMPLEX         0
+#define CV_FONT_HERSHEY_PLAIN           1
+#define CV_FONT_HERSHEY_DUPLEX          2
+#define CV_FONT_HERSHEY_COMPLEX         3 
+#define CV_FONT_HERSHEY_TRIPLEX         4
+#define CV_FONT_HERSHEY_COMPLEX_SMALL   5
+#define CV_FONT_HERSHEY_SCRIPT_SIMPLEX  6
+#define CV_FONT_HERSHEY_SCRIPT_COMPLEX  7
+
+/* font flags */
+#define CV_FONT_ITALIC                 16  
+
+#define CV_FONT_VECTOR0    CV_FONT_HERSHEY_SIMPLEX
+
+/* Font structure */
+typedef struct CvFont
+{
+    int         font_face; /* =CV_FONT_* */
+    const int*  ascii; /* font data and metrics */
+    const int*  greek;
+    const int*  cyrillic;
+    float       hscale, vscale;
+    float       shear; /* slope coefficient: 0 - normal, >0 - italic */
+    int         thickness; /* letters thickness */
+    float       dx; /* horizontal interval between letters */
+    int         line_type;
+}
+CvFont;
+
+/* Initializes font structure used further in cvPutText */
+CVAPI(void)  cvInitFont( CvFont* font, int font_face,
+                         double hscale, double vscale,
+                         double shear CV_DEFAULT(0),
+                         int thickness CV_DEFAULT(1),
+                         int line_type CV_DEFAULT(8));
+
+CV_INLINE CvFont cvFont( double scale, int thickness CV_DEFAULT(1) )
+{
+    CvFont font;
+    cvInitFont( &font, CV_FONT_HERSHEY_PLAIN, scale, scale, 0, thickness, CV_AA );
+    return font;
+}
 
 /* Renders text stroke with specified font and color at specified location.
-   CxFont should be initialized with cxInitFont */
-CXCOREAPI  void  cxPutText( CxArr* arr, const char* text, CxPoint org,
-                            CxFont* font, double color );
+   CvFont should be initialized with cvInitFont */
+CVAPI(void)  cvPutText( CvArr* img, const char* text, CvPoint org,
+                        const CvFont* font, CvScalar color );
 
 /* Calculates bounding box of text stroke (useful for alignment) */
-CXCOREAPI  void  cxGetTextSize( const char* text_string, CxFont* font,
-                                CxSize* text_size, int* ymin );
+CVAPI(void)  cvGetTextSize( const char* text_string, const CvFont* font,
+                            CvSize* text_size, int* baseline );
 
-/* Unpacks color value, if arrtype is CX_8UC?, <color> is treated as
+/* Unpacks color value, if arrtype is CV_8UC?, <color> is treated as
    packed color value, otherwise the first channels (depending on arrtype)
    of destination scalar are set to the same value = <color> */
-CXCOREAPI  CxScalar  cxColorToScalar( double color, int arrtype );
+CVAPI(CvScalar)  cvColorToScalar( double packed_color, int arrtype );
+
+/* Returns the polygon points which make up the given ellipse.  The ellipse is define by
+   the box of size 'axes' rotated 'angle' around the 'center'.  A partial sweep
+   of the ellipse arc can be done by spcifying arc_start and arc_end to be something
+   other than 0 and 360, respectively.  The input array 'pts' must be large enough to
+   hold the result.  The total number of points stored into 'pts' is returned by this
+   function. */
+CVAPI(int) cvEllipse2Poly( CvPoint center, CvSize axes,
+                 int angle, int arc_start, int arc_end, CvPoint * pts, int delta );
+
+/* Draws contour outlines or filled interiors on the image */
+CVAPI(void)  cvDrawContours( CvArr *img, CvSeq* contour,
+                            CvScalar external_color, CvScalar hole_color,
+                            int max_level, int thickness CV_DEFAULT(1),
+                            int line_type CV_DEFAULT(8),
+                            CvPoint offset CV_DEFAULT(cvPoint(0,0)));
 
 /* Does look-up transformation. Elements of the source array
    (that should be 8uC1 or 8sC1) are used as indexes in lutarr 256-element table */
-CXCOREAPI  void cxLUT( const CxArr* srcarr, CxArr* dstarr, const CxArr* lutarr );
+CVAPI(void) cvLUT( const CvArr* src, CvArr* dst, const CvArr* lut );
 
-/* Draws contour outlines or filled interiors on the image */
-CXCOREAPI void  cxDrawContours( CxArr *img, CxSeq* contour,
-                                double external_color, double hole_color,
-                                int max_level, int thickness CX_DEFAULT(1),
-                                int connectivity CX_DEFAULT(8));
 
 /******************* Iteration through the sequence tree *****************/
-typedef struct CxTreeNodeIterator
+typedef struct CvTreeNodeIterator
 {
     const void* node;
     int level;
-    int maxLevel;
+    int max_level;
 }
-CxTreeNodeIterator;
+CvTreeNodeIterator;
 
-CXCOREAPI void cxInitTreeNodeIterator( CxTreeNodeIterator* treeIterator,
-                                   const void* first, int maxLevel );
-CXCOREAPI void* cxNextTreeNode( CxTreeNodeIterator* treeIterator );
-CXCOREAPI void* cxPrevTreeNode( CxTreeNodeIterator* treeIterator );
+CVAPI(void) cvInitTreeNodeIterator( CvTreeNodeIterator* tree_iterator,
+                                   const void* first, int max_level );
+CVAPI(void*) cvNextTreeNode( CvTreeNodeIterator* tree_iterator );
+CVAPI(void*) cvPrevTreeNode( CvTreeNodeIterator* tree_iterator );
 
 /* Inserts sequence into tree with specified "parent" sequence.
    If parent is equal to frame (e.g. the most external contour),
    then added contour will have null pointer to parent. */
-CXCOREAPI void cxInsertNodeIntoTree( void* node, void* parent, void* frame );
+CVAPI(void) cvInsertNodeIntoTree( void* node, void* parent, void* frame );
 
 /* Removes contour from tree (together with the contour children). */
-CXCOREAPI void cxRemoveNodeFromTree( void* node, void* frame );
+CVAPI(void) cvRemoveNodeFromTree( void* node, void* frame );
 
 /* Gathers pointers to all the sequences,
    accessible from the <first>, to the single sequence */
-CXCOREAPI CxSeq* cxTreeToNodeSeq( const void* first, int header_size,
-                                  CxMemStorage* storage );
+CVAPI(CvSeq*) cvTreeToNodeSeq( const void* first, int header_size,
+                              CvMemStorage* storage );
 
 /* The function implements the K-means algorithm for clustering an array of sample
    vectors in a specified number of classes */
-CXCOREAPI  void  cxKMeans2( const CxArr* samples, int cluster_count,
-                            CxArr* cluster_idx, CxTermCriteria termcrit );
+CVAPI(void)  cvKMeans2( const CvArr* samples, int cluster_count,
+                        CvArr* labels, CvTermCriteria termcrit );
 
 /****************************************************************************************\
 *                                    System functions                                    *
 \****************************************************************************************/
 
-typedef struct CxIPPFuncInfo
-{
-    void** func_addr;
-    void* default_func_addr;
-    const char* func_names;
-    int search_modules;
-    int loaded_from;
-}
-CxIPPFuncInfo;
-
 /* Add the function pointers table with associated information to the IPP primitives list */
-CXCOREAPI  int  cxRegisterPrimitives( CxIPPFuncInfo* ipp_func_tab );
+CVAPI(int)  cvRegisterModule( const CvModuleInfo* module_info );
 
-/* Loads optimized functions from IPP */
-CXCOREAPI  int  cxLoadPrimitives( const char* processor );
+/* Loads optimized functions from IPP, MKL etc. or switches back to pure C code */
+CVAPI(int)  cvUseOptimized( int on_off );
 
-/* Retrieves information about CX core and loaded optimized primitives */
-CXCOREAPI  void  cxGetLibraryInfo_cxcore( const char** version,
-                                          const char** loaded_modules );
+/* Retrieves information about the registered modules and loaded optimized plugins */
+CVAPI(void)  cvGetModuleInfo( const char* module_name,
+                              const char** version,
+                              const char** loaded_addon_plugins );
 
-/* Get current OpenCX error status */
-CXCOREAPI CXStatus cxGetErrStatus( void );
+/* Get current OpenCV error status */
+CVAPI(int) cvGetErrStatus( void );
 
 /* Sets error status silently */
-CXCOREAPI void cxSetErrStatus( CXStatus status );
+CVAPI(void) cvSetErrStatus( int status );
 
-#define CX_ErrModeLeaf     0   /* Print error and exit program */
-#define CX_ErrModeParent   1   /* Print error and continue */
-#define CX_ErrModeSilent   2   /* Don't print and continue */
+#define CV_ErrModeLeaf     0   /* Print error and exit program */
+#define CV_ErrModeParent   1   /* Print error and continue */
+#define CV_ErrModeSilent   2   /* Don't print and continue */
 
 /* Retrives current error processing mode */
-CXCOREAPI int  cxGetErrMode( void );
+CVAPI(int)  cvGetErrMode( void );
 
-/* Sets error processing mode */
-CXCOREAPI void cxSetErrMode( int mode );
+/* Sets error processing mode, returns previously used mode */
+CVAPI(int) cvSetErrMode( int mode );
 
-/* Sets error status and performs some additonal actions (error message box,
-   writing message to stderr, terminate application etc.)
+/* Sets error status and performs some additonal actions (displaying message box,
+   writing message to stderr, terminating application etc.)
    depending on the current error mode */
-CXCOREAPI CXStatus cxError( CXStatus code, const char *func,
-                         const char *context, const char *file, int line);
+CVAPI(void) cvError( int status, const char* func_name,
+                    const char* err_msg, const char* file_name, int line );
 
 /* Retrieves textual description of the error given its code */
-CXCOREAPI const char* cxErrorStr( CXStatus status );
+CVAPI(const char*) cvErrorStr( int status );
 
-/* Converts IPP error status to OpenCX error code */
-CXCOREAPI CXStatus cxErrorFromStatus( CxStatus ipp_status );
+/* Retrieves detailed information about the last error occured */
+CVAPI(int) cvGetErrInfo( const char** errcode_desc, const char** description,
+                        const char** filename, int* line );
 
-typedef int (CX_CDECL *CXErrorCallBack) (CXStatus status, const char *func,
-                                         const char *context, const char *file,int line);
+/* Maps IPP error codes to the counterparts from OpenCV */
+CVAPI(int) cvErrorFromIppStatus( int ipp_status );
+
+typedef int (CV_CDECL *CvErrorCallback)( int status, const char* func_name,
+                    const char* err_msg, const char* file_name, int line, void* userdata );
 
 /* Assigns a new error-handling function */
-CXCOREAPI CXErrorCallBack cxRedirectError(CXErrorCallBack cxErrorFunc);
+CVAPI(CvErrorCallback) cvRedirectError( CvErrorCallback error_handler,
+                                       void* userdata CV_DEFAULT(NULL),
+                                       void** prev_userdata CV_DEFAULT(NULL) );
 
 /*
     Output to:
-        cxNulDevReport - nothing
-        cxStdErrReport - console(printf)
-        cxGuiBoxReport - MessageBox(WIN32)
+        cvNulDevReport - nothing
+        cvStdErrReport - console(fprintf(stderr,...))
+        cvGuiBoxReport - MessageBox(WIN32)
 */
-CXCOREAPI CXStatus cxNulDevReport( CXStatus status, const char *funcName,
-                                const char *context, const char *file, int line );
+CVAPI(int) cvNulDevReport( int status, const char* func_name, const char* err_msg,
+                          const char* file_name, int line, void* userdata );
 
-CXCOREAPI CXStatus cxStdErrReport( CXStatus status, const char *funcName,
-                                const char *context, const char *file, int line );
+CVAPI(int) cvStdErrReport( int status, const char* func_name, const char* err_msg,
+                          const char* file_name, int line, void* userdata );
 
-CXCOREAPI CXStatus cxGuiBoxReport( CXStatus status, const char *funcName,
-                                const char *context, const char *file, int line);
+CVAPI(int) cvGuiBoxReport( int status, const char* func_name, const char* err_msg,
+                          const char* file_name, int line, void* userdata );
 
-/* Get call stack */
-CXCOREAPI void cxGetCallStack(CxStackRecord** stack, int* size);
-
-/* Push the record to the call stack */
-CXCOREAPI void cxStartProfile( const char* call, const char* file, int line );
-
-/* Pop the record from the stack */
-CXCOREAPI void cxEndProfile( const char* file, int line );
-
-CX_EXTERN_C_FUNCPTR(void (CX_CDECL* CxStartProfileFunc)(const char*,const char*,int));
-CX_EXTERN_C_FUNCPTR(void (CX_CDECL* CxEndProfileFunc)(const char*,int));
-
-/* management functions */
-CXCOREAPI void cxSetProfile( CxStartProfileFunc startProfile,
-                             CxEndProfileFunc endProfile );
- 
-CXCOREAPI void cxRemoveProfile();                  
-
-
-CX_EXTERN_C_FUNCPTR(void* (CX_CDECL *CxAllocFunc)(size_t, const char*, int));
-CX_EXTERN_C_FUNCPTR(int (CX_CDECL *CxFreeFunc)(void**, const char*, int));
+typedef void* (CV_CDECL *CvAllocFunc)(size_t size, void* userdata);
+typedef int (CV_CDECL *CvFreeFunc)(void* pptr, void* userdata);
 
 /* Set user-defined memory managment functions (substitutors for malloc and free) that
-   will be called by cxAlloc, cxFree and higher-level functions (e.g. cxCreateImage) */
-CXCOREAPI void cxSetMemoryManager( CxAllocFunc allocFunc CX_DEFAULT(0),
-                                   CxFreeFunc freeFunc CX_DEFAULT(0));
+   will be called by cvAlloc, cvFree and higher-level functions (e.g. cvCreateImage) */
+CVAPI(void) cvSetMemoryManager( CvAllocFunc alloc_func CV_DEFAULT(NULL),
+                               CvFreeFunc free_func CV_DEFAULT(NULL),
+                               void* userdata CV_DEFAULT(NULL));
 
 
-CX_EXTERN_C_FUNCPTR(IplImage* (CX_STDCALL* Cx_iplCreateImageHeader)
+typedef IplImage* (CV_STDCALL* Cv_iplCreateImageHeader)
                             (int,int,int,char*,char*,int,int,int,int,int,
-                            IplROI*,IplImage*,void*,IplTileInfo*));
-CX_EXTERN_C_FUNCPTR(void (CX_STDCALL* Cx_iplAllocateImageData)(IplImage*,int,int));
+                            IplROI*,IplImage*,void*,IplTileInfo*);
+typedef void (CV_STDCALL* Cv_iplAllocateImageData)(IplImage*,int,int);
+typedef void (CV_STDCALL* Cv_iplDeallocate)(IplImage*,int);
+typedef IplROI* (CV_STDCALL* Cv_iplCreateROI)(int,int,int,int,int);
+typedef IplImage* (CV_STDCALL* Cv_iplCloneImage)(const IplImage*);
 
-CX_EXTERN_C_FUNCPTR(void (CX_STDCALL* Cx_iplDeallocate)(IplImage*,int));
+/* Makes OpenCV use IPL functions for IplImage allocation/deallocation */
+CVAPI(void) cvSetIPLAllocators( Cv_iplCreateImageHeader create_header,
+                               Cv_iplAllocateImageData allocate_data,
+                               Cv_iplDeallocate deallocate,
+                               Cv_iplCreateROI create_roi,
+                               Cv_iplCloneImage clone_image );
 
-CX_EXTERN_C_FUNCPTR(IplROI* (CX_STDCALL* Cx_iplCreateROI)(int,int,int,int,int));
-
-CX_EXTERN_C_FUNCPTR(IplImage* (CX_STDCALL* Cx_iplCloneImage)(const IplImage*));
-
-
-/* Makes OpenCX use IPL functions for IplImage allocation/deallocation */
-CXCOREAPI void cxSetIPLAllocators( Cx_iplCreateImageHeader createHeader,
-                                   Cx_iplAllocateImageData allocateData,
-                                   Cx_iplDeallocate deallocate,
-                                   Cx_iplCreateROI createROI,
-                                   Cx_iplCloneImage cloneImage );
-
-#define CX_TURN_ON_IPL_COMPATIBILITY()                                  \
-    cxSetIPLAllocators( iplCreateImageHeader, iplAllocateImage,         \
+#define CV_TURN_ON_IPL_COMPATIBILITY()                                  \
+    cvSetIPLAllocators( iplCreateImageHeader, iplAllocateImage,         \
                         iplDeallocate, iplCreateROI, iplCloneImage )
 
 /****************************************************************************************\
@@ -1517,149 +1562,189 @@ CXCOREAPI void cxSetIPLAllocators( Cx_iplCreateImageHeader createHeader,
 
 /********************************** High-level functions ********************************/
 
-/* "black box" file storage */
-typedef struct CxFileStorage CxFileStorage;
-
-/* storage flags */
-#define CX_STORAGE_READ          0
-#define CX_STORAGE_WRITE_TEXT    1
-#define CX_STORAGE_WRITE_BINARY  2
-
-/* write flags */
-#define CX_WRITE_TREE      2 /* flag for storing sequence trees */
-
 /* opens existing or creates new file storage */
-CXCOREAPI  CxFileStorage*  cxOpenFileStorage( const char* filename,
-                                              CxMemStorage* storage,
-                                              int flags );
+CVAPI(CvFileStorage*)  cvOpenFileStorage( const char* filename,
+                                          CvMemStorage* memstorage,
+                                          int flags );
 
 /* closes file storage and deallocates buffers */
-CXCOREAPI  void cxReleaseFileStorage( CxFileStorage** storage );
+CVAPI(void) cvReleaseFileStorage( CvFileStorage** fs );
 
-/* list of attributes */
-typedef struct CxAttrList
+/* returns attribute value or 0 (NULL) if there is no such attribute */
+CVAPI(const char*) cvAttrValue( const CvAttrList* attr, const char* attr_name );
+
+/* starts writing compound structure (map or sequence) */
+CVAPI(void) cvStartWriteStruct( CvFileStorage* fs, const char* name,
+                                int struct_flags, const char* type_name CV_DEFAULT(NULL),
+                                CvAttrList attributes CV_DEFAULT(cvAttrList()));
+
+/* finishes writing compound structure */
+CVAPI(void) cvEndWriteStruct( CvFileStorage* fs );
+
+/* writes an integer */
+CVAPI(void) cvWriteInt( CvFileStorage* fs, const char* name, int value );
+
+/* writes a floating-point number */
+CVAPI(void) cvWriteReal( CvFileStorage* fs, const char* name, double value );
+
+/* writes a string */
+CVAPI(void) cvWriteString( CvFileStorage* fs, const char* name,
+                           const char* str, int quote CV_DEFAULT(0) );
+
+/* writes a comment */
+CVAPI(void) cvWriteComment( CvFileStorage* fs, const char* comment,
+                            int eol_comment );
+
+/* writes instance of a standard type (matrix, image, sequence, graph etc.)
+   or user-defined type */
+CVAPI(void) cvWrite( CvFileStorage* fs, const char* name, const void* ptr,
+                         CvAttrList attributes CV_DEFAULT(cvAttrList()));
+
+/* starts the next stream */
+CVAPI(void) cvStartNextStream( CvFileStorage* fs );
+
+/* helper function: writes multiple integer or floating-point numbers */
+CVAPI(void) cvWriteRawData( CvFileStorage* fs, const void* src,
+                                int len, const char* dt );
+
+/* returns the hash entry corresponding to the specified literal key string or 0
+   if there is no such a key in the storage */
+CVAPI(CvStringHashNode*) cvGetHashedKey( CvFileStorage* fs, const char* name,
+                                        int len CV_DEFAULT(-1),
+                                        int create_missing CV_DEFAULT(0));
+
+/* returns file node with the specified key within the specified map
+   (collection of named nodes) */
+CVAPI(CvFileNode*) cvGetRootFileNode( const CvFileStorage* fs,
+                                     int stream_index CV_DEFAULT(0) );
+
+/* returns file node with the specified key within the specified map
+   (collection of named nodes) */
+CVAPI(CvFileNode*) cvGetFileNode( CvFileStorage* fs, CvFileNode* map,
+                                 const CvStringHashNode* key,
+                                 int create_missing CV_DEFAULT(0) );
+
+/* this is a slower version of cvGetFileNode that takes the key as a literal string */
+CVAPI(CvFileNode*) cvGetFileNodeByName( const CvFileStorage* fs,
+                                       const CvFileNode* map,
+                                       const char* name );
+
+CV_INLINE int cvReadInt( const CvFileNode* node, int default_value CV_DEFAULT(0) )
 {
-    char** attr; /* NULL-terminated array of (attribute_name,attribute_value) pairs */
-    struct CxAttrList* next; /* pointer to next chunk of the attributes list */
-}
-CxAttrList;
-
-CX_INLINE CxAttrList cxAttrList( char** attr CX_DEFAULT(NULL),
-                                 CxAttrList* next CX_DEFAULT(NULL) );
-CX_INLINE CxAttrList cxAttrList( char** attr, CxAttrList* next )
-{
-    CxAttrList l;
-    l.attr = attr;
-    l.next = next;
-
-    return l;
-}
-
-CXCOREAPI const char* cxAttrValue( const CxAttrList* attr, const char* attr_name );
-
-struct CxTypeInfo;
-
-typedef struct CxFileNode
-{
-    CX_TREE_NODE_FIELDS(CxFileNode)
-    const char* tagname;
-    const char* name;
-    CxAttrList* attr;
-    struct CxFileNode* hash_next;
-    unsigned hash_val;
-    int elem_size;
-    struct CxTypeInfo* typeinfo;
-    const char* body;
-    const void* content;
-}
-CxFileNode;
-
-
-/* writes matrix, image, sequence, graph etc. */
-CXCOREAPI  void cxWrite( CxFileStorage* storage, const char* name,
-                         const void* struct_ptr,
-                         CxAttrList attributes CX_DEFAULT(cxAttrList()),
-                         int flags CX_DEFAULT(0));
-
-/* writes opening tag of a compound object (used internally by cxWrite) */
-CXCOREAPI  void cxStartWriteStruct( CxFileStorage* storage, const char* name,
-                                    const char* type_name CX_DEFAULT(NULL),
-                                    const void* struct_ptr CX_DEFAULT(NULL),
-                                    CxAttrList attributes CX_DEFAULT(cxAttrList()));
-
-/* writes closing tag of a compound object (used internally by cxWrite) */
-CXCOREAPI  void cxEndWriteStruct( CxFileStorage* storage );
-
-/* writes a basic type value or a C structure of such values */
-CXCOREAPI  void cxWriteElem( CxFileStorage* storage,
-                             const char* name,
-                             const char* elem_spec,
-                             const void* data_ptr );
-
-/* finds the specified noe of file storage */
-CXCOREAPI  CxFileNode* cxGetFileNode( CxFileStorage* storage, const char* name );
-
-/* reads matrix, image, sequence, graph etc. */
-CXCOREAPI  const void* cxReadFileNode( CxFileStorage* storage, CxFileNode* node,
-                                       CxAttrList** attr_list CX_DEFAULT(NULL));
-
-CX_INLINE  const void* cxRead( CxFileStorage* storage, const char* name,
-                               CxAttrList** attr_list CX_DEFAULT(NULL) );
-CX_INLINE  const void* cxRead( CxFileStorage* storage, const char* name, CxAttrList** attr_list )
-{
-    return cxReadFileNode( storage, cxGetFileNode( storage, name ), attr_list );
+    return !node ? default_value :
+        CV_NODE_IS_INT(node->tag) ? node->data.i :
+        CV_NODE_IS_REAL(node->tag) ? cvRound(node->data.f) : 0x7fffffff;
 }
 
-/* read a basic type value or a C structure of such values */
-CXCOREAPI  int cxReadElem( CxFileStorage* storage, const char* name, void* data_ptr );
+
+CV_INLINE int cvReadIntByName( const CvFileStorage* fs, const CvFileNode* map,
+                         const char* name, int default_value CV_DEFAULT(0) )
+{
+    return cvReadInt( cvGetFileNodeByName( fs, map, name ), default_value );
+}
+
+
+CV_INLINE double cvReadReal( const CvFileNode* node, double default_value CV_DEFAULT(0.) )
+{
+    return !node ? default_value :
+        CV_NODE_IS_INT(node->tag) ? (double)node->data.i :
+        CV_NODE_IS_REAL(node->tag) ? node->data.f : 1e300;
+}
+
+
+CV_INLINE double cvReadRealByName( const CvFileStorage* fs, const CvFileNode* map,
+                        const char* name, double default_value CV_DEFAULT(0.) )
+{
+    return cvReadReal( cvGetFileNodeByName( fs, map, name ), default_value );
+}
+
+
+CV_INLINE const char* cvReadString( const CvFileNode* node,
+                        const char* default_value CV_DEFAULT(NULL) )
+{
+    return !node ? default_value : CV_NODE_IS_STRING(node->tag) ? node->data.str.ptr : 0;
+}
+
+
+CV_INLINE const char* cvReadStringByName( const CvFileStorage* fs, const CvFileNode* map,
+                        const char* name, const char* default_value CV_DEFAULT(NULL) )
+{
+    return cvReadString( cvGetFileNodeByName( fs, map, name ), default_value );
+}
+
+
+/* decodes standard or user-defined object and returns it */
+CVAPI(void*) cvRead( CvFileStorage* fs, CvFileNode* node,
+                        CvAttrList* attributes CV_DEFAULT(NULL));
+
+/* decodes standard or user-defined object and returns it */
+CV_INLINE void* cvReadByName( CvFileStorage* fs, const CvFileNode* map,
+                              const char* name, CvAttrList* attributes CV_DEFAULT(NULL) )
+{
+    return cvRead( fs, cvGetFileNodeByName( fs, map, name ), attributes );
+}
+
+
+/* starts reading data from sequence or scalar numeric node */
+CVAPI(void) cvStartReadRawData( const CvFileStorage* fs, const CvFileNode* src,
+                               CvSeqReader* reader );
+
+/* reads multiple numbers and stores them to array */
+CVAPI(void) cvReadRawDataSlice( const CvFileStorage* fs, CvSeqReader* reader,
+                               int count, void* dst, const char* dt );
+
+/* combination of two previous functions for easier reading of whole sequences */
+CVAPI(void) cvReadRawData( const CvFileStorage* fs, const CvFileNode* src,
+                          void* dst, const char* dt );
+
+/* writes a copy of file node to file storage */
+CVAPI(void) cvWriteFileNode( CvFileStorage* fs, const char* new_node_name,
+                            const CvFileNode* node, int embed );
+
+/* returns name of file node */
+CVAPI(const char*) cvGetFileNodeName( const CvFileNode* node );
 
 /*********************************** Adding own types ***********************************/
 
-CX_EXTERN_C_FUNCPTR(int (CX_CDECL *CxIsInstanceFunc)(const void* struct_ptr));
-CX_EXTERN_C_FUNCPTR(void (CX_CDECL *CxReleaseFunc)(void** struct_dblptr));
-CX_EXTERN_C_FUNCPTR(void* (CX_CDECL *CxReadFunc)( CxFileStorage* storage,
-                                                  CxFileNode* node ));
-CX_EXTERN_C_FUNCPTR(void (CX_CDECL *CxWriteFunc)( CxFileStorage* storage,
-                                                  const char* name,
-                                                  const void* struct_ptr,
-                                                  CxAttrList attributes,
-                                                  int flags ));
-CX_EXTERN_C_FUNCPTR(void* (CX_CDECL *CxCloneFunc)( const void* struct_ptr));
-
-typedef struct CxTypeInfo
-{
-    int flags;
-    int header_size;
-    struct CxTypeInfo* prev;
-    struct CxTypeInfo* next;
-    const char* type_name;
-    CxIsInstanceFunc is_instance;
-    CxReleaseFunc release;
-    CxReadFunc read;
-    CxWriteFunc write;
-    CxCloneFunc clone;
-}
-CxTypeInfo;
-
-CXCOREAPI  CxTypeInfo* cxRegisterType( CxTypeInfo* info_data );
-CXCOREAPI  void        cxUnregisterType( const char* type_name );
-CXCOREAPI  CxTypeInfo* cxFirstType(void);
-CXCOREAPI  CxTypeInfo* cxFindType( const char* type_name );
-CXCOREAPI  CxTypeInfo* cxTypeOf( const void* struct_ptr );
+CVAPI(void) cvRegisterType( const CvTypeInfo* info );
+CVAPI(void) cvUnregisterType( const char* type_name );
+CVAPI(CvTypeInfo*) cvFirstType(void);
+CVAPI(CvTypeInfo*) cvFindType( const char* type_name );
+CVAPI(CvTypeInfo*) cvTypeOf( const void* struct_ptr );
 
 /* universal functions */
-CXCOREAPI  void cxRelease( void** struct_ptr );
-CXCOREAPI  void* cxClone( const void* struct_ptr );
+CVAPI(void) cvRelease( void** struct_ptr );
+CVAPI(void*) cvClone( const void* struct_ptr );
+
+/* simple API for reading/writing data */
+CVAPI(void) cvSave( const char* filename, const void* struct_ptr,
+                    const char* name CV_DEFAULT(NULL),
+                    const char* comment CV_DEFAULT(NULL),
+                    CvAttrList attributes CV_DEFAULT(cvAttrList()));
+CVAPI(void*) cvLoad( const char* filename,
+                     CvMemStorage* memstorage CV_DEFAULT(NULL),
+                     const char* name CV_DEFAULT(NULL),
+                     const char** real_name CV_DEFAULT(NULL) );
 
 /*********************************** Measuring Execution Time ***************************/
 
 /* helper functions for RNG initialization and accurate time measurement:
    uses internal clock counter on x86 */
-CXCOREAPI  int64  cxGetTickCount( void );
-CXCOREAPI  double cxGetTickFrequency( void ); 
+CVAPI(int64)  cvGetTickCount( void );
+CVAPI(double) cvGetTickFrequency( void );
+
+/*********************************** Multi-Threading ************************************/
+
+/* retrieve/set the number of threads used in OpenMP implementations */
+CVAPI(int)  cvGetNumThreads( void );
+CVAPI(void) cvSetNumThreads( int threads CV_DEFAULT(0) );
+/* get index of the thread being executed */
+CVAPI(int)  cvGetThreadNum( void );
 
 #ifdef __cplusplus
 }
+
+#include "cxcore.hpp"
 #endif
 
 #endif /*_CXCORE_H_*/

@@ -41,7 +41,7 @@
 
 /* ////////////////////////////////////////////////////////////////////
 //
-//  CxMat logical operations: &, |, ^ ...
+//  CvMat logical operations: &, |, ^ ...
 //
 // */
 
@@ -58,34 +58,37 @@
 ////////////////////////////////////////////////////////////////////////////////////// */
 
 
-#define ICX_DEF_BIN_LOG_OP_2D( __op__, name )                                       \
-IPCXAPI_IMPL( CxStatus, icx##name##_8u_C1R,                                         \
+#define ICV_DEF_BIN_LOG_OP_2D( __op__, name )                                       \
+IPCVAPI_IMPL( CvStatus, icv##name##_8u_C1R,                                         \
 ( const uchar* src1, int step1, const uchar* src2, int step2,                       \
-  uchar* dst, int step, CxSize size ))                                              \
+  uchar* dst, int step, CvSize size ), (src1, step1, src2, step2, dst, step, size) )\
 {                                                                                   \
     for( ; size.height--; src1 += step1, src2 += step2, dst += step )               \
     {                                                                               \
-        int i;                                                                      \
+        int i = 0;                                                                  \
                                                                                     \
-        for( i = 0; i <= size.width - 16; i += 16 )                                 \
+        if( (((size_t)src1 | (size_t)src2 | (size_t)dst) & 3) == 0 )                \
         {                                                                           \
-            int t0 = __op__(((const int*)(src1+i))[0], ((const int*)(src2+i))[0]);  \
-            int t1 = __op__(((const int*)(src1+i))[1], ((const int*)(src2+i))[1]);  \
+            for( ; i <= size.width - 16; i += 16 )                                  \
+            {                                                                       \
+                int t0 = __op__(((const int*)(src1+i))[0], ((const int*)(src2+i))[0]);\
+                int t1 = __op__(((const int*)(src1+i))[1], ((const int*)(src2+i))[1]);\
                                                                                     \
-            ((int*)(dst+i))[0] = t0;                                                \
-            ((int*)(dst+i))[1] = t1;                                                \
+                ((int*)(dst+i))[0] = t0;                                            \
+                ((int*)(dst+i))[1] = t1;                                            \
                                                                                     \
-            t0 = __op__(((const int*)(src1+i))[2], ((const int*)(src2+i))[2]);      \
-            t1 = __op__(((const int*)(src1+i))[3], ((const int*)(src2+i))[3]);      \
+                t0 = __op__(((const int*)(src1+i))[2], ((const int*)(src2+i))[2]);  \
+                t1 = __op__(((const int*)(src1+i))[3], ((const int*)(src2+i))[3]);  \
                                                                                     \
-            ((int*)(dst+i))[2] = t0;                                                \
-            ((int*)(dst+i))[3] = t1;                                                \
-        }                                                                           \
+                ((int*)(dst+i))[2] = t0;                                            \
+                ((int*)(dst+i))[3] = t1;                                            \
+            }                                                                       \
                                                                                     \
-        for( ; i <= size.width - 4; i += 4 )                                        \
-        {                                                                           \
-            int t = __op__(*(const int*)(src1+i), *(const int*)(src2+i));           \
-            *(int*)(dst+i) = t;                                                     \
+            for( ; i <= size.width - 4; i += 4 )                                    \
+            {                                                                       \
+                int t = __op__(*(const int*)(src1+i), *(const int*)(src2+i));       \
+                *(int*)(dst+i) = t;                                                 \
+            }                                                                       \
         }                                                                           \
                                                                                     \
         for( ; i < size.width; i++ )                                                \
@@ -95,7 +98,7 @@ IPCXAPI_IMPL( CxStatus, icx##name##_8u_C1R,                                     
         }                                                                           \
     }                                                                               \
                                                                                     \
-    return  CX_OK;                                                                  \
+    return  CV_OK;                                                                  \
 }
 
 
@@ -104,11 +107,10 @@ IPCXAPI_IMPL( CxStatus, icx##name##_8u_C1R,                                     
 ////////////////////////////////////////////////////////////////////////////////////// */
 
 
-#define ICX_DEF_UN_LOG_OP_2D( __op__, name )                                            \
-IPCXAPI_IMPL( CxStatus, icx##name##_8u_C1R,                                             \
-( const uchar* src0, int step1,                                                         \
-  uchar* dst0, int step, CxSize size,                                                   \
-  const uchar* scalar, int pix_size ))                                                  \
+#define ICV_DEF_UN_LOG_OP_2D( __op__, name )                                            \
+static CvStatus CV_STDCALL icv##name##_8u_CnR                                           \
+( const uchar* src0, int step1, uchar* dst0, int step, CvSize size,                     \
+  const uchar* scalar, int pix_size )                                                   \
 {                                                                                       \
     int delta = 12*pix_size;                                                            \
                                                                                         \
@@ -118,22 +120,43 @@ IPCXAPI_IMPL( CxStatus, icx##name##_8u_C1R,                                     
         uchar* dst = dst0;                                                              \
         int i, len = size.width;                                                        \
                                                                                         \
-        while( (len -= delta) >= 0 )                                                    \
+        if( (((size_t)src|(size_t)dst) & 3) == 0 )                                      \
         {                                                                               \
-            for( i = 0; i < (delta); i += 12 )                                          \
+            while( (len -= delta) >= 0 )                                                \
             {                                                                           \
-                int t0 = __op__(((const int*)(src+i))[0], ((const int*)(scalar+i))[0]); \
-                int t1 = __op__(((const int*)(src+i))[1], ((const int*)(scalar+i))[1]); \
+                for( i = 0; i < (delta); i += 12 )                                      \
+                {                                                                       \
+                    int t0 = __op__(((const int*)(src+i))[0], ((const int*)(scalar+i))[0]); \
+                    int t1 = __op__(((const int*)(src+i))[1], ((const int*)(scalar+i))[1]); \
+                    ((int*)(dst+i))[0] = t0;                                            \
+                    ((int*)(dst+i))[1] = t1;                                            \
                                                                                         \
-                ((int*)(dst+i))[0] = t0;                                                \
-                ((int*)(dst+i))[1] = t1;                                                \
-                                                                                        \
-                t0 = __op__(((const int*)(src+i))[2], ((const int*)(scalar+i))[2]);     \
-                                                                                        \
-                ((int*)(dst+i))[2] = t0;                                                \
+                    t0 = __op__(((const int*)(src+i))[2], ((const int*)(scalar+i))[2]); \
+                    ((int*)(dst+i))[2] = t0;                                            \
+                }                                                                       \
+                src += delta;                                                           \
+                dst += delta;                                                           \
             }                                                                           \
-            src += delta;                                                               \
-            dst += delta;                                                               \
+        }                                                                               \
+        else                                                                            \
+        {                                                                               \
+            while( (len -= delta) >= 0 )                                                \
+            {                                                                           \
+                for( i = 0; i < (delta); i += 4 )                                       \
+                {                                                                       \
+                    int t0 = __op__(src[i], scalar[i]);                                 \
+                    int t1 = __op__(src[i+1], scalar[i+1]);                             \
+                    dst[i] = (uchar)t0;                                                 \
+                    dst[i+1] = (uchar)t1;                                               \
+                                                                                        \
+                    t0 = __op__(src[i+2], scalar[i+2]);                                 \
+                    t1 = __op__(src[i+3], scalar[i+3]);                                 \
+                    dst[i+2] = (uchar)t0;                                               \
+                    dst[i+3] = (uchar)t1;                                               \
+                }                                                                       \
+                src += delta;                                                           \
+                dst += delta;                                                           \
+            }                                                                           \
         }                                                                               \
                                                                                         \
         for( len += delta, i = 0; i < len; i++ )                                        \
@@ -143,165 +166,8 @@ IPCXAPI_IMPL( CxStatus, icx##name##_8u_C1R,                                     
         }                                                                               \
     }                                                                                   \
                                                                                         \
-    return CX_OK;                                                                       \
+    return CV_OK;                                                                       \
 }
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                     //
-//                             Macros for logic operations with mask                   //
-//                                                                                     //
-/////////////////////////////////////////////////////////////////////////////////////////
-
-/* //////////////////////////////////////////////////////////////////////////////////////
-                                    Mat op Mat
-////////////////////////////////////////////////////////////////////////////////////// */
-
-#define ICX_DEF_BIN_LOG_OP_MASK( __op__, _mask_op_, arrtype, worktype,          \
-                                 src, dst, mask, len, cn )                      \
-{                                                                               \
-    int i;                                                                      \
-    for( i = 0; i <= (len) - 4; i += 4, src += 4*(cn), dst += 4*(cn) )          \
-    {                                                                           \
-        int k = cn - 1;                                                         \
-        int m = 0;                                                              \
-                                                                                \
-        do                                                                      \
-        {                                                                       \
-            worktype t0 = (mask)[i] ? -1 : 0;                                   \
-            worktype t1 = (mask)[i+1] ? -1 : 0;                                 \
-                                                                                \
-            t0 = _mask_op_( t0, (src)[k]);                                      \
-            t1 = _mask_op_( t1, (src)[k+(cn)]);                                 \
-                                                                                \
-            t0 = __op__( t0, (dst)[k]);                                         \
-            t1 = __op__( t1, (dst)[k+(cn)]);                                    \
-                                                                                \
-            (dst)[k] = (arrtype)t0;                                             \
-            (dst)[k+(cn)] = (arrtype)t1;                                        \
-                                                                                \
-            t0 = (mask)[i+2] ? -1 : 0;                                          \
-            t1 = (mask)[i+3] ? -1 : 0;                                          \
-                                                                                \
-            t0 = _mask_op_( t0, (src)[k+2*(cn)]);                               \
-            t1 = _mask_op_( t1, (src)[k+3*(cn)]);                               \
-                                                                                \
-            t0 = __op__( t0, (dst)[k+2*(cn)]);                                  \
-            t1 = __op__( t1, (dst)[k+3*(cn)]);                                  \
-                                                                                \
-            (dst)[k+2*(cn)] = (arrtype)t0;                                      \
-            (dst)[k+3*(cn)] = (arrtype)t1;                                      \
-        }                                                                       \
-        while( k-- && (m || (m = (mask[i]|mask[i+1]|mask[i+2]|mask[i+3])) != 0));\
-    }                                                                           \
-                                                                                \
-    for( ; i < (len); i++, src += cn, dst += cn )                               \
-    {                                                                           \
-        int k = cn - 1;                                                         \
-        do                                                                      \
-        {                                                                       \
-            worktype t = (mask)[i] ? -1 : 0;                                    \
-            t = _mask_op_( t, (src)[k] );                                       \
-            t = __op__( t, (dst)[k] );                                          \
-            (dst)[k] = (arrtype)t;                                              \
-        }                                                                       \
-        while( k-- && mask[i] != 0 );                                           \
-    }                                                                           \
-}
-
-#define ICX_DEF_BIN_LOG_OP_MASK_2D( __op__, _mask_op_, name )                           \
-static CxStatus CX_STDCALL                                                              \
-icx##name##_8u_CnMR( const uchar* src, int step1, const uchar* mask, int step2,         \
-                     uchar* dst, int step, CxSize size, int cn )                        \
-{                                                                                       \
-    for( ; size.height--; (char*&)src += step1, mask += step2, (char*&)dst += step )    \
-    {                                                                                   \
-        const uchar* tsrc = src;                                                        \
-        uchar* tdst = dst;                                                              \
-                                                                                        \
-        ICX_DEF_BIN_LOG_OP_MASK( __op__, _mask_op_, uchar,                              \
-                                 int, tsrc, tdst, mask, size.width, cn )                \
-    }                                                                                   \
-                                                                                        \
-    return CX_OK;                                                                       \
-}
-
-
-/* //////////////////////////////////////////////////////////////////////////////////////
-                                     Mat op Scalar
-////////////////////////////////////////////////////////////////////////////////////// */
-
-
-#define ICX_DEF_UN_LOG_OP_MASK( __op__, _mask_op_, arrtype, worktype,           \
-                                dst, mask, len, cn )                            \
-{                                                                               \
-    int i;                                                                      \
-    for( i = 0; i <= (len) - 4; i += 4, dst += 4*(cn) )                         \
-    {                                                                           \
-        int k = cn - 1;                                                         \
-        int m = 0;                                                              \
-                                                                                \
-        do                                                                      \
-        {                                                                       \
-            arrtype value = scalar[k];                                          \
-            worktype t0 = (mask)[i] ? -1 : 0;                                   \
-            worktype t1 = (mask)[i+1] ? -1 : 0;                                 \
-                                                                                \
-            t0 = _mask_op_( t0, value );                                        \
-            t1 = _mask_op_( t1, value );                                        \
-                                                                                \
-            t0 = __op__( t0, (dst)[k]);                                         \
-            t1 = __op__( t1, (dst)[k+(cn)]);                                    \
-                                                                                \
-            (dst)[k] = (arrtype)t0;                                             \
-            (dst)[k+(cn)] = (arrtype)t1;                                        \
-                                                                                \
-            t0 = (mask)[i+2] ? -1 : 0;                                          \
-            t1 = (mask)[i+3] ? -1 : 0;                                          \
-                                                                                \
-            t0 = _mask_op_( t0, value );                                        \
-            t1 = _mask_op_( t1, value );                                        \
-                                                                                \
-            t0 = __op__( t0, (dst)[k+2*(cn)]);                                  \
-            t1 = __op__( t1, (dst)[k+3*(cn)]);                                  \
-                                                                                \
-            (dst)[k+2*(cn)] = (arrtype)t0;                                      \
-            (dst)[k+3*(cn)] = (arrtype)t1;                                      \
-        }                                                                       \
-        while( k-- && (m || (m = (mask[i]|mask[i+1]|mask[i+2]|mask[i+3])) != 0));\
-    }                                                                           \
-                                                                                \
-    for( ; i < (len); i++, dst += cn )                                          \
-    {                                                                           \
-        int k = cn - 1;                                                         \
-        do                                                                      \
-        {                                                                       \
-            worktype t = (mask)[i] ? -1 : 0;                                    \
-            t = _mask_op_( t, scalar[k] );                                      \
-            t = __op__( t, (dst)[k] );                                          \
-            (dst)[k] = (arrtype)t;                                              \
-        }                                                                       \
-        while( k-- && mask[i] != 0 );                                           \
-    }                                                                           \
-}
-
-
-#define ICX_DEF_UN_LOG_OP_MASK_2D( __op__, _mask_op_, name )                    \
-static CxStatus CX_STDCALL                                                      \
-icx##name##C_8u_CnMR( uchar* dst, int step, const uchar* mask, int maskstep,    \
-                      CxSize size, const uchar* scalar, int cn )                \
-{                                                                               \
-    for( ; size.height--; mask += maskstep, (char*&)dst += step )               \
-    {                                                                           \
-        uchar* tdst = dst;                                                      \
-                                                                                \
-        ICX_DEF_UN_LOG_OP_MASK( __op__, _mask_op_, uchar, int,                  \
-                                tdst, mask, size.width, cn )                    \
-    }                                                                           \
-                                                                                \
-    return  CX_OK;                                                              \
-}
-
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
@@ -310,443 +176,374 @@ icx##name##C_8u_CnMR( uchar* dst, int step, const uchar* mask, int maskstep,    
 /////////////////////////////////////////////////////////////////////////////////////////
 
 static void
-icxLogicS( const void* srcarr, CxScalar* scalar,
-           void* dstarr, CxFunc2D_2A1P1I fn_2d )
+icvLogicS( const void* srcarr, CvScalar* scalar, void* dstarr,
+           const void* maskarr, CvFunc2D_2A1P1I fn_2d )
 {
-    CX_FUNCNAME( "icxLogicS" );
+    uchar* buffer = 0;
+    int local_alloc = 1;
+    
+    CV_FUNCNAME( "icvLogicS" );
     
     __BEGIN__;
 
-    CxMat srcstub, *src = (CxMat*)srcarr;
-    CxMat dststub, *dst = (CxMat*)dstarr;
+    CvMat srcstub, *src = (CvMat*)srcarr;
+    CvMat dststub, *dst = (CvMat*)dstarr;
+    CvMat maskstub, *mask = (CvMat*)maskarr;
+    CvMat dstbuf, *tdst;
+    CvCopyMaskFunc copym_func = 0;
     
+    int y, dy;
     int coi1 = 0, coi2 = 0;
-    int is_nd = 0;
-    int pix_size, type;
+    int is_nd = 0, cont_flag = 0;
+    int elem_size, elem_size1, type, depth;
     double buf[12];
-    CxSize size;
-    int src_step, dst_step;
+    CvSize size, tsize;
+    int src_step, dst_step, tdst_step, mask_step;
 
-    if( !CX_IS_MAT(src))
+    if( !CV_IS_MAT(src))
     {
-        if( CX_IS_MATND(src) )
+        if( CV_IS_MATND(src) )
             is_nd = 1;
         else
-            CX_CALL( src = cxGetMat( src, &srcstub, &coi1 ));
+            CV_CALL( src = cvGetMat( src, &srcstub, &coi1 ));
     }
 
-    if( !CX_IS_MAT(dst))
+    if( !CV_IS_MAT(dst))
     {
-        if( CX_IS_MATND(dst) )
+        if( CV_IS_MATND(dst) )
             is_nd = 1;
         else
-            CX_CALL( dst = cxGetMat( dst, &dststub, &coi2 ));
+            CV_CALL( dst = cvGetMat( dst, &dststub, &coi2 ));
     }
 
     if( is_nd )
     {
-        CxArr* arrs[] = { src, dst };
-        CxMatND stubs[2];
-        CxNArrayIterator iterator;
+        CvArr* arrs[] = { src, dst };
+        CvMatND stubs[2];
+        CvNArrayIterator iterator;
 
-        CX_CALL( cxInitNArrayIterator( 2, arrs, 0, stubs, &iterator ));
+        if( maskarr )
+            CV_ERROR( CV_StsBadMask,
+            "This operation on multi-dimensional arrays does not support mask" );
 
-        type = CX_MAT_TYPE(iterator.hdr[0]->type);
-        iterator.size.width *= icxPixSize[type];
-        pix_size = icxPixSize[type & CX_MAT_DEPTH_MASK];
+        CV_CALL( cvInitNArrayIterator( 2, arrs, 0, stubs, &iterator ));
 
-        CX_CALL( cxScalarToRawData( scalar, buf, type, 1 ));
+        type = CV_MAT_TYPE(iterator.hdr[0]->type);
+        depth = CV_MAT_DEPTH(type);
+        iterator.size.width *= CV_ELEM_SIZE(type);
+        elem_size1 = CV_ELEM_SIZE1(depth);
+
+        CV_CALL( cvScalarToRawData( scalar, buf, type, 1 ));
 
         do
         {
-            IPPI_CALL( fn_2d( iterator.ptr[0], CX_STUB_STEP,
-                              iterator.ptr[1], CX_STUB_STEP,
-                              iterator.size, buf, pix_size ));
+            IPPI_CALL( fn_2d( iterator.ptr[0], CV_STUB_STEP,
+                              iterator.ptr[1], CV_STUB_STEP,
+                              iterator.size, buf, elem_size1 ));
         }
-        while( cxNextNArraySlice( &iterator ));
+        while( cvNextNArraySlice( &iterator ));
         EXIT;
     }
 
     if( coi1 != 0 || coi2 != 0 )
-        CX_ERROR( CX_BadCOI, "" );
+        CV_ERROR( CV_BadCOI, "" );
 
-    if( !CX_ARE_TYPES_EQ( src, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+    if( !CV_ARE_TYPES_EQ( src, dst ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
 
-    if( !CX_ARE_SIZES_EQ( src, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+    if( !CV_ARE_SIZES_EQ( src, dst ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
 
-    size = cxGetMatSize( src );
-    src_step = src->step;
-    dst_step = dst->step;
+    size = cvGetMatSize( src );
+    type = CV_MAT_TYPE(src->type);
+    depth = CV_MAT_DEPTH(type);
+    elem_size = CV_ELEM_SIZE(type);
+    elem_size1 = CV_ELEM_SIZE1(depth);
 
-    if( CX_IS_MAT_CONT( src->type & dst->type ))
+    if( !mask )
     {
-        size.width *= size.height;
-        src_step = dst_step = CX_STUB_STEP;
-        size.height = 1;
+        cont_flag = CV_IS_MAT_CONT( src->type & dst->type );
+        dy = size.height;
+        tdst = dst;
+    }
+    else
+    {
+        int buf_size;
+        
+        if( !CV_IS_MAT(mask) )
+            CV_CALL( mask = cvGetMat( mask, &maskstub ));
+
+        if( !CV_IS_MASK_ARR(mask))
+            CV_ERROR( CV_StsBadMask, "" );
+
+        if( !CV_ARE_SIZES_EQ( mask, dst ))
+            CV_ERROR( CV_StsUnmatchedSizes, "" );
+
+        cont_flag = CV_IS_MAT_CONT( src->type & dst->type & mask->type );
+        dy = CV_MAX_LOCAL_SIZE/(elem_size*size.height);
+        dy = MAX(dy,1);
+        dy = MIN(dy,size.height);
+        dstbuf = cvMat( dy, size.width, type );
+        if( !cont_flag )
+            dstbuf.step = cvAlign( dstbuf.step, 8 );
+        buf_size = dstbuf.step ? dstbuf.step*dy : size.width*elem_size;
+        if( buf_size > CV_MAX_LOCAL_SIZE )
+        {
+            CV_CALL( buffer = (uchar*)cvAlloc( buf_size ));
+            local_alloc = 0;
+        }
+        else
+            buffer = (uchar*)cvStackAlloc( buf_size );
+        dstbuf.data.ptr = buffer;
+        tdst = &dstbuf;
+        
+        copym_func = icvGetCopyMaskFunc( elem_size );
     }
 
-    type = CX_MAT_TYPE( src->type );
-    size.width *= icxPixSize[type];
-    pix_size = icxPixSize[type & CX_MAT_DEPTH_MASK];
+    src_step = src->step;
+    dst_step = dst->step;
+    tdst_step = tdst->step;
+    mask_step = mask ? mask->step : 0;
+    CV_CALL( cvScalarToRawData( scalar, buf, type, 1 ));
 
-    CX_CALL( cxScalarToRawData( scalar, buf, type, 1 ));
-
-    IPPI_CALL( fn_2d( src->data.ptr, src_step, dst->data.ptr, dst_step,
-                      size, buf, pix_size ));
+    for( y = 0; y < size.height; y += dy )
+    {
+        tsize.width = size.width;
+        tsize.height = dy;
+        if( y + dy > size.height )
+            tsize.height = size.height - y;
+        if( cont_flag || tsize.height == 1 )
+        {
+            tsize.width *= tsize.height;
+            tsize.height = 1;
+            src_step = tdst_step = dst_step = mask_step = CV_STUB_STEP;
+        }
+        IPPI_CALL( fn_2d( src->data.ptr + y*src->step, src_step, tdst->data.ptr, tdst_step,
+                          cvSize(tsize.width*elem_size, tsize.height), buf, elem_size1 ));
+        if( mask )
+        {
+            IPPI_CALL( copym_func( tdst->data.ptr, tdst_step, dst->data.ptr + y*dst->step,
+                                   dst_step, tsize, mask->data.ptr + y*mask->step, mask_step ));
+        }
+    }
 
     __END__;
+
+    if( !local_alloc )
+        cvFree( &buffer );
 }
 
 
 static void
-icxLogic( const void* srcimg1, const void* srcimg2,
-          void* dstarr, CxFunc2D_3A fn_2d )
+icvLogic( const void* srcarr1, const void* srcarr2, void* dstarr,
+          const void* maskarr, CvFunc2D_3A fn_2d )
 {
-    CX_FUNCNAME( "icxLogic" );
+    uchar* buffer = 0;
+    int local_alloc = 1;
+
+    CV_FUNCNAME( "icvLogic" );
     
     __BEGIN__;
 
+    int y, dy;
     int coi1 = 0, coi2 = 0, coi3 = 0;
-    int is_nd = 0;
-    CxMat  srcstub1, *src1 = (CxMat*)srcimg1;
-    CxMat  srcstub2, *src2 = (CxMat*)srcimg2;
-    CxMat  dststub,  *dst = (CxMat*)dstarr;
-    int src1_step, src2_step, dst_step;
-    CxSize size;
+    int type, elem_size;
+    int is_nd = 0, cont_flag = 0;
+    CvMat  srcstub1, *src1 = (CvMat*)srcarr1;
+    CvMat  srcstub2, *src2 = (CvMat*)srcarr2;
+    CvMat  dststub,  *dst = (CvMat*)dstarr;
+    CvMat  maskstub, *mask = (CvMat*)maskarr;
+    CvMat  dstbuf, *tdst;
+    int src1_step, src2_step, tdst_step, dst_step, mask_step;
+    CvSize size, tsize;
+    CvCopyMaskFunc copym_func = 0;
 
-    if( !CX_IS_MAT(src1))
+    if( !CV_IS_MAT(src1))
     {
-        if( CX_IS_MATND(src1) )
+        if( CV_IS_MATND(src1) )
             is_nd = 1;
         else
-            CX_CALL( src1 = cxGetMat( src1, &srcstub1, &coi1 ));
+            CV_CALL( src1 = cvGetMat( src1, &srcstub1, &coi1 ));
     }
 
-    if( !CX_IS_MAT(src2))
+    if( !CV_IS_MAT(src2))
     {
-        if( CX_IS_MATND(src2) )
+        if( CV_IS_MATND(src2) )
             is_nd = 1;
         else
-            CX_CALL( src2 = cxGetMat( src2, &srcstub2, &coi2 ));
+            CV_CALL( src2 = cvGetMat( src2, &srcstub2, &coi2 ));
     }
 
-    if( !CX_IS_MAT(dst))
+    if( !CV_IS_MAT(dst))
     {
-        if( CX_IS_MATND(dst) )
+        if( CV_IS_MATND(dst) )
             is_nd = 1;
         else
-            CX_CALL( dst = cxGetMat( dst, &dststub, &coi3 ));
+            CV_CALL( dst = cvGetMat( dst, &dststub, &coi3 ));
     }
 
     if( is_nd )
     {
-        CxArr* arrs[] = { src1, src2, dst };
-        CxMatND stubs[3];
-        CxNArrayIterator iterator;
-        int type;
+        CvArr* arrs[] = { src1, src2, dst };
+        CvMatND stubs[3];
+        CvNArrayIterator iterator;
 
-        CX_CALL( cxInitNArrayIterator( 3, arrs, 0, stubs, &iterator ));
+        if( maskarr )
+            CV_ERROR( CV_StsBadMask,
+            "This operation on multi-dimensional arrays does not support mask" );
 
-        type = CX_MAT_TYPE(iterator.hdr[0]->type);
-        iterator.size.width *= icxPixSize[type];
+        CV_CALL( cvInitNArrayIterator( 3, arrs, 0, stubs, &iterator ));
+
+        type = CV_MAT_TYPE(iterator.hdr[0]->type);
+        iterator.size.width *= CV_ELEM_SIZE(type);
 
         do
         {
-            IPPI_CALL( fn_2d( iterator.ptr[0], CX_STUB_STEP,
-                              iterator.ptr[1], CX_STUB_STEP,
-                              iterator.ptr[2], CX_STUB_STEP,
+            IPPI_CALL( fn_2d( iterator.ptr[0], CV_STUB_STEP,
+                              iterator.ptr[1], CV_STUB_STEP,
+                              iterator.ptr[2], CV_STUB_STEP,
                               iterator.size ));
         }
-        while( cxNextNArraySlice( &iterator ));
+        while( cvNextNArraySlice( &iterator ));
         EXIT;
     }
 
     if( coi1 != 0 || coi2 != 0 || coi3 != 0 )
-        CX_ERROR_FROM_CODE( CX_BadCOI );
+        CV_ERROR_FROM_CODE( CV_BadCOI );
 
-    if( !CX_ARE_TYPES_EQ( src1, src2 ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+    if( !CV_ARE_TYPES_EQ( src1, src2 ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
 
-    if( !CX_ARE_SIZES_EQ( src1, src2 ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+    if( !CV_ARE_SIZES_EQ( src1, src2 ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
 
-    size = cxGetMatSize( src1 );
-        
-    if( !CX_ARE_TYPES_EQ( src1, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+    if( !CV_ARE_TYPES_EQ( src1, dst ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
     
-    if( !CX_ARE_SIZES_EQ( src1, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+    if( !CV_ARE_SIZES_EQ( src1, dst ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
+
+    size = cvGetMatSize( src1 );
+    type = CV_MAT_TYPE( src1->type );
+    elem_size = CV_ELEM_SIZE(type);
+
+    if( !mask )
+    {
+        cont_flag = CV_IS_MAT_CONT( src1->type & src2->type & dst->type );
+        dy = size.height;
+        tdst = dst;
+    }
+    else
+    {
+        int buf_size;
+        
+        if( !CV_IS_MAT(mask) )
+            CV_CALL( mask = cvGetMat( mask, &maskstub ));
+
+        if( !CV_IS_MASK_ARR(mask))
+            CV_ERROR( CV_StsBadMask, "" );
+
+        if( !CV_ARE_SIZES_EQ( mask, dst ))
+            CV_ERROR( CV_StsUnmatchedSizes, "" );
+
+        cont_flag = CV_IS_MAT_CONT( src1->type & src2->type & dst->type & mask->type );
+        dy = CV_MAX_LOCAL_SIZE/(elem_size*size.height);
+        dy = MAX(dy,1);
+        dy = MIN(dy,size.height);
+        dstbuf = cvMat( dy, size.width, type );
+        if( !cont_flag )
+            dstbuf.step = cvAlign( dstbuf.step, 8 );
+        buf_size = dstbuf.step ? dstbuf.step*dy : size.width*elem_size;
+        if( buf_size > CV_MAX_LOCAL_SIZE )
+        {
+            CV_CALL( buffer = (uchar*)cvAlloc( buf_size ));
+            local_alloc = 0;
+        }
+        else
+            buffer = (uchar*)cvStackAlloc( buf_size );
+        dstbuf.data.ptr = buffer;
+        tdst = &dstbuf;
+        
+        copym_func = icvGetCopyMaskFunc( elem_size );
+    }
 
     src1_step = src1->step;
     src2_step = src2->step;
     dst_step = dst->step;
+    tdst_step = tdst->step;
+    mask_step = mask ? mask->step : 0;
 
-    if( CX_IS_MAT_CONT( src1->type & src2->type & dst->type ))
+    for( y = 0; y < size.height; y += dy )
     {
-        size.width *= size.height;
-        src1_step = src2_step = dst_step = CX_STUB_STEP;
-        size.height = 1;
-    }
-
-    size.width *= icxPixSize[CX_MAT_TYPE(src1->type)];
-
-    IPPI_CALL( fn_2d( src1->data.ptr, src1_step, src2->data.ptr, src2_step,
-                      dst->data.ptr, dst_step, size ));
-
-    __END__;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                     //
-//                       LOGIC OPERATIONS WITH MASK SUPPORT                            //
-//                                                                                     //
-/////////////////////////////////////////////////////////////////////////////////////////
-
-static void
-icxLogicSM( const void* srcarr, CxScalar* scalar, void* dstarr,
-            const void* maskarr, CxArithmUniMaskFunc2D func )
-{
-    CX_FUNCNAME( "icxLogicSM" );
-    
-    __BEGIN__;
-
-    double buf[12];
-    int coi1 = 0, coi2 = 0;
-    CxMat  srcstub, *src = (CxMat*)srcarr;
-    CxMat  dststub, *dst = (CxMat*)dstarr;
-    CxMat  maskstub, *mask = (CxMat*)maskarr;
-    int pix_size, type;
-    int dst_step, mask_step;
-    CxSize size;
-
-    if( !CX_IS_MAT(src))
-        CX_CALL( src = cxGetMat( src, &srcstub, &coi1 ));
-
-    if( !CX_IS_MAT(dst))
-        CX_CALL( dst = cxGetMat( dst, &dststub ));
-
-    if( coi1 != 0 || coi2 != 0 )
-        CX_ERROR( CX_BadCOI, "" );
-
-    CX_CALL( mask = cxGetMat( mask, &maskstub ));
-
-    if( !CX_IS_MASK_ARR(mask) )
-        CX_ERROR_FROM_CODE( CX_StsBadMask );
-
-    if( !CX_ARE_SIZES_EQ( mask, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
-
-    if( src->data.ptr != dst->data.ptr )
-    {
-        CX_CALL( cxCopy( src, dst, mask ));
-    }
-
-    size = cxGetMatSize( dst );
-    dst_step = dst->step;
-    mask_step = mask->step;
-
-    if( CX_IS_MAT_CONT( mask->type & dst->type ))
-    {
-        size.width *= size.height;
-        dst_step = mask_step = CX_STUB_STEP;
-        size.height = 1;
-    }
-
-    type = CX_MAT_TYPE( src->type );
-    pix_size = icxPixSize[type];
-    
-    CX_CALL( cxScalarToRawData( scalar, buf, type, 0 ));
-    IPPI_CALL( func( dst->data.ptr, dst_step, mask->data.ptr,
-                     mask_step, size, buf, pix_size ));
-
-    __END__;
-}
-
-
-CX_IMPL void
-icxLogicM( const void* srcimg1, const void* srcimg2,
-           void* dstarr, const void* maskarr,
-           CxArithmBinMaskFunc2D func )
-{
-    CX_FUNCNAME( "icxLogicM" );
-    
-    __BEGIN__;
-
-    int  coi1 = 0, coi2 = 0, coi3 = 0;
-    CxMat  srcstub1, *src1 = (CxMat*)srcimg1;
-    CxMat  srcstub2, *src2 = (CxMat*)srcimg2;
-    CxMat  dststub, *dst = (CxMat*)dstarr;
-    CxMat  maskstub, *mask = (CxMat*)maskarr;
-    int src_step, dst_step, mask_step; 
-    int pix_size;
-    CxSize size;
-
-    CX_CALL( src1 = cxGetMat( src1, &srcstub1, &coi1 ));
-    CX_CALL( src2 = cxGetMat( src2, &srcstub2, &coi2 ));
-    CX_CALL( dst = cxGetMat( dst, &dststub, &coi3 ));
-    CX_CALL( mask = cxGetMat( mask, &maskstub ));
-
-    if( coi1 != 0 || coi2 != 0 || coi3 != 0 )
-        CX_ERROR( CX_BadCOI, "" );
-
-    if( !CX_IS_MASK_ARR(mask) )
-        CX_ERROR_FROM_CODE( CX_StsBadMask );
-
-    if( !CX_ARE_SIZES_EQ( mask, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
-
-    if( !CX_ARE_SIZES_EQ( src1, src2 ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
-
-    size = cxGetMatSize( src1 );
-    pix_size = icxPixSize[CX_MAT_TYPE(src1->type)];
-        
-    if( src2->data.ptr != dst->data.ptr )
-    {
-        if( src1->data.ptr != dst->data.ptr )
+        tsize.width = size.width;
+        tsize.height = dy;
+        if( y + dy > size.height )
+            tsize.height = size.height - y;
+        if( cont_flag || tsize.height == 1 )
         {
-            CX_CALL( cxCopy( src2, dst, mask ));
+            tsize.width *= tsize.height;
+            tsize.height = 1;
+            src1_step = src2_step = tdst_step = dst_step = mask_step = CV_STUB_STEP;
         }
-        else
-            src1 = src2;
+        IPPI_CALL( fn_2d( src1->data.ptr + y*src1->step, src1_step,
+                          src2->data.ptr + y*src2->step, src2_step,
+                          tdst->data.ptr, tdst_step,
+                          cvSize(tsize.width*elem_size, tsize.height) ));
+        if( mask )
+        {
+            IPPI_CALL( copym_func( tdst->data.ptr, tdst_step, dst->data.ptr + y*dst->step,
+                                   dst_step, tsize, mask->data.ptr + y*mask->step, mask_step ));
+        }
     }
-    
-    if( !CX_ARE_TYPES_EQ( src1, dst ))
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
-
-    if( !CX_ARE_SIZES_EQ( src1, dst ))
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
-
-    src_step = src1->step;
-    dst_step = dst->step;
-    mask_step = mask->step;
-    
-    if( CX_IS_MAT_CONT( src1->type & dst->type & mask->type ))
-    {
-        size.width *= size.height;
-        src_step = dst_step = mask_step = CX_STUB_STEP;
-        size.height = 1;
-    }
-
-    IPPI_CALL( func( src1->data.ptr, src_step, mask->data.ptr, mask_step,
-                     dst->data.ptr, dst_step, size, pix_size ));
 
     __END__;
+
+    if( !local_alloc )
+        cvFree( &buffer );
 }
 
+ICV_DEF_BIN_LOG_OP_2D( CV_XOR, Xor )
+ICV_DEF_UN_LOG_OP_2D( CV_XOR, XorC )
 
-#define ICX_DEF_LOG_OP_MASK_2D( __op__, _mask_op_, name )  \
-    ICX_DEF_BIN_LOG_OP_MASK_2D( __op__, _mask_op_, name )  \
-    ICX_DEF_UN_LOG_OP_MASK_2D( __op__, _mask_op_, name )
+ICV_DEF_BIN_LOG_OP_2D( CV_AND, And )
+ICV_DEF_UN_LOG_OP_2D( CV_AND, AndC )
 
-ICX_DEF_LOG_OP_MASK_2D( CX_XOR, CX_AND, Xor )
-ICX_DEF_LOG_OP_MASK_2D( CX_AND, CX_ORN, And )
-ICX_DEF_LOG_OP_MASK_2D( CX_OR,  CX_AND, Or )
-
-ICX_DEF_BIN_LOG_OP_2D( CX_XOR, Xor )
-ICX_DEF_UN_LOG_OP_2D( CX_XOR, XorC )
-
-ICX_DEF_BIN_LOG_OP_2D( CX_AND, And )
-ICX_DEF_UN_LOG_OP_2D( CX_AND, AndC )
-
-ICX_DEF_BIN_LOG_OP_2D( CX_OR, Or )
-ICX_DEF_UN_LOG_OP_2D( CX_OR, OrC )
+ICV_DEF_BIN_LOG_OP_2D( CV_OR, Or )
+ICV_DEF_UN_LOG_OP_2D( CV_OR, OrC )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                    X O R                                            //
 /////////////////////////////////////////////////////////////////////////////////////////
 
-CX_IMPL void
-cxXorS( const void* src, CxScalar scalar, void* dst, const void* mask )
+CV_IMPL void
+cvXorS( const void* src, CvScalar scalar, void* dst, const void* mask )
 {
-    CX_FUNCNAME( "cxXorS" );
-    
-    __BEGIN__;
-
-    if( !mask )
-    {
-        CX_CALL( icxLogicS( src, &scalar, dst, (CxFunc2D_2A1P1I)icxXorC_8u_C1R ));
-    }
-    else
-    {
-        CX_CALL( icxLogicSM( src, &scalar, dst, mask,
-                             (CxArithmUniMaskFunc2D)icxXorC_8u_CnMR ));
-    }
-
-    __END__;
+    icvLogicS( src, &scalar, dst, mask, (CvFunc2D_2A1P1I)icvXorC_8u_CnR );
 }
 
 
-CX_IMPL void
-cxXor( const void* src1, const void* src2, void* dst, const void* mask )
+CV_IMPL void
+cvXor( const void* src1, const void* src2, void* dst, const void* mask )
 {
-    CX_FUNCNAME( "cxXor" );
-    
-    __BEGIN__;
-
-    if( !mask )
-    {
-        CX_CALL( icxLogic( src1, src2, dst,
-                           (CxFunc2D_3A)icxXor_8u_C1R ));
-    }
-    else
-    {
-        CX_CALL( icxLogicM( src1, src2, dst, mask,
-                            (CxArithmBinMaskFunc2D)icxXor_8u_CnMR ));
-    }
-
-    __END__;
+    icvLogic( src1, src2, dst, mask, (CvFunc2D_3A)icvXor_8u_C1R );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                    A N D                                            //
 /////////////////////////////////////////////////////////////////////////////////////////
 
-CX_IMPL void
-cxAndS( const void* src, CxScalar scalar, void* dst, const void* mask )
+CV_IMPL void
+cvAndS( const void* src, CvScalar scalar, void* dst, const void* mask )
 {
-    CX_FUNCNAME( "cxAndS" );
-    
-    __BEGIN__;
-
-    if( !mask )
-    {
-        CX_CALL( icxLogicS( src, &scalar, dst, (CxFunc2D_2A1P1I)icxAndC_8u_C1R ));
-    }
-    else
-    {
-        CX_CALL( icxLogicSM( src, &scalar, dst, mask,
-                             (CxArithmUniMaskFunc2D)icxAndC_8u_CnMR ));
-    }
-
-    __END__;
+    icvLogicS( src, &scalar, dst, mask, (CvFunc2D_2A1P1I)icvAndC_8u_CnR );
 }
 
 
-CX_IMPL void
-cxAnd( const void* src1, const void* src2, void* dst, const void* mask )
+CV_IMPL void
+cvAnd( const void* src1, const void* src2, void* dst, const void* mask )
 {
-    CX_FUNCNAME( "cxAnd" );
-    
-    __BEGIN__;
-
-    if( !mask )
-    {
-        CX_CALL( icxLogic( src1, src2, dst,
-                           (CxFunc2D_3A)icxAnd_8u_C1R ));
-    }
-    else
-    {
-        CX_CALL( icxLogicM( src1, src2, dst, mask,
-                            (CxArithmBinMaskFunc2D)icxAnd_8u_CnMR ));
-    }
-
-    __END__;
+    icvLogic( src1, src2, dst, mask, (CvFunc2D_3A)icvAnd_8u_C1R );
 }
 
 
@@ -754,46 +551,17 @@ cxAnd( const void* src1, const void* src2, void* dst, const void* mask )
 //                                      O R                                            //
 /////////////////////////////////////////////////////////////////////////////////////////
 
-CX_IMPL void
-cxOrS( const void* src, CxScalar scalar, void* dst, const void* mask )
+CV_IMPL void
+cvOrS( const void* src, CvScalar scalar, void* dst, const void* mask )
 {
-    CX_FUNCNAME( "cxOrS" );
-    
-    __BEGIN__;
-
-    if( !mask )
-    {
-        CX_CALL( icxLogicS( src, &scalar, dst, (CxFunc2D_2A1P1I)icxOrC_8u_C1R ));
-    }
-    else
-    {
-        CX_CALL( icxLogicSM( src, &scalar, dst, mask,
-                             (CxArithmUniMaskFunc2D)icxOrC_8u_CnMR ));
-    }
-
-    __END__;
+    icvLogicS( src, &scalar, dst, mask, (CvFunc2D_2A1P1I)icvOrC_8u_CnR );
 }
 
 
-CX_IMPL void
-cxOr( const void* src1, const void* src2, void* dst, const void* mask )
+CV_IMPL void
+cvOr( const void* src1, const void* src2, void* dst, const void* mask )
 {
-    CX_FUNCNAME( "cxOr" );
-    
-    __BEGIN__;
-
-    if( !mask )
-    {
-        CX_CALL( icxLogic( src1, src2, dst,
-                           (CxFunc2D_3A)icxOr_8u_C1R ));
-    }
-    else
-    {
-        CX_CALL( icxLogicM( src1, src2, dst, mask,
-                            (CxArithmBinMaskFunc2D)icxOr_8u_CnMR ));
-    }
-
-    __END__;
+    icvLogic( src1, src2, dst, mask, (CvFunc2D_3A)icvOr_8u_C1R );
 }
 
 
@@ -802,32 +570,36 @@ cxOr( const void* src1, const void* src2, void* dst, const void* mask )
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
-IPCXAPI_IMPL( CxStatus, icxNot_8u_C1R,
-( const uchar* src1, int step1, uchar* dst, int step, CxSize size ))
+IPCVAPI_IMPL( CvStatus, icvNot_8u_C1R,
+( const uchar* src1, int step1, uchar* dst, int step, CvSize size ),
+  (src1, step1, dst, step, size) )
 {
     for( ; size.height--; src1 += step1, dst += step )
     {
-        int i;
+        int i = 0;
 
-        for( i = 0; i <= size.width - 16; i += 16 )
+        if( (((size_t)src1 | (size_t)dst) & 3) == 0 )
         {
-            int t0 = ~((const int*)(src1+i))[0];
-            int t1 = ~((const int*)(src1+i))[1];
+            for( ; i <= size.width - 16; i += 16 )
+            {
+                int t0 = ~((const int*)(src1+i))[0];
+                int t1 = ~((const int*)(src1+i))[1];
 
-            ((int*)(dst+i))[0] = t0;
-            ((int*)(dst+i))[1] = t1;
+                ((int*)(dst+i))[0] = t0;
+                ((int*)(dst+i))[1] = t1;
 
-            t0 = ~((const int*)(src1+i))[2];
-            t1 = ~((const int*)(src1+i))[3];
+                t0 = ~((const int*)(src1+i))[2];
+                t1 = ~((const int*)(src1+i))[3];
 
-            ((int*)(dst+i))[2] = t0;
-            ((int*)(dst+i))[3] = t1;
-        }
+                ((int*)(dst+i))[2] = t0;
+                ((int*)(dst+i))[3] = t1;
+            }
 
-        for( ; i <= size.width - 4; i += 4 )
-        {
-            int t = ~*(const int*)(src1+i);
-            *(int*)(dst+i) = t;
+            for( ; i <= size.width - 4; i += 4 )
+            {
+                int t = ~*(const int*)(src1+i);
+                *(int*)(dst+i) = t;
+            }
         }
 
         for( ; i < size.width; i++ )
@@ -837,89 +609,88 @@ IPCXAPI_IMPL( CxStatus, icxNot_8u_C1R,
         }
     }
 
-    return  CX_OK;
+    return  CV_OK;
 }
 
 
-CX_IMPL void
-cxNot( const void* srcarr, void* dstarr )
+CV_IMPL void
+cvNot( const void* srcarr, void* dstarr )
 {
-    CX_FUNCNAME( "cxNot" );
+    CV_FUNCNAME( "cvNot" );
     
     __BEGIN__;
 
-    CxMat srcstub, *src = (CxMat*)srcarr;
-    CxMat dststub, *dst = (CxMat*)dstarr;
+    CvMat srcstub, *src = (CvMat*)srcarr;
+    CvMat dststub, *dst = (CvMat*)dstarr;
     
     int coi1 = 0, coi2 = 0;
     int type, is_nd = 0;
-    CxSize size;
+    CvSize size;
     int src_step, dst_step;
 
-    if( !CX_IS_MAT(src))
+    if( !CV_IS_MAT(src))
     {
-        if( CX_IS_MATND(src) )
+        if( CV_IS_MATND(src) )
             is_nd = 1;
         else
-            CX_CALL( src = cxGetMat( src, &srcstub, &coi1 ));
+            CV_CALL( src = cvGetMat( src, &srcstub, &coi1 ));
     }
 
-    if( !CX_IS_MAT(dst))
+    if( !CV_IS_MAT(dst))
     {
-        if( CX_IS_MATND(src) )
+        if( CV_IS_MATND(src) )
             is_nd = 1;
         else
-            CX_CALL( dst = cxGetMat( dst, &dststub, &coi2 ));
+            CV_CALL( dst = cvGetMat( dst, &dststub, &coi2 ));
     }
 
     if( is_nd )
     {
-        CxArr* arrs[] = { src, dst };
-        CxMatND stubs[2];
-        CxNArrayIterator iterator;
+        CvArr* arrs[] = { src, dst };
+        CvMatND stubs[2];
+        CvNArrayIterator iterator;
 
-        CX_CALL( cxInitNArrayIterator( 2, arrs, 0, stubs, &iterator ));
+        CV_CALL( cvInitNArrayIterator( 2, arrs, 0, stubs, &iterator ));
 
-        type = CX_MAT_TYPE(iterator.hdr[0]->type);
-        iterator.size.width *= icxPixSize[type];
+        type = CV_MAT_TYPE(iterator.hdr[0]->type);
+        iterator.size.width *= CV_ELEM_SIZE(type);
 
         do
         {
-            IPPI_CALL( icxNot_8u_C1R( iterator.ptr[0], CX_STUB_STEP,
-                                      iterator.ptr[1], CX_STUB_STEP,
+            IPPI_CALL( icvNot_8u_C1R( iterator.ptr[0], CV_STUB_STEP,
+                                      iterator.ptr[1], CV_STUB_STEP,
                                       iterator.size ));
         }
-        while( cxNextNArraySlice( &iterator ));
+        while( cvNextNArraySlice( &iterator ));
         EXIT;
     }
 
     if( coi1 != 0 || coi2 != 0 )
-        CX_ERROR( CX_BadCOI, "" );
+        CV_ERROR( CV_BadCOI, "" );
 
-    if( !CX_ARE_TYPES_EQ( src, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+    if( !CV_ARE_TYPES_EQ( src, dst ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
 
-    if( !CX_ARE_SIZES_EQ( src, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+    if( !CV_ARE_SIZES_EQ( src, dst ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
 
-    size = cxGetMatSize( src );
+    size = cvGetMatSize( src );
     src_step = src->step;
     dst_step = dst->step;
 
-    if( CX_IS_MAT_CONT( src->type & dst->type ))
+    if( CV_IS_MAT_CONT( src->type & dst->type ))
     {
         size.width *= size.height;
-        src_step = dst_step = CX_STUB_STEP;
+        src_step = dst_step = CV_STUB_STEP;
         size.height = 1;
     }
 
-    type = CX_MAT_TYPE( src->type );
-    size.width *= icxPixSize[type];
+    type = CV_MAT_TYPE( src->type );
+    size.width *= CV_ELEM_SIZE(type);
 
-    IPPI_CALL( icxNot_8u_C1R( src->data.ptr, src_step, dst->data.ptr, dst_step, size ));
+    IPPI_CALL( icvNot_8u_C1R( src->data.ptr, src_step, dst->data.ptr, dst_step, size ));
 
     __END__;
 }
-
 
 /* End of file. */

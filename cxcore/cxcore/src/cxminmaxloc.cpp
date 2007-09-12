@@ -41,214 +41,147 @@
 
 #include "_cxcore.h"
 
-static CxStatus
-icxWriteMinMaxResults( double min_val, double max_val,
-                       int min_loc, int max_loc,
-                       int width, void *minVal, void *maxVal,
-                       CxPoint * minLoc, CxPoint * maxLoc, int is_double )
-{
-    if( (min_loc | max_loc) < 0 )
-    {
-        min_loc = max_loc = 0;
-        min_val = max_val = 0.f;
-    }
-
-    if( is_double )
-    {
-        if( minVal )
-            *(double*)minVal = min_val;
-        if( maxVal )
-            *(double*)maxVal = max_val;
-    }
-    else
-    {
-        if( minVal )
-            *(float*)minVal = (float)min_val;
-        if( maxVal )
-            *(float*)maxVal = (float)max_val;
-    }
-
-    if( minLoc )
-    {
-        minLoc->y = min_loc / width;
-        minLoc->x = min_loc - minLoc->y * width;
-    }
-
-    if( maxLoc )
-    {
-        maxLoc->y = max_loc / width;
-        maxLoc->x = max_loc - maxLoc->y * width;
-    }
-    return CX_NO_ERR;
-}
-
-
 /****************************************************************************************\
 *                                     MinMaxLoc                                          *
 \****************************************************************************************/
                                                                     
-#define CX_MINMAXLOC_ENTRY( _cast_macro_, _toggle_, srctype, temptype, cn )\
-    temptype min_val, max_val;                      \
-    int min_loc = 0, max_loc = 0;                   \
-    int x, loc = 0, width = size.width;             \
-                                                    \
-    if( (int)(width*(cn)*sizeof(srctype)) == step ) \
-    {                                               \
-        width *= size.height;                       \
-        size.height = 1;                            \
-    }                                               \
-                                                    \
-    min_val = _cast_macro_((src)[0]);               \
+#define CV_MINMAXLOC_ENTRY( _toggle_, srctype, temptype, cn ) \
+    temptype min_val, max_val;                  \
+    int min_loc = 0, max_loc = 0;               \
+    int x, loc = 0, width = size.width*(cn);    \
+    step /= sizeof(src[0]);                     \
+                                                \
+    min_val = src[0];                           \
     min_val = max_val = _toggle_( min_val )
 
 
-
-#define CX_MINMAXLOC_EXIT( _toggle_, _fin_cast_macro_ ) \
-    min_val = _toggle_( min_val );                  \
-    max_val = _toggle_( max_val );                  \
-                                                    \
-    return  icxWriteMinMaxResults(                  \
-        _fin_cast_macro_(min_val),                  \
-        _fin_cast_macro_(max_val),                  \
-        min_loc, max_loc, size.width,               \
-        minVal, maxVal, minLoc, maxLoc,             \
-        sizeof(*minVal) == sizeof(double) )
+#define CV_MINMAXLOC_EXIT( _fin_cast_macro_ )   \
+    minLoc->x = min_loc;                        \
+    maxLoc->x = max_loc;                        \
+    minLoc->y = maxLoc->y = 0;                  \
+    *minVal = _fin_cast_macro_(min_val);        \
+    *maxVal = _fin_cast_macro_(max_val);        \
+    return CV_OK
 
 
+#define ICV_DEF_MINMAXLOC_1D_CASE_COI( _toggle_, temptype, cn ) \
+    for( x = 0; x < width; x += (cn), loc++ )   \
+    {                                           \
+        temptype val = src[x];                  \
+        val = _toggle_(val);                    \
+                                                \
+        if( val < min_val )                     \
+        {                                       \
+            min_val = val;                      \
+            min_loc = loc;                      \
+        }                                       \
+        else if( val > max_val )                \
+        {                                       \
+            max_val = val;                      \
+            max_loc = loc;                      \
+        }                                       \
+    }
 
-#define ICX_DEF_MINMAXLOC_1D_CASE_COI( _cast_macro_, _toggle_, temptype, src, len,  \
-                                       min_val, max_val, min_loc, max_loc, loc, cn )\
-{                                                                                   \
-    for( x = 0; x < (len)*(cn); x += (cn), (loc)++ )                                \
-    {                                                                               \
-        temptype val = _cast_macro_((src)[x]);                                      \
-        val = _toggle_(val);                                                        \
-                                                                                    \
-        if( val < (min_val) )                                                       \
-        {                                                                           \
-            (min_val) = val;                                                        \
-            (min_loc) = (loc);                                                      \
-        }                                                                           \
-        else if( val > (max_val) )                                                  \
-        {                                                                           \
-            (max_val) = val;                                                        \
-            (max_loc) = (loc);                                                      \
-        }                                                                           \
-    }                                                                               \
+
+#define ICV_DEF_MINMAXLOC_FUNC_2D( _toggle_, _fin_cast_macro_, flavor,      \
+                                   srctype, temptype, extrtype )            \
+IPCVAPI_IMPL( CvStatus,                                                     \
+icvMinMaxIndx_##flavor##_C1R,( const srctype* src, int step, CvSize size,   \
+    extrtype* minVal, extrtype* maxVal, CvPoint* minLoc, CvPoint* maxLoc ), \
+    (src, step, size, minVal, maxVal, minLoc, maxLoc) )                     \
+{                                                                           \
+    CV_MINMAXLOC_ENTRY( _toggle_, srctype, temptype, 1 );                   \
+                                                                            \
+    for( ; size.height--; src += step )                                     \
+    {                                                                       \
+        ICV_DEF_MINMAXLOC_1D_CASE_COI( _toggle_, temptype, 1 );             \
+    }                                                                       \
+                                                                            \
+    CV_MINMAXLOC_EXIT( _fin_cast_macro_ );                                  \
 }
 
 
-
-#define ICX_DEF_MINMAXLOC_1D_CASE_C1( _cast_macro_, _toggle_, temptype, src, len,   \
-                                      min_val, max_val, min_loc, max_loc, loc )     \
-    ICX_DEF_MINMAXLOC_1D_CASE_COI( _cast_macro_, _toggle_, temptype, src, len,      \
-                                   min_val, max_val, min_loc, max_loc, loc, 1 )
-
-
-
-#define ICX_DEF_MINMAXLOC_FUNC_2D( _cast_macro_, _toggle_, _fin_cast_macro_,        \
-                                   _entry_, _exit_, flavor, srctype,                \
-                                   temptype, extrtype )                             \
-IPCXAPI_IMPL( CxStatus,                                                             \
-icxMinMaxIndx_##flavor##_C1R,( const srctype* src, int step,                        \
-                               CxSize size, extrtype* minVal, extrtype* maxVal,     \
-                               CxPoint* minLoc, CxPoint* maxLoc ))                  \
-{                                                                                   \
-    _entry_( _cast_macro_, _toggle_, srctype, temptype, 1 );                        \
-                                                                                    \
-    for( ; size.height--; (char*&)src += step )                                     \
-    {                                                                               \
-        ICX_DEF_MINMAXLOC_1D_CASE_C1( _cast_macro_, _toggle_, temptype, src, width, \
-                                      min_val, max_val, min_loc, max_loc, loc );    \
-    }                                                                               \
-                                                                                    \
-    _exit_( _toggle_, _fin_cast_macro_ );                                           \
+#define ICV_DEF_MINMAXLOC_FUNC_2D_COI( _toggle_, _fin_cast_macro_, flavor,  \
+                                       srctype, temptype, extrtype )        \
+static CvStatus CV_STDCALL                                                  \
+icvMinMaxIndx_##flavor##_CnCR( const srctype* src, int step,                \
+                          CvSize size, int cn, int coi,                     \
+                          extrtype* minVal, extrtype* maxVal,               \
+                          CvPoint* minLoc, CvPoint* maxLoc )                \
+{                                                                           \
+    (src) += coi - 1;                                                       \
+    CV_MINMAXLOC_ENTRY( _toggle_, srctype, temptype, cn );                  \
+                                                                            \
+    for( ; size.height--; src += step )                                     \
+    {                                                                       \
+        ICV_DEF_MINMAXLOC_1D_CASE_COI( _toggle_, temptype, cn );            \
+    }                                                                       \
+                                                                            \
+    CV_MINMAXLOC_EXIT( _fin_cast_macro_ );                                  \
 }
 
 
-#define ICX_DEF_MINMAXLOC_FUNC_2D_COI( _cast_macro_, _toggle_, _fin_cast_macro_,    \
-                                       _entry_, _exit_, flavor,                     \
-                                       srctype, temptype, extrtype  )               \
-static CxStatus CX_STDCALL                                                          \
-icxMinMaxIndx_##flavor##_CnCR( const srctype* src, int step,                        \
-                          CxSize size, int cn, int coi,                             \
-                          extrtype* minVal, extrtype* maxVal,                       \
-                          CxPoint* minLoc, CxPoint* maxLoc )                        \
-{                                                                                   \
-    (src) += coi - 1;                                                               \
-    _entry_( _cast_macro_, _toggle_, srctype, temptype, cn );                       \
-                                                                                    \
-    for( ; size.height--; (char*&)src += step )                                     \
-    {                                                                               \
-        ICX_DEF_MINMAXLOC_1D_CASE_COI( _cast_macro_, _toggle_, temptype, src, width,\
-                                       min_val, max_val, min_loc, max_loc, loc, cn);\
-    }                                                                               \
-                                                                                    \
-    _exit_( _toggle_, _fin_cast_macro_ );                                           \
+#define ICV_DEF_MINMAXLOC_ALL_INT( flavor, srctype,             \
+                                   _fin_cast_macro_, extrtype ) \
+    ICV_DEF_MINMAXLOC_FUNC_2D( CV_NOP, _fin_cast_macro_, flavor,\
+                               srctype, int, extrtype )         \
+    ICV_DEF_MINMAXLOC_FUNC_2D_COI( CV_NOP, _fin_cast_macro_,    \
+                            flavor, srctype, int, extrtype )
+
+CV_INLINE float minmax_to_float( int val )
+{
+    Cv32suf v;
+    v.i = CV_TOGGLE_FLT(val);
+    return v.f;
 }
 
+CV_INLINE double minmax_to_double( int64 val )
+{
+    Cv64suf v;
+    v.i = CV_TOGGLE_DBL(val);
+    return v.f;
+}
 
-#define ICX_DEF_MINMAXLOC_ALL( flavor, srctype, temptype, extrtype )                \
-    ICX_DEF_MINMAXLOC_FUNC_2D( CX_NOP, CX_NOP, CX_CAST_64F, CX_MINMAXLOC_ENTRY,     \
-                               CX_MINMAXLOC_EXIT, flavor,                           \
-                               srctype, temptype, extrtype )                        \
-    ICX_DEF_MINMAXLOC_FUNC_2D_COI( CX_NOP, CX_NOP, CX_CAST_64F, CX_MINMAXLOC_ENTRY, \
-                                   CX_MINMAXLOC_EXIT, flavor, srctype, temptype, extrtype )
+#define ICV_DEF_MINMAXLOC_ALL_FLT( flavor, srctype, _toggle_,           \
+                                   _fin_cast_macro_, extrtype )         \
+                                                                        \
+    ICV_DEF_MINMAXLOC_FUNC_2D( _toggle_, _fin_cast_macro_, flavor,      \
+                                srctype, srctype, extrtype )            \
+    ICV_DEF_MINMAXLOC_FUNC_2D_COI( _toggle_, _fin_cast_macro_, flavor,  \
+                                srctype, srctype, extrtype )
 
-#define  _toggle_float_         CX_TOGGLE_FLT
-#define  _toggle_double_        CX_TOGGLE_DBL
-#define  _as_int_(x)            (*(int*)&(x))
-#define  _as_float_(x)          (*(float*)&(x))
-#define  _as_int64_(x)          (*(int64*)&(x))
-#define  _as_double_(x)         (*(double*)&(x))
-
-
-#define ICX_DEF_MINMAXLOC_ALL_FLT( flavor, srctype, temptype,                   \
-                                   _cast_macro_, _toggle_,                      \
-                                   _fin_cast_macro_, extrtype )                 \
-                                                                                \
-    ICX_DEF_MINMAXLOC_FUNC_2D( _cast_macro_, _toggle_, _fin_cast_macro_,        \
-                               CX_MINMAXLOC_ENTRY, CX_MINMAXLOC_EXIT,           \
-                               flavor, srctype, temptype, extrtype )            \
-    ICX_DEF_MINMAXLOC_FUNC_2D_COI( _cast_macro_, _toggle_, _fin_cast_macro_,    \
-                                   CX_MINMAXLOC_ENTRY, CX_MINMAXLOC_EXIT,       \
-                                   flavor, srctype, temptype, extrtype )
-
-ICX_DEF_MINMAXLOC_ALL( 8u, uchar, int, float )
-ICX_DEF_MINMAXLOC_ALL( 16s, short, int, float )
-ICX_DEF_MINMAXLOC_ALL( 32s, int, int, double )
-ICX_DEF_MINMAXLOC_ALL_FLT( 32f, float, int, _as_int_,
-                           _toggle_float_, _as_float_, float )
-ICX_DEF_MINMAXLOC_ALL_FLT( 64f, double, int64, _as_int64_,
-                           _toggle_double_, _as_double_, double )
+ICV_DEF_MINMAXLOC_ALL_INT( 8u, uchar, CV_CAST_32F, float )
+ICV_DEF_MINMAXLOC_ALL_INT( 16u, ushort, CV_CAST_32F, float )
+ICV_DEF_MINMAXLOC_ALL_INT( 16s, short, CV_CAST_32F, float )
+ICV_DEF_MINMAXLOC_ALL_INT( 32s, int, CV_CAST_64F, double )
+ICV_DEF_MINMAXLOC_ALL_FLT( 32f, int, CV_TOGGLE_FLT, minmax_to_float, float )
+ICV_DEF_MINMAXLOC_ALL_FLT( 64f, int64, CV_TOGGLE_DBL, minmax_to_double, double )
 
 
 /****************************************************************************************\
 *                              MinMaxLoc with mask                                       *
 \****************************************************************************************/
 
-
-#define CX_MINMAXLOC_MASK_ENTRY( _cast_macro_, _toggle_,            \
-                                 srctype, temptype, cn )            \
+#define CV_MINMAXLOC_MASK_ENTRY( _toggle_, srctype, temptype, cn )  \
     temptype min_val = 0, max_val = 0;                              \
     int min_loc = -1, max_loc = -1;                                 \
     int x = 0, y, loc = 0, width = size.width;                      \
+    step /= sizeof(src[0]);                                         \
                                                                     \
-    if( (int)(width*(cn)*sizeof(srctype)) == step &&                \
-        width == maskStep )                                         \
+    if( width*(cn) == step && width == maskStep )                   \
     {                                                               \
         width *= size.height;                                       \
         size.height = 1;                                            \
     }                                                               \
                                                                     \
-    for( y = 0; y < size.height; y++, (char*&)src += step,          \
-                                      (char*&)mask += maskStep )    \
+    for( y = 0; y < size.height; y++, src += step,                  \
+                                      mask += maskStep )            \
     {                                                               \
         for( x = 0; x < width; x++, loc++ )                         \
             if( mask[x] != 0 )                                      \
             {                                                       \
                 min_loc = max_loc = loc;                            \
-                min_val = _cast_macro_((src)[x*(cn)]);              \
+                min_val = (src)[x*(cn)];                            \
                 min_val = max_val = _toggle_( min_val );            \
                 goto stop_scan;                                     \
             }                                                       \
@@ -257,242 +190,263 @@ ICX_DEF_MINMAXLOC_ALL_FLT( 64f, double, int64, _as_int64_,
     stop_scan:;
 
 
+#define ICV_DEF_MINMAXLOC_1D_MASK_CASE_COI( _toggle_, temptype, cn ) \
+    for( ; x < width; x++, loc++ )      \
+    {                                   \
+        temptype val = src[x*(cn)];     \
+        int m = mask[x] != 0;           \
+        val = _toggle_(val);            \
+                                        \
+        if( val < min_val && m )        \
+        {                               \
+            min_val = val;              \
+            min_loc = loc;              \
+        }                               \
+        else if( val > max_val && m )   \
+        {                               \
+            max_val = val;              \
+            max_loc = loc;              \
+        }                               \
+    }
 
 
-#define ICX_DEF_MINMAXLOC_MASK_FUNC_2D(_cast_macro_, _toggle_, _fin_cast_macro_,\
-                                       _entry_, _exit_, flavor,                 \
-                                       srctype, temptype, extrtype )            \
-IPCXAPI_IMPL( CxStatus,                                                         \
-icxMinMaxIndx_##flavor##_C1MR,( const srctype* src, int step,                   \
-                                const uchar* mask, int maskStep,                \
-                                CxSize size, extrtype* minVal, extrtype* maxVal,\
-                                CxPoint* minLoc, CxPoint* maxLoc ))             \
-{                                                                               \
-    _entry_( _cast_macro_, _toggle_, srctype, temptype, 1 );                    \
-                                                                                \
-    for( ; y < size.height; y++, (char*&)src += step,                           \
-                                 (char*&)mask += maskStep )                     \
-    {                                                                           \
-        for( ; x < width; x++, (loc)++ )                                        \
-        {                                                                       \
-            temptype val = _cast_macro_((src)[x]);                              \
-            int m = (mask)[x] != 0;                                             \
-            val = _toggle_(val);                                                \
-                                                                                \
-            if( val < (min_val) && m )                                          \
-            {                                                                   \
-                (min_val) = val;                                                \
-                (min_loc) = (loc);                                              \
-            }                                                                   \
-            else if( val > (max_val) && m )                                     \
-            {                                                                   \
-                (max_val) = val;                                                \
-                (max_loc) = (loc);                                              \
-            }                                                                   \
-        }                                                                       \
-        x = 0;                                                                  \
-    }                                                                           \
-                                                                                \
-    _exit_( _toggle_, _fin_cast_macro_ );                                       \
+#define ICV_DEF_MINMAXLOC_MASK_FUNC_2D( _toggle_, _fin_cast_macro_, flavor, \
+                                        srctype, temptype, extrtype )       \
+IPCVAPI_IMPL( CvStatus,                                                     \
+icvMinMaxIndx_##flavor##_C1MR,( const srctype* src, int step,               \
+    const uchar* mask, int maskStep, CvSize size,                           \
+    extrtype* minVal, extrtype* maxVal, CvPoint* minLoc, CvPoint* maxLoc ), \
+    ( src, step, mask, maskStep, size, minVal, maxVal, minLoc, maxLoc) )    \
+{                                                                           \
+    CV_MINMAXLOC_MASK_ENTRY( _toggle_, srctype, temptype, 1 );              \
+                                                                            \
+    for( ; y < size.height; y++, src += step, mask += maskStep )            \
+    {                                                                       \
+        ICV_DEF_MINMAXLOC_1D_MASK_CASE_COI( _toggle_, temptype, 1 )         \
+        x = 0;                                                              \
+    }                                                                       \
+                                                                            \
+    CV_MINMAXLOC_EXIT( _fin_cast_macro_ );                                  \
 }
 
 
-#define ICX_DEF_MINMAXLOC_MASK_FUNC_2D_COI( _cast_macro_, _toggle_, _fin_cast_macro_,\
-                                     _entry_, _exit_, flavor,                   \
-                                     srctype, temptype, extrtype )              \
-static CxStatus CX_STDCALL                                                      \
-icxMinMaxIndx_##flavor##_CnCMR( const srctype* src, int step,                   \
-                           const uchar* mask, int maskStep,                     \
-                           CxSize size, int cn, int coi,                        \
-                           extrtype* minVal, extrtype* maxVal,                  \
-                           CxPoint* minLoc, CxPoint* maxLoc )                   \
-{                                                                               \
-    (src) += coi - 1;                                                           \
-    _entry_( _cast_macro_, _toggle_, srctype, temptype, cn );                   \
-                                                                                \
-    for( ; y < size.height; y++, (char*&)src += step,                           \
-                                 (char*&)mask += maskStep )                     \
-    {                                                                           \
-        for( ; x < width; x++, (loc)++ )                                        \
-        {                                                                       \
-            temptype val = _cast_macro_((src)[x*(cn)]);                         \
-            int m = (mask)[x] != 0;                                             \
-            val = _toggle_(val);                                                \
-                                                                                \
-            if( val < (min_val) && m )                                          \
-            {                                                                   \
-                (min_val) = val;                                                \
-                (min_loc) = (loc);                                              \
-            }                                                                   \
-            else if( val > (max_val) && m )                                     \
-            {                                                                   \
-                (max_val) = val;                                                \
-                (max_loc) = (loc);                                              \
-            }                                                                   \
-        }                                                                       \
-        x = 0;                                                                  \
-    }                                                                           \
-                                                                                \
-    _exit_( _toggle_, _fin_cast_macro_ );                                       \
+#define ICV_DEF_MINMAXLOC_MASK_FUNC_2D_COI( _toggle_, _fin_cast_macro_,     \
+                                    flavor, srctype, temptype, extrtype )   \
+static CvStatus CV_STDCALL                                                  \
+icvMinMaxIndx_##flavor##_CnCMR( const srctype* src, int step,               \
+    const uchar* mask, int maskStep, CvSize size, int cn, int coi,          \
+    extrtype* minVal, extrtype* maxVal, CvPoint* minLoc, CvPoint* maxLoc )  \
+{                                                                           \
+    (src) += coi - 1;                                                       \
+    CV_MINMAXLOC_MASK_ENTRY( _toggle_, srctype, temptype, cn );             \
+                                                                            \
+    for( ; y < size.height; y++, src += step, mask += maskStep )            \
+    {                                                                       \
+        ICV_DEF_MINMAXLOC_1D_MASK_CASE_COI( _toggle_, temptype, cn )        \
+        x = 0;                                                              \
+    }                                                                       \
+                                                                            \
+    CV_MINMAXLOC_EXIT( _fin_cast_macro_ );                                  \
 }
 
 
 
-#define ICX_DEF_MINMAXLOC_MASK_ALL( flavor, srctype, temptype, extrtype )           \
-                                                                                    \
-    ICX_DEF_MINMAXLOC_MASK_FUNC_2D( CX_NOP, CX_NOP, CX_CAST_64F,                    \
-                               CX_MINMAXLOC_MASK_ENTRY, CX_MINMAXLOC_EXIT,          \
-                               flavor, srctype, temptype, extrtype )                \
-    ICX_DEF_MINMAXLOC_MASK_FUNC_2D_COI( CX_NOP, CX_NOP, CX_CAST_64F,                \
-                                   CX_MINMAXLOC_MASK_ENTRY, CX_MINMAXLOC_EXIT,      \
-                                   flavor, srctype, temptype, extrtype )
+#define ICV_DEF_MINMAXLOC_MASK_ALL_INT( flavor, srctype,                    \
+                                        _fin_cast_macro_, extrtype )        \
+    ICV_DEF_MINMAXLOC_MASK_FUNC_2D( CV_NOP, _fin_cast_macro_, flavor,       \
+                                    srctype, int, extrtype )                \
+    ICV_DEF_MINMAXLOC_MASK_FUNC_2D_COI( CV_NOP, _fin_cast_macro_, flavor,   \
+                                    srctype, int, extrtype )
+
+#define ICV_DEF_MINMAXLOC_MASK_ALL_FLT( flavor, srctype, _toggle_,          \
+                                        _fin_cast_macro_, extrtype )        \
+    ICV_DEF_MINMAXLOC_MASK_FUNC_2D( _toggle_, _fin_cast_macro_, flavor,     \
+                                    srctype, srctype, extrtype )            \
+    ICV_DEF_MINMAXLOC_MASK_FUNC_2D_COI( _toggle_, _fin_cast_macro_, flavor, \
+                                    srctype, srctype, extrtype )
+
+ICV_DEF_MINMAXLOC_MASK_ALL_INT( 8u, uchar, CV_CAST_32F, float )
+ICV_DEF_MINMAXLOC_MASK_ALL_INT( 16u, ushort, CV_CAST_32F, float )
+ICV_DEF_MINMAXLOC_MASK_ALL_INT( 16s, short, CV_CAST_32F, float )
+ICV_DEF_MINMAXLOC_MASK_ALL_INT( 32s, int, CV_CAST_64F, double )
+ICV_DEF_MINMAXLOC_MASK_ALL_FLT( 32f, int, CV_TOGGLE_FLT, minmax_to_float, float )
+ICV_DEF_MINMAXLOC_MASK_ALL_FLT( 64f, int64, CV_TOGGLE_DBL, minmax_to_double, double )
+
+#define icvMinMaxIndx_8s_C1R    0
+#define icvMinMaxIndx_8s_CnCR   0
+#define icvMinMaxIndx_8s_C1MR   0
+#define icvMinMaxIndx_8s_CnCMR  0
+
+CV_DEF_INIT_FUNC_TAB_2D( MinMaxIndx, C1R )
+CV_DEF_INIT_FUNC_TAB_2D( MinMaxIndx, CnCR )
+CV_DEF_INIT_FUNC_TAB_2D( MinMaxIndx, C1MR )
+CV_DEF_INIT_FUNC_TAB_2D( MinMaxIndx, CnCMR )
 
 
-#define ICX_DEF_MINMAXLOC_MASK_ALL_FLT( flavor, srctype, temptype,                  \
-                                        _cast_macro_, _toggle_,                     \
-                                        _fin_cast_macro_, extrtype )                \
-                                                                                    \
-    ICX_DEF_MINMAXLOC_MASK_FUNC_2D( _cast_macro_, _toggle_, _fin_cast_macro_,       \
-                                    CX_MINMAXLOC_MASK_ENTRY, CX_MINMAXLOC_EXIT,     \
-                                    flavor, srctype, temptype, extrtype )           \
-    ICX_DEF_MINMAXLOC_MASK_FUNC_2D_COI( _cast_macro_, _toggle_, _fin_cast_macro_,   \
-                                       CX_MINMAXLOC_MASK_ENTRY, CX_MINMAXLOC_EXIT,  \
-                                       flavor, srctype, temptype, extrtype )
-
-
-ICX_DEF_MINMAXLOC_MASK_ALL( 8u, uchar, int, float )
-ICX_DEF_MINMAXLOC_MASK_ALL( 16s, short, int, float )
-ICX_DEF_MINMAXLOC_MASK_ALL( 32s, int, int, double )
-ICX_DEF_MINMAXLOC_MASK_ALL_FLT( 32f, float, int, _as_int_,
-                                _toggle_float_, _as_float_, float )
-ICX_DEF_MINMAXLOC_MASK_ALL_FLT( 64f, double, int64, _as_int64_,
-                                _toggle_double_, _as_double_, double )
-
-#define icxMinMaxIndx_8s_C1R    0
-#define icxMinMaxIndx_8s_CnCR   0
-#define icxMinMaxIndx_8s_C1MR   0
-#define icxMinMaxIndx_8s_CnCMR  0
-
-CX_DEF_INIT_FUNC_TAB_2D( MinMaxIndx, C1R )
-CX_DEF_INIT_FUNC_TAB_2D( MinMaxIndx, CnCR )
-CX_DEF_INIT_FUNC_TAB_2D( MinMaxIndx, C1MR )
-CX_DEF_INIT_FUNC_TAB_2D( MinMaxIndx, CnCMR )
-
-
-CX_IMPL  void
-cxMinMaxLoc( const void* img, double* minVal, double* maxVal,
-             CxPoint* minLoc, CxPoint* maxLoc, const void* mask )
+CV_IMPL  void
+cvMinMaxLoc( const void* img, double* _minVal, double* _maxVal,
+             CvPoint* _minLoc, CvPoint* _maxLoc, const void* mask )
 {
-    static CxFuncTable minmax_tab, minmaxcoi_tab;
-    static CxFuncTable minmaxmask_tab, minmaxmaskcoi_tab;
+    static CvFuncTable minmax_tab, minmaxcoi_tab;
+    static CvFuncTable minmaxmask_tab, minmaxmaskcoi_tab;
     static int inittab = 0;
 
-    CX_FUNCNAME("cxMinMaxLoc");
+    CV_FUNCNAME("cvMinMaxLoc");
 
     __BEGIN__;
 
     int type, depth, cn, coi = 0;
-    int mat_step, mask_step = 0;
-    CxSize size;
-    CxMat stub, maskstub, *mat = (CxMat*)img, *matmask = (CxMat*)mask;
+    int mat_step, mask_step = 0, cont_flag;
+    CvSize size;
+    CvMat stub, maskstub, *mat = (CvMat*)img, *matmask = (CvMat*)mask;
+    CvPoint minloc, maxloc;
+    double minv = 0, maxv = 0;
+    float minvf = 0.f, maxvf = 0.f;
+    void *pmin = &minvf, *pmax = &maxvf;
 
     if( !inittab )
     {
-        icxInitMinMaxIndxC1RTable( &minmax_tab );
-        icxInitMinMaxIndxCnCRTable( &minmaxcoi_tab );
-        icxInitMinMaxIndxC1MRTable( &minmaxmask_tab );
-        icxInitMinMaxIndxCnCMRTable( &minmaxmaskcoi_tab );
+        icvInitMinMaxIndxC1RTable( &minmax_tab );
+        icvInitMinMaxIndxCnCRTable( &minmaxcoi_tab );
+        icvInitMinMaxIndxC1MRTable( &minmaxmask_tab );
+        icvInitMinMaxIndxCnCMRTable( &minmaxmaskcoi_tab );
         inittab = 1;
     }
     
-    CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
+    if( !CV_IS_MAT(mat) )
+        CV_CALL( mat = cvGetMat( mat, &stub, &coi ));
 
-    type = CX_MAT_TYPE( mat->type );
-    depth = CX_MAT_DEPTH( type );
-    cn = CX_MAT_CN( type );
-    size = cxGetMatSize( mat );
+    type = CV_MAT_TYPE( mat->type );
+    depth = CV_MAT_DEPTH( type );
+    cn = CV_MAT_CN( type );
+    size = cvGetMatSize( mat );
 
     if( cn > 1 && coi == 0 )
-        CX_ERROR( CX_StsBadArg, "" );
+        CV_ERROR( CV_StsBadArg, "" );
+
+    if( depth == CV_32S || depth == CV_64F )
+        pmin = &minv, pmax = &maxv;
     
     mat_step = mat->step;
+    cont_flag = mat->type;
+
+    if( mask )
+    {
+        CV_CALL( matmask = cvGetMat( matmask, &maskstub ));
+
+        if( !CV_IS_MASK_ARR( matmask ))
+            CV_ERROR( CV_StsBadMask, "" );
+
+        if( !CV_ARE_SIZES_EQ( mat, matmask ))
+            CV_ERROR( CV_StsUnmatchedSizes, "" );
+
+        mask_step = matmask->step;
+        cont_flag &= matmask->type;
+    }
+
+    if( CV_IS_MAT_CONT(cont_flag) )
+    {
+        size.width *= size.height;
+        size.height = 1;
+    }
+
+    if( size.height == 1 )
+        mat_step = mask_step = CV_STUB_STEP;
 
     if( !mask )
     {
-        if( size.height == 1 )
-            mat_step = CX_STUB_STEP;
-
-        if( CX_MAT_CN(type) == 1 || coi == 0 )
+        if( CV_MAT_CN(type) == 1 || coi == 0 )
         {
-            CxFunc2D_1A4P func = (CxFunc2D_1A4P)(minmax_tab.fn_2d[depth]);
+            CvFunc2D_1A4P func = (CvFunc2D_1A4P)(minmax_tab.fn_2d[depth]);
 
             if( !func )
-                CX_ERROR( CX_StsBadArg, cxUnsupportedFormat );
+                CV_ERROR( CV_StsBadArg, cvUnsupportedFormat );
 
             IPPI_CALL( func( mat->data.ptr, mat_step, size,
-                             minVal, maxVal, minLoc, maxLoc ));
+                             pmin, pmax, &minloc, &maxloc ));
         }
         else
         {
-            CxFunc2DnC_1A4P func = (CxFunc2DnC_1A4P)(minmaxcoi_tab.fn_2d[depth]);
+            CvFunc2DnC_1A4P func = (CvFunc2DnC_1A4P)(minmaxcoi_tab.fn_2d[depth]);
 
             if( !func )
-                CX_ERROR( CX_StsBadArg, cxUnsupportedFormat );
+                CV_ERROR( CV_StsBadArg, cvUnsupportedFormat );
 
             IPPI_CALL( func( mat->data.ptr, mat_step, size, cn, coi,
-                             minVal, maxVal, minLoc, maxLoc ));
+                             pmin, pmax, &minloc, &maxloc ));
         }
     }
     else
     {
-        CX_CALL( matmask = cxGetMat( matmask, &maskstub ));
-
-        if( !CX_IS_MASK_ARR( matmask ))
-            CX_ERROR( CX_StsBadMask, "" );
-
-        if( !CX_ARE_SIZES_EQ( mat, matmask ))
-            CX_ERROR( CX_StsUnmatchedSizes, "" );
-
-        mask_step = matmask->step;
-
-        if( size.height == 1 )
-            mat_step = mask_step = CX_STUB_STEP;
-
-        if( CX_MAT_CN(type) == 1 || coi == 0 )
+        if( CV_MAT_CN(type) == 1 || coi == 0 )
         {
-            CxFunc2D_2A4P func = (CxFunc2D_2A4P)(minmaxmask_tab.fn_2d[depth]);
+            CvFunc2D_2A4P func = (CvFunc2D_2A4P)(minmaxmask_tab.fn_2d[depth]);
 
             if( !func )
-                CX_ERROR( CX_StsBadArg, cxUnsupportedFormat );
+                CV_ERROR( CV_StsBadArg, cvUnsupportedFormat );
 
             IPPI_CALL( func( mat->data.ptr, mat_step, matmask->data.ptr,
                              mask_step, size,
-                             minVal, maxVal, minLoc, maxLoc ));
+                             pmin, pmax, &minloc, &maxloc ));
         }
         else
         {
-            CxFunc2DnC_2A4P func = (CxFunc2DnC_2A4P)(minmaxmaskcoi_tab.fn_2d[depth]);
+            CvFunc2DnC_2A4P func = (CvFunc2DnC_2A4P)(minmaxmaskcoi_tab.fn_2d[depth]);
 
             if( !func )
-                CX_ERROR( CX_StsBadArg, cxUnsupportedFormat );
+                CV_ERROR( CV_StsBadArg, cvUnsupportedFormat );
 
             IPPI_CALL( func( mat->data.ptr, mat_step,
                              matmask->data.ptr, mask_step, size, cn, coi,
-                             minVal, maxVal, minLoc, maxLoc ));
+                             pmin, pmax, &minloc, &maxloc ));
         }
     }
 
-    if( depth < CX_32S || depth == CX_32F )
+    if( matmask || _minLoc || _maxLoc )
     {
-        if( minVal )
-            *minVal = *(float*)minVal;
+        if( minloc.x >= mat->cols )
+        {
+            minloc.y = minloc.x / mat->cols;
+            minloc.x -= minloc.y * mat->cols;
+        }
 
-        if( maxVal )
-            *maxVal = *(float*)maxVal;
+        if( maxloc.x >= mat->cols )
+        {
+            maxloc.y = maxloc.x / mat->cols;
+            maxloc.x -= maxloc.y * mat->cols;
+        }
+
+        if( matmask && ((unsigned)minloc.x >= (unsigned)mat->cols ||
+            (unsigned)minloc.y >= (unsigned)mat->rows ||
+            matmask->data.ptr[minloc.y*matmask->step + minloc.x] == 0 ||
+            (unsigned)maxloc.x >= (unsigned)mat->cols ||
+            (unsigned)maxloc.y >= (unsigned)mat->rows ||
+            matmask->data.ptr[maxloc.y*matmask->step + maxloc.x] == 0) )
+        {
+            minloc.x = minloc.y = maxloc.x = maxloc.y = -1;
+            minv = maxv = minvf = maxvf = 0;
+        }
+
+        if( _minLoc )
+            *_minLoc = minloc;
+
+        if( _maxLoc )
+            *_maxLoc = maxloc;
     }
+
+    if( depth != CV_32S && depth != CV_64F )
+    {
+        minv = minvf;
+        maxv = maxvf;
+    }
+
+    if( _minVal )
+        *_minVal = minv;
+
+    if( _maxVal )
+        *_maxVal = maxv;
 
     __END__;
 }
-
 
 /*  End of file  */

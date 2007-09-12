@@ -62,7 +62,7 @@
 	#define   _msize(p)         _msize_dbg(p, _NORMAL_BLOCK)
 #endif
 
-//#define cxRound(f) ((int)f)
+//#define cvRound(f) ((int)f)
 
 const int BUF_SIZE = 100;
 
@@ -379,7 +379,7 @@ typedef struct CxClassifierSample
 #define CX_CLASSIFIER_TRAIN_PARAMS_FIELDS() \
     int num_features_of_interest;           \
     int *features_of_interest;              \
-	CxMat* features_of_interest_mat;		\
+	CvMat* features_of_interest_mat;		\
     int features_of_interest_step;
 
 typedef struct CxClassifierTrainParams
@@ -491,7 +491,7 @@ typedef enum CxCARTSplitCriterion
     int split_min_points;                 \
     int split_max_points;                 \
 	int max_clusters;					  \
-    CxMat* priors_mat;                    \
+    CvMat* priors_mat;                    \
 	int mem_economy_mode;			  	  \
 	float alpha;						  \
 	BOOL transform_freq;				  \
@@ -644,8 +644,8 @@ typedef struct CxCARTError
 } CxCARTError;
 
 #define CX_EXT_CART_INFO_FIELDS()                \
-	CxMat* data_mat;		                     \
-	CxMat* missed_mat;							 \
+	CvMat* data_mat;		                     \
+	CvMat* missed_mat;							 \
 	int* sorted_idx;	                         \
     int* num_not_missed;			             \
 	int** cat_proportions;						 \

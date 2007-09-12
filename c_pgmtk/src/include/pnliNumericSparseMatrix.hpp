@@ -126,14 +126,14 @@ public:
 protected:
     iCNumericSparseMatrix( int dim, const int *range, int Clamp );
     iCNumericSparseMatrix( const iCNumericSparseMatrix<Type> &inputMat );
-    iCNumericSparseMatrix( CxSparseMat *p_sparse );
+    iCNumericSparseMatrix( CvSparseMat *p_sparse );
 
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
 #endif 
 
 #if GCC_VERSION >= 30400
-    using CSparseMatrix<Type>::GetCxSparseMat;
+    using CSparseMatrix<Type>::GetCvSparseMat;
 #endif
 
 private:
@@ -170,37 +170,37 @@ pnlCombineNumericMatrices(const iCNumericSparseMatrix<Type> *mat1,
     resMat->CombineInSelf( mat2, combineFlag );
     return resMat;
 
-    /*CxSparseMat* cxSpMat = cxCreateSparseMat( dim1, ranges1, ConvertToIndex() );
-    CxSparseMat* cxSpMat1 = mat1->GetCxSparseMat();
-    CxSparseMat* cxSpMat2 = mat2->GetCxSparseMat();
+    /*CvSparseMat* cvSpMat = cvCreateSparseMat( dim1, ranges1, ConvertToIndex() );
+    CvSparseMat* cvSpMat1 = mat1->GetCvSparseMat();
+    CvSparseMat* cvSpMat2 = mat2->GetCvSparseMat();
     //iterate throw values from first matrix
-    CxSparseMatIterator iterator1;
-    CxSparseNode* node1;
+    CvSparseMatIterator iterator1;
+    CvSparseNode* node1;
     int* idx1;
-    for( node1 = cxInitSparseMatIterator( cxSpMat1, &iterator );
-                 node1 != 0; node1 = cxGetNextSparseNode( &iterator ))
+    for( node1 = cvInitSparseMatIterator( cvSpMat1, &iterator );
+                 node1 != 0; node1 = cvGetNextSparseNode( &iterator ))
     {
-        idx1 = CX_NODE_IDX( cxSpMat1, node1 );
-        void* val1 = CX_NODE_VAL(  m_pCxSparseMat, node );
+        idx1 = CV_NODE_IDX( cvSpMat1, node1 );
+        void* val1 = CV_NODE_VAL(  m_pCvSparseMat, node );
         Type valT1 = *(Type*)val1;
         //set all values from the largest matrix
-        //uchar* valInNew = cxPtrND( cxSpMat, idx1, NULL, 1 );//create node
-        uchar* valInNew = cxPtrND( cxSpMat, idx1 );
+        //uchar* valInNew = cvPtrND( cvSpMat, idx1, NULL, 1 );//create node
+        uchar* valInNew = cvPtrND( cvSpMat, idx1 );
         //set value for node
         *((Type*)valInNew) = *valT1;
     }
-    CxSparseMatIterator iterator2;
-    CxSparseNode* node2;
+    CvSparseMatIterator iterator2;
+    CvSparseNode* node2;
     int* idx2;
-    for( node2 = cxInitSparseMatIterator( cxSpMat2, &iterator );
-                 node2 != 0; node2 = cxGetNextSparseNode( &iterator ))
+    for( node2 = cvInitSparseMatIterator( cvSpMat2, &iterator );
+                 node2 != 0; node2 = cvGetNextSparseNode( &iterator ))
     {
-        idx2 = CX_NODE_IDX( cxSpMat2, node2 );
-        void* val2 = CX_NODE_VAL(  m_pCxSparseMat, node );
+        idx2 = CV_NODE_IDX( cvSpMat2, node2 );
+        void* val2 = CV_NODE_VAL(  m_pCvSparseMat, node );
         Type valT2 = *(Type*)val2;
         //set all values from the largest matrix
-        //uchar* valInNew = cxPtrND( cxSpMat, idx2, NULL, 2 );//create node
-        uchar* valInNew = cxPtrND( cxSpMat, idx2 );
+        //uchar* valInNew = cvPtrND( cvSpMat, idx2, NULL, 2 );//create node
+        uchar* valInNew = cvPtrND( cvSpMat, idx2 );
         //set value for node
         Type oldVal = *(Type*)(valInNew);
         Type resVal = Type(0);
@@ -226,7 +226,7 @@ pnlCombineNumericMatrices(const iCNumericSparseMatrix<Type> *mat1,
         *((Type*)valInNew) = resVal;
     }
     
-	iCNumericSparseMatrix *mat = new iCNumericSparseMatrix( cxSpMat, 0);
+	iCNumericSparseMatrix *mat = new iCNumericSparseMatrix( cvSpMat, 0);
 	return mat;*/
 }
 
@@ -267,23 +267,23 @@ void iCNumericSparseMatrix<Type>::CombineInSelf(
 			PNL_THROW( CInconsistentSize, "matrix sizes");
 		}
 	}
-    CxSparseMat* cxSpMat1 = GetCxSparseMat();
-    CxSparseMat* cxSpMat2 = const_cast<CxSparseMat*>(matAdd->GetCxSparseMat());
+    CvSparseMat* cvSpMat1 = GetCvSparseMat();
+    CvSparseMat* cvSpMat2 = const_cast<CvSparseMat*>(matAdd->GetCvSparseMat());
     //iterate throw additional matrix
-    CxSparseMatIterator iterator2;
-    CxSparseNode* node2;
+    CvSparseMatIterator iterator2;
+    CvSparseNode* node2;
     if( combineFlag >= 0 )
     {
         int* idx2;
-        for( node2 = cxInitSparseMatIterator( cxSpMat2, &iterator2 );
-                 node2 != 0; node2 = cxGetNextSparseNode( &iterator2 ))
+        for( node2 = cvInitSparseMatIterator( cvSpMat2, &iterator2 );
+                 node2 != 0; node2 = cvGetNextSparseNode( &iterator2 ))
         {
-            idx2 = CX_NODE_IDX( cxSpMat2, node2 );
-            void* val2 = CX_NODE_VAL(  cxSpMat2, node2 );
+            idx2 = CV_NODE_IDX( cvSpMat2, node2 );
+            void* val2 = CV_NODE_VAL(  cvSpMat2, node2 );
             Type valT2 = *(Type*)val2;
             //set all values from the largest matrix
-            uchar* valInNew = cxPtrND( cxSpMat1, idx2, NULL, 2, 0 );//create node
-            //uchar* valInNew = cxPtrND( cxSpMat, idx2 );
+            uchar* valInNew = cvPtrND( cvSpMat1, idx2, NULL, 2, 0 );//create node
+            //uchar* valInNew = cvPtrND( cvSpMat, idx2 );
             //set value for node
             Type res = Type(0);
             Type oldVal = *(Type*)(valInNew);
@@ -328,17 +328,17 @@ CDenseMatrix<Type>* iCNumericSparseMatrix<Type>::ConvertToDense() const
     pnlVector<Type> dataVec;
     dataVec.assign( dataSize, GetDefaultValue() );
     //iterate throw matrix and set non-default elements
-    CxSparseMatIterator iterator;
-    CxSparseNode* node;
+    CvSparseMatIterator iterator;
+    CvSparseNode* node;
     int* idx;
     int offset = 0;
-    const CxSparseMat* mat = GetCxSparseMat();
-    for( node = cxInitSparseMatIterator( mat, &iterator );
-                 node != 0; node = cxGetNextSparseNode( &iterator ))
+    const CvSparseMat* mat = GetCvSparseMat();
+    for( node = cvInitSparseMatIterator( mat, &iterator );
+                 node != 0; node = cvGetNextSparseNode( &iterator ))
     {
         //we put data from small matrix to needed positions in bigData
-        idx = CX_NODE_IDX( mat, node );
-        void* val = CX_NODE_VAL(  mat, node );
+        idx = CV_NODE_IDX( mat, node );
+        void* val = CV_NODE_VAL(  mat, node );
         //convert from indices to line
         offset = 0;
         for( i = 0; i < dim; i++)
@@ -401,16 +401,16 @@ iCNumericSparseMatrix<Type>* iCNumericSparseMatrix<Type>::Copy(
 template <class Type>
 Type iCNumericSparseMatrix<Type>::SumAll( int byAbsValue /* = 0 */) const
 {
-    CxSparseMatIterator iterator;
-    CxSparseNode* node;
+    CvSparseMatIterator iterator;
+    CvSparseNode* node;
     const iCNumericSparseMatrix<Type>* self = this;
-    const CxSparseMat* mat = const_cast<CxSparseMat*>(self->GetCxSparseMat());
+    const CvSparseMat* mat = const_cast<CvSparseMat*>(self->GetCvSparseMat());
     Type sum = 0;
-    for( node = cxInitSparseMatIterator( mat, &iterator );
-                 node != 0; node = cxGetNextSparseNode( &iterator ))
+    for( node = cvInitSparseMatIterator( mat, &iterator );
+                 node != 0; node = cvGetNextSparseNode( &iterator ))
     {
         //we put data from small matrix to needed positions in bigData
-        void* val = CX_NODE_VAL(  mat, node );
+        void* val = CV_NODE_VAL(  mat, node );
         Type valT = *(Type*)val;
         if( byAbsValue )
         {
@@ -430,14 +430,14 @@ void iCNumericSparseMatrix<Type>::Normalize()
     if(( sum > (2*FLT_MIN) )&&( fabs(sum - 1)> FLT_EPSILON ))
     {
         Type reciprocalSum = 1/sum;
-        CxSparseMatIterator iterator;
-        CxSparseNode* node;
-        CxSparseMat* pCxSparseMat = this->GetCxSparseMat();
-        for( node = cxInitSparseMatIterator( pCxSparseMat, &iterator );
-                 node != 0; node = cxGetNextSparseNode( &iterator ))
+        CvSparseMatIterator iterator;
+        CvSparseNode* node;
+        CvSparseMat* pCvSparseMat = this->GetCvSparseMat();
+        for( node = cvInitSparseMatIterator( pCvSparseMat, &iterator );
+                 node != 0; node = cvGetNextSparseNode( &iterator ))
         {
             //we put data from small matrix to needed positions in bigData
-            void* val = CX_NODE_VAL( pCxSparseMat, node );
+            void* val = CV_NODE_VAL( pCvSparseMat, node );
             Type valT = *(Type*)val;
             valT = valT*reciprocalSum;
             *((Type*)val) = valT;
@@ -449,17 +449,17 @@ template <class Type>
 CMatrix<Type>*  iCNumericSparseMatrix<Type>::NormalizeAll() const
 {
     Type sum = (static_cast<const CNumericSparseMatrix<Type>*>(this))->SumAll();
-    const CxSparseMat* mat = GetCxSparseMat();
-    CxSparseMat* resMat = cxCloneSparseMat(mat);
+    const CvSparseMat* mat = GetCvSparseMat();
+    CvSparseMat* resMat = cvCloneSparseMat(mat);
     if( sum != 0 )
     {
-        CxSparseMatIterator iterator;
-        CxSparseNode* node;
-        for( node = cxInitSparseMatIterator( resMat, &iterator );
-        node != 0; node = cxGetNextSparseNode( &iterator ))
+        CvSparseMatIterator iterator;
+        CvSparseNode* node;
+        for( node = cvInitSparseMatIterator( resMat, &iterator );
+        node != 0; node = cvGetNextSparseNode( &iterator ))
         {
             //we put data from small matrix to needed positions in bigData
-            void* val = CX_NODE_VAL(  resMat, node );
+            void* val = CV_NODE_VAL(  resMat, node );
             Type valT = *(Type*)val;
             valT = valT/sum;
             *((Type*)val) = valT;
@@ -482,11 +482,11 @@ void iCNumericSparseMatrix<Type>::MultiplyInSelf(
     }
     int i;
     Type zeroEpsilon = Type(0.0000000001);
-    CxSparseMat* mat = GetCxSparseMat();
+    CvSparseMat* mat = GetCvSparseMat();
     const iCNumericSparseMatrix<Type>* matToMultSp = static_cast<const
         iCNumericSparseMatrix<Type>*>(matToMult);
-    const CxSparseMat* cxMatMult = matToMultSp->GetCxSparseMat();
-    int numSmDims = cxMatMult->dims;
+    const CvSparseMat* cvMatMult = matToMultSp->GetCvSparseMat();
+    int numSmDims = cvMatMult->dims;
     if( numSmDims != numDimsToMult )
     {
         PNL_THROW( CInconsistentSize, "numDimsToMult must be the same as " )
@@ -495,7 +495,7 @@ void iCNumericSparseMatrix<Type>::MultiplyInSelf(
     Type newVal;
     if( isUnifrom )
     {
-        if( mat->total > 1 )
+        if( mat->heap->active_count > 1 )
         {
             PNL_THROW( CInvalidOperation,
                 "uniform matrices must haven't any data" );
@@ -505,14 +505,14 @@ void iCNumericSparseMatrix<Type>::MultiplyInSelf(
             if( numDimsToMult == mat->dims )
             {
                 //create copy of matrix with multiplying value
-                CxSparseMatIterator iterator;
-                CxSparseNode* node;
-                for( node = cxInitSparseMatIterator( cxMatMult, &iterator );
-                         node != 0; node = cxGetNextSparseNode( &iterator ))
+                CvSparseMatIterator iterator;
+                CvSparseNode* node;
+                for( node = cvInitSparseMatIterator( cvMatMult, &iterator );
+                         node != 0; node = cvGetNextSparseNode( &iterator ))
                 {
-                    idx = CX_NODE_IDX( cxMatMult, node );
-                    newVal = *(Type*)CX_NODE_VAL( cxMatMult, node );
-                    uchar* valInNew = cxPtrND( mat, idx, NULL, 1, 0 );
+                    idx = CV_NODE_IDX( cvMatMult, node );
+                    newVal = *(Type*)CV_NODE_VAL( cvMatMult, node );
+                    uchar* valInNew = cvPtrND( mat, idx, NULL, 1, 0 );
                     *((Type*)valInNew) = uniVal*newVal;
                 }
                 return;
@@ -552,19 +552,19 @@ void iCNumericSparseMatrix<Type>::MultiplyInSelf(
             //we need to put new values in matrix on all positions corresponding 
             //non-zero result of multiplying of uniVal and other matrix elements
             div_t result;
-            CxSparseMatIterator iterator;
-            CxSparseNode* node;
-            for( node = cxInitSparseMatIterator( cxMatMult, &iterator );
-                         node != 0; node = cxGetNextSparseNode( &iterator ))
+            CvSparseMatIterator iterator;
+            CvSparseNode* node;
+            for( node = cvInitSparseMatIterator( cvMatMult, &iterator );
+                         node != 0; node = cvGetNextSparseNode( &iterator ))
             {
-                idx = CX_NODE_IDX( cxMatMult, node );
+                idx = CV_NODE_IDX( cvMatMult, node );
                 intVector indexInBig;
                 indexInBig.assign( numBigDims,0 );
                 for( i = 0; i < numSmDims; i++ )
                 {
                     indexInBig[indicesToMultInSelf[i]] = idx[i];
                 }
-                newVal = *(Type*)CX_NODE_VAL( cxMatMult, node );
+                newVal = *(Type*)CV_NODE_VAL( cvMatMult, node );
                 //need to set all other indices
                 for( i = 0; i < numDiffCombs; i++ )
                 {
@@ -577,7 +577,7 @@ void iCNumericSparseMatrix<Type>::MultiplyInSelf(
                         indexInBig[indicesOtherInSelf[k]] = result.quot;
                         res = result.rem;
                     }
-                    uchar* valInNew = cxPtrND( mat, &indexInBig.front(),
+                    uchar* valInNew = cvPtrND( mat, &indexInBig.front(),
                                                     NULL, 1, 0 );
                     *((Type*)valInNew) = uniVal*newVal;
                 }
@@ -599,21 +599,21 @@ void iCNumericSparseMatrix<Type>::MultiplyInSelf(
         intVector index;
         intVector indexInSmall;
         indexInSmall.resize( numDimsToMult );
-        CxSparseMatIterator iterator;
-        CxSparseNode* node;
-        for( node = cxInitSparseMatIterator( mat, &iterator );
-                     node != 0; node = cxGetNextSparseNode( &iterator ))
+        CvSparseMatIterator iterator;
+        CvSparseNode* node;
+        for( node = cvInitSparseMatIterator( mat, &iterator );
+                     node != 0; node = cvGetNextSparseNode( &iterator ))
         {
-            idx = CX_NODE_IDX( mat, node );
+            idx = CV_NODE_IDX( mat, node );
             for( i = 0; i < numDimsToMult; i++ )
             {
                 indexInSmall[i] = idx[indicesToMultInSelf[i]];
             }
-            uchar* valInMult = cxPtrND( cxMatMult, &indexInSmall.front() );
+            uchar* valInMult = cvPtrND( cvMatMult, &indexInSmall.front() );
             //check if in small matrix there is such value - multiply them
             if( valInMult )
             {
-                void* val = CX_NODE_VAL( mat, node );
+                void* val = CV_NODE_VAL( mat, node );
                 newVal = (*(Type*)valInMult)*(*(Type*)val);
                 if( Type(fabs(newVal)) > zeroEpsilon )
                 {
@@ -640,7 +640,7 @@ void iCNumericSparseMatrix<Type>::MultiplyInSelf(
         int numDeleteNodes = indicesToDelete.size();
         for( i = numDeleteNodes - 1; i >= 0; i-- )
         {
-            cxClearND( mat, &(indicesToDelete[i].front()) );
+            cvClearND( mat, &(indicesToDelete[i].front()) );
         }
     }
 }
@@ -656,11 +656,11 @@ void iCNumericSparseMatrix<Type>::DivideInSelf(
         PNL_THROW( CInvalidOperation, "can't multiply dense in sparse" );
     }
     int i;
-    const CxSparseMat* mat = GetCxSparseMat();
+    const CvSparseMat* mat = GetCvSparseMat();
     const iCNumericSparseMatrix<Type>* matToDivSp = static_cast<const
         iCNumericSparseMatrix<Type>*>(matToDiv);
-    const CxSparseMat* cxMatDiv = matToDivSp->GetCxSparseMat();
-    int numSmDims = cxMatDiv->dims;
+    const CvSparseMat* cvMatDiv = matToDivSp->GetCvSparseMat();
+    int numSmDims = cvMatDiv->dims;
     if( numSmDims != numDimsToDiv )
     {
         PNL_THROW( CInconsistentSize, "numDimsToDiv must be the same as " )
@@ -669,17 +669,17 @@ void iCNumericSparseMatrix<Type>::DivideInSelf(
     Type newVal;
     intVector indexInSmall;
     indexInSmall.resize( numDimsToDiv );
-    CxSparseMatIterator iterator;
-    CxSparseNode* node;
-    for( node = cxInitSparseMatIterator( mat, &iterator );
-                 node != 0; node = cxGetNextSparseNode( &iterator ))
+    CvSparseMatIterator iterator;
+    CvSparseNode* node;
+    for( node = cvInitSparseMatIterator( mat, &iterator );
+                 node != 0; node = cvGetNextSparseNode( &iterator ))
     {
-        idx = CX_NODE_IDX( mat, node );
+        idx = CV_NODE_IDX( mat, node );
         for( i = 0; i < numDimsToDiv; i++ )
         {
             indexInSmall[i] = idx[indicesToDivInSelf[i]];
         }
-        uchar* valInDiv = cxPtrND( cxMatDiv, &indexInSmall.front() );
+        uchar* valInDiv = cvPtrND( cvMatDiv, &indexInSmall.front() );
         //check if in small matrix there is such value - multiply them
         if( valInDiv )
         {
@@ -687,7 +687,7 @@ void iCNumericSparseMatrix<Type>::DivideInSelf(
             //we needn't to divide if there is zero val
             if( divVal )
             {
-                void* val = CX_NODE_VAL( mat, node );
+                void* val = CV_NODE_VAL( mat, node );
                 newVal = (*(Type*)val)/(*(Type*)valInDiv);
                 //memcpy(val, &newVal, sizeof(Type));
                 *((Type*)val) = newVal;
@@ -703,28 +703,28 @@ void iCNumericSparseMatrix<Type>::GetIndicesOfMaxValue( intVector* indices)
 {
     PNL_CHECK_IS_NULL_POINTER( indices );
 
-    const CxSparseMat* selfMat = GetCxSparseMat();
+    const CvSparseMat* selfMat = GetCvSparseMat();
     int numDims = selfMat->dims;
-    CxSparseMatIterator iterator;
-    CxSparseNode* node  = cxInitSparseMatIterator( selfMat, &iterator );
+    CvSparseMatIterator iterator;
+    CvSparseNode* node  = cvInitSparseMatIterator( selfMat, &iterator );
     if( !node )
     {
         //no node - max indices are empty
         indices->assign( numDims, 0 );
         return;
     }
-    CxSparseNode* maxNode = node;
-    for( node = cxInitSparseMatIterator( selfMat, &iterator );
-                 node != 0; node = cxGetNextSparseNode( &iterator ))
+    CvSparseNode* maxNode = node;
+    for( node = cvInitSparseMatIterator( selfMat, &iterator );
+                 node != 0; node = cvGetNextSparseNode( &iterator ))
     {
-        void* valCur = CX_NODE_VAL( selfMat, node );
-        void* valMax = CX_NODE_VAL( selfMat, maxNode );
+        void* valCur = CV_NODE_VAL( selfMat, node );
+        void* valMax = CV_NODE_VAL( selfMat, maxNode );
         if( (*(Type*)valCur) > (*(Type*)valMax ))
         {
             maxNode = node;
         }
     }
-    int* idx = CX_NODE_IDX( selfMat, maxNode);
+    int* idx = CV_NODE_IDX( selfMat, maxNode);
     indices->assign( idx, idx + numDims );
 }
 
@@ -796,7 +796,7 @@ inline void iCNumericSparseMatrix<Type>::SetUnitValuesOneByOne()
     for( int i1 = m_Dim-1; i1 >= 0; i1--)
     {
         pconvIndBig[i1] = nlineBig;
-        int bigNodeSize = m_pCxSparseMat->dims[i1];
+        int bigNodeSize = m_pCvSparseMat->dims[i1];
         nlineBig = nlineBig*bigNodeSize;
     }
     div_t result;
@@ -833,7 +833,7 @@ iCNumericSparseMatrix<Type>::iCNumericSparseMatrix( const
 }
 
 template <class Type>
-iCNumericSparseMatrix<Type>::iCNumericSparseMatrix( CxSparseMat* p_sparse)
+iCNumericSparseMatrix<Type>::iCNumericSparseMatrix( CvSparseMat* p_sparse)
 :CSparseMatrix<Type>( p_sparse, Type(0) )// , CMatrix<Type>(0)
 {
 }
@@ -852,15 +852,15 @@ iCNumericSparseMatrix< ELTYPE >::ReduceOp( const int *pDimsOfInterest,
     int *idx;
     const int *ranges;
     int num_dims_to_keep;
-    CxSparseNode *nd;
-    CxSparseMatIterator it;
+    CvSparseNode *nd;
+    CvSparseMatIterator it;
 
     PNL_DEFINE_AUTOBUF( bool, mask, PNL_SPARSE_MATRIX_SOFT_MAX_DIM );
     PNL_DEFINE_AUTOBUF( int, dims_to_keep, PNL_SPARSE_MATRIX_SOFT_MAX_DIM );
     PNL_DEFINE_AUTOBUF( int, new_ranges, PNL_SPARSE_MATRIX_SOFT_MAX_DIM );
     PNL_DEFINE_AUTOBUF( int, stats, PNL_SPARSE_MATRIX_SOFT_MAX_DIM );
 
-    PNL_MAKE_LOCAL( CxSparseMat *, mat, this, GetCxSparseMat() );
+    PNL_MAKE_LOCAL( CvSparseMat *, mat, this, GetCvSparseMat() );
 //    PNL_MAKE_LOCAL( ELTYPE, inival, this, GetDefaultValue() );
 
     if ( (unsigned)action > 2 )
@@ -951,43 +951,43 @@ iCNumericSparseMatrix< ELTYPE >::ReduceOp( const int *pDimsOfInterest,
                                                          new_ranges, 0 );
     }
 
-    PNL_MAKE_LOCAL( CxSparseMat *, tgt, (CNumericSparseMatrix< ELTYPE > *)output, GetCxSparseMat() );
+    PNL_MAKE_LOCAL( CvSparseMat *, tgt, (CNumericSparseMatrix< ELTYPE > *)output, GetCvSparseMat() );
     PNL_DEMAND_AUTOBUF( stats, num_dims );
-    nd = cxInitSparseMatIterator( mat, &it );
+    nd = cvInitSparseMatIterator( mat, &it );
     if ( action < 2 )
     {
         if ( action == 0 )
         {
             while ( nd )
             {
-                idx = CX_NODE_IDX( mat, nd );
+                idx = CV_NODE_IDX( mat, nd );
                 for ( i = num_dims_to_keep; i--; )
                 {
                     stats[i] = idx[dims_to_keep[i]];
                 }
-                //nnd = (CxSparseNode*)cxPtrND( tgt, stats );
-                //nnd = (CxSparseNode *)cxPtrND( tgt, stats, 0, 1 );
-                //*(ELTYPE *)CX_NODE_VAL( tgt, nnd ) += *(ELTYPE *)CX_NODE_VAL( mat, nd );
+                //nnd = (CvSparseNode*)cvPtrND( tgt, stats );
+                //nnd = (CvSparseNode *)cvPtrND( tgt, stats, 0, 1 );
+                //*(ELTYPE *)CV_NODE_VAL( tgt, nnd ) += *(ELTYPE *)CV_NODE_VAL( mat, nd );
 
-                *(ELTYPE *)cxPtrND( tgt, stats ) += *(ELTYPE *)CX_NODE_VAL( mat, nd );
-                nd = cxGetNextSparseNode( &it );
+                *(ELTYPE *)cvPtrND( tgt, stats ) += *(ELTYPE *)CV_NODE_VAL( mat, nd );
+                nd = cvGetNextSparseNode( &it );
             }
         }
         else
         {
             while ( nd )
             {
-                idx = CX_NODE_IDX( mat, nd );
+                idx = CV_NODE_IDX( mat, nd );
                 for ( i = num_dims_to_keep; i--; )
                 {
                     stats[i] = idx[dims_to_keep[i]];
                 }
-                //nnd = (CxSparseNode*)cxPtrND( tgt, stats );
-                //nnd = (CxSparseNode *)cxPtrND( tgt, stats, 0, 1 );
-                ELTYPE *el = (ELTYPE *)cxPtrND( tgt, stats );
-                ELTYPE *ll = (ELTYPE *)CX_NODE_VAL( mat, nd );
+                //nnd = (CvSparseNode*)cvPtrND( tgt, stats );
+                //nnd = (CvSparseNode *)cvPtrND( tgt, stats, 0, 1 );
+                ELTYPE *el = (ELTYPE *)cvPtrND( tgt, stats );
+                ELTYPE *ll = (ELTYPE *)CV_NODE_VAL( mat, nd );
                 if ( *ll > *el ) *el = *ll;
-                nd = cxGetNextSparseNode( &it );
+                nd = cvGetNextSparseNode( &it );
             }
         }
     }
@@ -1001,7 +1001,7 @@ iCNumericSparseMatrix< ELTYPE >::ReduceOp( const int *pDimsOfInterest,
         {
             while ( nd )
             {
-                idx = CX_NODE_IDX( mat, nd );
+                idx = CV_NODE_IDX( mat, nd );
                 for ( i = numDimsOfInterest; i--; )
                 {
                     if ( idx[pDimsOfInterest[i]] != pObservedValues[i] )
@@ -1013,23 +1013,23 @@ iCNumericSparseMatrix< ELTYPE >::ReduceOp( const int *pDimsOfInterest,
                 {
                     stats[dims_to_keep[i]] = idx[dims_to_keep[i]];
                 }
-                //nnd = (CxSparseNode*)cxPtrND( tgt, stats );
+                //nnd = (CvSparseNode*)cvPtrND( tgt, stats );
 #if 1
 
-                *(ELTYPE *)cxPtrND( tgt, stats ) = *(ELTYPE *)CX_NODE_VAL( mat, nd );
+                *(ELTYPE *)cvPtrND( tgt, stats ) = *(ELTYPE *)CV_NODE_VAL( mat, nd );
 #else
-                CxSparseNode* nnd = (CxSparseNode *)cxPtrND( tgt, stats, 0, 1, 0 );
-                *(ELTYPE *)CX_NODE_VAL( tgt, nnd ) = *(ELTYPE *)CX_NODE_VAL( mat, nd );
+                CvSparseNode* nnd = (CvSparseNode *)cvPtrND( tgt, stats, 0, 1, 0 );
+                *(ELTYPE *)CV_NODE_VAL( tgt, nnd ) = *(ELTYPE *)CV_NODE_VAL( mat, nd );
 #endif
                 cont:
-                nd = cxGetNextSparseNode( &it );
+                nd = cvGetNextSparseNode( &it );
             }
         }
         else if ( accum_type == PNL_ACCUM_TYPE_MUL )
         {
             while ( nd )
             {
-                idx = CX_NODE_IDX( mat, nd );
+                idx = CV_NODE_IDX( mat, nd );
                 for ( i = numDimsOfInterest; i--; )
                 {
                     if ( idx[pDimsOfInterest[i]] != pObservedValues[i] )
@@ -1041,16 +1041,16 @@ iCNumericSparseMatrix< ELTYPE >::ReduceOp( const int *pDimsOfInterest,
                 {
                     stats[dims_to_keep[i]] = idx[dims_to_keep[i]];
                 }
-                //nnd = (CxSparseNode*)cxPtrND( tgt, stats );
+                //nnd = (CvSparseNode*)cvPtrND( tgt, stats );
 #if 1
 
-                *(ELTYPE *)cxPtrND( tgt, stats ) *= *(ELTYPE *)CX_NODE_VAL( mat, nd );
+                *(ELTYPE *)cvPtrND( tgt, stats ) *= *(ELTYPE *)CV_NODE_VAL( mat, nd );
 #else
-                CxSparseNode* nnd = (CxSparseNode *)cxPtrND( tgt, stats, 0, 1, 0 );
-                *(ELTYPE *)CX_NODE_VAL( tgt, nnd ) = *(ELTYPE *)CX_NODE_VAL( mat, nd );
+                CvSparseNode* nnd = (CvSparseNode *)cvPtrND( tgt, stats, 0, 1, 0 );
+                *(ELTYPE *)CV_NODE_VAL( tgt, nnd ) = *(ELTYPE *)CV_NODE_VAL( mat, nd );
 #endif
                 cont2:
-                nd = cxGetNextSparseNode( &it );
+                nd = cvGetNextSparseNode( &it );
             }
         }
         else

@@ -42,39 +42,39 @@
 #include "_cxcore.h"
 
 /****************************************************************************************\
-*                                         cxSetIdentity                                  *
+*                           [scaled] Identity matrix initialization                      *
 \****************************************************************************************/
 
-CX_IMPL void
-cxSetIdentity( CxArr* array, CxScalar value )
+CV_IMPL void
+cvSetIdentity( CvArr* array, CvScalar value )
 {
-    CX_FUNCNAME( "cxSetIdentity" );
+    CV_FUNCNAME( "cvSetIdentity" );
 
     __BEGIN__;
 
-    CxMat stub, *mat = (CxMat*)array;
-    CxSize size;
-    int i, len, step;
+    CvMat stub, *mat = (CvMat*)array;
+    CvSize size;
+    int i, k, len, step;
     int type, pix_size;
     uchar* data = 0;
     double buf[4];
 
-    if( !CX_IS_MAT( mat ))
+    if( !CV_IS_MAT( mat ))
     {
         int coi = 0;
-        CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
+        CV_CALL( mat = cvGetMat( mat, &stub, &coi ));
         if( coi != 0 )
-            CX_ERROR( CX_BadCOI, "coi is not supported" );
+            CV_ERROR( CV_BadCOI, "coi is not supported" );
     }
 
-    size = cxGetMatSize( mat );
-    len = CX_IMIN( size.width, size.height );
+    size = cvGetMatSize( mat );
+    len = CV_IMIN( size.width, size.height );
 
-    type = CX_MAT_TYPE(mat->type);
-    pix_size = icxPixSize[type];
+    type = CV_MAT_TYPE(mat->type);
+    pix_size = CV_ELEM_SIZE(type);
     size.width *= pix_size;
 
-    if( CX_IS_MAT_CONT( mat->type ))
+    if( CV_IS_MAT_CONT( mat->type ))
     {
         size.width *= size.height;
         size.height = 1;
@@ -82,63 +82,69 @@ cxSetIdentity( CxArr* array, CxScalar value )
 
     data = mat->data.ptr;
     step = mat->step;
-    IPPI_CALL( icxSetZero_8u_C1R( data, step, size ));
+    if( step == 0 )
+        step = CV_STUB_STEP;
+    IPPI_CALL( icvSetZero_8u_C1R( data, step, size ));
     step += pix_size;
 
-    if( type == CX_32FC1 )
+    if( type == CV_32FC1 )
     {
-        if( value.val[0] == 1 )
-            *((float*)buf) = 1.f;
-        else
-            cxScalarToRawData( &value, buf, type, 0 );
+        float val = (float)value.val[0];
+        float* _data = (float*)data;
+        step /= sizeof(_data[0]);
+        len *= step;
 
-        for( i = 0; i < len; i++, (char*&)data += step )
-            *((float*)data) = *((float*)buf);
+        for( i = 0; i < len; i += step )
+            _data[i] = val;
     }
-    else if( type == CX_64FC1 )
+    else if( type == CV_64FC1 )
     {
-        buf[0] = value.val[0];
-        
-        for( i = 0; i < len; i++, (char*&)data += step )
-            *((double*)data) = buf[0];
+        double val = value.val[0];
+        double* _data = (double*)data;
+        step /= sizeof(_data[0]);
+        len *= step;
+
+        for( i = 0; i < len; i += step )
+            _data[i] = val;
     }
     else
     {
-        cxScalarToRawData( &value, buf, type, 0 );
+        uchar* val_ptr = (uchar*)buf;
+        cvScalarToRawData( &value, buf, type, 0 );
+        len *= step;
 
-        for( i = 0; i < len; i++, (char*&)data += step )
-            memcpy( data, buf, pix_size );
+        for( i = 0; i < len; i += step )
+            for( k = 0; k < pix_size; k++ )
+                data[i+k] = val_ptr[k];
     }
-
-    CX_CHECK_NANS( mat );
 
     __END__;
 }
 
 
 /****************************************************************************************\
-*                                          cxTrace                                       *
+*                                    Trace of the matrix                                 *
 \****************************************************************************************/
 
-CX_IMPL CxScalar
-cxTrace( const CxArr* array )
+CV_IMPL CvScalar
+cvTrace( const CvArr* array )
 {
-    CxScalar sum = {{ 0, 0, 0, 0 }};
+    CvScalar sum = {{0,0,0,0}};
     
-    CX_FUNCNAME( "cxTrace" );
+    CV_FUNCNAME( "cvTrace" );
 
     __BEGIN__;
 
-    CxMat stub, *mat = 0;
+    CvMat stub, *mat = 0;
 
-    if( CX_IS_MAT( array ))
+    if( CV_IS_MAT( array ))
     {
-        mat = (CxMat*)array;
-        int type = CX_MAT_TYPE(mat->type);
-        int size = CX_MIN(mat->rows,mat->cols);
+        mat = (CvMat*)array;
+        int type = CV_MAT_TYPE(mat->type);
+        int size = MIN(mat->rows,mat->cols);
         uchar* data = mat->data.ptr;
 
-        if( type == CX_32FC1 )
+        if( type == CV_32FC1 )
         {
             int step = mat->step + sizeof(float);
 
@@ -147,7 +153,7 @@ cxTrace( const CxArr* array )
             EXIT;
         }
         
-        if( type == CX_64FC1 )
+        if( type == CV_64FC1 )
         {
             int step = mat->step + sizeof(double);
 
@@ -157,8 +163,8 @@ cxTrace( const CxArr* array )
         }
     }
 
-    CX_CALL( mat = cxGetDiag( array, &stub ));
-    CX_CALL( sum = cxSum( mat ));
+    CV_CALL( mat = cvGetDiag( array, &stub ));
+    CV_CALL( sum = cvSum( mat ));
 
     __END__;
 
@@ -167,294 +173,303 @@ cxTrace( const CxArr* array )
 
 
 /****************************************************************************************\
-*                                        cxTranspose                                     *
+*                                     Matrix transpose                                   *
 \****************************************************************************************/
 
 /////////////////// macros for inplace transposition of square matrix ////////////////////
 
-#define ICX_DEF_TRANSP_INP_CASE_C1( arrtype, arr, step, len )   \
-{                                                               \
-    arrtype* arr1 = arr;                                        \
-                                                                \
-    while( --len )                                              \
-    {                                                           \
-        (char*&)arr += step, arr1++;                            \
-        arrtype* arr2 = arr;                                    \
-        arrtype* arr3 = arr1;                                   \
-                                                                \
-        do                                                      \
-        {                                                       \
-            arrtype t0 = arr2[0];                               \
-            arrtype t1 = arr3[0];                               \
-            arr2[0] = t1;                                       \
-            arr3[0] = t0;                                       \
-                                                                \
-            arr2++;                                             \
-            (char*&)arr3 += step;                               \
-        }                                                       \
-        while( arr2 != arr3  );                                 \
-    }                                                           \
+#define ICV_DEF_TRANSP_INP_CASE_C1( \
+    arrtype, len )                  \
+{                                   \
+    arrtype* arr1 = arr;            \
+    step /= sizeof(arr[0]);         \
+                                    \
+    while( --len )                  \
+    {                               \
+        arr += step, arr1++;        \
+        arrtype* arr2 = arr;        \
+        arrtype* arr3 = arr1;       \
+                                    \
+        do                          \
+        {                           \
+            arrtype t0 = arr2[0];   \
+            arrtype t1 = arr3[0];   \
+            arr2[0] = t1;           \
+            arr3[0] = t0;           \
+                                    \
+            arr2++;                 \
+            arr3 += step;           \
+        }                           \
+        while( arr2 != arr3  );     \
+    }                               \
 }
 
 
-#define ICX_DEF_TRANSP_INP_CASE_C3( arrtype, arr, step, len )   \
-{                                                               \
-    arrtype* arr1 = arr;                                        \
-    int y;                                                      \
-                                                                \
-    for( y = 1; y < len; y++ )                                  \
-    {                                                           \
-        (char*&)arr += step, arr1 += 3;                         \
-        arrtype* arr2 = arr;                                    \
-        arrtype* arr3 = arr1;                                   \
-                                                                \
-        for( ; arr2 != arr3; arr2 += 3, (char*&)arr3 += step )  \
-        {                                                       \
-            arrtype t0 = arr2[0];                               \
-            arrtype t1 = arr3[0];                               \
-            arr2[0] = t1;                                       \
-            arr3[0] = t0;                                       \
-            t0 = arr2[1];                                       \
-            t1 = arr3[1];                                       \
-            arr2[1] = t1;                                       \
-            arr3[1] = t0;                                       \
-            t0 = arr2[2];                                       \
-            t1 = arr3[2];                                       \
-            arr2[2] = t1;                                       \
-            arr3[2] = t0;                                       \
-        }                                                       \
-    }                                                           \
+#define ICV_DEF_TRANSP_INP_CASE_C3( \
+    arrtype, len )                  \
+{                                   \
+    arrtype* arr1 = arr;            \
+    int y;                          \
+    step /= sizeof(arr[0]);         \
+                                    \
+    for( y = 1; y < len; y++ )      \
+    {                               \
+        arr += step, arr1 += 3;     \
+        arrtype* arr2 = arr;        \
+        arrtype* arr3 = arr1;       \
+                                    \
+        for( ; arr2!=arr3; arr2+=3, \
+                        arr3+=step )\
+        {                           \
+            arrtype t0 = arr2[0];   \
+            arrtype t1 = arr3[0];   \
+            arr2[0] = t1;           \
+            arr3[0] = t0;           \
+            t0 = arr2[1];           \
+            t1 = arr3[1];           \
+            arr2[1] = t1;           \
+            arr3[1] = t0;           \
+            t0 = arr2[2];           \
+            t1 = arr3[2];           \
+            arr2[2] = t1;           \
+            arr3[2] = t0;           \
+        }                           \
+    }                               \
 }
 
 
-#define ICX_DEF_TRANSP_INP_CASE_C4( arrtype, arr, step, len )   \
-{                                                               \
-    arrtype* arr1 = arr;                                        \
-    int y;                                                      \
-                                                                \
-    for( y = 1; y < len; y++ )                                  \
-    {                                                           \
-        (char*&)arr += step, arr1 += 4;                         \
-        arrtype* arr2 = arr;                                    \
-        arrtype* arr3 = arr1;                                   \
-                                                                \
-        for( ; arr2 != arr3; arr2 += 4, (char*&)arr3 += step )  \
-        {                                                       \
-            arrtype t0 = arr2[0];                               \
-            arrtype t1 = arr3[0];                               \
-            arr2[0] = t1;                                       \
-            arr3[0] = t0;                                       \
-            t0 = arr2[1];                                       \
-            t1 = arr3[1];                                       \
-            arr2[1] = t1;                                       \
-            arr3[1] = t0;                                       \
-            t0 = arr2[2];                                       \
-            t1 = arr3[2];                                       \
-            arr2[2] = t1;                                       \
-            arr3[2] = t0;                                       \
-            t0 = arr2[3];                                       \
-            t1 = arr3[3];                                       \
-            arr2[3] = t1;                                       \
-            arr3[3] = t0;                                       \
-        }                                                       \
-    }                                                           \
+#define ICV_DEF_TRANSP_INP_CASE_C4( \
+    arrtype, len )                  \
+{                                   \
+    arrtype* arr1 = arr;            \
+    int y;                          \
+    step /= sizeof(arr[0]);         \
+                                    \
+    for( y = 1; y < len; y++ )      \
+    {                               \
+        arr += step, arr1 += 4;     \
+        arrtype* arr2 = arr;        \
+        arrtype* arr3 = arr1;       \
+                                    \
+        for( ; arr2!=arr3; arr2+=4, \
+                        arr3+=step )\
+        {                           \
+            arrtype t0 = arr2[0];   \
+            arrtype t1 = arr3[0];   \
+            arr2[0] = t1;           \
+            arr3[0] = t0;           \
+            t0 = arr2[1];           \
+            t1 = arr3[1];           \
+            arr2[1] = t1;           \
+            arr3[1] = t0;           \
+            t0 = arr2[2];           \
+            t1 = arr3[2];           \
+            arr2[2] = t1;           \
+            arr3[2] = t0;           \
+            t0 = arr2[3];           \
+            t1 = arr3[3];           \
+            arr2[3] = t1;           \
+            arr3[3] = t0;           \
+        }                           \
+    }                               \
 }
 
 
 //////////////// macros for non-inplace transposition of rectangular matrix //////////////
 
-#define ICX_DEF_TRANSP_CASE_C1( arrtype, src, srcstep,                              \
-                                dst, dststep, size )                                \
-{                                                                                   \
-    int x, y;                                                                       \
-                                                                                    \
-    for( y = 0; y <= size.height - 2; y += 2, (char*&)src += 2*srcstep, dst += 2 )  \
-    {                                                                               \
-        const arrtype* src1 = (const arrtype*)((char*)src + srcstep);               \
-        uchar* dst1 = (uchar*)dst;                                                  \
-                                                                                    \
-        for( x = 0; x <= size.width - 2; x += 2, dst1 += dststep )                  \
-        {                                                                           \
-            arrtype t0 = src[x];                                                    \
-            arrtype t1 = src1[x];                                                   \
-            ((arrtype*)dst1)[0] = t0;                                               \
-            ((arrtype*)dst1)[1] = t1;                                               \
-                                                                                    \
-            dst1 += dststep;                                                        \
-                                                                                    \
-            t0 = src[x + 1];                                                        \
-            t1 = src1[x + 1];                                                       \
-            ((arrtype*)dst1)[0] = t0;                                               \
-            ((arrtype*)dst1)[1] = t1;                                               \
-        }                                                                           \
-                                                                                    \
-        if( x < size.width )                                                        \
-        {                                                                           \
-            arrtype t0 = src[x];                                                    \
-            arrtype t1 = src1[x];                                                   \
-            ((arrtype*)dst1)[0] = t0;                                               \
-            ((arrtype*)dst1)[1] = t1;                                               \
-        }                                                                           \
-    }                                                                               \
-                                                                                    \
-    if( y < size.height )                                                           \
-    {                                                                               \
-        uchar* dst1 = (uchar*)dst;                                                  \
-        for( x = 0; x <= size.width - 2; x += 2, dst1 += 2*dststep )                \
-        {                                                                           \
-            arrtype t0 = src[x];                                                    \
-            arrtype t1 = src[x + 1];                                                \
-            ((arrtype*)dst1)[0] = t0;                                               \
-            ((arrtype*)(dst1 + dststep))[0] = t1;                                   \
-        }                                                                           \
-                                                                                    \
-        if( x < size.width )                                                        \
-        {                                                                           \
-            arrtype t0 = src[x];                                                    \
-            ((arrtype*)dst1)[0] = t0;                                               \
-        }                                                                           \
-    }                                                                               \
+#define ICV_DEF_TRANSP_CASE_C1( arrtype )       \
+{                                               \
+    int x, y;                                   \
+    srcstep /= sizeof(src[0]);                  \
+    dststep /= sizeof(dst[0]);                  \
+                                                \
+    for( y = 0; y <= size.height - 2; y += 2,   \
+                src += 2*srcstep, dst += 2 )    \
+    {                                           \
+        const arrtype* src1 = src + srcstep;    \
+        arrtype* dst1 = dst;                    \
+                                                \
+        for( x = 0; x <= size.width - 2;        \
+                x += 2, dst1 += dststep )       \
+        {                                       \
+            arrtype t0 = src[x];                \
+            arrtype t1 = src1[x];               \
+            dst1[0] = t0;                       \
+            dst1[1] = t1;                       \
+            dst1 += dststep;                    \
+                                                \
+            t0 = src[x + 1];                    \
+            t1 = src1[x + 1];                   \
+            dst1[0] = t0;                       \
+            dst1[1] = t1;                       \
+        }                                       \
+                                                \
+        if( x < size.width )                    \
+        {                                       \
+            arrtype t0 = src[x];                \
+            arrtype t1 = src1[x];               \
+            dst1[0] = t0;                       \
+            dst1[1] = t1;                       \
+        }                                       \
+    }                                           \
+                                                \
+    if( y < size.height )                       \
+    {                                           \
+        arrtype* dst1 = dst;                    \
+        for( x = 0; x <= size.width - 2;        \
+                x += 2, dst1 += 2*dststep )     \
+        {                                       \
+            arrtype t0 = src[x];                \
+            arrtype t1 = src[x + 1];            \
+            dst1[0] = t0;                       \
+            dst1[dststep] = t1;                 \
+        }                                       \
+                                                \
+        if( x < size.width )                    \
+        {                                       \
+            arrtype t0 = src[x];                \
+            dst1[0] = t0;                       \
+        }                                       \
+    }                                           \
 }
 
 
-#define ICX_DEF_TRANSP_CASE_C3( arrtype, src, srcstep,                              \
-                                dst, dststep, size )                                \
-{                                                                                   \
-    size.width *= 3;                                                                \
-                                                                                    \
-    for( ; size.height--; (char*&)src += srcstep, dst++ )                           \
-    {                                                                               \
-        int x;                                                                      \
-        arrtype* dst1 = dst;                                                        \
-                                                                                    \
-        for( x = 0; x < size.width; x += 3, (char*&)dst1 += dststep )               \
-        {                                                                           \
-            arrtype t0 = src[x];                                                    \
-            arrtype t1 = src[x + 1];                                                \
-            arrtype t2 = src[x + 2];                                                \
-                                                                                    \
-            dst1[0] = t0;                                                           \
-            dst1[1] = t1;                                                           \
-            dst1[2] = t2;                                                           \
-        }                                                                           \
-    }                                                                               \
+#define ICV_DEF_TRANSP_CASE_C3( arrtype )       \
+{                                               \
+    size.width *= 3;                            \
+    srcstep /= sizeof(src[0]);                  \
+    dststep /= sizeof(dst[0]);                  \
+                                                \
+    for( ; size.height--; src+=srcstep, dst+=3 )\
+    {                                           \
+        int x;                                  \
+        arrtype* dst1 = dst;                    \
+                                                \
+        for( x = 0; x < size.width; x += 3,     \
+                            dst1 += dststep )   \
+        {                                       \
+            arrtype t0 = src[x];                \
+            arrtype t1 = src[x + 1];            \
+            arrtype t2 = src[x + 2];            \
+                                                \
+            dst1[0] = t0;                       \
+            dst1[1] = t1;                       \
+            dst1[2] = t2;                       \
+        }                                       \
+    }                                           \
 }
 
 
-#define ICX_DEF_TRANSP_CASE_C4( arrtype, src, srcstep,                              \
-                                dst, dststep, size )                                \
-{                                                                                   \
-    size.width *= 4;                                                                \
-                                                                                    \
-    for( ; size.height--; (char*&)src += srcstep, dst++ )                           \
-    {                                                                               \
-        int x;                                                                      \
-        arrtype* dst1 = dst;                                                        \
-                                                                                    \
-        for( x = 0; x < size.width; x += 4, (char*&)dst1 += dststep )               \
-        {                                                                           \
-            arrtype t0 = src[x];                                                    \
-            arrtype t1 = src[x + 1];                                                \
-                                                                                    \
-            dst1[0] = t0;                                                           \
-            dst1[1] = t1;                                                           \
-                                                                                    \
-            t0 = src[x + 2];                                                        \
-            t1 = src[x + 3];                                                        \
-                                                                                    \
-            dst1[2] = t0;                                                           \
-            dst1[3] = t1;                                                           \
-        }                                                                           \
-    }                                                                               \
+#define ICV_DEF_TRANSP_CASE_C4( arrtype )       \
+{                                               \
+    size.width *= 4;                            \
+    srcstep /= sizeof(src[0]);                  \
+    dststep /= sizeof(dst[0]);                  \
+                                                \
+    for( ; size.height--; src+=srcstep, dst+=4 )\
+    {                                           \
+        int x;                                  \
+        arrtype* dst1 = dst;                    \
+                                                \
+        for( x = 0; x < size.width; x += 4,     \
+                            dst1 += dststep )   \
+        {                                       \
+            arrtype t0 = src[x];                \
+            arrtype t1 = src[x + 1];            \
+                                                \
+            dst1[0] = t0;                       \
+            dst1[1] = t1;                       \
+                                                \
+            t0 = src[x + 2];                    \
+            t1 = src[x + 3];                    \
+                                                \
+            dst1[2] = t0;                       \
+            dst1[3] = t1;                       \
+        }                                       \
+    }                                           \
 }
 
 
-#define ICX_DEF_TRANSP_INP_FUNC( flavor, arrtype, cn )      \
-static CxStatus CX_STDCALL                                  \
-icxTranspose_##flavor( arrtype* arr, int step, CxSize size )\
+#define ICV_DEF_TRANSP_INP_FUNC( flavor, arrtype, cn )      \
+static CvStatus CV_STDCALL                                  \
+icvTranspose_##flavor( arrtype* arr, int step, CvSize size )\
 {                                                           \
     assert( size.width == size.height );                    \
                                                             \
-    ICX_DEF_TRANSP_INP_CASE_C##cn( arrtype, arr,            \
-                                   step, size.width )       \
-                                                            \
-    return CX_OK;                                           \
+    ICV_DEF_TRANSP_INP_CASE_C##cn( arrtype, size.width )    \
+    return CV_OK;                                           \
 }
 
 
-#define ICX_DEF_TRANSP_FUNC( flavor, arrtype, cn )          \
-static CxStatus CX_STDCALL                                  \
-icxTranspose_##flavor( const arrtype* src, int srcstep,     \
-                    arrtype* dst, int dststep, CxSize size )\
+#define ICV_DEF_TRANSP_FUNC( flavor, arrtype, cn )          \
+static CvStatus CV_STDCALL                                  \
+icvTranspose_##flavor( const arrtype* src, int srcstep,     \
+                    arrtype* dst, int dststep, CvSize size )\
 {                                                           \
-    ICX_DEF_TRANSP_CASE_C##cn( arrtype, src, srcstep,       \
-                               dst, dststep, size )         \
-                                                            \
-    return CX_OK;                                           \
+    ICV_DEF_TRANSP_CASE_C##cn( arrtype )                    \
+    return CV_OK;                                           \
 }
 
 
-ICX_DEF_TRANSP_INP_FUNC( 8u_C1IR, uchar, 1 )
-ICX_DEF_TRANSP_INP_FUNC( 8u_C2IR, ushort, 1 )
-ICX_DEF_TRANSP_INP_FUNC( 8u_C3IR, uchar, 3 )
-ICX_DEF_TRANSP_INP_FUNC( 16u_C2IR, int, 1 )
-ICX_DEF_TRANSP_INP_FUNC( 16u_C3IR, ushort, 3 )
-ICX_DEF_TRANSP_INP_FUNC( 32s_C2IR, int64, 1 )
-ICX_DEF_TRANSP_INP_FUNC( 32s_C3IR, int, 3 )
-ICX_DEF_TRANSP_INP_FUNC( 64s_C2IR, int, 4 )
-ICX_DEF_TRANSP_INP_FUNC( 64s_C3IR, int64, 3 )
-ICX_DEF_TRANSP_INP_FUNC( 64s_C4IR, int64, 4 )
+ICV_DEF_TRANSP_INP_FUNC( 8u_C1IR, uchar, 1 )
+ICV_DEF_TRANSP_INP_FUNC( 8u_C2IR, ushort, 1 )
+ICV_DEF_TRANSP_INP_FUNC( 8u_C3IR, uchar, 3 )
+ICV_DEF_TRANSP_INP_FUNC( 16u_C2IR, int, 1 )
+ICV_DEF_TRANSP_INP_FUNC( 16u_C3IR, ushort, 3 )
+ICV_DEF_TRANSP_INP_FUNC( 32s_C2IR, int64, 1 )
+ICV_DEF_TRANSP_INP_FUNC( 32s_C3IR, int, 3 )
+ICV_DEF_TRANSP_INP_FUNC( 64s_C2IR, int, 4 )
+ICV_DEF_TRANSP_INP_FUNC( 64s_C3IR, int64, 3 )
+ICV_DEF_TRANSP_INP_FUNC( 64s_C4IR, int64, 4 )
 
 
-ICX_DEF_TRANSP_FUNC( 8u_C1R, uchar, 1 )
-ICX_DEF_TRANSP_FUNC( 8u_C2R, ushort, 1 )
-ICX_DEF_TRANSP_FUNC( 8u_C3R, uchar, 3 )
-ICX_DEF_TRANSP_FUNC( 16u_C2R, int, 1 )
-ICX_DEF_TRANSP_FUNC( 16u_C3R, ushort, 3 )
-ICX_DEF_TRANSP_FUNC( 32s_C2R, int64, 1 )
-ICX_DEF_TRANSP_FUNC( 32s_C3R, int, 3 )
-ICX_DEF_TRANSP_FUNC( 64s_C2R, int, 4 )
-ICX_DEF_TRANSP_FUNC( 64s_C3R, int64, 3 )
-ICX_DEF_TRANSP_FUNC( 64s_C4R, int64, 4 )
+ICV_DEF_TRANSP_FUNC( 8u_C1R, uchar, 1 )
+ICV_DEF_TRANSP_FUNC( 8u_C2R, ushort, 1 )
+ICV_DEF_TRANSP_FUNC( 8u_C3R, uchar, 3 )
+ICV_DEF_TRANSP_FUNC( 16u_C2R, int, 1 )
+ICV_DEF_TRANSP_FUNC( 16u_C3R, ushort, 3 )
+ICV_DEF_TRANSP_FUNC( 32s_C2R, int64, 1 )
+ICV_DEF_TRANSP_FUNC( 32s_C3R, int, 3 )
+ICV_DEF_TRANSP_FUNC( 64s_C2R, int, 4 )
+ICV_DEF_TRANSP_FUNC( 64s_C3R, int64, 3 )
+ICV_DEF_TRANSP_FUNC( 64s_C4R, int64, 4 )
 
+CV_DEF_INIT_PIXSIZE_TAB_2D( Transpose, R )
+CV_DEF_INIT_PIXSIZE_TAB_2D( Transpose, IR )
 
-CX_DEF_INIT_PIXSIZE_TAB_2D( Transpose, R )
-CX_DEF_INIT_PIXSIZE_TAB_2D( Transpose, IR )
-
-
-CX_IMPL void
-cxTranspose( const CxArr* srcarr, CxArr* dstarr )
+CV_IMPL void
+cvTranspose( const CvArr* srcarr, CvArr* dstarr )
 {
-    static CxBtFuncTable tab, inp_tab;
+    static CvBtFuncTable tab, inp_tab;
     static int inittab = 0;
     
-    CX_FUNCNAME( "cxTranspose" );
+    CV_FUNCNAME( "cvTranspose" );
 
     __BEGIN__;
 
-    CxMat sstub, *src = (CxMat*)srcarr;
-    CxMat dstub, *dst = (CxMat*)dstarr;
-    CxSize size;
+    CvMat sstub, *src = (CvMat*)srcarr;
+    CvMat dstub, *dst = (CvMat*)dstarr;
+    CvSize size;
     int type, pix_size;
 
     if( !inittab )
     {
-        icxInitTransposeIRTable( &inp_tab );
-        icxInitTransposeRTable( &tab );
+        icvInitTransposeIRTable( &inp_tab );
+        icvInitTransposeRTable( &tab );
         inittab = 1;
     }
 
-    if( !CX_IS_MAT( src ))
+    if( !CV_IS_MAT( src ))
     {
         int coi = 0;
-        CX_CALL( src = cxGetMat( src, &sstub, &coi ));
+        CV_CALL( src = cvGetMat( src, &sstub, &coi ));
         if( coi != 0 )
-            CX_ERROR( CX_BadCOI, "coi is not supported" );
+            CV_ERROR( CV_BadCOI, "coi is not supported" );
     }
 
-    type = CX_MAT_TYPE( src->type );
-    pix_size = icxPixSize[type];
-    size = cxGetMatSize( src );
+    type = CV_MAT_TYPE( src->type );
+    pix_size = CV_ELEM_SIZE(type);
+    size = cvGetMatSize( src );
 
     if( dstarr == srcarr )
     {
@@ -462,88 +477,85 @@ cxTranspose( const CxArr* srcarr, CxArr* dstarr )
     }
     else
     {
-        if( !CX_IS_MAT( dst ))
+        if( !CV_IS_MAT( dst ))
         {
             int coi = 0;
-            CX_CALL( dst = cxGetMat( dst, &dstub, &coi ));
+            CV_CALL( dst = cvGetMat( dst, &dstub, &coi ));
 
             if( coi != 0 )
-            CX_ERROR( CX_BadCOI, "coi is not supported" );
+            CV_ERROR( CV_BadCOI, "coi is not supported" );
         }
 
-        if( !CX_ARE_TYPES_EQ( src, dst ))
-            CX_ERROR( CX_StsUnmatchedFormats, "" );
+        if( !CV_ARE_TYPES_EQ( src, dst ))
+            CV_ERROR( CV_StsUnmatchedFormats, "" );
 
         if( size.width != dst->height || size.height != dst->width )
-            CX_ERROR( CX_StsUnmatchedSizes, "" );
+            CV_ERROR( CV_StsUnmatchedSizes, "" );
     }
 
     if( src->data.ptr == dst->data.ptr )
     {
         if( size.width == size.height )
         {
-            CxFunc2D_1A func = (CxFunc2D_1A)(inp_tab.fn_2d[pix_size]);
+            CvFunc2D_1A func = (CvFunc2D_1A)(inp_tab.fn_2d[pix_size]);
 
             if( !func )
-                CX_ERROR( CX_StsUnsupportedFormat, "" );
+                CV_ERROR( CV_StsUnsupportedFormat, "" );
 
             IPPI_CALL( func( src->data.ptr, src->step, size ));
         }
         else
         {
             if( size.width != 1 && size.height != 1 )
-                CX_ERROR( CX_StsBadSize,
+                CV_ERROR( CV_StsBadSize,
                     "Rectangular matrix can not be transposed inplace" );
             
-            if( !CX_IS_MAT_CONT( src->type & dst->type ))
-                CX_ERROR( CX_StsBadFlag, "In case of inplace column/row transposition "
+            if( !CV_IS_MAT_CONT( src->type & dst->type ))
+                CV_ERROR( CV_StsBadFlag, "In case of inplace column/row transposition "
                                        "both source and destination must be continuous" );
 
             if( dst == src )
             {
                 int t;
-                CX_SWAP( dst->width, dst->height, t );
+                CV_SWAP( dst->width, dst->height, t );
                 dst->step = dst->height == 1 ? 0 : pix_size;
             }
         }
     }
     else
     {
-        CxFunc2D_2A func = (CxFunc2D_2A)(tab.fn_2d[pix_size]);
+        CvFunc2D_2A func = (CvFunc2D_2A)(tab.fn_2d[pix_size]);
 
         if( !func )
-            CX_ERROR( CX_StsUnsupportedFormat, "" );
+            CV_ERROR( CV_StsUnsupportedFormat, "" );
 
         IPPI_CALL( func( src->data.ptr, src->step,
                          dst->data.ptr, dst->step, size ));
     }
-
-    CX_CHECK_NANS( dst );
 
     __END__;
 }
 
 
 /****************************************************************************************\
-*              Linear system solution via LU decomposition and related functions         *
+*                              LU decomposition/back substitution                        *
 \****************************************************************************************/
 
 #define arrtype float
 #define temptype double
 
-typedef  CxStatus (CX_STDCALL * CxLUDecompFunc)( void* src, int srcstep, CxSize srcsize,
-                                                 void* dst, int dststep, CxSize dstsize,
+typedef  CvStatus (CV_STDCALL * CvLUDecompFunc)( double* A, int stepA, CvSize sizeA,
+                                                 void* B, int stepB, CvSize sizeB,
                                                  double* det );
 
-typedef  CxStatus (CX_STDCALL * CxLUBackFunc)( void* src, int srcstep, CxSize srcsize,
-                                               void* dst, int dststep, CxSize dstsize );
+typedef  CvStatus (CV_STDCALL * CvLUBackFunc)( double* A, int stepA, CvSize sizeA,
+                                               void* B, int stepB, CvSize sizeB );
 
 
-#define ICX_DEF_LU_DECOMP_FUNC( flavor, arrtype )                               \
-IPCXAPI_IMPL( CxStatus,                                                         \
-icxLUDecomp_##flavor, ( arrtype* A, int stepA, CxSize sizeA,                    \
-                        arrtype* B, int stepB, CxSize sizeB,                    \
-                        double* _det ))                                         \
+#define ICV_DEF_LU_DECOMP_FUNC( flavor, arrtype )                               \
+static CvStatus CV_STDCALL                                                      \
+icvLUDecomp_##flavor( double* A, int stepA, CvSize sizeA,                       \
+                      arrtype* B, int stepB, CvSize sizeB, double* _det )       \
 {                                                                               \
     int n = sizeA.width;                                                        \
     int m = 0, i;                                                               \
@@ -556,21 +568,22 @@ icxLUDecomp_##flavor, ( arrtype* A, int stepA, CxSize sizeA,                    
         assert( sizeA.height == sizeB.height );                                 \
         m = sizeB.width;                                                        \
     }                                                                           \
+    stepA /= sizeof(A[0]);                                                      \
+    stepB /= sizeof(B[0]);                                                      \
                                                                                 \
-    for( i = 0; i < n; i++, (char*&)A += stepA, (char*&)B += stepB )            \
+    for( i = 0; i < n; i++, A += stepA, B += stepB )                            \
     {                                                                           \
         int j, k = i;                                                           \
-        arrtype *tA = A, *tB = 0;                                               \
-        arrtype kval = (arrtype)fabs(A[i]);                                     \
-        double inv_val;                                                         \
+        double* tA = A;                                                         \
+        arrtype* tB = 0;                                                        \
+        double kval = fabs(A[i]), tval;                                         \
                                                                                 \
         /* find the pivot element */                                            \
         for( j = i + 1; j < n; j++ )                                            \
         {                                                                       \
-            arrtype tval;                                                       \
-            (char*&)tA += stepA;                                                \
+            tA += stepA;                                                        \
+            tval = fabs(tA[i]);                                                 \
                                                                                 \
-            tval = (arrtype)fabs(tA[i]);                                        \
             if( tval > kval )                                                   \
             {                                                                   \
                 kval = tval;                                                    \
@@ -587,45 +600,42 @@ icxLUDecomp_##flavor, ( arrtype* A, int stepA, CxSize sizeA,                    
         /* swap rows */                                                         \
         if( k != i )                                                            \
         {                                                                       \
-            tA = (arrtype*)((char*)A + stepA*(k - i));                          \
+            tA = A + stepA*(k - i);                                             \
             det = -det;                                                         \
                                                                                 \
             for( j = i; j < n; j++ )                                            \
             {                                                                   \
-                arrtype t;                                                      \
-                CX_SWAP( A[j], tA[j], t );                                      \
+                double t;                                                       \
+                CV_SWAP( A[j], tA[j], t );                                      \
             }                                                                   \
                                                                                 \
             if( m > 0 )                                                         \
             {                                                                   \
-                tB = (arrtype*)((char*)B + stepB*(k - i));                      \
+                tB = B + stepB*(k - i);                                         \
                                                                                 \
                 for( j = 0; j < m; j++ )                                        \
                 {                                                               \
                     arrtype t = B[j];                                           \
-                    CX_SWAP( B[j], tB[j], t );                                  \
+                    CV_SWAP( B[j], tB[j], t );                                  \
                 }                                                               \
             }                                                                   \
         }                                                                       \
                                                                                 \
-        inv_val = 1./A[i];                                                      \
+        tval = 1./A[i];                                                         \
         det *= A[i];                                                            \
         tA = A;                                                                 \
         tB = B;                                                                 \
-        A[i] = (arrtype)inv_val;                                                \
+        A[i] = tval; /* to replace division with multiplication in LUBack */    \
                                                                                 \
         /* update matrix and the right side of the system */                    \
         for( j = i + 1; j < n; j++ )                                            \
         {                                                                       \
-            double alpha;                                                       \
-                                                                                \
-            (char*&)tA += stepA;                                                \
-            (char*&)tB += stepB;                                                \
-                                                                                \
-            alpha = -tA[i]*inv_val;                                             \
+            tA += stepA;                                                        \
+            tB += stepB;                                                        \
+            double alpha = -tA[i]*tval;                                         \
                                                                                 \
             for( k = i + 1; k < n; k++ )                                        \
-                tA[k] = (arrtype)(tA[k] + alpha*A[k]);                          \
+                tA[k] = tA[k] + alpha*A[k];                                     \
                                                                                 \
             if( m > 0 )                                                         \
                 for( k = 0; k < m; k++ )                                        \
@@ -636,67 +646,68 @@ icxLUDecomp_##flavor, ( arrtype* A, int stepA, CxSize sizeA,                    
     if( _det )                                                                  \
         *_det = det;                                                            \
                                                                                 \
-    return CX_OK;                                                               \
+    return CV_OK;                                                               \
 }
 
 
-ICX_DEF_LU_DECOMP_FUNC( 32f, float )
-ICX_DEF_LU_DECOMP_FUNC( 64f, double )
+ICV_DEF_LU_DECOMP_FUNC( 32f, float )
+ICV_DEF_LU_DECOMP_FUNC( 64f, double )
 
 
-#define ICX_DEF_LU_BACK_FUNC( flavor, arrtype )                                 \
-IPCXAPI_IMPL( CxStatus,                                                         \
-icxLUBack_##flavor, ( arrtype* A, int stepA, CxSize sizeA,                      \
-                      arrtype* B, int stepB, CxSize sizeB ))                    \
+#define ICV_DEF_LU_BACK_FUNC( flavor, arrtype )                                 \
+static CvStatus CV_STDCALL                                                      \
+icvLUBack_##flavor( double* A, int stepA, CvSize sizeA,                         \
+                    arrtype* B, int stepB, CvSize sizeB )                       \
 {                                                                               \
     int n = sizeA.width;                                                        \
     int m = sizeB.width, i;                                                     \
                                                                                 \
     assert( m > 0 && sizeA.width == sizeA.height &&                             \
             sizeA.height == sizeB.height );                                     \
+    stepA /= sizeof(A[0]);                                                      \
+    stepB /= sizeof(B[0]);                                                      \
                                                                                 \
-    (char*&)A += stepA*(n - 1);                                                 \
-    (char*&)B += stepB*(n - 1);                                                 \
+    A += stepA*(n - 1);                                                         \
+    B += stepB*(n - 1);                                                         \
                                                                                 \
-    for( i = n - 1; i >= 0; i--, (char*&)A -= stepA )                           \
+    for( i = n - 1; i >= 0; i--, A -= stepA )                                   \
     {                                                                           \
         int j, k;                                                               \
-                                                                                \
         for( j = 0; j < m; j++ )                                                \
         {                                                                       \
             arrtype* tB = B + j;                                                \
             double x = 0;                                                       \
                                                                                 \
-            for( k = n - 1; k > i; k--, (char*&)tB -= stepB )                   \
+            for( k = n - 1; k > i; k--, tB -= stepB )                           \
                 x += A[k]*tB[0];                                                \
                                                                                 \
             tB[0] = (arrtype)((tB[0] - x)*A[i]);                                \
         }                                                                       \
     }                                                                           \
                                                                                 \
-    return CX_OK;                                                               \
+    return CV_OK;                                                               \
 }
 
 
-ICX_DEF_LU_BACK_FUNC( 32f, float )
-ICX_DEF_LU_BACK_FUNC( 64f, double )
+ICV_DEF_LU_BACK_FUNC( 32f, float )
+ICV_DEF_LU_BACK_FUNC( 64f, double )
 
-static CxFuncTable lu_decomp_tab, lu_back_tab;
+static CvFuncTable lu_decomp_tab, lu_back_tab;
 static int lu_inittab = 0;
 
-static void icxInitLUTable( CxFuncTable* decomp_tab,
-                            CxFuncTable* back_tab )
+static void icvInitLUTable( CvFuncTable* decomp_tab,
+                            CvFuncTable* back_tab )
 {
-    decomp_tab->fn_2d[0] = (void*)icxLUDecomp_32f;
-    decomp_tab->fn_2d[1] = (void*)icxLUDecomp_64f;
-    back_tab->fn_2d[0] = (void*)icxLUBack_32f;
-    back_tab->fn_2d[1] = (void*)icxLUBack_64f;
+    decomp_tab->fn_2d[0] = (void*)icvLUDecomp_32f;
+    decomp_tab->fn_2d[1] = (void*)icvLUDecomp_64f;
+    back_tab->fn_2d[0] = (void*)icvLUBack_32f;
+    back_tab->fn_2d[1] = (void*)icvLUBack_64f;
 }
 
 
 
 /****************************************************************************************\
-*                                     Determinant                                        *
+*                                 Determinant of the matrix                              *
 \****************************************************************************************/
 
 #define det2(m)   (m(0,0)*m(1,1) - m(0,1)*m(1,0))
@@ -704,29 +715,29 @@ static void icxInitLUTable( CxFuncTable* decomp_tab,
                    m(0,1)*(m(1,0)*m(2,2) - m(1,2)*m(2,0)) +  \
                    m(0,2)*(m(1,0)*m(2,1) - m(1,1)*m(2,0)))
 
-CX_IMPL double
-cxDet( const CxArr* arr )
+CV_IMPL double
+cvDet( const CvArr* arr )
 {
     double result = 0;
     uchar* buffer = 0;
     int local_alloc = 0;
     
-    CX_FUNCNAME( "cxDet" );
+    CV_FUNCNAME( "cvDet" );
 
     __BEGIN__;
 
-    CxMat stub, *mat = (CxMat*)arr;
+    CvMat stub, *mat = (CvMat*)arr;
     int type;
 
-    if( !CX_IS_MAT( mat ))
+    if( !CV_IS_MAT( mat ))
     {
-        CX_CALL( mat = cxGetMat( mat, &stub ));
+        CV_CALL( mat = cvGetMat( mat, &stub ));
     }
 
-    type = CX_MAT_TYPE( mat->type );
+    type = CV_MAT_TYPE( mat->type );
 
     if( mat->width != mat->height )
-        CX_ERROR( CX_StsBadSize, "The matrix must be square" );
+        CV_ERROR( CV_StsBadSize, "The matrix must be square" );
 
     #define Mf( y, x ) ((float*)(m + y*step))[x]
     #define Md( y, x ) ((double*)(m + y*step))[x]
@@ -736,17 +747,17 @@ cxDet( const CxArr* arr )
         uchar* m = mat->data.ptr;
         int step = mat->step;
 
-        if( type == CX_32FC1 )
+        if( type == CV_32FC1 )
         {
             result = det2(Mf);
         }
-        else if( type == CX_64FC1 )
+        else if( type == CV_64FC1 )
         {
             result = det2(Md);
         }
         else
         {
-            CX_ERROR( CX_StsUnsupportedFormat, "" );
+            CV_ERROR( CV_StsUnsupportedFormat, "" );
         }
     }
     else if( mat->width == 3 )
@@ -754,79 +765,84 @@ cxDet( const CxArr* arr )
         uchar* m = mat->data.ptr;
         int step = mat->step;
         
-        if( type == CX_32FC1 )
+        if( type == CV_32FC1 )
         {
             result = det3(Mf);
         }
-        else if( type == CX_64FC1 )
+        else if( type == CV_64FC1 )
         {
             result = det3(Md);
         }
         else
         {
-            CX_ERROR( CX_StsUnsupportedFormat, "" );
+            CV_ERROR( CV_StsUnsupportedFormat, "" );
         }
     }
     else if( mat->width == 1 )
     {
-        if( type == CX_32FC1 )
+        if( type == CV_32FC1 )
         {
             result = mat->data.fl[0];
         }
-        else if( type == CX_64FC1 )
+        else if( type == CV_64FC1 )
         {
             result = mat->data.db[0];
         }
         else
         {
-            CX_ERROR( CX_StsUnsupportedFormat, "" );
+            CV_ERROR( CV_StsUnsupportedFormat, "" );
         }
     }
     else
     {
-        CxLUDecompFunc decomp_func;
-        CxSize size = cxGetMatSize( mat );
-        int buf_size = size.width*size.height*icxPixSize[type];
-        CxMat tmat;
-        
+        CvLUDecompFunc decomp_func;
+        CvSize size = cvGetMatSize( mat );
+        const int worktype = CV_64FC1;
+        int buf_size = size.width*size.height*CV_ELEM_SIZE(worktype);
+        CvMat tmat;
+
         if( !lu_inittab )
         {
-            icxInitLUTable( &lu_decomp_tab, &lu_back_tab );
+            icvInitLUTable( &lu_decomp_tab, &lu_back_tab );
             lu_inittab = 1;
         }
 
-        if( CX_MAT_CN( type ) != 1 || CX_MAT_DEPTH( type ) < CX_32F )
-            CX_ERROR( CX_StsUnsupportedFormat, "" );
+        if( CV_MAT_CN( type ) != 1 || CV_MAT_DEPTH( type ) < CV_32F )
+            CV_ERROR( CV_StsUnsupportedFormat, "" );
 
-        if( size.width <= CX_MAX_LOCAL_MAT_SIZE )
+        if( size.width <= CV_MAX_LOCAL_MAT_SIZE )
         {
-            buffer = (uchar*)alloca( buf_size + 8 );
-            buffer = (uchar*)cxAlignPtr( buffer, 8 );
+            buffer = (uchar*)cvStackAlloc( buf_size );
             local_alloc = 1;
         }
         else
         {
-            CX_CALL( buffer = (uchar*)cxAlloc( buf_size ));
+            CV_CALL( buffer = (uchar*)cvAlloc( buf_size ));
         }
 
-        CX_CALL( cxInitMatHeader( &tmat, size.height, size.width, type, buffer ));
-        CX_CALL( cxCopy( mat, &tmat ));
-        
-        decomp_func = (CxLUDecompFunc)(lu_decomp_tab.fn_2d[CX_MAT_DEPTH(type)-CX_32F]);
+        CV_CALL( cvInitMatHeader( &tmat, size.height, size.width, worktype, buffer ));
+        if( type == worktype )
+        {
+        	CV_CALL( cvCopy( mat, &tmat ));
+        }
+        else
+            CV_CALL( cvConvert( mat, &tmat ));
+
+        decomp_func = (CvLUDecompFunc)(lu_decomp_tab.fn_2d[CV_MAT_DEPTH(worktype)-CV_32F]);
         assert( decomp_func );
 
-        IPPI_CALL( decomp_func( tmat.data.ptr, tmat.step, size, 0, 0, size, &result ));
+        IPPI_CALL( decomp_func( tmat.data.db, tmat.step, size, 0, 0, size, &result ));
     }
 
     #undef Mf
     #undef Md
 
-    /*icxCheckVector_64f( &result, 1 );*/
+    /*icvCheckVector_64f( &result, 1 );*/
 
     __END__;
 
     if( buffer && !local_alloc )
-        cxFree( (void**)&buffer );
+        cvFree( &buffer );
 
     return result;
 }
@@ -834,7 +850,7 @@ cxDet( const CxArr* arr )
 
 
 /****************************************************************************************\
-*                                     Inverse Matrix                                     *
+*                          Inverse (or pseudo-inverse) of the matrix                     *
 \****************************************************************************************/
 
 #define Sf( y, x ) ((float*)(srcdata + y*srcstep))[x]
@@ -842,67 +858,69 @@ cxDet( const CxArr* arr )
 #define Df( y, x ) ((float*)(dstdata + y*dststep))[x]
 #define Dd( y, x ) ((double*)(dstdata + y*dststep))[x]
 
-CX_IMPL double
-cxInvert( const CxArr* srcarr, CxArr* dstarr, int method )
+CV_IMPL double
+cvInvert( const CvArr* srcarr, CvArr* dstarr, int method )
 {
-    CxMat* u = 0;
-    CxMat* v = 0;
-    CxMat* w = 0;
+    CvMat* u = 0;
+    CvMat* v = 0;
+    CvMat* w = 0;
 
     uchar* buffer = 0;
     int local_alloc = 0;
     double result = 0;
     
-    CX_FUNCNAME( "cxInvert" );
+    CV_FUNCNAME( "cvInvert" );
 
     __BEGIN__;
 
-    CxMat sstub, *src = (CxMat*)srcarr;
-    CxMat dstub, *dst = (CxMat*)dstarr;
+    CvMat sstub, *src = (CvMat*)srcarr;
+    CvMat dstub, *dst = (CvMat*)dstarr;
     int type;
 
-    if( !CX_IS_MAT( src ))
-        CX_CALL( src = cxGetMat( src, &sstub ));
+    if( !CV_IS_MAT( src ))
+        CV_CALL( src = cvGetMat( src, &sstub ));
 
-    if( !CX_IS_MAT( dst ))
-        CX_CALL( dst = cxGetMat( dst, &dstub ));
+    if( !CV_IS_MAT( dst ))
+        CV_CALL( dst = cvGetMat( dst, &dstub ));
 
-    type = CX_MAT_TYPE( src->type );
+    type = CV_MAT_TYPE( src->type );
 
-    if( method == CX_SVD )
+    if( method == CV_SVD || method == CV_SVD_SYM )
     {
         int n = MIN(src->rows,src->cols);
+        if( method == CV_SVD_SYM && src->rows != src->cols )
+            CV_ERROR( CV_StsBadSize, "CV_SVD_SYM method is used for non-square matrix" );
 
-        CX_CALL( u = cxCreateMat( n, src->rows, src->type ));
-        CX_CALL( v = cxCreateMat( n, src->cols, src->type ));
-        CX_CALL( w = cxCreateMat( n, 1, src->type ));
-        CX_CALL( cxSVD( src, w, u, v, CX_SVD_U_T + CX_SVD_V_T ));
-        CX_CALL( cxSVBkSb( w, u, v, 0, dst, CX_SVD_U_T + CX_SVD_V_T ));
+        CV_CALL( u = cvCreateMat( n, src->rows, src->type ));
+        if( method != CV_SVD_SYM )
+            CV_CALL( v = cvCreateMat( n, src->cols, src->type ));
+        CV_CALL( w = cvCreateMat( n, 1, src->type ));
+        CV_CALL( cvSVD( src, w, u, v, CV_SVD_U_T + CV_SVD_V_T ));
 
-        if( type == CX_32FC1 )
+        if( type == CV_32FC1 )
             result = w->data.fl[0] >= FLT_EPSILON ?
                      w->data.fl[w->rows-1]/w->data.fl[0] : 0;
         else
             result = w->data.db[0] >= FLT_EPSILON ?
                      w->data.db[w->rows-1]/w->data.db[0] : 0;
 
-        CX_CALL( cxSVBkSb( w, u, v, 0, dst, CX_SVD_U_T + CX_SVD_V_T ));
+        CV_CALL( cvSVBkSb( w, u, v ? v : u, 0, dst, CV_SVD_U_T + CV_SVD_V_T ));
         EXIT;
     }
-    else if( method != CX_LU )
-        CX_ERROR( CX_StsBadArg, "Unknown inversion method" );
+    else if( method != CV_LU )
+        CV_ERROR( CV_StsBadArg, "Unknown inversion method" );
 
-    if( !CX_ARE_TYPES_EQ( src, dst ))
-        CX_ERROR( CX_StsUnmatchedFormats, "" );
+    if( !CV_ARE_TYPES_EQ( src, dst ))
+        CV_ERROR( CV_StsUnmatchedFormats, "" );
 
     if( src->width != src->height )
-        CX_ERROR( CX_StsBadSize, "The matrix must be square" );
+        CV_ERROR( CV_StsBadSize, "The matrix must be square" );
 
-    if( !CX_ARE_SIZES_EQ( src, dst ))
-        CX_ERROR( CX_StsUnmatchedSizes, "" );
+    if( !CV_ARE_SIZES_EQ( src, dst ))
+        CV_ERROR( CV_StsUnmatchedSizes, "" );
 
-    if( type != CX_32FC1 && type != CX_64FC1 )
-        CX_ERROR( CX_StsUnsupportedFormat, "" );
+    if( type != CV_32FC1 && type != CV_64FC1 )
+        CV_ERROR( CV_StsUnsupportedFormat, "" );
 
     if( src->width <= 3 )
     {
@@ -913,7 +931,7 @@ cxInvert( const CxArr* srcarr, CxArr* dstarr, int method )
 
         if( src->width == 2 )
         {
-            if( type == CX_32FC1 )
+            if( type == CV_32FC1 )
             {
                 double d = det2(Sf);
                 if( d != 0. )
@@ -952,7 +970,7 @@ cxInvert( const CxArr* srcarr, CxArr* dstarr, int method )
         }
         else if( src->width == 3 )
         {
-            if( type == CX_32FC1 )
+            if( type == CV_32FC1 )
             {
                 double d = det3(Sf);
                 if( d != 0. )
@@ -1009,7 +1027,7 @@ cxInvert( const CxArr* srcarr, CxArr* dstarr, int method )
         {
             assert( src->width == 1 );
 
-            if( type == CX_32FC1 )
+            if( type == CV_32FC1 )
             {
                 double d = Sf(0,0);
                 if( d != 0. )
@@ -1031,124 +1049,135 @@ cxInvert( const CxArr* srcarr, CxArr* dstarr, int method )
     }
     else
     {
-        CxLUDecompFunc decomp_func;
-        CxLUBackFunc back_func;
-        CxSize size = cxGetMatSize( src );
-        int buf_size = size.width*size.height*icxPixSize[type];
-        CxMat tmat;
-        
+        CvLUDecompFunc decomp_func;
+        CvLUBackFunc back_func;
+        CvSize size = cvGetMatSize( src );
+        const int worktype = CV_64FC1;
+        int buf_size = size.width*size.height*CV_ELEM_SIZE(worktype);
+        CvMat tmat;
+
         if( !lu_inittab )
         {
-            icxInitLUTable( &lu_decomp_tab, &lu_back_tab );
+            icvInitLUTable( &lu_decomp_tab, &lu_back_tab );
             lu_inittab = 1;
         }
 
-        if( size.width <= CX_MAX_LOCAL_MAT_SIZE )
+        if( size.width <= CV_MAX_LOCAL_MAT_SIZE )
         {
-            buffer = (uchar*)alloca( buf_size + 8 );
-            buffer = (uchar*)cxAlignPtr( buffer, 8 );
+            buffer = (uchar*)cvStackAlloc( buf_size );
             local_alloc = 1;
         }
         else
         {
-            CX_CALL( buffer = (uchar*)cxAlloc( buf_size ));
+            CV_CALL( buffer = (uchar*)cvAlloc( buf_size ));
         }
 
-        CX_CALL( cxInitMatHeader( &tmat, size.height, size.width, type, buffer ));
-        CX_CALL( cxCopy( src, &tmat ));
-        CX_CALL( cxSetIdentity( dst ));
+        CV_CALL( cvInitMatHeader( &tmat, size.height, size.width, worktype, buffer ));
+        if( type == worktype )
+        {
+            CV_CALL( cvCopy( src, &tmat ));
+        }
+        else
+            CV_CALL( cvConvert( src, &tmat ));
+        CV_CALL( cvSetIdentity( dst ));
 
-        decomp_func = (CxLUDecompFunc)(lu_decomp_tab.fn_2d[CX_MAT_DEPTH(type)-CX_32F]);
-        back_func = (CxLUBackFunc)(lu_back_tab.fn_2d[CX_MAT_DEPTH(type)-CX_32F]);
+        decomp_func = (CvLUDecompFunc)(lu_decomp_tab.fn_2d[CV_MAT_DEPTH(type)-CV_32F]);
+        back_func = (CvLUBackFunc)(lu_back_tab.fn_2d[CV_MAT_DEPTH(type)-CV_32F]);
         assert( decomp_func && back_func );
 
-        IPPI_CALL( decomp_func( tmat.data.ptr, tmat.step, size,
+        IPPI_CALL( decomp_func( tmat.data.db, tmat.step, size,
                                 dst->data.ptr, dst->step, size, &result ));
 
         if( result != 0 )
         {
-            IPPI_CALL( back_func( tmat.data.ptr, tmat.step, size,
+            IPPI_CALL( back_func( tmat.data.db, tmat.step, size,
                                   dst->data.ptr, dst->step, size ));
         }
     }
 
     if( !result )
-        CX_CALL( cxSetZero( dst ));
+        CV_CALL( cvSetZero( dst ));
 
     __END__;
 
     if( buffer && !local_alloc )
-        cxFree( (void**)&buffer );
+        cvFree( &buffer );
 
     if( u || v || w )
     {
-        cxReleaseMat( &u );
-        cxReleaseMat( &v );
-        cxReleaseMat( &w );
+        cvReleaseMat( &u );
+        cvReleaseMat( &v );
+        cvReleaseMat( &w );
     }
 
     return result;
 }
 
+
 /****************************************************************************************\
-*                                  Solving Linear Systems                                *
+*                               Linear system [least-squares] solution                   *
 \****************************************************************************************/
 
-CX_IMPL int
-cxSolve( const CxArr* A, const CxArr* b, CxArr* x, int method )
+CV_IMPL int
+cvSolve( const CvArr* A, const CvArr* b, CvArr* x, int method )
 {
-    CxMat* u = 0;
-    CxMat* v = 0;
-    CxMat* w = 0;
-    
+    CvMat* u = 0;
+    CvMat* v = 0;
+    CvMat* w = 0;
+
     uchar* buffer = 0;
     int local_alloc = 0;
     int result = 1;
-    
-    CX_FUNCNAME( "cxSolve" );
+
+    CV_FUNCNAME( "cvSolve" );
 
     __BEGIN__;
 
-    CxMat sstub, *src = (CxMat*)A;
-    CxMat dstub, *dst = (CxMat*)x;
-    CxMat bstub, *src2 = (CxMat*)b;
+    CvMat sstub, *src = (CvMat*)A;
+    CvMat dstub, *dst = (CvMat*)x;
+    CvMat bstub, *src2 = (CvMat*)b;
     int type;
 
-    if( !CX_IS_MAT( src ))
-        CX_CALL( src = cxGetMat( src, &sstub ));
+    if( !CV_IS_MAT( src ))
+        CV_CALL( src = cvGetMat( src, &sstub ));
 
-    if( !CX_IS_MAT( src2 ))
-        CX_CALL( src2 = cxGetMat( src2, &bstub ));
+    if( !CV_IS_MAT( src2 ))
+        CV_CALL( src2 = cvGetMat( src2, &bstub ));
 
-    if( !CX_IS_MAT( dst ))
-        CX_CALL( dst = cxGetMat( dst, &dstub ));
+    if( !CV_IS_MAT( dst ))
+        CV_CALL( dst = cvGetMat( dst, &dstub ));
 
-    if( method == CX_SVD )
+    if( method == CV_SVD || method == CV_SVD_SYM )
     {
         int n = MIN(src->rows,src->cols);
-        CX_CALL( u = cxCreateMat( n, src->rows, src->type ));
-        CX_CALL( v = cxCreateMat( n, src->cols, src->type ));
-        CX_CALL( w = cxCreateMat( n, 1, src->type ));
-        CX_CALL( cxSVD( src, w, u, v, CX_SVD_U_T + CX_SVD_V_T ));
-        CX_CALL( cxSVBkSb( w, u, v, src2, dst, CX_SVD_U_T + CX_SVD_V_T ));
+
+        if( method == CV_SVD_SYM && src->rows != src->cols )
+            CV_ERROR( CV_StsBadSize, "CV_SVD_SYM method is used for non-square matrix" );
+
+        CV_CALL( u = cvCreateMat( n, src->rows, src->type ));
+        if( method != CV_SVD_SYM )
+            CV_CALL( v = cvCreateMat( n, src->cols, src->type ));
+        CV_CALL( w = cvCreateMat( n, 1, src->type ));
+        CV_CALL( cvSVD( src, w, u, v, CV_SVD_U_T + CV_SVD_V_T ));
+        CV_CALL( cvSVBkSb( w, u, v ? v : u, src2, dst, CV_SVD_U_T + CV_SVD_V_T ));
         EXIT;
     }
-    else if( method != CX_LU )
-        CX_ERROR( CX_StsBadArg, "Unknown inversion method" );
+    else if( method != CV_LU )
+        CV_ERROR( CV_StsBadArg, "Unknown inversion method" );
 
-    type = CX_MAT_TYPE( src->type );
+    type = CV_MAT_TYPE( src->type );
 
-    if( !CX_ARE_TYPES_EQ( src, dst ) || !CX_ARE_TYPES_EQ( src, src2 ))
-        CX_ERROR( CX_StsUnmatchedFormats, "" );
+    if( !CV_ARE_TYPES_EQ( src, dst ) || !CV_ARE_TYPES_EQ( src, src2 ))
+        CV_ERROR( CV_StsUnmatchedFormats, "" );
 
     if( src->width != src->height )
-        CX_ERROR( CX_StsBadSize, "The matrix must be square" );
+        CV_ERROR( CV_StsBadSize, "The matrix must be square" );
 
-    if( !CX_ARE_SIZES_EQ( src2, dst ) || src->width != src2->height )
-        CX_ERROR( CX_StsUnmatchedSizes, "" );
+    if( !CV_ARE_SIZES_EQ( src2, dst ) || src->width != src2->height )
+        CV_ERROR( CV_StsUnmatchedSizes, "" );
 
-    if( type != CX_32FC1 && type != CX_64FC1 )
-        CX_ERROR( CX_StsUnsupportedFormat, "" );
+    if( type != CV_32FC1 && type != CV_64FC1 )
+        CV_ERROR( CV_StsUnsupportedFormat, "" );
 
     // check case of a single equation and small matrix
     if( src->width <= 3 && src2->width == 1 )
@@ -1165,7 +1194,7 @@ cxSolve( const CxArr* A, const CxArr* b, CxArr* x, int method )
 
         if( src->width == 2 )
         {
-            if( type == CX_32FC1 )
+            if( type == CV_32FC1 )
             {
                 double d = det2(Sf);
                 if( d != 0. )
@@ -1173,7 +1202,7 @@ cxSolve( const CxArr* A, const CxArr* b, CxArr* x, int method )
                     float t;
                     d = 1./d;
                     t = (float)((bf(0)*Sf(1,1) - bf(1)*Sf(0,1))*d);
-                    Df(0,1) = (float)((bf(1)*Sf(0,0) - bf(0)*Sf(1,0))*d);
+                    Df(1,0) = (float)((bf(1)*Sf(0,0) - bf(0)*Sf(1,0))*d);
                     Df(0,0) = t;
                 }
                 else
@@ -1186,8 +1215,8 @@ cxSolve( const CxArr* A, const CxArr* b, CxArr* x, int method )
                 {
                     double t;
                     d = 1./d;
-                    t = (float)((bd(0)*Sd(1,1) - bd(1)*Sd(0,1))*d);
-                    Dd(1,0) = (float)((bd(1)*Sd(0,0) - bd(0)*Sd(1,0))*d);
+                    t = (bd(0)*Sd(1,1) - bd(1)*Sd(0,1))*d;
+                    Dd(1,0) = (bd(1)*Sd(0,0) - bd(0)*Sd(1,0))*d;
                     Dd(0,0) = t;
                 }
                 else
@@ -1196,7 +1225,7 @@ cxSolve( const CxArr* A, const CxArr* b, CxArr* x, int method )
         }
         else if( src->width == 3 )
         {
-            if( type == CX_32FC1 )
+            if( type == CV_32FC1 )
             {
                 double d = det3(Sf);
                 if( d != 0. )
@@ -1259,7 +1288,7 @@ cxSolve( const CxArr* A, const CxArr* b, CxArr* x, int method )
         {
             assert( src->width == 1 );
 
-            if( type == CX_32FC1 )
+            if( type == CV_32FC1 )
             {
                 double d = Sf(0,0);
                 if( d != 0. )
@@ -1279,49 +1308,54 @@ cxSolve( const CxArr* A, const CxArr* b, CxArr* x, int method )
     }
     else
     {
-        CxLUDecompFunc decomp_func;
-        CxLUBackFunc back_func;
-        CxSize size = cxGetMatSize( src );
-        CxSize dstsize = cxGetMatSize( dst );
-        int buf_size = size.width*size.height*icxPixSize[type];
+        CvLUDecompFunc decomp_func;
+        CvLUBackFunc back_func;
+        CvSize size = cvGetMatSize( src );
+        CvSize dstsize = cvGetMatSize( dst );
+        int worktype = CV_64FC1;
+        int buf_size = size.width*size.height*CV_ELEM_SIZE(worktype);
         double d = 0;
-        CxMat tmat;
-        
+        CvMat tmat;
+
         if( !lu_inittab )
         {
-            icxInitLUTable( &lu_decomp_tab, &lu_back_tab );
+            icvInitLUTable( &lu_decomp_tab, &lu_back_tab );
             lu_inittab = 1;
         }
 
-        if( size.width <= CX_MAX_LOCAL_MAT_SIZE )
+        if( size.width <= CV_MAX_LOCAL_MAT_SIZE )
         {
-            buffer = (uchar*)alloca( buf_size + 8 );
-            buffer = (uchar*)cxAlignPtr( buffer, 8 );
+            buffer = (uchar*)cvStackAlloc( buf_size );
             local_alloc = 1;
         }
         else
         {
-            CX_CALL( buffer = (uchar*)cxAlloc( buf_size ));
+            CV_CALL( buffer = (uchar*)cvAlloc( buf_size ));
         }
 
-        CX_CALL( cxInitMatHeader( &tmat, size.height, size.width, type, buffer ));
-        CX_CALL( cxCopy( src, &tmat ));
-        
+        CV_CALL( cvInitMatHeader( &tmat, size.height, size.width, worktype, buffer ));
+        if( type == worktype )
+        {
+            CV_CALL( cvCopy( src, &tmat ));
+        }
+        else
+            CV_CALL( cvConvert( src, &tmat ));
+
         if( src2->data.ptr != dst->data.ptr )
         {
-            CX_CALL( cxCopy( src2, dst ));
+            CV_CALL( cvCopy( src2, dst ));
         }
 
-        decomp_func = (CxLUDecompFunc)(lu_decomp_tab.fn_2d[CX_MAT_DEPTH(type)-CX_32F]);
-        back_func = (CxLUBackFunc)(lu_back_tab.fn_2d[CX_MAT_DEPTH(type)-CX_32F]);
+        decomp_func = (CvLUDecompFunc)(lu_decomp_tab.fn_2d[CV_MAT_DEPTH(type)-CV_32F]);
+        back_func = (CvLUBackFunc)(lu_back_tab.fn_2d[CV_MAT_DEPTH(type)-CV_32F]);
         assert( decomp_func && back_func );
 
-        IPPI_CALL( decomp_func( tmat.data.ptr, tmat.step, size,
+        IPPI_CALL( decomp_func( tmat.data.db, tmat.step, size,
                                 dst->data.ptr, dst->step, dstsize, &d ));
 
         if( d != 0 )
         {
-            IPPI_CALL( back_func( tmat.data.ptr, tmat.step, size,
+            IPPI_CALL( back_func( tmat.data.db, tmat.step, size,
                                   dst->data.ptr, dst->step, dstsize ));
         }
         else
@@ -1329,101 +1363,557 @@ cxSolve( const CxArr* A, const CxArr* b, CxArr* x, int method )
     }
 
     if( !result )
-        CX_CALL( cxSetZero( dst ));
+        CV_CALL( cvSetZero( dst ));
 
     __END__;
 
     if( buffer && !local_alloc )
-        cxFree( (void**)&buffer );
+        cvFree( &buffer );
 
     if( u || v || w )
     {
-        cxReleaseMat( &u );
-        cxReleaseMat( &v );
-        cxReleaseMat( &w );
+        cvReleaseMat( &u );
+        cvReleaseMat( &v );
+        cvReleaseMat( &w );
     }
 
     return result;
 }
 
 
-CX_IMPL void
-cxCrossProduct( const CxArr* srcAarr, const CxArr* srcBarr, CxArr* dstarr )
+
+/****************************************************************************************\
+*                               3D vector cross-product                                  *
+\****************************************************************************************/
+
+CV_IMPL void
+cvCrossProduct( const CvArr* srcAarr, const CvArr* srcBarr, CvArr* dstarr )
 {
-    CX_FUNCNAME( "cxCrossProduct" );
-    
+    CV_FUNCNAME( "cvCrossProduct" );
+
     __BEGIN__;
 
-    CxMat stubA, *srcA = (CxMat*)srcAarr;
-    CxMat stubB, *srcB = (CxMat*)srcBarr;
-    CxMat dstub, *dst = (CxMat*)dstarr;
+    CvMat stubA, *srcA = (CvMat*)srcAarr;
+    CvMat stubB, *srcB = (CvMat*)srcBarr;
+    CvMat dstub, *dst = (CvMat*)dstarr;
     int type;
 
-    if( !CX_IS_MAT(srcA))
-        CX_CALL( srcA = cxGetMat( srcA, &stubA ));
+    if( !CV_IS_MAT(srcA))
+        CV_CALL( srcA = cvGetMat( srcA, &stubA ));
 
-    type = CX_MAT_TYPE( srcA->type );
+    type = CV_MAT_TYPE( srcA->type );
 
-    if( !CX_IS_MAT_CONT(srcA->type) || srcA->width*srcA->height*CX_MAT_CN(type) != 3 )
-        CX_ERROR( CX_StsBadArg, "All the input arrays must be continuous 3-vectors" );
+    if( srcA->width*srcA->height*CV_MAT_CN(type) != 3 )
+        CV_ERROR( CV_StsBadArg, "All the input arrays must be continuous 3-vectors" );
 
     if( !srcB || !dst )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    if( srcA->type == srcB->type && srcA->type == dst->type )
+    if( (srcA->type & ~CV_MAT_CONT_FLAG) == (srcB->type & ~CV_MAT_CONT_FLAG) &&
+        (srcA->type & ~CV_MAT_CONT_FLAG) == (dst->type & ~CV_MAT_CONT_FLAG) )
     {
         if( !srcB->data.ptr || !dst->data.ptr )
-            CX_ERROR( CX_StsNullPtr, "" );
+            CV_ERROR( CV_StsNullPtr, "" );
     }
     else
     {
-        if( !CX_IS_MAT(srcB))
-            CX_CALL( srcB = cxGetMat( srcB, &stubB ));
+        if( !CV_IS_MAT(srcB))
+            CV_CALL( srcB = cvGetMat( srcB, &stubB ));
 
-        if( !CX_IS_MAT(dst))
-            CX_CALL( dst = cxGetMat( dst, &dstub ));
+        if( !CV_IS_MAT(dst))
+            CV_CALL( dst = cvGetMat( dst, &dstub ));
 
-        if( !CX_ARE_TYPES_EQ( srcA, srcB ) ||
-            !CX_ARE_TYPES_EQ( srcB, dst ))
-            CX_ERROR( CX_StsUnmatchedFormats, "" );
-
-        if( !CX_IS_MAT_CONT( srcB->type & dst->type ))
-            CX_ERROR( CX_StsBadArg, "All the input arrays must be continuous 3-vectors" );
+        if( !CV_ARE_TYPES_EQ( srcA, srcB ) ||
+            !CV_ARE_TYPES_EQ( srcB, dst ))
+            CV_ERROR( CV_StsUnmatchedFormats, "" );
     }
 
-    if( !CX_ARE_SIZES_EQ( srcA, srcB ) || !CX_ARE_SIZES_EQ( srcB, dst ))
-        CX_ERROR( CX_StsUnmatchedSizes, "" );
+    if( !CV_ARE_SIZES_EQ( srcA, srcB ) || !CV_ARE_SIZES_EQ( srcB, dst ))
+        CV_ERROR( CV_StsUnmatchedSizes, "" );
 
-    if( CX_MAT_DEPTH(type) == CX_32F )
+    if( CV_MAT_DEPTH(type) == CV_32F )
     {
         float* dstdata = (float*)(dst->data.ptr);
         const float* src1data = (float*)(srcA->data.ptr);
         const float* src2data = (float*)(srcB->data.ptr);
-        
-        dstdata[2] = src1data[0] * src2data[1] - src1data[1] * src2data[0];
-        dstdata[0] = src1data[1] * src2data[2] - src1data[2] * src2data[1];
-        dstdata[1] = src1data[2] * src2data[0] - src1data[0] * src2data[2];
+
+        if( CV_IS_MAT_CONT(srcA->type & srcB->type & dst->type) )
+        {
+            dstdata[2] = src1data[0] * src2data[1] - src1data[1] * src2data[0];
+            dstdata[0] = src1data[1] * src2data[2] - src1data[2] * src2data[1];
+            dstdata[1] = src1data[2] * src2data[0] - src1data[0] * src2data[2];
+        }
+        else
+        {
+            int step1 = srcA->step ? srcA->step/sizeof(src1data[0]) : 1;
+            int step2 = srcB->step ? srcB->step/sizeof(src1data[0]) : 1;
+            int step = dst->step ? dst->step/sizeof(src1data[0]) : 1;
+
+            dstdata[2*step] = src1data[0] * src2data[step2] - src1data[step1] * src2data[0];
+            dstdata[0] = src1data[step1] * src2data[step2*2] - src1data[step1*2] * src2data[step2];
+            dstdata[step] = src1data[step1*2] * src2data[0] - src1data[0] * src2data[step2*2];
+        }
     }
-    else if( CX_MAT_DEPTH(type) == CX_64F )
+    else if( CV_MAT_DEPTH(type) == CV_64F )
     {
         double* dstdata = (double*)(dst->data.ptr);
         const double* src1data = (double*)(srcA->data.ptr);
         const double* src2data = (double*)(srcB->data.ptr);
         
-        dstdata[2] = src1data[0] * src2data[1] - src1data[1] * src2data[0];
-        dstdata[0] = src1data[1] * src2data[2] - src1data[2] * src2data[1];
-        dstdata[1] = src1data[2] * src2data[0] - src1data[0] * src2data[2];
+        if( CV_IS_MAT_CONT(srcA->type & srcB->type & dst->type) )
+        {
+            dstdata[2] = src1data[0] * src2data[1] - src1data[1] * src2data[0];
+            dstdata[0] = src1data[1] * src2data[2] - src1data[2] * src2data[1];
+            dstdata[1] = src1data[2] * src2data[0] - src1data[0] * src2data[2];
+        }
+        else
+        {
+            int step1 = srcA->step ? srcA->step/sizeof(src1data[0]) : 1;
+            int step2 = srcB->step ? srcB->step/sizeof(src1data[0]) : 1;
+            int step = dst->step ? dst->step/sizeof(src1data[0]) : 1;
+
+            dstdata[2*step] = src1data[0] * src2data[step2] - src1data[step1] * src2data[0];
+            dstdata[0] = src1data[step1] * src2data[step2*2] - src1data[step1*2] * src2data[step2];
+            dstdata[step] = src1data[step1*2] * src2data[0] - src1data[0] * src2data[step2*2];
+        }
     }
     else
     {
-        CX_ERROR( CX_StsUnsupportedFormat, "" );
+        CV_ERROR( CV_StsUnsupportedFormat, "" );
     }
-
-    CX_CHECK_NANS( srcA );
-    CX_CHECK_NANS( srcB );
-    CX_CHECK_NANS( dst );
 
     __END__;
 }
+
+
+CV_IMPL void
+cvCalcPCA( const CvArr* data_arr, CvArr* avg_arr, CvArr* eigenvals, CvArr* eigenvects, int flags )
+{
+    CvMat* tmp_avg = 0;
+    CvMat* tmp_avg_r = 0;
+    CvMat* tmp_cov = 0;
+    CvMat* tmp_evals = 0;
+    CvMat* tmp_evects = 0;
+    CvMat* tmp_evects2 = 0;
+    CvMat* tmp_data = 0;
+    
+    CV_FUNCNAME( "cvCalcPCA" );
+
+    __BEGIN__;
+
+    CvMat stub, *data = (CvMat*)data_arr;
+    CvMat astub, *avg = (CvMat*)avg_arr;
+    CvMat evalstub, *evals = (CvMat*)eigenvals;
+    CvMat evectstub, *evects = (CvMat*)eigenvects;
+    int covar_flags = CV_COVAR_SCALE;
+    int i, len, in_count, count, out_count;
+
+    if( !CV_IS_MAT(data) )
+        CV_CALL( data = cvGetMat( data, &stub ));
+
+    if( !CV_IS_MAT(avg) )
+        CV_CALL( avg = cvGetMat( avg, &astub ));
+
+    if( !CV_IS_MAT(evals) )
+        CV_CALL( evals = cvGetMat( evals, &evalstub ));
+
+    if( !CV_IS_MAT(evects) )
+        CV_CALL( evects = cvGetMat( evects, &evectstub ));
+
+    if( CV_MAT_CN(data->type) != 1 || CV_MAT_CN(avg->type) != 1 ||
+        CV_MAT_CN(evals->type) != 1 || CV_MAT_CN(evects->type) != 1 )
+        CV_ERROR( CV_StsUnsupportedFormat, "All the input and output arrays must be 1-channel" );
+
+    if( CV_MAT_DEPTH(avg->type) < CV_32F || !CV_ARE_DEPTHS_EQ(avg, evals) ||
+        !CV_ARE_DEPTHS_EQ(avg, evects) )
+        CV_ERROR( CV_StsUnsupportedFormat, "All the output arrays must have the same type, 32fC1 or 64fC1" );
+
+    if( flags & CV_PCA_DATA_AS_COL )
+    {
+        len = data->rows;
+        in_count = data->cols;
+        covar_flags |= CV_COVAR_COLS;
+
+        if( avg->cols != 1 || avg->rows != len )
+            CV_ERROR( CV_StsBadSize,
+            "The mean (average) vector should be data->rows x 1 when CV_PCA_DATA_AS_COL is used" );
+
+        CV_CALL( tmp_avg = cvCreateMat( len, 1, CV_64F ));
+    }
+    else
+    {
+        len = data->cols;
+        in_count = data->rows;
+        covar_flags |= CV_COVAR_ROWS;
+
+        if( avg->rows != 1 || avg->cols != len )
+            CV_ERROR( CV_StsBadSize,
+            "The mean (average) vector should be 1 x data->cols when CV_PCA_DATA_AS_ROW is used" );
+
+        CV_CALL( tmp_avg = cvCreateMat( 1, len, CV_64F ));
+    }
+
+    count = MIN(len, in_count);
+    out_count = evals->cols + evals->rows - 1;
+    
+    if( (evals->cols != 1 && evals->rows != 1) || out_count > count )
+        CV_ERROR( CV_StsBadSize,
+        "The array of eigenvalues must be 1d vector containing "
+        "no more than min(data->rows,data->cols) elements" );
+
+    if( evects->cols != len || evects->rows != out_count )
+        CV_ERROR( CV_StsBadSize,
+        "The matrix of eigenvalues must have the same number of columns as the input vector length "
+        "and the same number of rows as the number of eigenvalues" );
+
+    // "scrambled" way to compute PCA (when cols(A)>rows(A)):
+    // B = A'A; B*x=b*x; C = AA'; C*y=c*y -> AA'*y=c*y -> A'A*(A'*y)=c*(A'*y) -> c = b, x=A'*y
+    if( len <= in_count )
+        covar_flags |= CV_COVAR_NORMAL;
+
+    if( flags & CV_PCA_USE_AVG ){
+        covar_flags |= CV_COVAR_USE_AVG;
+		CV_CALL( cvConvert( avg, tmp_avg ) );
+	}
+
+    CV_CALL( tmp_cov = cvCreateMat( count, count, CV_64F ));
+    CV_CALL( tmp_evals = cvCreateMat( 1, count, CV_64F ));
+    CV_CALL( tmp_evects = cvCreateMat( count, count, CV_64F ));
+
+    CV_CALL( cvCalcCovarMatrix( &data_arr, 0, tmp_cov, tmp_avg, covar_flags ));
+    CV_CALL( cvSVD( tmp_cov, tmp_evals, tmp_evects, 0, CV_SVD_MODIFY_A + CV_SVD_U_T ));
+    tmp_evects->rows = out_count;
+    tmp_evals->cols = out_count;
+    cvZero( evects );
+    cvZero( evals );
+
+    if( covar_flags & CV_COVAR_NORMAL )
+    {
+        CV_CALL( cvConvert( tmp_evects, evects ));
+    }
+    else
+    {
+        // CV_PCA_DATA_AS_ROW: cols(A)>rows(A). x=A'*y -> x'=y'*A
+        // CV_PCA_DATA_AS_COL: rows(A)>cols(A). x=A''*y -> x'=y'*A'
+        int block_count = 0;
+
+        CV_CALL( tmp_data = cvCreateMat( count, count, CV_64F ));
+        CV_CALL( tmp_avg_r = cvCreateMat( count, count, CV_64F ));
+        CV_CALL( tmp_evects2 = cvCreateMat( count, count, CV_64F ));
+
+        for( i = 0; i < len; i += block_count )
+        {
+            CvMat data_part, tdata_part, part, dst_part, avg_part, tmp_avg_part;
+            int gemm_flags;
+
+            block_count = MIN( count, len - i );
+
+            if( flags & CV_PCA_DATA_AS_COL )
+            {
+                cvGetRows( data, &data_part, i, i + block_count );
+                cvGetRows( tmp_data, &tdata_part, 0, block_count );
+                cvGetRows( tmp_avg, &avg_part, i, i + block_count );
+                cvGetRows( tmp_avg_r, &tmp_avg_part, 0, block_count );
+                gemm_flags = CV_GEMM_B_T;
+            }
+            else
+            {
+                cvGetCols( data, &data_part, i, i + block_count );
+                cvGetCols( tmp_data, &tdata_part, 0, block_count );
+                cvGetCols( tmp_avg, &avg_part, i, i + block_count );
+                cvGetCols( tmp_avg_r, &tmp_avg_part, 0, block_count );
+                gemm_flags = 0;
+            }
+
+            cvGetCols( tmp_evects2, &part, 0, block_count );
+            cvGetCols( evects, &dst_part, i, i + block_count );
+
+            cvConvert( &data_part, &tdata_part );
+            cvRepeat( &avg_part, &tmp_avg_part );
+            cvSub( &tdata_part, &tmp_avg_part, &tdata_part );
+            cvGEMM( tmp_evects, &tdata_part, 1, 0, 0, &part, gemm_flags );
+            cvConvert( &part, &dst_part );
+        }
+
+        // normalize eigenvectors
+        for( i = 0; i < count; i++ )
+        {
+            CvMat ei;
+            cvGetRow( evects, &ei, i );
+			cvNormalize( &ei, &ei );
+        }
+    }
+
+    if( tmp_evals->rows != evals->rows )
+        cvReshape( tmp_evals, tmp_evals, 1, evals->rows );
+    cvConvert( tmp_evals, evals );
+    cvConvert( tmp_avg, avg );
+
+    __END__;
+
+    cvReleaseMat( &tmp_avg );
+    cvReleaseMat( &tmp_avg_r );
+    cvReleaseMat( &tmp_cov );
+    cvReleaseMat( &tmp_evals );
+    cvReleaseMat( &tmp_evects );
+    cvReleaseMat( &tmp_evects2 );
+    cvReleaseMat( &tmp_data );
+}
+
+
+CV_IMPL void
+cvProjectPCA( const CvArr* data_arr, const CvArr* avg_arr,
+              const CvArr* eigenvects, CvArr* result_arr )
+{
+    uchar* buffer = 0;
+    int local_alloc = 0;
+    
+    CV_FUNCNAME( "cvProjectPCA" );
+
+    __BEGIN__;
+
+    CvMat stub, *data = (CvMat*)data_arr;
+    CvMat astub, *avg = (CvMat*)avg_arr;
+    CvMat evectstub, *evects = (CvMat*)eigenvects;
+    CvMat rstub, *result = (CvMat*)result_arr;
+    CvMat avg_repeated;
+    int i, len, in_count;
+    int gemm_flags, as_cols, convert_data;
+    int block_count0, block_count, buf_size, elem_size;
+    uchar* tmp_data_ptr;
+
+    if( !CV_IS_MAT(data) )
+        CV_CALL( data = cvGetMat( data, &stub ));
+
+    if( !CV_IS_MAT(avg) )
+        CV_CALL( avg = cvGetMat( avg, &astub ));
+
+    if( !CV_IS_MAT(evects) )
+        CV_CALL( evects = cvGetMat( evects, &evectstub ));
+
+    if( !CV_IS_MAT(result) )
+        CV_CALL( result = cvGetMat( result, &rstub ));
+
+    if( CV_MAT_CN(data->type) != 1 || CV_MAT_CN(avg->type) != 1 )
+        CV_ERROR( CV_StsUnsupportedFormat, "All the input and output arrays must be 1-channel" );
+
+    if( CV_MAT_TYPE(avg->type) != CV_32FC1 && CV_MAT_TYPE(avg->type) != CV_64FC1 ||
+        !CV_ARE_TYPES_EQ(avg, evects) || !CV_ARE_TYPES_EQ(avg, result) )
+        CV_ERROR( CV_StsUnsupportedFormat,
+        "All the input and output arrays (except for data) must have the same type, 32fC1 or 64fC1" );
+
+    if( (avg->cols != 1 || avg->rows != data->rows) &&
+        (avg->rows != 1 || avg->cols != data->cols) )
+        CV_ERROR( CV_StsBadSize,
+        "The mean (average) vector should be either 1 x data->cols or data->rows x 1" );
+
+    if( avg->cols == 1 )
+    {
+        len = data->rows;
+        in_count = data->cols;
+
+        gemm_flags = CV_GEMM_A_T + CV_GEMM_B_T;
+        as_cols = 1;
+    }
+    else
+    {
+        len = data->cols;
+        in_count = data->rows;
+
+        gemm_flags = CV_GEMM_B_T;
+        as_cols = 0;
+    }
+
+    if( evects->cols != len )
+        CV_ERROR( CV_StsUnmatchedSizes,
+        "Eigenvectors must be stored as rows and be of the same size as input vectors" );
+
+    if( result->cols > evects->rows )
+        CV_ERROR( CV_StsOutOfRange,
+        "The output matrix of coefficients must have the number of columns "
+        "less than or equal to the number of eigenvectors (number of rows in eigenvectors matrix)" );
+
+    evects = cvGetRows( evects, &evectstub, 0, result->cols );
+
+    block_count0 = (1 << 16)/len;
+    block_count0 = MAX( block_count0, 4 );
+    block_count0 = MIN( block_count0, in_count );
+    elem_size = CV_ELEM_SIZE(avg->type);
+    convert_data = CV_MAT_DEPTH(data->type) < CV_MAT_DEPTH(avg->type);
+
+    buf_size = block_count0*len*((block_count0 > 1) + 1)*elem_size;
+
+    if( buf_size < CV_MAX_LOCAL_SIZE )
+    {
+        buffer = (uchar*)cvStackAlloc( buf_size );
+        local_alloc = 1;
+    }
+    else
+        CV_CALL( buffer = (uchar*)cvAlloc( buf_size ));
+
+    tmp_data_ptr = buffer;
+    if( block_count0 > 1 )
+    {
+        avg_repeated = cvMat( as_cols ? len : block_count0,
+                              as_cols ? block_count0 : len, avg->type, buffer );
+        cvRepeat( avg, &avg_repeated );
+        tmp_data_ptr += block_count0*len*elem_size;
+    }
+    else
+        avg_repeated = *avg;
+
+    for( i = 0; i < in_count; i += block_count )
+    {
+        CvMat data_part, norm_data, avg_part, *src = &data_part, out_part;
+        
+        block_count = MIN( block_count0, in_count - i );
+        if( as_cols )
+        {
+            cvGetCols( data, &data_part, i, i + block_count );
+            cvGetCols( &avg_repeated, &avg_part, 0, block_count );
+            norm_data = cvMat( len, block_count, avg->type, tmp_data_ptr );
+        }
+        else
+        {
+            cvGetRows( data, &data_part, i, i + block_count );
+            cvGetRows( &avg_repeated, &avg_part, 0, block_count );
+            norm_data = cvMat( block_count, len, avg->type, tmp_data_ptr );
+        }
+
+        if( convert_data )
+        {
+            cvConvert( src, &norm_data );
+            src = &norm_data;
+        }
+        
+        cvSub( src, &avg_part, &norm_data );
+
+        cvGetRows( result, &out_part, i, i + block_count );
+        cvGEMM( &norm_data, evects, 1, 0, 0, &out_part, gemm_flags );
+    }
+
+    __END__;
+
+    if( !local_alloc )
+        cvFree( &buffer );
+}
+
+
+CV_IMPL void
+cvBackProjectPCA( const CvArr* proj_arr, const CvArr* avg_arr,
+                  const CvArr* eigenvects, CvArr* result_arr )
+{
+    uchar* buffer = 0;
+    int local_alloc = 0;
+    
+    CV_FUNCNAME( "cvProjectPCA" );
+
+    __BEGIN__;
+
+    CvMat pstub, *data = (CvMat*)proj_arr;
+    CvMat astub, *avg = (CvMat*)avg_arr;
+    CvMat evectstub, *evects = (CvMat*)eigenvects;
+    CvMat rstub, *result = (CvMat*)result_arr;
+    CvMat avg_repeated;
+    int i, len, in_count, as_cols;
+    int block_count0, block_count, buf_size, elem_size;
+
+    if( !CV_IS_MAT(data) )
+        CV_CALL( data = cvGetMat( data, &pstub ));
+
+    if( !CV_IS_MAT(avg) )
+        CV_CALL( avg = cvGetMat( avg, &astub ));
+
+    if( !CV_IS_MAT(evects) )
+        CV_CALL( evects = cvGetMat( evects, &evectstub ));
+
+    if( !CV_IS_MAT(result) )
+        CV_CALL( result = cvGetMat( result, &rstub ));
+
+    if( CV_MAT_TYPE(avg->type) != CV_32FC1 && CV_MAT_TYPE(avg->type) != CV_64FC1 ||
+        !CV_ARE_TYPES_EQ(avg, data) || !CV_ARE_TYPES_EQ(avg, evects) || !CV_ARE_TYPES_EQ(avg, result) )
+        CV_ERROR( CV_StsUnsupportedFormat,
+        "All the input and output arrays must have the same type, 32fC1 or 64fC1" );
+
+    if( (avg->cols != 1 || avg->rows != result->rows) &&
+        (avg->rows != 1 || avg->cols != result->cols) )
+        CV_ERROR( CV_StsBadSize,
+        "The mean (average) vector should be either 1 x result->cols or result->rows x 1" );
+
+    if( avg->cols == 1 )
+    {
+        len = result->rows;
+        in_count = result->cols;
+        as_cols = 1;
+    }
+    else
+    {
+        len = result->cols;
+        in_count = result->rows;
+        as_cols = 0;
+    }
+
+    if( evects->cols != len )
+        CV_ERROR( CV_StsUnmatchedSizes,
+        "Eigenvectors must be stored as rows and be of the same size as the output vectors" );
+
+    if( data->cols > evects->rows )
+        CV_ERROR( CV_StsOutOfRange,
+        "The input matrix of coefficients must have the number of columns "
+        "less than or equal to the number of eigenvectors (number of rows in eigenvectors matrix)" );
+
+    evects = cvGetRows( evects, &evectstub, 0, data->cols );
+
+    block_count0 = (1 << 16)/len;
+    block_count0 = MAX( block_count0, 4 );
+    block_count0 = MIN( block_count0, in_count );
+    elem_size = CV_ELEM_SIZE(avg->type);
+
+    buf_size = block_count0*len*(block_count0 > 1)*elem_size;
+
+    if( buf_size < CV_MAX_LOCAL_SIZE )
+    {
+        buffer = (uchar*)cvStackAlloc( MAX(buf_size,16) );
+        local_alloc = 1;
+    }
+    else
+        CV_CALL( buffer = (uchar*)cvAlloc( buf_size ));
+
+    if( block_count0 > 1 )
+    {
+        avg_repeated = cvMat( as_cols ? len : block_count0,
+                              as_cols ? block_count0 : len, avg->type, buffer );
+        cvRepeat( avg, &avg_repeated );
+    }
+    else
+        avg_repeated = *avg;
+
+    for( i = 0; i < in_count; i += block_count )
+    {
+        CvMat data_part, avg_part, out_part;
+        
+        block_count = MIN( block_count0, in_count - i );
+        cvGetRows( data, &data_part, i, i + block_count );
+
+        if( as_cols )
+        {
+            cvGetCols( result, &out_part, i, i + block_count );
+            cvGetCols( &avg_repeated, &avg_part, 0, block_count );
+            cvGEMM( evects, &data_part, 1, &avg_part, 1, &out_part, CV_GEMM_A_T + CV_GEMM_B_T );
+        }
+        else
+        {
+            cvGetRows( result, &out_part, i, i + block_count );
+            cvGetRows( &avg_repeated, &avg_part, 0, block_count );
+            cvGEMM( &data_part, evects, 1, &avg_part, 1, &out_part, 0 );
+        }
+    }
+
+    __END__;
+
+    if( !local_alloc )
+        cvFree( &buffer );
+}
+
 
 /* End of file. */

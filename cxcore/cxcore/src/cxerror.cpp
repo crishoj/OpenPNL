@@ -41,453 +41,375 @@
 
 #include "_cxcore.h"
 
-#ifdef WIN32  
-#include <windows.h>  
+#if defined WIN32 || defined WIN64
+#include <windows.h>
 #else
 #include <pthread.h>
-#endif 
-
-typedef struct CxContext
-{
-    CXStatus        CXLastStatus;
-    int             CXErrMode;
-    CXErrorCallBack CXErrorFunc;
-    CxStackRecord*  CXStack;
-    int             CXStackSize;
-    int             CXStackCapacity;
-    
-} CxContext;
-
-CxContext* icxCreateContext()
-{
-    CxContext* context = (CxContext*)malloc( sizeof( CxContext ) );
-
-    context->CXErrMode    = CX_ErrModeLeaf;
-    context->CXLastStatus = CX_StsOk;
-
-#ifdef WIN32
-   context->CXErrorFunc   = cxGuiBoxReport;
-#else
-   context->CXErrorFunc   = cxStdErrReport;
 #endif
 
-   /* below is stuff for profiling */
-   context->CXStackCapacity = 100; /* let it be so*/
-   context->CXStackSize = 0;
-   context->CXStack =
-       (CxStackRecord*)malloc( sizeof(CxStackRecord) * context->CXStackCapacity );
-   return context;
+typedef struct
+{
+    const char* file;
+    int         line;
+}
+CvStackRecord;
+
+typedef struct CvContext
+{
+    int  err_code;
+    int  err_mode;
+    CvErrorCallback error_callback;
+    void*  userdata;
+    char  err_msg[4096];
+    CvStackRecord  err_ctx;
+} CvContext;
+
+#if defined WIN32 || defined WIN64
+#define CV_DEFAULT_ERROR_CALLBACK  cvGuiBoxReport
+#else
+#define CV_DEFAULT_ERROR_CALLBACK  cvStdErrReport
+#endif
+
+static CvContext*
+icvCreateContext(void)
+{
+    CvContext* context = (CvContext*)malloc( sizeof(*context) );
+
+    context->err_mode = CV_ErrModeLeaf;
+    context->err_code = CV_StsOk;
+
+    context->error_callback = CV_DEFAULT_ERROR_CALLBACK;
+    context->userdata = 0;
+
+    return context;
 }
 
-void icxDestroyContext(CxContext* context)
+static void
+icvDestroyContext(CvContext* context)
 {
-    free(context->CXStack);
     free(context);
 }
 
-#ifdef WIN32
-    DWORD g_TlsIndex = TLS_OUT_OF_INDEXES;
+#if defined WIN32 || defined WIN64
+    static DWORD g_TlsIndex = TLS_OUT_OF_INDEXES;
 #else
-    pthread_key_t g_TlsIndex;
+    static pthread_key_t g_TlsIndex;
 #endif
 
-CxContext* icxGetContext()
+static CvContext*
+icvGetContext(void)
 {
-#ifdef CX_DLL
-#ifdef WIN32
-    CxContext* pContext = (CxContext*)TlsGetValue( g_TlsIndex );
-    if( !pContext )
-    {
-    pContext = icxCreateContext();
+#ifdef CV_DLL
+#if defined WIN32 || defined WIN64
+    CvContext* context;
 
-    if( !pContext )
+    //assert(g_TlsIndex != TLS_OUT_OF_INDEXES);
+    if( g_TlsIndex == TLS_OUT_OF_INDEXES )
     {
-        FatalAppExit( 0, "OpenCX. Problem to allocate memory for TLS OpenCX context." );
+        g_TlsIndex = TlsAlloc();
+        if( g_TlsIndex == TLS_OUT_OF_INDEXES )
+            FatalAppExit( 0, "Only set CV_DLL for DLL usage" );
     }
-    TlsSetValue( g_TlsIndex, pContext );
+
+    context = (CvContext*)TlsGetValue( g_TlsIndex );
+    if( !context )
+    {
+        context = icvCreateContext();
+        if( !context )
+            FatalAppExit( 0, "OpenCV. Problem to allocate memory for TLS OpenCV context." );
+
+        TlsSetValue( g_TlsIndex, context );
     }
-    return pContext;
+    return context;
 #else
-    CxContext* pContext = (CxContext*)pthread_getspecific( g_TlsIndex );
-    if( !pContext )
+    CvContext* context = (CvContext*)pthread_getspecific( g_TlsIndex );
+    if( !context )
     {
-    pContext = icxCreateContext();
-    if( !pContext )
+    context = icvCreateContext();
+    if( !context )
     {
-            fprintf(stderr,"OpenCX. Problem to allocate memory for OpenCX context.");
+            fprintf(stderr,"OpenCV. Problem to allocate memory for OpenCV context.");
         exit(1);
     }
-    pthread_setspecific( g_TlsIndex, pContext );
+    pthread_setspecific( g_TlsIndex, context );
     }
-    return pContext;
+    return context;
 #endif
-#else /* CX_DLL */
-    static CxContext* pContext = 0;
+#else /* static single-thread library case */
+    static CvContext* context = 0;
 
-    if( !pContext )
-    pContext = icxCreateContext();
+    if( !context )
+        context = icvCreateContext();
 
-    return pContext;
+    return context;
 #endif
 }
 
 
-CX_IMPL CXStatus cxStdErrReport( CXStatus status, const char *funcName,
-                                 const char *context, const char *file, int line )
+CV_IMPL int
+cvStdErrReport( int code, const char *func_name, const char *err_msg,
+                const char *file, int line, void* )
 {
-    CxContext* cont = icxGetContext();
-
-    if ( cxGetErrMode() == CX_ErrModeSilent )
-    return ( status != CX_StsBackTrace ) ? ( cont->CXLastStatus = status ) : status;
-    
-    if (( status == CX_StsBackTrace ) || ( status == CX_StsAutoTrace ))
-    fprintf(stderr, "\tcalled from ");
-    else 
-    {
-    cont->CXLastStatus = status;
-    fprintf(stderr, "OpenCX Error: %s \n\tin function ", cxErrorStr(status));
-    }
-    if ( line > 0 || file != NULL )
-    fprintf(stderr,"[%s:%d]", file, line);
-    fprintf(stderr,":%s", funcName ? funcName : "<unknown>");
-    if ( context != NULL ) {
-    if ( status != CX_StsAutoTrace )
-        fprintf(stderr, "():\n%s", context);    /* Print context      */
+    if( code == CV_StsBackTrace || code == CV_StsAutoTrace )
+        fprintf( stderr, "\tcalled from " );
     else
-        fprintf(stderr, "(%s)", context);          /* Print arguments    */
-    }
-    fprintf(stderr, "\n");
-    if ( cont->CXErrMode == CX_ErrModeLeaf ) {
-    fprintf(stderr, "OpenCX: %s\n","terminating the application");
-    exit(1);
-    };
+        fprintf( stderr, "OpenCV ERROR: %s (%s)\n\tin function ",
+                 cvErrorStr(code), err_msg ? err_msg : "no description" );
 
-    return status;
+    fprintf( stderr, "%s, %s(%d)\n", func_name ? func_name : "<unknown>",
+             file != NULL ? file : "", line );
+
+    if( cvGetErrMode() == CV_ErrModeLeaf )
+    {
+        fprintf( stderr, "Terminating the application...\n" );
+        return 1;
+    }
+    else
+        return 0;
 }
 
-CX_IMPL CXStatus cxGuiBoxReport( CXStatus status, const char *funcName, 
-                 const char *context, const char *file, int line)
+
+CV_IMPL int
+cvGuiBoxReport( int code, const char *func_name, const char *err_msg,
+                const char *file, int line, void* )
 {
-
-#ifdef WIN32
-
-    char mess[1000];
-    char title[100];
-    char *choice = 0;
-    const char* errText = cxErrorStr( status );
-
-
-    if ( cxGetErrMode() != CX_ErrModeSilent )
-    {
-        if( !funcName ) funcName = "<unknown>";
-        if( !context  ) context = "";
-        if( !file     ) file = "";
-        if(  line < 0 ) line = 0;
-
-        if( cxGetErrMode() == CX_ErrModeLeaf )
-            choice="\nErrMode=CX_ErrorModeLeaf\n"
-                   "\nTerminate the application?";
-
-        if( cxGetErrMode() == CX_ErrModeParent)
-            choice="\nErrMode=CX_ErrorModeParent\n"
-            "\nContinue?";
-
-        if( status == CX_StsBackTrace)
-            wsprintf( mess,"Called from %s(): [file %s, line %d]\n%s\n%s\n(status:%d)\n%s",
-                      funcName, file,line,context, errText, status, choice);
-        else if ( status == CX_StsAutoTrace )
-            wsprintf( mess,"Called from %s(): [file %s, line %d]\n%s\n%s\n(status:%d)\n%s",
-                      funcName, file, line, context, errText, status, choice);
-        else
-            wsprintf( mess,"In function %s(): [file %s, line %d]\n%s\n%s\n(status:%d)\n%s",
-                      funcName, file, line, context,errText, status, choice);
-
-        wsprintf(title,"OpenCX Beta 2: %s",cxErrorStr(cxGetErrStatus()));
-
-        int answer = -1;
-
-        if( (( cxGetErrMode()==CX_ErrModeParent) &&
-            (IDCANCEL==MessageBox(NULL,mess,title,MB_ICONERROR|MB_OKCANCEL|MB_SYSTEMMODAL) ) ||
-            ((cxGetErrMode() == CX_ErrModeLeaf) &&
-            //(IDYES==MessageBox(NULL,mess,title,MB_ICONERROR|MB_YESNO|MB_SYSTEMMODAL))
-            (IDABORT == (answer=MessageBox(NULL,mess,title,MB_ICONERROR|MB_ABORTRETRYIGNORE|MB_SYSTEMMODAL))||
-            IDRETRY == answer)
-            )))
-        {
-            if( answer == IDRETRY )
-            {
-
-    #if _MSC_VER >= 1200 || defined __ICL
-                __asm int 3;
-    #else
-                assert(0);
-    #endif
-            }
-            FatalAppExit(0,"OpenCX:\nterminating the application");
-        }
-    }
-
+#if !defined WIN32 && !defined WIN64
+    return cvStdErrReport( code, func_name, err_msg, file, line, 0 );
 #else
-    cxStdErrReport( status, funcName, context, file, line);
-#endif
-
-    return status;
-}
-
-
-CX_IMPL CXStatus cxNulDevReport( CXStatus status, const char *funcName,
-                 const char *context, const char *file, int line)
-{
-  if( status||funcName||context||file||line )
-  if ( cxGetErrMode() == CX_ErrModeLeaf )
-      exit(1);
-  return status;
-}
-
-CX_IMPL CXErrorCallBack cxRedirectError(CXErrorCallBack func)
-{
-    CxContext* context = icxGetContext();
-
-    CXErrorCallBack old = context->CXErrorFunc;
-    context->CXErrorFunc = func;
-    return old;
-} 
- 
-CX_IMPL const char* cxErrorStr(CXStatus status)
-{
-    static char buf[80];
-
-    switch (status) 
+    if( code != CV_StsBackTrace && code != CV_StsAutoTrace )
     {
-    case CX_StsOk :    return "No Error";
-    case CX_StsBackTrace : return "Backtrace";
-    case CX_StsError :     return "Unknown error";
-    case CX_StsInternal :  return "Internal error";
-    case CX_StsNoMem :     return "Insufficient memory";
-    case CX_StsBadArg :    return "Bad argument";
-    case CX_StsNoConv :    return "Iteration convergence failed";
-    case CX_StsAutoTrace : return "Autotrace call";
-    case CX_StsBadSize :   return "Bad/unsupported parameter of type CxSize";
-    case CX_StsNullPtr :   return "Null pointer";
-    case CX_StsDivByZero : return "Divizion by zero occured";
-    case CX_BadStep :      return "Image step is wrong";
-    case CX_StsInplaceNotSupported : return "Inplace operation is not supported";
-    case CX_StsObjectNotFound :      return "Requested object was not found";
-    case CX_BadDepth :     return "Input image depth is not supported by function";
-    case CX_StsUnmatchedFormats : return "Formats of input arguments do not match"; 
-    case CX_StsUnmatchedSizes :  return "Sizes of input arguments do not match";
-    case CX_StsOutOfRange : return "One of arguments\' values is out of range";
-    case CX_StsUnsupportedFormat : return "Unsupported format or combination of formats";
-    case CX_BadCOI :      return "Input COI is not supported";
-    case CX_BadNumChannels : return "Bad number of channels";
-    case CX_StsBadFlag :   return "Bad flag (parameter or structure field)";
-    case CX_StsBadPoint :  return "Bad parameter of type CxPoint";
+        size_t msg_len = strlen(err_msg ? err_msg : "") + 1024;
+        char* message = (char*)alloca(msg_len);
+        char title[100];
+
+        wsprintf( message, "%s (%s)\nin function %s, %s(%d)\n\n"
+                  "Press \"Abort\" to terminate application.\n"
+                  "Press \"Retry\" to debug (if the app is running under debugger).\n"
+                  "Press \"Ignore\" to continue (this is not safe).\n",
+                  cvErrorStr(code), err_msg ? err_msg : "no description",
+                  func_name, file, line );
+
+        wsprintf( title, "OpenCV GUI Error Handler" );
+
+        int answer = MessageBox( NULL, message, title, MB_ICONERROR|MB_ABORTRETRYIGNORE|MB_SYSTEMMODAL );
+
+        if( answer == IDRETRY )
+        {
+            CV_DBG_BREAK();
+        }
+        return answer != IDIGNORE;
+    }
+    return 0;
+#endif
+}
+
+
+CV_IMPL int cvNulDevReport( int /*code*/, const char* /*func_name*/,
+    const char* /*err_msg*/, const char* /*file*/, int /*line*/, void* )
+{
+    return cvGetErrMode() == CV_ErrModeLeaf;
+}
+
+
+CV_IMPL CvErrorCallback
+cvRedirectError( CvErrorCallback func, void* userdata, void** prev_userdata )
+{
+    CvContext* context = icvGetContext();
+
+    CvErrorCallback old = context->error_callback;
+    if( prev_userdata )
+        *prev_userdata = context->userdata;
+    if( func )
+    {
+        context->error_callback = func;
+        context->userdata = userdata;
+    }
+    else
+    {
+        context->error_callback = CV_DEFAULT_ERROR_CALLBACK;
+        context->userdata = 0;
+    }
+
+    return old;
+}
+
+
+CV_IMPL int cvGetErrInfo( const char** errorcode_desc, const char** description,
+                          const char** filename, int* line )
+{
+    int code = cvGetErrStatus();
+
+    if( errorcode_desc )
+        *errorcode_desc = cvErrorStr( code );
+
+    if( code >= 0 )
+    {
+        if( description )
+            *description = 0;
+        if( filename )
+            *filename = 0;
+        if( line )
+            *line = 0;
+    }
+    else
+    {
+        CvContext* ctx = icvGetContext();
+
+        if( description )
+            *description = ctx->err_msg;
+        if( filename )
+            *filename = ctx->err_ctx.file;
+        if( line )
+            *line = ctx->err_ctx.line;
+    }
+
+    return code;
+}
+
+
+CV_IMPL const char* cvErrorStr( int status )
+{
+    static char buf[256];
+
+    switch (status)
+    {
+    case CV_StsOk :        return "No Error";
+    case CV_StsBackTrace : return "Backtrace";
+    case CV_StsError :     return "Unspecified error";
+    case CV_StsInternal :  return "Internal error";
+    case CV_StsNoMem :     return "Insufficient memory";
+    case CV_StsBadArg :    return "Bad argument";
+    case CV_StsNoConv :    return "Iterations do not converge";
+    case CV_StsAutoTrace : return "Autotrace call";
+    case CV_StsBadSize :   return "Incorrect size of input array";
+    case CV_StsNullPtr :   return "Null pointer";
+    case CV_StsDivByZero : return "Divizion by zero occured";
+    case CV_BadStep :      return "Image step is wrong";
+    case CV_StsInplaceNotSupported : return "Inplace operation is not supported";
+    case CV_StsObjectNotFound :      return "Requested object was not found";
+    case CV_BadDepth :     return "Input image depth is not supported by function";
+    case CV_StsUnmatchedFormats : return "Formats of input arguments do not match";
+    case CV_StsUnmatchedSizes :  return "Sizes of input arguments do not match";
+    case CV_StsOutOfRange : return "One of arguments\' values is out of range";
+    case CV_StsUnsupportedFormat : return "Unsupported format or combination of formats";
+    case CV_BadCOI :      return "Input COI is not supported";
+    case CV_BadNumChannels : return "Bad number of channels";
+    case CV_StsBadFlag :   return "Bad flag (parameter or structure field)";
+    case CV_StsBadPoint :  return "Bad parameter of type CvPoint";
+    case CV_StsBadMask : return "Bad type of mask argument";
+    case CV_StsParseError : return "Parsing error";
+    case CV_StsNotImplemented : return "The function/feature is not implemented";
+    case CV_StsBadMemBlock :  return "Memory block has been corrupted";
     };
 
     sprintf(buf, "Unknown %s code %d", status >= 0 ? "status":"error", status);
     return buf;
 }
 
-CX_IMPL int cxGetErrMode(void)
+CV_IMPL int cvGetErrMode(void)
 {
-    return icxGetContext()->CXErrMode;
+    return icvGetContext()->err_mode;
 }
 
-CX_IMPL void cxSetErrMode( int mode )
+CV_IMPL int cvSetErrMode( int mode )
 {
-    icxGetContext()->CXErrMode = mode;
+    CvContext* context = icvGetContext();
+    int prev_mode = context->err_mode;
+    context->err_mode = mode;
+    return prev_mode;
 }
 
-CX_IMPL CXStatus cxGetErrStatus()
+CV_IMPL int cvGetErrStatus()
 {
-    return icxGetContext()->CXLastStatus;
+    return icvGetContext()->err_code;
 }
 
-CX_IMPL void cxSetErrStatus(CXStatus status)
+CV_IMPL void cvSetErrStatus( int code )
 {
-    icxGetContext()->CXLastStatus = status;
+    icvGetContext()->err_code = code;
 }
 
 
-/******************** Implementation of profiling stuff *********************/
-
-/* initial assignment of profiling functions */
-CxStartProfileFunc p_cxStartProfile = cxStartProfile;
-CxEndProfileFunc p_cxEndProfile = cxEndProfile;
-
-
-CX_IMPL void cxSetProfile( void (CX_CDECL *startprofile_f)(const char*, const char*, int),
-               void (CX_CDECL *endprofile_f)(const char*, int))
+CV_IMPL void cvError( int code, const char* func_name,
+                      const char* err_msg,
+                      const char* file_name, int line )
 {
-    p_cxStartProfile = startprofile_f;
-    p_cxEndProfile   = endprofile_f;
-}
-
-CX_IMPL void cxRemoveProfile()
-{
-    p_cxStartProfile = cxStartProfile;
-    p_cxEndProfile   = cxEndProfile;
-}
-
-    
-
-/* default implementation of cxStartProfile & cxEndProfile */
-void CX_CDECL cxStartProfile(const char* call, const char* file, int line )
-{   
-#ifdef _CX_COMPILE_PROFILE_
-    if( p_cxStartProfile != cxStartProfile )
+    if( code == CV_StsOk )
+        cvSetErrStatus( code );
+    else
     {
-    p_cxStartProfile( call, file, line );
-    }        
-       
-    /* default implementation */
-    CxContext* context = icxGetContext();
+        CvContext* context = icvGetContext();
 
-    /* add record to stack */
-    assert( context->CXStackCapacity >= context->CXStackSize ); 
-    if( context->CXStackCapacity == context->CXStackSize )
-    {
-    /* increase stack */
-    context->CXStackCapacity += 100;
-    context->CXStack = (CxStackRecord*)realloc( context->CXStack, 
-                      (context->CXStackCapacity) * sizeof(CxStackRecord) );
+        if( code != CV_StsBackTrace && code != CV_StsAutoTrace )
+        {
+            char* message = context->err_msg;
+            context->err_code = code;
+
+            strcpy( message, err_msg );
+            context->err_ctx.file = file_name;
+            context->err_ctx.line = line;
+        }
+
+        if( context->err_mode != CV_ErrModeSilent )
+        {
+            int terminate = context->error_callback( code, func_name, err_msg,
+                                                    file_name, line, context->userdata );
+            if( terminate )
+            {
+#if !defined WIN32 && !defined WIN64
+                assert(0); // for post-mortem analysis with GDB
+#endif
+                exit(-abs(terminate));
+            }
+        }
     }
-
-    CxStackRecord* rec = &context->CXStack[context->CXStackSize];
-    rec->file = file;
-    rec->line = line;
-    context->CXStackSize++;
-#else 
-    /* avoid warning "unreferenced value" */
-    if( call||file||line) {}
-    assert(0);
-#endif
-};
-
-CX_IMPL void cxEndProfile( const char* file, int line )
-{
-#ifdef _CX_COMPILE_PROFILE_
-    CxContext* context = icxGetContext();
-    if( p_cxEndProfile != cxEndProfile )
-    {
-    p_cxEndProfile( file, line );
-    }                
-    /* default implementation */  
-    context->CXStackSize--;
-
-#else 
-    /* avoid warning "unreferenced value" */
-    if( file||line) {}
-    assert(0);
-#endif
-
-};
-
-
-CX_IMPL CXStatus cxError( CXStatus code, const char* funcName, 
-              const char* msg, const char* file, int line )
-{
-    CxContext* context = icxGetContext();
-
-    if ((code!=CX_StsBackTrace) && (code!=CX_StsAutoTrace))
-    cxSetErrStatus(code);
-    if (code == CX_StsOk)
-    return CX_StsOk;
-   
-#ifdef _CX_COMPILE_PROFILE_
-
-    int i;                                    
-    char message[4096] = "";                              
-    /* copy input message */                              
-    strcpy( message, msg );                           
-    /* append stack info */
-    strcat( message, "\nStack\n{" );                               
-    char* mes = message + strlen(message);
-
-    for( i = 0; i < context->CXStackSize; i++ )                      
-    {         
-    i ? 0 : sprintf( mes,"\n" ), mes += strlen(mes); 
-    CxStackRecord* rec = &(context->CXStack[i]);
-    sprintf( mes, "   %s line %d\n", rec->file, rec->line ); 
-    mes += strlen(mes);
-    }
-    strcat( message, "}\n" );
-
-    context->CXErrorFunc( code, funcName, message, file, line );          
-#else          
-    context->CXErrorFunc( code, funcName, msg, file, line );
-
-#endif
-    return code;
-};
-
-CX_IMPL void cxGetCallStack(CxStackRecord** stack, int* size)
-{
-    CxContext* context = icxGetContext();
-    *stack = context->CXStack;
-    *size  = context->CXStackSize;
 }
+
 
 /******************** End of implementation of profiling stuff *********************/
 
 
 /**********************DllMain********************************/
 
-#ifdef CX_DLL
-
-#ifdef WIN32
-BOOL WINAPI DllMain( HINSTANCE /*hinstDLL*/,     /* DLL module handle        */
-             DWORD     fdwReason,    /* reason called        */
-             LPVOID    /*lpvReserved*/)  /* reserved             */
+#if defined WIN32 || defined WIN64
+BOOL WINAPI DllMain( HINSTANCE, DWORD  fdwReason, LPVOID )
 {
-    CxContext *pContext;
-
-    /// Note the actual size of the structure is larger.
+    CvContext *pContext;
 
     switch (fdwReason)
     {
     case DLL_PROCESS_ATTACH:
-
-    g_TlsIndex = TlsAlloc();
-    if( g_TlsIndex == TLS_OUT_OF_INDEXES ) return FALSE;
-
-    /* No break: Initialize the index for first thread. */
-    /* The attached process creates a new thread. */
+        g_TlsIndex = TlsAlloc();
+        if( g_TlsIndex == TLS_OUT_OF_INDEXES ) return FALSE;
+        //break;
 
     case DLL_THREAD_ATTACH:
-
-    pContext = icxCreateContext();
-    if( pContext == NULL)
-        return FALSE;
-    TlsSetValue( g_TlsIndex, (LPVOID)pContext );
-    break;
+        pContext = icvCreateContext();
+        if( pContext == NULL)
+            return FALSE;
+        TlsSetValue( g_TlsIndex, (LPVOID)pContext );
+        break;
 
     case DLL_THREAD_DETACH:
-
-    if( g_TlsIndex != TLS_OUT_OF_INDEXES ) 
-    {
-        pContext = (CxContext*)TlsGetValue( g_TlsIndex );
-        if( pContext != NULL ) 
+        if( g_TlsIndex != TLS_OUT_OF_INDEXES )
         {
-        icxDestroyContext( pContext );
+            pContext = (CvContext*)TlsGetValue( g_TlsIndex );
+            if( pContext != NULL )
+                icvDestroyContext( pContext );
         }
-    }
-    break;
+        break;
 
     case DLL_PROCESS_DETACH:
-
-    if( g_TlsIndex != TLS_OUT_OF_INDEXES ) {
-        pContext = (CxContext*)TlsGetValue( g_TlsIndex );
-        if( pContext != NULL ) 
+        if( g_TlsIndex != TLS_OUT_OF_INDEXES )
         {
-        icxDestroyContext( pContext );
+            pContext = (CvContext*)TlsGetValue( g_TlsIndex );
+            if( pContext != NULL )
+                icvDestroyContext( pContext );
         }
         TlsFree( g_TlsIndex );
-    }
-    break;
-
+        break;
     default:
-    break;
+        ;
     }
     return TRUE;
 }
@@ -495,51 +417,46 @@ BOOL WINAPI DllMain( HINSTANCE /*hinstDLL*/,     /* DLL module handle        */
 /* POSIX pthread */
 
 /* function - destructor of thread */
-void icxPthreadDestructor(void* key_val)
+void icvPthreadDestructor(void* key_val)
 {
-    CxContext* context = (CxContext*) key_val;
-    icxDestroyContext( context );
+    CvContext* context = (CvContext*) key_val;
+    icvDestroyContext( context );
 }
 
-int pthrerr = pthread_key_create( &g_TlsIndex, icxPthreadDestructor );
+int pthrerr = pthread_key_create( &g_TlsIndex, icvPthreadDestructor );
 
 #endif
 
-#endif
-
-/* function, which converts CxStatus to CXStatus */
-CX_IMPL CXStatus
-cxErrorFromStatus( CxStatus status )
+/* function, which converts int to int */
+CV_IMPL int
+cvErrorFromIppStatus( int status )
 {
-    switch (status) 
+    switch (status)
     {
-    case CX_BADSIZE_ERR     : return CX_StsBadSize; //bad parameter of type CxSize
-    case CX_NULLPTR_ERR     : return CX_StsNullPtr;
-    case CX_DIV_BY_ZERO_ERR : return CX_StsDivByZero;
-    case CX_BADSTEP_ERR     : return CX_BadStep ;
-    case CX_OUTOFMEM_ERR    : return CX_StsNoMem;
-    case CX_BADARG_ERR      : return CX_StsBadArg;
-    case CX_NOTDEFINED_ERR  : return CX_StsError; //unknown/undefined err
-    
-    case CX_INPLACE_NOT_SUPPORTED_ERR: return CX_StsInplaceNotSupported;
-    case CX_NOTFOUND_ERR : return CX_StsObjectNotFound;
-    case CX_BADCONVERGENCE_ERR: return CX_StsNoConv;
-    case CX_BADDEPTH_ERR     : return CX_BadDepth;
-    case CX_UNMATCHED_FORMATS_ERR : return CX_StsUnmatchedFormats;
+    case CV_BADSIZE_ERR: return CV_StsBadSize;
+    case CV_BADMEMBLOCK_ERR: return CV_StsBadMemBlock;
+    case CV_NULLPTR_ERR: return CV_StsNullPtr;
+    case CV_DIV_BY_ZERO_ERR: return CV_StsDivByZero;
+    case CV_BADSTEP_ERR: return CV_BadStep ;
+    case CV_OUTOFMEM_ERR: return CV_StsNoMem;
+    case CV_BADARG_ERR: return CV_StsBadArg;
+    case CV_NOTDEFINED_ERR: return CV_StsError;
+    case CV_INPLACE_NOT_SUPPORTED_ERR: return CV_StsInplaceNotSupported;
+    case CV_NOTFOUND_ERR: return CV_StsObjectNotFound;
+    case CV_BADCONVERGENCE_ERR: return CV_StsNoConv;
+    case CV_BADDEPTH_ERR: return CV_BadDepth;
+    case CV_UNMATCHED_FORMATS_ERR: return CV_StsUnmatchedFormats;
+    case CV_UNSUPPORTED_COI_ERR: return CV_BadCOI;
+    case CV_UNSUPPORTED_CHANNELS_ERR: return CV_BadNumChannels;
+    case CV_BADFLAG_ERR: return CV_StsBadFlag;
+    case CV_BADRANGE_ERR: return CV_StsBadArg;
+    case CV_BADCOEF_ERR: return CV_StsBadArg;
+    case CV_BADFACTOR_ERR: return CV_StsBadArg;
+    case CV_BADPOINT_ERR: return CV_StsBadPoint;
 
-    case CX_UNSUPPORTED_COI_ERR      : return CX_BadCOI; 
-    case CX_UNSUPPORTED_CHANNELS_ERR : return CX_BadNumChannels; 
-    
-    case CX_BADFLAG_ERR : return CX_StsBadFlag;//used when bad flag CX_ ..something
-    
-    case CX_BADRANGE_ERR    : return CX_StsBadArg; //used everywhere
-    case CX_BADCOEF_ERR  :return CX_StsBadArg;     //used everywhere
-    case CX_BADFACTOR_ERR:return CX_StsBadArg;     //used everywhere
-    case CX_BADPOINT_ERR  :return CX_StsBadPoint;
-
-    default: assert(0); return CX_StsError;
-    }         
-}         
+    default: return CV_StsError;
+    }
+}
 /* End of file */
 
 

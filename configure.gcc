@@ -1,8 +1,6 @@
 SRCROOT=`dirname $0`
 OBJROOT=`pwd`
 
-cd $SRCROOT
-tar xjf conf.tbz 2>/dev/null
 cd $OBJROOT
 rm -f libtool
 sh ${SRCROOT}/configure $@

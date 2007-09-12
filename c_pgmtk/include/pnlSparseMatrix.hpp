@@ -111,15 +111,15 @@ protected:
     int ConvertToIndex() const;
     CSparseMatrix(int dim, const int *range, const Type defaultVal, int Clamp);
     CSparseMatrix( const CSparseMatrix<Type> & inputMat );
-    CSparseMatrix( CxSparseMat* p_sparse, Type defaultVal );
-    inline CxSparseMat* GetCxSparseMat();
-    inline const CxSparseMat* GetCxSparseMat() const;
+    CSparseMatrix( CvSparseMat* p_sparse, Type defaultVal );
+    inline CvSparseMat* GetCvSparseMat();
+    inline const CvSparseMat* GetCvSparseMat() const;
 
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
 #endif 
 private:
-    CxSparseMat* m_pCvSparseMat;
+    CvSparseMat* m_pCvSparseMat;
     Type m_defaultVal;
 
 };
@@ -189,16 +189,16 @@ CDenseMatrix<Type>* CSparseMatrix<Type>::ConvertToDense() const
     pnlVector<Type> dataVec;
     dataVec.assign( dataSize, m_defaultVal );
     //iterate throw matrix and set non-default elements
-    CxSparseMatIterator iterator;
-    CxSparseNode* node;
+    CvSparseMatIterator iterator;
+    CvSparseNode* node;
     int* idx;
     int offset = 0;
-    for( node = cxInitSparseMatIterator( m_pCvSparseMat, &iterator );
-                 node != 0; node = cxGetNextSparseNode( &iterator ))
+    for( node = cvInitSparseMatIterator( m_pCvSparseMat, &iterator );
+                 node != 0; node = cvGetNextSparseNode( &iterator ))
     {
         //we put data from small matrix to needed positions in bigData
-        idx = CX_NODE_IDX( m_pCvSparseMat, node );
-        void* val = CX_NODE_VAL(  m_pCvSparseMat, node );
+        idx = CV_NODE_IDX( m_pCvSparseMat, node );
+        void* val = CV_NODE_VAL(  m_pCvSparseMat, node );
         //convert from indices to line
         offset = 0;
         for( i = 0; i < dim; i++)
@@ -240,7 +240,7 @@ CSparseMatrix<Type>::~CSparseMatrix<Type>()
 {
     if( m_pCvSparseMat )
     {
-        cxReleaseSparseMat( &m_pCvSparseMat );
+        cvReleaseSparseMat( &m_pCvSparseMat );
     }
 }
 
@@ -284,9 +284,9 @@ CSparseMatrix<Type>& CSparseMatrix<Type>::operator = ( const
         {
             if( m_pCvSparseMat )
             {
-                cxReleaseSparseMat( &m_pCvSparseMat );
+                cvReleaseSparseMat( &m_pCvSparseMat );
             }
-            m_pCvSparseMat = cxCloneSparseMat( inputMat.GetCxSparseMat() );
+            m_pCvSparseMat = cvCloneSparseMat( inputMat.GetCvSparseMat() );
         }
         else
         {
@@ -315,7 +315,7 @@ template <class Type>
 inline Type CSparseMatrix<Type>::GetElementByIndexes(const int *multidimindexes) const
 {
     int* multInd = const_cast<int*>(multidimindexes);
-    uchar* retVal = cxPtrND( m_pCvSparseMat, multInd, NULL, 0, 0 );
+    uchar* retVal = cvPtrND( m_pCvSparseMat, multInd, NULL, 0, 0 );
     Type retValT;
     if( retVal )
     {
@@ -332,7 +332,7 @@ template <class Type>
 inline bool CSparseMatrix<Type>::IsExistingElement(const int *multidimindexes) const
 {
     int* multInd = const_cast<int*>(multidimindexes);
-    uchar* retVal = cxPtrND( m_pCvSparseMat, multInd, NULL, 0, 0 );
+    uchar* retVal = cvPtrND( m_pCvSparseMat, multInd, NULL, 0, 0 );
     if( retVal )
     {
         return true;
@@ -350,8 +350,8 @@ inline void CSparseMatrix<Type>::SetElementByIndexes( Type value,
     if( !GetClampValue() )
     {
         int* multInd = const_cast<int*>(multidimindexes);
-        uchar* retVal = cxPtrND( m_pCvSparseMat, multInd, NULL, 1, 0);
-        //uchar* retVal = cxPtrND( m_pCvSparseMat, multInd );
+        uchar* retVal = cvPtrND( m_pCvSparseMat, multInd, NULL, 1, 0);
+        //uchar* retVal = cvPtrND( m_pCvSparseMat, multInd );
         if( retVal )
         {
             //Type retValT = *((Type*)retVal) ;
@@ -417,26 +417,26 @@ CMatrix<Type>* CSparseMatrix<Type>::ExpandDims( const int *dimsToExpand,
     CSparseMatrix<Type>* resMat = static_cast<CSparseMatrix<Type>*>(
         CreateEmptyMatrix( dim, &rangesNew.front(),
         GetClampValue(), m_defaultVal ));
-    CxSparseMat* retMat = resMat->GetCxSparseMat();
+    CvSparseMat* retMat = resMat->GetCvSparseMat();
     //need to put information in this matrix
     //compute corrsponding map between old and new matrices
-    CxSparseMatIterator iterator;
-    CxSparseNode* node;
+    CvSparseMatIterator iterator;
+    CvSparseNode* node;
     int* idx;
-    for( node = cxInitSparseMatIterator( m_pCvSparseMat, &iterator );
-                 node != 0; node = cxGetNextSparseNode( &iterator ))
+    for( node = cvInitSparseMatIterator( m_pCvSparseMat, &iterator );
+                 node != 0; node = cvGetNextSparseNode( &iterator ))
     {
         //we put data from small matrix to needed positions in bigData
-        idx = CX_NODE_IDX( m_pCvSparseMat, node );
+        idx = CV_NODE_IDX( m_pCvSparseMat, node );
         intVector index = intVector( idx, idx + dim );
         for( i = 0; i < numDimsToExpand; i++ )
         {
             index[dimsToExpand[i]] = keepPosOfDims[i];
         }
-        void* val = CX_NODE_VAL(  m_pCvSparseMat, node );
+        void* val = CV_NODE_VAL(  m_pCvSparseMat, node );
         Type* valT = (Type*)val;
-        uchar* valInNew = cxPtrND( retMat, &index.front(), NULL, 1, 0 );
-        //uchar* valInNew = cxPtrND( retMat, idx );
+        uchar* valInNew = cvPtrND( retMat, &index.front(), NULL, 1, 0 );
+        //uchar* valInNew = cvPtrND( retMat, idx );
         *((Type*)valInNew) = *valT;
     }
     return resMat;
@@ -445,27 +445,46 @@ CMatrix<Type>* CSparseMatrix<Type>::ExpandDims( const int *dimsToExpand,
 template <class Type>
 inline void CSparseMatrix<Type> :: ClearData()
 {
-    //cxReleaseMemStorage( &m_pCvSparseMat->heap->storage );
-    //cxFree( (void**)(m_pCvSparseMat->hashtable) );
-    cxSetZero(m_pCvSparseMat);
+    //cvReleaseMemStorage( &m_pCvSparseMat->heap->storage );
+    //cvFree( (void**)(m_pCvSparseMat->hashtable) );
+    cvSetZero(m_pCvSparseMat);
 }
 
 template<class Type>
 inline int CSparseMatrix<Type>::ConvertToIndex() const
 {
-    return int(CX_USRTYPE1);
+    if (sizeof(Type) == sizeof(size_t))
+    {
+	return CV_USRTYPE1;
+    }
+    if (sizeof(Type) == 4)
+    {
+	return CV_32S;
+    }
+    if (sizeof(Type) == 2)
+    {
+	return CV_16U;
+    }
+    if (sizeof(Type) == 1)
+    {
+	return CV_8U;
+    } 
+
+    pnlString msg;
+    msg << "Can't create sparse matrix with entries of size " << sizeof(Type);
+    PNL_THROW(CInvalidOperation, msg);
 }
 
 template<>
 inline int CSparseMatrix<float>::ConvertToIndex() const
 {
-    return int(CX_32F);
+    return int(CV_32F);
 }
 
 template<>
 inline int CSparseMatrix<int>::ConvertToIndex() const
 {
-    return int(CX_32F);
+    return int(CV_32S);
 }
 
 template <class Type>
@@ -489,13 +508,13 @@ inline void CSparseMatrix<Type>::SetDefaultVal( Type defVal )
 }
 
 template <class Type>
-CxSparseMat* CSparseMatrix<Type> ::GetCxSparseMat() 
+CvSparseMat* CSparseMatrix<Type> ::GetCvSparseMat() 
 {
 	return m_pCvSparseMat;
 }
 
 template <class Type>
-const CxSparseMat* CSparseMatrix<Type> ::GetCxSparseMat() const
+const CvSparseMat* CSparseMatrix<Type> ::GetCvSparseMat() const
 {
 	return m_pCvSparseMat;
 }
@@ -507,7 +526,7 @@ CSparseMatrix<Type>::CSparseMatrix( int dim,
                                  int Clamp):CMatrix<Type>(Clamp),
                                  m_defaultVal(defaultVal)
 {
-    m_pCvSparseMat = cxCreateSparseMat( dim, range, CX_32F/*ConvertToIndex()*/ );
+    m_pCvSparseMat = cvCreateSparseMat( dim, range, ConvertToIndex() );
 }
 
 template <class Type>
@@ -515,12 +534,12 @@ CSparseMatrix<Type>::CSparseMatrix( const CSparseMatrix<Type> & inputMat )
 :CMatrix<Type>(0), m_defaultVal(0)
 {
     m_defaultVal = inputMat.GetDefaultValue();
-    m_pCvSparseMat = cxCloneSparseMat( inputMat.GetCxSparseMat() );
+    m_pCvSparseMat = cvCloneSparseMat( inputMat.GetCvSparseMat() );
 }
 
 
 template <class Type>
-CSparseMatrix<Type>::CSparseMatrix( CxSparseMat* p_sparse, Type defaultVal )
+CSparseMatrix<Type>::CSparseMatrix( CvSparseMat* p_sparse, Type defaultVal )
 :CMatrix<Type>(0), m_defaultVal(defaultVal)
 {
     m_pCvSparseMat = p_sparse;
@@ -542,15 +561,15 @@ CMatrix< ELTYPE > *CSparseMatrix< ELTYPE >::ReduceOp( const int *pDimsOfInterest
     int *idx;
     const int *ranges;
     int num_dims_to_keep;
-    CxSparseNode *nd, *nnd;
-    CxSparseMatIterator it;
+    CvSparseNode *nd, *nnd;
+    CvSparseMatIterator it;
 
     PNL_DEFINE_AUTOBUF( bool, mask, PNL_SPARSE_MATRIX_SOFT_MAX_DIM );
     PNL_DEFINE_AUTOBUF( int, dims_to_keep, PNL_SPARSE_MATRIX_SOFT_MAX_DIM );
     PNL_DEFINE_AUTOBUF( int, new_ranges, PNL_SPARSE_MATRIX_SOFT_MAX_DIM );
     PNL_DEFINE_AUTOBUF( int, stats, PNL_SPARSE_MATRIX_SOFT_MAX_DIM );
 
-    PNL_MAKE_LOCAL( CxSparseMat *, mat, this, GetCxSparseMat() );
+    PNL_MAKE_LOCAL( CvSparseMat *, mat, this, GetCvSparseMat() );
     PNL_MAKE_LOCAL( ELTYPE, inival, this, GetDefaultValue() );
 
     if ( (unsigned)action > 2 )
@@ -629,9 +648,9 @@ CMatrix< ELTYPE > *CSparseMatrix< ELTYPE >::ReduceOp( const int *pDimsOfInterest
     }
     retval = CSparseMatrix< ELTYPE >::Create( action == 2 ? num_dims : num_dims_to_keep,
                                               new_ranges, inival );
-    PNL_MAKE_LOCAL( CxSparseMat *, tgt, retval, GetCxSparseMat() );
+    PNL_MAKE_LOCAL( CvSparseMat *, tgt, retval, GetCvSparseMat() );
     PNL_DEMAND_AUTOBUF( stats, num_dims );
-    nd = cxInitSparseMatIterator( mat, &it );
+    nd = cvInitSparseMatIterator( mat, &it );
     if ( action < 2 )
     {
         PNL_THROW( CInvalidOperation, 
@@ -645,7 +664,7 @@ CMatrix< ELTYPE > *CSparseMatrix< ELTYPE >::ReduceOp( const int *pDimsOfInterest
         }
         while ( nd )
         {
-            idx = CX_NODE_IDX( mat, nd );
+            idx = CV_NODE_IDX( mat, nd );
             for ( i = numDimsOfInterest; i--; )
             {
                 if ( idx[pDimsOfInterest[i]] != pObservedValues[i] )
@@ -658,10 +677,10 @@ CMatrix< ELTYPE > *CSparseMatrix< ELTYPE >::ReduceOp( const int *pDimsOfInterest
                 stats[dims_to_keep[i]] = idx[dims_to_keep[i]];
             }
             //nnd = (CvSparseNode*)cvPtrND( tgt, stats );
-            nnd = (CxSparseNode *)cxPtrND( tgt, stats, 0, 1, 0 );
-            *(ELTYPE *)CX_NODE_VAL( tgt, nnd ) = *(ELTYPE *)CX_NODE_VAL( mat, nd );
+            nnd = (CvSparseNode *)cvPtrND( tgt, stats, 0, 1, 0 );
+            *(ELTYPE *)CV_NODE_VAL( tgt, nnd ) = *(ELTYPE *)CV_NODE_VAL( mat, nd );
 cont:
-            nd = cxGetNextSparseNode( &it );
+            nd = cvGetNextSparseNode( &it );
         }
     }
 

@@ -28,7 +28,7 @@ typedef struct _SCARTParams
     bool is_cross_val;
     int cross_val_folds;
     float learn_sample_part;
-    CxMat* priors;
+    CvMat* priors;
 } SCARTParams;
 
 #ifdef PNL_RTTI
@@ -169,9 +169,9 @@ private:
     CxCART* m_pCART;
     CxClassifierSample* m_pSample;
     CxPruningData* m_pOptimalData;
-    CxMat* m_terms_mat;
-    CxMat* m_missed_mask;
-    CxMat* m_response_mat;
+    CvMat* m_terms_mat;
+    CvMat* m_missed_mask;
+    CvMat* m_response_mat;
     const int* m_domain;
 };
 

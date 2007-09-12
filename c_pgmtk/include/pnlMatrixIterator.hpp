@@ -137,7 +137,7 @@ const CPNLType CDenseMatrixIterator<Type> ::m_TypeInfo = CPNLType("CDenseMatrixI
 template <class Type> class PNL_API CSparseMatrixIterator : public CMatrixIterator<Type>
 {
 public:
-    static CSparseMatrixIterator<Type>* Create( CxSparseMat* matrix );
+    static CSparseMatrixIterator<Type>* Create( CvSparseMat* matrix );
     void Iteration();
     inline int IsNodeHere() const;
     inline int* Index() const;
@@ -154,7 +154,7 @@ public:
     }
 #endif
 protected:
-    CSparseMatrixIterator( CxSparseMat* matrix );
+    CSparseMatrixIterator( CvSparseMat* matrix );
 
 #if GCC_VERSION >= 30400
     using CMatrixIterator<Type>::m_Current;
@@ -164,14 +164,14 @@ protected:
     static const CPNLType m_TypeInfo;
 #endif 
 private:
-    CxSparseNode* m_currNode;
-    CxSparseMatIterator m_cvSparseIter;
-    CxSparseMat* m_CvMatrix;
+    CvSparseNode* m_currNode;
+    CvSparseMatIterator m_cvSparseIter;
+    CvSparseMat* m_CvMatrix;
 };
 
 template <class Type>
 CSparseMatrixIterator<Type>* CSparseMatrixIterator<Type>::Create(
-                                                       CxSparseMat* matrix)
+                                                       CvSparseMat* matrix)
 {
     PNL_CHECK_IS_NULL_POINTER( matrix );
     CSparseMatrixIterator<Type>* res = new CSparseMatrixIterator<Type>(matrix);
@@ -182,8 +182,8 @@ CSparseMatrixIterator<Type>* CSparseMatrixIterator<Type>::Create(
 template <class Type>
 inline void CSparseMatrixIterator<Type>::Iteration()
 {
-    m_currNode = cxGetNextSparseNode( &m_cvSparseIter );
-    m_Current = (Type*)CX_NODE_VAL( m_CvMatrix, m_currNode );
+    m_currNode = cvGetNextSparseNode( &m_cvSparseIter );
+    m_Current = (Type*)CV_NODE_VAL( m_CvMatrix, m_currNode );
 }
 
 template <class Type>
@@ -202,16 +202,16 @@ int CSparseMatrixIterator<Type>::IsNodeHere() const
 template <class Type>
 int* CSparseMatrixIterator<Type>::Index() const
 {
-    return CX_NODE_IDX( m_CvMatrix, m_currNode );
+    return CV_NODE_IDX( m_CvMatrix, m_currNode );
 }
 
 template <class Type>
-CSparseMatrixIterator<Type>::CSparseMatrixIterator( CxSparseMat* matrix)
+CSparseMatrixIterator<Type>::CSparseMatrixIterator( CvSparseMat* matrix)
                     :CMatrixIterator<Type>(NULL)
 {
     m_CvMatrix = matrix;
-    m_currNode = cxInitSparseMatIterator( m_CvMatrix, &m_cvSparseIter );    
-    m_Current = (Type*)CX_NODE_VAL( matrix, m_currNode );
+    m_currNode = cvInitSparseMatIterator( m_CvMatrix, &m_cvSparseIter );    
+    m_Current = (Type*)CV_NODE_VAL( matrix, m_currNode );
 }
 
 #ifdef PNL_RTTI

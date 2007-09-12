@@ -50,10 +50,10 @@ CART_API void cxReleaseClassifierSample( CxClassifierSample **sample );
 //      tuned header CxClassifierSample
 //    Notes:
 //F*/
-CART_API CxClassifierSample* cxCreateClassifierSampleHeader( CxMat *train_data, int tflag,
-                                                             CxMat *train_responses,
-                                                             CxMat *type_mask,
-                                                             CxMat *missed_mask,
+CART_API CxClassifierSample* cxCreateClassifierSampleHeader( CvMat *train_data, int tflag,
+                                                             CvMat *train_responses,
+                                                             CvMat *type_mask,
+                                                             CvMat *missed_mask,
                                                              int* samples_of_interest,
 															 int num_samples_of_interest );
 
@@ -104,8 +104,8 @@ CART_API void cxReleaseClassifier( CxClassifier** cfer );
 //      CxCARTTrainParams structure
 //    Notes:
 //F*/
-CART_API CxCARTTrainParams* cxCARTTrainParams( CxMat *features_of_interest,
-                                               CxMat *priors,
+CART_API CxCARTTrainParams* cxCARTTrainParams( CvMat *features_of_interest,
+                                               CvMat *priors,
                                                CxCARTSplitCriterion splitting_rule,
                                                int num_competitors,
                                                float competitor_threshold,
@@ -789,9 +789,9 @@ CART_API void cxPruneCART(CxCART *cart );
 CART_API CxClassifierVar cxCARTEvalFeatures( CxCART* cart, 
                                              void* features,
 										     int pruning_step,
-                                             int features_step CX_DEFAULT(sizeof( CxClassifierVar )),
-                                             char* missed_mask CX_DEFAULT(0),
-                                             int missed_mask_step CX_DEFAULT(1) );
+                                             int features_step CV_DEFAULT(sizeof( CxClassifierVar )),
+                                             char* missed_mask CV_DEFAULT(0),
+                                             int missed_mask_step CV_DEFAULT(1) );
 
 /*F///////////////////////////////////////////////////////////////////////////////////////
 //
@@ -1079,8 +1079,8 @@ CART_API CxCARTSplit* cxSelectNodeSurrogate( CxCARTNode *node,
 //F*/
 CART_API void cxFindCARTNodeSurrogates( CxCART *cart, 
 									    CxCARTNode *node,
-                                        int num_surrogates CX_DEFAULT(3),
-                                        float threshold CX_DEFAULT(.6f));
+                                        int num_surrogates CV_DEFAULT(3),
+                                        float threshold CV_DEFAULT(.6f));
 
 
 

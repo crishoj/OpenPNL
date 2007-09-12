@@ -41,7 +41,7 @@
 
 /* ////////////////////////////////////////////////////////////////////
 //
-//  CxMat, CxMatND, CxSparceMat and IplImage support functions
+//  CvMat, CvMatND, CvSparceMat and IplImage support functions
 //  (creation, deletion, copying, retrieving and setting elements etc.)
 //
 // */
@@ -50,153 +50,153 @@
 
 static struct
 {
-    Cx_iplCreateImageHeader  createHeader;
-    Cx_iplAllocateImageData  allocateData;
-    Cx_iplDeallocate  deallocate;
-    Cx_iplCreateROI  createROI;
-    Cx_iplCloneImage  cloneImage;
+    Cv_iplCreateImageHeader  createHeader;
+    Cv_iplAllocateImageData  allocateData;
+    Cv_iplDeallocate  deallocate;
+    Cv_iplCreateROI  createROI;
+    Cv_iplCloneImage  cloneImage;
 }
-CxIPL;
+CvIPL;
 
 // Makes the library use native IPL image allocators
-CX_IMPL void
-cxSetIPLAllocators( Cx_iplCreateImageHeader createHeader,
-                    Cx_iplAllocateImageData allocateData,
-                    Cx_iplDeallocate deallocate,
-                    Cx_iplCreateROI createROI,
-                    Cx_iplCloneImage cloneImage )
+CV_IMPL void
+cvSetIPLAllocators( Cv_iplCreateImageHeader createHeader,
+                    Cv_iplAllocateImageData allocateData,
+                    Cv_iplDeallocate deallocate,
+                    Cv_iplCreateROI createROI,
+                    Cv_iplCloneImage cloneImage )
 {
-    CX_FUNCNAME( "cxSetIPLAllocators" );
+    CV_FUNCNAME( "cvSetIPLAllocators" );
 
     __BEGIN__;
 
     if( !createHeader || !allocateData || !deallocate || !createROI || !cloneImage )
     {
         if( createHeader || allocateData || deallocate || createROI || cloneImage )
-            CX_ERROR( CX_StsBadArg, "Either all the pointers should be null or "
+            CV_ERROR( CV_StsBadArg, "Either all the pointers should be null or "
                                     "they all should be non-null" );
     }
 
-    CxIPL.createHeader = createHeader;
-    CxIPL.allocateData = allocateData;
-    CxIPL.deallocate = deallocate;
-    CxIPL.createROI = createROI;
-    CxIPL.cloneImage = cloneImage;
+    CvIPL.createHeader = createHeader;
+    CvIPL.allocateData = allocateData;
+    CvIPL.deallocate = deallocate;
+    CvIPL.createROI = createROI;
+    CvIPL.cloneImage = cloneImage;
 
     __END__;
 }
 
 
 /****************************************************************************************\
-*                               CxMat creation and basic operations                      *
+*                               CvMat creation and basic operations                      *
 \****************************************************************************************/
 
-// Creates CxMat and underlying data
-CX_IMPL CxMat*
-cxCreateMat( int height, int width, int type )
+// Creates CvMat and underlying data
+CV_IMPL CvMat*
+cvCreateMat( int height, int width, int type )
 {
-    CxMat* arr = 0;
+    CvMat* arr = 0;
 
-    CX_FUNCNAME( "cxCreateMat" );
+    CV_FUNCNAME( "cvCreateMat" );
     
     __BEGIN__;
 
-    CX_CALL( arr = cxCreateMatHeader( height, width, type ));
-    CX_CALL( cxCreateData( arr ));
+    CV_CALL( arr = cvCreateMatHeader( height, width, type ));
+    CV_CALL( cvCreateData( arr ));
 
     __END__;
 
-    if( cxGetErrStatus() < 0 )
-        cxReleaseMat( &arr );
+    if( cvGetErrStatus() < 0 )
+        cvReleaseMat( &arr );
 
     return arr;
 }
 
 
-CX_INLINE void icxCheckHuge( CxMat* arr );
-CX_INLINE void icxCheckHuge( CxMat* arr )
+static void icvCheckHuge( CvMat* arr )
 {
     if( (int64)arr->step*arr->rows > INT_MAX )
-        arr->type &= ~CX_MAT_CONT_FLAG;
+        arr->type &= ~CV_MAT_CONT_FLAG;
 }
 
-// Creates CxMat header only
-CX_IMPL CxMat*
-cxCreateMatHeader( int rows, int cols, int type )
+// Creates CvMat header only
+CV_IMPL CvMat*
+cvCreateMatHeader( int rows, int cols, int type )
 {
-    CxMat* arr = 0;
+    CvMat* arr = 0;
     
-    CX_FUNCNAME( "cxCreateMatHeader" );
+    CV_FUNCNAME( "cvCreateMatHeader" );
 
     __BEGIN__;
 
     int min_step;
-    type = CX_MAT_TYPE(type);
+    type = CV_MAT_TYPE(type);
 
     if( rows <= 0 || cols <= 0 )
-        CX_ERROR( CX_StsBadSize, "Non-positive width or height" );
+        CV_ERROR( CV_StsBadSize, "Non-positive width or height" );
 
-    min_step = icxPixSize[type]*cols;
+    min_step = CV_ELEM_SIZE(type)*cols;
     if( min_step <= 0 )
-        CX_ERROR( CX_StsUnsupportedFormat, "Invalid matrix type" );
+        CV_ERROR( CV_StsUnsupportedFormat, "Invalid matrix type" );
 
-    CX_CALL( arr = (CxMat*)cxAlloc( sizeof(*arr)));
+    CV_CALL( arr = (CvMat*)cvAlloc( sizeof(*arr)));
 
-    arr->step = rows == 1 ? 0 : (min_step + CX_DEFAULT_MAT_ROW_ALIGN-1)
-                & -CX_DEFAULT_MAT_ROW_ALIGN;
-    arr->type = CX_MAT_MAGIC_VAL | type |
-                (arr->step == 0 || arr->step == min_step ? CX_MAT_CONT_FLAG : 0);
+    arr->step = rows == 1 ? 0 : cvAlign(min_step, CV_DEFAULT_MAT_ROW_ALIGN);
+    arr->type = CV_MAT_MAGIC_VAL | type |
+                (arr->step == 0 || arr->step == min_step ? CV_MAT_CONT_FLAG : 0);
     arr->rows = rows;
     arr->cols = cols;
     arr->data.ptr = 0;
     arr->refcount = 0;
+    arr->hdr_refcount = 1;
 
-    icxCheckHuge( arr );
+    icvCheckHuge( arr );
 
     __END__;
 
-    if( cxGetErrStatus() < 0 )
-        cxReleaseMat( &arr );
+    if( cvGetErrStatus() < 0 )
+        cvReleaseMat( &arr );
 
     return arr;
 }
 
 
-// Initializes CxMat header, allocated by the user
-CX_IMPL CxMat*
-cxInitMatHeader( CxMat* arr, int rows, int cols,
+// Initializes CvMat header, allocated by the user
+CV_IMPL CvMat*
+cvInitMatHeader( CvMat* arr, int rows, int cols,
                  int type, void* data, int step )
 {
-    CX_FUNCNAME( "cxInitMatHeader" );
+    CV_FUNCNAME( "cvInitMatHeader" );
     
     __BEGIN__;
 
     int mask, pix_size, min_step;
 
     if( !arr )
-        CX_ERROR_FROM_CODE( CX_StsNullPtr );
+        CV_ERROR_FROM_CODE( CV_StsNullPtr );
 
-    if( (unsigned)CX_MAT_DEPTH(type) > CX_DEPTH_MAX )
-        CX_ERROR_FROM_CODE( CX_BadNumChannels );
+    if( (unsigned)CV_MAT_DEPTH(type) > CV_DEPTH_MAX )
+        CV_ERROR_FROM_CODE( CV_BadNumChannels );
 
     if( rows <= 0 || cols <= 0 )
-        CX_ERROR( CX_StsBadSize, "Non-positive cols or rows" );
+        CV_ERROR( CV_StsBadSize, "Non-positive cols or rows" );
  
-    type = CX_MAT_TYPE( type );
-    arr->type = type | CX_MAT_MAGIC_VAL;
+    type = CV_MAT_TYPE( type );
+    arr->type = type | CV_MAT_MAGIC_VAL;
     arr->rows = rows;
     arr->cols = cols;
     arr->data.ptr = (uchar*)data;
     arr->refcount = 0;
+    arr->hdr_refcount = 0;
 
     mask = (arr->rows <= 1) - 1;
-    pix_size = icxPixSize[type];
+    pix_size = CV_ELEM_SIZE(type);
     min_step = arr->cols*pix_size & mask;
 
-    if( step != CX_AUTOSTEP && step != 0 )
+    if( step != CV_AUTOSTEP && step != 0 )
     {
         if( step < min_step )
-            CX_ERROR_FROM_CODE( CX_BadStep );
+            CV_ERROR_FROM_CODE( CV_BadStep );
         arr->step = step & mask;
     }
     else
@@ -204,10 +204,10 @@ cxInitMatHeader( CxMat* arr, int rows, int cols,
         arr->step = min_step;
     }
 
-    arr->type = CX_MAT_MAGIC_VAL | type |
-                (arr->step == min_step ? CX_MAT_CONT_FLAG : 0);
+    arr->type = CV_MAT_MAGIC_VAL | type |
+                (arr->step == min_step ? CV_MAT_CONT_FLAG : 0);
 
-    icxCheckHuge( arr );
+    icvCheckHuge( arr );
 
     __END__;
 
@@ -215,28 +215,28 @@ cxInitMatHeader( CxMat* arr, int rows, int cols,
 }
 
 
-// Deallocates the CxMat structure and underlying data
-CX_IMPL void
-cxReleaseMat( CxMat** array )
+// Deallocates the CvMat structure and underlying data
+CV_IMPL void
+cvReleaseMat( CvMat** array )
 {
-    CX_FUNCNAME( "cxReleaseMat" );
+    CV_FUNCNAME( "cvReleaseMat" );
     
     __BEGIN__;
 
     if( !array )
-        CX_ERROR_FROM_CODE( CX_HeaderIsNull );
+        CV_ERROR_FROM_CODE( CV_HeaderIsNull );
 
     if( *array )
     {
-        CxMat* arr = *array;
+        CvMat* arr = *array;
         
-        if( !CX_IS_MAT_HDR(arr) && !CX_IS_MATND_HDR(arr) )
-            CX_ERROR_FROM_CODE( CX_StsBadFlag );
+        if( !CV_IS_MAT_HDR(arr) && !CV_IS_MATND_HDR(arr) )
+            CV_ERROR_FROM_CODE( CV_StsBadFlag );
 
         *array = 0;
 
-        cxDecRefData( arr );
-        cxFree( (void**)&arr );
+        cvDecRefData( arr );
+        cvFree( &arr );
     }
 
     __END__;
@@ -244,23 +244,23 @@ cxReleaseMat( CxMat** array )
 
 
 // Creates a copy of matrix
-CX_IMPL CxMat*
-cxCloneMat( const CxMat* src )
+CV_IMPL CvMat*
+cvCloneMat( const CvMat* src )
 {
-    CxMat* dst = 0;
-    CX_FUNCNAME( "cxCloneMat" );
+    CvMat* dst = 0;
+    CV_FUNCNAME( "cvCloneMat" );
 
     __BEGIN__;
 
-    if( !CX_IS_MAT_HDR( src ))
-        CX_ERROR( CX_StsBadArg, "Bad CxMat header" );
+    if( !CV_IS_MAT_HDR( src ))
+        CV_ERROR( CV_StsBadArg, "Bad CvMat header" );
 
-    CX_CALL( dst = cxCreateMatHeader( src->rows, src->cols, src->type ));
+    CV_CALL( dst = cvCreateMatHeader( src->rows, src->cols, src->type ));
 
     if( src->data.ptr )
     {
-        CX_CALL( cxCreateData( dst ));
-        CX_CALL( cxCopy( src, dst ));
+        CV_CALL( cvCreateData( dst ));
+        CV_CALL( cvCopy( src, dst ));
     }
 
     __END__;
@@ -270,54 +270,57 @@ cxCloneMat( const CxMat* src )
 
 
 /****************************************************************************************\
-*                               CxMatND creation and basic operations                    *
+*                               CvMatND creation and basic operations                    *
 \****************************************************************************************/
 
-CxMatND*
-cxInitMatNDHeader( CxMatND* mat, int dims, const int* sizes, int type, void* data )
+CV_IMPL CvMatND*
+cvInitMatNDHeader( CvMatND* mat, int dims, const int* sizes,
+                    int type, void* data )
 {
-    CxMatND* result = 0;
+    CvMatND* result = 0;
 
-    CX_FUNCNAME( "cxInitMatNDHeader" );
+    CV_FUNCNAME( "cvInitMatNDHeader" );
 
     __BEGIN__;
 
-    type = CX_MAT_TYPE(type);
+    type = CV_MAT_TYPE(type);
     int i;
-    int64 step = icxPixSize[type];
+    int64 step = CV_ELEM_SIZE(type);
 
     if( !mat )
-        CX_ERROR( CX_StsNullPtr, "NULL matrix header pointer" );
+        CV_ERROR( CV_StsNullPtr, "NULL matrix header pointer" );
 
     if( step == 0 )
-        CX_ERROR( CX_StsUnsupportedFormat, "invalid array data type" );
-
-    if( (unsigned)dims > CX_MAX_DIM )
-        CX_ERROR( CX_StsOutOfRange, "bad number of dimensions" );
+        CV_ERROR( CV_StsUnsupportedFormat, "invalid array data type" );
 
     if( !sizes )
-        CX_ERROR( CX_StsNullPtr, "NULL <sizes> pointer" );
+        CV_ERROR( CV_StsNullPtr, "NULL <sizes> pointer" );
+
+    if( dims <= 0 || dims > CV_MAX_DIM )
+        CV_ERROR( CV_StsOutOfRange,
+        "non-positive or too large number of dimensions" );
 
     for( i = dims - 1; i >= 0; i-- )
     {
         if( sizes[i] <= 0 )
-            CX_ERROR( CX_StsBadSize, "one of dimesion sizes is non-positive" );
+            CV_ERROR( CV_StsBadSize, "one of dimesion sizes is non-positive" );
         mat->dim[i].size = sizes[i];
         if( step > INT_MAX )
-            CX_ERROR( CX_StsOutOfRange, "The array is too big" );
+            CV_ERROR( CV_StsOutOfRange, "The array is too big" );
         mat->dim[i].step = (int)step;
         step *= sizes[i];
     }
 
-    mat->type = CX_MATND_MAGIC_VAL | (step <= INT_MAX ? CX_MAT_CONT_FLAG : 0) | type;
+    mat->type = CV_MATND_MAGIC_VAL | (step <= INT_MAX ? CV_MAT_CONT_FLAG : 0) | type;
     mat->dims = dims;
     mat->data.ptr = (uchar*)data;
     mat->refcount = 0;
+    mat->hdr_refcount = 0;
     result = mat;
 
     __END__;
 
-    if( cxGetErrStatus() < 0 && mat )
+    if( cvGetErrStatus() < 0 && mat )
     {
         mat->type = 0;
         mat->data.ptr = 0;
@@ -327,73 +330,81 @@ cxInitMatNDHeader( CxMatND* mat, int dims, const int* sizes, int type, void* dat
 }
 
 
-// Creates CxMatND and underlying data
-CX_IMPL CxMatND*
-cxCreateMatND( int dims, const int* sizes, int type )
+// Creates CvMatND and underlying data
+CV_IMPL CvMatND*
+cvCreateMatND( int dims, const int* sizes, int type )
 {
-    CxMatND* arr = 0;
+    CvMatND* arr = 0;
 
-    CX_FUNCNAME( "cxCreateMatND" );
+    CV_FUNCNAME( "cvCreateMatND" );
     
     __BEGIN__;
 
-    CX_CALL( arr = cxCreateMatNDHeader( dims, sizes, type ));
-    CX_CALL( cxCreateData( arr ));
+    CV_CALL( arr = cvCreateMatNDHeader( dims, sizes, type ));
+    CV_CALL( cvCreateData( arr ));
 
     __END__;
 
-    if( cxGetErrStatus() < 0 )
-        cxReleaseMatND( &arr );
+    if( cvGetErrStatus() < 0 )
+        cvReleaseMatND( &arr );
 
     return arr;
 }
 
 
-// Creates CxMatND header only
-CX_IMPL CxMatND*
-cxCreateMatNDHeader( int dims, const int* sizes, int type )
+// Creates CvMatND header only
+CV_IMPL CvMatND*
+cvCreateMatNDHeader( int dims, const int* sizes, int type )
 {
-    CxMatND* arr = 0;
+    CvMatND* arr = 0;
     
-    CX_FUNCNAME( "cxCreateMatNDHeader" );
+    CV_FUNCNAME( "cvCreateMatNDHeader" );
 
     __BEGIN__;
 
-    CX_CALL( arr = (CxMatND*)cxAlloc( sizeof(*arr)));
-    CX_CALL( cxInitMatNDHeader( arr, dims, sizes, type ));
+    if( dims <= 0 || dims > CV_MAX_DIM )
+        CV_ERROR( CV_StsOutOfRange,
+        "non-positive or too large number of dimensions" );
+
+    CV_CALL( arr = (CvMatND*)cvAlloc( sizeof(*arr) ));
+    
+    CV_CALL( cvInitMatNDHeader( arr, dims, sizes, type, 0 ));
+    arr->hdr_refcount = 1;
 
     __END__;
 
-    if( cxGetErrStatus() < 0 )
-        cxReleaseMatND( &arr );
+    if( cvGetErrStatus() < 0 )
+        cvReleaseMatND( &arr );
 
     return arr;
 }
 
 
 // Creates a copy of nD array
-CX_IMPL CxMatND*
-cxCloneMatND( const CxMatND* src )
+CV_IMPL CvMatND*
+cvCloneMatND( const CvMatND* src )
 {
-    CxMatND* dst = 0;
-    CX_FUNCNAME( "cxCloneMatND" );
+    CvMatND* dst = 0;
+    CV_FUNCNAME( "cvCloneMatND" );
 
     __BEGIN__;
 
-    int i, sizes[CX_MAX_DIM];
+    int i, *sizes;
 
-    if( !CX_IS_MATND_HDR( src ))
-        CX_ERROR( CX_StsBadArg, "Bad CxMatND header" );
+    if( !CV_IS_MATND_HDR( src ))
+        CV_ERROR( CV_StsBadArg, "Bad CvMatND header" );
+
+    sizes = (int*)alloca( src->dims*sizeof(sizes[0]) );
 
     for( i = 0; i < src->dims; i++ )
         sizes[i] = src->dim[i].size;
 
-    CX_CALL( dst = cxCreateMatNDHeader( src->dims, sizes, src->type ));
+    CV_CALL( dst = cvCreateMatNDHeader( src->dims, sizes, src->type ));
 
     if( src->data.ptr )
     {
-        CX_CALL( cxCreateData( dst ));
-        CX_CALL( cxCopy( src, dst ));
+        CV_CALL( cvCreateData( dst ));
+        CV_CALL( cvCopy( src, dst ));
     }
 
     __END__;
@@ -402,12 +413,12 @@ cxCloneMatND( const CxMatND* src )
 }
 
 
-CX_IMPL CxMatND*
-cxGetMatND( const CxArr* arr, CxMatND* matnd, int* coi )
+static CvMatND*
+cvGetMatND( const CvArr* arr, CvMatND* matnd, int* coi )
 {
-    CxMatND* result = 0;
+    CvMatND* result = 0;
     
-    CX_FUNCNAME( "cxGetMat" );
+    CV_FUNCNAME( "cvGetMatND" );
 
     __BEGIN__;
 
@@ -415,36 +426,37 @@ cxGetMatND( const CxArr* arr, CxMatND* matnd, int* coi )
         *coi = 0;
 
     if( !matnd || !arr )
-        CX_ERROR( CX_StsNullPtr, "NULL array pointer is passed" );
+        CV_ERROR( CV_StsNullPtr, "NULL array pointer is passed" );
 
-    if( CX_IS_MATND_HDR(arr))
+    if( CV_IS_MATND_HDR(arr))
     {
-        if( !((CxMatND*)arr)->data.ptr )
-            CX_ERROR( CX_StsNullPtr, "The matrix has NULL data pointer" );
+        if( !((CvMatND*)arr)->data.ptr )
+            CV_ERROR( CV_StsNullPtr, "The matrix has NULL data pointer" );
         
-        result = (CxMatND*)arr;
+        result = (CvMatND*)arr;
     }
     else
     {
-        CxMat stub, *mat = (CxMat*)arr;
+        CvMat stub, *mat = (CvMat*)arr;
         
-        if( CX_IS_IMAGE_HDR( mat ))
-            CX_CALL( mat = cxGetMat( mat, &stub, coi ));
+        if( CV_IS_IMAGE_HDR( mat ))
+            CV_CALL( mat = cvGetMat( mat, &stub, coi ));
 
-        if( !CX_IS_MAT_HDR( mat ))
-            CX_ERROR( CX_StsBadArg, "Unrecognized or unsupported array type" );
+        if( !CV_IS_MAT_HDR( mat ))
+            CV_ERROR( CV_StsBadArg, "Unrecognized or unsupported array type" );
         
         if( !mat->data.ptr )
-            CX_ERROR( CX_StsNullPtr, "Input array has NULL data pointer" );
+            CV_ERROR( CV_StsNullPtr, "Input array has NULL data pointer" );
 
         matnd->data.ptr = mat->data.ptr;
         matnd->refcount = 0;
+        matnd->hdr_refcount = 0;
         matnd->type = mat->type;
         matnd->dims = 2;
         matnd->dim[0].size = mat->rows;
         matnd->dim[0].step = mat->step;
         matnd->dim[1].size = mat->cols;
-        matnd->dim[1].step = icxPixSize[CX_MAT_TYPE(mat->type)];
+        matnd->dim[1].step = CV_ELEM_SIZE(mat->type);
         result = matnd;
     }
 
@@ -458,55 +470,55 @@ cxGetMatND( const CxArr* arr, CxMatND* matnd, int* coi )
 /*
 Checks whether <count> arrays have equal type, sizes (mask is optional array
 that needs to have the same size, but 8uC1 or 8sC1 type).
-Returns number of dimensions to iterate through
-(0 means that all arrays are continuous (total number of elements
-is returned, 1 means that all arrays are vectors of continuous arrays etc.)
+Returns number of dimensions to iterate through:
+0 means that all arrays are continuous,
+1 means that all arrays are vectors of continuous arrays etc.
 and the size of largest common continuous part of the arrays 
 */
-CX_IMPL int
-cxInitNArrayIterator( int count, CxArr** arrs,
-                      const CxArr* mask, CxMatND* stubs,
-                      CxNArrayIterator* iterator, int flags )
+CV_IMPL int
+cvInitNArrayIterator( int count, CvArr** arrs,
+                      const CvArr* mask, CvMatND* stubs,
+                      CvNArrayIterator* iterator, int flags )
 {
     int dims = -1;
 
-    CX_FUNCNAME( "cxInitArrayOp" );
+    CV_FUNCNAME( "cvInitArrayOp" );
     
     __BEGIN__;
 
     int i, j, size, dim0 = -1;
     int64 step;
-    CxMatND* hdr0 = 0;
+    CvMatND* hdr0 = 0;
 
-    if( count < 1 || count > CX_MAX_ARR )
-        CX_ERROR( CX_StsOutOfRange, "Incorrect number of arrays" );
+    if( count < 1 || count > CV_MAX_ARR )
+        CV_ERROR( CV_StsOutOfRange, "Incorrect number of arrays" );
 
     if( !arrs || !stubs )
-        CX_ERROR( CX_StsNullPtr, "Some of required array pointers is NULL" );
+        CV_ERROR( CV_StsNullPtr, "Some of required array pointers is NULL" );
 
     if( !iterator )
-        CX_ERROR( CX_StsNullPtr, "Iterator pointer is NULL" );
+        CV_ERROR( CV_StsNullPtr, "Iterator pointer is NULL" );
 
     for( i = 0; i <= count; i++ )
     {
-        const CxArr* arr = i < count ? arrs[i] : mask;
-        CxMatND* hdr;
+        const CvArr* arr = i < count ? arrs[i] : mask;
+        CvMatND* hdr;
         
         if( !arr )
         {
             if( i < count )
-                CX_ERROR( CX_StsNullPtr, "Some of required array pointers is NULL" );
+                CV_ERROR( CV_StsNullPtr, "Some of required array pointers is NULL" );
             break;
         }
 
-        if( CX_IS_MATND( arr ))
-            hdr = (CxMatND*)arr;
+        if( CV_IS_MATND( arr ))
+            hdr = (CvMatND*)arr;
         else
         {
             int coi = 0;
-            CX_CALL( hdr = cxGetMatND( arr, stubs + i, &coi ));
+            CV_CALL( hdr = cvGetMatND( arr, stubs + i, &coi ));
             if( coi != 0 )
-                CX_ERROR( CX_BadCOI, "COI set is not allowed here" );
+                CV_ERROR( CV_BadCOI, "COI set is not allowed here" );
         }
 
         iterator->hdr[i] = hdr;
@@ -514,48 +526,48 @@ cxInitNArrayIterator( int count, CxArr** arrs,
         if( i > 0 )
         {
             if( hdr->dims != hdr0->dims )
-                CX_ERROR( CX_StsUnmatchedSizes,
+                CV_ERROR( CV_StsUnmatchedSizes,
                           "Number of dimensions is the same for all arrays" );
             
             if( i < count )
             {
-                switch( flags & (CX_NO_DEPTH_CHECK|CX_NO_CN_CHECK))
+                switch( flags & (CV_NO_DEPTH_CHECK|CV_NO_CN_CHECK))
                 {
                 case 0:
-                    if( !CX_ARE_TYPES_EQ( hdr, hdr0 ))
-                        CX_ERROR( CX_StsUnmatchedFormats,
+                    if( !CV_ARE_TYPES_EQ( hdr, hdr0 ))
+                        CV_ERROR( CV_StsUnmatchedFormats,
                                   "Data type is not the same for all arrays" );
                     break;
-                case CX_NO_DEPTH_CHECK:
-                    if( !CX_ARE_CNS_EQ( hdr, hdr0 ))
-                        CX_ERROR( CX_StsUnmatchedFormats,
+                case CV_NO_DEPTH_CHECK:
+                    if( !CV_ARE_CNS_EQ( hdr, hdr0 ))
+                        CV_ERROR( CV_StsUnmatchedFormats,
                                   "Number of channels is not the same for all arrays" );
                     break;
-                case CX_NO_CN_CHECK:
-                    if( !CX_ARE_CNS_EQ( hdr, hdr0 ))
-                        CX_ERROR( CX_StsUnmatchedFormats,
+                case CV_NO_CN_CHECK:
+                    if( !CV_ARE_CNS_EQ( hdr, hdr0 ))
+                        CV_ERROR( CV_StsUnmatchedFormats,
                                   "Depth is not the same for all arrays" );
                     break;
                 }
             }
             else
             {
-                if( !CX_IS_MASK_ARR( hdr ))
-                    CX_ERROR( CX_StsBadMask, "Mask should have 8uC1 or 8sC1 data type" );
+                if( !CV_IS_MASK_ARR( hdr ))
+                    CV_ERROR( CV_StsBadMask, "Mask should have 8uC1 or 8sC1 data type" );
             }
 
-            if( !(flags & CX_NO_SIZE_CHECK) )
+            if( !(flags & CV_NO_SIZE_CHECK) )
             {
                 for( j = 0; j < hdr->dims; j++ )
                     if( hdr->dim[j].size != hdr0->dim[j].size )
-                        CX_ERROR( CX_StsUnmatchedSizes,
+                        CV_ERROR( CV_StsUnmatchedSizes,
                                   "Dimension sizes are the same for all arrays" );
             }
         }
         else
             hdr0 = hdr;
 
-        step = icxPixSize[CX_MAT_TYPE(hdr->type)];
+        step = CV_ELEM_SIZE(hdr->type);
         for( j = hdr->dims - 1; j > dim0; j-- )
         {
             if( step != hdr->dim[j].step )
@@ -569,7 +581,7 @@ cxInitNArrayIterator( int count, CxArr** arrs,
         if( j > dim0 )
             dim0 = j;
 
-        iterator->hdr[i] = (CxMatND*)hdr;
+        iterator->hdr[i] = (CvMatND*)hdr;
         iterator->ptr[i] = (uchar*)hdr->data.ptr;
     }
 
@@ -580,7 +592,7 @@ cxInitNArrayIterator( int count, CxArr** arrs,
     dims = dim0 + 1;
     iterator->dims = dims;
     iterator->count = count;
-    iterator->size = cxSize(size,1);
+    iterator->size = cvSize(size,1);
 
     for( i = 0; i < dims; i++ )
         iterator->stack[i] = hdr0->dim[i].size;
@@ -592,7 +604,7 @@ cxInitNArrayIterator( int count, CxArr** arrs,
 
 
 // returns zero value if iteration is finished, non-zero otherwise
-CX_IMPL  int  cxNextNArraySlice( CxNArrayIterator* iterator )
+CV_IMPL  int  cvNextNArraySlice( CvNArrayIterator* iterator )
 {
     assert( iterator != 0 );
     int i, dims, size = 0;
@@ -618,150 +630,149 @@ CX_IMPL  int  cxNextNArraySlice( CxNArrayIterator* iterator )
 
 
 /****************************************************************************************\
-*                            CxSparseMat creation and basic operations                   *
+*                            CvSparseMat creation and basic operations                   *
 \****************************************************************************************/
 
 
-// Creates CxMatND and underlying data
-CX_IMPL CxSparseMat*
-cxCreateSparseMat( int dims, const int* sizes, int type )
+// Creates CvMatND and underlying data
+CV_IMPL CvSparseMat*
+cvCreateSparseMat( int dims, const int* sizes, int type )
 {
-    CxSparseMat* arr = 0;
+    CvSparseMat* arr = 0;
 
-    CX_FUNCNAME( "cxCreateSparseMat" );
+    CV_FUNCNAME( "cvCreateSparseMat" );
     
     __BEGIN__;
 
-    type = CX_MAT_TYPE( type );
-    int pix_size = icxPixSize[type];
-    int pix_size1 = icxPixSize[type & -CX_MAT_CN_MASK];
+    type = CV_MAT_TYPE( type );
+    int pix_size1 = CV_ELEM_SIZE1(type);
+    int pix_size = pix_size1*CV_MAT_CN(type);
     int i, size;
-    CxMemStorage* storage;
+    CvMemStorage* storage;
 
     if( pix_size == 0 )
-        CX_ERROR( CX_StsUnsupportedFormat, "invalid array data type" );
+        CV_ERROR( CV_StsUnsupportedFormat, "invalid array data type" );
 
-    if( (unsigned)dims > CX_MAX_DIM )
-        CX_ERROR( CX_StsOutOfRange, "bad number of dimensions" );
+    if( dims <= 0 || dims > CV_MAX_DIM_HEAP )
+        CV_ERROR( CV_StsOutOfRange, "bad number of dimensions" );
 
     if( !sizes )
-        CX_ERROR( CX_StsNullPtr, "NULL <sizes> pointer" );
+        CV_ERROR( CV_StsNullPtr, "NULL <sizes> pointer" );
 
     for( i = 0; i < dims; i++ )
     {
         if( sizes[i] <= 0 )
-            CX_ERROR( CX_StsBadSize, "one of dimesion sizes is non-positive" );
+            CV_ERROR( CV_StsBadSize, "one of dimesion sizes is non-positive" );
     }
 
-    CX_CALL( arr = (CxSparseMat*)cxAlloc(sizeof(*arr)));
+    CV_CALL( arr = (CvSparseMat*)cvAlloc(sizeof(*arr)+MAX(0,dims-CV_MAX_DIM)*sizeof(arr->size[0])));
 
-    arr->type = CX_SPARSE_MAT_MAGIC_VAL | type;
+    arr->type = CV_SPARSE_MAT_MAGIC_VAL | type;
     arr->dims = dims;
     arr->refcount = 0;
-    arr->total = 0;
+    arr->hdr_refcount = 1;
     memcpy( arr->size, sizes, dims*sizeof(sizes[0]));
 
-    arr->valoffset = (int)cxAlign(sizeof(CxSparseNode), pix_size1);
-    arr->idxoffset = (int)cxAlign(arr->valoffset + pix_size, sizeof(int));
-    size = (arr->idxoffset + dims*sizeof(int) + sizeof(CxSetElem) - 1) &
-           -(int)sizeof(CxSetElem);
+    arr->valoffset = (int)cvAlign(sizeof(CvSparseNode), pix_size1);
+    arr->idxoffset = (int)cvAlign(arr->valoffset + pix_size, sizeof(int));
+    size = (int)cvAlign(arr->idxoffset + dims*sizeof(int), sizeof(CvSetElem));
 
-    CX_CALL( storage = cxCreateMemStorage( CX_SPARSE_MAT_BLOCK ));
-    CX_CALL( arr->heap = cxCreateSet( 0, sizeof(CxSet), size, storage ));
+    CV_CALL( storage = cvCreateMemStorage( CV_SPARSE_MAT_BLOCK ));
+    CV_CALL( arr->heap = cvCreateSet( 0, sizeof(CvSet), size, storage ));
 
-    arr->hashsize = CX_SPARSE_HASH_SIZE0;
+    arr->hashsize = CV_SPARSE_HASH_SIZE0;
     size = arr->hashsize*sizeof(arr->hashtable[0]);
     
-    CX_CALL( arr->hashtable = (void**)cxAlloc( size ));
+    CV_CALL( arr->hashtable = (void**)cvAlloc( size ));
     memset( arr->hashtable, 0, size );
 
     __END__;
 
-    if( cxGetErrStatus() < 0 )
-        cxReleaseSparseMat( &arr );
+    if( cvGetErrStatus() < 0 )
+        cvReleaseSparseMat( &arr );
 
     return arr;
 }
 
 
-// Creates CxMatND and underlying data
-CX_IMPL void
-cxReleaseSparseMat( CxSparseMat** array )
+// Creates CvMatND and underlying data
+CV_IMPL void
+cvReleaseSparseMat( CvSparseMat** array )
 {
-    CX_FUNCNAME( "cxReleaseSparseMat" );
+    CV_FUNCNAME( "cvReleaseSparseMat" );
     
     __BEGIN__;
 
     if( !array )
-        CX_ERROR_FROM_CODE( CX_HeaderIsNull );
+        CV_ERROR_FROM_CODE( CV_HeaderIsNull );
 
     if( *array )
     {
-        CxSparseMat* arr = *array;
+        CvSparseMat* arr = *array;
         
-        if( !CX_IS_SPARSE_MAT_HDR(arr) )
-            CX_ERROR_FROM_CODE( CX_StsBadFlag );
+        if( !CV_IS_SPARSE_MAT_HDR(arr) )
+            CV_ERROR_FROM_CODE( CV_StsBadFlag );
 
         *array = 0;
 
-        cxReleaseMemStorage( &arr->heap->storage );
-        cxFree( (void**)(&arr->hashtable) );
-        cxFree( (void**)&arr );
+        cvReleaseMemStorage( &arr->heap->storage );
+        cvFree( &arr->hashtable );
+        cvFree( &arr );
     }
 
     __END__;
 }
 
 
-// Creates CxMatND and underlying data
-CX_IMPL CxSparseMat*
-cxCloneSparseMat( const CxSparseMat* src )
+// Creates CvMatND and underlying data
+CV_IMPL CvSparseMat*
+cvCloneSparseMat( const CvSparseMat* src )
 {
-    CxSparseMat* dst = 0;
+    CvSparseMat* dst = 0;
     
-    CX_FUNCNAME( "cxCloneSparseMat" );
+    CV_FUNCNAME( "cvCloneSparseMat" );
     
     __BEGIN__;
 
-    if( !CX_IS_SPARSE_MAT_HDR(src) )
-        CX_ERROR( CX_StsBadArg, "Invalid sparse array header" );
+    if( !CV_IS_SPARSE_MAT_HDR(src) )
+        CV_ERROR( CV_StsBadArg, "Invalid sparse array header" );
 
-    CX_CALL( dst = cxCreateSparseMat( src->dims, src->size, src->type ));
-    CX_CALL( cxCopy( src, dst )); 
+    CV_CALL( dst = cvCreateSparseMat( src->dims, src->size, src->type ));
+    CV_CALL( cvCopy( src, dst )); 
 
     __END__;
 
-    if( cxGetErrStatus() < 0 )
-        cxReleaseSparseMat( &dst );
+    if( cvGetErrStatus() < 0 )
+        cvReleaseSparseMat( &dst );
     
     return dst;
 }
 
 
-CxSparseNode*
-cxInitSparseMatIterator( const CxSparseMat* mat, CxSparseMatIterator* iterator )
+CvSparseNode*
+cvInitSparseMatIterator( const CvSparseMat* mat, CvSparseMatIterator* iterator )
 {
-    CxSparseNode* node = 0;
+    CvSparseNode* node = 0;
     
-    CX_FUNCNAME( "cxInitSparseMatIterator" );
+    CV_FUNCNAME( "cvInitSparseMatIterator" );
 
     __BEGIN__;
 
     int idx;
 
-    if( !CX_IS_SPARSE_MAT( mat ))
-        CX_ERROR( CX_StsBadArg, "Invalid sparse matrix header" );
+    if( !CV_IS_SPARSE_MAT( mat ))
+        CV_ERROR( CV_StsBadArg, "Invalid sparse matrix header" );
 
     if( !iterator )
-        CX_ERROR( CX_StsNullPtr, "NULL iterator pointer" );
+        CV_ERROR( CV_StsNullPtr, "NULL iterator pointer" );
 
-    iterator->mat = (CxSparseMat*)mat;
+    iterator->mat = (CvSparseMat*)mat;
     iterator->node = 0;
 
     for( idx = 0; idx < mat->hashsize; idx++ )
         if( mat->hashtable[idx] )
         {
-            node = iterator->node = (CxSparseNode*)mat->hashtable[idx];
+            node = iterator->node = (CvSparseNode*)mat->hashtable[idx];
             break;
         }
 
@@ -772,22 +783,22 @@ cxInitSparseMatIterator( const CxSparseMat* mat, CxSparseMatIterator* iterator )
     return node;
 }
 
-#define ICX_SPARSE_MAT_HASH_MULTIPLIER  33
+#define ICV_SPARSE_MAT_HASH_MULTIPLIER  33
 
-/*CXCOREAPI*/ uchar*
-icxGetNodePtr( CxSparseMat* mat, int* idx, int* _type,
+static uchar*
+icvGetNodePtr( CvSparseMat* mat, const int* idx, int* _type,
                int create_node, unsigned* precalc_hashval )
 {
     uchar* ptr = 0;
     
-    CX_FUNCNAME( "icxGetNodePtr" );
+    CV_FUNCNAME( "icvGetNodePtr" );
 
     __BEGIN__;
 
     int i, tabidx;
     unsigned hashval = 0;
-    CxSparseNode *node, *prev = 0;
-    assert( CX_IS_SPARSE_MAT( mat ));
+    CvSparseNode *node;
+    assert( CV_IS_SPARSE_MAT( mat ));
 
     if( !precalc_hashval )
     {
@@ -795,8 +806,8 @@ icxGetNodePtr( CxSparseMat* mat, int* idx, int* _type,
         {
             int t = idx[i];
             if( (unsigned)t >= (unsigned)mat->size[i] )
-                CX_ERROR( CX_StsOutOfRange, "One of indices is out of range" );
-            hashval = hashval*ICX_SPARSE_MAT_HASH_MULTIPLIER + t;
+                CV_ERROR( CV_StsOutOfRange, "One of indices is out of range" );
+            hashval = hashval*ICV_SPARSE_MAT_HASH_MULTIPLIER + t;
         }
     }
     else
@@ -807,78 +818,66 @@ icxGetNodePtr( CxSparseMat* mat, int* idx, int* _type,
     tabidx = hashval & (mat->hashsize - 1);
     hashval &= INT_MAX;
 
-    for( node = (CxSparseNode*)mat->hashtable[tabidx];
-         node != 0; prev = node, node = node->next )
+    for( node = (CvSparseNode*)mat->hashtable[tabidx];
+         node != 0; node = node->next )
     {
         if( node->hashval == hashval )
         {
-            int* nodeidx = CX_NODE_IDX(mat,node);
+            int* nodeidx = CV_NODE_IDX(mat,node);
             for( i = 0; i < mat->dims; i++ )
                 if( idx[i] != nodeidx[i] )
                     break;
             if( i == mat->dims )
             {
-                ptr = (uchar*)CX_NODE_VAL(mat,node);
+                ptr = (uchar*)CV_NODE_VAL(mat,node);
                 break;
             }
         }
     }
 
-    if( ptr )
+    if( !ptr && create_node )
     {
-        /*if( prev )
-        {
-            prev->next = node->next;
-            node->next = (CxSparseNode*)mat->hashtable[tabidx];
-            mat->hashtable[tabidx] = node;
-        }*/
-    }
-    else if( create_node )
-    {
-        CxSparseNode* node;
-        
-        if( mat->total >= mat->hashsize*CX_SPARSE_HASH_RATIO )
+        if( mat->heap->active_count >= mat->hashsize*CV_SPARSE_HASH_RATIO )
         {
             void** newtable;
-            int newsize = CX_MAX( mat->hashsize*2, CX_SPARSE_HASH_SIZE0);
+            int newsize = MAX( mat->hashsize*2, CV_SPARSE_HASH_SIZE0);
             int newrawsize = newsize*sizeof(newtable[0]);
             
-            CxSparseMatIterator iterator;
+            CvSparseMatIterator iterator;
             assert( (newsize & (newsize - 1)) == 0 );
 
             // resize hash table
-            CX_CALL( newtable = (void**)cxAlloc( newrawsize ));
+            CV_CALL( newtable = (void**)cvAlloc( newrawsize ));
             memset( newtable, 0, newrawsize );
 
-            node = cxInitSparseMatIterator( mat, &iterator );
+            node = cvInitSparseMatIterator( mat, &iterator );
             while( node )
             {
-                CxSparseNode* next = cxGetNextSparseNode( &iterator );
+                CvSparseNode* next = cvGetNextSparseNode( &iterator );
                 int newidx = node->hashval & (newsize - 1);
-                node->next = (CxSparseNode*)newtable[newidx];
+                node->next = (CvSparseNode*)newtable[newidx];
                 newtable[newidx] = node;
                 node = next;
             }
 
-            CX_CALL( cxFree( (void**)&mat->hashtable ));
+            cvFree( &mat->hashtable );
             mat->hashtable = newtable;
             mat->hashsize = newsize;
             tabidx = hashval & (newsize - 1);
         }
 
-        node = (CxSparseNode*)cxSetNew( mat->heap );
+        node = (CvSparseNode*)cvSetNew( mat->heap );
         node->hashval = hashval;
-        node->next = (CxSparseNode*)mat->hashtable[tabidx];
+        node->next = (CvSparseNode*)mat->hashtable[tabidx];
         mat->hashtable[tabidx] = node;
-        mat->total++;
-        memcpy( CX_NODE_IDX(mat,node), idx, mat->dims*sizeof(idx[0]));
-        ptr = (uchar*)CX_NODE_VAL(mat,node);
+        CV_MEMCPY_INT( CV_NODE_IDX(mat,node), idx, mat->dims );
+        ptr = (uchar*)CV_NODE_VAL(mat,node);
         if( create_node > 0 )
-            memset( ptr, 0, icxPixSize[CX_MAT_TYPE(mat->type)]);
+            CV_ZERO_CHAR( ptr, CV_ELEM_SIZE(mat->type));
     }
 
     if( _type )
-        *_type = CX_MAT_TYPE(mat->type);
+        *_type = CV_MAT_TYPE(mat->type);
 
     __END__;
 
@@ -886,17 +885,17 @@ icxGetNodePtr( CxSparseMat* mat, int* idx, int* _type,
 }
 
 
-/*CXCOREAPI*/ void
-icxDeleteNode( CxSparseMat* mat, int* idx, unsigned* precalc_hashval )
+static void
+icvDeleteNode( CvSparseMat* mat, const int* idx, unsigned* precalc_hashval )
 {
-    CX_FUNCNAME( "icxDeleteNode" );
+    CV_FUNCNAME( "icvDeleteNode" );
 
     __BEGIN__;
 
     int i, tabidx;
     unsigned hashval = 0;
-    CxSparseNode *node, *prev = 0;
-    assert( CX_IS_SPARSE_MAT( mat ));
+    CvSparseNode *node, *prev = 0;
+    assert( CV_IS_SPARSE_MAT( mat ));
 
     if( !precalc_hashval )
     {
@@ -904,8 +903,8 @@ icxDeleteNode( CxSparseMat* mat, int* idx, unsigned* precalc_hashval )
         {
             int t = idx[i];
             if( (unsigned)t >= (unsigned)mat->size[i] )
-                CX_ERROR( CX_StsOutOfRange, "One of indices is out of range" );
-            hashval = hashval*ICX_SPARSE_MAT_HASH_MULTIPLIER + t;
+                CV_ERROR( CV_StsOutOfRange, "One of indices is out of range" );
+            hashval = hashval*ICV_SPARSE_MAT_HASH_MULTIPLIER + t;
         }
     }
     else
@@ -916,12 +915,12 @@ icxDeleteNode( CxSparseMat* mat, int* idx, unsigned* precalc_hashval )
     tabidx = hashval & (mat->hashsize - 1);
     hashval &= INT_MAX;
 
-    for( node = (CxSparseNode*)mat->hashtable[tabidx];
+    for( node = (CvSparseNode*)mat->hashtable[tabidx];
          node != 0; prev = node, node = node->next )
     {
         if( node->hashval == hashval )
         {
-            int* nodeidx = CX_NODE_IDX(mat,node);
+            int* nodeidx = CV_NODE_IDX(mat,node);
             for( i = 0; i < mat->dims; i++ )
                 if( idx[i] != nodeidx[i] )
                     break;
@@ -936,8 +935,7 @@ icxDeleteNode( CxSparseMat* mat, int* idx, unsigned* precalc_hashval )
             prev->next = node->next;
         else
             mat->hashtable[tabidx] = node->next;
-        mat->total--;
-        cxSetRemoveByPtr( mat->heap, node );
+        cvSetRemoveByPtr( mat->heap, node );
     }
 
     __END__;
@@ -950,42 +948,41 @@ icxDeleteNode( CxSparseMat* mat, int* idx, unsigned* precalc_hashval )
 \****************************************************************************************/
 
 // Allocates underlying array data
-CX_IMPL void
-cxCreateData( CxArr* arr )
+CV_IMPL void
+cvCreateData( CvArr* arr )
 {
-    CX_FUNCNAME( "cxCreateData" );
+    CV_FUNCNAME( "cvCreateData" );
     
     __BEGIN__;
 
-    if( CX_IS_MAT_HDR( arr ))
+    if( CV_IS_MAT_HDR( arr ))
     {
-        int64 step, total_size;
-        CxMat* mat = (CxMat*)arr;
+        size_t step, total_size;
+        CvMat* mat = (CvMat*)arr;
         step = mat->step;
 
         if( mat->data.ptr != 0 )
-            CX_ERROR( CX_StsError, "Data is already allocated" );
+            CV_ERROR( CV_StsError, "Data is already allocated" );
 
         if( step == 0 )
-            step = icxPixSize[CX_MAT_TYPE(mat->type)]*mat->cols;
+            step = CV_ELEM_SIZE(mat->type)*mat->cols;
 
-        total_size = step*mat->rows;
-        CX_CALL( mat->data.ptr = (uchar*)cxAlloc( (size_t)total_size ));
-
-        mat->refcount = (int*)(mat->data.ptr - sizeof(char*)*2);
+        total_size = step*mat->rows + sizeof(int) + CV_MALLOC_ALIGN;
+        CV_CALL( mat->refcount = (int*)cvAlloc( (size_t)total_size ));
+        mat->data.ptr = (uchar*)cvAlignPtr( mat->refcount + 1, CV_MALLOC_ALIGN );
         *mat->refcount = 1;
     }
-    else if( CX_IS_IMAGE_HDR(arr))
+    else if( CV_IS_IMAGE_HDR(arr))
     {
         IplImage* img = (IplImage*)arr;
 
         if( img->imageData != 0 )
-            CX_ERROR( CX_StsError, "Data is already allocated" );
+            CV_ERROR( CV_StsError, "Data is already allocated" );
 
-        if( !CxIPL.allocateData )
+        if( !CvIPL.allocateData )
         {
-            CX_CALL( img->imageData = img->imageDataOrigin = 
-                        (char*)cxAlloc( (size_t)img->imageSize ));
+            CV_CALL( img->imageData = img->imageDataOrigin = 
+                        (char*)cvAlloc( (size_t)img->imageSize ));
         }
         else
         {
@@ -998,22 +995,22 @@ cxCreateData( CxArr* arr )
                 img->depth = IPL_DEPTH_8U;
             }
 
-            CxIPL.allocateData( img, 0, 0 );
+            CvIPL.allocateData( img, 0, 0 );
 
             img->width = width;
             img->depth = depth;
         }
     }
-    else if( CX_IS_MATND_HDR( arr ))
+    else if( CV_IS_MATND_HDR( arr ))
     {
-        CxMatND* mat = (CxMatND*)arr;
+        CvMatND* mat = (CvMatND*)arr;
         int i;
-        int64 total_size = icxPixSize[CX_MAT_TYPE(mat->type)];
+        size_t total_size = CV_ELEM_SIZE(mat->type);
 
         if( mat->data.ptr != 0 )
-            CX_ERROR( CX_StsError, "Data is already allocated" );
+            CV_ERROR( CV_StsError, "Data is already allocated" );
 
-        if( CX_IS_MAT_CONT( mat->type ))
+        if( CV_IS_MAT_CONT( mat->type ))
         {
             total_size = (size_t)mat->dim[0].size*(mat->dim[0].step != 0 ?
                          mat->dim[0].step : total_size);
@@ -1022,22 +1019,21 @@ cxCreateData( CxArr* arr )
         {
             for( i = mat->dims - 1; i >= 0; i-- )
             {
-                int64 size = (int64)mat->dim[i].step*mat->dim[i].size;
+                size_t size = (size_t)mat->dim[i].step*mat->dim[i].size;
 
                 if( total_size < size )
                     total_size = size;
             }
         }
         
-        assert( total_size >= 0 );
-        CX_CALL( mat->data.ptr = (uchar*)cxAlloc( (size_t)total_size ));
-
-        mat->refcount = (int*)(mat->data.ptr - sizeof(char*)*2);
+        CV_CALL( mat->refcount = (int*)cvAlloc( total_size +
+                                        sizeof(int) + CV_MALLOC_ALIGN ));
+        mat->data.ptr = (uchar*)cvAlignPtr( mat->refcount + 1, CV_MALLOC_ALIGN );
         *mat->refcount = 1;
     }
     else
     {
-        CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
     }
 
     __END__;
@@ -1045,100 +1041,97 @@ cxCreateData( CxArr* arr )
 
 
 // Assigns external data to array
-CX_IMPL void
-cxSetData( CxArr* arr, void* data, int step )
+CV_IMPL void
+cvSetData( CvArr* arr, void* data, int step )
 {
-    CX_FUNCNAME( "cxSetData" );
+    CV_FUNCNAME( "cvSetData" );
 
     __BEGIN__;
 
     int pix_size, min_step;
 
-    if( CX_IS_MAT_HDR(arr) || CX_IS_MATND_HDR(arr) )
-        cxReleaseData( arr );
+    if( CV_IS_MAT_HDR(arr) || CV_IS_MATND_HDR(arr) )
+        cvReleaseData( arr );
 
-    if( data )
+    if( CV_IS_MAT_HDR( arr ))
     {
-        if( CX_IS_MAT_HDR( arr ))
-        {
-            CxMat* mat = (CxMat*)arr;
-        
-            int type = CX_MAT_TYPE(mat->type);
-            pix_size = icxPixSize[type];
-            min_step = mat->cols*pix_size & ((mat->rows <= 1) - 1);
-
-            if( step != CX_AUTOSTEP )
-            {
-                if( step < min_step && data != 0 )
-                    CX_ERROR_FROM_CODE( CX_BadStep );
-                mat->step = step & ((mat->rows <= 1) - 1);
-            }
-            else
-            {
-                mat->step = min_step;
-            }
+        CvMat* mat = (CvMat*)arr;
     
-            mat->data.ptr = (uchar*)data;
-            mat->type = CX_MAT_MAGIC_VAL | type |
-                        (mat->step==min_step ? CX_MAT_CONT_FLAG : 0);
-            icxCheckHuge( mat );
-        }
-        else if( CX_IS_IMAGE_HDR( arr ))
+        int type = CV_MAT_TYPE(mat->type);
+        pix_size = CV_ELEM_SIZE(type);
+        min_step = mat->cols*pix_size & ((mat->rows <= 1) - 1);
+
+        if( step != CV_AUTOSTEP )
         {
-            IplImage* img = (IplImage*)arr;
-        
-            pix_size = ((img->depth & 255) >> 3)*img->nChannels;
-            min_step = img->width*pix_size;
-
-            if( step != CX_AUTOSTEP && img->height > 1 )
-            {
-                if( step < min_step && data != 0 )
-                    CX_ERROR_FROM_CODE( CX_BadStep );
-                img->widthStep = step;
-            }
-            else
-            {
-                img->widthStep = min_step;
-            }
-
-            img->imageSize = img->widthStep * img->height;
-            img->imageData = img->imageDataOrigin = (char*)data;
-
-            if( (((int)(long)data | step) & 7) == 0 &&
-                cxAlign(img->width * pix_size, 8) == step )
-            {
-                img->align = 8;
-            }
-            else
-            {
-                img->align = 4;
-            }
-        }
-        else if( CX_IS_MATND_HDR( arr ))
-        {
-            CxMatND* mat = (CxMatND*)arr;
-            int i;
-            int64 cur_step;
-        
-            if( step != CX_AUTOSTEP )
-                CX_ERROR( CX_BadStep,
-                "For multidimensional array only CX_AUTOSTEP is allowed here" );
-
-            mat->data.ptr = (uchar*)data;
-            cur_step = icxPixSize[CX_MAT_TYPE(mat->type)];
-
-            for( i = mat->dims - 1; i >= 0; i-- )
-            {
-                if( cur_step > INT_MAX )
-                    CX_ERROR( CX_StsOutOfRange, "The array is too big" );
-                mat->dim[i].step = (int)cur_step;
-                cur_step *= mat->dim[i].size;
-            }
+            if( step < min_step && data != 0 )
+                CV_ERROR_FROM_CODE( CV_BadStep );
+            mat->step = step & ((mat->rows <= 1) - 1);
         }
         else
         {
-            CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
+            mat->step = min_step;
         }
+
+        mat->data.ptr = (uchar*)data;
+        mat->type = CV_MAT_MAGIC_VAL | type |
+                    (mat->step==min_step ? CV_MAT_CONT_FLAG : 0);
+        icvCheckHuge( mat );
+    }
+    else if( CV_IS_IMAGE_HDR( arr ))
+    {
+        IplImage* img = (IplImage*)arr;
+    
+        pix_size = ((img->depth & 255) >> 3)*img->nChannels;
+        min_step = img->width*pix_size;
+
+        if( step != CV_AUTOSTEP && img->height > 1 )
+        {
+            if( step < min_step && data != 0 )
+                CV_ERROR_FROM_CODE( CV_BadStep );
+            img->widthStep = step;
+        }
+        else
+        {
+            img->widthStep = min_step;
+        }
+
+        img->imageSize = img->widthStep * img->height;
+        img->imageData = img->imageDataOrigin = (char*)data;
+
+        if( (((int)(size_t)data | step) & 7) == 0 &&
+            cvAlign(img->width * pix_size, 8) == step )
+        {
+            img->align = 8;
+        }
+        else
+        {
+            img->align = 4;
+        }
+    }
+    else if( CV_IS_MATND_HDR( arr ))
+    {
+        CvMatND* mat = (CvMatND*)arr;
+        int i;
+        int64 cur_step;
+    
+        if( step != CV_AUTOSTEP )
+            CV_ERROR( CV_BadStep,
+            "For multidimensional array only CV_AUTOSTEP is allowed here" );
+
+        mat->data.ptr = (uchar*)data;
+        cur_step = CV_ELEM_SIZE(mat->type);
+
+        for( i = mat->dims - 1; i >= 0; i-- )
+        {
+            if( cur_step > INT_MAX )
+                CV_ERROR( CV_StsOutOfRange, "The array is too big" );
+            mat->dim[i].step = (int)cur_step;
+            cur_step *= mat->dim[i].size;
+        }
+    }
+    else
+    {
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
     }
 
     __END__;
@@ -1146,53 +1139,53 @@ cxSetData( CxArr* arr, void* data, int step )
 
 
 // Deallocates array's data
-CX_IMPL void
-cxReleaseData( CxArr* arr )
+CV_IMPL void
+cvReleaseData( CvArr* arr )
 {
-    CX_FUNCNAME( "cxReleaseData" );
+    CV_FUNCNAME( "cvReleaseData" );
     
     __BEGIN__;
 
-    if( CX_IS_MAT_HDR( arr ) || CX_IS_MATND_HDR( arr ))
+    if( CV_IS_MAT_HDR( arr ) || CV_IS_MATND_HDR( arr ))
     {
-        CxMat* mat = (CxMat*)arr;
-        cxDecRefData( mat );
+        CvMat* mat = (CvMat*)arr;
+        cvDecRefData( mat );
     }
-    else if( CX_IS_IMAGE_HDR( arr ))
+    else if( CV_IS_IMAGE_HDR( arr ))
     {
         IplImage* img = (IplImage*)arr;
 
-        if( !CxIPL.deallocate )
+        if( !CvIPL.deallocate )
         {
-            char* ptr = img->imageData;
+            char* ptr = img->imageDataOrigin;
             img->imageData = img->imageDataOrigin = 0;
-            cxFree( (void**)&ptr );
+            cvFree( &ptr );
         }
         else
         {
-            CxIPL.deallocate( img, IPL_IMAGE_DATA );
+            CvIPL.deallocate( img, IPL_IMAGE_DATA );
         }
     }
     else
     {
-        CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
     }
 
     __END__;
 }
 
 
-// Retrieves essential information about image ROI or CxMat data
-CX_IMPL void
-cxGetRawData( const CxArr* arr, uchar** data, int* step, CxSize* roi_size )
+// Retrieves essential information about image ROI or CvMat data
+CV_IMPL void
+cvGetRawData( const CvArr* arr, uchar** data, int* step, CvSize* roi_size )
 {
-    CX_FUNCNAME( "cxGetRawData" );
+    CV_FUNCNAME( "cvGetRawData" );
 
     __BEGIN__;
 
-    if( CX_IS_MAT( arr ))
+    if( CV_IS_MAT( arr ))
     {
-        CxMat *mat = (CxMat*)arr;
+        CvMat *mat = (CvMat*)arr;
 
         if( step )
             *step = mat->step;
@@ -1201,9 +1194,9 @@ cxGetRawData( const CxArr* arr, uchar** data, int* step, CxSize* roi_size )
             *data = mat->data.ptr;
 
         if( roi_size )
-            *roi_size = cxGetMatSize( mat );
+            *roi_size = cvGetMatSize( mat );
     }
-    else if( CX_IS_IMAGE( arr ))
+    else if( CV_IS_IMAGE( arr ))
     {
         IplImage* img = (IplImage*)arr;
 
@@ -1211,26 +1204,26 @@ cxGetRawData( const CxArr* arr, uchar** data, int* step, CxSize* roi_size )
             *step = img->widthStep;
 
         if( data )
-            CX_CALL( *data = cxPtr2D( img, 0, 0 ));
+            CV_CALL( *data = cvPtr2D( img, 0, 0 ));
 
         if( roi_size )
         {
             if( img->roi )
             {
-                *roi_size = cxSize( img->roi->width, img->roi->height );
+                *roi_size = cvSize( img->roi->width, img->roi->height );
             }
             else
             {
-                *roi_size = cxSize( img->width, img->height );
+                *roi_size = cvSize( img->width, img->height );
             }
         }
     }
-    else if( CX_IS_MATND( arr ))
+    else if( CV_IS_MATND( arr ))
     {
-        CxMatND* mat = (CxMatND*)arr;
+        CvMatND* mat = (CvMatND*)arr;
 
-        if( !CX_IS_MAT_CONT( mat->type ))
-            CX_ERROR( CX_StsBadArg, "Only continuous nD arrays are supported here" );
+        if( !CV_IS_MAT_CONT( mat->type ))
+            CV_ERROR( CV_StsBadArg, "Only continuous nD arrays are supported here" );
 
         if( data )
             *data = mat->data.ptr;
@@ -1257,39 +1250,33 @@ cxGetRawData( const CxArr* arr, uchar** data, int* step, CxSize* roi_size )
     }
     else
     {
-        CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
     }
 
     __END__;
 }
 
 
-CX_IMPL int
-cxGetElemType( const CxArr* arr )
+CV_IMPL int
+cvGetElemType( const CvArr* arr )
 {
     int type = -1;
 
-    CX_FUNCNAME( "cxGetElemType" );
+    CV_FUNCNAME( "cvGetElemType" );
 
     __BEGIN__;
 
-    if( CX_IS_MAT_HDR(arr) || CX_IS_MATND_HDR(arr) || CX_IS_SPARSE_MAT_HDR(arr))
+    if( CV_IS_MAT_HDR(arr) || CV_IS_MATND_HDR(arr) || CV_IS_SPARSE_MAT_HDR(arr))
     {
-        type = CX_MAT_TYPE( ((CxMat*)arr)->type );
+        type = CV_MAT_TYPE( ((CvMat*)arr)->type );
     }
-    else if( CX_IS_IMAGE(arr))
+    else if( CV_IS_IMAGE(arr))
     {
         IplImage* img = (IplImage*)arr;
-        
-        if( img->nChannels > 4 )
-            CX_ERROR( CX_BadNumChannels, "The image has more than 4 channels" );
-
-        type = icxIplToCxDepth(img->depth) + (img->nChannels - 1)*8;
+        type = CV_MAKETYPE( icvIplToCvDepth(img->depth), img->nChannels );
     }
     else
-    {
-        CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
-    }
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
 
     __END__;
 
@@ -1298,17 +1285,17 @@ cxGetElemType( const CxArr* arr )
 
 
 // Returns a number of array dimensions
-CX_IMPL int
-cxGetDims( const CxArr* arr, int* sizes )
+CV_IMPL int
+cvGetDims( const CvArr* arr, int* sizes )
 {
     int dims = -1;
-    CX_FUNCNAME( "cxGetDims" );
+    CV_FUNCNAME( "cvGetDims" );
 
     __BEGIN__;
 
-    if( CX_IS_MAT_HDR( arr ))
+    if( CV_IS_MAT_HDR( arr ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
         
         dims = 2;
         if( sizes )
@@ -1317,7 +1304,7 @@ cxGetDims( const CxArr* arr, int* sizes )
             sizes[1] = mat->cols;
         }
     }
-    else if( CX_IS_IMAGE( arr ))
+    else if( CV_IS_IMAGE( arr ))
     {
         IplImage* img = (IplImage*)arr;
         dims = 2;
@@ -1328,9 +1315,9 @@ cxGetDims( const CxArr* arr, int* sizes )
             sizes[1] = img->width;
         }
     }
-    else if( CX_IS_MATND_HDR( arr ))
+    else if( CV_IS_MATND_HDR( arr ))
     {
-        CxMatND* mat = (CxMatND*)arr;
+        CvMatND* mat = (CvMatND*)arr;
         dims = mat->dims;
         
         if( sizes )
@@ -1340,9 +1327,9 @@ cxGetDims( const CxArr* arr, int* sizes )
                 sizes[i] = mat->dim[i].size;
         }
     }
-    else if( CX_IS_SPARSE_MAT_HDR( arr ))
+    else if( CV_IS_SPARSE_MAT_HDR( arr ))
     {
-        CxSparseMat* mat = (CxSparseMat*)arr;
+        CvSparseMat* mat = (CvSparseMat*)arr;
         dims = mat->dims;
         
         if( sizes )
@@ -1350,7 +1337,7 @@ cxGetDims( const CxArr* arr, int* sizes )
     }
     else
     {
-        CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
     }
 
     __END__;
@@ -1360,17 +1347,17 @@ cxGetDims( const CxArr* arr, int* sizes )
 
 
 // Returns the size of particular array dimension
-CX_IMPL int
-cxGetDimSize( const CxArr* arr, int index )
+CV_IMPL int
+cvGetDimSize( const CvArr* arr, int index )
 {
     int size = -1;
-    CX_FUNCNAME( "cxGetDimSize" );
+    CV_FUNCNAME( "cvGetDimSize" );
 
     __BEGIN__;
 
-    if( CX_IS_MAT( arr ))
+    if( CV_IS_MAT( arr ))
     {
-        CxMat *mat = (CxMat*)arr;
+        CvMat *mat = (CvMat*)arr;
 
         switch( index )
         {
@@ -1381,10 +1368,10 @@ cxGetDimSize( const CxArr* arr, int index )
             size = mat->cols;
             break;
         default:
-            CX_ERROR( CX_StsOutOfRange, "bad dimension index" );
+            CV_ERROR( CV_StsOutOfRange, "bad dimension index" );
         }
     }
-    else if( CX_IS_IMAGE( arr ))
+    else if( CV_IS_IMAGE( arr ))
     {
         IplImage* img = (IplImage*)arr;
 
@@ -1397,30 +1384,30 @@ cxGetDimSize( const CxArr* arr, int index )
             size = !img->roi ? img->width : img->roi->width;
             break;
         default:
-            CX_ERROR( CX_StsOutOfRange, "bad dimension index" );
+            CV_ERROR( CV_StsOutOfRange, "bad dimension index" );
         }
     }
-    else if( CX_IS_MATND_HDR( arr ))
+    else if( CV_IS_MATND_HDR( arr ))
     {
-        CxMatND* mat = (CxMatND*)arr;
+        CvMatND* mat = (CvMatND*)arr;
         
         if( (unsigned)index >= (unsigned)mat->dims )
-            CX_ERROR( CX_StsOutOfRange, "bad dimension index" );
+            CV_ERROR( CV_StsOutOfRange, "bad dimension index" );
 
         size = mat->dim[index].size;
     }
-    if( CX_IS_SPARSE_MAT_HDR( arr ))
+    else if( CV_IS_SPARSE_MAT_HDR( arr ))
     {
-        CxSparseMat* mat = (CxSparseMat*)arr;
+        CvSparseMat* mat = (CvSparseMat*)arr;
         
         if( (unsigned)index >= (unsigned)mat->dims )
-            CX_ERROR( CX_StsOutOfRange, "bad dimension index" );
+            CV_ERROR( CV_StsOutOfRange, "bad dimension index" );
 
         size = mat->size[index];
     }
     else
     {
-        CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
     }
 
     __END__;
@@ -1429,24 +1416,24 @@ cxGetDimSize( const CxArr* arr, int index )
 }
 
 
-// Returns the size of CxMat or IplImage
-CX_IMPL CxSize
-cxGetSize( const CxArr* arr )
+// Returns the size of CvMat or IplImage
+CV_IMPL CvSize
+cvGetSize( const CvArr* arr )
 {
-    CxSize size = { 0, 0 };
+    CvSize size = { 0, 0 };
 
-    CX_FUNCNAME( "cxGetSize" );
+    CV_FUNCNAME( "cvGetSize" );
 
     __BEGIN__;
 
-    if( CX_IS_MAT_HDR( arr ))
+    if( CV_IS_MAT_HDR( arr ))
     {
-        CxMat *mat = (CxMat*)arr;
+        CvMat *mat = (CvMat*)arr;
 
         size.width = mat->cols;
         size.height = mat->rows;
     }
-    else if( CX_IS_IMAGE_HDR( arr ))
+    else if( CV_IS_IMAGE_HDR( arr ))
     {
         IplImage* img = (IplImage*)arr;
 
@@ -1463,7 +1450,7 @@ cxGetSize( const CxArr* arr )
     }
     else
     {
-        CX_ERROR( CX_StsBadArg, "Array should be CxMat or IplImage" );
+        CV_ERROR( CV_StsBadArg, "Array should be CvMat or IplImage" );
     }
 
     __END__;
@@ -1473,29 +1460,29 @@ cxGetSize( const CxArr* arr )
 
 
 // Selects sub-array (no data is copied)
-CX_IMPL  CxMat*
-cxGetSubRect( const CxArr* arr, CxMat* submat, CxRect rect )
+CV_IMPL  CvMat*
+cvGetSubRect( const CvArr* arr, CvMat* submat, CvRect rect )
 {
-    CxMat* res = 0;
+    CvMat* res = 0;
     
-    CX_FUNCNAME( "cxGetRect" );
+    CV_FUNCNAME( "cvGetRect" );
 
     __BEGIN__;
 
-    CxMat stub, *mat = (CxMat*)arr;
+    CvMat stub, *mat = (CvMat*)arr;
 
-    if( !CX_IS_MAT( mat ))
-        CX_CALL( mat = cxGetMat( mat, &stub ));
+    if( !CV_IS_MAT( mat ))
+        CV_CALL( mat = cvGetMat( mat, &stub ));
 
     if( !submat )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( (rect.x|rect.y|rect.width|rect.height) < 0 )
-        CX_ERROR( CX_StsBadSize, "" );
+        CV_ERROR( CV_StsBadSize, "" );
 
     if( rect.x + rect.width > mat->cols ||
         rect.y + rect.height > mat->rows )
-        CX_ERROR( CX_StsBadSize, "" );
+        CV_ERROR( CV_StsBadSize, "" );
 
     {
     /*
@@ -1504,15 +1491,15 @@ cxGetSubRect( const CxArr* arr, CxMat* submat, CxRect rect )
     if( refcount )
         ++*refcount;
 
-    cxDecRefData( submat );
+    cvDecRefData( submat );
     */
+    submat->data.ptr = mat->data.ptr + (size_t)rect.y*mat->step +
+                       rect.x*CV_ELEM_SIZE(mat->type);
+    submat->step = mat->step & (rect.height > 1 ? -1 : 0);
+    submat->type = (mat->type & (rect.width < mat->cols ? ~CV_MAT_CONT_FLAG : -1)) |
+                   (submat->step == 0 ? CV_MAT_CONT_FLAG : 0);
     submat->rows = rect.height;
     submat->cols = rect.width;
-    submat->step = mat->step & (submat->rows > 1 ? -1 : 0);
-    submat->data.ptr = mat->data.ptr + (size_t)rect.y*mat->step +
-                       rect.x*icxPixSize[CX_MAT_TYPE(mat->type)];
-    submat->type = (mat->type & (submat->cols < mat->cols ? ~CX_MAT_CONT_FLAG : -1)) |
-                   (submat->step == 0 ? CX_MAT_CONT_FLAG : 0);
     submat->refcount = 0;
     res = submat;
     }
@@ -1524,27 +1511,27 @@ cxGetSubRect( const CxArr* arr, CxMat* submat, CxRect rect )
 
 
 // Selects array's row span.
-CX_IMPL  CxMat*
-cxGetRows( const CxArr* arr, CxMat* submat,
+CV_IMPL  CvMat*
+cvGetRows( const CvArr* arr, CvMat* submat,
            int start_row, int end_row, int delta_row )
 {
-    CxMat* res = 0;
+    CvMat* res = 0;
     
-    CX_FUNCNAME( "cxGetRows" );
+    CV_FUNCNAME( "cvGetRows" );
 
     __BEGIN__;
 
-    CxMat stub, *mat = (CxMat*)arr;
+    CvMat stub, *mat = (CvMat*)arr;
 
-    if( !CX_IS_MAT( mat ))
-        CX_CALL( mat = cxGetMat( mat, &stub ));
+    if( !CV_IS_MAT( mat ))
+        CV_CALL( mat = cvGetMat( mat, &stub ));
 
     if( !submat )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( (unsigned)start_row >= (unsigned)mat->rows ||
         (unsigned)end_row > (unsigned)mat->rows || delta_row <= 0 )
-        CX_ERROR( CX_StsOutOfRange, "" );
+        CV_ERROR( CV_StsOutOfRange, "" );
 
     {
     /*
@@ -1553,7 +1540,7 @@ cxGetRows( const CxArr* arr, CxMat* submat,
     if( refcount )
         ++*refcount;
 
-    cxDecRefData( submat );
+    cvDecRefData( submat );
     */
     if( delta_row == 1 )
     {
@@ -1569,9 +1556,10 @@ cxGetRows( const CxArr* arr, CxMat* submat,
     submat->cols = mat->cols;
     submat->step &= submat->rows > 1 ? -1 : 0;
     submat->data.ptr = mat->data.ptr + (size_t)start_row*mat->step;
-    submat->type = (mat->type | (submat->step == 0 ? CX_MAT_CONT_FLAG : 0)) &
-                   (delta_row != 1 ? ~CX_MAT_CONT_FLAG : -1);
+    submat->type = (mat->type | (submat->step == 0 ? CV_MAT_CONT_FLAG : 0)) &
+                   (delta_row != 1 ? ~CV_MAT_CONT_FLAG : -1);
     submat->refcount = 0;
+    submat->hdr_refcount = 0;
     res = submat;
     }
     
@@ -1582,26 +1570,26 @@ cxGetRows( const CxArr* arr, CxMat* submat,
 
 
 // Selects array's column span.
-CX_IMPL  CxMat*
-cxGetCols( const CxArr* arr, CxMat* submat, int start_col, int end_col )
+CV_IMPL  CvMat*
+cvGetCols( const CvArr* arr, CvMat* submat, int start_col, int end_col )
 {
-    CxMat* res = 0;
+    CvMat* res = 0;
     
-    CX_FUNCNAME( "cxGetCols" );
+    CV_FUNCNAME( "cvGetCols" );
 
     __BEGIN__;
 
-    CxMat stub, *mat = (CxMat*)arr;
+    CvMat stub, *mat = (CvMat*)arr;
 
-    if( !CX_IS_MAT( mat ))
-        CX_CALL( mat = cxGetMat( mat, &stub ));
+    if( !CV_IS_MAT( mat ))
+        CV_CALL( mat = cvGetMat( mat, &stub ));
 
     if( !submat )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( (unsigned)start_col >= (unsigned)mat->cols ||
         (unsigned)end_col > (unsigned)mat->cols )
-        CX_ERROR( CX_StsOutOfRange, "" );
+        CV_ERROR( CV_StsOutOfRange, "" );
 
     {
     /*
@@ -1610,15 +1598,16 @@ cxGetCols( const CxArr* arr, CxMat* submat, int start_col, int end_col )
     if( refcount )
         ++*refcount;
 
-    cxDecRefData( submat );
+    cvDecRefData( submat );
     */
     submat->rows = mat->rows;
     submat->cols = end_col - start_col;
     submat->step = mat->step & (submat->rows > 1 ? -1 : 0);
-    submat->data.ptr = mat->data.ptr + (size_t)start_col*icxPixSize[CX_MAT_TYPE(mat->type)];
+    submat->data.ptr = mat->data.ptr + (size_t)start_col*CV_ELEM_SIZE(mat->type);
     submat->type = mat->type & (submat->step && submat->cols < mat->cols ?
-                                ~CX_MAT_CONT_FLAG : -1);
+                                ~CV_MAT_CONT_FLAG : -1);
     submat->refcount = 0;
+    submat->hdr_refcount = 0;
     res = submat;
     }
     
@@ -1629,25 +1618,25 @@ cxGetCols( const CxArr* arr, CxMat* submat, int start_col, int end_col )
 
 
 // Selects array diagonal
-CX_IMPL  CxMat*
-cxGetDiag( const CxArr* arr, CxMat* submat, int diag )
+CV_IMPL  CvMat*
+cvGetDiag( const CvArr* arr, CvMat* submat, int diag )
 {
-    CxMat* res = 0;
+    CvMat* res = 0;
     
-    CX_FUNCNAME( "cxGetDiag" );
+    CV_FUNCNAME( "cvGetDiag" );
 
     __BEGIN__;
 
-    CxMat stub, *mat = (CxMat*)arr;
+    CvMat stub, *mat = (CvMat*)arr;
     int len, pix_size; 
 
-    if( !CX_IS_MAT( mat ))
-        CX_CALL( mat = cxGetMat( mat, &stub ));
+    if( !CV_IS_MAT( mat ))
+        CV_CALL( mat = cvGetMat( mat, &stub ));
 
     if( !submat )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    pix_size = CX_ELEM_SIZE(mat->type);
+    pix_size = CV_ELEM_SIZE(mat->type);
 
     /*{
     int* refcount = mat->refcount;
@@ -1655,7 +1644,7 @@ cxGetDiag( const CxArr* arr, CxMat* submat, int diag )
     if( refcount )
         ++*refcount;
 
-    cxDecRefData( submat );
+    cvDecRefData( submat );
     }*/
 
     if( diag >= 0 )
@@ -1663,9 +1652,9 @@ cxGetDiag( const CxArr* arr, CxMat* submat, int diag )
         len = mat->cols - diag;
         
         if( len <= 0 )
-            CX_ERROR( CX_StsOutOfRange, "" );
+            CV_ERROR( CV_StsOutOfRange, "" );
 
-        len = CX_IMIN( len, mat->rows );
+        len = CV_IMIN( len, mat->rows );
         submat->data.ptr = mat->data.ptr + diag*pix_size;
     }
     else
@@ -1673,17 +1662,22 @@ cxGetDiag( const CxArr* arr, CxMat* submat, int diag )
         len = mat->rows + diag;
         
         if( len <= 0 )
-            CX_ERROR( CX_StsOutOfRange, "" );
+            CV_ERROR( CV_StsOutOfRange, "" );
 
-        len = CX_IMIN( len, mat->cols );
+        len = CV_IMIN( len, mat->cols );
         submat->data.ptr = mat->data.ptr - diag*mat->step;
     }
 
     submat->rows = len;
     submat->cols = 1;
     submat->step = (mat->step + pix_size) & (submat->rows > 1 ? -1 : 0);
-    submat->type = mat->type & (submat->step ? ~CX_MAT_CONT_FLAG : -1);
+    submat->type = mat->type;
+    if( submat->step )
+        submat->type &= ~CV_MAT_CONT_FLAG;
+    else
+        submat->type |= CV_MAT_CONT_FLAG;
     submat->refcount = 0;
+    submat->hdr_refcount = 0;
     res = submat;
     
     __END__;
@@ -1693,74 +1687,82 @@ cxGetDiag( const CxArr* arr, CxMat* submat, int diag )
 
 
 /****************************************************************************************\
-*                      Operations on CxScalar and accessing array elements               *
+*                      Operations on CvScalar and accessing array elements               *
 \****************************************************************************************/
 
-// Converts CxScalar to specified type
-CX_IMPL void
-cxScalarToRawData( const CxScalar* scalar, void* data, int type, int extend_to_12 )
+// Converts CvScalar to specified type
+CV_IMPL void
+cvScalarToRawData( const CvScalar* scalar, void* data, int type, int extend_to_12 )
 {
-    CX_FUNCNAME( "cxScalarToRawData" );
+    CV_FUNCNAME( "cvScalarToRawData" );
 
-    type = CX_MAT_TYPE(type);
+    type = CV_MAT_TYPE(type);
     
     __BEGIN__;
 
-    int cn = CX_MAT_CN( type );
-    int depth = type & CX_MAT_DEPTH_MASK;
+    int cn = CV_MAT_CN( type );
+    int depth = type & CV_MAT_DEPTH_MASK;
 
     assert( scalar && data );
-    assert( (unsigned)(cn - 1) < 4 );
+    if( (unsigned)(cn - 1) >= 4 )
+        CV_ERROR( CV_StsOutOfRange, "The number of channels must be 1, 2, 3 or 4" );
 
     switch( depth )
     {
-    case CX_8UC1:
+    case CV_8UC1:
         while( cn-- )
         {
-            int t = cxRound( scalar->val[cn] );
-            ((uchar*)data)[cn] = CX_CAST_8U(t);
+            int t = cvRound( scalar->val[cn] );
+            ((uchar*)data)[cn] = CV_CAST_8U(t);
         }
         break;
-    case CX_8SC1:
+    case CV_8SC1:
         while( cn-- )
         {
-            int t = cxRound( scalar->val[cn] );
-            ((char*)data)[cn] = CX_CAST_8S(t);
+            int t = cvRound( scalar->val[cn] );
+            ((char*)data)[cn] = CV_CAST_8S(t);
         }
         break;
-    case CX_16SC1:
+    case CV_16UC1:
         while( cn-- )
         {
-            int t = cxRound( scalar->val[cn] );
-            ((short*)data)[cn] = CX_CAST_16S(t);
+            int t = cvRound( scalar->val[cn] );
+            ((ushort*)data)[cn] = CV_CAST_16U(t);
         }
         break;
-    case CX_32SC1:
+    case CV_16SC1:
         while( cn-- )
-            ((int*)data)[cn] = cxRound( scalar->val[cn] );
+        {
+            int t = cvRound( scalar->val[cn] );
+            ((short*)data)[cn] = CV_CAST_16S(t);
+        }
         break;
-    case CX_32FC1:
+    case CV_32SC1:
+        while( cn-- )
+            ((int*)data)[cn] = cvRound( scalar->val[cn] );
+        break;
+    case CV_32FC1:
         while( cn-- )
             ((float*)data)[cn] = (float)(scalar->val[cn]);
         break;
-    case CX_64FC1:
+    case CV_64FC1:
         while( cn-- )
             ((double*)data)[cn] = (double)(scalar->val[cn]);
         break;
     default:
         assert(0);
-        CX_ERROR_FROM_CODE( CX_BadDepth );
+        CV_ERROR_FROM_CODE( CV_BadDepth );
     }
 
     if( extend_to_12 )
     {
-        int pix_size = icxPixSize[type];
-        int offset = icxPixSize[depth]*12;
+        int pix_size = CV_ELEM_SIZE(type);
+        int offset = CV_ELEM_SIZE1(depth)*12;
 
         do
         {
             offset -= pix_size;
-            memcpy( (char*)data + offset, data, pix_size );
+            CV_MEMCPY_AUTO( (char*)data + offset, data, pix_size );
         }
         while( offset > pix_size );
     }
@@ -1769,71 +1771,79 @@ cxScalarToRawData( const CxScalar* scalar, void* data, int type, int extend_to_1
 }
 
 
-// Converts data of specified type to CxScalar
-CX_IMPL void
-cxRawDataToScalar( const void* data, int flags, CxScalar* scalar )
+// Converts data of specified type to CvScalar
+CV_IMPL void
+cvRawDataToScalar( const void* data, int flags, CvScalar* scalar )
 {
-    CX_FUNCNAME( "cxRawDataToScalar" );
+    CV_FUNCNAME( "cvRawDataToScalar" );
     
     __BEGIN__;
 
-    int cn = CX_MAT_CN( flags );
+    int cn = CV_MAT_CN( flags );
 
     assert( scalar && data );
-    assert( (unsigned)(cn - 1) < 4 );
+    
+    if( (unsigned)(cn - 1) >= 4 )
+        CV_ERROR( CV_StsOutOfRange, "The number of channels must be 1, 2, 3 or 4" );
 
     memset( scalar->val, 0, sizeof(scalar->val));
 
-    switch( CX_MAT_DEPTH( flags ))
+    switch( CV_MAT_DEPTH( flags ))
     {
-    case CX_8U:
+    case CV_8U:
         while( cn-- )
-            scalar->val[cn] = CX_8TO32F(((uchar*)data)[cn]);
+            scalar->val[cn] = CV_8TO32F(((uchar*)data)[cn]);
         break;
-    case CX_8S:
+    case CV_8S:
         while( cn-- )
-            scalar->val[cn] = CX_8TO32F(((char*)data)[cn]);
+            scalar->val[cn] = CV_8TO32F(((char*)data)[cn]);
         break;
-    case CX_16S:
+    case CV_16U:
+        while( cn-- )
+            scalar->val[cn] = ((ushort*)data)[cn];
+        break;
+    case CV_16S:
         while( cn-- )
             scalar->val[cn] = ((short*)data)[cn];
         break;
-    case CX_32S:
+    case CV_32S:
         while( cn-- )
             scalar->val[cn] = ((int*)data)[cn];
         break;
-    case CX_32F:
+    case CV_32F:
         while( cn-- )
             scalar->val[cn] = ((float*)data)[cn];
         break;
-    case CX_64F:
+    case CV_64F:
         while( cn-- )
             scalar->val[cn] = ((double*)data)[cn];
         break;
     default:
         assert(0);
-        CX_ERROR_FROM_CODE( CX_BadDepth );
+        CV_ERROR_FROM_CODE( CV_BadDepth );
     }
 
     __END__;
 }
 
 
-static double icxGetReal( const void* data, int type )
+static double icvGetReal( const void* data, int type )
 {
     switch( type )
     {
-    case CX_8U:
+    case CV_8U:
         return *(uchar*)data;
-    case CX_8S:
+    case CV_8S:
         return *(char*)data;
-    case CX_16S:
+    case CV_16U:
+        return *(ushort*)data;
+    case CV_16S:
         return *(short*)data;
-    case CX_32S:
+    case CV_32S:
         return *(int*)data;
-    case CX_32F:
+    case CV_32F:
         return *(float*)data;
-    case CX_64F:
+    case CV_64F:
         return *(double*)data;
     }
 
@@ -1841,24 +1851,27 @@ static double icxGetReal( const void* data, int type )
 }
 
 
-static void icxSetReal( double value, const void* data, int type )
+static void icvSetReal( double value, const void* data, int type )
 {
-    if( type < CX_32F )
+    if( type < CV_32F )
     {
-        int ivalue = cxRound(value);
+        int ivalue = cvRound(value);
         switch( type )
         {
-        case CX_8U:
-            *(uchar*)data = CX_CAST_8U(ivalue);
+        case CV_8U:
+            *(uchar*)data = CV_CAST_8U(ivalue);
             break;
-        case CX_8S:
-            *(char*)data = CX_CAST_8S(ivalue);
+        case CV_8S:
+            *(char*)data = CV_CAST_8S(ivalue);
             break;
-        case CX_16S:
-            *(short*)data = CX_CAST_16S(ivalue);
+        case CV_16U:
+            *(ushort*)data = CV_CAST_16U(ivalue);
             break;
-        case CX_32S:
-            *(int*)data = CX_CAST_32S(ivalue);
+        case CV_16S:
+            *(short*)data = CV_CAST_16S(ivalue);
+            break;
+        case CV_32S:
+            *(int*)data = CV_CAST_32S(ivalue);
             break;
         }
     }
@@ -1866,10 +1879,10 @@ static void icxSetReal( double value, const void* data, int type )
     {
         switch( type )
         {
-        case CX_32F:
+        case CV_32F:
             *(float*)data = (float)value;
             break;
-        case CX_64F:
+        case CV_64F:
             *(double*)data = value;
             break;
         }
@@ -1878,21 +1891,21 @@ static void icxSetReal( double value, const void* data, int type )
 
 
 // Returns pointer to specified element of array (linear index is used)
-CX_IMPL  uchar*
-cxPtr1D( const CxArr* arr, int idx, int* _type )
+CV_IMPL  uchar*
+cvPtr1D( const CvArr* arr, int idx, int* _type )
 {
     uchar* ptr = 0;
     
-    CX_FUNCNAME( "cxPtr1D" );
+    CV_FUNCNAME( "cvPtr1D" );
 
     __BEGIN__;
 
-    if( CX_IS_MAT( arr ))
+    if( CV_IS_MAT( arr ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
 
-        int type = CX_MAT_TYPE(mat->type);
-        int pix_size = icxPixSize[type];
+        int type = CV_MAT_TYPE(mat->type);
+        int pix_size = CV_ELEM_SIZE(type);
 
         if( _type )
             *_type = type;
@@ -1901,30 +1914,34 @@ cxPtr1D( const CxArr* arr, int idx, int* _type )
         // that the index is within the matrix
         if( (unsigned)idx >= (unsigned)(mat->rows + mat->cols - 1) &&
             (unsigned)idx >= (unsigned)(mat->rows*mat->cols))
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
-        if( CX_IS_MAT_CONT(mat->type))
+        if( CV_IS_MAT_CONT(mat->type))
         {
             ptr = mat->data.ptr + (size_t)idx*pix_size;
         }
         else
         {
-            int row = idx/mat->cols;
-            ptr = mat->data.ptr + (size_t)row*mat->step + (idx - row*mat->cols)*pix_size;
+            int row, col;
+            if( mat->cols == 1 )
+                row = idx, col = 0;
+            else
+                row = idx/mat->cols, col = idx - row*mat->cols;
+            ptr = mat->data.ptr + (size_t)row*mat->step + col*pix_size;
         }
     }
-    else if( CX_IS_IMAGE_HDR( arr ))
+    else if( CV_IS_IMAGE_HDR( arr ))
     {
         IplImage* img = (IplImage*)arr;
         int width = !img->roi ? img->width : img->roi->width;
         int y = idx/width, x = idx - y*width;
 
-        ptr = cxPtr2D( arr, y, x, _type );
+        ptr = cvPtr2D( arr, y, x, _type );
     }
-    else if( CX_IS_MATND( arr ))
+    else if( CV_IS_MATND( arr ))
     {
-        CxMatND* mat = (CxMatND*)arr;
-        int j, type = CX_MAT_TYPE(mat->type);
+        CvMatND* mat = (CvMatND*)arr;
+        int j, type = CV_MAT_TYPE(mat->type);
         size_t size = mat->dim[0].size;
 
         if( _type )
@@ -1934,11 +1951,11 @@ cxPtr1D( const CxArr* arr, int idx, int* _type )
             size *= mat->dim[j].size;
 
         if((unsigned)idx >= (unsigned)size )
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
-        if( CX_IS_MAT_CONT(mat->type))
+        if( CV_IS_MAT_CONT(mat->type))
         {
-            int pix_size = icxPixSize[type];
+            int pix_size = CV_ELEM_SIZE(type);
             ptr = mat->data.ptr + (size_t)idx*pix_size;
         }
         else
@@ -1956,13 +1973,28 @@ cxPtr1D( const CxArr* arr, int idx, int* _type )
             }
         }
     }
-    else if( CX_IS_SPARSE_MAT( arr ))
+    else if( CV_IS_SPARSE_MAT( arr ))
     {
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, &idx, _type, 1, 0 );
+        CvSparseMat* m = (CvSparseMat*)arr;
+        if( m->dims == 1 )
+            ptr = icvGetNodePtr( (CvSparseMat*)arr, &idx, _type, 1, 0 );
+        else
+        {
+            int i, n = m->dims;
+            int* _idx = (int*)cvStackAlloc(n*sizeof(_idx[0]));
+            
+            for( i = n - 1; i >= 0; i-- )
+            {
+                int t = idx / m->size[i];
+                _idx[i] = idx - t*m->size[i];
+                idx = t;
+            }
+            ptr = icvGetNodePtr( (CvSparseMat*)arr, _idx, _type, 1, 0 );
+        }
     }
     else
     {
-        CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
     }
 
     __END__;
@@ -1972,31 +2004,31 @@ cxPtr1D( const CxArr* arr, int idx, int* _type )
 
 
 // Returns pointer to specified element of 2d array
-CX_IMPL  uchar*
-cxPtr2D( const CxArr* arr, int y, int x, int* _type )
+CV_IMPL  uchar*
+cvPtr2D( const CvArr* arr, int y, int x, int* _type )
 {
     uchar* ptr = 0;
     
-    CX_FUNCNAME( "cxPtr2D" );
+    CV_FUNCNAME( "cvPtr2D" );
 
     __BEGIN__;
 
-    if( CX_IS_MAT( arr ))
+    if( CV_IS_MAT( arr ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
         int type;
 
         if( (unsigned)y >= (unsigned)(mat->rows) ||
             (unsigned)x >= (unsigned)(mat->cols) )
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
-        type = CX_MAT_TYPE(mat->type);
+        type = CV_MAT_TYPE(mat->type);
         if( _type )
             *_type = type;
 
-        ptr = mat->data.ptr + (size_t)y*mat->step + x*icxPixSize[type];
+        ptr = mat->data.ptr + (size_t)y*mat->step + x*CV_ELEM_SIZE(type);
     }
-    else if( CX_IS_IMAGE( arr ))
+    else if( CV_IS_IMAGE( arr ))
     {
         IplImage* img = (IplImage*)arr;
         int pix_size = (img->depth & 255) >> 3;
@@ -2018,7 +2050,7 @@ cxPtr2D( const CxArr* arr, int y, int x, int* _type )
             {
                 int coi = img->roi->coi;
                 if( !coi )
-                    CX_ERROR( CX_BadCOI,
+                    CV_ERROR( CV_BadCOI,
                         "COI must be non-null in case of planar images" );
                 ptr += (coi - 1)*img->imageSize;
             }
@@ -2031,40 +2063,40 @@ cxPtr2D( const CxArr* arr, int y, int x, int* _type )
 
         if( (unsigned)y >= (unsigned)height ||
             (unsigned)x >= (unsigned)width )
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
         ptr += y*img->widthStep + x*pix_size;
 
         if( _type )
         {
-            int type = icxIplToCxDepth(img->depth);
+            int type = icvIplToCvDepth(img->depth);
             if( type < 0 || (unsigned)(img->nChannels - 1) > 3 )
-                CX_ERROR( CX_StsUnsupportedFormat, "" );
+                CV_ERROR( CV_StsUnsupportedFormat, "" );
 
-            *_type = type + (img->nChannels - 1)*8;
+            *_type = CV_MAKETYPE( type, img->nChannels );
         }
     }
-    else if( CX_IS_MATND( arr ))
+    else if( CV_IS_MATND( arr ))
     {
-        CxMatND* mat = (CxMatND*)arr;
+        CvMatND* mat = (CvMatND*)arr;
 
         if( mat->dims != 2 || 
             (unsigned)y >= (unsigned)(mat->dim[0].size) ||
             (unsigned)x >= (unsigned)(mat->dim[1].size) )
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
         ptr = mat->data.ptr + (size_t)y*mat->dim[0].step + x*mat->dim[1].step;
         if( _type )
-            *_type = CX_MAT_TYPE(mat->type);
+            *_type = CV_MAT_TYPE(mat->type);
     }
-    else if( CX_IS_SPARSE_MAT( arr ))
+    else if( CV_IS_SPARSE_MAT( arr ))
     {
         int idx[] = { y, x };
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, _type, 1, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, _type, 1, 0 );
     }
     else
     {
-        CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
     }
 
     __END__;
@@ -2074,39 +2106,39 @@ cxPtr2D( const CxArr* arr, int y, int x, int* _type )
 
 
 // Returns pointer to specified element of 3d array
-CX_IMPL  uchar*
-cxPtr3D( const CxArr* arr, int z, int y, int x, int* _type )
+CV_IMPL  uchar*
+cvPtr3D( const CvArr* arr, int z, int y, int x, int* _type )
 {
     uchar* ptr = 0;
     
-    CX_FUNCNAME( "cxPtr3D" );
+    CV_FUNCNAME( "cvPtr3D" );
 
     __BEGIN__;
 
-    if( CX_IS_MATND( arr ))
+    if( CV_IS_MATND( arr ))
     {
-        CxMatND* mat = (CxMatND*)arr;
+        CvMatND* mat = (CvMatND*)arr;
 
         if( mat->dims != 3 || 
             (unsigned)z >= (unsigned)(mat->dim[0].size) ||
             (unsigned)y >= (unsigned)(mat->dim[1].size) ||
             (unsigned)x >= (unsigned)(mat->dim[2].size) )
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
         ptr = mat->data.ptr + (size_t)z*mat->dim[0].step +
               (size_t)y*mat->dim[1].step + x*mat->dim[2].step;
 
         if( _type )
-            *_type = CX_MAT_TYPE(mat->type);
+            *_type = CV_MAT_TYPE(mat->type);
     }
-    else if( CX_IS_SPARSE_MAT( arr ))
+    else if( CV_IS_SPARSE_MAT( arr ))
     {
         int idx[] = { z, y, x };
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, _type, 1, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, _type, 1, 0 );
     }
     else
     {
-        CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
     }
 
     __END__;
@@ -2116,41 +2148,41 @@ cxPtr3D( const CxArr* arr, int z, int y, int x, int* _type )
 
 
 // Returns pointer to specified element of n-d array
-CX_IMPL  uchar*
-cxPtrND( const CxArr* arr, int* idx, int* _type,
+CV_IMPL  uchar*
+cvPtrND( const CvArr* arr, const int* idx, int* _type,
          int create_node, unsigned* precalc_hashval )
 {
     uchar* ptr = 0;
-    CX_FUNCNAME( "cxPtrND" );
+    CV_FUNCNAME( "cvPtrND" );
 
     __BEGIN__;
 
     if( !idx )
-        CX_ERROR( CX_StsNullPtr, "NULL pointer to indices" );
+        CV_ERROR( CV_StsNullPtr, "NULL pointer to indices" );
 
-    if( CX_IS_SPARSE_MAT( arr ))
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, 
+    if( CV_IS_SPARSE_MAT( arr ))
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, 
                              _type, create_node, precalc_hashval );
-    else if( CX_IS_MATND( arr ))
+    else if( CV_IS_MATND( arr ))
     {
-        CxMatND* mat = (CxMatND*)arr;
+        CvMatND* mat = (CvMatND*)arr;
         int i;
         ptr = mat->data.ptr;
 
         for( i = 0; i < mat->dims; i++ )
         {
             if( (unsigned)idx[i] >= (unsigned)(mat->dim[i].size) )
-                CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+                CV_ERROR( CV_StsOutOfRange, "index is out of range" );
             ptr += (size_t)idx[i]*mat->dim[i].step;
         }
 
         if( _type )
-            *_type = CX_MAT_TYPE(mat->type);
+            *_type = CV_MAT_TYPE(mat->type);
     }
-    else if( CX_IS_MAT_HDR(arr) || CX_IS_IMAGE_HDR(arr) )
-        ptr = cxPtr2D( arr, idx[0], idx[1], _type );
+    else if( CV_IS_MAT_HDR(arr) || CV_IS_IMAGE_HDR(arr) )
+        ptr = cvPtr2D( arr, idx[0], idx[1], _type );
     else
-        CX_ERROR( CX_StsBadArg, "unrecognized or unsupported array type" );
+        CV_ERROR( CV_StsBadArg, "unrecognized or unsupported array type" );
 
     __END__;
 
@@ -2159,39 +2191,39 @@ cxPtrND( const CxArr* arr, int* idx, int* _type,
 
 
 // Returns specifed element of n-D array given linear index
-CX_IMPL  CxScalar
-cxGet1D( const CxArr* arr, int idx )
+CV_IMPL  CvScalar
+cvGet1D( const CvArr* arr, int idx )
 {
-    CxScalar scalar = {{ 0, 0, 0, 0 }};
+    CvScalar scalar = {{0,0,0,0}};
 
-    CX_FUNCNAME( "cxGet1D" );
+    CV_FUNCNAME( "cvGet1D" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( CX_IS_MAT( arr ) && CX_IS_MAT_CONT( ((CxMat*)arr)->type ))
+    if( CV_IS_MAT( arr ) && CV_IS_MAT_CONT( ((CvMat*)arr)->type ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
 
-        type = CX_MAT_TYPE(mat->type);
-        int pix_size = icxPixSize[type];
+        type = CV_MAT_TYPE(mat->type);
+        int pix_size = CV_ELEM_SIZE(type);
 
         // the first part is mul-free sufficient check
         // that the index is within the matrix
         if( (unsigned)idx >= (unsigned)(mat->rows + mat->cols - 1) &&
             (unsigned)idx >= (unsigned)(mat->rows*mat->cols))
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
         ptr = mat->data.ptr + (size_t)idx*pix_size;
     }
-    else if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr1D( arr, idx, &type );
+    else if( !CV_IS_SPARSE_MAT( arr ) || ((CvSparseMat*)arr)->dims > 1 )
+        ptr = cvPtr1D( arr, idx, &type );
     else
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, &idx, &type, 0, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, &idx, &type, 0, 0 );
 
-    cxRawDataToScalar( ptr, type, &scalar );
+    cvRawDataToScalar( ptr, type, &scalar );
 
     __END__;
 
@@ -2200,38 +2232,38 @@ cxGet1D( const CxArr* arr, int idx )
 
 
 // Returns specifed element of 2D array
-CX_IMPL  CxScalar
-cxGet2D( const CxArr* arr, int y, int x )
+CV_IMPL  CvScalar
+cvGet2D( const CvArr* arr, int y, int x )
 {
-    CxScalar scalar = {{ 0, 0, 0, 0 }};
+    CvScalar scalar = {{0,0,0,0}};
 
-    CX_FUNCNAME( "cxGet2D" );
+    CV_FUNCNAME( "cvGet2D" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
 
-    if( CX_IS_MAT( arr ))
+    if( CV_IS_MAT( arr ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
 
         if( (unsigned)y >= (unsigned)(mat->rows) ||
             (unsigned)x >= (unsigned)(mat->cols) )
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
-        type = CX_MAT_TYPE(mat->type);
-        ptr = mat->data.ptr + (size_t)y*mat->step + x*icxPixSize[type];
+        type = CV_MAT_TYPE(mat->type);
+        ptr = mat->data.ptr + (size_t)y*mat->step + x*CV_ELEM_SIZE(type);
     }
-    else if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr2D( arr, y, x, &type );
+    else if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtr2D( arr, y, x, &type );
     else
     {
         int idx[] = { y, x };
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, 0, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, 0, 0 );
     }
 
-    cxRawDataToScalar( ptr, type, &scalar );
+    cvRawDataToScalar( ptr, type, &scalar );
 
     __END__;
 
@@ -2240,27 +2272,27 @@ cxGet2D( const CxArr* arr, int y, int x )
 
 
 // Returns specifed element of 3D array
-CX_IMPL  CxScalar
-cxGet3D( const CxArr* arr, int z, int y, int x )
+CV_IMPL  CvScalar
+cvGet3D( const CvArr* arr, int z, int y, int x )
 {
-    CxScalar scalar = {{ 0, 0, 0, 0 }};
+    CvScalar scalar = {{0,0,0,0}};
 
-    /*CX_FUNCNAME( "cxGet3D" );*/
+    /*CV_FUNCNAME( "cvGet3D" );*/
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
 
-    if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr3D( arr, z, y, x, &type );
+    if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtr3D( arr, z, y, x, &type );
     else
     {
         int idx[] = { z, y, x };
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, 0, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, 0, 0 );
     }
 
-    cxRawDataToScalar( ptr, type, &scalar );
+    cvRawDataToScalar( ptr, type, &scalar );
 
     __END__;
 
@@ -2269,24 +2301,24 @@ cxGet3D( const CxArr* arr, int z, int y, int x )
 
 
 // Returns specifed element of nD array
-CX_IMPL  CxScalar
-cxGetND( const CxArr* arr, int* idx )
+CV_IMPL  CvScalar
+cvGetND( const CvArr* arr, const int* idx )
 {
-    CxScalar scalar = {{ 0, 0, 0, 0 }};
+    CvScalar scalar = {{0,0,0,0}};
 
-    /*CX_FUNCNAME( "cxGetND" );*/
+    /*CV_FUNCNAME( "cvGetND" );*/
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
 
-    if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtrND( arr, idx, &type );
+    if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtrND( arr, idx, &type );
     else
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, 0, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, 0, 0 );
 
-    cxRawDataToScalar( ptr, type, &scalar );
+    cvRawDataToScalar( ptr, type, &scalar );
 
     __END__;
 
@@ -2295,44 +2327,44 @@ cxGetND( const CxArr* arr, int* idx )
 
 
 // Returns specifed element of n-D array given linear index
-CX_IMPL  double
-cxGetReal1D( const CxArr* arr, int idx )
+CV_IMPL  double
+cvGetReal1D( const CvArr* arr, int idx )
 {
     double value = 0;
 
-    CX_FUNCNAME( "cxGetReal1D" );
+    CV_FUNCNAME( "cvGetReal1D" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
 
-    if( CX_IS_MAT( arr ) && CX_IS_MAT_CONT( ((CxMat*)arr)->type ))
+    if( CV_IS_MAT( arr ) && CV_IS_MAT_CONT( ((CvMat*)arr)->type ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
 
-        type = CX_MAT_TYPE(mat->type);
-        int pix_size = icxPixSize[type];
+        type = CV_MAT_TYPE(mat->type);
+        int pix_size = CV_ELEM_SIZE(type);
 
         // the first part is mul-free sufficient check
         // that the index is within the matrix
         if( (unsigned)idx >= (unsigned)(mat->rows + mat->cols - 1) &&
             (unsigned)idx >= (unsigned)(mat->rows*mat->cols))
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
         ptr = mat->data.ptr + (size_t)idx*pix_size;
     }
-    else if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr1D( arr, idx, &type );
+    else if( !CV_IS_SPARSE_MAT( arr ) || ((CvSparseMat*)arr)->dims > 1 )
+        ptr = cvPtr1D( arr, idx, &type );
     else
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, &idx, &type, 0, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, &idx, &type, 0, 0 );
 
     if( ptr )
     {
-        if( CX_MAT_CN( type ) > 1 )
-            CX_ERROR( CX_BadNumChannels, "cxGetReal* support only single-channel arrays" );
+        if( CV_MAT_CN( type ) > 1 )
+            CV_ERROR( CV_BadNumChannels, "cvGetReal* support only single-channel arrays" );
 
-        value = icxGetReal( ptr, type );
+        value = icvGetReal( ptr, type );
     }
 
     __END__;
@@ -2342,44 +2374,43 @@ cxGetReal1D( const CxArr* arr, int idx )
 
 
 // Returns specifed element of 2D array
-CX_IMPL  double
-cxGetReal2D( const CxArr* arr, int y, int x )
+CV_IMPL  double
+cvGetReal2D( const CvArr* arr, int y, int x )
 {
     double value = 0;
 
-    CX_FUNCNAME( "cxGetReal2D" );
+    CV_FUNCNAME( "cvGetReal2D" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( CX_IS_MAT( arr ))
+    if( CV_IS_MAT( arr ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
 
         if( (unsigned)y >= (unsigned)(mat->rows) ||
             (unsigned)x >= (unsigned)(mat->cols) )
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
-        type = CX_MAT_TYPE(mat->type);
-        ptr = mat->data.ptr + (size_t)y*mat->step + x*icxPixSize[type];
+        type = CV_MAT_TYPE(mat->type);
+        ptr = mat->data.ptr + (size_t)y*mat->step + x*CV_ELEM_SIZE(type);
     }
-    else if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr2D( arr, y, x, &type );
+    else if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtr2D( arr, y, x, &type );
     else
     {
         int idx[] = { y, x };
-        
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, 0, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, 0, 0 );
     }
 
     if( ptr )
     {
-        if( CX_MAT_CN( type ) > 1 )
-            CX_ERROR( CX_BadNumChannels, "cxGetReal* support only single-channel arrays" );
+        if( CV_MAT_CN( type ) > 1 )
+            CV_ERROR( CV_BadNumChannels, "cvGetReal* support only single-channel arrays" );
 
-        value = icxGetReal( ptr, type );
+        value = icvGetReal( ptr, type );
     }
 
     __END__;
@@ -2389,32 +2420,32 @@ cxGetReal2D( const CxArr* arr, int y, int x )
 
 
 // Returns specifed element of 3D array
-CX_IMPL  double
-cxGetReal3D( const CxArr* arr, int z, int y, int x )
+CV_IMPL  double
+cvGetReal3D( const CvArr* arr, int z, int y, int x )
 {
     double value = 0;
 
-    CX_FUNCNAME( "cxGetReal3D" );
+    CV_FUNCNAME( "cvGetReal3D" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
 
-    if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr3D( arr, z, y, x, &type );
+    if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtr3D( arr, z, y, x, &type );
     else
     {
         int idx[] = { z, y, x };
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, 0, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, 0, 0 );
     }
     
     if( ptr )
     {
-        if( CX_MAT_CN( type ) > 1 )
-            CX_ERROR( CX_BadNumChannels, "cxGetReal* support only single-channel arrays" );
+        if( CV_MAT_CN( type ) > 1 )
+            CV_ERROR( CV_BadNumChannels, "cvGetReal* support only single-channel arrays" );
 
-        value = icxGetReal( ptr, type );
+        value = icvGetReal( ptr, type );
     }
 
     __END__;
@@ -2424,29 +2455,29 @@ cxGetReal3D( const CxArr* arr, int z, int y, int x )
 
 
 // Returns specifed element of nD array
-CX_IMPL  double
-cxGetRealND( const CxArr* arr, int* idx )
+CV_IMPL  double
+cvGetRealND( const CvArr* arr, const int* idx )
 {
     double value = 0;
 
-    CX_FUNCNAME( "cxGetRealND" );
+    CV_FUNCNAME( "cvGetRealND" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtrND( arr, idx, &type );
+    if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtrND( arr, idx, &type );
     else
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, 0, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, 0, 0 );
 
     if( ptr )
     {
-        if( CX_MAT_CN( type ) > 1 )
-            CX_ERROR( CX_BadNumChannels, "cxGetReal* support only single-channel arrays" );
+        if( CV_MAT_CN( type ) > 1 )
+            CV_ERROR( CV_BadNumChannels, "cvGetReal* support only single-channel arrays" );
 
-        value = icxGetReal( ptr, type );
+        value = icvGetReal( ptr, type );
     }
 
     __END__;
@@ -2456,272 +2487,272 @@ cxGetRealND( const CxArr* arr, int* idx )
 
 
 // Assigns new value to specifed element of nD array given linear index
-CX_IMPL  void
-cxSet1D( CxArr* arr, int idx, CxScalar scalar )
+CV_IMPL  void
+cvSet1D( CvArr* arr, int idx, CvScalar scalar )
 {
-    CX_FUNCNAME( "cxSet1D" );
+    CV_FUNCNAME( "cvSet1D" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( CX_IS_MAT( arr ) && CX_IS_MAT_CONT( ((CxMat*)arr)->type ))
+    if( CV_IS_MAT( arr ) && CV_IS_MAT_CONT( ((CvMat*)arr)->type ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
 
-        type = CX_MAT_TYPE(mat->type);
-        int pix_size = icxPixSize[type];
+        type = CV_MAT_TYPE(mat->type);
+        int pix_size = CV_ELEM_SIZE(type);
 
         // the first part is mul-free sufficient check
         // that the index is within the matrix
         if( (unsigned)idx >= (unsigned)(mat->rows + mat->cols - 1) &&
             (unsigned)idx >= (unsigned)(mat->rows*mat->cols))
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
         ptr = mat->data.ptr + (size_t)idx*pix_size;
     }
-    else if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr1D( arr, idx, &type );
+    else if( !CV_IS_SPARSE_MAT( arr ) || ((CvSparseMat*)arr)->dims > 1 )
+        ptr = cvPtr1D( arr, idx, &type );
     else
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, &idx, &type, -1, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, &idx, &type, -1, 0 );
 
-    cxScalarToRawData( &scalar, ptr, type );
+    cvScalarToRawData( &scalar, ptr, type );
 
     __END__;
 }
 
 
 // Assigns new value to specifed element of 2D array
-CX_IMPL  void
-cxSet2D( CxArr* arr, int y, int x, CxScalar scalar )
+CV_IMPL  void
+cvSet2D( CvArr* arr, int y, int x, CvScalar scalar )
 {
-    CX_FUNCNAME( "cxSet2D" );
+    CV_FUNCNAME( "cvSet2D" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( CX_IS_MAT( arr ))
+    if( CV_IS_MAT( arr ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
 
         if( (unsigned)y >= (unsigned)(mat->rows) ||
             (unsigned)x >= (unsigned)(mat->cols) )
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
-        type = CX_MAT_TYPE(mat->type);
-        ptr = mat->data.ptr + (size_t)y*mat->step + x*icxPixSize[type];
+        type = CV_MAT_TYPE(mat->type);
+        ptr = mat->data.ptr + (size_t)y*mat->step + x*CV_ELEM_SIZE(type);
     }
-    else if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr2D( arr, y, x, &type );
+    else if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtr2D( arr, y, x, &type );
     else
     {
         int idx[] = { y, x };
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, -1, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, -1, 0 );
     }
-    cxScalarToRawData( &scalar, ptr, type );
+    cvScalarToRawData( &scalar, ptr, type );
 
     __END__;
 }
 
 
 // Assigns new value to specifed element of 3D array
-CX_IMPL  void
-cxSet3D( CxArr* arr, int z, int y, int x, CxScalar scalar )
+CV_IMPL  void
+cvSet3D( CvArr* arr, int z, int y, int x, CvScalar scalar )
 {
-    /*CX_FUNCNAME( "cxSet3D" );*/
+    /*CV_FUNCNAME( "cvSet3D" );*/
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr3D( arr, z, y, x, &type );
+    if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtr3D( arr, z, y, x, &type );
     else
     {
         int idx[] = { z, y, x };
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, -1, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, -1, 0 );
     }
-    cxScalarToRawData( &scalar, ptr, type );
+    cvScalarToRawData( &scalar, ptr, type );
 
     __END__;
 }
 
 
 // Assigns new value to specifed element of nD array
-CX_IMPL  void
-cxSetND( CxArr* arr, int* idx, CxScalar scalar )
+CV_IMPL  void
+cvSetND( CvArr* arr, const int* idx, CvScalar scalar )
 {
-    /*CX_FUNCNAME( "cxSetND" );*/
+    /*CV_FUNCNAME( "cvSetND" );*/
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtrND( arr, idx, &type );
+    if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtrND( arr, idx, &type );
     else
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, -1, 0 );
-    cxScalarToRawData( &scalar, ptr, type );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, -1, 0 );
+    cvScalarToRawData( &scalar, ptr, type );
 
     __END__;
 }
 
 
-CX_IMPL  void
-cxSetReal1D( CxArr* arr, int idx, double value )
+CV_IMPL  void
+cvSetReal1D( CvArr* arr, int idx, double value )
 {
-    CX_FUNCNAME( "cxSetReal1D" );
+    CV_FUNCNAME( "cvSetReal1D" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( CX_IS_MAT( arr ) && CX_IS_MAT_CONT( ((CxMat*)arr)->type ))
+    if( CV_IS_MAT( arr ) && CV_IS_MAT_CONT( ((CvMat*)arr)->type ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
 
-        type = CX_MAT_TYPE(mat->type);
-        int pix_size = icxPixSize[type];
+        type = CV_MAT_TYPE(mat->type);
+        int pix_size = CV_ELEM_SIZE(type);
 
         // the first part is mul-free sufficient check
         // that the index is within the matrix
         if( (unsigned)idx >= (unsigned)(mat->rows + mat->cols - 1) &&
             (unsigned)idx >= (unsigned)(mat->rows*mat->cols))
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
         ptr = mat->data.ptr + (size_t)idx*pix_size;
     }
-    else if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr1D( arr, idx, &type );
+    else if( !CV_IS_SPARSE_MAT( arr ) || ((CvSparseMat*)arr)->dims > 1 )
+        ptr = cvPtr1D( arr, idx, &type );
     else
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, &idx, &type, -1, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, &idx, &type, -1, 0 );
 
-    if( CX_MAT_CN( type ) > 1 )
-        CX_ERROR( CX_BadNumChannels, "cxSetReal* support only single-channel arrays" );
+    if( CV_MAT_CN( type ) > 1 )
+        CV_ERROR( CV_BadNumChannels, "cvSetReal* support only single-channel arrays" );
 
     if( ptr )
-        icxSetReal( value, ptr, type );
+        icvSetReal( value, ptr, type );
 
     __END__;
 }
 
 
-CX_IMPL  void
-cxSetReal2D( CxArr* arr, int y, int x, double value )
+CV_IMPL  void
+cvSetReal2D( CvArr* arr, int y, int x, double value )
 {
-    CX_FUNCNAME( "cxSetReal2D" );
+    CV_FUNCNAME( "cvSetReal2D" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( CX_IS_MAT( arr ))
+    if( CV_IS_MAT( arr ))
     {
-        CxMat* mat = (CxMat*)arr;
+        CvMat* mat = (CvMat*)arr;
 
         if( (unsigned)y >= (unsigned)(mat->rows) ||
             (unsigned)x >= (unsigned)(mat->cols) )
-            CX_ERROR( CX_StsOutOfRange, "index is out of range" );
+            CV_ERROR( CV_StsOutOfRange, "index is out of range" );
 
-        type = CX_MAT_TYPE(mat->type);
-        ptr = mat->data.ptr + (size_t)y*mat->step + x*icxPixSize[type];
+        type = CV_MAT_TYPE(mat->type);
+        ptr = mat->data.ptr + (size_t)y*mat->step + x*CV_ELEM_SIZE(type);
     }
-    else if( !CX_IS_SPARSE_MAT( arr ))
+    else if( !CV_IS_SPARSE_MAT( arr ))
     {
-        ptr = cxPtr2D( arr, y, x, &type );
+        ptr = cvPtr2D( arr, y, x, &type );
     }
     else
     {
         int idx[] = { y, x };
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, -1, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, -1, 0 );
     }
-    if( CX_MAT_CN( type ) > 1 )
-        CX_ERROR( CX_BadNumChannels, "cxSetReal* support only single-channel arrays" );
+    if( CV_MAT_CN( type ) > 1 )
+        CV_ERROR( CV_BadNumChannels, "cvSetReal* support only single-channel arrays" );
 
     if( ptr )
-        icxSetReal( value, ptr, type );
+        icvSetReal( value, ptr, type );
 
     __END__;
 }
 
 
-CX_IMPL  void
-cxSetReal3D( CxArr* arr, int z, int y, int x, double value )
+CV_IMPL  void
+cvSetReal3D( CvArr* arr, int z, int y, int x, double value )
 {
-    CX_FUNCNAME( "cxSetReal3D" );
+    CV_FUNCNAME( "cvSetReal3D" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtr3D( arr, z, y, x, &type );
+    if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtr3D( arr, z, y, x, &type );
     else
     {
         int idx[] = { z, y, x };
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, -1, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, -1, 0 );
     }
-    if( CX_MAT_CN( type ) > 1 )
-        CX_ERROR( CX_BadNumChannels, "cxSetReal* support only single-channel arrays" );
+    if( CV_MAT_CN( type ) > 1 )
+        CV_ERROR( CV_BadNumChannels, "cvSetReal* support only single-channel arrays" );
 
     if( ptr )
-        icxSetReal( value, ptr, type );
+        icvSetReal( value, ptr, type );
 
     __END__;
 }
 
 
-CX_IMPL  void
-cxSetRealND( CxArr* arr, int* idx, double value )
+CV_IMPL  void
+cvSetRealND( CvArr* arr, const int* idx, double value )
 {
-    CX_FUNCNAME( "cxSetRealND" );
+    CV_FUNCNAME( "cvSetRealND" );
 
     __BEGIN__;
 
     int type = 0;
     uchar* ptr;
     
-    if( !CX_IS_SPARSE_MAT( arr ))
-        ptr = cxPtrND( arr, idx, &type );
+    if( !CV_IS_SPARSE_MAT( arr ))
+        ptr = cvPtrND( arr, idx, &type );
     else
-        ptr = icxGetNodePtr( (CxSparseMat*)arr, idx, &type, -1, 0 );
+        ptr = icvGetNodePtr( (CvSparseMat*)arr, idx, &type, -1, 0 );
 
-    if( CX_MAT_CN( type ) > 1 )
-        CX_ERROR( CX_BadNumChannels, "cxSetReal* support only single-channel arrays" );
+    if( CV_MAT_CN( type ) > 1 )
+        CV_ERROR( CV_BadNumChannels, "cvSetReal* support only single-channel arrays" );
 
     if( ptr )
-        icxSetReal( value, ptr, type );
+        icvSetReal( value, ptr, type );
 
     __END__;
 }
 
 
-CX_IMPL void
-cxClearND( CxArr* arr, int* idx )
+CV_IMPL void
+cvClearND( CvArr* arr, const int* idx )
 {
-    /*CX_FUNCNAME( "cxClearND" );*/
+    /*CV_FUNCNAME( "cvClearND" );*/
 
     __BEGIN__;
 
-    if( !CX_IS_SPARSE_MAT( arr ))
+    if( !CV_IS_SPARSE_MAT( arr ))
     {
         int type;
         uchar* ptr;
-        ptr = cxPtrND( arr, idx, &type );
+        ptr = cvPtrND( arr, idx, &type );
         if( ptr )
-            memset( ptr, 0, icxPixSize[type] );
+            CV_ZERO_CHAR( ptr, CV_ELEM_SIZE(type) );
     }
     else
     {
-        icxDeleteNode( (CxSparseMat*)arr, idx, 0 );
+        icvDeleteNode( (CvSparseMat*)arr, idx, 0 );
     }
 
     __END__;
@@ -2729,43 +2760,43 @@ cxClearND( CxArr* arr, int* idx )
 
 
 /****************************************************************************************\
-*                             Conversion to CxMat or IplImage                            *
+*                             Conversion to CvMat or IplImage                            *
 \****************************************************************************************/
 
-// convert array (CxMat or IplImage) to CxMat
-CX_IMPL CxMat*
-cxGetMat( const CxArr* array, CxMat* mat,
+// convert array (CvMat or IplImage) to CvMat
+CV_IMPL CvMat*
+cvGetMat( const CvArr* array, CvMat* mat,
           int* pCOI, int allowND )
 {
-    CxMat* result = 0;
-    CxMat* src = (CxMat*)array;
+    CvMat* result = 0;
+    CvMat* src = (CvMat*)array;
     int coi = 0;
     
-    CX_FUNCNAME( "cxGetMat" );
+    CV_FUNCNAME( "cvGetMat" );
 
     __BEGIN__;
 
     if( !mat || !src )
-        CX_ERROR( CX_StsNullPtr, "NULL array pointer is passed" );
+        CV_ERROR( CV_StsNullPtr, "NULL array pointer is passed" );
 
-    if( CX_IS_MAT_HDR(src))
+    if( CV_IS_MAT_HDR(src))
     {
         if( !src->data.ptr )
-            CX_ERROR( CX_StsNullPtr, "The matrix has NULL data pointer" );
+            CV_ERROR( CV_StsNullPtr, "The matrix has NULL data pointer" );
         
-        result = (CxMat*)src;
+        result = (CvMat*)src;
     }
-    else if( CX_IS_IMAGE_HDR(src) )
+    else if( CV_IS_IMAGE_HDR(src) )
     {
         const IplImage* img = (const IplImage*)src;
         int depth, order;
 
         if( img->imageData == 0 )
-            CX_ERROR( CX_StsNullPtr, "The image has NULL data pointer" );
+            CV_ERROR( CV_StsNullPtr, "The image has NULL data pointer" );
 
-        depth = icxIplToCxDepth( img->depth );
+        depth = icvIplToCvDepth( img->depth );
         if( depth < 0 )
-            CX_ERROR_FROM_CODE( CX_BadDepth );
+            CV_ERROR_FROM_CODE( CV_BadDepth );
 
         order = img->dataOrder & (img->nChannels > 1 ? -1 : 0);
 
@@ -2776,77 +2807,78 @@ cxGetMat( const CxArr* array, CxMat* mat,
                 int type = depth;
 
                 if( img->roi->coi == 0 )
-                    CX_ERROR( CX_StsBadFlag,
+                    CV_ERROR( CV_StsBadFlag,
                     "Images with planar data layout should be used with COI selected" );
 
-                CX_CALL( cxInitMatHeader( mat, img->roi->height,
+                CV_CALL( cvInitMatHeader( mat, img->roi->height,
                                    img->roi->width, type,
                                    img->imageData + (img->roi->coi-1)*img->imageSize +
                                    img->roi->yOffset*img->widthStep +
-                                   img->roi->xOffset*icxPixSize[type],
+                                   img->roi->xOffset*CV_ELEM_SIZE(type),
                                    img->widthStep ));
             }
             else /* pixel order */
             {
-                int type = depth + (img->nChannels - 1)*8;
+                int type = CV_MAKETYPE( depth, img->nChannels );
                 coi = img->roi->coi;
 
-                if( img->nChannels > 4 )
-                    CX_ERROR( CX_BadNumChannels,
-                        "The image is interleaved and has more than 4 channels" );
+                if( img->nChannels > CV_CN_MAX )
+                    CV_ERROR( CV_BadNumChannels,
+                        "The image is interleaved and has over CV_CN_MAX channels" );
 
-                CX_CALL( cxInitMatHeader( mat, img->roi->height, img->roi->width,
+                CV_CALL( cvInitMatHeader( mat, img->roi->height, img->roi->width,
                                           type, img->imageData +
                                           img->roi->yOffset*img->widthStep +
-                                          img->roi->xOffset*icxPixSize[type],
+                                          img->roi->xOffset*CV_ELEM_SIZE(type),
                                           img->widthStep ));
             }
         }
         else
         {
-            int type = depth + (img->nChannels - 1)*8;
+            int type = CV_MAKETYPE( depth, img->nChannels );
 
             if( order != IPL_DATA_ORDER_PIXEL )
-                CX_ERROR( CX_StsBadFlag, "Pixel order should be used with coi == 0" );
+                CV_ERROR( CV_StsBadFlag, "Pixel order should be used with coi == 0" );
 
-            CX_CALL( cxInitMatHeader( mat, img->height, img->width, type,
+            CV_CALL( cvInitMatHeader( mat, img->height, img->width, type,
                                       img->imageData, img->widthStep ));
         }
 
         result = mat;
     }
-    else if( allowND && CX_IS_MATND_HDR(src) )
+    else if( allowND && CV_IS_MATND_HDR(src) )
     {
-        CxMatND* matnd = (CxMatND*)src;
+        CvMatND* matnd = (CvMatND*)src;
         int i;
         int size1 = matnd->dim[0].size, size2 = 1;
         
         if( !src->data.ptr )
-            CX_ERROR( CX_StsNullPtr, "Input array has NULL data pointer" );
+            CV_ERROR( CV_StsNullPtr, "Input array has NULL data pointer" );
 
-        if( !CX_IS_MAT_CONT( matnd->type ))
-            CX_ERROR( CX_StsBadArg, "Only continuous nD arrays are supported here" );
+        if( !CV_IS_MAT_CONT( matnd->type ))
+            CV_ERROR( CV_StsBadArg, "Only continuous nD arrays are supported here" );
 
         if( matnd->dims > 2 )
             for( i = 1; i < matnd->dims; i++ )
-                size1 *= matnd->dim[i].size;
+                size2 *= matnd->dim[i].size;
         else
             size2 = matnd->dims == 1 ? 1 : matnd->dim[1].size;
 
         mat->refcount = 0;
+        mat->hdr_refcount = 0;
         mat->data.ptr = matnd->data.ptr;
         mat->rows = size1;
         mat->cols = size2;
-        mat->type = CX_MAT_TYPE(matnd->type) | CX_MAT_MAGIC_VAL | CX_MAT_CONT_FLAG;
-        mat->step = size2*icxPixSize[CX_MAT_TYPE(matnd->type)];
+        mat->type = CV_MAT_TYPE(matnd->type) | CV_MAT_MAGIC_VAL | CV_MAT_CONT_FLAG;
+        mat->step = size2*CV_ELEM_SIZE(matnd->type);
         mat->step &= size1 > 1 ? -1 : 0;
 
-        icxCheckHuge( mat );
+        icvCheckHuge( mat );
         result = mat;
     }
     else
     {
-        CX_ERROR( CX_StsBadFlag, "Unrecognized or unsupported array type" );
+        CV_ERROR( CV_StsBadFlag, "Unrecognized or unsupported array type" );
     }
 
     __END__;
@@ -2858,29 +2890,25 @@ cxGetMat( const CxArr* array, CxMat* mat,
 }
 
 
-CX_IMPL CxArr*
-cxReshapeMatND( const CxArr* arr,
-                int sizeof_header, CxArr* _header,
+CV_IMPL CvArr*
+cvReshapeMatND( const CvArr* arr,
+                int sizeof_header, CvArr* _header,
                 int new_cn, int new_dims, int* new_sizes )
 {
-    CxArr* result = 0;
-    CX_FUNCNAME( "cxReshapeMatND" );
+    CvArr* result = 0;
+    CV_FUNCNAME( "cvReshapeMatND" );
 
     __BEGIN__;
 
     int dims, coi = 0;
 
     if( !arr || !_header )
-        CX_ERROR( CX_StsNullPtr, "NULL pointer to array or destination header" );
+        CV_ERROR( CV_StsNullPtr, "NULL pointer to array or destination header" );
 
     if( new_cn == 0 && new_dims == 0 )
-        CX_ERROR( CX_StsBadArg, "None of array parameters is changed: dummy call?" );
+        CV_ERROR( CV_StsBadArg, "None of array parameters is changed: dummy call?" );
 
-    if( (unsigned)new_cn > 4 )
-        CX_ERROR( CX_BadNumChannels,
-        "Number of channels should be 0 (not changed) or 1..4" );
-    
-    CX_CALL( dims = cxGetDims( arr ));
+    CV_CALL( dims = cvGetDims( arr ));
 
     if( new_dims == 0 )
     {
@@ -2893,28 +2921,32 @@ cxReshapeMatND( const CxArr* arr,
     }
     else
     {
-        if( (unsigned)new_dims > CX_MAX_DIM )
-            CX_ERROR( CX_StsOutOfRange, "Bad number of dimensions" );
+        if( new_dims <= 0 || new_dims > CV_MAX_DIM )
+            CV_ERROR( CV_StsOutOfRange, "Non-positive or too large number of dimensions" );
         if( !new_sizes )
-            CX_ERROR( CX_StsNullPtr, "New dimension sizes are not specified" );
+            CV_ERROR( CV_StsNullPtr, "New dimension sizes are not specified" );
     }
 
     if( new_dims <= 2 )
     {
-        CxMat* mat = (CxMat*)arr;
-        CxMat* header = (CxMat*)_header;
+        CvMat* mat = (CvMat*)arr;
+        CvMat* header = (CvMat*)_header;
         int* refcount = 0;
+        int  hdr_refcount = 0;
         int  total_width, new_rows, cn;
 
-        if( sizeof_header != sizeof(CxMat))
-            CX_ERROR( CX_StsBadArg, "The header should be CxMat" );
+        if( sizeof_header != sizeof(CvMat))
+            CV_ERROR( CV_StsBadArg, "The header should be CvMat" );
 
         if( mat == header )
+        {
             refcount = mat->refcount;
-        else if( !CX_IS_MAT( mat ))
-            CX_CALL( mat = cxGetMat( mat, header, &coi, 1 ));
+            hdr_refcount = mat->hdr_refcount;
+        }
+        else if( !CV_IS_MAT( mat ))
+            CV_CALL( mat = cvGetMat( mat, header, &coi, 1 ));
 
-        cn = CX_MAT_CN( mat->type );
+        cn = CV_MAT_CN( mat->type );
         total_width = mat->cols * cn;
 
         if( new_cn == 0 )
@@ -2935,14 +2967,14 @@ cxReshapeMatND( const CxArr* arr,
         {
             int total_size = total_width * mat->rows;
 
-            if( !CX_IS_MAT_CONT( mat->type ))
-                CX_ERROR( CX_BadStep,
+            if( !CV_IS_MAT_CONT( mat->type ))
+                CV_ERROR( CV_BadStep,
                 "The matrix is not continuous so the number of rows can not be changed" );
 
             total_width = total_size / new_rows;
 
             if( total_width * new_rows != total_size )
-                CX_ERROR( CX_StsBadArg, "The total number of matrix elements "
+                CV_ERROR( CV_StsBadArg, "The total number of matrix elements "
                                         "is not divisible by the new number of rows" );
         }
 
@@ -2951,66 +2983,68 @@ cxReshapeMatND( const CxArr* arr,
 
         if( header->cols * new_cn != total_width ||
             new_sizes && header->cols != new_sizes[1] )
-            CX_ERROR( CX_StsBadArg, "The total matrix width is not "
+            CV_ERROR( CV_StsBadArg, "The total matrix width is not "
                             "divisible by the new number of columns" );
 
-        header->type = (mat->type & ~CX_MAT_CN_MASK) + (new_cn - 1)*8;
-        header->step = header->cols * icxPixSize[CX_MAT_TYPE(mat->type)];
+        header->type = CV_MAKETYPE( mat->type & ~CV_MAT_CN_MASK, new_cn );
+        header->step = header->cols * CV_ELEM_SIZE(mat->type);
         header->step &= new_rows > 1 ? -1 : 0;
         header->refcount = refcount;
+        header->hdr_refcount = hdr_refcount;
     }
     else
     {
-        CxMatND* header = (CxMatND*)_header;
+        CvMatND* header = (CvMatND*)_header;
 
-        if( sizeof_header != sizeof(CxMatND))
-            CX_ERROR( CX_StsBadSize, "The header should be CxMatND" );
+        if( sizeof_header != sizeof(CvMatND))
+            CV_ERROR( CV_StsBadSize, "The header should be CvMatND" );
         
         if( !new_sizes )
         {
-            if( !CX_IS_MATND( arr ))
-                CX_ERROR( CX_StsBadArg, "The source array must be CxMatND" );
+            if( !CV_IS_MATND( arr ))
+                CV_ERROR( CV_StsBadArg, "The source array must be CvMatND" );
 
             {
-            CxMatND* mat = (CxMatND*)arr;
+            CvMatND* mat = (CvMatND*)arr;
             assert( new_cn > 0 );
-            int last_dim_size = mat->dim[mat->dims-1].size*CX_MAT_CN(mat->type);
+            int last_dim_size = mat->dim[mat->dims-1].size*CV_MAT_CN(mat->type);
             int new_size = last_dim_size/new_cn;
 
             if( new_size*new_cn != last_dim_size )
-                CX_ERROR( CX_StsBadArg,
+                CV_ERROR( CV_StsBadArg,
                 "The last dimension full size is not divisible by new number of channels");
 
             if( mat != header )
             {
                 memcpy( header, mat, sizeof(*header));
                 header->refcount = 0;
+                header->hdr_refcount = 0;
             }
 
             header->dim[header->dims-1].size = new_size;
-            header->type = (header->type & ~CX_MAT_CN_MASK) + (new_cn - 1)*8;
+            header->type = CV_MAKETYPE( header->type & ~CV_MAT_CN_MASK, new_cn );
             }
         }
         else
         {
-            CxMatND stub;
-            CxMatND* mat = (CxMatND*)arr;
+            CvMatND stub;
+            CvMatND* mat = (CvMatND*)arr;
             int i, size1, size2;
             int step;
             
             if( new_cn != 0 )
-                CX_ERROR( CX_StsBadArg,
+                CV_ERROR( CV_StsBadArg,
                 "Simultaneous change of shape and number of channels is not supported. "
                 "Do it by 2 separate calls" );
             
-            if( !CX_IS_MATND( mat ))
+            if( !CV_IS_MATND( mat ))
             {
-                CX_CALL( cxGetMatND( mat, &stub, &coi ));
+                CV_CALL( cvGetMatND( mat, &stub, &coi ));
                 mat = &stub;
             }
 
-            if( CX_IS_MAT_CONT( mat->type ))
-                CX_ERROR( CX_StsBadArg, "Non-continuous nD arrays are not supported" );
+            if( CV_IS_MAT_CONT( mat->type ))
+                CV_ERROR( CV_StsBadArg, "Non-continuous nD arrays are not supported" );
 
             size1 = mat->dim[0].size;
             for( i = 1; i < dims; i++ )
@@ -3020,22 +3054,25 @@ cxReshapeMatND( const CxArr* arr,
             for( i = 0; i < new_dims; i++ )
             {
                 if( new_sizes[i] <= 0 )
-                    CX_ERROR( CX_StsBadSize,
+                    CV_ERROR( CV_StsBadSize,
                     "One of new dimension sizes is non-positive" );
                 size2 *= new_sizes[i];
             }
 
             if( size1 != size2 )
-                CX_ERROR( CX_StsBadSize,
+                CV_ERROR( CV_StsBadSize,
                 "Number of elements in the original and reshaped array is different" );
 
             if( header != mat )
+            {
                 header->refcount = 0;
+                header->hdr_refcount = 0;
+            }
 
             header->dims = new_dims;
             header->type = mat->type;
             header->data.ptr = mat->data.ptr;
-            step = icxPixSize[CX_MAT_TYPE(header->type)];
+            step = CV_ELEM_SIZE(header->type);
 
             for( i = new_dims - 1; i >= 0; i-- )
             {
@@ -3047,7 +3084,7 @@ cxReshapeMatND( const CxArr* arr,
     }
 
     if( !coi )
-        CX_ERROR( CX_BadCOI, "COI is not supported by this operation" );
+        CV_ERROR( CV_BadCOI, "COI is not supported by this operation" );
 
     result = _header;
     
@@ -3057,74 +3094,79 @@ cxReshapeMatND( const CxArr* arr,
 }
 
 
-CX_IMPL CxMat*
-cxReshape( const CxArr* array, CxMat* header,
+CV_IMPL CvMat*
+cvReshape( const CvArr* array, CvMat* header,
            int new_cn, int new_rows )
 {
-    CxMat* result = 0;
-    CX_FUNCNAME( "cxReshape" );
+    CvMat* result = 0;
+    CV_FUNCNAME( "cvReshape" );
 
     __BEGIN__;
 
-    CxMat *mat = (CxMat*)array;
+    CvMat *mat = (CvMat*)array;
     int total_width, new_width;
 
     if( !header )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    if( !CX_IS_MAT( mat ))
+    if( !CV_IS_MAT( mat ))
     {
         int coi = 0;
-        CX_CALL( mat = cxGetMat( mat, header, &coi, 1 ));
+        CV_CALL( mat = cvGetMat( mat, header, &coi, 1 ));
         if( coi )
-            CX_ERROR( CX_BadCOI, "COI is not supported" );
+            CV_ERROR( CV_BadCOI, "COI is not supported" );
     }
 
     if( new_cn == 0 )
-        new_cn = CX_MAT_CN(mat->type);
+        new_cn = CV_MAT_CN(mat->type);
     else if( (unsigned)(new_cn - 1) > 3 )
-        CX_ERROR( CX_BadNumChannels, "" );
+        CV_ERROR( CV_BadNumChannels, "" );
 
     if( mat != header )
     {
         *header = *mat;
         header->refcount = 0;
+        header->hdr_refcount = 0;
     }
 
-    total_width = mat->cols * CX_MAT_CN( mat->type );
+    total_width = mat->cols * CV_MAT_CN( mat->type );
 
-    if( new_cn > total_width )
+    if( (new_cn > total_width || total_width % new_cn != 0) && new_rows == 0 )
         new_rows = mat->rows * total_width / new_cn;
 
-    if( new_rows != 0 )
+    if( new_rows == 0 || new_rows == mat->rows )
+    {
+        header->rows = mat->rows;
+        header->step = mat->step;
+    }
+    else
     {
         int total_size = total_width * mat->rows;
-
-        if( !CX_IS_MAT_CONT( mat->type ))
-            CX_ERROR( CX_BadStep,
+        if( !CV_IS_MAT_CONT( mat->type ))
+            CV_ERROR( CV_BadStep,
             "The matrix is not continuous, thus its number of rows can not be changed" );
 
         if( (unsigned)new_rows > (unsigned)total_size )
-            CX_ERROR( CX_StsOutOfRange, "Bad new number of rows" );
+            CV_ERROR( CV_StsOutOfRange, "Bad new number of rows" );
 
         total_width = total_size / new_rows;
 
         if( total_width * new_rows != total_size )
-            CX_ERROR( CX_StsBadArg, "The total number of matrix elements "
+            CV_ERROR( CV_StsBadArg, "The total number of matrix elements "
                                     "is not divisible by the new number of rows" );
 
         header->rows = new_rows;
-        header->step = total_width * icxPixSize[mat->type & CX_MAT_DEPTH_MASK];
+        header->step = total_width * CV_ELEM_SIZE1(mat->type);
     }
 
     new_width = total_width / new_cn;
 
     if( new_width * new_cn != total_width )
-        CX_ERROR( CX_BadNumChannels,
+        CV_ERROR( CV_BadNumChannels,
         "The total width is not divisible by the new number of channels" );
 
     header->cols = new_width;
-    header->type = (mat->type & ~CX_MAT_CN_MASK) + ((new_cn - 1)*8);
+    header->type = CV_MAKETYPE( mat->type & ~CV_MAT_CN_MASK, new_cn );
 
     result = header;
 
@@ -3134,34 +3176,37 @@ cxReshape( const CxArr* array, CxMat* header,
 }
 
 
-// convert array (CxMat or IplImage) to IplImage
-CX_IMPL IplImage*
-cxGetImage( const CxArr* array, IplImage* img )
+// convert array (CvMat or IplImage) to IplImage
+CV_IMPL IplImage*
+cvGetImage( const CvArr* array, IplImage* img )
 {
     IplImage* result = 0;
     const IplImage* src = (const IplImage*)array;
     
-    CX_FUNCNAME( "cxGetImage" );
+    CV_FUNCNAME( "cvGetImage" );
 
     __BEGIN__;
 
-    if( !img )
-        CX_ERROR_FROM_CODE( CX_StsNullPtr );
+    int depth;
 
-    if( !CX_IS_IMAGE_HDR(src) )
+    if( !img )
+        CV_ERROR_FROM_CODE( CV_StsNullPtr );
+
+    if( !CV_IS_IMAGE_HDR(src) )
     {
-        const CxMat* mat = (const CxMat*)src;
+        const CvMat* mat = (const CvMat*)src;
         
-        if( !CX_IS_MAT_HDR(mat))
-            CX_ERROR_FROM_CODE( CX_StsBadFlag );
+        if( !CV_IS_MAT_HDR(mat))
+            CV_ERROR_FROM_CODE( CV_StsBadFlag );
 
         if( mat->data.ptr == 0 )
-            CX_ERROR_FROM_CODE( CX_StsNullPtr );
+            CV_ERROR_FROM_CODE( CV_StsNullPtr );
 
-        cxInitImageHeader( img, cxSize(mat->cols, mat->rows),
-                           icxCxToIplDepth(CX_MAT_DEPTH(mat->type)),
-                           CX_MAT_CN(mat->type) );
-        cxSetData( img, mat->data.ptr, mat->step );
+        depth = cvCvToIplDepth(mat->type);
+
+        cvInitImageHeader( img, cvSize(mat->cols, mat->rows),
+                           depth, CV_MAT_CN(mat->type) );
+        cvSetData( img, mat->data.ptr, mat->step );
 
         result = img;
     }
@@ -3180,17 +3225,17 @@ cxGetImage( const CxArr* array, IplImage* img )
 *                               IplImage-specific functions                              *
 \****************************************************************************************/
 
-static IplROI* icxCreateROI( int coi, int xOffset, int yOffset, int width, int height )
+static IplROI* icvCreateROI( int coi, int xOffset, int yOffset, int width, int height )
 {
     IplROI *roi = 0;
 
-    CX_FUNCNAME( "icxCreateROI" );
+    CV_FUNCNAME( "icvCreateROI" );
 
     __BEGIN__;
 
-    if( !CxIPL.createROI )
+    if( !CvIPL.createROI )
     {
-        CX_CALL( roi = (IplROI*)cxAlloc( sizeof(*roi)));
+        CV_CALL( roi = (IplROI*)cvAlloc( sizeof(*roi)));
 
         roi->coi = coi;
         roi->xOffset = xOffset;
@@ -3200,7 +3245,7 @@ static IplROI* icxCreateROI( int coi, int xOffset, int yOffset, int width, int h
     }
     else
     {
-        roi = CxIPL.createROI( coi, xOffset, yOffset, width, height );
+        roi = CvIPL.createROI( coi, xOffset, yOffset, width, height );
     }
 
     __END__;
@@ -3209,7 +3254,7 @@ static IplROI* icxCreateROI( int coi, int xOffset, int yOffset, int width, int h
 }
 
 static  void
-icxGetColorModel( int nchannels, char** colorModel, char** channelSeq )
+icvGetColorModel( int nchannels, char** colorModel, char** channelSeq )
 {
     static char* tab[][2] =
     {
@@ -3231,103 +3276,103 @@ icxGetColorModel( int nchannels, char** colorModel, char** channelSeq )
 
 
 // create IplImage header
-CX_IMPL IplImage *
-cxCreateImageHeader( CxSize size, int depth, int channels )
+CV_IMPL IplImage *
+cvCreateImageHeader( CvSize size, int depth, int channels )
 {
     IplImage *img = 0;
 
-    CX_FUNCNAME( "cxCreateImageHeader" );
+    CV_FUNCNAME( "cvCreateImageHeader" );
 
     __BEGIN__;
 
-    if( !CxIPL.createHeader )
+    if( !CvIPL.createHeader )
     {
-        CX_CALL( img = (IplImage *)cxAlloc( sizeof( *img )));
-        CX_CALL( cxInitImageHeader( img, size, depth, channels, IPL_ORIGIN_TL,
-                                    CX_DEFAULT_IMAGE_ROW_ALIGN ));
+        CV_CALL( img = (IplImage *)cvAlloc( sizeof( *img )));
+        CV_CALL( cvInitImageHeader( img, size, depth, channels, IPL_ORIGIN_TL,
+                                    CV_DEFAULT_IMAGE_ROW_ALIGN ));
     }
     else
     {
         char *colorModel;
         char *channelSeq;
 
-        icxGetColorModel( channels, &colorModel, &channelSeq );
+        icvGetColorModel( channels, &colorModel, &channelSeq );
 
-        img = CxIPL.createHeader( channels, 0, depth, colorModel, channelSeq,
+        img = CvIPL.createHeader( channels, 0, depth, colorModel, channelSeq,
                                   IPL_DATA_ORDER_PIXEL, IPL_ORIGIN_TL,
-                                  CX_DEFAULT_IMAGE_ROW_ALIGN,
+                                  CV_DEFAULT_IMAGE_ROW_ALIGN,
                                   size.width, size.height, 0, 0, 0, 0 );
     }
 
     __END__;
 
-    if( cxGetErrStatus() < 0 && img )
-        cxReleaseImageHeader( &img );
+    if( cvGetErrStatus() < 0 && img )
+        cvReleaseImageHeader( &img );
 
     return img;
 }
 
 
 // create IplImage header and allocate underlying data
-CX_IMPL IplImage *
-cxCreateImage( CxSize size, int depth, int channels )
+CV_IMPL IplImage *
+cvCreateImage( CvSize size, int depth, int channels )
 {
     IplImage *img = 0;
 
-    CX_FUNCNAME( "cxCreateImage" );
+    CV_FUNCNAME( "cvCreateImage" );
 
     __BEGIN__;
 
-    CX_CALL( img = cxCreateImageHeader( size, depth, channels ));
+    CV_CALL( img = cvCreateImageHeader( size, depth, channels ));
     assert( img );
-    CX_CALL( cxCreateData( img ));
+    CV_CALL( cvCreateData( img ));
 
     __END__;
 
-    if( cxGetErrStatus() < 0 )
-        cxReleaseImage( &img );
+    if( cvGetErrStatus() < 0 )
+        cvReleaseImage( &img );
 
     return img;
 }
 
 
 // initalize IplImage header, allocated by the user
-CX_IMPL IplImage*
-cxInitImageHeader( IplImage * image, CxSize size, int depth,
+CV_IMPL IplImage*
+cvInitImageHeader( IplImage * image, CvSize size, int depth,
                    int channels, int origin, int align )
 {
     IplImage* result = 0;
 
-    CX_FUNCNAME( "cxInitImageHeader" );
+    CV_FUNCNAME( "cvInitImageHeader" );
 
     __BEGIN__;
 
     char *colorModel, *channelSeq;
 
     if( !image )
-        CX_ERROR( CX_HeaderIsNull, "null pointer to header" );
+        CV_ERROR( CV_HeaderIsNull, "null pointer to header" );
 
     memset( image, 0, sizeof( *image ));
     image->nSize = sizeof( *image );
 
-    CX_CALL( icxGetColorModel( channels, &colorModel, &channelSeq ));
+    CV_CALL( icvGetColorModel( channels, &colorModel, &channelSeq ));
     strncpy( image->colorModel, colorModel, 4 );
     strncpy( image->channelSeq, channelSeq, 4 );
 
     if( size.width < 0 || size.height < 0 )
-        CX_ERROR( CX_BadROISize, "Bad input roi" );
+        CV_ERROR( CV_BadROISize, "Bad input roi" );
 
     if( (depth != (int)IPL_DEPTH_1U && depth != (int)IPL_DEPTH_8U &&
          depth != (int)IPL_DEPTH_8S && depth != (int)IPL_DEPTH_16U &&
          depth != (int)IPL_DEPTH_16S && depth != (int)IPL_DEPTH_32S &&
          depth != (int)IPL_DEPTH_32F && depth != (int)IPL_DEPTH_64F) ||
          channels < 0 )
-        CX_ERROR( CX_BadDepth, "Unsupported format" );
-    if( origin != CX_ORIGIN_BL && origin != CX_ORIGIN_TL )
-        CX_ERROR( CX_BadOrigin, "Bad input origin" );
+        CV_ERROR( CV_BadDepth, "Unsupported format" );
+    if( origin != CV_ORIGIN_BL && origin != CV_ORIGIN_TL )
+        CV_ERROR( CV_BadOrigin, "Bad input origin" );
 
     if( align != 4 && align != 8 )
-        CX_ERROR( CX_BadAlign, "Bad input align" );
+        CV_ERROR( CV_BadAlign, "Bad input align" );
 
     image->width = size.width;
     image->height = size.height;
@@ -3356,73 +3401,73 @@ cxInitImageHeader( IplImage * image, CxSize size, int depth,
 }
 
 
-CX_IMPL void
-cxReleaseImageHeader( IplImage** image )
+CV_IMPL void
+cvReleaseImageHeader( IplImage** image )
 {
-    CX_FUNCNAME( "cxReleaseImageHeader" );
+    CV_FUNCNAME( "cvReleaseImageHeader" );
 
     __BEGIN__;
 
     if( !image )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( *image )
     {
         IplImage* img = *image;
         *image = 0;
         
-        if( !CxIPL.deallocate )
+        if( !CvIPL.deallocate )
         {
-            cxFree( (void**)&(img->roi) );
-            cxFree( (void**)&img );
+            cvFree( &img->roi );
+            cvFree( &img );
         }
         else
         {
-            CxIPL.deallocate( img, IPL_IMAGE_HEADER | IPL_IMAGE_ROI );
+            CvIPL.deallocate( img, IPL_IMAGE_HEADER | IPL_IMAGE_ROI );
         }
     }
     __END__;
 }
 
 
-CX_IMPL void
-cxReleaseImage( IplImage ** image )
+CV_IMPL void
+cvReleaseImage( IplImage ** image )
 {
-    CX_FUNCNAME( "cxReleaseImage" );
+    CV_FUNCNAME( "cvReleaseImage" );
 
     __BEGIN__
 
     if( !image )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( *image )
     {
         IplImage* img = *image;
         *image = 0;
         
-        cxReleaseData( img );
-        cxReleaseImageHeader( &img );
+        cvReleaseData( img );
+        cvReleaseImageHeader( &img );
     }
 
     __END__;
 }
 
 
-CX_IMPL void
-cxSetImageROI( IplImage* image, CxRect rect )
+CV_IMPL void
+cvSetImageROI( IplImage* image, CvRect rect )
 {
-    CX_FUNCNAME( "cxSetImageROI" );
+    CV_FUNCNAME( "cvSetImageROI" );
 
     __BEGIN__;
 
     if( !image )
-        CX_ERROR( CX_HeaderIsNull, 0 );
+        CV_ERROR( CV_HeaderIsNull, "" );
 
     if( rect.x > image->width || rect.y > image->height )
-        CX_ERROR( CX_BadROISize, 0 );
+        CV_ERROR( CV_BadROISize, "" );
 
     if( rect.x + rect.width < 0 || rect.y + rect.height < 0 )
-        CX_ERROR( CX_BadROISize, 0 );
+        CV_ERROR( CV_BadROISize, "" );
 
     if( rect.x < 0 )
     {
@@ -3451,32 +3496,32 @@ cxSetImageROI( IplImage* image, CxRect rect )
     }
     else
     {
-        CX_CALL( image->roi = icxCreateROI( 0, rect.x, rect.y, rect.width, rect.height ));
+        CV_CALL( image->roi = icvCreateROI( 0, rect.x, rect.y, rect.width, rect.height ));
     }
 
     __END__;
 }
 
 
-CX_IMPL void
-cxResetImageROI( IplImage* image )
+CV_IMPL void
+cvResetImageROI( IplImage* image )
 {
-    CX_FUNCNAME( "cxResetImageROI" );
+    CV_FUNCNAME( "cvResetImageROI" );
 
     __BEGIN__;
 
     if( !image )
-        CX_ERROR( CX_HeaderIsNull, 0 );
+        CV_ERROR( CV_HeaderIsNull, "" );
 
     if( image->roi )
     {
-        if( !CxIPL.deallocate )
+        if( !CvIPL.deallocate )
         {
-            CX_CALL( cxFree( (void**)&(image->roi) ));
+            cvFree( &image->roi );
         }
         else
         {
-            CxIPL.deallocate( image, IPL_IMAGE_ROI );
+            CvIPL.deallocate( image, IPL_IMAGE_ROI );
             image->roi = 0;
         }
     }
@@ -3485,23 +3530,23 @@ cxResetImageROI( IplImage* image )
 }
 
 
-CX_IMPL CxRect
-cxGetImageROI( const IplImage* img )
+CV_IMPL CvRect
+cvGetImageROI( const IplImage* img )
 {
-    CxRect rect = { 0, 0, 0, 0 };
+    CvRect rect = { 0, 0, 0, 0 };
     
-    CX_FUNCNAME( "cxGetImageROI" );
+    CV_FUNCNAME( "cvGetImageROI" );
 
     __BEGIN__;
 
     if( !img )
-        CX_ERROR( CX_StsNullPtr, "Null pointer to image" );
+        CV_ERROR( CV_StsNullPtr, "Null pointer to image" );
 
     if( img->roi )
-        rect = cxRect( img->roi->xOffset, img->roi->yOffset,
+        rect = cvRect( img->roi->xOffset, img->roi->yOffset,
                        img->roi->width, img->roi->height );
     else
-        rect = cxRect( 0, 0, img->width, img->height );
+        rect = cvRect( 0, 0, img->width, img->height );
 
     __END__;
     
@@ -3509,18 +3554,18 @@ cxGetImageROI( const IplImage* img )
 }
 
 
-CX_IMPL void
-cxSetImageCOI( IplImage* image, int coi )
+CV_IMPL void
+cvSetImageCOI( IplImage* image, int coi )
 {
-    CX_FUNCNAME( "cxSetImageCOI" );
+    CV_FUNCNAME( "cvSetImageCOI" );
 
     __BEGIN__;
 
     if( !image )
-        CX_ERROR( CX_HeaderIsNull, 0 );
+        CV_ERROR( CV_HeaderIsNull, "" );
 
     if( (unsigned)coi > (unsigned)(image->nChannels) )
-        CX_ERROR( CX_BadCOI, 0 );
+        CV_ERROR( CV_BadCOI, "" );
 
     if( image->roi || coi != 0 )
     {
@@ -3530,7 +3575,7 @@ cxSetImageCOI( IplImage* image, int coi )
         }
         else
         {
-            CX_CALL( image->roi = icxCreateROI( coi, 0, 0, image->width, image->height ));
+            CV_CALL( image->roi = icvCreateROI( coi, 0, 0, image->width, image->height ));
         }
     }
 
@@ -3538,16 +3583,16 @@ cxSetImageCOI( IplImage* image, int coi )
 }
 
 
-CX_IMPL int
-cxGetImageCOI( IplImage* image )
+CV_IMPL int
+cvGetImageCOI( const IplImage* image )
 {
     int coi = -1;
-    CX_FUNCNAME( "cxGetImageCOI" );
+    CV_FUNCNAME( "cvGetImageCOI" );
 
     __BEGIN__;
 
     if( !image )
-        CX_ERROR( CX_HeaderIsNull, 0 );
+        CV_ERROR( CV_HeaderIsNull, "" );
 
     coi = image->roi ? image->roi->coi : 0;
 
@@ -3557,20 +3602,20 @@ cxGetImageCOI( IplImage* image )
 }
 
 
-CX_IMPL IplImage*
-cxCloneImage( const IplImage* src )
+CV_IMPL IplImage*
+cvCloneImage( const IplImage* src )
 {
     IplImage* dst = 0;
-    CX_FUNCNAME( "cxCloneImage" );
+    CV_FUNCNAME( "cvCloneImage" );
 
     __BEGIN__;
 
-    if( !CX_IS_IMAGE_HDR( src ))
-        CX_ERROR( CX_StsBadArg, "Bad image header" );
+    if( !CV_IS_IMAGE_HDR( src ))
+        CV_ERROR( CV_StsBadArg, "Bad image header" );
 
-    if( !CxIPL.cloneImage )
+    if( !CvIPL.cloneImage )
     {
-        CX_CALL( dst = (IplImage*)cxAlloc( sizeof(*dst)));
+        CV_CALL( dst = (IplImage*)cvAlloc( sizeof(*dst)));
 
         memcpy( dst, src, sizeof(*src));
         dst->imageData = dst->imageDataOrigin = 0;
@@ -3578,20 +3623,20 @@ cxCloneImage( const IplImage* src )
 
         if( src->roi )
         {
-            dst->roi = icxCreateROI( src->roi->coi, src->roi->xOffset,
+            dst->roi = icvCreateROI( src->roi->coi, src->roi->xOffset,
                           src->roi->yOffset, src->roi->width, src->roi->height );
         }
 
         if( src->imageData )
         {
             int size = src->imageSize;
-            cxCreateData( dst );
+            cvCreateData( dst );
             memcpy( dst->imageData, src->imageData, size );
         }
     }
     else
     {
-        dst = CxIPL.cloneImage( src );
+        dst = CvIPL.cloneImage( src );
     }
 
     __END__;
@@ -3601,52 +3646,52 @@ cxCloneImage( const IplImage* src )
 
 
 /****************************************************************************************\
-*                            Additional operations on CxTermCriteria                     *
+*                            Additional operations on CvTermCriteria                     *
 \****************************************************************************************/
 
-CX_IMPL CxTermCriteria
-cxCheckTermCriteria( CxTermCriteria criteria, double default_eps,
+CV_IMPL CvTermCriteria
+cvCheckTermCriteria( CvTermCriteria criteria, double default_eps,
                      int default_max_iters )
 {
-    CX_FUNCNAME( "cxCheckTermCriteria" );
+    CV_FUNCNAME( "cvCheckTermCriteria" );
 
-    CxTermCriteria crit;
+    CvTermCriteria crit;
 
-    crit.type = CX_TERMCRIT_ITER|CX_TERMCRIT_EPS;
-    crit.maxIter = default_max_iters;
+    crit.type = CV_TERMCRIT_ITER|CV_TERMCRIT_EPS;
+    crit.max_iter = default_max_iters;
     crit.epsilon = (float)default_eps;
     
     __BEGIN__;
 
-    if( (criteria.type & ~(CX_TERMCRIT_EPS | CX_TERMCRIT_ITER)) != 0 )
-        CX_ERROR( CX_StsBadArg,
+    if( (criteria.type & ~(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER)) != 0 )
+        CV_ERROR( CV_StsBadArg,
                   "Unknown type of term criteria" );
 
-    if( (criteria.type & CX_TERMCRIT_ITER) != 0 )
+    if( (criteria.type & CV_TERMCRIT_ITER) != 0 )
     {
-        if( criteria.maxIter <= 0 )
-            CX_ERROR( CX_StsBadArg,
+        if( criteria.max_iter <= 0 )
+            CV_ERROR( CV_StsBadArg,
                   "Iterations flag is set and maximum number of iterations is <= 0" );
-        crit.maxIter = criteria.maxIter;
+        crit.max_iter = criteria.max_iter;
     }
     
-    if( (criteria.type & CX_TERMCRIT_EPS) != 0 )
+    if( (criteria.type & CV_TERMCRIT_EPS) != 0 )
     {
         if( criteria.epsilon < 0 )
-            CX_ERROR( CX_StsBadArg, "Accuracy flag is set and epsilon is < 0" );
+            CV_ERROR( CV_StsBadArg, "Accuracy flag is set and epsilon is < 0" );
 
         crit.epsilon = criteria.epsilon;
     }
 
-    if( (criteria.type & (CX_TERMCRIT_EPS | CX_TERMCRIT_ITER)) == 0 )
-        CX_ERROR( CX_StsBadArg,
+    if( (criteria.type & (CV_TERMCRIT_EPS | CV_TERMCRIT_ITER)) == 0 )
+        CV_ERROR( CV_StsBadArg,
                   "Neither accuracy nor maximum iterations "
                   "number flags are set in criteria type" );
 
     __END__;
 
     crit.epsilon = (float)MAX( 0, crit.epsilon );
-    crit.maxIter = MAX( 1, crit.maxIter );
+    crit.max_iter = MAX( 1, crit.max_iter );
 
     return crit;
 }

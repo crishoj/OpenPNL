@@ -41,7 +41,7 @@
 
 /* ////////////////////////////////////////////////////////////////////
 //
-//  Filling CxMat/IplImage instances with random numbers
+//  Filling CvMat/IplImage instances with random numbers
 //
 // */
 
@@ -56,80 +56,25 @@
    X(n+1) = temp mod (2^32)
    carry = temp / (2^32)
 */
-#define  ICX_RNG_NEXT(x)    ((uint64)(unsigned)(x)*1554115554 + ((x) >> 32))
-#define  ICX_CXT_FLT(x)     (((unsigned)(x) >> 9)|CX_1F)
-#define  ICX_1D             CX_BIG_INT(0x3FF0000000000000)
-#define  ICX_CXT_DBL(x)     (((uint64)(unsigned)(x) << 20)|((x) >> 44)|ICX_1D)
+#define  ICV_RNG_NEXT(x)    ((uint64)(unsigned)(x)*1554115554 + ((x) >> 32))
+#define  ICV_CVT_FLT(x)     (((unsigned)(x) >> 9)|CV_1F)
+#define  ICV_1D             CV_BIG_INT(0x3FF0000000000000)
+#define  ICV_CVT_DBL(x)     (((uint64)(unsigned)(x) << 20)|((x) >> 44)|ICV_1D)
 
 /***************************************************************************************\
 *                           Pseudo-Random Number Generators (PRNGs)                     *
 \***************************************************************************************/
 
-CX_IMPL void
-cxRandSetRange( CxRandState * state, double lower, double upper, int index  )
-{
-    CX_FUNCNAME( "cxRandSetRange" );
-
-    __BEGIN__;
-
-    if( !state )
-        CX_ERROR_FROM_CODE( CX_StsNullPtr );
-
-    /*if( lower > upper )
-        CX_ERROR( CX_StsOutOfRange,
-        "lower boundary is greater than the upper one" );*/
-
-    if( (unsigned)(index + 1) > 4 )
-        CX_ERROR( CX_StsOutOfRange, "index is not in -1..3" );
-
-    if( index < 0 )
-    {
-        state->param[0].val[0] = state->param[0].val[1] =
-        state->param[0].val[2] = state->param[0].val[3] = lower;
-        state->param[1].val[0] = state->param[1].val[1] = 
-        state->param[1].val[2] = state->param[1].val[3] = upper;
-    }
-    else
-    {
-        state->param[0].val[index] = lower;
-        state->param[1].val[index] = upper;
-    }
-
-    __END__;
-}
-
-
-CX_IMPL void
-cxRandInit( CxRandState* state, double lower, double upper,
-            int seed, int disttype )
-{
-    CX_FUNCNAME( "cxRandInit" );
-
-    __BEGIN__;
-
-    if( !state )
-        CX_ERROR( CX_StsNullPtr, "" );
-
-    if( disttype != CX_RAND_UNI && disttype != CX_RAND_NORMAL )
-        CX_ERROR( CX_StsBadFlag, "Unknown distribution type" );
-
-    state->state = (uint64)(seed ? seed : UINT_MAX);
-    state->disttype = disttype;
-    CX_CALL( cxRandSetRange( state, lower, upper ));
-
-    __END__;
-}
-
-
-#define ICX_IMPL_RAND_BITS( flavor, arrtype, cast_macro )               \
-static CxStatus CX_STDCALL                                              \
-icxRandBits_##flavor##_C1R( arrtype* arr, int step, CxSize size,        \
+#define ICV_IMPL_RAND_BITS( flavor, arrtype, cast_macro )               \
+static CvStatus CV_STDCALL                                              \
+icvRandBits_##flavor##_C1R( arrtype* arr, int step, CvSize size,        \
                             uint64* state, const int* param )           \
 {                                                                       \
     uint64 temp = *state;                                               \
     int small_flag = (param[12]|param[13]|param[14]|param[15]) <= 255;  \
+    step /= sizeof(arr[0]);                                             \
                                                                         \
-    for( ; size.height--; (char*&)arr += step )                         \
+    for( ; size.height--; arr += step )                                 \
     {                                                                   \
         int i, k = 3;                                                   \
         const int* p = param;                                           \
@@ -140,16 +85,16 @@ icxRandBits_##flavor##_C1R( arrtype* arr, int step, CxSize size,        \
             {                                                           \
                 unsigned t0, t1;                                        \
                                                                         \
-                temp = ICX_RNG_NEXT(temp);                              \
+                temp = ICV_RNG_NEXT(temp);                              \
                 t0 = ((unsigned)temp & p[i + 12]) + p[i];               \
-                temp = ICX_RNG_NEXT(temp);                              \
+                temp = ICV_RNG_NEXT(temp);                              \
                 t1 = ((unsigned)temp & p[i + 13]) + p[i+1];             \
                 arr[i] = cast_macro((int)t0);                           \
                 arr[i+1] = cast_macro((int)t1);                         \
                                                                         \
-                temp = ICX_RNG_NEXT(temp);                              \
+                temp = ICV_RNG_NEXT(temp);                              \
                 t0 = ((unsigned)temp & p[i + 14]) + p[i+2];             \
-                temp = ICX_RNG_NEXT(temp);                              \
+                temp = ICV_RNG_NEXT(temp);                              \
                 t1 = ((unsigned)temp & p[i + 15]) + p[i+3];             \
                 arr[i+2] = cast_macro((int)t0);                         \
                 arr[i+3] = cast_macro((int)t1);                         \
@@ -167,7 +112,7 @@ icxRandBits_##flavor##_C1R( arrtype* arr, int step, CxSize size,        \
             {                                                           \
                 unsigned t0, t1, t;                                     \
                                                                         \
-                temp = ICX_RNG_NEXT(temp);                              \
+                temp = ICV_RNG_NEXT(temp);                              \
                 t = (unsigned)temp;                                     \
                 t0 = (t & p[i + 12]) + p[i];                            \
                 t1 = ((t >> 8) & p[i + 13]) + p[i+1];                   \
@@ -190,7 +135,7 @@ icxRandBits_##flavor##_C1R( arrtype* arr, int step, CxSize size,        \
         for( ; i < size.width; i++ )                                    \
         {                                                               \
             unsigned t0;                                                \
-            temp = ICX_RNG_NEXT(temp);                                  \
+            temp = ICV_RNG_NEXT(temp);                                  \
                                                                         \
             t0 = ((unsigned)temp & p[i + 12]) + p[i];                   \
             arr[i] = cast_macro((int)t0);                               \
@@ -198,18 +143,19 @@ icxRandBits_##flavor##_C1R( arrtype* arr, int step, CxSize size,        \
     }                                                                   \
                                                                         \
     *state = temp;                                                      \
-    return CX_OK;                                                       \
+    return CV_OK;                                                       \
 }
 
 
-#define ICX_IMPL_RAND( flavor, arrtype, worktype, cast_macro1, cast_macro2 )\
-static CxStatus CX_STDCALL                                              \
-icxRand_##flavor##_C1R( arrtype* arr, int step, CxSize size,            \
+#define ICV_IMPL_RAND( flavor, arrtype, worktype, cast_macro1, cast_macro2 )\
+static CvStatus CV_STDCALL                                              \
+icvRand_##flavor##_C1R( arrtype* arr, int step, CvSize size,            \
                         uint64* state, const double* param )            \
 {                                                                       \
     uint64 temp = *state;                                               \
+    step /= sizeof(arr[0]);                                             \
                                                                         \
-    for( ; size.height--; (char*&)arr += step )                         \
+    for( ; size.height--; arr += step )                                 \
     {                                                                   \
         int i, k = 3;                                                   \
         const double* p = param;                                        \
@@ -217,23 +163,23 @@ icxRand_##flavor##_C1R( arrtype* arr, int step, CxSize size,            \
         for( i = 0; i <= size.width - 4; i += 4 )                       \
         {                                                               \
             worktype f0, f1;                                            \
-            unsigned t0, t1;                                            \
+            Cv32suf t0, t1;                                             \
                                                                         \
-            temp = ICX_RNG_NEXT(temp);                                  \
-            t0 = ICX_CXT_FLT(temp);                                     \
-            temp = ICX_RNG_NEXT(temp);                                  \
-            t1 = ICX_CXT_FLT(temp);                                     \
-            f0 = cast_macro1( (float&)t0 * p[i + 12] + p[i] );          \
-            f1 = cast_macro1( (float&)t1 * p[i + 13] + p[i + 1] );      \
+            temp = ICV_RNG_NEXT(temp);                                  \
+            t0.u = ICV_CVT_FLT(temp);                                   \
+            temp = ICV_RNG_NEXT(temp);                                  \
+            t1.u = ICV_CVT_FLT(temp);                                   \
+            f0 = cast_macro1( t0.f * p[i + 12] + p[i] );                \
+            f1 = cast_macro1( t1.f * p[i + 13] + p[i + 1] );            \
             arr[i] = cast_macro2(f0);                                   \
             arr[i+1] = cast_macro2(f1);                                 \
                                                                         \
-            temp = ICX_RNG_NEXT(temp);                                  \
-            t0 = ICX_CXT_FLT(temp);                                     \
-            temp = ICX_RNG_NEXT(temp);                                  \
-            t1 = ICX_CXT_FLT(temp);                                     \
-            f0 = cast_macro1( (float&)t0 * p[i + 14] + p[i + 2] );      \
-            f1 = cast_macro1( (float&)t1 * p[i + 15] + p[i + 3] );      \
+            temp = ICV_RNG_NEXT(temp);                                  \
+            t0.u = ICV_CVT_FLT(temp);                                   \
+            temp = ICV_RNG_NEXT(temp);                                  \
+            t1.u = ICV_CVT_FLT(temp);                                   \
+            f0 = cast_macro1( t0.f * p[i + 14] + p[i + 2] );            \
+            f1 = cast_macro1( t1.f * p[i + 15] + p[i + 3] );            \
             arr[i+2] = cast_macro2(f0);                                 \
             arr[i+3] = cast_macro2(f1);                                 \
                                                                         \
@@ -247,27 +193,28 @@ icxRand_##flavor##_C1R( arrtype* arr, int step, CxSize size,            \
         for( ; i < size.width; i++ )                                    \
         {                                                               \
             worktype f0;                                                \
-            unsigned t0;                                                \
+            Cv32suf t0;                                                 \
                                                                         \
-            temp = ICX_RNG_NEXT(temp);                                  \
-            t0 = ICX_CXT_FLT(temp);                                     \
-            f0 = cast_macro1( (float&)t0 * p[i + 12] + p[i] );          \
+            temp = ICV_RNG_NEXT(temp);                                  \
+            t0.u = ICV_CVT_FLT(temp);                                   \
+            f0 = cast_macro1( t0.f * p[i + 12] + p[i] );                \
             arr[i] = cast_macro2(f0);                                   \
         }                                                               \
     }                                                                   \
                                                                         \
     *state = temp;                                                      \
-    return CX_OK;                                                       \
+    return CV_OK;                                                       \
 }
 
 
-static CxStatus CX_STDCALL
-icxRand_64f_C1R( double* arr, int step, CxSize size,
+static CvStatus CV_STDCALL
+icvRand_64f_C1R( double* arr, int step, CvSize size,
                  uint64* state, const double* param )
 {
     uint64 temp = *state;
+    step /= sizeof(arr[0]);
 
-    for( ; size.height--; (char*&)arr += step )
+    for( ; size.height--; arr += step )
     {
         int i, k = 3;
         const double* p = param;
@@ -275,23 +222,23 @@ icxRand_64f_C1R( double* arr, int step, CxSize size,
         for( i = 0; i <= size.width - 4; i += 4 )
         {
             double f0, f1;
-            uint64 t0, t1;
+            Cv64suf t0, t1;
 
-            temp = ICX_RNG_NEXT(temp);
-            t0 = ICX_CXT_DBL(temp);
-            temp = ICX_RNG_NEXT(temp);
-            t1 = ICX_CXT_DBL(temp);
-            f0 = (double&)t0 * p[i + 12] + p[i];
-            f1 = (double&)t1 * p[i + 13] + p[i + 1];
+            temp = ICV_RNG_NEXT(temp);
+            t0.u = ICV_CVT_DBL(temp);
+            temp = ICV_RNG_NEXT(temp);
+            t1.u = ICV_CVT_DBL(temp);
+            f0 = t0.f * p[i + 12] + p[i];
+            f1 = t1.f * p[i + 13] + p[i + 1];
             arr[i] = f0;
             arr[i+1] = f1;
 
-            temp = ICX_RNG_NEXT(temp);
-            t0 = ICX_CXT_DBL(temp);
-            temp = ICX_RNG_NEXT(temp);
-            t1 = ICX_CXT_DBL(temp);
-            f0 = (double&)t0 * p[i + 14] + p[i + 2];
-            f1 = (double&)t1 * p[i + 15] + p[i + 3];
+            temp = ICV_RNG_NEXT(temp);
+            t0.u = ICV_CVT_DBL(temp);
+            temp = ICV_RNG_NEXT(temp);
+            t1.u = ICV_CVT_DBL(temp);
+            f0 = t0.f * p[i + 14] + p[i + 2];
+            f1 = t1.f * p[i + 15] + p[i + 3];
             arr[i+2] = f0;
             arr[i+3] = f1;
 
@@ -305,17 +252,17 @@ icxRand_64f_C1R( double* arr, int step, CxSize size,
         for( ; i < size.width; i++ )
         {
             double f0;
-            uint64 t0;
+            Cv64suf t0;
 
-            temp = ICX_RNG_NEXT(temp);
-            t0 = ICX_CXT_DBL(temp);
-            f0 = (double&)t0 * p[i + 12] + p[i];
+            temp = ICV_RNG_NEXT(temp);
+            t0.u = ICV_CVT_DBL(temp);
+            f0 = t0.f * p[i + 12] + p[i];
             arr[i] = f0;
         }
     }
 
     *state = temp;
-    return CX_OK;
+    return CV_OK;
 }
 
 
@@ -328,57 +275,51 @@ icxRand_64f_C1R( double* arr, int step, CxSize size,
     Pages 341-350, September, 1998.
 \***************************************************************************************/
 
-static CxStatus CX_STDCALL
-icxRandn_0_1_32f_C1R( float* arr, int len, uint64* state )
+static CvStatus CV_STDCALL
+icvRandn_0_1_32f_C1R( float* arr, int len, uint64* state )
 {
     uint64 temp = *state;
     int i;
+    temp = ICV_RNG_NEXT(temp);
 
     for( i = 0; i < len; i++ )
     {
-        double x;
+        double x, y, v, ax, bx;
+
         for(;;)
         {
-            double y, v, ax, bx;
-
-            temp = ICX_RNG_NEXT(temp);
-            x=((int)temp)*1.167239e-9;
+            x = ((int)temp)*1.167239e-9;
+            temp = ICV_RNG_NEXT(temp);
             ax = fabs(x);
-
-            if( ax < 1.17741 )
-                break;
-
-            temp = ICX_RNG_NEXT(temp);
-            y=((unsigned)temp)*2.328306e-10;
-
             v = 2.8658 - ax*(2.0213 - 0.3605*ax);
-            if( y < v )
+            y = ((unsigned)temp)*2.328306e-10;
+            temp = ICV_RNG_NEXT(temp);
+
+            if( y < v || ax < 1.17741 )
                 break;
 
-            bx = x > 0 ? 0.8857913*(2.506628 - x) :
-                        -0.8857913*(2.506628 + x);
+            bx = x;
+            x = bx > 0 ? 0.8857913*(2.506628 - ax) : -0.8857913*(2.506628 - ax);
             
             if( y > v + 0.0506 )
+                break;
+
+            if( log(y) < .6931472 - .5*bx*bx )
             {
                 x = bx;
                 break;
             }
-
-            if( log(y) < .6931472 - .5*x*x )
-                break;
-
-            x = bx;
 
             if( log(1.8857913 - y) < .5718733-.5*x*x )
                 break;
 
             do
             {
-                temp = ICX_RNG_NEXT(temp);
                 v = ((int)temp)*4.656613e-10;
                 x = -log(fabs(v))*.3989423;
-                temp = ICX_RNG_NEXT(temp);
+                temp = ICV_RNG_NEXT(temp);
                 y = -log(((unsigned)temp)*2.328306e-10);
+                temp = ICV_RNG_NEXT(temp);
             }
             while( y+y < x*x );
 
@@ -388,23 +329,23 @@ icxRandn_0_1_32f_C1R( float* arr, int len, uint64* state )
 
         arr[i] = (float)x;
     }
-
     *state = temp;
-    return CX_OK;
+    return CV_OK;
 }
 
 
 #define RAND_BUF_SIZE  96
 
 
-#define ICX_IMPL_RANDN( flavor, arrtype, worktype, cast_macro1, cast_macro2 )   \
-static CxStatus CX_STDCALL                                                      \
-icxRandn_##flavor##_C1R( arrtype* arr, int step, CxSize size,                   \
+#define ICV_IMPL_RANDN( flavor, arrtype, worktype, cast_macro1, cast_macro2 )   \
+static CvStatus CV_STDCALL                                                      \
+icvRandn_##flavor##_C1R( arrtype* arr, int step, CvSize size,                   \
                          uint64* state, const double* param )                   \
 {                                                                               \
     float buffer[RAND_BUF_SIZE];                                                \
+    step /= sizeof(arr[0]);                                                     \
                                                                                 \
-    for( ; size.height--; (char*&)arr += step )                                 \
+    for( ; size.height--; arr += step )                                         \
     {                                                                           \
         int i, j, len = RAND_BUF_SIZE;                                          \
                                                                                 \
@@ -416,7 +357,7 @@ icxRandn_##flavor##_C1R( arrtype* arr, int step, CxSize size,                   
             if( i + len > size.width )                                          \
                 len = size.width - i;                                           \
                                                                                 \
-            icxRandn_0_1_32f_C1R( buffer, len, state );                         \
+            icvRandn_0_1_32f_C1R( buffer, len, state );                         \
                                                                                 \
             for( j = 0; j <= len - 4; j += 4 )                                  \
             {                                                                   \
@@ -447,128 +388,135 @@ icxRandn_##flavor##_C1R( arrtype* arr, int step, CxSize size,                   
         }                                                                       \
     }                                                                           \
                                                                                 \
-    return CX_OK;                                                               \
+    return CV_OK;                                                               \
 }
 
 
-ICX_IMPL_RAND_BITS( 8u, uchar, CX_CAST_8U )
-ICX_IMPL_RAND_BITS( 16s, short, CX_CAST_16S )
-ICX_IMPL_RAND_BITS( 32s, int, CX_CAST_32S )
+ICV_IMPL_RAND_BITS( 8u, uchar, CV_CAST_8U )
+ICV_IMPL_RAND_BITS( 16u, ushort, CV_CAST_16U )
+ICV_IMPL_RAND_BITS( 16s, short, CV_CAST_16S )
+ICV_IMPL_RAND_BITS( 32s, int, CV_CAST_32S )
 
-ICX_IMPL_RAND( 8u, uchar, int, cxFloor, CX_CAST_8U )
-ICX_IMPL_RAND( 16s, short, int, cxFloor, CX_CAST_16S )
-ICX_IMPL_RAND( 32s, int, int, cxFloor, CX_CAST_32S )
-ICX_IMPL_RAND( 32f, float, float, CX_CAST_32F, CX_NOP )
+ICV_IMPL_RAND( 8u, uchar, int, cvFloor, CV_CAST_8U )
+ICV_IMPL_RAND( 16u, ushort, int, cvFloor, CV_CAST_16U )
+ICV_IMPL_RAND( 16s, short, int, cvFloor, CV_CAST_16S )
+ICV_IMPL_RAND( 32s, int, int, cvFloor, CV_CAST_32S )
+ICV_IMPL_RAND( 32f, float, float, CV_CAST_32F, CV_NOP )
 
-ICX_IMPL_RANDN( 8u, uchar, int, cxRound, CX_CAST_8U )
-ICX_IMPL_RANDN( 16s, short, int, cxRound, CX_CAST_16S )
-ICX_IMPL_RANDN( 32s, int, int, cxRound, CX_CAST_32S )
-ICX_IMPL_RANDN( 32f, float, float, CX_CAST_32F, CX_NOP )
-ICX_IMPL_RANDN( 64f, double, double, CX_CAST_64F, CX_NOP )
+ICV_IMPL_RANDN( 8u, uchar, int, cvRound, CV_CAST_8U )
+ICV_IMPL_RANDN( 16u, ushort, int, cvRound, CV_CAST_16U )
+ICV_IMPL_RANDN( 16s, short, int, cvRound, CV_CAST_16S )
+ICV_IMPL_RANDN( 32s, int, int, cvRound, CV_CAST_32S )
+ICV_IMPL_RANDN( 32f, float, float, CV_CAST_32F, CV_NOP )
+ICV_IMPL_RANDN( 64f, double, double, CV_CAST_64F, CV_NOP )
 
-static void icxInitRandTable( CxFuncTable* fastrng_tab,
-                              CxFuncTable* rng_tab,
-                              CxFuncTable* normal_tab )
+static void icvInitRandTable( CvFuncTable* fastrng_tab,
+                              CvFuncTable* rng_tab,
+                              CvFuncTable* normal_tab )
 {
-    fastrng_tab->fn_2d[CX_8U] = (void*)icxRandBits_8u_C1R;
-    fastrng_tab->fn_2d[CX_8S] = 0;
-    fastrng_tab->fn_2d[CX_16S] = (void*)icxRandBits_16s_C1R;
-    fastrng_tab->fn_2d[CX_32S] = (void*)icxRandBits_32s_C1R;
+    fastrng_tab->fn_2d[CV_8U] = (void*)icvRandBits_8u_C1R;
+    fastrng_tab->fn_2d[CV_8S] = 0;
+    fastrng_tab->fn_2d[CV_16U] = (void*)icvRandBits_16u_C1R;
+    fastrng_tab->fn_2d[CV_16S] = (void*)icvRandBits_16s_C1R;
+    fastrng_tab->fn_2d[CV_32S] = (void*)icvRandBits_32s_C1R;
 
-    rng_tab->fn_2d[CX_8U] = (void*)icxRand_8u_C1R;
-    rng_tab->fn_2d[CX_8S] = 0;
-    rng_tab->fn_2d[CX_16S] = (void*)icxRand_16s_C1R;
-    rng_tab->fn_2d[CX_32S] = (void*)icxRand_32s_C1R;
-    rng_tab->fn_2d[CX_32F] = (void*)icxRand_32f_C1R;
-    rng_tab->fn_2d[CX_64F] = (void*)icxRand_64f_C1R;
+    rng_tab->fn_2d[CV_8U] = (void*)icvRand_8u_C1R;
+    rng_tab->fn_2d[CV_8S] = 0;
+    rng_tab->fn_2d[CV_16U] = (void*)icvRand_16u_C1R;
+    rng_tab->fn_2d[CV_16S] = (void*)icvRand_16s_C1R;
+    rng_tab->fn_2d[CV_32S] = (void*)icvRand_32s_C1R;
+    rng_tab->fn_2d[CV_32F] = (void*)icvRand_32f_C1R;
+    rng_tab->fn_2d[CV_64F] = (void*)icvRand_64f_C1R;
 
-    normal_tab->fn_2d[CX_8U] = (void*)icxRandn_8u_C1R;
-    normal_tab->fn_2d[CX_8S] = 0;
-    normal_tab->fn_2d[CX_16S] = (void*)icxRandn_16s_C1R;
-    normal_tab->fn_2d[CX_32S] = (void*)icxRandn_32s_C1R;
-    normal_tab->fn_2d[CX_32F] = (void*)icxRandn_32f_C1R;
-    normal_tab->fn_2d[CX_64F] = (void*)icxRandn_64f_C1R;
+    normal_tab->fn_2d[CV_8U] = (void*)icvRandn_8u_C1R;
+    normal_tab->fn_2d[CV_8S] = 0;
+    normal_tab->fn_2d[CV_16U] = (void*)icvRandn_16u_C1R;
+    normal_tab->fn_2d[CV_16S] = (void*)icvRandn_16s_C1R;
+    normal_tab->fn_2d[CV_32S] = (void*)icvRandn_32s_C1R;
+    normal_tab->fn_2d[CV_32F] = (void*)icvRandn_32f_C1R;
+    normal_tab->fn_2d[CV_64F] = (void*)icvRandn_64f_C1R;
 }
 
 
-CX_IMPL void
-cxRand( CxRandState* state, CxArr* arr )
+CV_IMPL void
+cvRandArr( CvRNG* rng, CvArr* arr, int disttype, CvScalar param1, CvScalar param2 )
 {
-    static CxFuncTable rng_tab[2], fastrng_tab;
+    static CvFuncTable rng_tab[2], fastrng_tab;
     static int inittab = 0;
 
-    CX_FUNCNAME( "cxRand" );
+    CV_FUNCNAME( "cvRandArr" );
 
     __BEGIN__;
 
     int is_nd = 0;
-    CxMat stub, *mat = (CxMat*)arr;
+    CvMat stub, *mat = (CvMat*)arr;
     int type, depth, channels;
     double dparam[2][12];
     int iparam[2][12];
     void* param = dparam;
     int i, fast_int_mode = 0;
     int mat_step = 0;
-    CxSize size;
-    CxFunc2D_1A2P func = 0;
-    CxMatND stub_nd;
-    CxNArrayIterator iterator_state, *iterator = 0;
+    CvSize size;
+    CvFunc2D_1A2P func = 0;
+    CvMatND stub_nd;
+    CvNArrayIterator iterator_state, *iterator = 0;
 
     if( !inittab )
     {
-        icxInitRandTable( &fastrng_tab, &rng_tab[CX_RAND_UNI],
-                          &rng_tab[CX_RAND_NORMAL] );
+        icvInitRandTable( &fastrng_tab, &rng_tab[CV_RAND_UNI],
+                          &rng_tab[CV_RAND_NORMAL] );
         inittab = 1;
     }
 
-    if( !state )
-        CX_ERROR_FROM_CODE( CX_StsNullPtr );
+    if( !rng )
+        CV_ERROR( CV_StsNullPtr, "Null pointer to RNG state" );
 
-    if( CX_IS_MATND(mat) )
+    if( CV_IS_MATND(mat) )
     {
         iterator = &iterator_state;
-        CX_CALL( cxInitNArrayIterator( 1, (void**)&mat, 0, &stub_nd, iterator ));
-        type = CX_MAT_TYPE(iterator->hdr[0]->type);
+        CV_CALL( cvInitNArrayIterator( 1, &arr, 0, &stub_nd, iterator ));
+        type = CV_MAT_TYPE(iterator->hdr[0]->type);
         size = iterator->size;
         is_nd = 1;
     }
     else
     {
-        if( !CX_IS_MAT(mat))
+        if( !CV_IS_MAT(mat))
         {
             int coi = 0;
-            CX_CALL( mat = cxGetMat( mat, &stub, &coi ));
+            CV_CALL( mat = cvGetMat( mat, &stub, &coi ));
 
             if( coi != 0 )
-                CX_ERROR( CX_BadCOI, "COI is not supported" );
+                CV_ERROR( CV_BadCOI, "COI is not supported" );
         }
 
-        type = CX_MAT_TYPE( mat->type );
-        size = cxGetMatSize( mat );
+        type = CV_MAT_TYPE( mat->type );
+        size = cvGetMatSize( mat );
         mat_step = mat->step;
 
-        if( mat->height > 1 && CX_IS_MAT_CONT( mat->type ))
+        if( mat->height > 1 && CV_IS_MAT_CONT( mat->type ))
         {
             size.width *= size.height;
-            mat_step = CX_STUB_STEP;
+            mat_step = CV_STUB_STEP;
             size.height = 1;
         }
     }
 
-    depth = CX_MAT_DEPTH( type );
-    channels = CX_MAT_CN( type );
+    depth = CV_MAT_DEPTH( type );
+    channels = CV_MAT_CN( type );
     size.width *= channels;
 
-    if( state->disttype == CX_RAND_UNI )
+    if( disttype == CV_RAND_UNI )
     {
-        if( depth <= CX_32S )
+        if( depth <= CV_32S )
         {
             for( i = 0, fast_int_mode = 1; i < channels; i++ )
             {
-                int t0 = iparam[0][i] = cxCeil( state->param[0].val[i] );
-                int t1 = iparam[1][i] = cxFloor( state->param[1].val[i] ) - t0;
+                int t0 = iparam[0][i] = cvCeil( param1.val[i] );
+                int t1 = iparam[1][i] = cvFloor( param2.val[i] ) - t0;
+                double diff = param1.val[i] - param2.val[i];
 
-                fast_int_mode &= (t1 & (t1 - 1)) == 0;
+                fast_int_mode &= INT_MIN <= diff && diff <= INT_MAX && (t1 & (t1 - 1)) == 0;
             }
         }
 
@@ -586,39 +534,39 @@ cxRand( CxRandState* state, CxArr* arr )
                 iparam[1][i] = t1;
             }
 
-            CX_GET_FUNC_PTR( func, (CxFunc2D_1A2P)(fastrng_tab.fn_2d[depth]));
+            CV_GET_FUNC_PTR( func, (CvFunc2D_1A2P)(fastrng_tab.fn_2d[depth]));
             param = iparam;
         }
         else
         {
             for( i = 0; i < channels; i++ )
             {
-                double t0 = state->param[0].val[i];
-                double t1 = state->param[1].val[i];
+                double t0 = param1.val[i];
+                double t1 = param2.val[i];
 
                 dparam[0][i] = t0 - (t1 - t0);
                 dparam[1][i] = t1 - t0;
             }
 
-            CX_GET_FUNC_PTR( func, (CxFunc2D_1A2P)(rng_tab[0].fn_2d[depth]));
+            CV_GET_FUNC_PTR( func, (CvFunc2D_1A2P)(rng_tab[0].fn_2d[depth]));
         }
     }
-    else if( state->disttype == CX_RAND_NORMAL )
+    else if( disttype == CV_RAND_NORMAL )
     {
         for( i = 0; i < channels; i++ )
         {
-            double t0 = state->param[0].val[i];
-            double t1 = state->param[1].val[i];
+            double t0 = param1.val[i];
+            double t1 = param2.val[i];
 
-            dparam[0][i] = t1;
-            dparam[1][i] = t0;
+            dparam[0][i] = t0;
+            dparam[1][i] = t1;
         }
 
-        CX_GET_FUNC_PTR( func, (CxFunc2D_1A2P)(rng_tab[1].fn_2d[depth]));
+        CV_GET_FUNC_PTR( func, (CvFunc2D_1A2P)(rng_tab[1].fn_2d[depth]));
     }
     else
     {
-        CX_ERROR( CX_StsBadArg, "Unknown distribution type" );
+        CV_ERROR( CV_StsBadArg, "Unknown distribution type" );
     }
 
     if( !fast_int_mode )
@@ -635,24 +583,18 @@ cxRand( CxRandState* state, CxArr* arr )
 
     if( !is_nd )
     {
-        IPPI_CALL( func( mat->data.ptr, mat_step, size, &(state->state), param ));
+        IPPI_CALL( func( mat->data.ptr, mat_step, size, rng, param ));
     }
     else
     {
         do
         {
-            IPPI_CALL( func( iterator->ptr[0], CX_STUB_STEP, size,
-                             &(state->state), param ));
+            IPPI_CALL( func( iterator->ptr[0], CV_STUB_STEP, size, rng, param ));
         }
-        while( cxNextNArraySlice( iterator ));
+        while( cvNextNArraySlice( iterator ));
     }
 
     __END__;
 }
 
 /* End of file. */
-
-
-
-
-

@@ -40,16 +40,22 @@
 //M*/
 #include "_cxcore.h"
 
-#define ICX_FREE_PTR(storage)  \
+#define ICV_FREE_PTR(storage)  \
     ((char*)(storage)->top + (storage)->block_size - (storage)->free_space)
 
-#define ICX_ALIGNED_SEQ_BLOCK_SIZE  \
-    (((int)sizeof(CxSeqBlock) + CX_STRUCT_ALIGN - 1) & -CX_STRUCT_ALIGN)
+#define ICV_ALIGNED_SEQ_BLOCK_SIZE  \
+    (int)cvAlign(sizeof(CvSeqBlock), CV_STRUCT_ALIGN)
 
-#define CX_GET_LAST_ELEM( seq, block ) \
+CV_INLINE int
+cvAlignLeft( int size, int align )
+{
+    return size & -align;
+}
+
+#define CV_GET_LAST_ELEM( seq, block ) \
     ((block)->data + ((block)->count - 1)*((seq)->elem_size))
 
-#define CX_SWAP_ELEMS(a,b)            \
+#define CV_SWAP_ELEMS(a,b,elem_size)  \
 {                                     \
     int k;                            \
     for( k = 0; k < elem_size; k++ )  \
@@ -61,120 +67,110 @@
     }                                 \
 }
 
+#define ICV_SHIFT_TAB_MAX 32
+static const char icvPower2ShiftTab[] =
+{
+    0, 1, -1, 2, -1, -1, -1, 3, -1, -1, -1, -1, -1, -1, -1, 4,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 5
+};
+
 /****************************************************************************************\
 *            Functions for manipulating memory storage - list of memory blocks           *
 \****************************************************************************************/
 
 /* initializes allocated storage */
-void
-icxInitMemStorage( CxMemStorage* storage, int block_size )
+static void
+icvInitMemStorage( CvMemStorage* storage, int block_size )
 {
-    CX_FUNCNAME( "icxInitMemStorage " );
+    CV_FUNCNAME( "icvInitMemStorage " );
     
     __BEGIN__;
 
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( block_size <= 0 )
-        block_size = CX_STORAGE_BLOCK_SIZE;
+        block_size = CV_STORAGE_BLOCK_SIZE;
 
-    block_size = cxAlign( block_size, CX_STRUCT_ALIGN );
-    assert( sizeof(CxMemBlock) % CX_STRUCT_ALIGN == 0 );
+    block_size = cvAlign( block_size, CV_STRUCT_ALIGN );
+    assert( sizeof(CvMemBlock) % CV_STRUCT_ALIGN == 0 );
 
     memset( storage, 0, sizeof( *storage ));
-    storage->signature = CX_STORAGE_MAGIC_VAL;
+    storage->signature = CV_STORAGE_MAGIC_VAL;
     storage->block_size = block_size;
-
-    __END__;
-}
-
-/* initializes child memory storage */
-void
-icxInitChildMemStorage( CxMemStorage* parent, CxMemStorage* storage )
-{
-    CX_FUNCNAME( "icxInitChildMemStorage" );
-
-    __BEGIN__;
-
-    if( !storage || !parent )
-        CX_ERROR( CX_StsNullPtr, "" );
-
-    CX_CALL( icxInitMemStorage( storage, parent->block_size ));
-    storage->parent = parent;
 
     __END__;
 }
 
 
 /* creates root memory storage */
-CX_IMPL CxMemStorage*
-cxCreateMemStorage( int block_size )
+CV_IMPL CvMemStorage*
+cvCreateMemStorage( int block_size )
 {
-    CxMemStorage *storage = 0;
+    CvMemStorage *storage = 0;
 
-    CX_FUNCNAME( "cxCreateMemStorage" );
+    CV_FUNCNAME( "cvCreateMemStorage" );
 
     __BEGIN__;
 
-    CX_CALL( storage = (CxMemStorage *)cxAlloc( sizeof( CxMemStorage )));
-    CX_CALL( icxInitMemStorage( storage, block_size ));
+    CV_CALL( storage = (CvMemStorage *)cvAlloc( sizeof( CvMemStorage )));
+    CV_CALL( icvInitMemStorage( storage, block_size ));
 
     __END__;
 
-    if( cxGetErrStatus() < 0 )
-        cxFree( (void**)&storage );
+    if( cvGetErrStatus() < 0 )
+        cvFree( &storage );
 
     return storage;
 }
 
 
 /* creates child memory storage */
-CX_IMPL CxMemStorage *
-cxCreateChildMemStorage( CxMemStorage * parent )
+CV_IMPL CvMemStorage *
+cvCreateChildMemStorage( CvMemStorage * parent )
 {
-    CxMemStorage *storage = 0;
-    CX_FUNCNAME( "cxCreateChildMemStorage" );
+    CvMemStorage *storage = 0;
+    CV_FUNCNAME( "cvCreateChildMemStorage" );
 
     __BEGIN__;
 
     if( !parent )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    CX_CALL( storage = cxCreateMemStorage(parent->block_size));
+    CV_CALL( storage = cvCreateMemStorage(parent->block_size));
     storage->parent = parent;
 
     __END__;
 
-    if( cxGetErrStatus() < 0 )
-        cxFree( (void**)&storage );
+    if( cvGetErrStatus() < 0 )
+        cvFree( &storage );
 
     return storage;
 }
 
 
 /* releases all blocks of the storage (or returns them to parent if any) */
-void
-icxDestroyMemStorage( CxMemStorage* storage )
+static void
+icvDestroyMemStorage( CvMemStorage* storage )
 {
-    CX_FUNCNAME( "icxDestroyMemStorage" );
+    CV_FUNCNAME( "icvDestroyMemStorage" );
 
     __BEGIN__;
 
     int k = 0;
 
-    CxMemBlock *block;
-    CxMemBlock *dst_top = 0;
+    CvMemBlock *block;
+    CvMemBlock *dst_top = 0;
 
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( storage->parent )
         dst_top = storage->parent->top;
 
     for( block = storage->bottom; block != 0; k++ )
     {
-        CxMemBlock *temp = block;
+        CvMemBlock *temp = block;
 
         block = block->next;
         if( storage->parent )
@@ -196,7 +192,7 @@ icxDestroyMemStorage( CxMemStorage* storage )
         }
         else
         {
-            cxFree( (void**)&temp );
+            cvFree( &temp );
         }
     }
 
@@ -208,24 +204,24 @@ icxDestroyMemStorage( CxMemStorage* storage )
 
 
 /* releases memory storage */
-CX_IMPL void
-cxReleaseMemStorage( CxMemStorage** storage )
+CV_IMPL void
+cvReleaseMemStorage( CvMemStorage** storage )
 {
-    CxMemStorage *st;
-    CX_FUNCNAME( "cxReleaseMemStorage" );
+    CvMemStorage *st;
+    CV_FUNCNAME( "cvReleaseMemStorage" );
 
     __BEGIN__;
 
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     st = *storage;
     *storage = 0;
 
     if( st )
     {
-        CX_CALL( icxDestroyMemStorage( st ));
-        cxFree( (void**)&st );
+        CV_CALL( icvDestroyMemStorage( st ));
+        cvFree( &st );
     }
 
     __END__;
@@ -233,24 +229,24 @@ cxReleaseMemStorage( CxMemStorage** storage )
 
 
 /* clears memory storage (returns blocks to the parent if any) */
-CX_IMPL void
-cxClearMemStorage( CxMemStorage * storage )
+CV_IMPL void
+cvClearMemStorage( CvMemStorage * storage )
 {
-    CX_FUNCNAME( "cxClearMemStorage" );
+    CV_FUNCNAME( "cvClearMemStorage" );
 
     __BEGIN__;
 
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( storage->parent )
     {
-        icxDestroyMemStorage( storage );
+        icvDestroyMemStorage( storage );
     }
     else
     {
         storage->top = storage->bottom;
-        storage->free_space = storage->bottom ? storage->block_size - sizeof(CxMemBlock) : 0;
+        storage->free_space = storage->bottom ? storage->block_size - sizeof(CvMemBlock) : 0;
     }
 
     __END__;
@@ -260,33 +256,33 @@ cxClearMemStorage( CxMemStorage * storage )
 /* moves stack pointer to next block.
    If no blocks, allocate new one and link it to the storage */
 static void
-icxGoNextMemBlock( CxMemStorage * storage )
+icvGoNextMemBlock( CvMemStorage * storage )
 {
-    CX_FUNCNAME( "icxGoNextMemBlock" );
+    CV_FUNCNAME( "icvGoNextMemBlock" );
     
     __BEGIN__;
     
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( !storage->top || !storage->top->next )
     {
-        CxMemBlock *block;
+        CvMemBlock *block;
 
         if( !(storage->parent) )
         {
-            CX_CALL( block = (CxMemBlock *)cxAlloc( storage->block_size ));
+            CV_CALL( block = (CvMemBlock *)cvAlloc( storage->block_size ));
         }
         else
         {
-            CxMemStorage *parent = storage->parent;
-            CxMemStoragePos parent_pos;
+            CvMemStorage *parent = storage->parent;
+            CvMemStoragePos parent_pos;
 
-            cxSaveMemStoragePos( parent, &parent_pos );
-            CX_CALL( icxGoNextMemBlock( parent ));
+            cvSaveMemStoragePos( parent, &parent_pos );
+            CV_CALL( icvGoNextMemBlock( parent ));
 
             block = parent->top;
-            cxRestoreMemStoragePos( parent, &parent_pos );
+            cvRestoreMemStoragePos( parent, &parent_pos );
 
             if( block == parent->top )  /* the single allocated block */
             {
@@ -315,23 +311,23 @@ icxGoNextMemBlock( CxMemStorage * storage )
 
     if( storage->top->next )
         storage->top = storage->top->next;
-    storage->free_space = storage->block_size - sizeof(CxMemBlock);
-    assert( storage->free_space % CX_STRUCT_ALIGN == 0 );
+    storage->free_space = storage->block_size - sizeof(CvMemBlock);
+    assert( storage->free_space % CV_STRUCT_ALIGN == 0 );
 
     __END__;
 }
 
 
 /* remembers memory storage position */
-CX_IMPL void
-cxSaveMemStoragePos( const CxMemStorage * storage, CxMemStoragePos * pos )
+CV_IMPL void
+cvSaveMemStoragePos( const CvMemStorage * storage, CvMemStoragePos * pos )
 {
-    CX_FUNCNAME( "cxSaveMemStoragePos" );
+    CV_FUNCNAME( "cvSaveMemStoragePos" );
 
     __BEGIN__;
 
     if( !storage || !pos )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     pos->top = storage->top;
     pos->free_space = storage->free_space;
@@ -341,17 +337,35 @@ cxSaveMemStoragePos( const CxMemStorage * storage, CxMemStoragePos * pos )
 
 
 /* restores memory storage position */
-CX_IMPL void
-cxRestoreMemStoragePos( CxMemStorage * storage, CxMemStoragePos * pos )
+CV_IMPL void
+cvRestoreMemStoragePos( CvMemStorage * storage, CvMemStoragePos * pos )
 {
-    CX_FUNCNAME( "cxRestoreMemStoragePos" );
+    CV_FUNCNAME( "cvRestoreMemStoragePos" );
 
     __BEGIN__;
 
     if( !storage || !pos )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
     if( pos->free_space > storage->block_size )
-        CX_ERROR_FROM_STATUS( CX_BADSIZE_ERR );
+        CV_ERROR( CV_StsBadSize, "" );
+
+    /*
+    // this breaks icvGoNextMemBlock, so comment it off for now
+    if( storage->parent && (!pos->top || pos->top->next) )
+    {
+        CvMemBlock* save_bottom;
+        if( !pos->top )
+            save_bottom = 0;
+        else
+        {
+            save_bottom = storage->bottom;
+            storage->bottom = pos->top->next;
+            pos->top->next = 0;
+            storage->bottom->prev = 0;
+        }
+        icvDestroyMemStorage( storage );
+        storage->bottom = save_bottom;
+    }*/
 
     storage->top = pos->top;
     storage->free_space = pos->free_space;
@@ -359,7 +373,7 @@ cxRestoreMemStoragePos( CxMemStorage * storage, CxMemStoragePos * pos )
     if( !storage->top )
     {
         storage->top = storage->bottom;
-        storage->free_space = storage->top ? storage->block_size - sizeof(CxMemBlock) : 0;
+        storage->free_space = storage->top ? storage->block_size - sizeof(CvMemBlock) : 0;
     }
 
     __END__;
@@ -367,38 +381,58 @@ cxRestoreMemStoragePos( CxMemStorage * storage, CxMemStoragePos * pos )
 
 
 /* Allocates continuous buffer of the specified size in the storage */
-CX_IMPL  void*
-cxMemStorageAlloc( CxMemStorage* storage, int size )
+CV_IMPL void*
+cvMemStorageAlloc( CvMemStorage* storage, size_t size )
 {
     char *ptr = 0;
     
-    CX_FUNCNAME( "cxMemStorageAlloc" );
+    CV_FUNCNAME( "cvMemStorageAlloc" );
 
     __BEGIN__;
 
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "NULL storage pointer" );
+        CV_ERROR( CV_StsNullPtr, "NULL storage pointer" );
 
-    assert( storage->free_space % CX_STRUCT_ALIGN == 0 );
+    if( size > INT_MAX )
+        CV_ERROR( CV_StsOutOfRange, "Too large memory block is requested" );
 
-    if( (unsigned)storage->free_space < (unsigned)size )
+    assert( storage->free_space % CV_STRUCT_ALIGN == 0 );
+
+    if( (size_t)storage->free_space < size )
     {
-        int max_free_space =
-            (storage->block_size - (int)sizeof(CxMemBlock)) & -CX_STRUCT_ALIGN;
+        size_t max_free_space = cvAlignLeft(storage->block_size - sizeof(CvMemBlock), CV_STRUCT_ALIGN);
+        if( max_free_space < size )
+            CV_ERROR( CV_StsOutOfRange, "requested size is negative or too big" );
 
-        if( (unsigned)max_free_space < (unsigned)size )
-            CX_ERROR( CX_StsOutOfRange, "requested size is negative or too big" );
-
-        CX_CALL( icxGoNextMemBlock( storage ));
+        CV_CALL( icvGoNextMemBlock( storage ));
     }
 
-    ptr = ICX_FREE_PTR(storage);
-    assert( (long)ptr % CX_STRUCT_ALIGN == 0 );
-    storage->free_space = (storage->free_space - size) & -CX_STRUCT_ALIGN;
+    ptr = ICV_FREE_PTR(storage);
+    assert( (size_t)ptr % CV_STRUCT_ALIGN == 0 );
+    storage->free_space = cvAlignLeft(storage->free_space - (int)size, CV_STRUCT_ALIGN );
 
     __END__;
 
     return ptr;
+}
+
+
+CV_IMPL CvString
+cvMemStorageAllocString( CvMemStorage* storage, const char* ptr, int len )
+{
+    CvString str;
+    CV_FUNCNAME( "cvMemStorageAllocString" );
+
+    __BEGIN__;
+
+    str.len = len >= 0 ? len : (int)strlen(ptr);
+    CV_CALL( str.ptr = (char*)cvMemStorageAlloc( storage, str.len + 1 ));
+    memcpy( str.ptr, ptr, str.len );
+    str.ptr[str.len] = '\0';
+
+    __END__;
+
+    return str;
 }
 
 
@@ -407,40 +441,40 @@ cxMemStorageAlloc( CxMemStorage* storage, int size )
 \****************************************************************************************/
 
 /* creates empty sequence */
-CX_IMPL CxSeq *
-cxCreateSeq( int seq_flags, int header_size, int elem_size, CxMemStorage * storage )
+CV_IMPL CvSeq *
+cvCreateSeq( int seq_flags, int header_size, int elem_size, CvMemStorage * storage )
 {
-    CxSeq *seq = 0;
+    CvSeq *seq = 0;
 
-    CX_FUNCNAME( "cxCreateSeq" );
+    CV_FUNCNAME( "cvCreateSeq" );
 
     __BEGIN__;
 
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "" );
-    if( header_size < (int)sizeof( CxSeq ) || elem_size <= 0 )
-        CX_ERROR( CX_StsBadSize, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
+    if( header_size < (int)sizeof( CvSeq ) || elem_size <= 0 )
+        CV_ERROR( CV_StsBadSize, "" );
 
     /* allocate sequence header */
-    CX_CALL( seq = (CxSeq*)cxMemStorageAlloc( storage, header_size ));
+    CV_CALL( seq = (CvSeq*)cvMemStorageAlloc( storage, header_size ));
     memset( seq, 0, header_size );
 
     seq->header_size = header_size;
-    seq->flags = (seq_flags & ~CX_MAGIC_MASK) | CX_SEQ_MAGIC_VAL;
+    seq->flags = (seq_flags & ~CV_MAGIC_MASK) | CV_SEQ_MAGIC_VAL;
     {
-        int elemtype = CX_MAT_TYPE(seq_flags);
-        int typesize = icxPixSize[elemtype];
+        int elemtype = CV_MAT_TYPE(seq_flags);
+        int typesize = CV_ELEM_SIZE(elemtype);
 
-        if( elemtype != CX_SEQ_ELTYPE_GENERIC &&
+        if( elemtype != CV_SEQ_ELTYPE_GENERIC &&
             typesize != 0 && typesize != elem_size )
-            CX_ERROR( CX_StsBadSize,
-            "Element size doesn't match to the size of predefined element type "
-            "(try to use 0 for sequence element type)" );
+            CV_ERROR( CV_StsBadSize,
+            "Specified element size doesn't match to the size of the specified element type "
+            "(try to use 0 for element type)" );
     }
     seq->elem_size = elem_size;
     seq->storage = storage;
 
-    CX_CALL( cxSetSeqBlockSize( seq, (1 << 10)/elem_size ));
+    CV_CALL( cvSetSeqBlockSize( seq, (1 << 10)/elem_size ));
 
     __END__;
 
@@ -450,32 +484,35 @@ cxCreateSeq( int seq_flags, int header_size, int elem_size, CxMemStorage * stora
 
 /* adjusts <delta_elems> field of sequence. It determines how much the sequence
    grows if there are no free space inside the sequence buffers */
-CX_IMPL void
-cxSetSeqBlockSize( CxSeq *seq, int delta_elements )
+CV_IMPL void
+cvSetSeqBlockSize( CvSeq *seq, int delta_elements )
 {
     int elem_size;
     int useful_block_size;
 
-    CX_FUNCNAME( "cxSetSeqBlockSize" );
+    CV_FUNCNAME( "cvSetSeqBlockSize" );
 
     __BEGIN__;
 
     if( !seq || !seq->storage )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
     if( delta_elements < 0 )
-        CX_ERROR( CX_StsOutOfRange, "" );
+        CV_ERROR( CV_StsOutOfRange, "" );
 
-    useful_block_size = (seq->storage->block_size - sizeof(CxMemBlock) -
-                        sizeof(CxSeqBlock)) & -CX_STRUCT_ALIGN;
+    useful_block_size = cvAlignLeft(seq->storage->block_size - sizeof(CvMemBlock) -
+                                    sizeof(CvSeqBlock), CV_STRUCT_ALIGN);
     elem_size = seq->elem_size;
 
     if( delta_elements == 0 )
+    {
         delta_elements = (1 << 10) / elem_size;
+        delta_elements = MAX( delta_elements, 1 );
+    }
     if( delta_elements * elem_size > useful_block_size )
     {
         delta_elements = useful_block_size / elem_size;
         if( delta_elements == 0 )
-            CX_ERROR( CX_StsOutOfRange, "Storage block size is too small "
+            CV_ERROR( CV_StsOutOfRange, "Storage block size is too small "
                                         "to fit the sequence elements" );
     }
 
@@ -486,59 +523,60 @@ cxSetSeqBlockSize( CxSeq *seq, int delta_elements )
 
 
 /* finds sequence element by its index */
-CX_IMPL char*
-cxGetSeqElem( CxSeq *seq, int index, CxSeqBlock **_block )
+CV_IMPL char*
+cvGetSeqElem( const CvSeq *seq, int index )
 {
-    CxSeqBlock *block;
-    char *elem = 0;
-    int count, total;
+    CvSeqBlock *block;
+    int count, total = seq->total;
 
-    CX_FUNCNAME( "cxGetSeqElem" );
-
-    __BEGIN__;
-
-    if( !seq )
-        CX_ERROR( CX_StsNullPtr, "" );
-    total = seq->total;
-    index += index < 0 ? total : 0;
-    index -= index >= total ? total : 0;
-
-    if( (unsigned)index < (unsigned)total )
+    if( (unsigned)index >= (unsigned)total )
     {
-        block = seq->first;
-        while( index >= (count = block->count) )
-        {
-            index -= count;
-            block = block->next;
-        }
-
-        if( _block )
-            *_block = block;
-        elem = block->data + index * seq->elem_size;
+        index += index < 0 ? total : 0;
+        index -= index >= total ? total : 0;
+        if( (unsigned)index >= (unsigned)total )
+            return 0;
     }
 
-    __END__;
+    block = seq->first;
+    if( index + index <= total )
+    {
+        while( index >= (count = block->count) )
+        {
+            block = block->next;
+            index -= count;
+        }
+    }
+    else
+    {
+        do
+        {
+            block = block->prev;
+            total -= block->count;
+        }
+        while( index < total );
+        index -= total;
+    }
 
-    return elem;
+    return block->data + index * seq->elem_size;
 }
 
 
 /* calculates index of sequence element */
-CX_IMPL int
-cxSeqElemIdx( const CxSeq* seq, const void* _element, CxSeqBlock** _block )
+CV_IMPL int
+cvSeqElemIdx( const CvSeq* seq, const void* _element, CvSeqBlock** _block )
 {
     const char *element = (const char *)_element;
     int elem_size;
     int id = -1;
-    CxSeqBlock *first_block;
-    CxSeqBlock *block;
+    CvSeqBlock *first_block;
+    CvSeqBlock *block;
 
-    CX_FUNCNAME( "cxSeqElemIdx" );
+    CV_FUNCNAME( "cvSeqElemIdx" );
 
     __BEGIN__;
 
     if( !seq || !element )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     block = first_block = seq->first;
     elem_size = seq->elem_size;
@@ -549,8 +587,11 @@ cxSeqElemIdx( const CxSeq* seq, const void* _element, CxSeqBlock** _block )
         {
             if( _block )
                 *_block = block;
-            id = (element - block->data) / elem_size +
-                block->start_index - seq->first->start_index;
+            if( elem_size <= ICV_SHIFT_TAB_MAX && (id = icvPower2ShiftTab[elem_size - 1]) >= 0 )
+                id = (int)((size_t)(element - block->data) >> id);
+            else
+                id = (int)((size_t)(element - block->data) / elem_size);
+            id += block->start_index - seq->first->start_index;
             break;
         }
         block = block->next;
@@ -564,16 +605,22 @@ cxSeqElemIdx( const CxSeq* seq, const void* _element, CxSeqBlock** _block )
 }
 
 
-CX_IMPL int
-cxSliceLength( CxSlice slice, CxSeq* seq )
+CV_IMPL int
+cvSliceLength( CvSlice slice, const CvSeq* seq )
 {
     int total = seq->total;
-    int length;
-    if( slice.startIndex < 0 )
-        slice.startIndex += total;
-    if( slice.endIndex <= 0 )
-        slice.endIndex += total;
-    length = slice.endIndex - slice.startIndex;
+    int length = slice.end_index - slice.start_index;
+    
+    if( length != 0 )
+    {
+        if( slice.start_index < 0 )
+            slice.start_index += total;
+        if( slice.end_index <= 0 )
+            slice.end_index += total;
+
+        length = slice.end_index - slice.start_index;
+    }
+
     if( length < 0 )
     {
         length += total;
@@ -584,44 +631,47 @@ cxSliceLength( CxSlice slice, CxSeq* seq )
         length = total;
 
     return length;
-};
+}
 
 
 /* copies all the sequence elements into single continuous array */
-CX_IMPL void*
-cxCxtSeqToArray( CxSeq *seq, void *array, CxSlice slice )
+CV_IMPL void*
+cvCvtSeqToArray( const CvSeq *seq, void *array, CvSlice slice )
 {
-    int elem_size, total;
-    CxSeqBlock *block;
-    char *dstPtr = (char*)array;
-    char *ptr = 0;
-
-    CX_FUNCNAME( "cxCxtSeqToArray" );
+    CV_FUNCNAME( "cvCvtSeqToArray" );
 
     __BEGIN__;
 
+    int elem_size, total;
+    CvSeqReader reader;
+    char *dst = (char*)array;
+
     if( !seq || !array )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     elem_size = seq->elem_size;
-    total = cxSliceLength( slice, seq )*elem_size;
-    ptr = cxGetSeqElem( seq, slice.startIndex, &block );
+    total = cvSliceLength( slice, seq )*elem_size;
+    
+    if( total == 0 )
+        EXIT;
+    
+    cvStartReadSeq( seq, &reader, 0 );
+    CV_CALL( cvSetSeqReaderPos( &reader, slice.start_index, 0 ));
 
-    if( !ptr )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
-    while( total > 0 )
+    do
     {
-        int count = block->data + block->count*elem_size - ptr;
+        int count = (int)(reader.block_max - reader.ptr);
         if( count > total )
             count = total;
 
-        memcpy( dstPtr, ptr, count );
-        dstPtr += count;
+        memcpy( dst, reader.ptr, count );
+        dst += count;
+        reader.block = reader.block->next;
+        reader.ptr = reader.block->data;
+        reader.block_max = reader.ptr + reader.block->count*elem_size;
         total -= count;
-        block = block->next;
-        ptr = block->data;
     }
+    while( total > 0 );
 
     __END__;
 
@@ -631,33 +681,33 @@ cxCxtSeqToArray( CxSeq *seq, void *array, CxSlice slice )
 
 /* constructs sequence from array without copying any data.
    the resultant sequence can't grow above its initial size */
-CX_IMPL CxSeq*
-cxMakeSeqHeaderForArray( int seq_flags, int header_size, int elem_size,
-                         void *array, int total, CxSeq *seq, CxSeqBlock * block )
+CV_IMPL CvSeq*
+cvMakeSeqHeaderForArray( int seq_flags, int header_size, int elem_size,
+                         void *array, int total, CvSeq *seq, CvSeqBlock * block )
 {
-    CxSeq* result = 0;
+    CvSeq* result = 0;
     
-    CX_FUNCNAME( "cxMakeSeqHeaderForArray" );
+    CV_FUNCNAME( "cvMakeSeqHeaderForArray" );
 
     __BEGIN__;
 
-    if( elem_size <= 0 || header_size < (int)sizeof( CxSeq ) || total < 0 )
-        CX_ERROR_FROM_STATUS( CX_BADSIZE_ERR );
+    if( elem_size <= 0 || header_size < (int)sizeof( CvSeq ) || total < 0 )
+        CV_ERROR( CV_StsBadSize, "" );
 
     if( !seq || ((!array || !block) && total > 0) )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     memset( seq, 0, header_size );
 
     seq->header_size = header_size;
-    seq->flags = (seq_flags & ~CX_MAGIC_MASK) | CX_SEQ_MAGIC_VAL;
+    seq->flags = (seq_flags & ~CV_MAGIC_MASK) | CV_SEQ_MAGIC_VAL;
     {
-        int elemtype = CX_MAT_TYPE(seq_flags);
-        int typesize = icxPixSize[elemtype];
+        int elemtype = CV_MAT_TYPE(seq_flags);
+        int typesize = CV_ELEM_SIZE(elemtype);
 
-        if( elemtype != CX_SEQ_ELTYPE_GENERIC &&
+        if( elemtype != CV_SEQ_ELTYPE_GENERIC &&
             typesize != 0 && typesize != elem_size )
-            CX_ERROR( CX_StsBadSize,
+            CV_ERROR( CV_StsBadSize,
             "Element size doesn't match to the size of predefined element type "
             "(try to use 0 for sequence element type)" );
     }
@@ -682,148 +732,151 @@ cxMakeSeqHeaderForArray( int seq_flags, int header_size, int elem_size,
 }
 
 
-/* tries to allocate space for at least single sequence element.
-   if the sequence has released blocks (seq->free_blocks != 0),
-   they are used, else additional space is allocated in the storage */
+/* the function allocates space for at least one more sequence element.
+   if there are free sequence blocks (seq->free_blocks != 0),
+   they are reused, otherwise the space is allocated in the storage */
 static void
-icxGrowSeq( CxSeq *seq, int in_front_of )
+icvGrowSeq( CvSeq *seq, int in_front_of )
 {
-    CX_FUNCNAME( "icxGrowSeq" );
+    CV_FUNCNAME( "icvGrowSeq" );
 
     __BEGIN__;
 
-    CxSeqBlock *free_blocks;
+    CvSeqBlock *block;
 
     if( !seq )
-        CX_ERROR( CX_StsNullPtr, "" );
-    free_blocks = seq->free_blocks;
+        CV_ERROR( CV_StsNullPtr, "" );
+    block = seq->free_blocks;
 
-    if( !free_blocks )
+    if( !block )
     {
         int elem_size = seq->elem_size;
         int delta_elems = seq->delta_elems;
-        CxMemStorage *storage = seq->storage;
+        CvMemStorage *storage = seq->storage;
+
+        if( seq->total >= delta_elems*4 )
+            cvSetSeqBlockSize( seq, delta_elems*2 );
 
         if( !storage )
-            CX_ERROR( CX_StsNullPtr, "The sequence has NULL storage pointer" );
+            CV_ERROR( CV_StsNullPtr, "The sequence has NULL storage pointer" );
 
         /* if there is a free space just after last allocated block
            and it's big enough then enlarge the last block
            (this can happen only if the new block is added to the end of sequence */
-        if( (unsigned)(ICX_FREE_PTR(storage) - seq->block_max) < CX_STRUCT_ALIGN &&
+        if( (unsigned)(ICV_FREE_PTR(storage) - seq->block_max) < CV_STRUCT_ALIGN &&
             storage->free_space >= seq->elem_size && !in_front_of )
         {
             int delta = storage->free_space / elem_size;
 
             delta = MIN( delta, delta_elems ) * elem_size;
             seq->block_max += delta;
-            storage->free_space = (((char*)storage->top + storage->block_size) -
-                                   seq->block_max) & -CX_STRUCT_ALIGN;
+            storage->free_space = cvAlignLeft((int)(((char*)storage->top + storage->block_size) -
+                                              seq->block_max), CV_STRUCT_ALIGN );
             EXIT;
         }
         else
         {
-            int delta = elem_size * delta_elems + ICX_ALIGNED_SEQ_BLOCK_SIZE;
+            int delta = elem_size * delta_elems + ICV_ALIGNED_SEQ_BLOCK_SIZE;
 
             /* try to allocate <delta_elements> elements */
             if( storage->free_space < delta )
             {
                 int small_block_size = MAX(1, delta_elems/3)*elem_size +
-                                       ICX_ALIGNED_SEQ_BLOCK_SIZE;
+                                       ICV_ALIGNED_SEQ_BLOCK_SIZE;
                 /* try to allocate smaller part */
-                if( storage->free_space >= small_block_size + CX_STRUCT_ALIGN )
+                if( storage->free_space >= small_block_size + CV_STRUCT_ALIGN )
                 {
-                    delta = ((storage->free_space - ICX_ALIGNED_SEQ_BLOCK_SIZE)/
-                            seq->elem_size)*seq->elem_size + ICX_ALIGNED_SEQ_BLOCK_SIZE;
+                    delta = (storage->free_space - ICV_ALIGNED_SEQ_BLOCK_SIZE)/seq->elem_size;
+                    delta = delta*seq->elem_size + ICV_ALIGNED_SEQ_BLOCK_SIZE;
                 }
                 else
                 {
-                    CX_CALL( icxGoNextMemBlock( storage ));
+                    CV_CALL( icvGoNextMemBlock( storage ));
                     assert( storage->free_space >= delta );
                 }
             }
 
-            CX_CALL( free_blocks = (CxSeqBlock*)cxMemStorageAlloc( storage, delta ));
-            free_blocks->data = (char*)cxAlignPtr( free_blocks + 1, CX_STRUCT_ALIGN );
-            free_blocks->count = delta - ICX_ALIGNED_SEQ_BLOCK_SIZE;
-            free_blocks->prev = free_blocks->next = 0;
+            CV_CALL( block = (CvSeqBlock*)cvMemStorageAlloc( storage, delta ));
+            block->data = (char*)cvAlignPtr( block + 1, CV_STRUCT_ALIGN );
+            block->count = delta - ICV_ALIGNED_SEQ_BLOCK_SIZE;
+            block->prev = block->next = 0;
         }
     }
     else
     {
-        seq->free_blocks = free_blocks->next;
+        seq->free_blocks = block->next;
     }
 
     if( !(seq->first) )
     {
-        seq->first = free_blocks;
-        free_blocks->prev = free_blocks->next = free_blocks;
+        seq->first = block;
+        block->prev = block->next = block;
     }
     else
     {
-        free_blocks->prev = seq->first->prev;
-        free_blocks->next = seq->first;
-        free_blocks->prev->next = free_blocks->next->prev = free_blocks;
+        block->prev = seq->first->prev;
+        block->next = seq->first;
+        block->prev->next = block->next->prev = block;
     }
 
     /* for free blocks the <count> field means total number of bytes in the block.
        And for used blocks it means a current number of sequence
        elements in the block */
-    assert( free_blocks->count % seq->elem_size == 0 && free_blocks->count > 0 );
+    assert( block->count % seq->elem_size == 0 && block->count > 0 );
 
     if( !in_front_of )
     {
-        seq->ptr = free_blocks->data;
-        seq->block_max = free_blocks->data + free_blocks->count;
-        free_blocks->start_index = free_blocks == free_blocks->prev ? 0 :
-            free_blocks->prev->start_index + free_blocks->prev->count;
+        seq->ptr = block->data;
+        seq->block_max = block->data + block->count;
+        block->start_index = block == block->prev ? 0 :
+            block->prev->start_index + block->prev->count;
     }
     else
     {
-        int delta = free_blocks->count / seq->elem_size;
-        free_blocks->data += free_blocks->count;
+        int delta = block->count / seq->elem_size;
+        block->data += block->count;
 
-        if( free_blocks != free_blocks->prev )
+        if( block != block->prev )
         {
             assert( seq->first->start_index == 0 );
-            seq->first = free_blocks;
+            seq->first = block;
         }
         else
         {
-            seq->block_max = seq->ptr = free_blocks->data;
+            seq->block_max = seq->ptr = block->data;
         }
 
-        free_blocks->start_index = 0;
+        block->start_index = 0;
 
         for( ;; )
         {
-            free_blocks->start_index += delta;
-            free_blocks = free_blocks->next;
-            if( free_blocks == seq->first )
+            block->start_index += delta;
+            block = block->next;
+            if( block == seq->first )
                 break;
         }
     }
 
-    free_blocks->count = 0;
+    block->count = 0;
 
     __END__;
 }
 
 /* recycles a sequence block for the further use */
 static void
-icxFreeSeqBlock( CxSeq *seq, int in_front_of )
+icvFreeSeqBlock( CvSeq *seq, int in_front_of )
 {
-    /*CX_FUNCNAME( "icxFreeSeqBlock" );*/
+    /*CV_FUNCNAME( "icvFreeSeqBlock" );*/
 
     __BEGIN__;
 
-    CxSeqBlock *block = seq->first;
+    CvSeqBlock *block = seq->first;
 
     assert( (in_front_of ? block : block->prev)->count == 0 );
 
     if( block == block->prev )  /* single block case */
     {
-        block->count = (seq->block_max - block->data) + block->start_index * seq->elem_size;
+        block->count = (int)(seq->block_max - block->data) + block->start_index * seq->elem_size;
         block->data = seq->block_max - block->count;
         seq->first = 0;
         seq->ptr = seq->block_max = 0;
@@ -836,7 +889,7 @@ icxFreeSeqBlock( CxSeq *seq, int in_front_of )
             block = block->prev;
             assert( seq->ptr == block->data );
 
-            block->count = seq->block_max - seq->ptr;
+            block->count = (int)(seq->block_max - seq->ptr);
             seq->block_max = seq->ptr = block->prev->data +
                 block->prev->count * seq->elem_size;
         }
@@ -876,18 +929,18 @@ icxFreeSeqBlock( CxSeq *seq, int in_front_of )
 \****************************************************************************************/
 
 /* initializes sequence writer */
-CX_IMPL void
-cxStartAppendToSeq( CxSeq *seq, CxSeqWriter * writer )
+CV_IMPL void
+cvStartAppendToSeq( CvSeq *seq, CvSeqWriter * writer )
 {
-    CX_FUNCNAME( "cxStartAppendToSeq" );
+    CV_FUNCNAME( "cvStartAppendToSeq" );
 
     __BEGIN__;
 
     if( !seq || !writer )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     memset( writer, 0, sizeof( *writer ));
-    writer->header_size = sizeof( CxSeqWriter );
+    writer->header_size = sizeof( CvSeqWriter );
 
     writer->seq = seq;
     writer->block = seq->first ? seq->first->prev : 0;
@@ -899,38 +952,38 @@ cxStartAppendToSeq( CxSeq *seq, CxSeqWriter * writer )
 
 
 /* initializes sequence writer */
-CX_IMPL void
-cxStartWriteSeq( int seq_flags, int header_size,
-                 int elem_size, CxMemStorage * storage, CxSeqWriter * writer )
+CV_IMPL void
+cvStartWriteSeq( int seq_flags, int header_size,
+                 int elem_size, CvMemStorage * storage, CvSeqWriter * writer )
 {
-    CxSeq *seq = 0;
+    CvSeq *seq = 0;
 
-    CX_FUNCNAME( "cxStartWriteSeq" );
+    CV_FUNCNAME( "cvStartWriteSeq" );
 
     __BEGIN__;
 
     if( !storage || !writer )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    CX_CALL( seq = cxCreateSeq( seq_flags, header_size, elem_size, storage ));
-    cxStartAppendToSeq( seq, writer );
+    CV_CALL( seq = cvCreateSeq( seq_flags, header_size, elem_size, storage ));
+    cvStartAppendToSeq( seq, writer );
 
     __END__;
 }
 
 
 /* updates sequence header */
-CX_IMPL void
-cxFlushSeqWriter( CxSeqWriter * writer )
+CV_IMPL void
+cvFlushSeqWriter( CvSeqWriter * writer )
 {
-    CxSeq *seq = 0;
+    CvSeq *seq = 0;
 
-    CX_FUNCNAME( "cxFlushSeqWriter" );
+    CV_FUNCNAME( "cvFlushSeqWriter" );
 
     __BEGIN__;
 
     if( !writer )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     seq = writer->seq;
     seq->ptr = writer->ptr;
@@ -938,10 +991,10 @@ cxFlushSeqWriter( CxSeqWriter * writer )
     if( writer->block )
     {
         int total = 0;
-        CxSeqBlock *first_block = writer->seq->first;
-        CxSeqBlock *block = first_block;
+        CvSeqBlock *first_block = writer->seq->first;
+        CvSeqBlock *block = first_block;
 
-        writer->block->count = (writer->ptr - writer->block->data) / seq->elem_size;
+        writer->block->count = (int)((writer->ptr - writer->block->data) / seq->elem_size);
         assert( writer->block->count > 0 );
 
         do
@@ -958,41 +1011,38 @@ cxFlushSeqWriter( CxSeqWriter * writer )
 }
 
 
-/* calls icxFlushSeqWriter and finishes writing process */
-CX_IMPL CxSeq *
-cxEndWriteSeq( CxSeqWriter * writer )
+/* calls icvFlushSeqWriter and finishes writing process */
+CV_IMPL CvSeq *
+cvEndWriteSeq( CvSeqWriter * writer )
 {
-    CxSeq *seq = 0;
+    CvSeq *seq = 0;
 
-    CX_FUNCNAME( "cxEndWriteSeq" );
+    CV_FUNCNAME( "cvEndWriteSeq" );
 
     __BEGIN__;
 
     if( !writer )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    CX_CALL( cxFlushSeqWriter( writer ));
+    CV_CALL( cvFlushSeqWriter( writer ));
+    seq = writer->seq;
 
     /* truncate the last block */
     if( writer->block && writer->seq->storage )
     {
-        CxSeq *seq = writer->seq;
-        CxMemStorage *storage = seq->storage;
+        CvMemStorage *storage = seq->storage;
         char *storage_block_max = (char *) storage->top + storage->block_size;
 
         assert( writer->block->count > 0 );
 
         if( (unsigned)((storage_block_max - storage->free_space)
-            - seq->block_max) < CX_STRUCT_ALIGN )
+            - seq->block_max) < CV_STRUCT_ALIGN )
         {
-            storage->free_space = (storage_block_max - seq->ptr) & -CX_STRUCT_ALIGN;
+            storage->free_space = cvAlignLeft((int)(storage_block_max - seq->ptr), CV_STRUCT_ALIGN);
             seq->block_max = seq->ptr;
         }
     }
 
-    seq = writer->seq;
-
-    /*writer->seq = 0; */
     writer->ptr = 0;
 
     __END__;
@@ -1002,23 +1052,23 @@ cxEndWriteSeq( CxSeqWriter * writer )
 
 
 /* creates new sequence block */
-CX_IMPL void
-cxCreateSeqBlock( CxSeqWriter * writer )
+CV_IMPL void
+cvCreateSeqBlock( CvSeqWriter * writer )
 {
-    CX_FUNCNAME( "cxCreateSeqBlock" );
+    CV_FUNCNAME( "cvCreateSeqBlock" );
 
     __BEGIN__;
 
-    CxSeq *seq;
+    CvSeq *seq;
 
     if( !writer || !writer->seq )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     seq = writer->seq;
 
-    cxFlushSeqWriter( writer );
+    cvFlushSeqWriter( writer );
 
-    CX_CALL( icxGrowSeq( seq, 0 ));
+    CV_CALL( icvGrowSeq( seq, 0 ));
 
     writer->block = seq->first->prev;
     writer->ptr = seq->ptr;
@@ -1033,21 +1083,28 @@ cxCreateSeqBlock( CxSeqWriter * writer )
 \****************************************************************************************/
 
 /* initializes sequence reader */
-CX_IMPL void
-cxStartReadSeq( const CxSeq *seq, CxSeqReader * reader, int reverse )
+CV_IMPL void
+cvStartReadSeq( const CvSeq *seq, CvSeqReader * reader, int reverse )
 {
-    CxSeqBlock *first_block;
-    CxSeqBlock *last_block;
+    CvSeqBlock *first_block;
+    CvSeqBlock *last_block;
 
-    CX_FUNCNAME( "cxStartReadSeq" );
+    CV_FUNCNAME( "cvStartReadSeq" );
+
+    if( reader )
+    {
+        reader->seq = 0;
+        reader->block = 0;
+        reader->ptr = reader->block_max = reader->block_min = 0;
+    }
 
     __BEGIN__;
 
     if( !seq || !reader )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    reader->header_size = sizeof( CxSeqReader );
-    reader->seq = (CxSeq*)seq;
+    reader->header_size = sizeof( CvSeqReader );
+    reader->seq = (CvSeq*)seq;
 
     first_block = seq->first;
 
@@ -1055,7 +1112,7 @@ cxStartReadSeq( const CxSeq *seq, CxSeqReader * reader, int reverse )
     {
         last_block = first_block->prev;
         reader->ptr = first_block->data;
-        reader->prev_elem = CX_GET_LAST_ELEM( seq, last_block );
+        reader->prev_elem = CV_GET_LAST_ELEM( seq, last_block );
         reader->delta_index = seq->first->start_index;
 
         if( reverse )
@@ -1088,15 +1145,17 @@ cxStartReadSeq( const CxSeq *seq, CxSeqReader * reader, int reverse )
 
 
 /* changes the current reading block to the previous or to the next */
-CX_IMPL void
-cxChangeSeqBlock( CxSeqReader * reader, int direction )
+CV_IMPL void
+cvChangeSeqBlock( void* _reader, int direction )
 {
-    CX_FUNCNAME( "cxChangeSeqBlock" );
+    CV_FUNCNAME( "cvChangeSeqBlock" );
 
     __BEGIN__;
+
+    CvSeqReader* reader = (CvSeqReader*)_reader;
     
     if( !reader )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( direction > 0 )
     {
@@ -1106,7 +1165,7 @@ cxChangeSeqBlock( CxSeqReader * reader, int direction )
     else
     {
         reader->block = reader->block->prev;
-        reader->ptr = CX_GET_LAST_ELEM( reader->seq, reader->block );
+        reader->ptr = CV_GET_LAST_ELEM( reader->seq, reader->block );
     }
     reader->block_min = reader->block->data;
     reader->block_max = reader->block_min + reader->block->count * reader->seq->elem_size;
@@ -1116,36 +1175,24 @@ cxChangeSeqBlock( CxSeqReader * reader, int direction )
 
 
 /* returns the current reader position */
-CX_IMPL int
-cxGetSeqReaderPos( CxSeqReader * reader )
+CV_IMPL int
+cvGetSeqReaderPos( CvSeqReader* reader )
 {
     int elem_size;
     int index = -1;
 
-    CX_FUNCNAME( "cxGetSeqReaderPos" );
+    CV_FUNCNAME( "cvGetSeqReaderPos" );
 
     __BEGIN__;
 
     if( !reader || !reader->ptr )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     elem_size = reader->seq->elem_size;
-    if( elem_size == 8 )
-    {
-        index = (reader->ptr - reader->block_min) >> 3;
-    }
-    else if( elem_size == 4 )
-    {
-        index = (reader->ptr - reader->block_min) >> 2;
-    }
-    else if( elem_size == 1 )
-    {
-        index = reader->ptr - reader->block_min;
-    }
+    if( elem_size <= ICV_SHIFT_TAB_MAX && (index = icvPower2ShiftTab[elem_size - 1]) >= 0 )
+        index = (int)((reader->ptr - reader->block_min) >> index);
     else
-    {
-        index = (reader->ptr - reader->block_min) / elem_size;
-    }
+        index = (int)((reader->ptr - reader->block_min) / elem_size);
 
     index += reader->block->start_index - reader->delta_index;
 
@@ -1157,49 +1204,98 @@ cxGetSeqReaderPos( CxSeqReader * reader )
 
 /* sets reader position to given absolute or relative
    (relatively to the current one) position */
-CX_IMPL void
-cxSetSeqReaderPos( CxSeqReader * reader, int index, int is_relative )
+CV_IMPL void
+cvSetSeqReaderPos( CvSeqReader* reader, int index, int is_relative )
 {
-    int total;
-    CxSeqBlock *block;
-    int idx, elem_size;
-
-    CX_FUNCNAME( "cxSetSeqReaderPos" );
+    CV_FUNCNAME( "cvSetSeqReaderPos" );
 
     __BEGIN__;
 
-    if( !reader )
-        CX_ERROR( CX_StsNullPtr, "" );
+    CvSeqBlock *block;
+    int elem_size, count, total;
+
+    if( !reader || !reader->seq )
+        CV_ERROR( CV_StsNullPtr, "" );
 
     total = reader->seq->total;
-
-    if( is_relative )
-        index += cxGetSeqReaderPos( reader );
-
-    if( index < 0 )
-        index += total;
-    if( index >= total )
-        index -= total;
-    if( (unsigned) index >= (unsigned) total )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
-
     elem_size = reader->seq->elem_size;
 
-    block = reader->block;
-    idx = index - block->start_index + reader->delta_index;
-
-    if( (unsigned) idx < (unsigned) block->count )
+    if( !is_relative )
     {
-        reader->ptr = block->data + idx * elem_size;
+        if( index < 0 )
+        {
+            if( index < -total )
+                CV_ERROR( CV_StsOutOfRange, "" );
+            index += total;
+        }
+        else if( index >= total )
+        {
+            index -= total;
+            if( index >= total )
+                CV_ERROR( CV_StsOutOfRange, "" );
+        }
+
+        block = reader->seq->first;
+        if( index >= (count = block->count) )
+        {
+            if( index + index <= total )
+            {
+                do
+                {
+                    block = block->next;
+                    index -= count;
+                }
+                while( index >= (count = block->count) );
+            }
+            else
+            {
+                do
+                {
+                    block = block->prev;
+                    total -= block->count;
+                }
+                while( index < total );
+                index -= total;
+            }
+        }
+        reader->ptr = block->data + index * elem_size;
+        if( reader->block != block )
+        {
+            reader->block = block;
+            reader->block_min = block->data;
+            reader->block_max = block->data + block->count * elem_size;
+        }
     }
     else
     {
-        reader->ptr = cxGetSeqElem( reader->seq, index, &block );
-        assert( reader->ptr && block );
+        char* ptr = reader->ptr;
+        index *= elem_size;
+        block = reader->block;
 
-        reader->block = block;
-        reader->block_min = block->data;
-        reader->block_max = CX_GET_LAST_ELEM( reader->seq, block ) + elem_size;
+        if( index > 0 )
+        {
+            while( ptr + index >= reader->block_max )
+            {
+                int delta = (int)(reader->block_max - ptr);
+                index -= delta;
+                reader->block = block = block->next;
+                reader->block_min = ptr = block->data;
+                reader->block_max = block->data + block->count*elem_size;
+            }
+            reader->ptr = ptr + index;
+        }
+        else
+        {
+            while( ptr + index < reader->block_min )
+            {
+                int delta = (int)(ptr - reader->block_min);
+                index += delta;
+                reader->block = block = block->prev;
+                reader->block_min = block->data;
+                reader->block_max = ptr = block->data + block->count*elem_size;
+            }
+            reader->ptr = ptr + index;
+        }
     }
 
     __END__;
@@ -1207,32 +1303,32 @@ cxSetSeqReaderPos( CxSeqReader * reader, int index, int is_relative )
 
 
 /* pushes element to the sequence */
-CX_IMPL char*
-cxSeqPush( CxSeq *seq, void *element )
+CV_IMPL char*
+cvSeqPush( CvSeq *seq, void *element )
 {
     char *ptr = 0;
-    int elem_size;
+    size_t elem_size;
 
-    CX_FUNCNAME( "cxSeqPush" );
+    CV_FUNCNAME( "cvSeqPush" );
 
     __BEGIN__;
 
     if( !seq )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     elem_size = seq->elem_size;
     ptr = seq->ptr;
 
     if( ptr >= seq->block_max )
     {
-        CX_CALL( icxGrowSeq( seq, 0 ));
+        CV_CALL( icvGrowSeq( seq, 0 ));
 
         ptr = seq->ptr;
         assert( ptr + elem_size <= seq->block_max /*&& ptr == seq->block_min */  );
     }
 
     if( element )
-        memcpy( ptr, element, elem_size );
+        CV_MEMCPY_AUTO( ptr, element, elem_size );
     seq->first->prev->count++;
     seq->total++;
     seq->ptr = ptr + elem_size;
@@ -1244,32 +1340,32 @@ cxSeqPush( CxSeq *seq, void *element )
 
 
 /* pops the last element out of the sequence */
-CX_IMPL void
-cxSeqPop( CxSeq *seq, void *element )
+CV_IMPL void
+cvSeqPop( CvSeq *seq, void *element )
 {
     char *ptr;
     int elem_size;
 
-    CX_FUNCNAME( "cxSeqPop" );
+    CV_FUNCNAME( "cvSeqPop" );
 
     __BEGIN__;
 
     if( !seq )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
     if( seq->total <= 0 )
-        CX_ERROR_FROM_STATUS( CX_BADSIZE_ERR );
+        CV_ERROR( CV_StsBadSize, "" );
 
     elem_size = seq->elem_size;
     seq->ptr = ptr = seq->ptr - elem_size;
 
     if( element )
-        memcpy( element, ptr, elem_size );
+        CV_MEMCPY_AUTO( element, ptr, elem_size );
     seq->ptr = ptr;
     seq->total--;
 
     if( --(seq->first->prev->count) == 0 )
     {
-        icxFreeSeqBlock( seq, 0 );
+        icvFreeSeqBlock( seq, 0 );
         assert( seq->ptr == seq->block_max );
     }
 
@@ -1278,26 +1374,26 @@ cxSeqPop( CxSeq *seq, void *element )
 
 
 /* pushes element to the front of the sequence */
-CX_IMPL char*
-cxSeqPushFront( CxSeq *seq, void *element )
+CV_IMPL char*
+cvSeqPushFront( CvSeq *seq, void *element )
 {
     char* ptr = 0;
     int elem_size;
-    CxSeqBlock *block;
+    CvSeqBlock *block;
 
-    CX_FUNCNAME( "cxSeqPushFront" );
+    CV_FUNCNAME( "cvSeqPushFront" );
 
     __BEGIN__;
 
     if( !seq )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     elem_size = seq->elem_size;
     block = seq->first;
 
     if( !block || block->start_index == 0 )
     {
-        CX_CALL( icxGrowSeq( seq, 1 ));
+        CV_CALL( icvGrowSeq( seq, 1 ));
 
         block = seq->first;
         assert( block->start_index > 0 );
@@ -1306,7 +1402,7 @@ cxSeqPushFront( CxSeq *seq, void *element )
     ptr = block->data -= elem_size;
 
     if( element )
-        memcpy( ptr, element, elem_size );
+        CV_MEMCPY_AUTO( ptr, element, elem_size );
     block->count++;
     block->start_index--;
     seq->total++;
@@ -1318,70 +1414,70 @@ cxSeqPushFront( CxSeq *seq, void *element )
 
 
 /* pulls out the first element of the sequence */
-CX_IMPL void
-cxSeqPopFront( CxSeq *seq, void *element )
+CV_IMPL void
+cvSeqPopFront( CvSeq *seq, void *element )
 {
     int elem_size;
-    CxSeqBlock *block;
+    CvSeqBlock *block;
 
-    CX_FUNCNAME( "cxSeqPopFront" );
+    CV_FUNCNAME( "cvSeqPopFront" );
 
     __BEGIN__;
 
     if( !seq )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
     if( seq->total <= 0 )
-        CX_ERROR_FROM_STATUS( CX_BADSIZE_ERR );
+        CV_ERROR( CV_StsBadSize, "" );
 
     elem_size = seq->elem_size;
     block = seq->first;
 
     if( element )
-        memcpy( element, block->data, elem_size );
+        CV_MEMCPY_AUTO( element, block->data, elem_size );
     block->data += elem_size;
     block->start_index++;
     seq->total--;
 
     if( --(block->count) == 0 )
     {
-        icxFreeSeqBlock( seq, 1 );
+        icvFreeSeqBlock( seq, 1 );
     }
 
     __END__;
 }
 
 /* inserts new element in the middle of the sequence */
-CX_IMPL char*
-cxSeqInsert( CxSeq *seq, int before_index, void *element )
+CV_IMPL char*
+cvSeqInsert( CvSeq *seq, int before_index, void *element )
 {
     int elem_size;
     int block_size;
-    CxSeqBlock *block;
+    CvSeqBlock *block;
     int delta_index;
     int total;
     char* ret_ptr = 0;
 
-    CX_FUNCNAME( "cxSeqInsert" );
+    CV_FUNCNAME( "cvSeqInsert" );
 
     __BEGIN__;
 
     if( !seq )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     total = seq->total;
     before_index += before_index < 0 ? total : 0;
     before_index -= before_index > total ? total : 0;
 
     if( (unsigned)before_index > (unsigned)total )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+        CV_ERROR( CV_StsOutOfRange, "" );
 
     if( before_index == total )
     {
-        CX_CALL( ret_ptr = cxSeqPush( seq, element ));
+        CV_CALL( ret_ptr = cvSeqPush( seq, element ));
     }
     else if( before_index == 0 )
     {
-        CX_CALL( ret_ptr = cxSeqPushFront( seq, element ));
+        CV_CALL( ret_ptr = cvSeqPushFront( seq, element ));
     }
     else
     {
@@ -1393,7 +1489,7 @@ cxSeqInsert( CxSeq *seq, int before_index, void *element )
 
             if( ptr > seq->block_max )
             {
-                CX_CALL( icxGrowSeq( seq, 0 ));
+                CV_CALL( icvGrowSeq( seq, 0 ));
 
                 ptr = seq->ptr + elem_size;
                 assert( ptr <= seq->block_max );
@@ -1402,11 +1498,11 @@ cxSeqInsert( CxSeq *seq, int before_index, void *element )
             delta_index = seq->first->start_index;
             block = seq->first->prev;
             block->count++;
-            block_size = ptr - block->data;
+            block_size = (int)(ptr - block->data);
 
             while( before_index < block->start_index - delta_index )
             {
-                CxSeqBlock *prev_block = block->prev;
+                CvSeqBlock *prev_block = block->prev;
 
                 memmove( block->data + elem_size, block->data, block_size - elem_size );
                 block_size = prev_block->count * elem_size;
@@ -1433,7 +1529,7 @@ cxSeqInsert( CxSeq *seq, int before_index, void *element )
 
             if( block->start_index == 0 )
             {
-                CX_CALL( icxGrowSeq( seq, 1 ));
+                CV_CALL( icvGrowSeq( seq, 1 ));
 
                 block = seq->first;
             }
@@ -1445,7 +1541,7 @@ cxSeqInsert( CxSeq *seq, int before_index, void *element )
 
             while( before_index > block->start_index - delta_index + block->count )
             {
-                CxSeqBlock *next_block = block->next;
+                CvSeqBlock *next_block = block->next;
 
                 block_size = block->count * elem_size;
                 memmove( block->data, block->data + elem_size, block_size - elem_size );
@@ -1474,22 +1570,22 @@ cxSeqInsert( CxSeq *seq, int before_index, void *element )
 
 
 /* removes element from the sequence */
-CX_IMPL void
-cxSeqRemove( CxSeq *seq, int index )
+CV_IMPL void
+cvSeqRemove( CvSeq *seq, int index )
 {
     char *ptr;
     int elem_size;
     int block_size;
-    CxSeqBlock *block;
+    CvSeqBlock *block;
     int delta_index;
     int total, front = 0;
 
-    CX_FUNCNAME( "cxSeqRemove" );
+    CV_FUNCNAME( "cvSeqRemove" );
 
     __BEGIN__;
 
     if( !seq )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     total = seq->total;
 
@@ -1497,15 +1593,15 @@ cxSeqRemove( CxSeq *seq, int index )
     index -= index >= total ? total : 0;
 
     if( (unsigned) index >= (unsigned) total )
-        CX_ERROR( CX_StsOutOfRange, "Invalid index" );
+        CV_ERROR( CV_StsOutOfRange, "Invalid index" );
 
     if( index == total - 1 )
     {
-        cxSeqPop( seq, 0 );
+        cvSeqPop( seq, 0 );
     }
     else if( index == 0 )
     {
-        cxSeqPopFront( seq, 0 );
+        cvSeqPopFront( seq, 0 );
     }
     else
     {
@@ -1520,11 +1616,11 @@ cxSeqRemove( CxSeq *seq, int index )
         front = index < total >> 1;
         if( !front )
         {
-            block_size = block->count * elem_size - (ptr - block->data);
+            block_size = block->count * elem_size - (int)(ptr - block->data);
 
             while( block != seq->first->prev )  /* while not the last block */
             {
-                CxSeqBlock *next_block = block->next;
+                CvSeqBlock *next_block = block->next;
 
                 memmove( ptr, ptr + elem_size, block_size - elem_size );
                 memcpy( ptr + block_size - elem_size, next_block->data, elem_size );
@@ -1539,11 +1635,11 @@ cxSeqRemove( CxSeq *seq, int index )
         else
         {
             ptr += elem_size;
-            block_size = ptr - block->data;
+            block_size = (int)(ptr - block->data);
 
             while( block != seq->first )
             {
-                CxSeqBlock *prev_block = block->prev;
+                CvSeqBlock *prev_block = block->prev;
 
                 memmove( block->data + elem_size, block->data, block_size - elem_size );
                 block_size = prev_block->count * elem_size;
@@ -1558,7 +1654,7 @@ cxSeqRemove( CxSeq *seq, int index )
 
         seq->total = total - 1;
         if( --block->count == 0 )
-            icxFreeSeqBlock( seq, front );
+            icvFreeSeqBlock( seq, front );
     }
 
     __END__;
@@ -1566,20 +1662,20 @@ cxSeqRemove( CxSeq *seq, int index )
 
 
 /* adds several elements to the end or in the beginning of sequence */
-CX_IMPL void
-cxSeqPushMulti( CxSeq *seq, void *_elements, int count, int front )
+CV_IMPL void
+cvSeqPushMulti( CvSeq *seq, void *_elements, int count, int front )
 {
     char *elements = (char *) _elements;
 
-    CX_FUNCNAME( "cxSeqPushMulti" );
+    CV_FUNCNAME( "cvSeqPushMulti" );
 
     __BEGIN__;
     int elem_size;
 
     if( !seq )
-        CX_ERROR( CX_StsNullPtr, "NULL sequence pointer" );
+        CV_ERROR( CV_StsNullPtr, "NULL sequence pointer" );
     if( count < 0 )
-        CX_ERROR( CX_StsBadSize, "number of removed elements is negative" );
+        CV_ERROR( CV_StsBadSize, "number of removed elements is negative" );
 
     elem_size = seq->elem_size;
 
@@ -1587,7 +1683,7 @@ cxSeqPushMulti( CxSeq *seq, void *_elements, int count, int front )
     {
         while( count > 0 )
         {
-            int delta = (seq->block_max - seq->ptr) / elem_size;
+            int delta = (int)((seq->block_max - seq->ptr) / elem_size);
 
             delta = MIN( delta, count );
             if( delta > 0 )
@@ -1605,12 +1701,12 @@ cxSeqPushMulti( CxSeq *seq, void *_elements, int count, int front )
             }
 
             if( count > 0 )
-                CX_CALL( icxGrowSeq( seq, 0 ));
+                CV_CALL( icvGrowSeq( seq, 0 ));
         }
     }
     else
     {
-        CxSeqBlock* block = seq->first;
+        CvSeqBlock* block = seq->first;
         
         while( count > 0 )
         {
@@ -1618,7 +1714,7 @@ cxSeqPushMulti( CxSeq *seq, void *_elements, int count, int front )
             
             if( !block || block->start_index == 0 )
             {
-                CX_CALL( icxGrowSeq( seq, 1 ));
+                CV_CALL( icvGrowSeq( seq, 1 ));
 
                 block = seq->first;
                 assert( block->start_index > 0 );
@@ -1642,19 +1738,19 @@ cxSeqPushMulti( CxSeq *seq, void *_elements, int count, int front )
 
 
 /* removes several elements from the end of sequence */
-CX_IMPL void
-cxSeqPopMulti( CxSeq *seq, void *_elements, int count, int front )
+CV_IMPL void
+cvSeqPopMulti( CvSeq *seq, void *_elements, int count, int front )
 {
     char *elements = (char *) _elements;
 
-    CX_FUNCNAME( "cxSeqPopMulti" );
+    CV_FUNCNAME( "cvSeqPopMulti" );
 
     __BEGIN__;
 
     if( !seq )
-        CX_ERROR( CX_StsNullPtr, "NULL sequence pointer" );
+        CV_ERROR( CV_StsNullPtr, "NULL sequence pointer" );
     if( count < 0 )
-        CX_ERROR( CX_StsBadSize, "number of removed elements is negative" );
+        CV_ERROR( CV_StsBadSize, "number of removed elements is negative" );
 
     count = MIN( count, seq->total );
 
@@ -1683,7 +1779,7 @@ cxSeqPopMulti( CxSeq *seq, void *_elements, int count, int front )
             }
 
             if( seq->first->prev->count == 0 )
-                icxFreeSeqBlock( seq, 0 );
+                icvFreeSeqBlock( seq, 0 );
         }
     }
     else
@@ -1700,7 +1796,6 @@ cxSeqPopMulti( CxSeq *seq, void *_elements, int count, int front )
             count -= delta;
             seq->first->start_index += delta;
             delta *= seq->elem_size;
-            seq->first->data += delta;
 
             if( elements )
             {
@@ -1708,8 +1803,9 @@ cxSeqPopMulti( CxSeq *seq, void *_elements, int count, int front )
                 elements += delta;
             }
 
+            seq->first->data += delta;
             if( seq->first->count == 0 )
-                icxFreeSeqBlock( seq, 1 );
+                icvFreeSeqBlock( seq, 1 );
         }
     }
 
@@ -1718,139 +1814,94 @@ cxSeqPopMulti( CxSeq *seq, void *_elements, int count, int front )
 
 
 /* removes all elements from the sequence */
-CX_IMPL void
-cxClearSeq( CxSeq *seq )
+CV_IMPL void
+cvClearSeq( CvSeq *seq )
 {
-    CX_FUNCNAME( "cxClearSeq" );
+    CV_FUNCNAME( "cvClearSeq" );
 
     __BEGIN__;
 
     if( !seq )
-        CX_ERROR( CX_StsNullPtr, "" );
-    cxSeqPopMulti( seq, 0, seq->total );
+        CV_ERROR( CV_StsNullPtr, "" );
+    cvSeqPopMulti( seq, 0, seq->total );
 
     __END__;
 }
 
 
-CX_IMPL CxSeq*
-cxSeqSlice( CxSeq* seq, CxSlice slice, CxMemStorage* storage, int copy_data )
+CV_IMPL CvSeq*
+cvSeqSlice( const CvSeq* seq, CvSlice slice, CvMemStorage* storage, int copy_data )
 {
-    CxSeq* subseq = 0;
+    CvSeq* subseq = 0;
     
-    CX_FUNCNAME("cxSeqSlice");
+    CV_FUNCNAME("cvSeqSlice");
 
     __BEGIN__;
-    int elem_size, length; 
     
-    if( !CX_IS_SEQ(seq) )
-        CX_ERROR( CX_StsBadArg, "Invalid sequence header" );
+    int elem_size, count, length;
+    CvSeqReader reader;
+    CvSeqBlock *block, *first_block = 0, *last_block = 0;
+    
+    if( !CV_IS_SEQ(seq) )
+        CV_ERROR( CV_StsBadArg, "Invalid sequence header" );
 
     if( !storage )
     {
         storage = seq->storage;
         if( !storage )
-            CX_ERROR( CX_StsNullPtr, "NULL storage pointer" );
+            CV_ERROR( CV_StsNullPtr, "NULL storage pointer" );
     }
 
     elem_size = seq->elem_size;
-    length = cxSliceLength( slice, seq );
-    if( slice.startIndex < 0 )
-        slice.startIndex += seq->total;
-    else if( slice.startIndex >= seq->total )
-        slice.startIndex -= seq->total;
+    length = cvSliceLength( slice, seq );
+    if( slice.start_index < 0 )
+        slice.start_index += seq->total;
+    else if( slice.start_index >= seq->total )
+        slice.start_index -= seq->total;
     if( (unsigned)length > (unsigned)seq->total ||
-        ((unsigned)slice.startIndex >= (unsigned)seq->total && length != 0) )
-        CX_ERROR( CX_StsOutOfRange, "Bad sequence slice" );
+        ((unsigned)slice.start_index >= (unsigned)seq->total && length != 0) )
+        CV_ERROR( CV_StsOutOfRange, "Bad sequence slice" );
 
-    if( !copy_data )
+    CV_CALL( subseq = cvCreateSeq( seq->flags, seq->header_size, elem_size, storage ));
+
+    if( length > 0 )
     {
-        int header_size = cxAlign( seq->header_size, CX_STRUCT_ALIGN );
-        int size, cnt;
-        CxSeqBlock* start_block = 0, *block, *prev_block;
-        char* data = 0;
-        
-        size = header_size + (length > 0 ? sizeof(CxSeqBlock) : 0);
+        cvStartReadSeq( seq, &reader, 0 );
+        cvSetSeqReaderPos( &reader, slice.start_index, 0 );
+        count = (int)((reader.block_max - reader.ptr)/elem_size);
 
-        CX_CALL( data = cxGetSeqElem( seq, slice.startIndex, &start_block ));
-        block = start_block;
-
-        cnt = start_block->start_index - seq->first->start_index +
-              start_block->count - slice.startIndex;
-
-        while( cnt < length )
+        do
         {
-            block = block->next;
-            cnt += block->count;
-            size += sizeof(CxSeqBlock);
-        }
-
-        // allocate sequence header and memory for all sequence blocks
-        CX_CALL( subseq = cxCreateSeq( seq->flags, size, elem_size, storage ));
-        
-        if( length > 0 )
-        {
-            subseq->total = length;
-            subseq->header_size = seq->header_size;
-            subseq->first = prev_block = block =
-                (CxSeqBlock*)((char*)subseq + header_size );
-
-            cnt = start_block->start_index - seq->first->start_index +
-                  start_block->count - slice.startIndex;
-
-            prev_block->start_index = prev_block->count = 0;
-
-            do
+            int bl = MIN( count, length );
+            
+            if( !copy_data )
             {
-                cnt = MIN( cnt, length );
-                length -= cnt;
-                block->prev = prev_block;
-                prev_block->next = block;
-                block->start_index = prev_block->start_index + prev_block->count;
-                block->count = cnt;
-                block->data = data;
-                prev_block = block;
-                block++;
-                start_block = start_block->next;
-                cnt = start_block->count;
-                data = start_block->data;
+                block = (CvSeqBlock*)cvMemStorageAlloc( storage, sizeof(*block) );
+                if( !first_block )
+                {
+                    first_block = subseq->first = block->prev = block->next = block;
+                    block->start_index = 0;
+                }
+                else
+                {
+                    block->prev = last_block;
+                    block->next = first_block;
+                    last_block->next = first_block->prev = block;
+                    block->start_index = last_block->start_index + last_block->count;
+                }
+                last_block = block;
+                block->data = reader.ptr;
+                block->count = bl;
+                subseq->total += bl;
             }
-            while( length > 0 );
-
-            --block;
-            subseq->ptr = subseq->block_max = block->data + block->count*subseq->elem_size;
-            block->next = subseq->first;
-            subseq->first->prev = block;
+            else
+                cvSeqPushMulti( subseq, reader.ptr, bl, 0 );
+            length -= bl;
+            reader.block = reader.block->next;
+            reader.ptr = reader.block->data;
+            count = reader.block->count;
         }
-    }
-    else
-    {
-        CX_CALL( subseq = cxCreateSeq( seq->flags, seq->header_size,
-                                       seq->elem_size, storage ));
-
-        if( length > 0 )
-        {
-            CxSeqBlock* block = 0;
-            char* data = 0;
- 
-            CX_CALL( data = cxGetSeqElem( seq, slice.startIndex, &block ));
-
-            int cnt = block->start_index - seq->first->start_index +
-                      block->count - slice.startIndex;
-
-            do
-            {
-                cnt = MIN( cnt, length );
-                length -= cnt;
-
-                cxSeqPushMulti( subseq, data, cnt );
-
-                block = block->next;
-                cnt = block->count;
-                data = block->data;
-            }
-            while( length > 0 );
-        }
+        while( length > 0 );
     }
     
     __END__;
@@ -1861,75 +1912,75 @@ cxSeqSlice( CxSeq* seq, CxSlice slice, CxMemStorage* storage, int copy_data )
 
 // Remove slice from the middle of the sequence
 // !!! TODO !!! Implement more efficient algorithm
-CX_IMPL void
-cxSeqRemoveSlice( CxSeq* seq, CxSlice slice )
+CV_IMPL void
+cvSeqRemoveSlice( CvSeq* seq, CvSlice slice )
 {
-    CX_FUNCNAME("cxSeqRemoveSlice");
+    CV_FUNCNAME("cvSeqRemoveSlice");
 
     __BEGIN__;
 
     int total, length;
 
-    if( !CX_IS_SEQ(seq) )
-        CX_ERROR( CX_StsBadArg, "Invalid sequence header" );
+    if( !CV_IS_SEQ(seq) )
+        CV_ERROR( CV_StsBadArg, "Invalid sequence header" );
 
-    length = cxSliceLength( slice, seq );
+    length = cvSliceLength( slice, seq );
     total = seq->total;
 
-    if( slice.startIndex < 0 )
-        slice.startIndex += total;
-    else if( slice.startIndex >= total )
-        slice.startIndex -= total;
+    if( slice.start_index < 0 )
+        slice.start_index += total;
+    else if( slice.start_index >= total )
+        slice.start_index -= total;
 
-    if( (unsigned)slice.startIndex >= (unsigned)total )
-        CX_ERROR( CX_StsOutOfRange, "start slice index is out of range" );
+    if( (unsigned)slice.start_index >= (unsigned)total )
+        CV_ERROR( CV_StsOutOfRange, "start slice index is out of range" );
 
-    slice.endIndex = slice.startIndex + length;
+    slice.end_index = slice.start_index + length;
 
-    if( slice.endIndex < total )
+    if( slice.end_index < total )
     {
-        CxSeqReader reader_to, reader_from;
+        CvSeqReader reader_to, reader_from;
         int elem_size = seq->elem_size;
 
-        cxStartReadSeq( seq, &reader_to );
-        cxStartReadSeq( seq, &reader_from );
+        cvStartReadSeq( seq, &reader_to );
+        cvStartReadSeq( seq, &reader_from );
 
-        if( slice.startIndex > total - slice.endIndex )
+        if( slice.start_index > total - slice.end_index )
         {
-            int i, count = seq->total - slice.endIndex;
-            cxSetSeqReaderPos( &reader_to, slice.startIndex );
-            cxSetSeqReaderPos( &reader_from, slice.endIndex );
+            int i, count = seq->total - slice.end_index;
+            cvSetSeqReaderPos( &reader_to, slice.start_index );
+            cvSetSeqReaderPos( &reader_from, slice.end_index );
 
             for( i = 0; i < count; i++ )
             {
-                memcpy( reader_to.ptr, reader_from.ptr, elem_size );
-                CX_NEXT_SEQ_ELEM( elem_size, reader_to );
-                CX_NEXT_SEQ_ELEM( elem_size, reader_from );
+                CV_MEMCPY_AUTO( reader_to.ptr, reader_from.ptr, elem_size );
+                CV_NEXT_SEQ_ELEM( elem_size, reader_to );
+                CV_NEXT_SEQ_ELEM( elem_size, reader_from );
             }
 
-            cxSeqPopMulti( seq, 0, slice.endIndex - slice.startIndex );
+            cvSeqPopMulti( seq, 0, slice.end_index - slice.start_index );
         }
         else
         {
-            int i, count = slice.startIndex;
-            cxSetSeqReaderPos( &reader_to, slice.endIndex );
-            cxSetSeqReaderPos( &reader_from, slice.startIndex );
+            int i, count = slice.start_index;
+            cvSetSeqReaderPos( &reader_to, slice.end_index );
+            cvSetSeqReaderPos( &reader_from, slice.start_index );
 
             for( i = 0; i < count; i++ )
             {
-                CX_PREV_SEQ_ELEM( elem_size, reader_to );
-                CX_PREV_SEQ_ELEM( elem_size, reader_from );
+                CV_PREV_SEQ_ELEM( elem_size, reader_to );
+                CV_PREV_SEQ_ELEM( elem_size, reader_from );
 
-                memcpy( reader_to.ptr, reader_from.ptr, elem_size );
+                CV_MEMCPY_AUTO( reader_to.ptr, reader_from.ptr, elem_size );
             }
 
-            cxSeqPopMulti( seq, 0, slice.endIndex - slice.startIndex, 1 );
+            cvSeqPopMulti( seq, 0, slice.end_index - slice.start_index, 1 );
         }
     }
     else
     {
-        cxSeqPopMulti( seq, 0, total - slice.startIndex );
-        cxSeqPopMulti( seq, 0, slice.endIndex - total, 1 );
+        cvSeqPopMulti( seq, 0, total - slice.start_index );
+        cvSeqPopMulti( seq, 0, slice.end_index - total, 1 );
     }
 
     __END__;
@@ -1938,39 +1989,39 @@ cxSeqRemoveSlice( CxSeq* seq, CxSlice slice )
 
 // Inserts a new sequence into the middle of another sequence
 // !!! TODO !!! Implement more efficient algorithm
-CX_IMPL void
-cxSeqInsertSlice( CxSeq* seq, int index, const CxArr* from_arr )
+CV_IMPL void
+cvSeqInsertSlice( CvSeq* seq, int index, const CvArr* from_arr )
 {
-    CxSeqReader reader_to, reader_from;
+    CvSeqReader reader_to, reader_from;
     int i, elem_size, total, from_total;
     
-    CX_FUNCNAME("cxSeqInsertSlice");
+    CV_FUNCNAME("cvSeqInsertSlice");
 
     __BEGIN__;
 
-    CxSeq from_header, *from = (CxSeq*)from_arr;
-    CxSeqBlock block;
+    CvSeq from_header, *from = (CvSeq*)from_arr;
+    CvSeqBlock block;
 
-    if( !CX_IS_SEQ(seq) )
-        CX_ERROR( CX_StsBadArg, "Invalid destination sequence header" );
+    if( !CV_IS_SEQ(seq) )
+        CV_ERROR( CV_StsBadArg, "Invalid destination sequence header" );
 
-    if( !CX_IS_SEQ(from))
+    if( !CV_IS_SEQ(from))
     {
-        CxMat* mat = (CxMat*)from;
-        if( !CX_IS_MAT(mat))
-            CX_ERROR( CX_StsBadArg, "Source is not a sequence nor matrix" );
+        CvMat* mat = (CvMat*)from;
+        if( !CV_IS_MAT(mat))
+            CV_ERROR( CV_StsBadArg, "Source is not a sequence nor matrix" );
 
-        if( !CX_IS_MAT_CONT(mat->type) || mat->rows != 1 || mat->cols != 1 )
-            CX_ERROR( CX_StsBadArg, "The source array must be 1d coninuous vector" );
+        if( !CV_IS_MAT_CONT(mat->type) || (mat->rows != 1 && mat->cols != 1) )
+            CV_ERROR( CV_StsBadArg, "The source array must be 1d coninuous vector" );
 
-        CX_CALL( from = cxMakeSeqHeaderForArray( CX_SEQ_KIND_GENERIC, sizeof(from_header),
-                                                 icxPixSize[CX_MAT_TYPE(mat->type)],
+        CV_CALL( from = cvMakeSeqHeaderForArray( CV_SEQ_KIND_GENERIC, sizeof(from_header),
+                                                 CV_ELEM_SIZE(mat->type),
                                                  mat->data.ptr, mat->cols + mat->rows - 1,
                                                  &from_header, &block ));
     }
 
     if( seq->elem_size != from->elem_size )
-        CX_ERROR( CX_StsUnmatchedSizes,
+        CV_ERROR( CV_StsUnmatchedSizes,
         "Sizes of source and destination sequences' elements are different" );
 
     from_total = from->total;
@@ -1983,199 +2034,400 @@ cxSeqInsertSlice( CxSeq* seq, int index, const CxArr* from_arr )
     index -= index > total ? total : 0;
 
     if( (unsigned)index > (unsigned)total )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+        CV_ERROR( CV_StsOutOfRange, "" );
 
     elem_size = seq->elem_size;
 
     if( index < (total >> 1) )
     {
-        cxSeqPushMulti( seq, 0, from_total, 1 );
+        cvSeqPushMulti( seq, 0, from_total, 1 );
 
-        cxStartReadSeq( seq, &reader_to );
-        cxStartReadSeq( seq, &reader_from );
-        cxSetSeqReaderPos( &reader_from, from_total );
+        cvStartReadSeq( seq, &reader_to );
+        cvStartReadSeq( seq, &reader_from );
+        cvSetSeqReaderPos( &reader_from, from_total );
 
         for( i = 0; i < index; i++ )
         {
-            memcpy( reader_to.ptr, reader_from.ptr, elem_size );
-            CX_NEXT_SEQ_ELEM( elem_size, reader_to );
-            CX_NEXT_SEQ_ELEM( elem_size, reader_from );
+            CV_MEMCPY_AUTO( reader_to.ptr, reader_from.ptr, elem_size );
+            CV_NEXT_SEQ_ELEM( elem_size, reader_to );
+            CV_NEXT_SEQ_ELEM( elem_size, reader_from );
         }
     }
     else
     {
-        cxSeqPushMulti( seq, 0, from_total );
+        cvSeqPushMulti( seq, 0, from_total );
 
-        cxStartReadSeq( seq, &reader_to );
-        cxStartReadSeq( seq, &reader_from );
-        cxSetSeqReaderPos( &reader_from, total );
-        cxSetSeqReaderPos( &reader_to, seq->total );
+        cvStartReadSeq( seq, &reader_to );
+        cvStartReadSeq( seq, &reader_from );
+        cvSetSeqReaderPos( &reader_from, total );
+        cvSetSeqReaderPos( &reader_to, seq->total );
 
         for( i = 0; i < total - index; i++ )
         {
-            CX_PREV_SEQ_ELEM( elem_size, reader_to );
-            CX_PREV_SEQ_ELEM( elem_size, reader_from );
-            memcpy( reader_to.ptr, reader_from.ptr, elem_size );
+            CV_PREV_SEQ_ELEM( elem_size, reader_to );
+            CV_PREV_SEQ_ELEM( elem_size, reader_from );
+            CV_MEMCPY_AUTO( reader_to.ptr, reader_from.ptr, elem_size );
         }
     }
 
-    cxStartReadSeq( from, &reader_from );
-    cxSetSeqReaderPos( &reader_to, index );
+    cvStartReadSeq( from, &reader_from );
+    cvSetSeqReaderPos( &reader_to, index );
 
     for( i = 0; i < from_total; i++ )
     {
-        memcpy( reader_to.ptr, reader_from.ptr, elem_size );
-        CX_NEXT_SEQ_ELEM( elem_size, reader_to );
-        CX_NEXT_SEQ_ELEM( elem_size, reader_from );
+        CV_MEMCPY_AUTO( reader_to.ptr, reader_from.ptr, elem_size );
+        CV_NEXT_SEQ_ELEM( elem_size, reader_to );
+        CV_NEXT_SEQ_ELEM( elem_size, reader_from );
     }
 
     __END__;
 }
 
-
 // Sort the sequence using user-specified comparison function.
-// Semantics is the same as in qsort function
-CX_IMPL void
-cxSeqSort( CxSeq* seq, CxCmpFunc cmp_func, void* userdata )
+// The semantics is similar to qsort() function. The code is based
+// on BSD system qsort():
+//    * Copyright (c) 1992, 1993
+//    *  The Regents of the University of California.  All rights reserved.
+//    *
+//    * Redistribution and use in source and binary forms, with or without
+//    * modification, are permitted provided that the following conditions
+//    * are met:
+//    * 1. Redistributions of source code must retain the above copyright
+//    *    notice, this list of conditions and the following disclaimer.
+//    * 2. Redistributions in binary form must reproduce the above copyright
+//    *    notice, this list of conditions and the following disclaimer in the
+//    *    documentation and/or other materials provided with the distribution.
+//    * 3. All advertising materials mentioning features or use of this software
+//    *    must display the following acknowledgement:
+//    *  This product includes software developed by the University of
+//    *  California, Berkeley and its contributors.
+//    * 4. Neither the name of the University nor the names of its contributors
+//    *    may be used to endorse or promote products derived from this software
+//    *    without specific prior written permission.
+//    *
+//    * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+//    * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+//    * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+//    * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+//    * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+//    * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+//    * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+//    * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+//    * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+//    * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+//    * SUCH DAMAGE.
+
+typedef struct CvSeqReaderPos
 {
-    const int bubble_level = 16;
+    CvSeqBlock* block;
+    char* ptr;
+    char* block_min;
+    char* block_max;
+}
+CvSeqReaderPos;
+
+#define CV_SAVE_READER_POS( reader, pos )   \
+{                                           \
+    (pos).block = (reader).block;           \
+    (pos).ptr = (reader).ptr;               \
+    (pos).block_min = (reader).block_min;   \
+    (pos).block_max = (reader).block_max;   \
+}
+
+#define CV_RESTORE_READER_POS( reader, pos )\
+{                                           \
+    (reader).block = (pos).block;           \
+    (reader).ptr = (pos).ptr;               \
+    (reader).block_min = (pos).block_min;   \
+    (reader).block_max = (pos).block_max;   \
+}
+
+inline char*
+icvMed3( char* a, char* b, char* c, CvCmpFunc cmp_func, void* aux )
+{
+    return cmp_func(a, b, aux) < 0 ?
+      (cmp_func(b, c, aux) < 0 ? b : cmp_func(a, c, aux) < 0 ? c : a)
+     :(cmp_func(b, c, aux) > 0 ? b : cmp_func(a, c, aux) < 0 ? a : c);
+}
+
+CV_IMPL void
+cvSeqSort( CvSeq* seq, CvCmpFunc cmp_func, void* aux )
+{         
+    int elem_size;
+    int isort_thresh = 7;
+    CvSeqReader left, right;
+    int sp = 0;
 
     struct
     {
-        int lb, ub;
+        CvSeqReaderPos lb;
+        CvSeqReaderPos ub;
     }
     stack[48];
 
-    int sp = 0;
-
-    int elem_size;
-    CxSeqReader left_reader, right_reader;
-
-    CX_FUNCNAME("cxSeqSort");
+    CV_FUNCNAME( "cvSeqSort" );
 
     __BEGIN__;
+    
+    if( !CV_IS_SEQ(seq) )
+        CV_ERROR( !seq ? CV_StsNullPtr : CV_StsBadArg, "Bad input sequence" );
 
-    if( !seq || !cmp_func )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+    if( !cmp_func )
+        CV_ERROR( CV_StsNullPtr, "Null compare function" );
 
     if( seq->total <= 1 )
         EXIT;
 
-    stack[0].lb = 0;
-    stack[0].ub = seq->total - 1;
-
     elem_size = seq->elem_size;
+    isort_thresh *= elem_size;
 
-    CX_CALL( cxStartReadSeq( seq, &left_reader ));
-    CX_CALL( cxStartReadSeq( seq, &right_reader ));
+    cvStartReadSeq( seq, &left, 0 );
+    right = left;
+    CV_SAVE_READER_POS( left, stack[0].lb );
+    CV_PREV_SEQ_ELEM( elem_size, right );
+    CV_SAVE_READER_POS( right, stack[0].ub );
 
     while( sp >= 0 )
     {
-        int lb = stack[sp].lb;
-        int ub = stack[sp--].ub;
+        CV_RESTORE_READER_POS( left, stack[sp].lb );
+        CV_RESTORE_READER_POS( right, stack[sp].ub );
+        sp--;
 
         for(;;)
         {
-            int diff = ub - lb;
-            if( diff < bubble_level )
+            int i, n, m;
+            CvSeqReader ptr, ptr2;
+
+            if( left.block == right.block )
+                n = (int)(right.ptr - left.ptr) + elem_size;
+            else
             {
-                int i, j;
-                cxSetSeqReaderPos( &left_reader, lb );
+                n = cvGetSeqReaderPos( &right );
+                n = (n - cvGetSeqReaderPos( &left ) + 1)*elem_size;
+            }
 
-                for( i = diff; i > 0; i-- )
+            if( n <= isort_thresh )
+            {
+            insert_sort:
+                ptr = ptr2 = left;
+                CV_NEXT_SEQ_ELEM( elem_size, ptr );
+                CV_NEXT_SEQ_ELEM( elem_size, right );
+                while( ptr.ptr != right.ptr )
                 {
-                    int f = 0;
-
-                    right_reader.block = left_reader.block;
-                    right_reader.ptr = left_reader.ptr;
-                    right_reader.block_min = left_reader.block_min;
-                    right_reader.block_max = left_reader.block_max;
-                    
-                    for( j = 0; j < i; j++ )
+                    ptr2.ptr = ptr.ptr;
+                    if( ptr2.block != ptr.block )
                     {
-                        char* ptr = right_reader.ptr;
-                        CX_NEXT_SEQ_ELEM( elem_size, right_reader );
-                        if( cmp_func( ptr, right_reader.ptr, userdata ) > 0 )
-                        {
-                            CX_SWAP_ELEMS( ptr, right_reader.ptr );
-                            f = 1;
-                        }
+                        ptr2.block = ptr.block;
+                        ptr2.block_min = ptr.block_min;
+                        ptr2.block_max = ptr.block_max;
                     }
-                    if( !f ) break;
+                    while( ptr2.ptr != left.ptr )
+                    {
+                        char* cur = ptr2.ptr;
+                        CV_PREV_SEQ_ELEM( elem_size, ptr2 );
+                        if( cmp_func( ptr2.ptr, cur, aux ) <= 0 )
+                            break;
+                        CV_SWAP_ELEMS( ptr2.ptr, cur, elem_size );
+                    }
+                    CV_NEXT_SEQ_ELEM( elem_size, ptr );
                 }
                 break;
             }
             else
             {
-                /* select pivot and exchange with 1st element */
-                int  m = lb + (diff >> 1);
-                int  i = lb, j = ub + 1;
-                char* pivot_ptr;
+                CvSeqReader left0, left1, right0, right1;
+                CvSeqReader tmp0, tmp1;
+                char *m1, *m2, *m3, *pivot;
+                int swap_cnt = 0;
+                int l, l0, l1, r, r0, r1;
 
-                cxSetSeqReaderPos( &left_reader, lb );
-                cxSetSeqReaderPos( &right_reader, m );
-                pivot_ptr = right_reader.ptr;
-                cxSetSeqReaderPos( &right_reader, ub );
-
-                /* choose median among seq[lb], seq[m], seq[ub] */
-                int a = cmp_func( pivot_ptr, left_reader.ptr, userdata ) < 0;
-                int b = cmp_func( pivot_ptr, right_reader.ptr, userdata ) < 0;
-
-                if( a == b )
+                left0 = tmp0 = left;
+                right0 = right1 = right;
+                n /= elem_size;
+                
+                if( n > 40 )
                 {
-                    b = cmp_func( left_reader.ptr, right_reader.ptr, userdata ) < 0;
-                    pivot_ptr = a == b ? left_reader.ptr : right_reader.ptr;
-                }
-
-                if( pivot_ptr != left_reader.ptr )
-                {
-                    CX_SWAP_ELEMS( left_reader.ptr, pivot_ptr );
-                    pivot_ptr = left_reader.ptr;
-                }
-                    
-                CX_NEXT_SEQ_ELEM( elem_size, left_reader );
-
-                /* partition into two segments */
-                for(;;)
-                {
-                    for( ; ++i < j && cmp_func( left_reader.ptr, pivot_ptr, userdata ) <= 0; )
-                    {
-                        CX_NEXT_SEQ_ELEM( elem_size, left_reader );
-                    }
-
-                    for( ; --j >= i && cmp_func( pivot_ptr, right_reader.ptr, userdata ) <= 0; )
-                    {
-                        CX_PREV_SEQ_ELEM( elem_size, right_reader );
-                    }
-
-                    if( i >= j ) break;
-                    CX_SWAP_ELEMS( left_reader.ptr, right_reader.ptr );
-                    CX_NEXT_SEQ_ELEM( elem_size, left_reader );
-                    CX_PREV_SEQ_ELEM( elem_size, right_reader );
-                }
-
-                /* pivot belongs in A[j] */
-                CX_SWAP_ELEMS( right_reader.ptr, pivot_ptr );
-
-                /* keep processing smallest segment, and stack largest*/
-                if( j - lb <= ub - j )
-                {
-                    if( j + 1 < ub )
-                    {
-                        stack[++sp].lb   = j + 1;
-                        stack[sp].ub = ub;
-                    }
-                    ub = j - 1;
+                    int d = n / 8;
+                    char *p1, *p2, *p3;
+                    p1 = tmp0.ptr;
+                    cvSetSeqReaderPos( &tmp0, d, 1 );
+                    p2 = tmp0.ptr;
+                    cvSetSeqReaderPos( &tmp0, d, 1 );
+                    p3 = tmp0.ptr;
+                    m1 = icvMed3( p1, p2, p3, cmp_func, aux );
+                    cvSetSeqReaderPos( &tmp0, (n/2) - d*3, 1 );
+                    p1 = tmp0.ptr;
+                    cvSetSeqReaderPos( &tmp0, d, 1 );
+                    p2 = tmp0.ptr;
+                    cvSetSeqReaderPos( &tmp0, d, 1 );
+                    p3 = tmp0.ptr;
+                    m2 = icvMed3( p1, p2, p3, cmp_func, aux );
+                    cvSetSeqReaderPos( &tmp0, n - 1 - d*3 - n/2, 1 );
+                    p1 = tmp0.ptr;
+                    cvSetSeqReaderPos( &tmp0, d, 1 );
+                    p2 = tmp0.ptr;
+                    cvSetSeqReaderPos( &tmp0, d, 1 );
+                    p3 = tmp0.ptr;
+                    m3 = icvMed3( p1, p2, p3, cmp_func, aux );
                 }
                 else
                 {
-                    if( j - 1 > lb)
-                    {
-                        stack[++sp].lb = lb;
-                        stack[sp].ub = j - 1;
-                    }
-                    lb = j + 1;
+                    m1 = tmp0.ptr;
+                    cvSetSeqReaderPos( &tmp0, n/2, 1 );
+                    m2 = tmp0.ptr;
+                    cvSetSeqReaderPos( &tmp0, n - 1 - n/2, 1 );
+                    m3 = tmp0.ptr;
                 }
+
+                pivot = icvMed3( m1, m2, m3, cmp_func, aux );
+                left = left0;
+                if( pivot != left.ptr )
+                {
+                    CV_SWAP_ELEMS( pivot, left.ptr, elem_size );
+                    pivot = left.ptr;
+                }
+                CV_NEXT_SEQ_ELEM( elem_size, left );
+                left1 = left;
+
+                for(;;)
+                {
+                    while( left.ptr != right.ptr && (r = cmp_func(left.ptr, pivot, aux)) <= 0 )
+                    {
+                        if( r == 0 )
+                        {
+                            if( left1.ptr != left.ptr )
+                                CV_SWAP_ELEMS( left1.ptr, left.ptr, elem_size );
+                            swap_cnt = 1;
+                            CV_NEXT_SEQ_ELEM( elem_size, left1 );
+                        }
+                        CV_NEXT_SEQ_ELEM( elem_size, left );
+                    }
+
+                    while( left.ptr != right.ptr && (r = cmp_func(right.ptr,pivot, aux)) >= 0 )
+                    {
+                        if( r == 0 )
+                        {
+                            if( right1.ptr != right.ptr )
+                                CV_SWAP_ELEMS( right1.ptr, right.ptr, elem_size );
+                            swap_cnt = 1;
+                            CV_PREV_SEQ_ELEM( elem_size, right1 );
+                        }
+                        CV_PREV_SEQ_ELEM( elem_size, right );
+                    }
+
+                    if( left.ptr == right.ptr )
+                    {
+                        r = cmp_func(left.ptr, pivot, aux);
+                        if( r == 0 )
+                        {
+                            if( left1.ptr != left.ptr )
+                                CV_SWAP_ELEMS( left1.ptr, left.ptr, elem_size );
+                            swap_cnt = 1;
+                            CV_NEXT_SEQ_ELEM( elem_size, left1 );
+                        }
+                        if( r <= 0 )
+                        {
+                            CV_NEXT_SEQ_ELEM( elem_size, left );
+                        }
+                        else
+                        {
+                            CV_PREV_SEQ_ELEM( elem_size, right );
+                        }
+                        break;
+                    }
+
+                    CV_SWAP_ELEMS( left.ptr, right.ptr, elem_size );
+                    CV_NEXT_SEQ_ELEM( elem_size, left );
+                    r = left.ptr == right.ptr;
+                    CV_PREV_SEQ_ELEM( elem_size, right );
+                    swap_cnt = 1;
+                    if( r )
+                        break;
+                }
+
+                if( swap_cnt == 0 )
+                {
+                    left = left0, right = right0;
+                    goto insert_sort;
+                }
+
+                l = cvGetSeqReaderPos( &left );
+                if( l == 0 )
+                    l = seq->total;
+                l0 = cvGetSeqReaderPos( &left0 );
+                l1 = cvGetSeqReaderPos( &left1 );
+                if( l1 == 0 )
+                    l1 = seq->total;
+                
+                n = MIN( l - l1, l1 - l0 );
+                if( n > 0 )
+                {
+                    tmp0 = left0;
+                    tmp1 = left;
+                    cvSetSeqReaderPos( &tmp1, 0-n, 1 );
+                    for( i = 0; i < n; i++ )
+                    {
+                        CV_SWAP_ELEMS( tmp0.ptr, tmp1.ptr, elem_size );
+                        CV_NEXT_SEQ_ELEM( elem_size, tmp0 );
+                        CV_NEXT_SEQ_ELEM( elem_size, tmp1 );
+                    }
+                }
+
+                r = cvGetSeqReaderPos( &right );
+                r0 = cvGetSeqReaderPos( &right0 );
+                r1 = cvGetSeqReaderPos( &right1 );
+                m = MIN( r0 - r1, r1 - r );
+                if( m > 0 )
+                {
+                    tmp0 = left;
+                    tmp1 = right0;
+                    cvSetSeqReaderPos( &tmp1, 1-m, 1 );
+                    for( i = 0; i < m; i++ )
+                    {
+                        CV_SWAP_ELEMS( tmp0.ptr, tmp1.ptr, elem_size );
+                        CV_NEXT_SEQ_ELEM( elem_size, tmp0 );
+                        CV_NEXT_SEQ_ELEM( elem_size, tmp1 );
+                    }
+                }
+
+                n = l - l1;
+                m = r1 - r;
+                if( n > 1 )
+                {
+                    if( m > 1 )
+                    {
+                        if( n > m )
+                        {
+                            sp++;
+                            CV_SAVE_READER_POS( left0, stack[sp].lb );
+                            cvSetSeqReaderPos( &left0, n - 1, 1 );
+                            CV_SAVE_READER_POS( left0, stack[sp].ub );
+                            left = right = right0;
+                            cvSetSeqReaderPos( &left, 1 - m, 1 );
+                        }
+                        else
+                        {
+                            sp++;
+                            CV_SAVE_READER_POS( right0, stack[sp].ub );
+                            cvSetSeqReaderPos( &right0, 1 - m, 1 );
+                            CV_SAVE_READER_POS( right0, stack[sp].lb );
+                            left = right = left0;
+                            cvSetSeqReaderPos( &right, n - 1, 1 );
+                        }
+                    }
+                    else
+                    {
+                        left = right = left0;
+                        cvSetSeqReaderPos( &right, n - 1, 1 );
+                    }
+                }
+                else if( m > 1 )
+                {
+                    left = right = right0;
+                    cvSetSeqReaderPos( &left, 1 - m, 1 );
+                }
+                else
+                    break;
             }
         }
     }
@@ -2184,103 +2436,221 @@ cxSeqSort( CxSeq* seq, CxCmpFunc cmp_func, void* userdata )
 }
 
 
-CX_IMPL void
-cxSeqInvert( CxSeq* seq )
+CV_IMPL char*
+cvSeqSearch( CvSeq* seq, const void* _elem, CvCmpFunc cmp_func,
+             int is_sorted, int* _idx, void* userdata )
 {
-    CX_FUNCNAME( "cxSeqInvert" );
+    char* result = 0;
+    const char* elem = (const char*)_elem;
+    int idx = -1;
+    
+    CV_FUNCNAME("cvSeqSort");
 
     __BEGIN__;
 
-    CxSeqReader left_reader, right_reader;
-    int elem_size = seq->elem_size;
+    int elem_size, i, j, total;
+
+    if( !CV_IS_SEQ(seq) )
+        CV_ERROR( !seq ? CV_StsNullPtr : CV_StsBadArg, "Bad input sequence" );
+
+    if( !elem )
+        CV_ERROR( CV_StsNullPtr, "Null element pointer" );
+
+    elem_size = seq->elem_size;
+    total = seq->total;
+
+    if( total == 0 )
+        EXIT;
+
+    if( !is_sorted )
+    {
+        CvSeqReader reader;
+        cvStartReadSeq( seq, &reader, 0 );
+
+        if( cmp_func )
+        {
+            for( i = 0; i < total; i++ )
+            {
+                if( cmp_func( elem, reader.ptr, userdata ) == 0 )
+                    break;
+                CV_NEXT_SEQ_ELEM( elem_size, reader );
+            }
+        }
+        else if( (elem_size & (sizeof(int)-1)) == 0 )
+        {
+            for( i = 0; i < total; i++ )
+            {
+                for( j = 0; j < elem_size; j += sizeof(int) )
+                {
+                    if( *(const int*)(reader.ptr + j) != *(const int*)(elem + j) )
+                        break;
+                }
+                if( j == elem_size )
+                    break;
+                CV_NEXT_SEQ_ELEM( elem_size, reader );
+            }
+        }
+        else
+        {
+            for( i = 0; i < total; i++ )
+            {
+                for( j = 0; j < elem_size; j++ )
+                {
+                    if( reader.ptr[j] != elem[j] )
+                        break;
+                }
+                if( j == elem_size )
+                    break;
+                CV_NEXT_SEQ_ELEM( elem_size, reader );
+            }
+        }
+
+        idx = i;
+        if( i < total )
+            result = reader.ptr;
+    }
+    else
+    {
+        if( !cmp_func )
+            CV_ERROR( CV_StsNullPtr, "Null compare function" );
+
+        i = 0, j = total;
+        
+        while( j > i )
+        {
+            int k = (i+j)>>1, code;
+            char* ptr = cvGetSeqElem( seq, k );
+            code = cmp_func( elem, ptr, userdata );
+            if( !code )
+            {
+                result = ptr;
+                idx = k;
+                EXIT;
+            }
+            if( code < 0 )
+                j = k;
+            else
+                i = k+1;
+        }
+        idx = j;
+    }
+
+    __END__;
+
+    if( _idx )
+        *_idx = idx;
+
+    return result;
+}
+
+
+CV_IMPL void
+cvSeqInvert( CvSeq* seq )
+{
+    CV_FUNCNAME( "cvSeqInvert" );
+
+    __BEGIN__;
+
+    CvSeqReader left_reader, right_reader;
+    int elem_size;
     int i, count;
 
-    CX_CALL( cxStartReadSeq( seq, &left_reader, 0 ));
-    CX_CALL( cxStartReadSeq( seq, &right_reader, 1 ));
+    CV_CALL( cvStartReadSeq( seq, &left_reader, 0 ));
+    CV_CALL( cvStartReadSeq( seq, &right_reader, 1 ));
+    elem_size = seq->elem_size;
     count = seq->total >> 1;
 
     for( i = 0; i < count; i++ )
     {
-        CX_SWAP_ELEMS( left_reader.ptr, right_reader.ptr );
-        CX_NEXT_SEQ_ELEM( elem_size, left_reader );
-        CX_PREV_SEQ_ELEM( elem_size, right_reader );
+        CV_SWAP_ELEMS( left_reader.ptr, right_reader.ptr, elem_size );
+        CV_NEXT_SEQ_ELEM( elem_size, left_reader );
+        CV_PREV_SEQ_ELEM( elem_size, right_reader );
     }
 
     __END__;
 }
 
 
-typedef struct CxPTreeNode
+typedef struct CvPTreeNode
 {
-    struct CxPTreeNode* parent;
+    struct CvPTreeNode* parent;
     char* element;
     int rank;
 }
-CxPTreeNode;
+CvPTreeNode;
 
 
-// split the input seq/set into one or more connected components.
-// is_equal returns 1 if two elements belong to the same component
-// the function returns sequence of integers - 0-based class indices for
-// each element.  
-CX_IMPL  int
-cxPartitionSeq( CxSeq* seq, CxMemStorage* storage, CxSeq** comps,
-                CxCmpFunc is_equal, void* userdata, int is_set )
+// the function splits the input sequence or set into one or more equivalence classes.
+// is_equal(a,b,...) returns non-zero if the two sequence elements
+// belong to the same class. the function returns sequence of integers -
+// 0-based class indexes for each element.
+//
+// The algorithm is described in "Introduction to Algorithms"
+// by Cormen, Leiserson and Rivest, chapter "Data structures for disjoint sets"
+CV_IMPL  int
+cvSeqPartition( const CvSeq* seq, CvMemStorage* storage, CvSeq** labels,
+                CvCmpFunc is_equal, void* userdata )
 {
-    CxSeq* result = 0;
-    CxMemStorage* temp_storage = 0;
+    CvSeq* result = 0;
+    CvMemStorage* temp_storage = 0;
     int class_idx = 0;
     
-    CX_FUNCNAME( "icxSeqPartition" );
+    CV_FUNCNAME( "cvSeqPartition" );
 
     __BEGIN__;
 
-    CxSeqWriter writer;
-    CxSeqReader reader;
-    CxSeq* nodes;
+    CvSeqWriter writer;
+    CvSeqReader reader, reader0;
+    CvSeq* nodes;
     int i, j;
+    int is_set; 
 
-    if( !comps )
-        CX_ERROR( CX_StsNullPtr, "" );
+    if( !labels )
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( !seq || !is_equal )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( !storage )
         storage = seq->storage;
 
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    temp_storage = cxCreateChildMemStorage( storage );
+    is_set = CV_IS_SET(seq);
 
-    nodes = cxCreateSeq( 0, sizeof(CxSeq), sizeof(CxPTreeNode), temp_storage );
+    temp_storage = cvCreateChildMemStorage( storage );
 
-    cxStartReadSeq( seq, &reader );
+    nodes = cvCreateSeq( 0, sizeof(CvSeq), sizeof(CvPTreeNode), temp_storage );
+
+    cvStartReadSeq( seq, &reader );
     memset( &writer, 0, sizeof(writer));
-    cxStartAppendToSeq( nodes, &writer ); 
+    cvStartAppendToSeq( nodes, &writer ); 
 
     // Initial O(N) pass. Make a forest of single-vertex trees.
     for( i = 0; i < seq->total; i++ )
     {
-        CxPTreeNode node = { 0, 0, 0 };
-        if( !is_set || CX_IS_SET_ELEM( reader.ptr ))
+        CvPTreeNode node = { 0, 0, 0 };
+        if( !is_set || CV_IS_SET_ELEM( reader.ptr ))
             node.element = reader.ptr;
-        CX_WRITE_SEQ_ELEM( node, writer );
-        CX_NEXT_SEQ_ELEM( seq->elem_size, reader );
+        CV_WRITE_SEQ_ELEM( node, writer );
+        CV_NEXT_SEQ_ELEM( seq->elem_size, reader );
     }
 
-    cxEndWriteSeq( &writer );
+    cvEndWriteSeq( &writer );
 
-    // because every time we made a full cycle through the node sequence,
+    // because in the next loop we will iterate
+    // through all the sequence nodes each time,
     // we do not need to initialize reader every time
-    cxStartReadSeq( nodes, &reader );
+    cvStartReadSeq( nodes, &reader );
+    cvStartReadSeq( nodes, &reader0 );
 
     // The main O(N^2) pass. Merge connected components.
     for( i = 0; i < nodes->total; i++ )
     {
-        CxPTreeNode* node = (CxPTreeNode*)cxGetSeqElem( nodes, i );
-        CxPTreeNode* root = node;
+        CvPTreeNode* node = (CvPTreeNode*)(reader0.ptr);
+        CvPTreeNode* root = node;
+        CV_NEXT_SEQ_ELEM( nodes->elem_size, reader0 );
 
         if( !node->element )
             continue;
@@ -2291,12 +2661,12 @@ cxPartitionSeq( CxSeq* seq, CxMemStorage* storage, CxSeq** comps,
 
         for( j = 0; j < nodes->total; j++ )
         {
-            CxPTreeNode* node2 = (CxPTreeNode*)reader.ptr;
+            CvPTreeNode* node2 = (CvPTreeNode*)reader.ptr;
             
             if( node2->element && node2 != node &&
                 is_equal( node->element, node2->element, userdata ))
             {
-                CxPTreeNode* root2 = node2;
+                CvPTreeNode* root2 = node2;
                 
                 // unite both trees
                 while( root2->parent )
@@ -2317,7 +2687,7 @@ cxPartitionSeq( CxSeq* seq, CxMemStorage* storage, CxSeq** comps,
                     // compress path from node2 to the root
                     while( node2->parent )
                     {
-                        CxPTreeNode* temp = node2;
+                        CvPTreeNode* temp = node2;
                         node2 = node2->parent;
                         temp->parent = root;
                     }
@@ -2326,25 +2696,25 @@ cxPartitionSeq( CxSeq* seq, CxMemStorage* storage, CxSeq** comps,
                     node2 = node;
                     while( node2->parent )
                     {
-                        CxPTreeNode* temp = node2;
+                        CvPTreeNode* temp = node2;
                         node2 = node2->parent;
                         temp->parent = root;
                     }
                 }
             }
 
-            CX_NEXT_SEQ_ELEM( sizeof(*node), reader );
+            CV_NEXT_SEQ_ELEM( sizeof(*node), reader );
         }
     }
 
     // Final O(N) pass (Enumerate classes)
     // Reuse reader one more time
-    result = cxCreateSeq( 0, sizeof(CxSeq), sizeof(int), storage );
-    cxStartAppendToSeq( result, &writer );
+    result = cvCreateSeq( 0, sizeof(CvSeq), sizeof(int), storage );
+    cvStartAppendToSeq( result, &writer );
 
     for( i = 0; i < nodes->total; i++ )
     {
-        CxPTreeNode* node = (CxPTreeNode*)reader.ptr;
+        CvPTreeNode* node = (CvPTreeNode*)reader.ptr;
         int idx = -1;
         
         if( node->element )
@@ -2356,18 +2726,18 @@ cxPartitionSeq( CxSeq* seq, CxMemStorage* storage, CxSeq** comps,
             idx = ~node->rank;
         }
 
-        CX_NEXT_SEQ_ELEM( sizeof(*node), reader );
-        CX_WRITE_SEQ_ELEM( idx, writer );
+        CV_NEXT_SEQ_ELEM( sizeof(*node), reader );
+        CV_WRITE_SEQ_ELEM( idx, writer );
     }
 
-    cxEndWriteSeq( &writer );
+    cvEndWriteSeq( &writer );
 
     __END__;
 
-    if( comps )
-        *comps = result;
+    if( labels )
+        *labels = result;
 
-    cxReleaseMemStorage( &temp_storage );
+    cvReleaseMemStorage( &temp_storage );
     return class_idx;
 }
 
@@ -2377,24 +2747,24 @@ cxPartitionSeq( CxSeq* seq, CxMemStorage* storage, CxSeq** comps,
 \****************************************************************************************/
 
 /* creates empty set */
-CX_IMPL CxSet*
-cxCreateSet( int set_flags, int header_size, int elem_size, CxMemStorage * storage )
+CV_IMPL CvSet*
+cvCreateSet( int set_flags, int header_size, int elem_size, CvMemStorage * storage )
 {
-    CxSet *set = 0;
+    CvSet *set = 0;
 
-    CX_FUNCNAME( "cxCreateSet" );
+    CV_FUNCNAME( "cvCreateSet" );
 
     __BEGIN__;
 
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "" );
-    if( header_size < (int)sizeof( CxSet ) ||
+        CV_ERROR( CV_StsNullPtr, "" );
+    if( header_size < (int)sizeof( CvSet ) ||
         elem_size < (int)sizeof(void*)*2 ||
         (elem_size & (sizeof(void*)-1)) != 0 )
-        CX_ERROR_FROM_STATUS( CX_BADSIZE_ERR );
+        CV_ERROR( CV_StsBadSize, "" );
 
-    set = (CxSet*) cxCreateSeq( set_flags, header_size, elem_size, storage );
-    set->flags = (set->flags & ~CX_MAGIC_MASK) | CX_SET_MAGIC_VAL;
+    set = (CvSet*) cvCreateSeq( set_flags, header_size, elem_size, storage );
+    set->flags = (set->flags & ~CV_MAGIC_MASK) | CV_SET_MAGIC_VAL;
 
     __END__;
 
@@ -2403,35 +2773,35 @@ cxCreateSet( int set_flags, int header_size, int elem_size, CxMemStorage * stora
 
 
 /* adds new element to the set */
-CX_IMPL int
-cxSetAdd( CxSet* set, CxSetElem* element, CxSetElem** inserted_element )
+CV_IMPL int
+cvSetAdd( CvSet* set, CvSetElem* element, CvSetElem** inserted_element )
 {
     int id = -1;
 
-    CX_FUNCNAME( "cxSetAdd" );
+    CV_FUNCNAME( "cvSetAdd" );
 
     __BEGIN__;
 
-    CxSetElem *free_elem;
+    CvSetElem *free_elem;
 
     if( !set )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     if( !(set->free_elems) )
     {
         int count = set->total;
         int elem_size = set->elem_size;
         char *ptr;
-        CX_CALL( icxGrowSeq( (CxSeq *) set, 0 ));
+        CV_CALL( icvGrowSeq( (CvSeq *) set, 0 ));
 
-        set->free_elems = (CxSetElem*) (ptr = set->ptr);
+        set->free_elems = (CvSetElem*) (ptr = set->ptr);
         for( ; ptr + elem_size <= set->block_max; ptr += elem_size, count++ )
         {
-            ((CxSetElem*)ptr)->flags = count | CX_SET_ELEM_FREE_FLAG;
-            ((CxSetElem*)ptr)->next_free = (CxSetElem*)(ptr + elem_size);
+            ((CvSetElem*)ptr)->flags = count | CV_SET_ELEM_FREE_FLAG;
+            ((CvSetElem*)ptr)->next_free = (CvSetElem*)(ptr + elem_size);
         }
-        assert( count <= CX_SET_ELEM_IDX_MASK+1 );
-        ((CxSetElem*)(ptr - elem_size))->next_free = 0;
+        assert( count <= CV_SET_ELEM_IDX_MASK+1 );
+        ((CvSetElem*)(ptr - elem_size))->next_free = 0;
         set->first->prev->count += count - set->total;
         set->total = count;
         set->ptr = set->block_max;
@@ -2440,11 +2810,12 @@ cxSetAdd( CxSet* set, CxSetElem* element, CxSetElem** inserted_element )
     free_elem = set->free_elems;
     set->free_elems = free_elem->next_free;
 
-    id = free_elem->flags & CX_SET_ELEM_IDX_MASK;
+    id = free_elem->flags & CV_SET_ELEM_IDX_MASK;
     if( element )
-        memcpy( free_elem, element, set->elem_size );
+        CV_MEMCPY_INT( free_elem, element, (size_t)set->elem_size/sizeof(int) );
 
     free_elem->flags = id;
+    set->active_count++;
 
     if( inserted_element )
         *inserted_element = free_elem;
@@ -2455,62 +2826,35 @@ cxSetAdd( CxSet* set, CxSetElem* element, CxSetElem** inserted_element )
 }
 
 
-/* get the set element given its index */
-CX_IMPL CxSetElem *
-cxGetSetElem( CxSet * set, int index )
-{
-    CxSetElem *elem = 0;
-
-    /*CX_FUNCNAME( "cxGetSetElem" );*/
-
-    __BEGIN__;
-
-    elem = (CxSetElem*)cxGetSeqElem( (CxSeq*)set, index, 0 );
-
-    if( elem && !CX_IS_SET_ELEM( elem ))
-        elem = 0;
-
-    __END__;
-
-    return elem;
-}
-
-
 /* removes element from the set given its index */
-CX_IMPL void
-cxSetRemove( CxSet* set, int index )
+CV_IMPL void
+cvSetRemove( CvSet* set, int index )
 {
-    CxSetElem *elem;
-
-    CX_FUNCNAME( "cxSetRemove" );
+    CV_FUNCNAME( "cvSetRemove" );
 
     __BEGIN__;
 
-    elem = cxGetSetElem( set, index );
-
+    CvSetElem* elem = cvGetSetElem( set, index );
     if( elem )
-    {
-        cxSetRemoveByPtr( set, elem );
-    }
+        cvSetRemoveByPtr( set, elem );
     else if( !set )
-    {
-        CX_ERROR( CX_StsNullPtr, "" );
-    }
+        CV_ERROR( CV_StsNullPtr, "" );
 
     __END__;
 }
 
 
 /* removes all elements from the set */
-CX_IMPL void
-cxClearSet( CxSet* set )
+CV_IMPL void
+cvClearSet( CvSet* set )
 {
-    CX_FUNCNAME( "cxClearSet" );
+    CV_FUNCNAME( "cvClearSet" );
 
     __BEGIN__;
 
-    CX_CALL( cxClearSeq( (CxSeq*)set ));
+    CV_CALL( cvClearSeq( (CvSeq*)set ));
     set->free_elems = 0;
+    set->active_count = 0;
 
     __END__;
 }
@@ -2521,29 +2865,29 @@ cxClearSet( CxSet* set )
 \****************************************************************************************/
 
 /* creates new graph */
-CX_IMPL CxGraph *
-cxCreateGraph( int graph_type, int header_size,
-               int vtx_size, int edge_size, CxMemStorage * storage )
+CV_IMPL CvGraph *
+cvCreateGraph( int graph_type, int header_size,
+               int vtx_size, int edge_size, CvMemStorage * storage )
 {
-    CxGraph *graph = 0;
-    CxSet *temp_graph = 0;
-    CxSet *edges = 0;
+    CvGraph *graph = 0;
+    CvSet *edges = 0;
 
-    CX_FUNCNAME( "cxCleateGraph" );
+    CV_FUNCNAME( "cvCleateGraph" );
 
     __BEGIN__;
 
-    if( header_size < (int)sizeof( CxGraph ) ||
-        edge_size < (int)sizeof( CxGraphEdge ) ||
-        vtx_size < (int)sizeof( CxGraphVtx ))
-        CX_ERROR_FROM_STATUS( CX_BADSIZE_ERR );
+    CvSet *vertices = 0;
 
-    CX_CALL( temp_graph = cxCreateSet( graph_type, header_size, vtx_size, storage ));
+    if( header_size < (int)sizeof( CvGraph ) ||
+        edge_size < (int)sizeof( CvGraphEdge ) ||
+        vtx_size < (int)sizeof( CvGraphVtx ))
+        CV_ERROR( CV_StsBadSize, "" );
 
-    CX_CALL( edges = cxCreateSet( CX_SEQ_KIND_GENERIC | CX_SEQ_ELTYPE_GRAPH_EDGE,
-                                  sizeof( CxSet ), edge_size, storage ));
+    CV_CALL( vertices = cvCreateSet( graph_type, header_size, vtx_size, storage ));
+    CV_CALL( edges = cvCreateSet( CV_SEQ_KIND_GENERIC | CV_SEQ_ELTYPE_GRAPH_EDGE,
+                                  sizeof( CvSet ), edge_size, storage ));
 
-    graph = (CxGraph*)temp_graph;
+    graph = (CvGraph*)vertices;
     graph->edges = edges;
 
     __END__;
@@ -2553,41 +2897,49 @@ cxCreateGraph( int graph_type, int header_size,
 
 
 /* Removes all the vertices and edges from the graph */
-CX_IMPL void
-cxClearGraph( CxGraph * graph )
+CV_IMPL void
+cvClearGraph( CvGraph * graph )
 {
-    CX_FUNCNAME( "cxClearGraph" );
+    CV_FUNCNAME( "cvClearGraph" );
 
     __BEGIN__;
 
     if( !graph )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    cxClearSet( graph->edges );
-    cxClearSet( (CxSet *) graph );
+    cvClearSet( graph->edges );
+    cvClearSet( (CvSet*)graph );
 
     __END__;
 }
 
 
 /* Adds vertex to the graph */
-CX_IMPL int
-cxGraphAddVtx( CxGraph * graph, CxGraphVtx * _vertex, CxGraphVtx ** _inserted_vertex )
+CV_IMPL int
+cvGraphAddVtx( CvGraph* graph, const CvGraphVtx* _vertex, CvGraphVtx** _inserted_vertex )
 {
-    CxGraphVtx *vertex = 0;
+    CvGraphVtx *vertex = 0;
     int index = -1;
 
-    CX_FUNCNAME( "cxGraphAddVtx" );
+    CV_FUNCNAME( "cvGraphAddVtx" );
 
     __BEGIN__;
 
     if( !graph )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    CX_CALL( index = cxSetAdd((CxSet*)graph, (CxSetElem*)_vertex, (CxSetElem**)&vertex));
+    vertex = (CvGraphVtx*)cvSetNew((CvSet*)graph);
+    if( vertex )
+    {
+        if( _vertex )
+            CV_MEMCPY_INT( vertex + 1, _vertex + 1,
+                (size_t)(graph->elem_size - sizeof(CvGraphVtx))/sizeof(int) );
+        vertex->first = 0;
+        index = vertex->flags;
+    }
+
     if( _inserted_vertex )
         *_inserted_vertex = vertex;
-    vertex->first = 0;
 
     __END__;
 
@@ -2595,32 +2947,32 @@ cxGraphAddVtx( CxGraph * graph, CxGraphVtx * _vertex, CxGraphVtx ** _inserted_ve
 }
 
 
-/* Removes vertex from the graph given its index together with incident edges */
-CX_IMPL int
-cxGraphRemoveVtxByPtr( CxGraph* graph, CxGraphVtx* vtx )
+/* Removes vertex from the graph together with incident edges */
+CV_IMPL int
+cvGraphRemoveVtxByPtr( CvGraph* graph, CvGraphVtx* vtx )
 {
     int count = -1;
-    
-    CX_FUNCNAME( "cxGraphRemoveVtxByPtr" );
+
+    CV_FUNCNAME( "cvGraphRemoveVtxByPtr" );
 
     __BEGIN__;
 
     if( !graph || !vtx )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    if( !CX_IS_SET_ELEM(vtx))
-        CX_ERROR( CX_StsBadArg, "The vertex does not belong to the graph" );
+    if( !CV_IS_SET_ELEM(vtx))
+        CV_ERROR( CV_StsBadArg, "The vertex does not belong to the graph" );
 
+    count = graph->edges->active_count;
     for( ;; )
     {
-        CxGraphEdge *edge = vtx->first;
-        count++;
-
+        CvGraphEdge *edge = vtx->first;
         if( !edge )
             break;
-        cxGraphRemoveEdgeByPtr( graph, edge->vtx[0], edge->vtx[1] );
+        cvGraphRemoveEdgeByPtr( graph, edge->vtx[0], edge->vtx[1] );
     }
-    cxSetRemoveByPtr( (CxSet*)graph, vtx );
+    count -= graph->edges->active_count;
+    cvSetRemoveByPtr( (CvSet*)graph, vtx );
 
     __END__;
 
@@ -2628,34 +2980,36 @@ cxGraphRemoveVtxByPtr( CxGraph* graph, CxGraphVtx* vtx )
 }
 
 
-/* removes vertex from the graph */
-CX_IMPL int
-cxGraphRemoveVtx( CxGraph* graph, int index )
+/* Removes vertex from the graph together with incident edges */
+CV_IMPL int
+cvGraphRemoveVtx( CvGraph* graph, int index )
 {
     int count = -1;
-    CxGraphVtx *vtx = 0;
+    CvGraphVtx *vtx = 0;
 
-    CX_FUNCNAME( "cxGraphRemoveVtx" );
+    CV_FUNCNAME( "cvGraphRemoveVtx" );
 
     __BEGIN__;
 
     if( !graph )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    vtx = cxGetGraphVtx( graph, index );
+    vtx = cvGetGraphVtx( graph, index );
     if( !vtx )
-        CX_ERROR( CX_StsBadArg, "The vertex is not found" );
+        CV_ERROR( CV_StsBadArg, "The vertex is not found" );
 
+    count = graph->edges->active_count;
     for( ;; )
     {
-        CxGraphEdge *edge = vtx->first;
+        CvGraphEdge *edge = vtx->first;
         count++;
 
         if( !edge )
             break;
-        cxGraphRemoveEdgeByPtr( graph, edge->vtx[0], edge->vtx[1] );
+        cvGraphRemoveEdgeByPtr( graph, edge->vtx[0], edge->vtx[1] );
     }
-    cxSetRemoveByPtr( (CxSet*)graph, vtx );
+    count -= graph->edges->active_count;
+    cvSetRemoveByPtr( (CvSet*)graph, vtx );
 
     __END__;
 
@@ -2663,45 +3017,39 @@ cxGraphRemoveVtx( CxGraph* graph, int index )
 }
 
 
-/* finds graph edge given pointers to the ending vertices */
-CX_IMPL CxGraphEdge*
-cxFindGraphEdgeByPtr( CxGraph * graph, CxGraphVtx* start_vtx, CxGraphVtx* end_vtx )
+/* Finds graph edge given pointers to the ending vertices */
+CV_IMPL CvGraphEdge*
+cvFindGraphEdgeByPtr( const CvGraph* graph,
+                      const CvGraphVtx* start_vtx,
+                      const CvGraphVtx* end_vtx )
 {
-    CxGraphEdge *edge = 0;
-
-    CX_FUNCNAME( "cxFindGraphEdgeByPtr" );
+    CvGraphEdge *edge = 0;
+    CV_FUNCNAME( "cvFindGraphEdgeByPtr" );
 
     __BEGIN__;
 
+    int ofs = 0;
+
     if( !graph || !start_vtx || !end_vtx )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    if( start_vtx != end_vtx )
+    if( start_vtx == end_vtx )
+        EXIT;
+
+    if( !CV_IS_GRAPH_ORIENTED( graph ) &&
+        (start_vtx->flags & CV_SET_ELEM_IDX_MASK) > (end_vtx->flags & CV_SET_ELEM_IDX_MASK) )
     {
-        int ofs = 0;
+        const CvGraphVtx* t;
+        CV_SWAP( start_vtx, end_vtx, t );
+    }
 
-        edge = start_vtx->first;
-
-        if( CX_IS_GRAPH_ORIENTED( graph ))
-        {
-            for( ; edge; edge = edge->next[ofs] )
-            {
-                ofs = start_vtx == edge->vtx[1];
-                assert( ofs == 1 || start_vtx == edge->vtx[0] );
-                if( ofs == 0 && edge->vtx[1] == end_vtx )
-                    break;
-            }
-        }
-        else
-        {
-            for( ; edge; edge = edge->next[ofs] )
-            {
-                ofs = start_vtx == edge->vtx[1];
-                assert( ofs == 1 || start_vtx == edge->vtx[0] );
-                if( edge->vtx[ofs ^ 1] == end_vtx )
-                    break;
-            }
-        }
+    edge = start_vtx->first;
+    for( ; edge; edge = edge->next[ofs] )
+    {
+        ofs = start_vtx == edge->vtx[1];
+        assert( ofs == 1 || start_vtx == edge->vtx[0] );
+        if( edge->vtx[1] == end_vtx )
+            break;
     }
 
     __END__;
@@ -2710,25 +3058,25 @@ cxFindGraphEdgeByPtr( CxGraph * graph, CxGraphVtx* start_vtx, CxGraphVtx* end_vt
 }
 
 
-/* finds edge in the graph given indices of the ending vertices */
-CX_IMPL CxGraphEdge *
-cxFindGraphEdge( CxGraph * graph, int start_idx, int end_idx )
+/* Finds edge in the graph given indices of the ending vertices */
+CV_IMPL CvGraphEdge *
+cvFindGraphEdge( const CvGraph* graph, int start_idx, int end_idx )
 {
-    CxGraphEdge *edge = 0;
-    CxGraphVtx *start_vtx;
-    CxGraphVtx *end_vtx;
+    CvGraphEdge *edge = 0;
+    CvGraphVtx *start_vtx;
+    CvGraphVtx *end_vtx;
 
-    CX_FUNCNAME( "cxFindGraphEdge" );
+    CV_FUNCNAME( "cvFindGraphEdge" );
 
     __BEGIN__;
 
     if( !graph )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "graph pointer is NULL" );
 
-    start_vtx = cxGetGraphVtx( graph, start_idx );
-    end_vtx = cxGetGraphVtx( graph, end_idx );
+    start_vtx = cvGetGraphVtx( graph, start_idx );
+    end_vtx = cvGetGraphVtx( graph, end_idx );
 
-    edge = cxFindGraphEdgeByPtr( graph, start_vtx, end_vtx );
+    edge = cvFindGraphEdgeByPtr( graph, start_vtx, end_vtx );
 
     __END__;
 
@@ -2736,27 +3084,34 @@ cxFindGraphEdge( CxGraph * graph, int start_idx, int end_idx )
 }
 
 
-/* Adds new edge connecting two given vertices
-   to the graph or returns already existing edge */
-CX_IMPL int
-cxGraphAddEdgeByPtr( CxGraph * graph,
-                     CxGraphVtx * start_vtx, CxGraphVtx * end_vtx,
-                     CxGraphEdge * _edge, CxGraphEdge ** _inserted_edge )
+/* Connects the two given vertices if they were not connected before,
+   otherwise it returns the existing edge */
+CV_IMPL int
+cvGraphAddEdgeByPtr( CvGraph* graph,
+                     CvGraphVtx* start_vtx, CvGraphVtx* end_vtx,
+                     const CvGraphEdge* _edge,
+                     CvGraphEdge ** _inserted_edge )
 {
-    CxGraphVtx *vtx[2];
-    CxGraphEdge *edge;
+    CvGraphEdge *edge = 0;
     int result = -1;
-    int i;
 
-    CX_FUNCNAME( "cxGraphAddEdgeByPtr" );
+    CV_FUNCNAME( "cvGraphAddEdgeByPtr" );
 
     __BEGIN__;
 
-    vtx[0] = start_vtx;
-    vtx[1] = end_vtx;
+    int delta;
 
-    CX_CALL( edge = cxFindGraphEdgeByPtr( graph, vtx[0], vtx[1] ));
+    if( !graph )
+        CV_ERROR( CV_StsNullPtr, "graph pointer is NULL" );
 
+    if( !CV_IS_GRAPH_ORIENTED( graph ) &&
+        (start_vtx->flags & CV_SET_ELEM_IDX_MASK) > (end_vtx->flags & CV_SET_ELEM_IDX_MASK) )
+    {
+        CvGraphVtx* t;
+        CV_SWAP( start_vtx, end_vtx, t );
+    }
+
+    CV_CALL( edge = cvFindGraphEdgeByPtr( graph, start_vtx, end_vtx ));
     if( edge )
     {
         result = 0;
@@ -2764,22 +3119,30 @@ cxGraphAddEdgeByPtr( CxGraph * graph,
     }
 
     if( start_vtx == end_vtx )
-        CX_ERROR( start_vtx ? CX_StsBadArg : CX_StsNullPtr, "" );
+        CV_ERROR( start_vtx ? CV_StsBadArg : CV_StsNullPtr,
+        "vertex pointers coinside (or set to NULL)" );
 
-    CX_CALL( edge = (CxGraphEdge*)cxSetNew( (CxSet*)(graph->edges) ));
+    CV_CALL( edge = (CvGraphEdge*)cvSetNew( (CvSet*)(graph->edges) ));
     assert( edge->flags >= 0 );
 
-    for( i = 0; i < 2; i++ )
-    {
-        edge->vtx[i] = vtx[i];
-        edge->next[i] = vtx[i]->first;
-        vtx[i]->first = edge;
-    }
+    edge->vtx[0] = start_vtx;
+    edge->vtx[1] = end_vtx;
+    edge->next[0] = start_vtx->first;
+    edge->next[1] = end_vtx->first;
+    start_vtx->first = end_vtx->first = edge;
 
+    delta = (graph->edges->elem_size - sizeof(*edge))/sizeof(int);
     if( _edge )
     {
-        memcpy( edge + 1, _edge + 1, graph->edges->elem_size - sizeof( *edge ));
+        if( delta > 0 )
+            CV_MEMCPY_INT( edge + 1, _edge + 1, delta );
         edge->weight = _edge->weight;
+    }
+    else
+    {
+        if( delta > 0 )
+            CV_ZERO_INT( edge + 1, delta );
+        edge->weight = 1.f;
     }
 
     result = 1;
@@ -2792,28 +3155,29 @@ cxGraphAddEdgeByPtr( CxGraph * graph,
     return result;
 }
 
-/* Adds new edge connecting two given vertices
-   to the graph or returns already existing edge */
-CX_IMPL int
-cxGraphAddEdge( CxGraph * graph,
+/* Connects the two given vertices if they were not connected before,
+   otherwise it returns the existing edge */
+CV_IMPL int
+cvGraphAddEdge( CvGraph* graph,
                 int start_idx, int end_idx,
-                CxGraphEdge * _edge, CxGraphEdge ** _inserted_edge )
+                const CvGraphEdge* _edge,
+                CvGraphEdge ** _inserted_edge )
 {
-    CxGraphVtx *start_vtx;
-    CxGraphVtx *end_vtx;
+    CvGraphVtx *start_vtx;
+    CvGraphVtx *end_vtx;
     int result = -1;
 
-    CX_FUNCNAME( "cxGraphAddEdge" );
+    CV_FUNCNAME( "cvGraphAddEdge" );
 
     __BEGIN__;
 
     if( !graph )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    start_vtx = cxGetGraphVtx( graph, start_idx );
-    end_vtx = cxGetGraphVtx( graph, end_idx );
+    start_vtx = cvGetGraphVtx( graph, start_idx );
+    end_vtx = cvGetGraphVtx( graph, end_idx );
 
-    result = cxGraphAddEdgeByPtr( graph, start_vtx, end_vtx, _edge, _inserted_edge );
+    result = cvGraphAddEdgeByPtr( graph, start_vtx, end_vtx, _edge, _inserted_edge );
 
     __END__;
 
@@ -2821,125 +3185,112 @@ cxGraphAddEdge( CxGraph * graph,
 }
 
 
-/* removes graph edge given pointers to the ending vertices */
-CX_IMPL void
-cxGraphRemoveEdgeByPtr( CxGraph* graph, CxGraphVtx* start_vtx, CxGraphVtx* end_vtx )
+/* Removes the graph edge connecting two given vertices */
+CV_IMPL void
+cvGraphRemoveEdgeByPtr( CvGraph* graph, CvGraphVtx* start_vtx, CvGraphVtx* end_vtx )
 {
-    int i;
-    CxGraphVtx *vtx[2];
-    CxGraphEdge *prev = 0;
-    CxGraphEdge *edge = 0;
-
-    CX_FUNCNAME( "cxGraphRemoveEdgeByPtr" );
+    CV_FUNCNAME( "cvGraphRemoveEdgeByPtr" );
 
     __BEGIN__;
 
+    int ofs, prev_ofs;
+    CvGraphEdge *edge, *next_edge, *prev_edge;
+
     if( !graph || !start_vtx || !end_vtx )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    if( start_vtx != end_vtx )
+    if( start_vtx == end_vtx )
+        EXIT;
+
+    if( !CV_IS_GRAPH_ORIENTED( graph ) &&
+        (start_vtx->flags & CV_SET_ELEM_IDX_MASK) > (end_vtx->flags & CV_SET_ELEM_IDX_MASK) )
     {
-        vtx[0] = start_vtx;
-        vtx[1] = end_vtx;
-
-        if( CX_IS_GRAPH_ORIENTED( graph ))
-        {
-            for( i = 0; i < 2; i++ )
-            {
-                int ofs = 0, prev_ofs = 0;
-
-                for( prev = 0, edge = vtx[i]->first; edge; prev_ofs = ofs, prev = edge,
-                     edge = edge->next[ofs] )
-                {
-                    ofs = vtx[i] == edge->vtx[1];
-                    assert( ofs == 1 || vtx[i] == edge->vtx[0] );
-                    if( ofs == i && edge->vtx[i ^ 1] == vtx[i ^ 1] )
-                        break;
-                }
-
-                if( edge )
-                {
-                    if( prev )
-                        prev->next[prev_ofs] = edge->next[ofs];
-                    else
-                        vtx[i]->first = edge->next[ofs];
-                }
-            }
-        }
-        else
-        {
-            for( i = 0; i < 2; i++ )
-            {
-                int ofs = 0, prev_ofs = 0;
-
-                for( prev = 0, edge = vtx[i]->first; edge; prev_ofs = ofs, prev = edge,
-                     edge = edge->next[ofs] )
-                {
-                    ofs = vtx[i] == edge->vtx[1];
-                    assert( ofs == 1 || vtx[i] == edge->vtx[0] );
-                    if( edge->vtx[ofs ^ 1] == vtx[i ^ 1] )
-                        break;
-                }
-
-                if( edge )
-                {
-                    if( prev )
-                        prev->next[prev_ofs] = edge->next[ofs];
-                    else
-                        vtx[i]->first = edge->next[ofs];
-                }
-            }
-        }
-
-        if( edge )
-            cxSetRemoveByPtr( graph->edges, edge );
+        CvGraphVtx* t;
+        CV_SWAP( start_vtx, end_vtx, t );
     }
+
+    for( ofs = prev_ofs = 0, prev_edge = 0, edge = start_vtx->first; edge != 0;
+         prev_ofs = ofs, prev_edge = edge, edge = edge->next[ofs] )
+    {
+        ofs = start_vtx == edge->vtx[1];
+        assert( ofs == 1 || start_vtx == edge->vtx[0] );
+        if( edge->vtx[1] == end_vtx )
+            break;
+    }
+
+    if( !edge )
+        EXIT;
+
+    next_edge = edge->next[ofs];
+    if( prev_edge )
+        prev_edge->next[prev_ofs] = next_edge;
+    else
+        start_vtx->first = next_edge;
+
+    for( ofs = prev_ofs = 0, prev_edge = 0, edge = end_vtx->first; edge != 0;
+         prev_ofs = ofs, prev_edge = edge, edge = edge->next[ofs] )
+    {
+        ofs = end_vtx == edge->vtx[1];
+        assert( ofs == 1 || end_vtx == edge->vtx[0] );
+        if( edge->vtx[0] == start_vtx )
+            break;
+    }
+
+    assert( edge != 0 );
+
+    next_edge = edge->next[ofs];
+    if( prev_edge )
+        prev_edge->next[prev_ofs] = next_edge;
+    else
+        end_vtx->first = next_edge;
+
+    cvSetRemoveByPtr( graph->edges, edge );
 
     __END__;
 }
 
 
-/* Removes edge from the graph given indices of the ending vertices */
-CX_IMPL void
-cxGraphRemoveEdge( CxGraph * graph, int start_idx, int end_idx )
+/* Removes the graph edge connecting two given vertices */
+CV_IMPL void
+cvGraphRemoveEdge( CvGraph* graph, int start_idx, int end_idx )
 {
-    CxGraphVtx *start_vtx;
-    CxGraphVtx *end_vtx;
+    CvGraphVtx *start_vtx;
+    CvGraphVtx *end_vtx;
 
-    CX_FUNCNAME( "cxGraphRemoveEdge" );
+    CV_FUNCNAME( "cvGraphRemoveEdge" );
 
     __BEGIN__;
 
     if( !graph )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    start_vtx = cxGetGraphVtx( graph, start_idx );
-    end_vtx = cxGetGraphVtx( graph, end_idx );
+    start_vtx = cvGetGraphVtx( graph, start_idx );
+    end_vtx = cvGetGraphVtx( graph, end_idx );
 
-    cxGraphRemoveEdgeByPtr( graph, start_vtx, end_vtx );
+    cvGraphRemoveEdgeByPtr( graph, start_vtx, end_vtx );
 
     __END__;
 }
 
 
-/* counts number of edges incident to the vertex */
-CX_IMPL int
-cxGraphVtxDegreeByPtr( CxGraph * graph, CxGraphVtx * vertex )
+/* Counts number of edges incident to the vertex */
+CV_IMPL int
+cvGraphVtxDegreeByPtr( const CvGraph* graph, const CvGraphVtx* vertex )
 {
-    CxGraphEdge *edge;
+    CvGraphEdge *edge;
     int count = -1;
 
-    CX_FUNCNAME( "cxGraphVtxDegreeByPtr" );
+    CV_FUNCNAME( "cvGraphVtxDegreeByPtr" );
 
     __BEGIN__;
 
     if( !graph || !vertex )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     for( edge = vertex->first, count = 0; edge; )
     {
         count++;
-        edge = CX_NEXT_GRAPH_EDGE( edge, vertex );
+        edge = CV_NEXT_GRAPH_EDGE( edge, vertex );
     }
 
     __END__;
@@ -2948,29 +3299,29 @@ cxGraphVtxDegreeByPtr( CxGraph * graph, CxGraphVtx * vertex )
 }
 
 
-/* counts number of edges incident to the vertex */
-CX_IMPL int
-cxGraphVtxDegree( CxGraph * graph, int vtx_idx )
+/* Counts number of edges incident to the vertex */
+CV_IMPL int
+cvGraphVtxDegree( const CvGraph* graph, int vtx_idx )
 {
-    CxGraphVtx *vertex;
-    CxGraphEdge *edge;
+    CvGraphVtx *vertex;
+    CvGraphEdge *edge;
     int count = -1;
 
-    CX_FUNCNAME( "cxGraphVtxDegree" );
+    CV_FUNCNAME( "cvGraphVtxDegree" );
 
     __BEGIN__;
 
     if( !graph )
-        CX_ERROR( CX_StsNullPtr, "" );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    vertex = cxGetGraphVtx( graph, vtx_idx );
+    vertex = cvGetGraphVtx( graph, vtx_idx );
     if( !vertex )
-        CX_ERROR_FROM_STATUS( CX_NOTFOUND_ERR );
+        CV_ERROR( CV_StsObjectNotFound, "" );
 
     for( edge = vertex->first, count = 0; edge; )
     {
         count++;
-        edge = CX_NEXT_GRAPH_EDGE( edge, vertex );
+        edge = CV_NEXT_GRAPH_EDGE( edge, vertex );
     }
 
     __END__;
@@ -2979,41 +3330,41 @@ cxGraphVtxDegree( CxGraph * graph, int vtx_idx )
 }
 
 
-typedef struct CxGraphItem
+typedef struct CvGraphItem
 {
-    CxGraphVtx* vtx;
-    CxGraphEdge* edge;
+    CvGraphVtx* vtx;
+    CvGraphEdge* edge;
 }
-CxGraphItem;
+CvGraphItem;
 
 
 static  void
-icxSeqElemsClearFlags( CxSeq* seq, int offset, int clear_mask )
+icvSeqElemsClearFlags( CvSeq* seq, int offset, int clear_mask )
 {
-    CX_FUNCNAME("icxStartScanGraph");
+    CV_FUNCNAME("icvStartScanGraph");
 
     __BEGIN__;
     
-    CxSeqReader reader;
+    CvSeqReader reader;
     int i, total, elem_size;
 
     if( !seq )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     elem_size = seq->elem_size;
     total = seq->total;
 
     if( (unsigned)offset > (unsigned)elem_size )
-        CX_ERROR_FROM_STATUS( CX_BADARG_ERR );
+        CV_ERROR( CV_StsBadArg, "" );
 
-    CX_CALL( cxStartReadSeq( seq, &reader ));
+    CV_CALL( cvStartReadSeq( seq, &reader ));
 
     for( i = 0; i < total; i++ )
     {
         int* flag_ptr = (int*)(reader.ptr + offset);
         *flag_ptr &= ~clear_mask;
 
-        CX_NEXT_SEQ_ELEM( elem_size, reader );
+        CV_NEXT_SEQ_ELEM( elem_size, reader );
     }
 
     __END__;
@@ -3021,27 +3372,27 @@ icxSeqElemsClearFlags( CxSeq* seq, int offset, int clear_mask )
 
 
 static  char*
-icxSeqFindNextElem( CxSeq* seq, int offset, int mask,
+icvSeqFindNextElem( CvSeq* seq, int offset, int mask,
                     int value, int* start_index )
 {
     char* elem_ptr = 0;
     
-    CX_FUNCNAME("icxStartScanGraph");
+    CV_FUNCNAME("icvStartScanGraph");
 
     __BEGIN__;
     
-    CxSeqReader reader;
+    CvSeqReader reader;
     int total, elem_size, index;
 
     if( !seq || !start_index )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     elem_size = seq->elem_size;
     total = seq->total;
     index = *start_index;
 
     if( (unsigned)offset > (unsigned)elem_size )
-        CX_ERROR_FROM_STATUS( CX_BADARG_ERR );
+        CV_ERROR( CV_StsBadArg, "" );
 
     if( total == 0 )
         EXIT;
@@ -3052,12 +3403,10 @@ icxSeqFindNextElem( CxSeq* seq, int offset, int mask,
         index += index < 0 ? total : 0;
     }
 
-    CX_CALL( cxStartReadSeq( seq, &reader ));
+    CV_CALL( cvStartReadSeq( seq, &reader ));
 
     if( index != 0 )
-    {
-        CX_CALL( cxSetSeqReaderPos( &reader, index ));
-    }
+        CV_CALL( cvSetSeqReaderPos( &reader, index ));
 
     for( index = 0; index < total; index++ )
     {
@@ -3065,7 +3414,7 @@ icxSeqFindNextElem( CxSeq* seq, int offset, int mask,
         if( (*flag_ptr & mask) == value )
             break;
 
-        CX_NEXT_SEQ_ELEM( elem_size, reader );
+        CV_NEXT_SEQ_ELEM( elem_size, reader );
     }
 
     if( index < total )
@@ -3079,24 +3428,24 @@ icxSeqFindNextElem( CxSeq* seq, int offset, int mask,
     return  elem_ptr;
 }
 
-#define CX_FIELD_OFFSET( field, structtype ) ((int)(long)&((structtype*)0)->field)
+#define CV_FIELD_OFFSET( field, structtype ) ((int)(size_t)&((structtype*)0)->field)
 
-CX_IMPL void
-cxStartScanGraph( CxGraph* graph, CxGraphScanner* scanner,
-                  CxGraphVtx* vtx, int mask )
+CV_IMPL CvGraphScanner*
+cvCreateGraphScanner( CvGraph* graph, CvGraphVtx* vtx, int mask )
 {
-    CxMemStorage* child_storage = 0;
+    CvGraphScanner* scanner = 0;
+    CvMemStorage* child_storage = 0;
 
-    CX_FUNCNAME("cxStartScanGraph");
+    CV_FUNCNAME("cvCreateGraphScanner");
 
     __BEGIN__;
 
-    if( !graph || !scanner )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+    if( !graph )
+        CV_ERROR( CV_StsNullPtr, "Null graph pointer" );
 
-    if( !(graph->storage ))
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+    CV_ASSERT( graph->storage != 0 );
 
+    CV_CALL( scanner = (CvGraphScanner*)cvAlloc( sizeof(*scanner) ));
     memset( scanner, 0, sizeof(*scanner));
 
     scanner->graph = graph;
@@ -3104,60 +3453,69 @@ cxStartScanGraph( CxGraph* graph, CxGraphScanner* scanner,
     scanner->vtx = vtx;
     scanner->index = vtx == 0 ? 0 : -1;
 
-    CX_CALL( child_storage = cxCreateChildMemStorage( graph->storage ));
+    CV_CALL( child_storage = cvCreateChildMemStorage( graph->storage ));
 
-    CX_CALL( scanner->stack = cxCreateSeq( 0, sizeof(CxSet),
-                       sizeof(CxGraphItem), child_storage ));
+    CV_CALL( scanner->stack = cvCreateSeq( 0, sizeof(CvSet),
+                       sizeof(CvGraphItem), child_storage ));
 
-    CX_CALL( icxSeqElemsClearFlags( (CxSeq*)graph,
-                                    CX_FIELD_OFFSET( flags, CxGraphVtx),
-                                    CX_GRAPH_ITEM_VISITED_FLAG|
-                                    CX_GRAPH_SEARCH_TREE_NODE_FLAG ));
+    CV_CALL( icvSeqElemsClearFlags( (CvSeq*)graph,
+                                    CV_FIELD_OFFSET( flags, CvGraphVtx),
+                                    CV_GRAPH_ITEM_VISITED_FLAG|
+                                    CV_GRAPH_SEARCH_TREE_NODE_FLAG ));
 
-    CX_CALL( icxSeqElemsClearFlags( (CxSeq*)(graph->edges),
-                                    CX_FIELD_OFFSET( flags, CxGraphEdge),
-                                    CX_GRAPH_ITEM_VISITED_FLAG ));
+    CV_CALL( icvSeqElemsClearFlags( (CvSeq*)(graph->edges),
+                                    CV_FIELD_OFFSET( flags, CvGraphEdge),
+                                    CV_GRAPH_ITEM_VISITED_FLAG ));
 
     __END__;
 
-    if( cxGetErrStatus() < 0 )
-        cxReleaseMemStorage( &child_storage );
+    if( cvGetErrStatus() < 0 )
+    {
+        cvReleaseMemStorage( &child_storage );
+        cvFree( &scanner );
+    }
+
+    return scanner;
 }
 
 
-CX_IMPL void
-cxEndScanGraph( CxGraphScanner* scanner )
+CV_IMPL void
+cvReleaseGraphScanner( CvGraphScanner** scanner )
 {
-    CX_FUNCNAME("cxEndScanGraph");
+    CV_FUNCNAME("cvReleaseGraphScanner");
 
     __BEGIN__;
 
     if( !scanner )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+        CV_ERROR( CV_StsNullPtr, "Null double pointer to graph scanner" );
 
-    if( scanner->stack )
-        CX_CALL( cxReleaseMemStorage( &(scanner->stack->storage)));
+    if( *scanner )
+    {
+        if( (*scanner)->stack )
+            CV_CALL( cvReleaseMemStorage( &((*scanner)->stack->storage)));
+        cvFree( scanner );
+    }
 
     __END__;
 }
 
 
-CX_IMPL int
-cxNextGraphItem( CxGraphScanner* scanner )
+CV_IMPL int
+cvNextGraphItem( CvGraphScanner* scanner )
 {
     int code = -1;
     
-    CX_FUNCNAME("cxNextGraphItem");
+    CV_FUNCNAME("cvNextGraphItem");
 
     __BEGIN__;
 
-    CxGraphVtx* vtx;
-    CxGraphVtx* dst;
-    CxGraphEdge* edge;
-    CxGraphItem item;
+    CvGraphVtx* vtx;
+    CvGraphVtx* dst;
+    CvGraphEdge* edge;
+    CvGraphItem item;
 
     if( !scanner || !(scanner->stack))
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+        CV_ERROR( CV_StsNullPtr, "Null graph scanner" );
 
     dst = scanner->dst;
     vtx = scanner->vtx;
@@ -3167,18 +3525,18 @@ cxNextGraphItem( CxGraphScanner* scanner )
     {
         for(;;)
         {
-            if( dst && !CX_IS_GRAPH_VERTEX_VISITED(dst) )
+            if( dst && !CV_IS_GRAPH_VERTEX_VISITED(dst) )
             {
                 scanner->vtx = vtx = dst;
                 edge = vtx->first;
-                dst->flags |= CX_GRAPH_ITEM_VISITED_FLAG;
+                dst->flags |= CV_GRAPH_ITEM_VISITED_FLAG;
 
-                if((scanner->mask & CX_GRAPH_VERTEX))
+                if((scanner->mask & CV_GRAPH_VERTEX))
                 {
                     scanner->vtx = vtx;
                     scanner->edge = vtx->first;
                     scanner->dst = 0;
-                    code = CX_GRAPH_VERTEX;
+                    code = CV_GRAPH_VERTEX;
                     EXIT;
                 }
             }
@@ -3187,26 +3545,26 @@ cxNextGraphItem( CxGraphScanner* scanner )
             {
                 dst = edge->vtx[vtx == edge->vtx[0]];
                 
-                if( !CX_IS_GRAPH_EDGE_VISITED(edge) )
+                if( !CV_IS_GRAPH_EDGE_VISITED(edge) )
                 {
                     // check that the edge is outcoming
-                    if( !CX_IS_GRAPH_ORIENTED( scanner->graph ) || dst != edge->vtx[0] )
+                    if( !CV_IS_GRAPH_ORIENTED( scanner->graph ) || dst != edge->vtx[0] )
                     {
-                        edge->flags |= CX_GRAPH_ITEM_VISITED_FLAG;
-                        code = CX_GRAPH_BACK_EDGE;
+                        edge->flags |= CV_GRAPH_ITEM_VISITED_FLAG;
 
-                        if( !CX_IS_GRAPH_VERTEX_VISITED(dst) )
+                        if( !CV_IS_GRAPH_VERTEX_VISITED(dst) )
                         {
                             item.vtx = vtx;
                             item.edge = edge;
 
-                            vtx->flags |= CX_GRAPH_SEARCH_TREE_NODE_FLAG;
+                            vtx->flags |= CV_GRAPH_SEARCH_TREE_NODE_FLAG;
 
-                            cxSeqPush( scanner->stack, &item );
+                            cvSeqPush( scanner->stack, &item );
                             
-                            if( scanner->mask & CX_GRAPH_TREE_EDGE )
+                            if( scanner->mask & CV_GRAPH_TREE_EDGE )
                             {
-                                code = CX_GRAPH_TREE_EDGE;
+                                code = CV_GRAPH_TREE_EDGE;
+                                scanner->vtx = vtx;
                                 scanner->dst = dst;
                                 scanner->edge = edge;
                                 EXIT;
@@ -3215,15 +3573,15 @@ cxNextGraphItem( CxGraphScanner* scanner )
                         }
                         else
                         {
-                            if( scanner->mask & (CX_GRAPH_BACK_EDGE|
-                                                 CX_GRAPH_CROSS_EDGE|
-                                                 CX_GRAPH_FORWARD_EDGE) )
+                            if( scanner->mask & (CV_GRAPH_BACK_EDGE|
+                                                 CV_GRAPH_CROSS_EDGE|
+                                                 CV_GRAPH_FORWARD_EDGE) )
                             {
-                                code = (dst->flags & CX_GRAPH_SEARCH_TREE_NODE_FLAG) ?
-                                       CX_GRAPH_BACK_EDGE :
-                                       (edge->flags & CX_GRAPH_FORWARD_EDGE_FLAG) ?
-                                       CX_GRAPH_FORWARD_EDGE : CX_GRAPH_CROSS_EDGE;
-                                edge->flags &= ~CX_GRAPH_FORWARD_EDGE_FLAG;
+                                code = (dst->flags & CV_GRAPH_SEARCH_TREE_NODE_FLAG) ?
+                                       CV_GRAPH_BACK_EDGE :
+                                       (edge->flags & CV_GRAPH_FORWARD_EDGE_FLAG) ?
+                                       CV_GRAPH_FORWARD_EDGE : CV_GRAPH_CROSS_EDGE;
+                                edge->flags &= ~CV_GRAPH_FORWARD_EDGE_FLAG;
                                 if( scanner->mask & code )
                                 {
                                     scanner->vtx = vtx;
@@ -3234,19 +3592,19 @@ cxNextGraphItem( CxGraphScanner* scanner )
                             }
                         }
                     }
-                    else if( (dst->flags & (CX_GRAPH_ITEM_VISITED_FLAG|
-                             CX_GRAPH_SEARCH_TREE_NODE_FLAG)) ==
-                             (CX_GRAPH_ITEM_VISITED_FLAG|
-                             CX_GRAPH_SEARCH_TREE_NODE_FLAG))
+                    else if( (dst->flags & (CV_GRAPH_ITEM_VISITED_FLAG|
+                             CV_GRAPH_SEARCH_TREE_NODE_FLAG)) ==
+                             (CV_GRAPH_ITEM_VISITED_FLAG|
+                             CV_GRAPH_SEARCH_TREE_NODE_FLAG))
                     {
-                        edge->flags |= CX_GRAPH_FORWARD_EDGE_FLAG;
+                        edge->flags |= CV_GRAPH_FORWARD_EDGE_FLAG;
                     }
                 }
 
-                edge = CX_NEXT_GRAPH_EDGE( edge, vtx );
+                edge = CV_NEXT_GRAPH_EDGE( edge, vtx );
             }
 
-            if( !edge ) // need to backtrack
+            if( !edge ) /* need to backtrack */
             {
                 if( scanner->stack->total == 0 )
                 {
@@ -3256,18 +3614,18 @@ cxNextGraphItem( CxGraphScanner* scanner )
                         scanner->index = 0;
                     break;
                 }
-                cxSeqPop( scanner->stack, &item );
+                cvSeqPop( scanner->stack, &item );
                 vtx = item.vtx;
-                vtx->flags &= ~CX_GRAPH_SEARCH_TREE_NODE_FLAG;
+                vtx->flags &= ~CV_GRAPH_SEARCH_TREE_NODE_FLAG;
                 edge = item.edge;
                 dst = 0;
 
-                if( scanner->mask & CX_GRAPH_BACKTRACKING )
+                if( scanner->mask & CV_GRAPH_BACKTRACKING )
                 {
                     scanner->vtx = vtx;
                     scanner->edge = edge;
                     scanner->dst = edge->vtx[vtx == edge->vtx[0]];
-                    code = CX_GRAPH_BACKTRACKING;
+                    code = CV_GRAPH_BACKTRACKING;
                     EXIT;
                 }
             }
@@ -3275,26 +3633,24 @@ cxNextGraphItem( CxGraphScanner* scanner )
 
         if( !vtx )
         {
-            vtx = (CxGraphVtx*)icxSeqFindNextElem( (CxSeq*)(scanner->graph),
-                  CX_FIELD_OFFSET( flags, CxGraphVtx ), CX_GRAPH_ITEM_VISITED_FLAG|INT_MIN,
+            vtx = (CvGraphVtx*)icvSeqFindNextElem( (CvSeq*)(scanner->graph),
+                  CV_FIELD_OFFSET( flags, CvGraphVtx ), CV_GRAPH_ITEM_VISITED_FLAG|INT_MIN,
                   0, &(scanner->index) );
 
             if( !vtx )
             {
-                code = CX_GRAPH_OVER;
-                cxEndScanGraph( scanner );
-                scanner->stack = 0;
+                code = CV_GRAPH_OVER;
                 break;
             }
         }
 
         dst = vtx;
-        if( scanner->mask & CX_GRAPH_NEW_TREE )
+        if( scanner->mask & CV_GRAPH_NEW_TREE )
         {
             scanner->dst = dst;
             scanner->edge = 0;
             scanner->vtx = 0;
-            code = CX_GRAPH_NEW_TREE;
+            code = CV_GRAPH_NEW_TREE;
             break;
         }
     }
@@ -3305,90 +3661,90 @@ cxNextGraphItem( CxGraphScanner* scanner )
 }
 
 
-CX_IMPL CxGraph*
-cxCloneGraph( const CxGraph* graph, CxMemStorage* storage )
+CV_IMPL CvGraph*
+cvCloneGraph( const CvGraph* graph, CvMemStorage* storage )
 {
     int* flag_buffer = 0;
-    CxGraphVtx** ptr_buffer = 0;
-    CxGraph* result = 0;
+    CvGraphVtx** ptr_buffer = 0;
+    CvGraph* result = 0;
     
-    CX_FUNCNAME( "cxCloneGraph" );
+    CV_FUNCNAME( "cvCloneGraph" );
 
     __BEGIN__;
 
     int i, k;
     int vtx_size, edge_size;
-    CxSeqReader reader;
+    CvSeqReader reader;
 
-    if( !CX_IS_GRAPH(graph))
-        CX_ERROR( CX_StsBadArg, "Invalid graph pointer" );
+    if( !CV_IS_GRAPH(graph))
+        CV_ERROR( CV_StsBadArg, "Invalid graph pointer" );
 
     if( !storage )
         storage = graph->storage;
 
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "NULL storage pointer" );
+        CV_ERROR( CV_StsNullPtr, "NULL storage pointer" );
 
     vtx_size = graph->elem_size;
     edge_size = graph->edges->elem_size;
 
-    CX_CALL( flag_buffer = (int*)cxAlloc( graph->total*sizeof(flag_buffer[0])));
-    CX_CALL( ptr_buffer = (CxGraphVtx**)cxAlloc( graph->total*sizeof(ptr_buffer[0])));
-    CX_CALL( result = cxCreateGraph( graph->flags, graph->header_size,
+    CV_CALL( flag_buffer = (int*)cvAlloc( graph->total*sizeof(flag_buffer[0])));
+    CV_CALL( ptr_buffer = (CvGraphVtx**)cvAlloc( graph->total*sizeof(ptr_buffer[0])));
+    CV_CALL( result = cvCreateGraph( graph->flags, graph->header_size,
                                      vtx_size, edge_size, storage ));
-    memcpy( result + sizeof(CxGraph), graph + sizeof(CxGraph),
-            graph->header_size - sizeof(CxGraph));
+    memcpy( result + sizeof(CvGraph), graph + sizeof(CvGraph),
+            graph->header_size - sizeof(CvGraph));
 
     // pass 1. save flags, copy vertices
-    cxStartReadSeq( (CxSeq*)graph, &reader );
+    cvStartReadSeq( (CvSeq*)graph, &reader );
     for( i = 0, k = 0; i < graph->total; i++ )
     {
-        if( CX_IS_SET_ELEM( reader.ptr ))
+        if( CV_IS_SET_ELEM( reader.ptr ))
         {
-            CxGraphVtx* vtx = (CxGraphVtx*)reader.ptr;
-            CxGraphVtx* dstvtx = 0;
-            CX_CALL( cxGraphAddVtx( result, vtx, &dstvtx ));
+            CvGraphVtx* vtx = (CvGraphVtx*)reader.ptr;
+            CvGraphVtx* dstvtx = 0;
+            CV_CALL( cvGraphAddVtx( result, vtx, &dstvtx ));
             flag_buffer[k] = dstvtx->flags = vtx->flags;
             vtx->flags = k;
             ptr_buffer[k++] = dstvtx;
         }
-        CX_NEXT_SEQ_ELEM( vtx_size, reader );
+        CV_NEXT_SEQ_ELEM( vtx_size, reader );
     }
 
     // pass 2. copy edges
-    cxStartReadSeq( (CxSeq*)graph->edges, &reader );
+    cvStartReadSeq( (CvSeq*)graph->edges, &reader );
     for( i = 0; i < graph->edges->total; i++ )
     {
-        if( CX_IS_SET_ELEM( reader.ptr ))
+        if( CV_IS_SET_ELEM( reader.ptr ))
         {
-            CxGraphEdge* edge = (CxGraphEdge*)reader.ptr;
-            CxGraphEdge* dstedge = 0;
-            CxGraphVtx* new_org = ptr_buffer[edge->vtx[0]->flags];
-            CxGraphVtx* new_dst = ptr_buffer[edge->vtx[1]->flags];
-            CX_CALL( cxGraphAddEdgeByPtr( result, new_org, new_dst, edge, &dstedge ));
+            CvGraphEdge* edge = (CvGraphEdge*)reader.ptr;
+            CvGraphEdge* dstedge = 0;
+            CvGraphVtx* new_org = ptr_buffer[edge->vtx[0]->flags];
+            CvGraphVtx* new_dst = ptr_buffer[edge->vtx[1]->flags];
+            CV_CALL( cvGraphAddEdgeByPtr( result, new_org, new_dst, edge, &dstedge ));
             dstedge->flags = edge->flags;
         }
-        CX_NEXT_SEQ_ELEM( edge_size, reader );
+        CV_NEXT_SEQ_ELEM( edge_size, reader );
     }
 
     // pass 3. restore flags
-    cxStartReadSeq( (CxSeq*)graph, &reader );
+    cvStartReadSeq( (CvSeq*)graph, &reader );
     for( i = 0, k = 0; i < graph->edges->total; i++ )
     {
-        if( CX_IS_SET_ELEM( reader.ptr ))
+        if( CV_IS_SET_ELEM( reader.ptr ))
         {
-            CxGraphVtx* vtx = (CxGraphVtx*)reader.ptr;
+            CvGraphVtx* vtx = (CvGraphVtx*)reader.ptr;
             vtx->flags = flag_buffer[k++];
         }
-        CX_NEXT_SEQ_ELEM( vtx_size, reader );
+        CV_NEXT_SEQ_ELEM( vtx_size, reader );
     }
 
     __END__;
 
-    cxFree( (void**)&flag_buffer );
-    cxFree( (void**)&ptr_buffer );
+    cvFree( &flag_buffer );
+    cvFree( &ptr_buffer );
 
-    if( cxGetErrStatus() < 0 )
+    if( cvGetErrStatus() < 0 )
         result = 0;
 
     return result;
@@ -3400,32 +3756,32 @@ cxCloneGraph( const CxGraph* graph, CxMemStorage* storage )
 \****************************************************************************************/
 
 // Gathers pointers to all the sequences, accessible from the <first>, to the single sequence.
-CX_IMPL CxSeq*
-cxTreeToNodeSeq( const void* first, int header_size, CxMemStorage* storage )
+CV_IMPL CvSeq*
+cvTreeToNodeSeq( const void* first, int header_size, CvMemStorage* storage )
 {
-    CxSeq* allseq = 0;
+    CvSeq* allseq = 0;
 
-    CX_FUNCNAME("cxTreeToNodeSeq");
+    CV_FUNCNAME("cvTreeToNodeSeq");
 
     __BEGIN__;
 
-    CxTreeNodeIterator iterator;
+    CvTreeNodeIterator iterator;
 
     if( !storage )
-        CX_ERROR( CX_StsNullPtr, "NULL storage pointer" );
+        CV_ERROR( CV_StsNullPtr, "NULL storage pointer" );
 
-    CX_CALL( allseq = cxCreateSeq( 0, header_size, sizeof(first), storage ));
+    CV_CALL( allseq = cvCreateSeq( 0, header_size, sizeof(first), storage ));
 
     if( first )
     {
-        CX_CALL( cxInitTreeNodeIterator( &iterator, first, INT_MAX ));
+        CV_CALL( cvInitTreeNodeIterator( &iterator, first, INT_MAX ));
 
         for(;;)
         {
-            void* node = cxNextTreeNode( &iterator );
+            void* node = cvNextTreeNode( &iterator );
             if( !node )
                 break;
-            cxSeqPush( allseq, &node );
+            cvSeqPush( allseq, &node );
         }
     }
 
@@ -3435,34 +3791,34 @@ cxTreeToNodeSeq( const void* first, int header_size, CxMemStorage* storage )
 }
 
 
-typedef struct CxTreeNode
+typedef struct CvTreeNode
 {
     int       flags;         /* micsellaneous flags */         
     int       header_size;   /* size of sequence header */     
-    struct    CxTreeNode* h_prev; /* previous sequence */      
-    struct    CxTreeNode* h_next; /* next sequence */          
-    struct    CxTreeNode* v_prev; /* 2nd previous sequence */  
-    struct    CxTreeNode* v_next; /* 2nd next sequence */
+    struct    CvTreeNode* h_prev; /* previous sequence */      
+    struct    CvTreeNode* h_next; /* next sequence */          
+    struct    CvTreeNode* v_prev; /* 2nd previous sequence */  
+    struct    CvTreeNode* v_next; /* 2nd next sequence */
 }
-CxTreeNode;
+CvTreeNode;
 
 
 
 // Insert contour into tree given certain parent sequence.
 // If parent is equal to frame (the most external contour),
 // then added contour will have null pointer to parent.
-CX_IMPL void
-cxInsertNodeIntoTree( void* _node, void* _parent, void* _frame )
+CV_IMPL void
+cvInsertNodeIntoTree( void* _node, void* _parent, void* _frame )
 {
-    CX_FUNCNAME( "cxInsertNodeIntoTree" );
+    CV_FUNCNAME( "cvInsertNodeIntoTree" );
 
     __BEGIN__;
 
-    CxTreeNode* node = (CxTreeNode*)_node;
-    CxTreeNode* parent = (CxTreeNode*)_parent;
+    CvTreeNode* node = (CvTreeNode*)_node;
+    CvTreeNode* parent = (CvTreeNode*)_parent;
 
     if( !node || !parent )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+        CV_ERROR( CV_StsNullPtr, "" );
 
     node->v_prev = _parent != _frame ? parent : 0;
     node->h_next = parent->v_next;
@@ -3478,21 +3834,21 @@ cxInsertNodeIntoTree( void* _node, void* _parent, void* _frame )
 
 
 // Removes contour from tree (together with the contour children).
-CX_IMPL void
-cxRemoveNodeFromTree( void* _node, void* _frame )
+CV_IMPL void
+cvRemoveNodeFromTree( void* _node, void* _frame )
 {
-    CX_FUNCNAME( "cxRemoveNodeFromTree" );
+    CV_FUNCNAME( "cvRemoveNodeFromTree" );
 
     __BEGIN__;
 
-    CxTreeNode* node = (CxTreeNode*)_node;
-    CxTreeNode* frame = (CxTreeNode*)_frame;
+    CvTreeNode* node = (CvTreeNode*)_node;
+    CvTreeNode* frame = (CvTreeNode*)_frame;
 
     if( !node )
-        CX_ERROR_FROM_CODE( CX_StsNullPtr );
+        CV_ERROR_FROM_CODE( CV_StsNullPtr );
 
     if( node == frame )
-        CX_ERROR( CX_StsBadArg, "frame node could not be deleted" );
+        CV_ERROR( CV_StsBadArg, "frame node could not be deleted" );
 
     if( node->h_next )
         node->h_next->h_prev = node->h_prev;
@@ -3501,7 +3857,7 @@ cxRemoveNodeFromTree( void* _node, void* _frame )
         node->h_prev->h_next = node->h_next;
     else
     {
-        CxTreeNode* parent = node->v_prev;
+        CvTreeNode* parent = node->v_prev;
         if( !parent )
             parent = frame;
 
@@ -3516,49 +3872,49 @@ cxRemoveNodeFromTree( void* _node, void* _frame )
 }
 
 
-CX_IMPL void
-cxInitTreeNodeIterator( CxTreeNodeIterator* treeIterator,
-                        const void* first, int maxLevel )
+CV_IMPL void
+cvInitTreeNodeIterator( CvTreeNodeIterator* treeIterator,
+                        const void* first, int max_level )
 {
-    CX_FUNCNAME("icxInitTreeNodeIterator");
+    CV_FUNCNAME("icvInitTreeNodeIterator");
 
     __BEGIN__;
     
     if( !treeIterator || !first )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );
+        CV_ERROR( CV_StsNullPtr, "" );
 
-    if( maxLevel < 0 )
-        CX_ERROR_FROM_STATUS( CX_BADRANGE_ERR );
+    if( max_level < 0 )
+        CV_ERROR( CV_StsOutOfRange, "" );
 
     treeIterator->node = (void*)first;
     treeIterator->level = 0;
-    treeIterator->maxLevel = maxLevel;
+    treeIterator->max_level = max_level;
 
     __END__;
 }
 
 
-CX_IMPL void*
-cxNextTreeNode( CxTreeNodeIterator* treeIterator )
+CV_IMPL void*
+cvNextTreeNode( CvTreeNodeIterator* treeIterator )
 {
-    CxTreeNode* prevNode = 0;
+    CvTreeNode* prevNode = 0;
     
-    CX_FUNCNAME("cxNextTreeNode");
+    CV_FUNCNAME("cvNextTreeNode");
 
     __BEGIN__;
     
-    CxTreeNode* node;
+    CvTreeNode* node;
     int level;
 
     if( !treeIterator )
-        CX_ERROR( CX_StsNullPtr, "NULL iterator pointer" );
+        CV_ERROR( CV_StsNullPtr, "NULL iterator pointer" );
 
-    prevNode = node = (CxTreeNode*)treeIterator->node;
+    prevNode = node = (CvTreeNode*)treeIterator->node;
     level = treeIterator->level;
 
     if( node )
     {
-        if( node->v_next && level+1 < treeIterator->maxLevel )
+        if( node->v_next && level+1 < treeIterator->max_level )
         {
             node = node->v_next;
             level++;
@@ -3574,7 +3930,7 @@ cxNextTreeNode( CxTreeNodeIterator* treeIterator )
                     break;
                 }
             }
-            node = node && treeIterator->maxLevel != 0 ? node->h_next : 0;
+            node = node && treeIterator->max_level != 0 ? node->h_next : 0;
         }
     }
 
@@ -3587,22 +3943,22 @@ cxNextTreeNode( CxTreeNodeIterator* treeIterator )
 }
 
 
-CX_IMPL void*
-cxPrevTreeNode( CxTreeNodeIterator* treeIterator )
+CV_IMPL void*
+cvPrevTreeNode( CvTreeNodeIterator* treeIterator )
 {
-    CxTreeNode* prevNode = 0;
+    CvTreeNode* prevNode = 0;
     
-    CX_FUNCNAME("cxPrevTreeNode");
+    CV_FUNCNAME("cvPrevTreeNode");
 
     __BEGIN__;
 
-    CxTreeNode* node;
+    CvTreeNode* node;
     int level;
 
     if( !treeIterator )
-        CX_ERROR_FROM_STATUS( CX_NULLPTR_ERR );    
+        CV_ERROR( CV_StsNullPtr, "" );    
 
-    prevNode = node = (CxTreeNode*)treeIterator->node;
+    prevNode = node = (CvTreeNode*)treeIterator->node;
     level = treeIterator->level;
     
     if( node )
@@ -3617,7 +3973,7 @@ cxPrevTreeNode( CxTreeNodeIterator* treeIterator )
         {
             node = node->h_prev;
 
-            while( node->v_next && level < treeIterator->maxLevel )
+            while( node->v_next && level < treeIterator->max_level )
             {
                 node = node->v_next;
                 level++;

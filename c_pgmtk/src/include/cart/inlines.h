@@ -19,7 +19,7 @@ inline int MyRound( float f )
 }
 
 #ifdef INLINE_ASM_OPTIMIZE
-	#define cxRound( val ) MyRound((float)val)
+	#define cvRound( val ) MyRound((float)val)
 #endif
 #endif
 
@@ -136,9 +136,9 @@ CART_INLINE double icxSafeDivide(double d , double denom )
 CART_INLINE int icxVarToInt(CxClassifierVar var , BOOL floating = TRUE)
 {
 #if FLOAT_ONLY
-	return cxRound(var.fl);
+	return cvRound(var.fl);
 #else
-	return  (floating ? cxRound(var.fl) : var.i);
+	return  (floating ? cvRound(var.fl) : var.i);
 #endif
 }
 
@@ -338,9 +338,9 @@ CART_INLINE BOOL icxIsVarSplitLeft(CxCARTBase* cart, CxCARTSplit* split, CxClass
 	else
 	{
 #if FLOAT_ONLY
-		int i = cxRound(var.fl) ;  
+		int i = cvRound(var.fl) ;  
 #else
-		int i = icxIsClassifierVar32f(type) ? cxRound(var.fl) : var.i;
+		int i = icxIsClassifierVar32f(type) ? cvRound(var.fl) : var.i;
 #endif
 		assert((i >=0) && (i < cart->num_classes[feature]));
 		char c = ((char*)split->boundary.ptr)[i];
@@ -711,7 +711,7 @@ loop1 :
 	float* _farr = farr;
 	int* _iarr = (int*)farr;
 	for (  ; n-- ; _iarr++ , _farr++)
-		(*_iarr) = cxRound(*_farr) ;
+		(*_iarr) = cvRound(*_farr) ;
 #endif
 	return (int*)farr;
 }
@@ -1177,13 +1177,13 @@ CART_INLINE double icxGetNormalizer(CxClassifier* cfer)
 CART_INLINE BOOL cxIsStringSplitLeft( CxCARTBase* cart,
 								      CxForestNode* node,
                                       void *features,
-								      int features_step CX_DEFAULT(sizeof( CxClassifierVar )),
-                                      char *missed_mask CX_DEFAULT(0),
-                                      int missed_mask_step CX_DEFAULT(1),
-								      CxCARTSplit* split CX_DEFAULT(NULL),
-								      int direction CX_DEFAULT(0))
+								      int features_step CV_DEFAULT(sizeof( CxClassifierVar )),
+                                      char *missed_mask CV_DEFAULT(0),
+                                      int missed_mask_step CV_DEFAULT(1),
+								      CxCARTSplit* split CV_DEFAULT(NULL),
+								      int direction CV_DEFAULT(0))
 {
-    CX_FUNCNAME( "cxIsStringSplitLeft" );
+    CV_FUNCNAME( "cxIsStringSplitLeft" );
     __BEGIN__;
 	CxCARTSplit* used_split = split ? split : node->split;
 	assert(used_split);
@@ -1211,11 +1211,11 @@ CART_INLINE BOOL cxIsStringSplitLeft( CxCARTBase* cart,
 CART_INLINE BOOL cxIsStringSplitLeft( CxCART* cart,
 								      CxCARTNode* node,
                                       void *features,
-								      int features_step CX_DEFAULT(sizeof( CxClassifierVar )),
-                                      char *missed_mask CX_DEFAULT(0),
-                                      int missed_mask_step CX_DEFAULT(1),
-								      CxCARTSplit* split CX_DEFAULT(NULL),
-								      int direction CX_DEFAULT(0))
+								      int features_step CV_DEFAULT(sizeof( CxClassifierVar )),
+                                      char *missed_mask CV_DEFAULT(0),
+                                      int missed_mask_step CV_DEFAULT(1),
+								      CxCARTSplit* split CV_DEFAULT(NULL),
+								      int direction CV_DEFAULT(0))
 {
 	return cxIsStringSplitLeft((CxCARTBase*)cart, (CxForestNode*)node , 
 								features, features_step, missed_mask, 

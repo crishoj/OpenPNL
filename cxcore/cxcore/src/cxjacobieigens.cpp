@@ -42,7 +42,7 @@
 #include "_cxcore.h"
 
 /*F///////////////////////////////////////////////////////////////////////////////////////
-//    Names:      icxJacobiEigens_32f, icxJacobiEigens_64d
+//    Names:      icvJacobiEigens_32f, icvJacobiEigens_64d
 //    Purpose:    Eigenvalues & eigenvectors calculation of a symmetric matrix:
 //                A Vi  =  Ei Vi
 //    Context:   
@@ -54,7 +54,7 @@
 //                eps     - accuracy of diagonalization.
 //               
 //    Returns:
-//    CX_NO_ERROR or error code     
+//    CV_NO_ERROR or error code     
 //    Notes:
 //        1. The functions destroy source matrix A, so if you need it further, you
 //           have to copy it before the processing.
@@ -65,18 +65,19 @@
 
 /*=========================== Single precision function ================================*/
 
-CxStatus CX_STDCALL icxJacobiEigens_32f(float *A, float *V, float *E, int n, float eps)
+static CvStatus CV_STDCALL
+icvJacobiEigens_32f(float *A, float *V, float *E, int n, float eps)
 {
-    int i, j, k, ind;
+    int i, j, k, ind, iters = 0;
     float *AA = A, *VV = V;
     double Amax, anorm = 0, ax;
 
     if( A == NULL || V == NULL || E == NULL )
-        return CX_NULLPTR_ERR;
+        return CV_NULLPTR_ERR;
     if( n <= 0 )
-        return CX_BADSIZE_ERR;
-    if( eps < 1.0e-7f )
-        eps = 1.0e-7f;
+        return CV_BADSIZE_ERR;
+    if( eps < DBL_EPSILON )
+        eps = DBL_EPSILON;
 
     /*-------- Prepare --------*/
     for( i = 0; i < n; i++, VV += n, AA += n )
@@ -96,7 +97,7 @@ CxStatus CX_STDCALL icxJacobiEigens_32f(float *A, float *V, float *E, int n, flo
     ax = anorm * eps / n;
     Amax = anorm;
 
-    while( Amax > ax )
+    while( Amax > ax && iters++ < 100 )
     {
         Amax /= n;
         do                      /* while (ind) */
@@ -210,23 +211,24 @@ CxStatus CX_STDCALL icxJacobiEigens_32f(float *A, float *V, float *E, int n, flo
         }
     }
 
-    return CX_NO_ERR;
+    return CV_NO_ERR;
 }
 
 /*=========================== Double precision function ================================*/
 
-CxStatus CX_STDCALL icxJacobiEigens_64d(double *A, double *V, double *E, int n, double eps)
+static CvStatus CV_STDCALL
+icvJacobiEigens_64d(double *A, double *V, double *E, int n, double eps)
 {
-    int i, j, k, p, q, ind;
+    int i, j, k, p, q, ind, iters = 0;
     double *A1 = A, *V1 = V, *A2 = A, *V2 = V;
     double Amax = 0.0, anorm = 0.0, ax;
 
     if( A == NULL || V == NULL || E == NULL )
-        return CX_NULLPTR_ERR;
+        return CV_NULLPTR_ERR;
     if( n <= 0 )
-        return CX_BADSIZE_ERR;
-    if( eps < 1.0e-15 )
-        eps = 1.0e-15;
+        return CV_BADSIZE_ERR;
+    if( eps < DBL_EPSILON )
+        eps = DBL_EPSILON;
 
     /*-------- Prepare --------*/
     for( i = 0; i < n; i++, V1 += n, A1 += n )
@@ -246,7 +248,7 @@ CxStatus CX_STDCALL icxJacobiEigens_64d(double *A, double *V, double *E, int n, 
     ax = anorm * eps / n;
     Amax = anorm;
 
-    while( Amax > ax )
+    while( Amax > ax && iters++ < 100 )
     {
         Amax /= n;
         do                      /* while (ind) */
@@ -360,64 +362,68 @@ CxStatus CX_STDCALL icxJacobiEigens_64d(double *A, double *V, double *E, int n, 
         }
     }
 
-    return CX_NO_ERR;
+    return CV_NO_ERR;
 }
 
 
-CX_IMPL void
-cxEigenVV( CxArr* srcarr, CxArr* evectsarr, CxArr* evalsarr, double eps )
+CV_IMPL void
+cvEigenVV( CvArr* srcarr, CvArr* evectsarr, CvArr* evalsarr, double eps )
 {
 
-    CX_FUNCNAME( "cxEigenVV" );
+    CV_FUNCNAME( "cvEigenVV" );
 
     __BEGIN__;
 
-    CxMat sstub, *src = (CxMat*)srcarr;
-    CxMat estub1, *evects = (CxMat*)evectsarr;
-    CxMat estub2, *evals = (CxMat*)evalsarr;
+    CvMat sstub, *src = (CvMat*)srcarr;
+    CvMat estub1, *evects = (CvMat*)evectsarr;
+    CvMat estub2, *evals = (CvMat*)evalsarr;
 
-    if( !CX_IS_MAT( src ))
-        CX_CALL( src = cxGetMat( src, &sstub ));
+    if( !CV_IS_MAT( src ))
+        CV_CALL( src = cvGetMat( src, &sstub ));
 
-    if( !CX_IS_MAT( evects ))
-        CX_CALL( evects = cxGetMat( evects, &estub1 ));
+    if( !CV_IS_MAT( evects ))
+        CV_CALL( evects = cvGetMat( evects, &estub1 ));
 
-    if( !CX_IS_MAT( evals ))
-        CX_CALL( evals = cxGetMat( evals, &estub2 ));
+    if( !CV_IS_MAT( evals ))
+        CV_CALL( evals = cvGetMat( evals, &estub2 ));
 
     if( src->cols != src->rows )
-        CX_ERROR( CX_StsUnmatchedSizes, " source is not quadratic matrix" );
-    if( !CX_ARE_SIZES_EQ( src, evects) )
-        CX_ERROR( CX_StsUnmatchedSizes, "evects has inappropriate size" );
-    if( evals->rows != src->rows || evals->cols != 1 )
-        CX_ERROR( CX_StsBadSize, " evals has inappropriate size" );
+        CV_ERROR( CV_StsUnmatchedSizes, "source is not quadratic matrix" );
 
-    if( !CX_ARE_TYPES_EQ( src, evects ) || !CX_ARE_TYPES_EQ( src, evals ))
-        CX_ERROR( CX_StsUnmatchedFormats, " evals has inappropriate size" );
+    if( !CV_ARE_SIZES_EQ( src, evects) )
+        CV_ERROR( CV_StsUnmatchedSizes, "eigenvectors matrix has inappropriate size" );
 
-    if( !CX_IS_MAT_CONT( src->type & evals->type & evects->type ))
-        CX_ERROR( CX_BadStep, "All the matrix should be continuous" );
+    if( (evals->rows != src->rows || evals->cols != 1) &&
+        (evals->cols != src->rows || evals->rows != 1))
+        CV_ERROR( CV_StsBadSize, "eigenvalues vector has inappropriate size" );
 
-    if( CX_MAT_TYPE(src->type) == CX_32FC1 )
+    if( !CV_ARE_TYPES_EQ( src, evects ) || !CV_ARE_TYPES_EQ( src, evals ))
+        CV_ERROR( CV_StsUnmatchedFormats,
+        "input matrix, eigenvalues and eigenvectors must have the same type" );
+
+    if( !CV_IS_MAT_CONT( src->type & evals->type & evects->type ))
+        CV_ERROR( CV_BadStep, "all the matrices must be continuous" );
+
+    if( CV_MAT_TYPE(src->type) == CV_32FC1 )
     {
-        IPPI_CALL( icxJacobiEigens_32f( src->data.fl,
+        IPPI_CALL( icvJacobiEigens_32f( src->data.fl,
                                         evects->data.fl,
-                                        evals->data.fl, src->cols, (float) eps ));
+                                        evals->data.fl, src->cols, (float)eps ));
 
     }
-    else if( CX_MAT_TYPE(src->type) == CX_64FC1 )
+    else if( CV_MAT_TYPE(src->type) == CV_64FC1 )
     {
-        IPPI_CALL( icxJacobiEigens_64d( src->data.db,
+        IPPI_CALL( icvJacobiEigens_64d( src->data.db,
                                         evects->data.db,
-                                        evals->data.db, src->cols, (float) eps ));
+                                        evals->data.db, src->cols, eps ));
     }
     else
     {
-        CX_ERROR( CX_StsUnsupportedFormat, "Only 32fC1 and 64fC1 types are supported" );
+        CV_ERROR( CV_StsUnsupportedFormat, "Only 32fC1 and 64fC1 types are supported" );
     }
 
-    CX_CHECK_NANS( evects );
-    CX_CHECK_NANS( evals );
+    CV_CHECK_NANS( evects );
+    CV_CHECK_NANS( evals );
 
     __END__;
 }

@@ -42,181 +42,147 @@
 #ifndef _CXCORE_ERROR_H_
 #define _CXCORE_ERROR_H_
 
-#if defined _CX_ALWAYS_PROFILE_ || defined _DEBUG
-#define _CX_COMPILE_PROFILE_
-#endif
-
-#define _CX_ALWAYS_NO_PROFILE_
-
-#ifdef _CX_ALWAYS_NO_PROFILE_
-#undef _CX_COMPILE_PROFILE_
-#endif
-
-#ifdef _CX_COMPILE_PROFILE_
-   #define CX_START_CALL( func, file, line )  cxStartProfile( func, file, line )
-   #define CX_END_CALL( file, line )    cxEndProfile( file, line )
-#else
-   #define CX_START_CALL( func, file, line )
-   #define CX_END_CALL( file, line )
-#endif 
-
 /************Below is declaration of error handling stuff in PLSuite manner**/
 
-typedef int CXStatus;
+typedef int CVStatus;
 
-/* this part of CXStatus is compatible with IPLStatus 
-  Some of below symbols are not [yet] used in OpenCX
+/* this part of CVStatus is compatible with IPLStatus 
+  Some of below symbols are not [yet] used in OpenCV
 */
-#define CX_StsOk                    0  /* everithing is ok                */
-#define CX_StsBackTrace            -1  /* pseudo error for back trace     */
-#define CX_StsError                -2  /* unknown /unspecified error      */
-#define CX_StsInternal             -3  /* internal error (bad state)      */
-#define CX_StsNoMem                -4  /* Insufficient memory             */
-#define CX_StsBadArg               -5  /* function arg/param is bad       */
-#define CX_StsBadFunc              -6  /* unsupported function            */
-#define CX_StsNoConv               -7  /* iter. didn't converge           */
-#define CX_StsAutoTrace            -8  /* Tracing                         */
+#define CV_StsOk                    0  /* everithing is ok                */
+#define CV_StsBackTrace            -1  /* pseudo error for back trace     */
+#define CV_StsError                -2  /* unknown /unspecified error      */
+#define CV_StsInternal             -3  /* internal error (bad state)      */
+#define CV_StsNoMem                -4  /* insufficient memory             */
+#define CV_StsBadArg               -5  /* function arg/param is bad       */
+#define CV_StsBadFunc              -6  /* unsupported function            */
+#define CV_StsNoConv               -7  /* iter. didn't converge           */
+#define CV_StsAutoTrace            -8  /* tracing                         */
 
-#define CX_HeaderIsNull            -9  /* image header is NULL            */
-#define CX_BadImageSize            -10 /* Image size is invalid           */
-#define CX_BadOffset               -11 /* Offset is invalid               */
-#define CX_BadDataPtr              -12 /**/
-#define CX_BadStep                 -13 /**/
-#define CX_BadModelOrChSeq         -14 /**/
-#define CX_BadNumChannels          -15 /**/
-#define CX_BadNumChannel1U         -16 /**/
-#define CX_BadDepth                -17 /**/
-#define CX_BadAlphaChannel         -18 /**/
-#define CX_BadOrder                -19 /**/
-#define CX_BadOrigin               -20 /**/
-#define CX_BadAlign                -21 /**/
-#define CX_BadCallBack             -22 /**/
-#define CX_BadTileSize             -23 /**/
-#define CX_BadCOI                  -24 /**/
-#define CX_BadROISize              -25 /**/
+#define CV_HeaderIsNull            -9  /* image header is NULL            */
+#define CV_BadImageSize            -10 /* image size is invalid           */
+#define CV_BadOffset               -11 /* offset is invalid               */
+#define CV_BadDataPtr              -12 /**/
+#define CV_BadStep                 -13 /**/
+#define CV_BadModelOrChSeq         -14 /**/
+#define CV_BadNumChannels          -15 /**/
+#define CV_BadNumChannel1U         -16 /**/
+#define CV_BadDepth                -17 /**/
+#define CV_BadAlphaChannel         -18 /**/
+#define CV_BadOrder                -19 /**/
+#define CV_BadOrigin               -20 /**/
+#define CV_BadAlign                -21 /**/
+#define CV_BadCallBack             -22 /**/
+#define CV_BadTileSize             -23 /**/
+#define CV_BadCOI                  -24 /**/
+#define CV_BadROISize              -25 /**/
 
-#define CX_MaskIsTiled             -26 /**/
+#define CV_MaskIsTiled             -26 /**/
 
-#define CX_StsNullPtr                -27 /* Null pointer */
-#define CX_StsVecLengthErr           -28 /* Incorrect vector length */
-#define CX_StsFilterStructContentErr -29 /* Incorr. filter structure content */
-#define CX_StsKernelStructContentErr -30 /* Incorr. transform kernel content */
-#define CX_StsFilterOffsetErr        -31 /* Incorrect filter ofset value */
+#define CV_StsNullPtr                -27 /* null pointer */
+#define CV_StsVecLengthErr           -28 /* incorrect vector length */
+#define CV_StsFilterStructContentErr -29 /* incorr. filter structure content */
+#define CV_StsKernelStructContentErr -30 /* incorr. transform kernel content */
+#define CV_StsFilterOffsetErr        -31 /* incorrect filter ofset value */
 
-/*extra for CX */
-#define CX_StsBadSize                -201 /* bad CxSize */
-#define CX_StsDivByZero              -202 /* division by zero */
-#define CX_StsInplaceNotSupported    -203 /* inplace operation is not supported */
-#define CX_StsObjectNotFound         -204 /* request can't be completed */
-#define CX_StsUnmatchedFormats       -205 /* formats of input/output arrays differ */
-#define CX_StsBadFlag                -206 /* flag is wrong or not supported */  
-#define CX_StsBadPoint               -207 /* bad CxPoint */ 
-#define CX_StsBadMask                -208 /* bad format of mask (neither 8uC1 nor 8sC1)*/
-#define CX_StsUnmatchedSizes         -209 /* ROI sizes of arrays differ */
-#define CX_StsUnsupportedFormat      -210 /* the format is not supported by the function*/
-#define CX_StsOutOfRange             -211 /* Some of parameters is out of range */
+/*extra for CV */
+#define CV_StsBadSize                -201 /* the input/output structure size is incorrect  */
+#define CV_StsDivByZero              -202 /* division by zero */
+#define CV_StsInplaceNotSupported    -203 /* in-place operation is not supported */
+#define CV_StsObjectNotFound         -204 /* request can't be completed */
+#define CV_StsUnmatchedFormats       -205 /* formats of input/output arrays differ */
+#define CV_StsBadFlag                -206 /* flag is wrong or not supported */  
+#define CV_StsBadPoint               -207 /* bad CvPoint */ 
+#define CV_StsBadMask                -208 /* bad format of mask (neither 8uC1 nor 8sC1)*/
+#define CV_StsUnmatchedSizes         -209 /* sizes of input/output structures do not match */
+#define CV_StsUnsupportedFormat      -210 /* the data format/type is not supported by the function*/
+#define CV_StsOutOfRange             -211 /* some of parameters are out of range */
+#define CV_StsParseError             -212 /* invalid syntax/structure of the parsed file */
+#define CV_StsNotImplemented         -213 /* the requested function/feature is not implemented */
+#define CV_StsBadMemBlock            -214 /* an allocated block has been corrupted */
 
 /********************************* Error handling Macros ********************************/
 
-#define OPENCX_ERROR(status,func,context)                           \
-                cxError((status),(func),(context),__FILE__,__LINE__)
+#define OPENCV_ERROR(status,func,context)                           \
+                cvError((status),(func),(context),__FILE__,__LINE__)
 
-#define OPENCX_ERRCHK(func,context)                                 \
-                ((cxGetErrStatus() >= 0) ? CX_StsOk                 \
-                : OPENCX_ERROR(CX_StsBackTrace,(func),(context)))
+#define OPENCV_ERRCHK(func,context)                                 \
+                {if (cvGetErrStatus() >= 0)                         \
+                 {OPENCV_ERROR(CV_StsBackTrace,(func),(context));}}
 
-#define OPENCX_ASSERT(expr,func,context)                            \
-                ((expr) ? CX_StsOk                                  \
-                : OPENCX_ERROR(CX_StsInternal,(func),(context)))
+#define OPENCV_ASSERT(expr,func,context)                            \
+                {if (! (expr))                                      \
+                 {OPENCV_ERROR(CV_StsInternal,(func),(context));}}
 
-#define OPENCX_RSTERR() (cxSetErrStatus(CX_StsOk))
+#define OPENCV_RSTERR() (cvSetErrStatus(CV_StsOk))
 
-#define OPENCX_CALL( Func )                                         \
+#define OPENCV_CALL( Func )                                         \
 {                                                                   \
-    CX_START_CALL( #Func, __FILE__, __LINE__ );                     \
     Func;                                                           \
-    CX_END_CALL( __FILE__, __LINE__ );                              \
 } 
 
 
-/**************************** OpenCX-style error handling *******************************/
+/**************************** OpenCV-style error handling *******************************/
 
-/* CX_FUNCNAME macro defines icxFuncName constant which is used by CX_ERROR macro */
-#ifdef CX_NO_FUNC_NAMES
-    #define CX_FUNCNAME( Name )
-    #define cxFuncName ""
+/* CV_FUNCNAME macro defines icvFuncName constant which is used by CV_ERROR macro */
+#ifdef CV_NO_FUNC_NAMES
+    #define CV_FUNCNAME( Name )
+    #define cvFuncName ""
 #else    
-    #define CX_FUNCNAME( Name )  \
-    static char cxFuncName[] = Name
+    #define CV_FUNCNAME( Name )  \
+    static char cvFuncName[] = Name
 #endif
 
 
 /*
-  CX_ERROR macro unconditionally raises error with passed code and message.
+  CV_ERROR macro unconditionally raises error with passed code and message.
   After raising error, control will be transferred to the exit label.
 */
-#define CX_ERROR( Code, Msg )                                       \
+#define CV_ERROR( Code, Msg )                                       \
 {                                                                   \
-     cxError( (Code), cxFuncName, Msg, __FILE__, __LINE__ );        \
+     cvError( (Code), cvFuncName, Msg, __FILE__, __LINE__ );        \
      EXIT;                                                          \
 }
 
-/* Simplified form of CX_ERROR */
-#define CX_ERROR_FROM_CODE( code )   \
-    CX_ERROR( code, "" )
+/* Simplified form of CV_ERROR */
+#define CV_ERROR_FROM_CODE( code )   \
+    CV_ERROR( code, "" )
 
 /*
- CX_CHECK macro checks error status after CX (or IPL)
+ CV_CHECK macro checks error status after CV (or IPL)
  function call. If error detected, control will be transferred to the exit
  label.
 */
-#define CX_CHECK()                                                  \
+#define CV_CHECK()                                                  \
 {                                                                   \
-    if( cxGetErrStatus() < 0 )                                      \
-        CX_ERROR( CX_StsBackTrace, "Inner function failed." );      \
+    if( cvGetErrStatus() < 0 )                                      \
+        CV_ERROR( CV_StsBackTrace, "Inner function failed." );      \
 }
 
 
 /*
- CX_CALL macro calls CX (or IPL) function, checks error status and
+ CV_CALL macro calls CV (or IPL) function, checks error status and
  signals a error if the function failed. Useful in "parent node"
  error procesing mode
 */
-#define CX_CALL( Func )                                             \
+#define CV_CALL( Func )                                             \
 {                                                                   \
-    /* start profile */                                             \
-    CX_START_CALL( #Func, __FILE__, __LINE__ );                     \
     Func;                                                           \
-    CX_END_CALL( __FILE__, __LINE__ );                              \
-    CX_CHECK();                                                     \
+    CV_CHECK();                                                     \
 }
 
 
 /* Runtime assertion macro */
-#define CX_ASSERT( Condition )                                          \
+#define CV_ASSERT( Condition )                                          \
 {                                                                       \
     if( !(Condition) )                                                  \
-        CX_ERROR( CX_StsInternal, "Assertion: " #Condition " failed" ); \
+        CV_ERROR( CV_StsInternal, "Assertion: " #Condition " failed" ); \
 }
 
 #define __BEGIN__       {
 #define __END__         goto exit; exit: ; }
 #define __CLEANUP__
 #define EXIT            goto exit
-
-#define CX_ERROR_FROM_STATUS( result )                \
-    CX_ERROR( cxErrorFromStatus( result ), "OpenCX function failed" )
-
-#define IPPI_CALL( Func )                                              \
-{                                                                      \
-      CxStatus  ippi_call_result;                                      \
-      CX_START_CALL( #Func, __FILE__, __LINE__ );                      \
-      ippi_call_result = Func;                                         \
-      CX_END_CALL( __FILE__, __LINE__ );                               \
-                                                                       \
-      if( ippi_call_result < 0 )                                       \
-            CX_ERROR_FROM_STATUS( (ippi_call_result));                 \
-}
 
 #endif /* _CXCORE_ERROR_H_ */
 

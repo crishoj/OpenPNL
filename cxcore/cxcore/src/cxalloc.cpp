@@ -42,17 +42,17 @@
 #include "_cxcore.h"
 
 // default <malloc>
-CX_IMPL void* icxDefaultAlloc( size_t size, const char*, int)
+static void*
+icvDefaultAlloc( size_t size, void* )
 {
     char *ptr, *ptr0 = (char*)malloc(
-        (size_t)(size + CX_MALLOC_ALIGN*((size >= 4096) + 1) + sizeof(char*)*2));
+        (size_t)(size + CV_MALLOC_ALIGN*((size >= 4096) + 1) + sizeof(char*)));
 
     if( !ptr0 )
         return 0;
 
     // align the pointer
-    ptr = ptr0 + sizeof(char*)*2 + 1;
-    ptr = (char*)cxAlignPtr(ptr, CX_MALLOC_ALIGN);
+    ptr = (char*)cvAlignPtr(ptr0 + sizeof(char*) + 1, CV_MALLOC_ALIGN);
     *(char**)(ptr - sizeof(char*)) = ptr0;
 
     return ptr;
@@ -60,60 +60,55 @@ CX_IMPL void* icxDefaultAlloc( size_t size, const char*, int)
 
 
 // default <free>
-CX_IMPL CXStatus icxDefaultFree( void** pptr, const char*, int )
+static int
+icvDefaultFree( void* ptr, void* )
 {
-    /* Checking for bad pointer */
-    if( pptr && *pptr )
-    {
-        char* ptr = (char*)*pptr;
+    // Pointer must be aligned by CV_MALLOC_ALIGN
+    if( ((size_t)ptr & (CV_MALLOC_ALIGN-1)) != 0 )
+        return CV_BADARG_ERR;
+    free( *((char**)ptr - 1) );
 
-        /* Pointer must be align by CX_MALLOC_ALIGN */
-        if( ((size_t)ptr & (CX_MALLOC_ALIGN-1)) != 0 )
-            return CX_BADARG_ERR;
-
-        *pptr = 0;
-        free( *(char**)(ptr - sizeof(char*)) );
-    }
-
-    return CX_OK;
+    return CV_OK;
 }
 
 
 // pointers to allocation functions, initially set to default
-static CxAllocFunc p_cxAlloc = icxDefaultAlloc;
-static CxFreeFunc p_cxFree = icxDefaultFree;
+static CvAllocFunc p_cvAlloc = icvDefaultAlloc;
+static CvFreeFunc p_cvFree = icvDefaultFree;
+static void* p_cvAllocUserData = 0;
 
-CX_IMPL void cxSetMemoryManager( CxAllocFunc alloc_func, CxFreeFunc free_func )
+CV_IMPL void cvSetMemoryManager( CvAllocFunc alloc_func, CvFreeFunc free_func, void* userdata )
 {
-    CX_FUNCNAME( "cxSetMemoryManager" );
+    CV_FUNCNAME( "cvSetMemoryManager" );
 
     __BEGIN__;
     
     if( (alloc_func == 0) ^ (free_func == 0) )
-        CX_ERROR( CX_StsNullPtr, "Either both pointers should be NULL or none of them");
+        CV_ERROR( CV_StsNullPtr, "Either both pointers should be NULL or none of them");
 
-    p_cxAlloc = alloc_func ? alloc_func : icxDefaultAlloc;
-    p_cxFree = free_func ? free_func : icxDefaultFree;
+    p_cvAlloc = alloc_func ? alloc_func : icvDefaultAlloc;
+    p_cvFree = free_func ? free_func : icvDefaultFree;
+    p_cvAllocUserData = userdata;
 
     __END__;
 }
 
 
-CX_IMPL  void*  cxAlloc( size_t size )
+CV_IMPL  void*  cvAlloc( size_t size )
 {
     void* ptr = 0;
     
-    CX_FUNCNAME( "cxAlloc" );
+    CV_FUNCNAME( "cvAlloc" );
 
     __BEGIN__;
 
-    if( (unsigned)size > CX_MAX_ALLOC_SIZE )
-        CX_ERROR( CX_StsOutOfRange,
-                  "Negative or too large argument of cxAlloc function" );
+    if( (size_t)size > CV_MAX_ALLOC_SIZE )
+        CV_ERROR( CV_StsOutOfRange,
+                  "Negative or too large argument of cvAlloc function" );
 
-    ptr = p_cxAlloc( size, "", 0 );
+    ptr = p_cvAlloc( size, p_cvAllocUserData );
     if( !ptr )
-        CX_ERROR( CX_StsNoMem, "Out of memory" );
+        CV_ERROR( CV_StsNoMem, "Out of memory" );
 
     __END__;
 
@@ -121,15 +116,18 @@ CX_IMPL  void*  cxAlloc( size_t size )
 }
 
 
-CX_IMPL  void  cxFree( void** ptr )
+CV_IMPL  void  cvFree_( void* ptr )
 {
-    CX_FUNCNAME( "cxFree" );
+    CV_FUNCNAME( "cvFree_" );
 
     __BEGIN__;
 
-    CXStatus status = p_cxFree( ptr, "", 0 );
-    if( status < 0 )
-        CX_ERROR( status, "" );
+    if( ptr )
+    {
+        CVStatus status = p_cvFree( ptr, p_cvAllocUserData );
+        if( status < 0 )
+            CV_ERROR( status, "Deallocation error" );
+    }
 
     __END__;
 }

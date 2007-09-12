@@ -41,43 +41,39 @@
 
 #include "_cxcore.h"
 
-#define ICX_MATH_BLOCK_SIZE  256
+#ifdef HAVE_CONFIG_H
+#include <cvconfig.h>
+#endif
 
-#define _CX_SQRT_MAGIC     0xbe6f0000
+#define ICV_MATH_BLOCK_SIZE  256
 
-#define _CX_SQRT_MAGIC_DBL CX_BIG_UINT(0xbfcd460000000000)
+#define _CV_SQRT_MAGIC     0xbe6f0000
 
-#define _CX_ATAN_CF0  (-15.8131890796f)
-#define _CX_ATAN_CF1  (61.0941945596f)
-#define _CX_ATAN_CF2  0.f /*(-0.140500406322f)*/
+#define _CV_SQRT_MAGIC_DBL CV_BIG_UINT(0xbfcd460000000000)
 
-static const float icxAtanTab[8] = { 0.f + _CX_ATAN_CF2, 90.f - _CX_ATAN_CF2,
-    180.f - _CX_ATAN_CF2, 90.f + _CX_ATAN_CF2,
-    360.f - _CX_ATAN_CF2, 270.f + _CX_ATAN_CF2,
-    180.f + _CX_ATAN_CF2, 270.f - _CX_ATAN_CF2
+#define _CV_ATAN_CF0  (-15.8131890796f)
+#define _CV_ATAN_CF1  (61.0941945596f)
+#define _CV_ATAN_CF2  0.f /*(-0.140500406322f)*/
+
+static const float icvAtanTab[8] = { 0.f + _CV_ATAN_CF2, 90.f - _CV_ATAN_CF2,
+    180.f - _CV_ATAN_CF2, 90.f + _CV_ATAN_CF2,
+    360.f - _CV_ATAN_CF2, 270.f + _CV_ATAN_CF2,
+    180.f + _CV_ATAN_CF2, 270.f - _CV_ATAN_CF2
 };
 
-static const int icxAtanSign[8] =
+static const int icvAtanSign[8] =
     { 0, 0x80000000, 0x80000000, 0, 0x80000000, 0, 0, 0x80000000 };
 
-/*F///////////////////////////////////////////////////////////////////////////////////////
-//    Name:    icxFastAcrtan32f
-//    Purpose: fast inaccurate arctangent approximation
-//    Context:
-//    Parameters:
-//      y - ordinate
-//      x - abscissa
-//    Returns:
-//      The angle of vector (x,y) in degrees (0°..360°).
-//    Notes:
-//      if x == 0 && y == 0 -> result is 0 too.
-//      Current version accurancy: ~0.14°
-//F*/
-CX_IMPL float
-cxFastArctan( float y, float x )
+CV_IMPL float
+cvFastArctan( float y, float x )
 {
-    int ix = *((int *) &x), iy = *((int *) &y);
-    int ygx, idx = (ix < 0) * 2 + (iy < 0) * 4;
+    Cv32suf _x, _y;
+    int ix, iy, ygx, idx;
+    double z;
+
+    _x.f = x; _y.f = y;
+    ix = _x.i; iy = _y.i;
+    idx = (ix < 0) * 2 + (iy < 0) * 4;
 
     ix &= 0x7fffffff;
     iy &= 0x7fffffff;
@@ -91,28 +87,28 @@ cxFastArctan( float y, float x )
     ix ^= iy & ygx;
     iy ^= ix & ygx;
     ix ^= iy & ygx;
-    iy ^= icxAtanSign[idx];
 
-    /* set ix to non zero */
-    ix |= 1;
+    _y.i = iy ^ icvAtanSign[idx];
 
-    {
-        double z = *((float *) &iy) / *((float *) &ix);
-        return (float)((_CX_ATAN_CF0*fabs(z) + _CX_ATAN_CF1)*z + icxAtanTab[idx]);
-    }
+    /* ix = ix != 0 ? ix : 1.f */
+    _x.i = ((ix ^ CV_1F) & ((ix == 0) - 1)) ^ CV_1F;
+    
+    z = _y.f / _x.f;
+    return (float)((_CV_ATAN_CF0*fabs(z) + _CV_ATAN_CF1)*z + icvAtanTab[idx]);
 }
 
 
-IPCXAPI_IMPL( CxStatus, icxbFastArctan_32f, (const float *y, const float *x,
-                                             float *angle, int len ))
+IPCVAPI_IMPL( CvStatus, icvFastArctan_32f,
+    (const float *__y, const float *__x, float *angle, int len ), (__y, __x, angle, len) )
 {
-    int i;
+    int i = 0;
+    const int *y = (const int*)__y, *x = (const int*)__x;
 
     if( !(y && x && angle && len >= 0) )
-        return CX_BADFACTOR_ERR;
+        return CV_BADFACTOR_ERR;
 
     /* unrolled by 4 loop */
-    for( i = 4; i <= len; i += 4 )
+    for( ; i <= len - 4; i += 4 )
     {
         int j, idx[4];
         float xf[4], yf[4];
@@ -121,8 +117,9 @@ IPCXAPI_IMPL( CxStatus, icxbFastArctan_32f, (const float *y, const float *x,
         /* calc numerators and denominators */
         for( j = 0; j < 4; j++ )
         {
-            int ix = *((int *) &x[i + j - 4]), iy = *((int *) &y[i + j - 4]);
+            int ix = x[i + j], iy = y[i + j];
             int ygx, k = (ix < 0) * 2 + (iy < 0) * 4;
+            Cv32suf _x, _y;
 
             ix &= 0x7fffffff;
             iy &= 0x7fffffff;
@@ -136,13 +133,14 @@ IPCXAPI_IMPL( CxStatus, icxbFastArctan_32f, (const float *y, const float *x,
             ix ^= iy & ygx;
             iy ^= ix & ygx;
             ix ^= iy & ygx;
-            iy ^= icxAtanSign[k];
+            
+            _y.i = iy ^ icvAtanSign[k];
 
             /* ix = ix != 0 ? ix : 1.f */
-            ix = ((ix ^ CX_1F) & ((ix == 0) - 1)) ^ CX_1F;
+            _x.i = ((ix ^ CV_1F) & ((ix == 0) - 1)) ^ CV_1F;
             idx[j] = k;
-            yf[j] = *(float *) &iy;
-            d *= (xf[j] = *(float *) &ix);
+            yf[j] = _y.f;
+            d *= (xf[j] = _x.f);
         }
 
         d = 1. / d;
@@ -155,228 +153,172 @@ IPCXAPI_IMPL( CxStatus, icxbFastArctan_32f, (const float *y, const float *x,
             float z2 = (float) (yf[2] * xf[3] * a * d);
             float z3 = (float) (yf[3] * xf[2] * a * d);
 
-            z0 = (float)((_CX_ATAN_CF0*fabs(z0) + _CX_ATAN_CF1)*z0 + icxAtanTab[idx[0]]);
-            z1 = (float)((_CX_ATAN_CF0*fabs(z1) + _CX_ATAN_CF1)*z1 + icxAtanTab[idx[1]]);
-            z2 = (float)((_CX_ATAN_CF0*fabs(z2) + _CX_ATAN_CF1)*z2 + icxAtanTab[idx[2]]);
-            z3 = (float)((_CX_ATAN_CF0*fabs(z3) + _CX_ATAN_CF1)*z3 + icxAtanTab[idx[3]]);
+            z0 = (float)((_CV_ATAN_CF0*fabs(z0) + _CV_ATAN_CF1)*z0 + icvAtanTab[idx[0]]);
+            z1 = (float)((_CV_ATAN_CF0*fabs(z1) + _CV_ATAN_CF1)*z1 + icvAtanTab[idx[1]]);
+            z2 = (float)((_CV_ATAN_CF0*fabs(z2) + _CV_ATAN_CF1)*z2 + icvAtanTab[idx[2]]);
+            z3 = (float)((_CV_ATAN_CF0*fabs(z3) + _CV_ATAN_CF1)*z3 + icvAtanTab[idx[3]]);
 
-            angle[i - 4] = z0;
-            angle[i - 3] = z1;
-            angle[i - 2] = z2;
-            angle[i - 1] = z3;
+            angle[i] = z0;
+            angle[i+1] = z1;
+            angle[i+2] = z2;
+            angle[i+3] = z3;
         }
     }
 
     /* process the rest */
-    for( i -= 4; i < len; i++ )
-    {
-        angle[i] = cxFastArctan( y[i], x[i] );
-    }
-    return CX_OK;
+    for( ; i < len; i++ )
+        angle[i] = cvFastArctan( __y[i], __x[i] );
+
+    return CV_OK;
 }
 
-static const double _0_5 = 0.5, _1_5 = 1.5;
 
-IPCXAPI_IMPL( CxStatus, icxbInvSqrt_32f, (const float *src, float *dst, int len))
+/* ************************************************************************** *\
+   Fast cube root by Ken Turkowski
+   (http://www.worldserver.com/turk/computergraphics/papers.html)
+\* ************************************************************************** */
+CV_IMPL  float  cvCbrt( float value )
+{
+    float fr;
+    Cv32suf v, m;
+    int ix, s;
+    int ex, shx;
+
+    v.f = value;
+    ix = v.i & 0x7fffffff;
+    s = v.i & 0x80000000;
+    ex = (ix >> 23) - 127;
+    shx = ex % 3;
+    shx -= shx >= 0 ? 3 : 0;
+    ex = (ex - shx) / 3; /* exponent of cube root */
+    v.i = (ix & ((1<<23)-1)) | ((shx + 127)<<23);
+    fr = v.f;
+
+    /* 0.125 <= fr < 1.0 */
+    /* Use quartic rational polynomial with error < 2^(-24) */
+    fr = (float)(((((45.2548339756803022511987494 * fr +
+    192.2798368355061050458134625) * fr +
+    119.1654824285581628956914143) * fr +
+    13.43250139086239872172837314) * fr +
+    0.1636161226585754240958355063)/
+    ((((14.80884093219134573786480845 * fr +
+    151.9714051044435648658557668) * fr +
+    168.5254414101568283957668343) * fr +
+    33.9905941350215598754191872) * fr +
+    1.0));
+
+    /* fr *= 2^ex * sign */
+    m.f = value;
+    v.f = fr;
+    v.i = (v.i + (ex << 23) + s) & (m.i*2 != 0 ? -1 : 0);
+    return v.f;
+}
+
+//static const double _0_5 = 0.5, _1_5 = 1.5;
+
+IPCVAPI_IMPL( CvStatus, icvInvSqrt_32f, (const float *src, float *dst, int len), (src, dst, len) )
 {
     int i = 0;
 
     if( !(src && dst && len >= 0) )
-        return CX_BADFACTOR_ERR;
-
-    for( ; i <= len - 4; i += 4 )
-    {
-        float x0_, x1_;
-        double x0, x1, x2, x3, y0, y1, y2, y3;
-
-        *((unsigned*)&x0_) = (_CX_SQRT_MAGIC - ((unsigned*)src)[i]) >> 1;
-        *((unsigned*)&x1_) = (_CX_SQRT_MAGIC - ((unsigned*)src)[i+1]) >> 1;
-        y0 = src[i] * _0_5;
-        y1 = src[i+1] * _0_5;
-        x0 = x0_ * (_1_5 - y0 * x0_ * x0_);
-        x1 = x1_ * (_1_5 - y1 * x1_ * x1_);
-
-        *((unsigned*)&x0_) = (_CX_SQRT_MAGIC - ((unsigned*)src)[i+2]) >> 1;
-        *((unsigned*)&x1_) = (_CX_SQRT_MAGIC - ((unsigned*)src)[i+3]) >> 1;
-        y2 = src[i+2] * _0_5;
-        y3 = src[i+3] * _0_5;
-        x2 = x0_ * (_1_5 - y2 * x0_ * x0_);
-        x3 = x1_ * (_1_5 - y3 * x1_ * x1_);
-
-        x0 *= _1_5 - y0 * x0 * x0;
-        x1 *= _1_5 - y1 * x1 * x1;
-        x2 *= _1_5 - y2 * x2 * x2;
-        x3 *= _1_5 - y3 * x3 * x3;
-
-        x0 *= (_1_5 - y0 * x0 * x0);
-        x1 *= (_1_5 - y1 * x1 * x1);
-        
-        dst[i] = (float)x0;
-        dst[i+1] = (float)x1;
-        
-        x2 *= (_1_5 - y2 * x2 * x2);
-        x3 *= (_1_5 - y3 * x3 * x3);
-        
-        dst[i+2] = (float)x2;
-        dst[i+3] = (float)x3;
-    }
+        return CV_BADFACTOR_ERR;
 
     for( ; i < len; i++ )
-    {
-        float x0_;
-        double x0, y0;
+        dst[i] = (float)(1.f/sqrt(src[i]));
 
-        *((unsigned *)&x0_) = (_CX_SQRT_MAGIC - ((unsigned*)src)[i]) >> 1;
-        y0 = src[i] * _0_5;
-        x0 = x0_ * (_1_5 - y0 * x0_ * x0_);
-        x0 *= _1_5 - y0 * x0 * x0;
-        dst[i] = (float)(x0 * (_1_5 - y0 * x0 * x0));
-    }
-
-    return CX_OK;
+    return CV_OK;
 }
 
 
-IPCXAPI_IMPL( CxStatus, icxbSqrt_32f, (const float *src, float *dst, int len) )
+IPCVAPI_IMPL( CvStatus, icvSqrt_32f, (const float *src, float *dst, int len), (src, dst, len) )
 {
     int i = 0;
 
     if( !(src && dst && len >= 0) )
-        return CX_BADFACTOR_ERR;
+        return CV_BADFACTOR_ERR;
 
-#if 1 /* In recent days standard sqrt works pretty fast */
     for( ; i < len; i++ )
         dst[i] = (float)sqrt(src[i]);
-#else
-    for( ; i <= len - 4; i += 4 )
-    {
-        float x0_, x1_;
-        double x0, x1, x2, x3, y0, y1, y2, y3;
 
-        *((unsigned*)&x0_) = (_CX_SQRT_MAGIC - ((unsigned*)src)[i]) >> 1;
-        *((unsigned*)&x1_) = (_CX_SQRT_MAGIC - ((unsigned*)src)[i+1]) >> 1;
-        y0 = src[i] * 0.5;
-        y1 = src[i+1] * 0.5;
-        x0 = x0_ * (1.5 - y0 * x0_ * x0_);
-        x1 = x1_ * (1.5 - y1 * x1_ * x1_);
-
-        *((unsigned*)&x0_) = (_CX_SQRT_MAGIC - ((unsigned*)src)[i+2]) >> 1;
-        *((unsigned*)&x1_) = (_CX_SQRT_MAGIC - ((unsigned*)src)[i+3]) >> 1;
-        y2 = src[i+2] * 0.5;
-        y3 = src[i+3] * 0.5;
-        x2 = x0_ * (1.5 - y2 * x0_ * x0_);
-        x3 = x1_ * (1.5 - y3 * x1_ * x1_);
-
-        x0 *= 1.5 - y0 * x0 * x0;
-        x1 *= 1.5 - y1 * x1 * x1;
-        x2 *= 1.5 - y2 * x2 * x2;
-        x3 *= 1.5 - y3 * x3 * x3;
-
-        x0 = (x0 * src[i]) * (1.5 - y0 * x0 * x0);
-        x1 = (x1 * src[i+1]) * (1.5 - y1 * x1 * x1);
-        
-        dst[i] = (float)x0;
-        dst[i+1] = (float)x1;
-        
-        x2 = (x2 * src[i+2]) * (1.5 - y2 * x2 * x2);
-        x3 = (x3 * src[i+3]) * (1.5 - y3 * x3 * x3);
-        
-        dst[i+2] = (float)x2;
-        dst[i+3] = (float)x3;
-    }
-
-    for( ; i < len; i++ )
-    {
-        float x0_;
-        double x0, y0;
-
-        *((unsigned *)&x0_) = (_CX_SQRT_MAGIC - ((unsigned*)src)[i]) >> 1;
-        y0 = src[i] * 0.5;
-        x0 = x0_ * (1.5 - y0 * x0_ * x0_);
-        x0 *= 1.5 - y0 * x0 * x0;
-        dst[i] = (float)((x0 * src[i]) * (1.5 - y0 * x0 * x0));
-    }
-#endif
-
-    return CX_OK;
+    return CV_OK;
 }
 
 
-IPCXAPI_IMPL( CxStatus, icxbSqrt_64f, (const double *src, double *dst, int len) )
+IPCVAPI_IMPL( CvStatus, icvSqrt_64f, (const double *src, double *dst, int len), (src, dst, len) )
 {
     int i = 0;
 
     if( !(src && dst && len >= 0) )
-        return CX_BADFACTOR_ERR;
+        return CV_BADFACTOR_ERR;
 
     for( ; i < len; i++ )
         dst[i] = sqrt(src[i]);
 
-    return CX_OK;
+    return CV_OK;
 }
 
 
-IPCXAPI_IMPL( CxStatus, icxbInvSqrt_64f, (const double *src, double *dst, int len))
+IPCVAPI_IMPL( CvStatus, icvInvSqrt_64f, (const double *src, double *dst, int len), (src, dst, len) )
 {
     int i = 0;
 
     if( !(src && dst && len >= 0) )
-        return CX_BADFACTOR_ERR;
+        return CV_BADFACTOR_ERR;
 
     for( ; i < len; i++ )
         dst[i] = 1./sqrt(src[i]);
 
-    return CX_OK;
+    return CV_OK;
 }
 
 
-#define ICX_DEF_SQR_MAGNITUDE_FUNC( flavor, arrtype, magtype )          \
-static CxStatus CX_STDCALL                                              \
-icxSqrMagnitude_##flavor( const arrtype* x, const arrtype* y,           \
-                          magtype* mag, int len )                       \
-{                                                                       \
-    int i;                                                              \
-                                                                        \
-    for( i = 0; i <= len - 4; i += 4 )                                  \
-    {                                                                   \
-        magtype x0 = (magtype)x[i], y0 = (magtype)y[i];                 \
-        magtype x1 = (magtype)x[i+1], y1 = (magtype)y[i+1];             \
-                                                                        \
-        x0 = x0*x0 + y0*y0;                                             \
-        x1 = x1*x1 + y1*y1;                                             \
-        mag[i] = x0;                                                    \
-        mag[i+1] = x1;                                                  \
-        x0 = (magtype)x[i+2], y0 = (magtype)y[i+2];                     \
-        x1 = (magtype)x[i+3], y1 = (magtype)y[i+3];                     \
-        x0 = x0*x0 + y0*y0;                                             \
-        x1 = x1*x1 + y1*y1;                                             \
-        mag[i+2] = x0;                                                  \
-        mag[i+3] = x1;                                                  \
-    }                                                                   \
-                                                                        \
-    for( ; i < len; i++ )                                               \
-    {                                                                   \
-        magtype x0 = (magtype)x[i], y0 = (magtype)y[i];                 \
-        mag[i] = x0*x0 + y0*y0;                                         \
-    }                                                                   \
-                                                                        \
-    return CX_OK;                                                       \
+#define ICV_DEF_SQR_MAGNITUDE_FUNC(flavor, arrtype, magtype)\
+static CvStatus CV_STDCALL                                  \
+icvSqrMagnitude_##flavor(const arrtype* x, const arrtype* y,\
+                         magtype* mag, int len)             \
+{                                                           \
+    int i;                                                  \
+                                                            \
+    for( i = 0; i <= len - 4; i += 4 )                      \
+    {                                                       \
+        magtype x0 = (magtype)x[i], y0 = (magtype)y[i];     \
+        magtype x1 = (magtype)x[i+1], y1 = (magtype)y[i+1]; \
+                                                            \
+        x0 = x0*x0 + y0*y0;                                 \
+        x1 = x1*x1 + y1*y1;                                 \
+        mag[i] = x0;                                        \
+        mag[i+1] = x1;                                      \
+        x0 = (magtype)x[i+2], y0 = (magtype)y[i+2];         \
+        x1 = (magtype)x[i+3], y1 = (magtype)y[i+3];         \
+        x0 = x0*x0 + y0*y0;                                 \
+        x1 = x1*x1 + y1*y1;                                 \
+        mag[i+2] = x0;                                      \
+        mag[i+3] = x1;                                      \
+    }                                                       \
+                                                            \
+    for( ; i < len; i++ )                                   \
+    {                                                       \
+        magtype x0 = (magtype)x[i], y0 = (magtype)y[i];     \
+        mag[i] = x0*x0 + y0*y0;                             \
+    }                                                       \
+                                                            \
+    return CV_OK;                                           \
 }
 
 
-ICX_DEF_SQR_MAGNITUDE_FUNC( 32f, float, float )
-ICX_DEF_SQR_MAGNITUDE_FUNC( 64f, double, double )
+ICV_DEF_SQR_MAGNITUDE_FUNC( 32f, float, float )
+ICV_DEF_SQR_MAGNITUDE_FUNC( 64f, double, double )
 
 /****************************************************************************************\
 *                                  Cartezian -> Polar                                    *
 \****************************************************************************************/
 
-CX_IMPL void
-cxCartToPolar( const CxArr* xarr, const CxArr* yarr,
-               CxArr* magarr, CxArr* anglearr,
+CV_IMPL void
+cvCartToPolar( const CvArr* xarr, const CvArr* yarr,
+               CvArr* magarr, CvArr* anglearr,
                int angle_in_degrees )
 {
-    CX_FUNCNAME( "cxCartToPolar" );
+    CV_FUNCNAME( "cvCartToPolar" );
 
     __BEGIN__;
 
@@ -384,80 +326,80 @@ cxCartToPolar( const CxArr* xarr, const CxArr* yarr,
     float* x_buffer = 0;
     float* y_buffer = 0;
     int block_size = 0;
-    CxMat xstub, *xmat = (CxMat*)xarr;
-    CxMat ystub, *ymat = (CxMat*)yarr;
-    CxMat magstub, *mag = (CxMat*)magarr;
-    CxMat anglestub, *angle = (CxMat*)anglearr;
+    CvMat xstub, *xmat = (CvMat*)xarr;
+    CvMat ystub, *ymat = (CvMat*)yarr;
+    CvMat magstub, *mag = (CvMat*)magarr;
+    CvMat anglestub, *angle = (CvMat*)anglearr;
     int coi1 = 0, coi2 = 0, coi3 = 0, coi4 = 0;
     int depth;
-    CxSize size;
+    CvSize size;
     int x, y;
-    int cont_flag = CX_MAT_CONT_FLAG;
+    int cont_flag = CV_MAT_CONT_FLAG;
     
-    if( !CX_IS_MAT(xmat))
-        CX_CALL( xmat = cxGetMat( xmat, &xstub, &coi1 ));
+    if( !CV_IS_MAT(xmat))
+        CV_CALL( xmat = cvGetMat( xmat, &xstub, &coi1 ));
 
-    if( !CX_IS_MAT(ymat))
-        CX_CALL( ymat = cxGetMat( ymat, &ystub, &coi2 ));
+    if( !CV_IS_MAT(ymat))
+        CV_CALL( ymat = cvGetMat( ymat, &ystub, &coi2 ));
 
-    if( !CX_ARE_TYPES_EQ( xmat, ymat ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+    if( !CV_ARE_TYPES_EQ( xmat, ymat ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
 
-    if( !CX_ARE_SIZES_EQ( xmat, ymat ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+    if( !CV_ARE_SIZES_EQ( xmat, ymat ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
 
-    depth = CX_MAT_DEPTH( xmat->type );
-    if( depth < CX_32F )
-        CX_ERROR( CX_StsUnsupportedFormat, "" );
+    depth = CV_MAT_DEPTH( xmat->type );
+    if( depth < CV_32F )
+        CV_ERROR( CV_StsUnsupportedFormat, "" );
 
     if( mag )
     {
-        CX_CALL( mag = cxGetMat( mag, &magstub, &coi3 ));
+        CV_CALL( mag = cvGetMat( mag, &magstub, &coi3 ));
 
-        if( !CX_ARE_TYPES_EQ( mag, xmat ) )
-            CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+        if( !CV_ARE_TYPES_EQ( mag, xmat ) )
+            CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
         
-        if( !CX_ARE_SIZES_EQ( mag, xmat ) )
-            CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+        if( !CV_ARE_SIZES_EQ( mag, xmat ) )
+            CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
         cont_flag = mag->type;
     }
 
     if( angle )
     {
-        CX_CALL( angle = cxGetMat( angle, &anglestub, &coi4 ));
+        CV_CALL( angle = cvGetMat( angle, &anglestub, &coi4 ));
 
-        if( !CX_ARE_TYPES_EQ( angle, xmat ) )
-            CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+        if( !CV_ARE_TYPES_EQ( angle, xmat ) )
+            CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
         
-        if( !CX_ARE_SIZES_EQ( angle, xmat ) )
-            CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+        if( !CV_ARE_SIZES_EQ( angle, xmat ) )
+            CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
         cont_flag &= angle->type;
     }
 
     if( coi1 != 0 || coi2 != 0 || coi3 != 0 || coi4 != 0 )
-        CX_ERROR( CX_BadCOI, "" );
+        CV_ERROR( CV_BadCOI, "" );
 
-    size = cxGetMatSize(xmat);
-    size.width *= CX_MAT_CN(xmat->type);
+    size = cvGetMatSize(xmat);
+    size.width *= CV_MAT_CN(xmat->type);
 
-    if( CX_IS_MAT_CONT( xmat->type & ymat->type & cont_flag ))
+    if( CV_IS_MAT_CONT( xmat->type & ymat->type & cont_flag ))
     {
         size.width *= size.height;
         size.height = 1;
     }
 
-    block_size = MIN( size.width, ICX_MATH_BLOCK_SIZE );
-    if( depth == CX_64F && angle )
+    block_size = MIN( size.width, ICV_MATH_BLOCK_SIZE );
+    if( depth == CV_64F && angle )
     {
-        x_buffer = (float*)alloca( block_size*sizeof(float));
-        y_buffer = (float*)alloca( block_size*sizeof(float));
+        x_buffer = (float*)cvStackAlloc( block_size*sizeof(float));
+        y_buffer = (float*)cvStackAlloc( block_size*sizeof(float));
     }
-    else if( depth == CX_32F && mag )
+    else if( depth == CV_32F && mag )
     {
-        mag_buffer = (float*)alloca( block_size*sizeof(float));
+        mag_buffer = (float*)cvStackAlloc( block_size*sizeof(float));
     }
 
-    if( depth == CX_32F )
+    if( depth == CV_32F )
     {
         for( y = 0; y < size.height; y++ )
         {
@@ -471,18 +413,18 @@ cxCartToPolar( const CxArr* xarr, const CxArr* yarr,
                 int len = MIN( size.width - x, block_size );
 
                 if( mag )
-                    icxSqrMagnitude_32f( x_data + x, y_data + x, mag_buffer, len );
+                    icvSqrMagnitude_32f( x_data + x, y_data + x, mag_buffer, len );
 
                 if( angle )
                 {
-                    icxbFastArctan_32f( y_data + x, x_data + x, angle_data + x, len );
+                    icvFastArctan_32f( y_data + x, x_data + x, angle_data + x, len );
                     if( !angle_in_degrees )
-                        icxScale_32f( angle_data + x, angle_data + x,
-                                      len, (float)(CX_PI/180.), 0 );
+                        icvScale_32f( angle_data + x, angle_data + x,
+                                      len, (float)(CV_PI/180.), 0 );
                 }
 
                 if( mag )
-                    icxbSqrt_32f( mag_buffer, mag_data + x, len );
+                    icvSqrt_32f( mag_buffer, mag_data + x, len );
             }
         }
     }
@@ -501,22 +443,22 @@ cxCartToPolar( const CxArr* xarr, const CxArr* yarr,
 
                 if( angle )
                 {
-                    icxCxt_64f32f( x_data + x, x_buffer, len );
-                    icxCxt_64f32f( y_data + x, y_buffer, len );
+                    icvCvt_64f32f( x_data + x, x_buffer, len );
+                    icvCvt_64f32f( y_data + x, y_buffer, len );
                 }
 
                 if( mag )
                 {
-                    icxSqrMagnitude_64f( x_data + x, y_data + x, mag_data + x, len );
-                    icxbSqrt_64f( mag_data + x, mag_data + x, len );
+                    icvSqrMagnitude_64f( x_data + x, y_data + x, mag_data + x, len );
+                    icvSqrt_64f( mag_data + x, mag_data + x, len );
                 }
 
                 if( angle )
                 {
-                    icxbFastArctan_32f( y_buffer, x_buffer, x_buffer, len );
+                    icvFastArctan_32f( y_buffer, x_buffer, x_buffer, len );
                     if( !angle_in_degrees )
-                        icxScale_32f( x_buffer, x_buffer, len, (float)(CX_PI/180.), 0 );
-                    icxCxt_32f64f( x_buffer, angle_data + x, len );
+                        icvScale_32f( x_buffer, x_buffer, len, (float)(CV_PI/180.), 0 );
+                    icvCvt_32f64f( x_buffer, angle_data + x, len );
                 }
             }
         }
@@ -530,13 +472,9 @@ cxCartToPolar( const CxArr* xarr, const CxArr* yarr,
 *                                  Polar -> Cartezian                                    *
 \****************************************************************************************/
 
-IPCXAPI( CxStatus,
-    icxbSinCos_32f, ( const float *angle,float *sinval, float* cosval,
-                      int len, int angle_in_degrees ))
-
-IPCXAPI_IMPL( CxStatus,
-    icxbSinCos_32f, ( const float *angle,float *sinval, float* cosval,
-                      int len, int angle_in_degrees ))
+static CvStatus CV_STDCALL
+icvSinCos_32f( const float *angle,float *sinval, float* cosval,
+                int len, int angle_in_degrees )
 {
     const int N = 64;
 
@@ -576,7 +514,7 @@ IPCXAPI_IMPL( CxStatus,
     -0.19509032201612872000,    -0.09801714032956050600,
     };
 
-    static const double k2 = (2*CX_PI)/N;
+    static const double k2 = (2*CV_PI)/N;
     
     static const double sin_a0 = -0.166630293345647*k2*k2*k2;
     static const double sin_a2 = k2;
@@ -588,14 +526,14 @@ IPCXAPI_IMPL( CxStatus,
     int i;
 
     if( !angle_in_degrees )
-        k1 = N/(2*CX_PI);
+        k1 = N/(2*CV_PI);
     else
         k1 = N/360.;
 
     for( i = 0; i < len; i++ )
     {
         double t = angle[i]*k1;
-        int it = cxRound(t);
+        int it = cvRound(t);
         t -= it;
         int sin_idx = it & (N - 1);
         int cos_idx = (N/4 - sin_idx) & (N - 1);
@@ -613,112 +551,123 @@ IPCXAPI_IMPL( CxStatus,
         cosval[i] = (float)cos_val;
     }
 
-    return CX_OK;
+    return CV_OK;
 }
 
 
-CX_IMPL void
-cxPolarToCart( const CxArr* magarr, const CxArr* anglearr,
-               CxArr* xarr, CxArr* yarr, int angle_in_degrees )
+CV_IMPL void
+cvPolarToCart( const CvArr* magarr, const CvArr* anglearr,
+               CvArr* xarr, CvArr* yarr, int angle_in_degrees )
 {
-    CX_FUNCNAME( "cxPolarToCart" );
+    CV_FUNCNAME( "cvPolarToCart" );
 
     __BEGIN__;
 
-    float* angle_buffer = 0;
     float* x_buffer = 0;
     float* y_buffer = 0;
     int block_size = 0;
-    CxMat xstub, *xmat = (CxMat*)xarr;
-    CxMat ystub, *ymat = (CxMat*)yarr;
-    CxMat magstub, *mag = (CxMat*)magarr;
-    CxMat anglestub, *angle = (CxMat*)anglearr;
+    CvMat xstub, *xmat = (CvMat*)xarr;
+    CvMat ystub, *ymat = (CvMat*)yarr;
+    CvMat magstub, *mag = (CvMat*)magarr;
+    CvMat anglestub, *angle = (CvMat*)anglearr;
     int coi1 = 0, coi2 = 0, coi3 = 0, coi4 = 0;
     int depth;
-    CxSize size;
+    CvSize size;
     int x, y;
-    int cont_flag = CX_MAT_CONT_FLAG;
+    int cont_flag;
     
-    if( !CX_IS_MAT(mag))
-        CX_CALL( mag = cxGetMat( mag, &magstub, &coi3 ));
+    if( !CV_IS_MAT(angle))
+        CV_CALL( angle = cvGetMat( angle, &anglestub, &coi4 ));
 
-    if( !CX_IS_MAT(angle))
-        CX_CALL( angle = cxGetMat( angle, &anglestub, &coi4 ));
+    depth = CV_MAT_DEPTH( angle->type );
+    if( depth < CV_32F )
+        CV_ERROR( CV_StsUnsupportedFormat, "" );
+    cont_flag = angle->type;
 
-    if( !CX_ARE_TYPES_EQ( angle, mag ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+    if( mag )
+    {
+        if( !CV_IS_MAT(mag))
+            CV_CALL( mag = cvGetMat( mag, &magstub, &coi3 ));
 
-    if( !CX_ARE_SIZES_EQ( angle, mag ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+        if( !CV_ARE_TYPES_EQ( angle, mag ) )
+            CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
 
-    depth = CX_MAT_DEPTH( angle->type );
-    if( depth < CX_32F )
-        CX_ERROR( CX_StsUnsupportedFormat, "" );
+        if( !CV_ARE_SIZES_EQ( angle, mag ) )
+            CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
+
+        cont_flag &= mag->type;
+    }
 
     if( xmat )
     {
-        if( !CX_IS_MAT(xmat))
-            CX_CALL( xmat = cxGetMat( xmat, &xstub, &coi1 ));
+        if( !CV_IS_MAT(xmat))
+            CV_CALL( xmat = cvGetMat( xmat, &xstub, &coi1 ));
 
-        if( !CX_ARE_TYPES_EQ( mag, xmat ) )
-            CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+        if( !CV_ARE_TYPES_EQ( angle, xmat ) )
+            CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
         
-        if( !CX_ARE_SIZES_EQ( mag, xmat ) )
-            CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
-        cont_flag = xmat->type;
+        if( !CV_ARE_SIZES_EQ( angle, xmat ) )
+            CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
+        
+        cont_flag &= xmat->type;
     }
 
     if( ymat )
     {
-        if( !CX_IS_MAT(ymat))
-            CX_CALL( ymat = cxGetMat( ymat, &ystub, &coi2 ));        
+        if( !CV_IS_MAT(ymat))
+            CV_CALL( ymat = cvGetMat( ymat, &ystub, &coi2 ));        
 
-        if( !CX_ARE_TYPES_EQ( angle, ymat ) )
-            CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+        if( !CV_ARE_TYPES_EQ( angle, ymat ) )
+            CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
         
-        if( !CX_ARE_SIZES_EQ( angle, ymat ) )
-            CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+        if( !CV_ARE_SIZES_EQ( angle, ymat ) )
+            CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
+        
         cont_flag &= ymat->type;
     }
 
     if( coi1 != 0 || coi2 != 0 || coi3 != 0 || coi4 != 0 )
-        CX_ERROR( CX_BadCOI, "" );
+        CV_ERROR( CV_BadCOI, "" );
 
-    size = cxGetMatSize(xmat);
-    size.width *= CX_MAT_CN(xmat->type);
+    size = cvGetMatSize(angle);
+    size.width *= CV_MAT_CN(angle->type);
 
-    if( CX_IS_MAT_CONT( xmat->type & ymat->type & cont_flag ))
+    if( CV_IS_MAT_CONT( cont_flag ))
     {
         size.width *= size.height;
         size.height = 1;
     }
 
-    block_size = MIN( size.width, ICX_MATH_BLOCK_SIZE );
-    if( depth == CX_64F )
-        angle_buffer = (float*)alloca( block_size*sizeof(float));
+    block_size = MIN( size.width, ICV_MATH_BLOCK_SIZE );
+    x_buffer = (float*)cvStackAlloc( block_size*sizeof(float));
+    y_buffer = (float*)cvStackAlloc( block_size*sizeof(float));
 
-    x_buffer = (float*)alloca( block_size*sizeof(float));
-    y_buffer = (float*)alloca( block_size*sizeof(float));
-
-    if( depth == CX_32F )
+    if( depth == CV_32F )
     {
         for( y = 0; y < size.height; y++ )
         {
             float* x_data = (float*)(xmat ? xmat->data.ptr + xmat->step*y : 0);
             float* y_data = (float*)(ymat ? ymat->data.ptr + ymat->step*y : 0);
-            float* mag_data = (float*)(mag->data.ptr + mag->step*y);
+            float* mag_data = (float*)(mag ? mag->data.ptr + mag->step*y : 0);
             float* angle_data = (float*)(angle->data.ptr + angle->step*y);
 
             for( x = 0; x < size.width; x += block_size )
             {
                 int i, len = MIN( size.width - x, block_size );
 
-                icxbSinCos_32f( angle_data+x, y_buffer, x_buffer, len, angle_in_degrees );
+                icvSinCos_32f( angle_data+x, y_buffer, x_buffer, len, angle_in_degrees );
 
                 for( i = 0; i < len; i++ )
                 {
-                    float tx = x_buffer[i]*mag_data[x+i];
-                    float ty = y_buffer[i]*mag_data[x+i];
+                    float tx = x_buffer[i];
+                    float ty = y_buffer[i];
+
+                    if( mag_data )
+                    {
+                        float magval = mag_data[x+i];
+                        tx *= magval;
+                        ty *= magval;
+                    }
 
                     if( xmat )
                         x_data[x+i] = tx;
@@ -734,17 +683,18 @@ cxPolarToCart( const CxArr* magarr, const CxArr* anglearr,
         {
             double* x_data = (double*)(xmat ? xmat->data.ptr + xmat->step*y : 0);
             double* y_data = (double*)(ymat ? ymat->data.ptr + ymat->step*y : 0);
-            double* mag_data = (double*)(mag->data.ptr + mag->step*y);
+            double* mag_data = (double*)(mag ? mag->data.ptr + mag->step*y : 0);
             double* angle_data = (double*)(angle->data.ptr + angle->step*y);
-            double C = angle_in_degrees ? CX_PI/180. : 1;
+            double C = angle_in_degrees ? CV_PI/180. : 1;
 
             for( x = 0; x < size.width; x++ )
             {
                 double phi = angle_data[x]*C;
+                double magval = mag_data ? mag_data[x] : 1.;
                 if( xmat )
-                    x_data[x] = cos(phi)*mag_data[x];
+                    x_data[x] = cos(phi)*magval;
                 if( ymat )
-                    y_data[x] = sin(phi)*mag_data[x];
+                    y_data[x] = sin(phi)*magval;
             }
         }
     }
@@ -758,7 +708,15 @@ cxPolarToCart( const CxArr* magarr, const CxArr* anglearr,
 
 typedef union
 {
-    int i[2];
+    struct {
+#if ( defined( WORDS_BIGENDIAN ) && !defined( OPENCV_UNIVERSAL_BUILD ) ) || defined( __BIG_ENDIAN__ )
+        int hi;
+        int lo;
+#else
+        int lo;
+        int hi;
+#endif
+    } i;
     double d;
 }
 DBLINT;
@@ -768,7 +726,7 @@ DBLINT;
 
 #define EXPPOLY_32F_A0 .9670371139572337719125840413672004409288e-2
 
-static const double icxExpTab[] = {
+static const double icvExpTab[] = {
     1.0 * EXPPOLY_32F_A0,
     1.0108892860517004600204097905619 * EXPPOLY_32F_A0,
     1.0218971486541166782344801347833 * EXPPOLY_32F_A0,
@@ -835,191 +793,115 @@ static const double icxExpTab[] = {
     1.9784560263879509682582499181312 * EXPPOLY_32F_A0,
 };
 
-static const double log_e = 1.4426950408889634073599246810019;
-static const double round_delta = 3. * ((int64) 1 << (52 - 1 - EXPTAB_SCALE));
+static const double exp_prescale = 1.4426950408889634073599246810019 * (1 << EXPTAB_SCALE);
+static const double exp_postscale = 1./(1 << EXPTAB_SCALE);
+static const double exp_max_val = 3000.*(1 << EXPTAB_SCALE); // log10(DBL_MAX) < 3000
 
-static const double
-    EXPPOLY_32F_A4 = 1.000000000000002438532970795181890933776 / EXPPOLY_32F_A0,
-    EXPPOLY_32F_A3 = .6931471805521448196800669615864773144641 / EXPPOLY_32F_A0,
-    EXPPOLY_32F_A2 = .2402265109513301490103372422686535526573 / EXPPOLY_32F_A0,
-    EXPPOLY_32F_A1 = .5550339366753125211915322047004666939128e-1 / EXPPOLY_32F_A0;
-
-#define EXPPOLY_32F(x)  \
-    (((((x) + EXPPOLY_32F_A1)*(x) + EXPPOLY_32F_A2)*(x) + EXPPOLY_32F_A3)*(x) + EXPPOLY_32F_A4)
-
-#undef EXPPOLY
-#define EXPPOLY EXPPOLY_32F
-
-IPCXAPI_IMPL( CxStatus, icxbExp_32f, ( const float *x, float *y, int n ) )
+IPCVAPI_IMPL( CvStatus, icvExp_32f, ( const float *_x, float *y, int n ), (_x, y, n) )
 {
+    static const double
+        EXPPOLY_32F_A4 = 1.000000000000002438532970795181890933776 / EXPPOLY_32F_A0,
+        EXPPOLY_32F_A3 = .6931471805521448196800669615864773144641 / EXPPOLY_32F_A0,
+        EXPPOLY_32F_A2 = .2402265109513301490103372422686535526573 / EXPPOLY_32F_A0,
+        EXPPOLY_32F_A1 = .5550339366753125211915322047004666939128e-1 / EXPPOLY_32F_A0;
+
+    #undef EXPPOLY
+    #define EXPPOLY(x)  \
+        (((((x) + EXPPOLY_32F_A1)*(x) + EXPPOLY_32F_A2)*(x) + EXPPOLY_32F_A3)*(x) + EXPPOLY_32F_A4)
+
     int i = 0;
     DBLINT buf[4];
+    const Cv32suf* x = (const Cv32suf*)_x;
 
     if( !x || !y )
-        return CX_NULLPTR_ERR;
+        return CV_NULLPTR_ERR;
     if( n <= 0 )
-        return CX_BADSIZE_ERR;
+        return CV_BADSIZE_ERR;
 
-    buf[0].i[0] = buf[1].i[0] = buf[2].i[0] = buf[3].i[0] = 0;
+    buf[0].i.lo = buf[1].i.lo = buf[2].i.lo = buf[3].i.lo = 0;
 
     for( ; i <= n - 4; i += 4 )
     {
-        double x0 = x[i] * log_e;
-        double x1 = x[i + 1] * log_e;
-        double x2 = x[i + 2] * log_e;
-        double x3 = x[i + 3] * log_e;
-
-        double y0 = x0 + round_delta;
-        double y1 = x1 + round_delta;
-        double y2 = x2 + round_delta;
-        double y3 = x3 + round_delta;
-
+        double x0 = x[i].f * exp_prescale;
+        double x1 = x[i + 1].f * exp_prescale;
+        double x2 = x[i + 2].f * exp_prescale;
+        double x3 = x[i + 3].f * exp_prescale;
         int val0, val1, val2, val3, t;
 
-        val0 = (int)*(int64*)&y0;
-        val1 = (int)*(int64*)&y1;
-        val2 = (int)*(int64*)&y2;
-        val3 = (int)*(int64*)&y3;
+        if( ((x[i].i >> 23) & 255) > 127 + 10 )
+            x0 = x[i].i < 0 ? -exp_max_val : exp_max_val;
 
-        x0 -= (y0 - round_delta);
-        x1 -= (y1 - round_delta);
-        x2 -= (y2 - round_delta);
-        x3 -= (y3 - round_delta);
+        if( ((x[i+1].i >> 23) & 255) > 127 + 10 )
+            x1 = x[i+1].i < 0 ? -exp_max_val : exp_max_val;
+
+        if( ((x[i+2].i >> 23) & 255) > 127 + 10 )
+            x2 = x[i+2].i < 0 ? -exp_max_val : exp_max_val;
+
+        if( ((x[i+3].i >> 23) & 255) > 127 + 10 )
+            x3 = x[i+3].i < 0 ? -exp_max_val : exp_max_val;
+
+        val0 = cvRound(x0);
+        val1 = cvRound(x1);
+        val2 = cvRound(x2);
+        val3 = cvRound(x3);
+
+        x0 = (x0 - val0)*exp_postscale;
+        x1 = (x1 - val1)*exp_postscale;
+        x2 = (x2 - val2)*exp_postscale;
+        x3 = (x3 - val3)*exp_postscale;
 
         t = (val0 >> EXPTAB_SCALE) + 1023;
         t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[0].i[1] = t << 20;
+        buf[0].i.hi = t << 20;
 
         t = (val1 >> EXPTAB_SCALE) + 1023;
         t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[1].i[1] = t << 20;
+        buf[1].i.hi = t << 20;
 
         t = (val2 >> EXPTAB_SCALE) + 1023;
         t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[2].i[1] = t << 20;
+        buf[2].i.hi = t << 20;
 
         t = (val3 >> EXPTAB_SCALE) + 1023;
         t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[3].i[1] = t << 20;
+        buf[3].i.hi = t << 20;
 
-        y0 = buf[0].d * icxExpTab[val0 & EXPTAB_MASK] * EXPPOLY( x0 );
-        y1 = buf[1].d * icxExpTab[val1 & EXPTAB_MASK] * EXPPOLY( x1 );
+        x0 = buf[0].d * icvExpTab[val0 & EXPTAB_MASK] * EXPPOLY( x0 );
+        x1 = buf[1].d * icvExpTab[val1 & EXPTAB_MASK] * EXPPOLY( x1 );
         
-        y[i] = (float)y0;
-        y[i + 1] = (float)y1;
+        y[i] = (float)x0;
+        y[i + 1] = (float)x1;
         
-        y2 = buf[2].d * icxExpTab[val2 & EXPTAB_MASK] * EXPPOLY( x2 );
-        y3 = buf[3].d * icxExpTab[val3 & EXPTAB_MASK] * EXPPOLY( x3 );
+        x2 = buf[2].d * icvExpTab[val2 & EXPTAB_MASK] * EXPPOLY( x2 );
+        x3 = buf[3].d * icvExpTab[val3 & EXPTAB_MASK] * EXPPOLY( x3 );
         
-        y[i + 2] = (float)y2;
-        y[i + 3] = (float)y3;
+        y[i + 2] = (float)x2;
+        y[i + 3] = (float)x3;
     }
 
     for( ; i < n; i++ )
     {
-        double x0 = x[i] * log_e;
-        double y0 = x0 + round_delta;
-        int val0 = (int)*(int64*)&y0, t;
+        double x0 = x[i].f * exp_prescale;
+        int val0, t;
 
+        if( ((x[i].i >> 23) & 255) > 127 + 10 )
+            x0 = x[i].i < 0 ? -exp_max_val : exp_max_val;
+
+        val0 = cvRound(x0);
         t = (val0 >> EXPTAB_SCALE) + 1023;
         t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
 
-        buf[0].i[1] = t << 20;
-        x0 -= (y0 - round_delta);
+        buf[0].i.hi = t << 20;
+        x0 = (x0 - val0)*exp_postscale;
 
-        y[i] = (float)(buf[0].d * icxExpTab[val0 & EXPTAB_MASK] * EXPPOLY(x0));
+        y[i] = (float)(buf[0].d * icvExpTab[val0 & EXPTAB_MASK] * EXPPOLY(x0));
     }
 
-    return CX_OK;
+    return CV_OK;
 }
 
 
-IPCXAPI_IMPL( CxStatus, icxbExp_32f64f, ( const float *x, double *y, int n ) )
-{
-    int i = 0;
-
-    DBLINT buf[4];
-
-    if( !x || !y )
-        return CX_NULLPTR_ERR;
-    if( n <= 0 )
-        return CX_BADSIZE_ERR;
-
-    buf[0].i[0] = buf[1].i[0] = buf[2].i[0] = buf[3].i[0] = 0;
-
-    for( ; i <= n - 4; i += 4 )
-    {
-        double x0 = x[i] * log_e;
-        double x1 = x[i + 1] * log_e;
-        double x2 = x[i + 2] * log_e;
-        double x3 = x[i + 3] * log_e;
-
-        double y0 = x0 + round_delta;
-        double y1 = x1 + round_delta;
-        double y2 = x2 + round_delta;
-        double y3 = x3 + round_delta;
-
-        int val0, val1, val2, val3, t;
-
-        val0 = (int)*(int64*)&y0;
-        val1 = (int)*(int64*)&y1;
-        val2 = (int)*(int64*)&y2;
-        val3 = (int)*(int64*)&y3;
-
-        x0 -= (y0 - round_delta);
-        x1 -= (y1 - round_delta);
-        x2 -= (y2 - round_delta);
-        x3 -= (y3 - round_delta);
-
-        t = (val0 >> EXPTAB_SCALE) + 1023;
-        t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[0].i[1] = t << 20;
-
-        t = (val1 >> EXPTAB_SCALE) + 1023;
-        t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[1].i[1] = t << 20;
-
-        t = (val2 >> EXPTAB_SCALE) + 1023;
-        t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[2].i[1] = t << 20;
-
-        t = (val3 >> EXPTAB_SCALE) + 1023;
-        t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[3].i[1] = t << 20;
-
-        y0 = buf[0].d * icxExpTab[val0 & EXPTAB_MASK] * EXPPOLY( x0 );
-        y1 = buf[1].d * icxExpTab[val1 & EXPTAB_MASK] * EXPPOLY( x1 );
-        
-        y[i] = y0;
-        y[i + 1] = y1;
-        
-        y2 = buf[2].d * icxExpTab[val2 & EXPTAB_MASK] * EXPPOLY( x2 );
-        y3 = buf[3].d * icxExpTab[val3 & EXPTAB_MASK] * EXPPOLY( x3 );
-        
-        y[i + 2] = y2;
-        y[i + 3] = y3;
-    }
-
-    for( ; i < n; i++ )
-    {
-        double x0 = x[i] * log_e;
-        double y0 = x0 + round_delta;
-        int val0 = (int)*(int64*)&y0, t;
-
-        t = (val0 >> EXPTAB_SCALE) + 1023;
-        t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-
-        buf[0].i[1] = t << 20;
-        x0 -= (y0 - round_delta);
-
-        y[i] = buf[0].d * icxExpTab[val0 & EXPTAB_MASK] * EXPPOLY(x0);
-    }
-    return CX_OK;
-    #undef EXP_POLY
-}
-
-
-IPCXAPI_IMPL( CxStatus, icxbExp_64f, ( const double *x, double *y, int n ))
+IPCVAPI_IMPL( CvStatus, icvExp_64f, ( const double *_x, double *y, int n ), (_x, y, n) )
 {
     static const double
         A5 = .99999999999999999998285227504999 / EXPPOLY_32F_A0,
@@ -1033,64 +915,76 @@ IPCXAPI_IMPL( CxStatus, icxbExp_64f, ( const double *x, double *y, int n ))
     #define EXPPOLY(x)  (((((A0*(x) + A1)*(x) + A2)*(x) + A3)*(x) + A4)*(x) + A5)
 
     int i = 0;
-
     DBLINT buf[4];
+    const Cv64suf* x = (const Cv64suf*)_x;
 
     if( !x || !y )
-        return CX_NULLPTR_ERR;
+        return CV_NULLPTR_ERR;
     if( n <= 0 )
-        return CX_BADSIZE_ERR;
+        return CV_BADSIZE_ERR;
 
-    buf[0].i[0] = buf[1].i[0] = buf[2].i[0] = buf[3].i[0] = 0;
+    buf[0].i.lo = buf[1].i.lo = buf[2].i.lo = buf[3].i.lo = 0;
 
     for( ; i <= n - 4; i += 4 )
     {
-        double x0 = x[i] * log_e;
-        double x1 = x[i + 1] * log_e;
-        double x2 = x[i + 2] * log_e;
-        double x3 = x[i + 3] * log_e;
+        double x0 = x[i].f * exp_prescale;
+        double x1 = x[i + 1].f * exp_prescale;
+        double x2 = x[i + 2].f * exp_prescale;
+        double x3 = x[i + 3].f * exp_prescale;
 
-        double y0 = x0 + round_delta;
-        double y1 = x1 + round_delta;
-        double y2 = x2 + round_delta;
-        double y3 = x3 + round_delta;
-
+        double y0, y1, y2, y3;
         int val0, val1, val2, val3, t;
 
-        val0 = (int)*(int64*)&y0;
-        val1 = (int)*(int64*)&y1;
-        val2 = (int)*(int64*)&y2;
-        val3 = (int)*(int64*)&y3;
+        t = (int)(x[i].i >> 52);
+        if( (t & 2047) > 1023 + 10 )
+            x0 = t < 0 ? -exp_max_val : exp_max_val;
 
-        x0 -= (y0 - round_delta);
-        x1 -= (y1 - round_delta);
-        x2 -= (y2 - round_delta);
-        x3 -= (y3 - round_delta);
+        t = (int)(x[i+1].i >> 52);
+        if( (t & 2047) > 1023 + 10 )
+            x1 = t < 0 ? -exp_max_val : exp_max_val;
+
+        t = (int)(x[i+2].i >> 52);
+        if( (t & 2047) > 1023 + 10 )
+            x2 = t < 0 ? -exp_max_val : exp_max_val;
+
+        t = (int)(x[i+3].i >> 52);
+        if( (t & 2047) > 1023 + 10 )
+            x3 = t < 0 ? -exp_max_val : exp_max_val;
+
+        val0 = cvRound(x0);
+        val1 = cvRound(x1);
+        val2 = cvRound(x2);
+        val3 = cvRound(x3);
+
+        x0 = (x0 - val0)*exp_postscale;
+        x1 = (x1 - val1)*exp_postscale;
+        x2 = (x2 - val2)*exp_postscale;
+        x3 = (x3 - val3)*exp_postscale;
 
         t = (val0 >> EXPTAB_SCALE) + 1023;
         t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[0].i[1] = t << 20;
+        buf[0].i.hi = t << 20;
 
         t = (val1 >> EXPTAB_SCALE) + 1023;
         t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[1].i[1] = t << 20;
+        buf[1].i.hi = t << 20;
 
         t = (val2 >> EXPTAB_SCALE) + 1023;
         t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[2].i[1] = t << 20;
+        buf[2].i.hi = t << 20;
 
         t = (val3 >> EXPTAB_SCALE) + 1023;
         t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
-        buf[3].i[1] = t << 20;
+        buf[3].i.hi = t << 20;
 
-        y0 = buf[0].d * icxExpTab[val0 & EXPTAB_MASK] * EXPPOLY( x0 );
-        y1 = buf[1].d * icxExpTab[val1 & EXPTAB_MASK] * EXPPOLY( x1 );
+        y0 = buf[0].d * icvExpTab[val0 & EXPTAB_MASK] * EXPPOLY( x0 );
+        y1 = buf[1].d * icvExpTab[val1 & EXPTAB_MASK] * EXPPOLY( x1 );
 
         y[i] = y0;
         y[i + 1] = y1;
 
-        y2 = buf[2].d * icxExpTab[val2 & EXPTAB_MASK] * EXPPOLY( x2 );
-        y3 = buf[3].d * icxExpTab[val3 & EXPTAB_MASK] * EXPPOLY( x3 );
+        y2 = buf[2].d * icvExpTab[val2 & EXPTAB_MASK] * EXPPOLY( x2 );
+        y3 = buf[3].d * icvExpTab[val3 & EXPTAB_MASK] * EXPPOLY( x3 );
 
         y[i + 2] = y2;
         y[i + 3] = y3;
@@ -1098,63 +992,74 @@ IPCXAPI_IMPL( CxStatus, icxbExp_64f, ( const double *x, double *y, int n ))
 
     for( ; i < n; i++ )
     {
-        double x0 = x[i] * log_e;
-        double y0 = x0 + round_delta;
-        int val0 = (int)*(int64*)&y0, t;
+        double x0 = x[i].f * exp_prescale;
+        int val0, t;
 
+        t = (int)(x[i].i >> 52);
+        if( (t & 2047) > 1023 + 10 )
+            x0 = t < 0 ? -exp_max_val : exp_max_val;
+
+        val0 = cvRound(x0);
         t = (val0 >> EXPTAB_SCALE) + 1023;
         t = (t | ((t < 2047) - 1)) & (((t < 0) - 1) & 2047);
 
-        buf[0].i[1] = t << 20;
-        x0 -= (y0 - round_delta);
+        buf[0].i.hi = t << 20;
+        x0 = (x0 - val0)*exp_postscale;
 
-        y[i] = buf[0].d * icxExpTab[val0 & EXPTAB_MASK] * EXPPOLY( x0 );
+        y[i] = buf[0].d * icvExpTab[val0 & EXPTAB_MASK] * EXPPOLY( x0 );
     }
 
-    return CX_OK;
+    return CV_OK;
 }
 
 #undef EXPTAB_SCALE
 #undef EXPTAB_MASK
 #undef EXPPOLY_32F_A0
 
-CX_IMPL void cxExp( const CxArr* srcarr, CxArr* dstarr )
+CV_IMPL void cvExp( const CvArr* srcarr, CvArr* dstarr )
 {
-    CX_FUNCNAME( "cxExp" );
+    CV_FUNCNAME( "cvExp" );
 
     __BEGIN__;
 
-    CxMat srcstub, *src = (CxMat*)srcarr;
-    CxMat dststub, *dst = (CxMat*)dstarr;
+    CvMat srcstub, *src = (CvMat*)srcarr;
+    CvMat dststub, *dst = (CvMat*)dstarr;
     int coi1 = 0, coi2 = 0, src_depth, dst_depth;
-    CxSize size;
-    int y;
+    double* buffer = 0;
+    CvSize size;
+    int x, y, dx = 0;
     
-    if( !CX_IS_MAT(src))
-        CX_CALL( src = cxGetMat( src, &srcstub, &coi1 ));
+    if( !CV_IS_MAT(src))
+        CV_CALL( src = cvGetMat( src, &srcstub, &coi1 ));
 
-    if( !CX_IS_MAT(dst))
-        CX_CALL( dst = cxGetMat( dst, &dststub, &coi2 ));
+    if( !CV_IS_MAT(dst))
+        CV_CALL( dst = cvGetMat( dst, &dststub, &coi2 ));
 
     if( coi1 != 0 || coi2 != 0 )
-        CX_ERROR( CX_BadCOI, "" );
+        CV_ERROR( CV_BadCOI, "" );
 
-    src_depth = CX_MAT_DEPTH(src->type);
-    dst_depth = CX_MAT_DEPTH(dst->type);
+    src_depth = CV_MAT_DEPTH(src->type);
+    dst_depth = CV_MAT_DEPTH(dst->type);
 
-    if( !CX_ARE_CNS_EQ( src, dst ) || src_depth < CX_32F || dst_depth < src_depth )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+    if( !CV_ARE_CNS_EQ( src, dst ) || src_depth < CV_32F || dst_depth < src_depth )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
 
-    if( !CX_ARE_SIZES_EQ( src, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+    if( !CV_ARE_SIZES_EQ( src, dst ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
 
-    size = cxGetMatSize(src);
-    size.width *= CX_MAT_CN(src->type);
+    size = cvGetMatSize(src);
+    size.width *= CV_MAT_CN(src->type);
 
-    if( CX_IS_MAT_CONT( src->type & dst->type ))
+    if( CV_IS_MAT_CONT( src->type & dst->type ))
     {
         size.width *= size.height;
         size.height = 1;
+    }
+
+    if( !CV_ARE_DEPTHS_EQ( src, dst ))
+    {
+        dx = MIN( 1024, size.width );
+        buffer = (double*)cvStackAlloc( dx*sizeof(buffer[0]) );
     }
 
     for( y = 0; y < size.height; y++ )
@@ -1162,17 +1067,24 @@ CX_IMPL void cxExp( const CxArr* srcarr, CxArr* dstarr )
         uchar* src_data = src->data.ptr + src->step*y;
         uchar* dst_data = dst->data.ptr + dst->step*y;
 
-        if( src_depth == CX_64F )
+        if( src_depth == CV_64F )
         {
-            icxbExp_64f( (double*)src_data, (double*)dst_data, size.width );
+            icvExp_64f( (double*)src_data, (double*)dst_data, size.width );
         }
         else if( src_depth == dst_depth )
         {
-            icxbExp_32f( (float*)src_data, (float*)dst_data, size.width );
+            icvExp_32f( (float*)src_data, (float*)dst_data, size.width );
         }
         else
         {
-            icxbExp_32f64f( (float*)src_data, (double*)dst_data, size.width );
+            for( x = 0; x < size.width; x += dx )
+            {
+                int len = dx;
+                if( x + len > size.width )
+                    len = size.width - x;
+                icvCvt_32f64f( (float*)src_data + x, buffer, len );
+                icvExp_64f( buffer, (double*)dst_data + x, len );
+            }
         }
     }
 
@@ -1189,7 +1101,7 @@ CX_IMPL void cxExp( const CxArr* srcarr, CxArr* dstarr )
 #define LOGTAB_MASK2        ((1 << (20 - LOGTAB_SCALE)) - 1)
 #define LOGTAB_MASK2_32F    ((1 << (23 - LOGTAB_SCALE)) - 1)
 
-static const double icxLogTab[] = {
+static const double icvLogTab[] = {
 0.0000000000000000000000000000000000000000,    1.000000000000000000000000000000000000000,
 .00389864041565732288852075271279318258166,    .9961089494163424124513618677042801556420,
 .00778214044205494809292034119607706088573,    .9922480620155038759689922480620155038760,
@@ -1450,10 +1362,10 @@ static const double icxLogTab[] = {
 
 
 
-#define LOGTAB_TRANSLATE(x,h) (((x) - 1.)*icxLogTab[(h)+1])
+#define LOGTAB_TRANSLATE(x,h) (((x) - 1.)*icvLogTab[(h)+1])
 static const double ln_2 = 0.69314718055994530941723212145818;
 
-IPCXAPI_IMPL( CxStatus, icxbLog_32f, ( const float *x, float *y, int n ))
+IPCVAPI_IMPL( CvStatus, icvLog_32f, ( const float *_x, float *y, int n ), (_x, y, n) )
 {
     static const double shift[] = { 0, -1./512 };
     static const double
@@ -1465,12 +1377,19 @@ IPCXAPI_IMPL( CxStatus, icxbLog_32f, ( const float *x, float *y, int n ))
     #define LOGPOLY(x,k) ((x)+=shift[k],((A0*(x) + A1)*(x) + A2)*(x))
 
     int i = 0;
-    float buf[4];
+    union
+    {
+        int i;
+        float f;
+    }
+    buf[4];
+    
+    const int* x = (const int*)_x;
 
     if( !x || !y )
-        return CX_NULLPTR_ERR;
+        return CV_NULLPTR_ERR;
     if( n <= 0 )
-        return CX_BADSIZE_ERR;
+        return CV_BADSIZE_ERR;
 
     for( i = 0; i <= n - 4; i += 4 )
     {
@@ -1478,10 +1397,10 @@ IPCXAPI_IMPL( CxStatus, icxbLog_32f, ( const float *x, float *y, int n ))
         double y0, y1, y2, y3;
         int h0, h1, h2, h3;
 
-        h0 = ((int*)x)[i];
-        h1 = ((int*)x)[i+1];
-        ((int*)buf)[0] = (h0 & LOGTAB_MASK2_32F) | (127 << 23);
-        ((int*)buf)[1] = (h1 & LOGTAB_MASK2_32F) | (127 << 23);
+        h0 = x[i];
+        h1 = x[i+1];
+        buf[0].i = (h0 & LOGTAB_MASK2_32F) | (127 << 23);
+        buf[1].i = (h1 & LOGTAB_MASK2_32F) | (127 << 23);
 
         y0 = (((h0 >> 23) & 0xff) - 127) * ln_2;
         y1 = (((h1 >> 23) & 0xff) - 127) * ln_2;
@@ -1489,17 +1408,17 @@ IPCXAPI_IMPL( CxStatus, icxbLog_32f, ( const float *x, float *y, int n ))
         h0 = (h0 >> (23 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
         h1 = (h1 >> (23 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
 
-        y0 += icxLogTab[h0];
-        y1 += icxLogTab[h1];
+        y0 += icvLogTab[h0];
+        y1 += icvLogTab[h1];
 
-        h2 = ((int*)x)[i+2];
-        h3 = ((int*)x)[i+3];
+        h2 = x[i+2];
+        h3 = x[i+3];
 
-        x0 = LOGTAB_TRANSLATE( buf[0], h0 );
-        x1 = LOGTAB_TRANSLATE( buf[1], h1 );
+        x0 = LOGTAB_TRANSLATE( buf[0].f, h0 );
+        x1 = LOGTAB_TRANSLATE( buf[1].f, h1 );
 
-        ((int*)buf)[2] = (h2 & LOGTAB_MASK2_32F) | (127 << 23);
-        ((int*)buf)[3] = (h3 & LOGTAB_MASK2_32F) | (127 << 23);
+        buf[2].i = (h2 & LOGTAB_MASK2_32F) | (127 << 23);
+        buf[3].i = (h3 & LOGTAB_MASK2_32F) | (127 << 23);
 
         y2 = (((h2 >> 23) & 0xff) - 127) * ln_2;
         y3 = (((h3 >> 23) & 0xff) - 127) * ln_2;
@@ -1507,11 +1426,11 @@ IPCXAPI_IMPL( CxStatus, icxbLog_32f, ( const float *x, float *y, int n ))
         h2 = (h2 >> (23 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
         h3 = (h3 >> (23 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
 
-        y2 += icxLogTab[h2];
-        y3 += icxLogTab[h3];
+        y2 += icvLogTab[h2];
+        y3 += icvLogTab[h3];
 
-        x2 = LOGTAB_TRANSLATE( buf[2], h2 );
-        x3 = LOGTAB_TRANSLATE( buf[3], h3 );
+        x2 = LOGTAB_TRANSLATE( buf[2].f, h2 );
+        x3 = LOGTAB_TRANSLATE( buf[3].f, h3 );
 
         y0 += LOGPOLY( x0, h0 == 510 );
         y1 += LOGPOLY( x1, h1 == 510 );
@@ -1528,131 +1447,26 @@ IPCXAPI_IMPL( CxStatus, icxbLog_32f, ( const float *x, float *y, int n ))
 
     for( ; i < n; i++ )
     {
-        int h0 = ((int*)x)[i];
+        int h0 = x[i];
         double x0, y0;
 
         y0 = (((h0 >> 23) & 0xff) - 127) * ln_2;
 
-        ((int*)buf)[0] = (h0 & LOGTAB_MASK2_32F) | (127 << 23);
+        buf[0].i = (h0 & LOGTAB_MASK2_32F) | (127 << 23);
         h0 = (h0 >> (23 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
 
-        y0 += icxLogTab[h0];
-        x0 = LOGTAB_TRANSLATE( buf[0], h0 );
-        h0 = h0 == 510;
-        y0 += LOGPOLY( x0, h0 );
+        y0 += icvLogTab[h0];
+        x0 = LOGTAB_TRANSLATE( buf[0].f, h0 );
+        y0 += LOGPOLY( x0, h0 == 510 );
 
         y[i] = (float)y0;
     }
 
-    return CX_OK;
+    return CV_OK;
 }
 
 
-IPCXAPI_IMPL( CxStatus, icxbLog_64f32f, ( const double *x, float *y, int n ))
-{
-    static const double shift[] = { 0, -1./512 };
-    static const double
-        A0 = 0.3333333333333333333333333,
-        A1 = -0.5,
-        A2 = 1;
-
-    #undef LOGPOLY
-    #define LOGPOLY(x,k) ((x)+=shift[k],((A0*(x) + A1)*(x) + A2)*(x))
-    
-    int i = 0;
-    DBLINT buf[4];
-    DBLINT *X = (DBLINT *) x;
-
-    if( !x || !y )
-        return CX_NULLPTR_ERR;
-    if( n <= 0 )
-        return CX_BADSIZE_ERR;
-
-    for( ; i <= n - 4; i += 4 )
-    {
-        double x0, x1, x2, x3;
-        double y0, y1, y2, y3;
-        int h0, h1, h2, h3;
-
-        h0 = X[i].i[0];
-        h1 = X[i + 1].i[0];
-        h2 = X[i + 2].i[0];
-        h3 = X[i + 3].i[0];
-
-        buf[0].i[0] = h0;
-        buf[1].i[0] = h1;
-        buf[2].i[0] = h2;
-        buf[3].i[0] = h3;
-
-        h0 = X[i].i[1];
-        h1 = X[i + 1].i[1];
-        buf[0].i[1] = (h0 & LOGTAB_MASK2) | (1023 << 20);
-        buf[1].i[1] = (h1 & LOGTAB_MASK2) | (1023 << 20);
-
-        y0 = (((h0 >> 20) & 0x7ff) - 1023) * ln_2;
-        y1 = (((h1 >> 20) & 0x7ff) - 1023) * ln_2;
-
-        h0 = (h0 >> (20 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
-        h1 = (h1 >> (20 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
-
-        y0 += icxLogTab[h0];
-        y1 += icxLogTab[h1];
-
-        h2 = X[i + 2].i[1];
-        h3 = X[i + 3].i[1];
-
-        x0 = LOGTAB_TRANSLATE( buf[0].d, h0 );
-        x1 = LOGTAB_TRANSLATE( buf[1].d, h1 );
-
-        buf[2].i[1] = (h2 & LOGTAB_MASK2) | (1023 << 20);
-        buf[3].i[1] = (h3 & LOGTAB_MASK2) | (1023 << 20);
-
-        y0 += LOGPOLY( x0, 0 );
-        y1 += LOGPOLY( x1, 0 );
-
-        y2 = (((h2 >> 20) & 0x7ff) - 1023) * ln_2;
-        y3 = (((h3 >> 20) & 0x7ff) - 1023) * ln_2;
-
-        y[i] = (float) y0;
-        y[i + 1] = (float) y1;
-
-        h2 = (h2 >> (20 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
-        h3 = (h3 >> (20 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
-
-        y2 += icxLogTab[h2];
-        y3 += icxLogTab[h3];
-
-        x2 = LOGTAB_TRANSLATE( buf[2].d, h2 );
-        x3 = LOGTAB_TRANSLATE( buf[3].d, h3 );
-
-        y2 += LOGPOLY( x2, 0 );
-        y3 += LOGPOLY( x3, 0 );
-
-        y[i + 2] = (float) y2;
-        y[i + 3] = (float) y3;
-    }
-
-    for( ; i < n; i++ )
-    {
-        int h0 = X[i].i[1];
-        double x0, y0 = (((h0 >> 20) & 0x7ff) - 1023) * ln_2;
-
-        buf[0].i[1] = (h0 & LOGTAB_MASK2) | (1023 << 20);
-        buf[0].i[0] = X[i].i[0];
-        h0 = (h0 >> (20 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
-
-        y0 += icxLogTab[h0];
-        x0 = LOGTAB_TRANSLATE( buf[0].d, h0 );
-        y0 += LOGPOLY( x0, 0 );
-
-        y[i] = (float)y0;
-    }
-
-    return CX_OK;
-}
-
-
-IPCXAPI_IMPL( CxStatus, icxbLog_64f, ( const double *x, double *y, int n ))
+IPCVAPI_IMPL( CvStatus, icvLog_64f, ( const double *x, double *y, int n ), (x, y, n) )
 {
     static const double shift[] = { 0, -1./512 };
     static const double
@@ -1672,9 +1486,9 @@ IPCXAPI_IMPL( CxStatus, icxbLog_64f, ( const double *x, double *y, int n ))
     DBLINT *X = (DBLINT *) x;
 
     if( !x || !y )
-        return CX_NULLPTR_ERR;
+        return CV_NULLPTR_ERR;
     if( n <= 0 )
-        return CX_BADSIZE_ERR;
+        return CV_BADSIZE_ERR;
 
     for( ; i <= n - 4; i += 4 )
     {
@@ -1683,38 +1497,38 @@ IPCXAPI_IMPL( CxStatus, icxbLog_64f, ( const double *x, double *y, int n ))
         double y0, y1, y2, y3;
         int h0, h1, h2, h3;
 
-        h0 = X[i].i[0];
-        h1 = X[i + 1].i[0];
-        buf[0].i[0] = h0;
-        buf[1].i[0] = h1;
+        h0 = X[i].i.lo;
+        h1 = X[i + 1].i.lo;
+        buf[0].i.lo = h0;
+        buf[1].i.lo = h1;
         
-        h0 = X[i].i[1];
-        h1 = X[i + 1].i[1];
-        buf[0].i[1] = (h0 & LOGTAB_MASK2) | (1023 << 20);
-        buf[1].i[1] = (h1 & LOGTAB_MASK2) | (1023 << 20);
+        h0 = X[i].i.hi;
+        h1 = X[i + 1].i.hi;
+        buf[0].i.hi = (h0 & LOGTAB_MASK2) | (1023 << 20);
+        buf[1].i.hi = (h1 & LOGTAB_MASK2) | (1023 << 20);
 
         y0 = (((h0 >> 20) & 0x7ff) - 1023) * ln_2;
         y1 = (((h1 >> 20) & 0x7ff) - 1023) * ln_2;
 
-        h2 = X[i + 2].i[0];
-        h3 = X[i + 3].i[0];
-        buf[2].i[0] = h2;
-        buf[3].i[0] = h3;
+        h2 = X[i + 2].i.lo;
+        h3 = X[i + 3].i.lo;
+        buf[2].i.lo = h2;
+        buf[3].i.lo = h3;
 
         h0 = (h0 >> (20 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
         h1 = (h1 >> (20 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
 
-        y0 += icxLogTab[h0];
-        y1 += icxLogTab[h1];
+        y0 += icvLogTab[h0];
+        y1 += icvLogTab[h1];
 
-        h2 = X[i + 2].i[1];
-        h3 = X[i + 3].i[1];
+        h2 = X[i + 2].i.hi;
+        h3 = X[i + 3].i.hi;
 
         x0 = LOGTAB_TRANSLATE( buf[0].d, h0 );
         x1 = LOGTAB_TRANSLATE( buf[1].d, h1 );
 
-        buf[2].i[1] = (h2 & LOGTAB_MASK2) | (1023 << 20);
-        buf[3].i[1] = (h3 & LOGTAB_MASK2) | (1023 << 20);
+        buf[2].i.hi = (h2 & LOGTAB_MASK2) | (1023 << 20);
+        buf[3].i.hi = (h3 & LOGTAB_MASK2) | (1023 << 20);
 
         y2 = (((h2 >> 20) & 0x7ff) - 1023) * ln_2;
         y3 = (((h3 >> 20) & 0x7ff) - 1023) * ln_2;
@@ -1722,8 +1536,8 @@ IPCXAPI_IMPL( CxStatus, icxbLog_64f, ( const double *x, double *y, int n ))
         h2 = (h2 >> (20 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
         h3 = (h3 >> (20 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
 
-        y2 += icxLogTab[h2];
-        y3 += icxLogTab[h3];
+        y2 += icvLogTab[h2];
+        y3 += icvLogTab[h3];
 
         x2 = LOGTAB_TRANSLATE( buf[2].d, h2 );
         x3 = LOGTAB_TRANSLATE( buf[3].d, h3 );
@@ -1743,61 +1557,68 @@ IPCXAPI_IMPL( CxStatus, icxbLog_64f, ( const double *x, double *y, int n ))
 
     for( ; i < n; i++ )
     {
-        int h0 = X[i].i[1];
+        int h0 = X[i].i.hi;
         double xq;
         double x0, y0 = (((h0 >> 20) & 0x7ff) - 1023) * ln_2;
 
-        buf[0].i[1] = (h0 & LOGTAB_MASK2) | (1023 << 20);
-        buf[0].i[0] = X[i].i[0];
+        buf[0].i.hi = (h0 & LOGTAB_MASK2) | (1023 << 20);
+        buf[0].i.lo = X[i].i.lo;
         h0 = (h0 >> (20 - LOGTAB_SCALE - 1)) & LOGTAB_MASK * 2;
 
-        y0 += icxLogTab[h0];
+        y0 += icvLogTab[h0];
         x0 = LOGTAB_TRANSLATE( buf[0].d, h0 );
         y0 += LOGPOLY( x0, h0 == 510 );
         y[i] = y0;
     }
 
-    return CX_OK;
+    return CV_OK;
 }
 
 
-CX_IMPL void cxLog( const CxArr* srcarr, CxArr* dstarr )
+CV_IMPL void cvLog( const CvArr* srcarr, CvArr* dstarr )
 {
-    CX_FUNCNAME( "cxLog" );
+    CV_FUNCNAME( "cvLog" );
 
     __BEGIN__;
 
-    CxMat srcstub, *src = (CxMat*)srcarr;
-    CxMat dststub, *dst = (CxMat*)dstarr;
+    CvMat srcstub, *src = (CvMat*)srcarr;
+    CvMat dststub, *dst = (CvMat*)dstarr;
     int coi1 = 0, coi2 = 0, src_depth, dst_depth;
-    CxSize size;
-    int y;
+    double* buffer = 0;
+    CvSize size;
+    int x, y, dx = 0;
     
-    if( !CX_IS_MAT(src))
-        CX_CALL( src = cxGetMat( src, &srcstub, &coi1 ));
+    if( !CV_IS_MAT(src))
+        CV_CALL( src = cvGetMat( src, &srcstub, &coi1 ));
 
-    if( !CX_IS_MAT(dst))
-        CX_CALL( dst = cxGetMat( dst, &dststub, &coi2 ));
+    if( !CV_IS_MAT(dst))
+        CV_CALL( dst = cvGetMat( dst, &dststub, &coi2 ));
 
     if( coi1 != 0 || coi2 != 0 )
-        CX_ERROR( CX_BadCOI, "" );
+        CV_ERROR( CV_BadCOI, "" );
 
-    src_depth = CX_MAT_DEPTH(src->type);
-    dst_depth = CX_MAT_DEPTH(dst->type);
+    src_depth = CV_MAT_DEPTH(src->type);
+    dst_depth = CV_MAT_DEPTH(dst->type);
 
-    if( !CX_ARE_CNS_EQ( src, dst ) || dst_depth < CX_32F || src_depth < dst_depth )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+    if( !CV_ARE_CNS_EQ( src, dst ) || dst_depth < CV_32F || src_depth < dst_depth )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
 
-    if( !CX_ARE_SIZES_EQ( src, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+    if( !CV_ARE_SIZES_EQ( src, dst ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
 
-    size = cxGetMatSize(src);
-    size.width *= CX_MAT_CN(src->type);
+    size = cvGetMatSize(src);
+    size.width *= CV_MAT_CN(src->type);
 
-    if( CX_IS_MAT_CONT( src->type & dst->type ))
+    if( CV_IS_MAT_CONT( src->type & dst->type ))
     {
         size.width *= size.height;
         size.height = 1;
+    }
+
+    if( !CV_ARE_DEPTHS_EQ( src, dst ))
+    {
+        dx = MIN( 1024, size.width );
+        buffer = (double*)cvStackAlloc( dx*sizeof(buffer[0]) );
     }
 
     for( y = 0; y < size.height; y++ )
@@ -1805,17 +1626,24 @@ CX_IMPL void cxLog( const CxArr* srcarr, CxArr* dstarr )
         uchar* src_data = src->data.ptr + src->step*y;
         uchar* dst_data = dst->data.ptr + dst->step*y;
 
-        if( dst_depth == CX_64F )
+        if( dst_depth == CV_64F )
         {
-            icxbLog_64f( (double*)src_data, (double*)dst_data, size.width );
+            icvLog_64f( (double*)src_data, (double*)dst_data, size.width );
         }
         else if( src_depth == dst_depth )
         {
-            icxbLog_32f( (float*)src_data, (float*)dst_data, size.width );
+            icvLog_32f( (float*)src_data, (float*)dst_data, size.width );
         }
         else
         {
-            icxbLog_64f32f( (double*)src_data, (float*)dst_data, size.width );
+            for( x = 0; x < size.width; x += dx )
+            {
+                int len = dx;
+                if( x + len > size.width )
+                    len = size.width - x;
+                icvLog_64f( (double*)src_data + x, buffer, len );
+                icvCvt_64f32f( buffer, (float*)dst_data + x, len );
+            }
         }
     }
 
@@ -1827,9 +1655,9 @@ CX_IMPL void cxLog( const CxArr* srcarr, CxArr* dstarr )
 *                                    P O W E R                                           *
 \****************************************************************************************/
 
-#define ICX_DEF_IPOW_OP( flavor, arrtype, worktype, cast_macro )                    \
-static CxStatus CX_STDCALL                                                          \
-icxIPow_##flavor( const arrtype* src, arrtype* dst, int len, int power )            \
+#define ICV_DEF_IPOW_OP( flavor, arrtype, worktype, cast_macro )                    \
+static CvStatus CV_STDCALL                                                          \
+icvIPow_##flavor( const arrtype* src, arrtype* dst, int len, int power )            \
 {                                                                                   \
     int i;                                                                          \
                                                                                     \
@@ -1849,73 +1677,72 @@ icxIPow_##flavor( const arrtype* src, arrtype* dst, int len, int power )        
         dst[i] = cast_macro(a);                                                     \
     }                                                                               \
                                                                                     \
-    return CX_OK;                                                                   \
+    return CV_OK;                                                                   \
 }
 
 
-ICX_DEF_IPOW_OP( 8u, uchar, int, CX_CAST_8U )
-ICX_DEF_IPOW_OP( 16s, short, int, CX_CAST_16S )
-ICX_DEF_IPOW_OP( 32s, int, int, CX_CAST_32S )
-ICX_DEF_IPOW_OP( 32f, float, double, CX_CAST_32F )
-ICX_DEF_IPOW_OP( 64f, double, double, CX_CAST_64F )
+ICV_DEF_IPOW_OP( 8u, uchar, int, CV_CAST_8U )
+ICV_DEF_IPOW_OP( 16u, ushort, int, CV_CAST_16U )
+ICV_DEF_IPOW_OP( 16s, short, int, CV_CAST_16S )
+ICV_DEF_IPOW_OP( 32s, int, int, CV_CAST_32S )
+ICV_DEF_IPOW_OP( 32f, float, double, CV_CAST_32F )
+ICV_DEF_IPOW_OP( 64f, double, double, CV_CAST_64F )
 
-#define icxIPow_8s 0
+#define icvIPow_8s 0
 
-CX_DEF_INIT_FUNC_TAB_1D( IPow );
+CV_DEF_INIT_FUNC_TAB_1D( IPow )
 
-typedef CxStatus (CX_STDCALL * CxIPowFunc)( const void* src, void* dst, int len, int power );
-typedef CxStatus (CX_STDCALL * CxSqrtFunc)( const void* src, void* dst, int len );
+typedef CvStatus (CV_STDCALL * CvIPowFunc)( const void* src, void* dst, int len, int power );
+typedef CvStatus (CV_STDCALL * CvSqrtFunc)( const void* src, void* dst, int len );
 
-CX_IMPL void cxPow( const CxArr* srcarr, CxArr* dstarr, double power )
+CV_IMPL void cvPow( const CvArr* srcarr, CvArr* dstarr, double power )
 {
-    static CxFuncTable ipow_tab;
+    static CvFuncTable ipow_tab;
     static int inittab = 0;
     
-    CX_FUNCNAME( "cxPow" );
+    CV_FUNCNAME( "cvPow" );
 
     __BEGIN__;
 
-    double* in_buffer = 0;
-    float* temp_buffer = 0;
-    double* out_buffer = 0;
+    void* temp_buffer = 0;
     int block_size = 0;
-    CxMat srcstub, *src = (CxMat*)srcarr;
-    CxMat dststub, *dst = (CxMat*)dstarr;
+    CvMat srcstub, *src = (CvMat*)srcarr;
+    CvMat dststub, *dst = (CvMat*)dstarr;
     int coi1 = 0, coi2 = 0;
     int depth;
-    CxSize size;
+    CvSize size;
     int x, y;
-    int ipower = cxRound( power );
+    int ipower = cvRound( power );
     int is_ipower = 0;
     
-    if( !CX_IS_MAT(src))
-        CX_CALL( src = cxGetMat( src, &srcstub, &coi1 ));
+    if( !CV_IS_MAT(src))
+        CV_CALL( src = cvGetMat( src, &srcstub, &coi1 ));
 
-    if( !CX_IS_MAT(dst))
-        CX_CALL( dst = cxGetMat( dst, &dststub, &coi2 ));
+    if( !CV_IS_MAT(dst))
+        CV_CALL( dst = cvGetMat( dst, &dststub, &coi2 ));
 
     if( coi1 != 0 || coi2 != 0 )
-        CX_ERROR( CX_BadCOI, "" );
+        CV_ERROR( CV_BadCOI, "" );
 
-    if( !CX_ARE_TYPES_EQ( src, dst ))
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedFormats );
+    if( !CV_ARE_TYPES_EQ( src, dst ))
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedFormats );
 
-    if( !CX_ARE_SIZES_EQ( src, dst ) )
-        CX_ERROR_FROM_CODE( CX_StsUnmatchedSizes );
+    if( !CV_ARE_SIZES_EQ( src, dst ) )
+        CV_ERROR_FROM_CODE( CV_StsUnmatchedSizes );
 
-    depth = CX_MAT_DEPTH( src->type );
+    depth = CV_MAT_DEPTH( src->type );
 
-    if( ipower == power )
+    if( fabs(ipower - power) < DBL_EPSILON )
     {
         if( !inittab )
         {
-            icxInitIPowTable( &ipow_tab );
+            icvInitIPowTable( &ipow_tab );
             inittab = 1;
         }
 
         if( ipower < 0 )
         {
-            CX_CALL( cxDiv( 0, src, dst ));
+            CV_CALL( cvDiv( 0, src, dst ));
             
             if( ipower == -1 )
                 EXIT;
@@ -1926,27 +1753,27 @@ CX_IMPL void cxPow( const CxArr* srcarr, CxArr* dstarr, double power )
         switch( ipower )
         {
         case 0:
-            cxSet( dst, cxScalarAll(1));
+            cvSet( dst, cvScalarAll(1));
             EXIT;
         case 1:
-            cxCopy( src, dst );
+            cvCopy( src, dst );
             EXIT;
         case 2:
-            cxMul( src, src, dst );
+            cvMul( src, src, dst );
             EXIT;
         default:
             is_ipower = 1;
         }
     }
-    else if( depth < CX_32F )
-        CX_ERROR( CX_StsUnsupportedFormat,
+    else if( depth < CV_32F )
+        CV_ERROR( CV_StsUnsupportedFormat,
         "Fractional or negative integer power factor can be used "
         "with floating-point types only");
 
-    size = cxGetMatSize(src);
-    size.width *= CX_MAT_CN(src->type);
+    size = cvGetMatSize(src);
+    size.width *= CV_MAT_CN(src->type);
 
-    if( CX_IS_MAT_CONT( src->type & dst->type ))
+    if( CV_IS_MAT_CONT( src->type & dst->type ))
     {
         size.width *= size.height;
         size.height = 1;
@@ -1954,7 +1781,9 @@ CX_IMPL void cxPow( const CxArr* srcarr, CxArr* dstarr, double power )
 
     if( is_ipower )
     {
-        CxIPowFunc pow_func = (CxIPowFunc)ipow_tab.fn_2d[depth];
+        CvIPowFunc pow_func = (CvIPowFunc)ipow_tab.fn_2d[depth];
+        if( !pow_func )
+            CV_ERROR( CV_StsUnsupportedFormat, "The data type is not supported" );
         
         for( y = 0; y < size.height; y++ )
         {
@@ -1964,11 +1793,11 @@ CX_IMPL void cxPow( const CxArr* srcarr, CxArr* dstarr, double power )
             pow_func( src_data, dst_data, size.width, ipower );
         }
     }
-    else if( fabs(power) == 0.5 )
+    else if( fabs(fabs(power) - 0.5) < DBL_EPSILON )
     {
-        CxSqrtFunc sqrt_func = power < 0 ? 
-            (depth == CX_32F ? (CxSqrtFunc)icxbInvSqrt_32f : (CxSqrtFunc)icxbInvSqrt_64f) :
-            (depth == CX_32F ? (CxSqrtFunc)icxbSqrt_32f : (CxSqrtFunc)icxbSqrt_64f);
+        CvSqrtFunc sqrt_func = power < 0 ? 
+            (depth == CV_32F ? (CvSqrtFunc)icvInvSqrt_32f : (CvSqrtFunc)icvInvSqrt_64f) :
+            (depth == CV_32F ? (CvSqrtFunc)icvSqrt_32f : (CvSqrtFunc)icvSqrt_64f);
 
         for( y = 0; y < size.height; y++ )
         {
@@ -1980,40 +1809,28 @@ CX_IMPL void cxPow( const CxArr* srcarr, CxArr* dstarr, double power )
     }
     else
     {
-        block_size = size.width;
-
-        if( CX_MAT_DEPTH(src->type) != CX_64F )
-        {
-            block_size = MIN( block_size, ICX_MATH_BLOCK_SIZE );
-            in_buffer = (double*)alloca( block_size*sizeof(double));
-            out_buffer = (double*)alloca( block_size*sizeof(double));
-        }
-
-        temp_buffer = (float*)alloca( block_size*sizeof(float));
+        block_size = MIN( size.width, ICV_MATH_BLOCK_SIZE );
+        temp_buffer = cvStackAlloc( block_size*CV_ELEM_SIZE(depth) );
 
         for( y = 0; y < size.height; y++ )
         {
             uchar* src_data = src->data.ptr + src->step*y;
             uchar* dst_data = dst->data.ptr + dst->step*y;
 
-            if( depth == CX_64F )
+            for( x = 0; x < size.width; x += block_size )
             {
-                for( x = 0; x < size.width; x++ )
-                    ((double*)dst_data)[x] = pow( fabs(((double*)src_data)[x]), power );
-            }
-            else
-            {
-                for( x = 0; x < size.width; x += block_size )
+                int len = MIN( size.width - x, block_size );
+                if( depth == CV_32F )
                 {
-                    int len = MIN( size.width - x, block_size );
-
-                    icxCxt_32f64f( (float*)src_data + x, in_buffer, len );
-
-                    icxbLog_64f32f( in_buffer, temp_buffer, len );
-                    icxScale_32f( temp_buffer, temp_buffer, len, (float)power, 0 );
-                    icxbExp_32f64f( temp_buffer, out_buffer, len );
-
-                    icxCxt_64f32f( out_buffer, (float*)dst_data + x, len );
+                    icvLog_32f( (float*)src_data + x, (float*)temp_buffer, len );
+                    icvScale_32f( (float*)temp_buffer, (float*)temp_buffer, len, (float)power, 0 );
+                    icvExp_32f( (float*)temp_buffer, (float*)dst_data + x, len );
+                }
+                else
+                {
+                    icvLog_64f( (double*)src_data + x, (double*)temp_buffer, len );
+                    icvScale_64f( (double*)temp_buffer, (double*)temp_buffer, len, power, 0 );
+                    icvExp_64f( (double*)temp_buffer, (double*)dst_data + x, len );
                 }
             }
         }
@@ -2025,143 +1842,147 @@ CX_IMPL void cxPow( const CxArr* srcarr, CxArr* dstarr, double power )
 
 /************************** CheckArray for NaN's, Inf's *********************************/
 
-IPCXAPI_IMPL( CxStatus, icxCheckArray_32f_C1R, ( const float* src, int srcstep,
-                                                 CxSize size, int flags,
-                                                 double min_val, double max_val ))
+IPCVAPI_IMPL( CvStatus, icvCheckArray_32f_C1R,
+    ( const float* src, int srcstep, CvSize size, int flags, double min_val, double max_val ),
+     (src, srcstep, size, flags, min_val, max_val) )
 {
-    int a, b;
+    Cv32suf a, b;
+    int ia, ib;
+    const int* isrc = (const int*)src;
     
     if( !src )
-        return CX_NULLPTR_ERR;
+        return CV_NULLPTR_ERR;
 
     if( size.width <= 0 || size.height <= 0 )
-        return CX_BADSIZE_ERR;
+        return CV_BADSIZE_ERR;
 
-    if( flags & CX_CHECK_RANGE )
+    if( flags & CV_CHECK_RANGE )
     {
-        (float&)a = (float)min_val;
-        (float&)b = (float)max_val;
+        a.f = (float)min_val;
+        b.f = (float)max_val;
     }
     else
     {
-        (float&)a = -FLT_MAX;
-        (float&)b = FLT_MAX;
+        a.f = -FLT_MAX;
+        b.f = FLT_MAX;
     }
 
-    a = CX_TOGGLE_FLT(a);
-    b = CX_TOGGLE_FLT(b);
+    ia = CV_TOGGLE_FLT(a.i);
+    ib = CV_TOGGLE_FLT(b.i);
 
-    for( ; size.height--; (char*&)src += srcstep )
+    srcstep /= sizeof(isrc[0]);
+    for( ; size.height--; isrc += srcstep )
     {
         int i;
         for( i = 0; i < size.width; i++ )
         {
-            int val = ((int*)src)[i];
+            int val = isrc[i];
+            val = CV_TOGGLE_FLT(val);
 
-            val = CX_TOGGLE_FLT(val);
-
-            if( val < a || val >= b )
-                return CX_BADRANGE_ERR;
+            if( val < ia || val >= ib )
+                return CV_BADRANGE_ERR;
         }
     }
 
-    return CX_OK;
+    return CV_OK;
 }
 
 
-IPCXAPI_IMPL( CxStatus,  icxCheckArray_64f_C1R, ( const double* src, int srcstep,
-                                                  CxSize size, int flags,
-                                                  double min_val, double max_val ))
+IPCVAPI_IMPL( CvStatus,  icvCheckArray_64f_C1R,
+    ( const double* src, int srcstep, CvSize size, int flags, double min_val, double max_val ),
+    (src, srcstep, size, flags, min_val, max_val) )
 {
-    int64 a, b;
+    Cv64suf a, b;
+    int64 ia, ib;
+    const int64* isrc = (const int64*)src;
     
     if( !src )
-        return CX_NULLPTR_ERR;
+        return CV_NULLPTR_ERR;
 
     if( size.width <= 0 || size.height <= 0 )
-        return CX_BADSIZE_ERR;
+        return CV_BADSIZE_ERR;
 
-    if( flags & CX_CHECK_RANGE )
+    if( flags & CV_CHECK_RANGE )
     {
-        (double&)a = min_val;
-        (double&)b = max_val;
+        a.f = min_val;
+        b.f = max_val;
     }
     else
     {
-        (double&)a = -DBL_MAX;
-        (double&)b = DBL_MAX;
+        a.f = -DBL_MAX;
+        b.f = DBL_MAX;
     }
 
-    a = CX_TOGGLE_DBL(a);
-    b = CX_TOGGLE_DBL(b);
+    ia = CV_TOGGLE_DBL(a.i);
+    ib = CV_TOGGLE_DBL(b.i);
 
-    for( ; size.height--; (char*&)src += srcstep )
+    srcstep /= sizeof(isrc[0]);
+    for( ; size.height--; isrc += srcstep )
     {
         int i;
         for( i = 0; i < size.width; i++ )
         {
-            int64 val = ((int64*)src)[i];
+            int64 val = isrc[i];
+            val = CV_TOGGLE_DBL(val);
 
-            val = CX_TOGGLE_DBL(val);
-
-            if( val < a || val >= b )
-                return CX_BADRANGE_ERR;
+            if( val < ia || val >= ib )
+                return CV_BADRANGE_ERR;
         }
     }
 
-    return CX_OK;
+    return CV_OK;
 }
 
 
-CX_IMPL  int  cxCheckArr( const CxArr* arr, int flags,
+CV_IMPL  int  cvCheckArr( const CvArr* arr, int flags,
                           double minVal, double maxVal )
 {
     int result = 0;
 
-    CX_FUNCNAME( "cxCheckArr" );
+    CV_FUNCNAME( "cvCheckArr" );
 
     __BEGIN__;
 
     if( arr )
     {
-        CxStatus status = CX_OK;
-        CxMat stub, *mat = (CxMat*)arr;
+        CvStatus status = CV_OK;
+        CvMat stub, *mat = (CvMat*)arr;
         int type;
-        CxSize size;
+        CvSize size;
 
-        if( !CX_IS_MAT( mat ))
-            CX_CALL( mat = cxGetMat( mat, &stub, 0, 1 ));
+        if( !CV_IS_MAT( mat ))
+            CV_CALL( mat = cvGetMat( mat, &stub, 0, 1 ));
 
-        type = CX_MAT_TYPE( mat->type );
-        size = cxGetMatSize( mat );
+        type = CV_MAT_TYPE( mat->type );
+        size = cvGetMatSize( mat );
 
-        size.width *= CX_MAT_CN( type );
+        size.width *= CV_MAT_CN( type );
 
-        if( CX_IS_MAT_CONT( mat->type ))
+        if( CV_IS_MAT_CONT( mat->type ))
         {
             size.width *= size.height;
             size.height = 1;
         }
 
-        if( CX_MAT_DEPTH(type) == CX_32F )
+        if( CV_MAT_DEPTH(type) == CV_32F )
         {
-            status = icxCheckArray_32f_C1R( mat->data.fl, mat->step, size,
+            status = icvCheckArray_32f_C1R( mat->data.fl, mat->step, size,
                                             flags, minVal, maxVal );
         }
-        else if( CX_MAT_DEPTH(type) == CX_64F )
+        else if( CV_MAT_DEPTH(type) == CV_64F )
         {
-            status = icxCheckArray_64f_C1R( mat->data.db, mat->step, size,
+            status = icvCheckArray_64f_C1R( mat->data.db, mat->step, size,
                                             flags, minVal, maxVal );
         }
         else
         {
-            CX_ERROR( CX_StsUnsupportedFormat, "" );
+            CV_ERROR( CV_StsUnsupportedFormat, "" );
         }
 
         if( status < 0 )  
         {
-            if( status != CX_BADRANGE_ERR || !(flags & CX_CHECK_QUIET))
-                CX_ERROR_FROM_STATUS( status );
+            if( status != CV_BADRANGE_ERR || !(flags & CV_CHECK_QUIET))
+                CV_ERROR( CV_StsOutOfRange, "CheckArray failed" );
 
             result = 0;
         }

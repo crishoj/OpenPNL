@@ -48,7 +48,7 @@ public:
 protected:
     CNumericSparseMatrix( int dim, const int *range, int Clamp );
     CNumericSparseMatrix( const CNumericSparseMatrix<Type> & inputMat );
-    CNumericSparseMatrix( CxSparseMat* p_sparse );
+    CNumericSparseMatrix( CvSparseMat* p_sparse );
 
 #ifdef PNL_RTTI
     static const CPNLType m_TypeInfo;
@@ -88,7 +88,7 @@ CNumericSparseMatrix<Type>::CNumericSparseMatrix(
 }
 
 template <class Type>
-CNumericSparseMatrix<Type>::CNumericSparseMatrix( CxSparseMat* p_sparse)
+CNumericSparseMatrix<Type>::CNumericSparseMatrix( CvSparseMat* p_sparse)
 :iCNumericSparseMatrix<Type>( p_sparse )
 {
 }

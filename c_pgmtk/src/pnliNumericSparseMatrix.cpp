@@ -71,16 +71,16 @@ CNumericSparseMatrix<double>* CNumericSparseMatrix<double>::Create( int dim,
 template<>
 double iCNumericSparseMatrix<double>::SumAll( int byAbsValue )const
 {
-    CxSparseMatIterator iterator;
-    CxSparseNode* node;
+    CvSparseMatIterator iterator;
+    CvSparseNode* node;
     const iCNumericSparseMatrix<double>* self = this;
-    CxSparseMat* mat = const_cast<CxSparseMat*>(self->GetCxSparseMat());
+    CvSparseMat* mat = const_cast<CvSparseMat*>(self->GetCvSparseMat());
     double sum = 0;
-    for( node = cxInitSparseMatIterator( mat, &iterator );
-                 node != 0; node = cxGetNextSparseNode( &iterator ))
+    for( node = cvInitSparseMatIterator( mat, &iterator );
+                 node != 0; node = cvGetNextSparseNode( &iterator ))
     {
         //we put data from small matrix to needed positions in bigData
-        void* val = CX_NODE_VAL(  mat, node );
+        void* val = CV_NODE_VAL(  mat, node );
         double valT = *(double*)val;
         if( byAbsValue )
         {
@@ -93,16 +93,16 @@ double iCNumericSparseMatrix<double>::SumAll( int byAbsValue )const
 */
 float CNumericSparseMatrix<float>::SumAll( int byAbsValue )const
 {
-    CxSparseMatIterator iterator;
-    CxSparseNode* node;
+    CvSparseMatIterator iterator;
+    CvSparseNode* node;
     const CNumericSparseMatrix<float>* self = this;
-    const CxSparseMat* mat = const_cast<CxSparseMat*>(self->GetCxSparseMat());
+    const CvSparseMat* mat = const_cast<CvSparseMat*>(self->GetCvSparseMat());
     float sum = 0;
-    for( node = cxInitSparseMatIterator( mat, &iterator );
-                 node != 0; node = cxGetNextSparseNode( &iterator ))
+    for( node = cvInitSparseMatIterator( mat, &iterator );
+                 node != 0; node = cvGetNextSparseNode( &iterator ))
     {
         //we put data from small matrix to needed positions in bigData
-        void* val = CX_NODE_VAL(  mat, node );
+        void* val = CV_NODE_VAL(  mat, node );
         float valT = *(float*)val;
         if( byAbsValue )
         {

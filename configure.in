@@ -11,9 +11,6 @@ BINARY_AGE=0
 DEBUG=
 VERSION=$PNLMAJOR.$PNLMINOR.$PNLSUBMINOR
 
-AM_INIT_AUTOMAKE
-AM_MAINTAINER_MODE
-
 AC_SUBST(am__configure_deps)
 AC_SUBST(PNLMAJOR)
 AC_SUBST(PNLMINOR)
@@ -46,6 +43,12 @@ AC_OBJEXT
 # C/C++
 
 dnl Checks for header files.
+
+dnl Automake support
+
+AM_INIT_AUTOMAKE
+AM_MAINTAINER_MODE
+
 AC_CONFIG_FILES([Makefile
 cxcore/Makefile
 cxcore/cxcore/Makefile
