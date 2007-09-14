@@ -177,7 +177,7 @@ void func_name( T* array, int length, user_data_type aux )		\
 
 #include "cart/cvcart.h"
 #include <math.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <iostream>
 
 #define DATA_TO_FILE1 0 // Numeric split resgression
