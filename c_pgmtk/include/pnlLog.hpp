@@ -49,8 +49,10 @@ public: // USER INTERFACE
 
     void printf(const char* pFmt, ...);
     inline Log& operator<<(const char*);
+    inline Log& operator<<(const signed char*);
     inline Log& operator<<(const unsigned char*);
     inline Log& operator<<(char);
+    inline Log& operator<<(signed char);
     inline Log& operator<<(unsigned char);
     inline Log& operator<<(unsigned long);
     inline Log& operator<<(long);
@@ -58,7 +60,10 @@ public: // USER INTERFACE
     inline Log& operator<<(short);
     inline Log& operator<<(unsigned int);
     inline Log& operator<<(int);
+    inline Log& operator<<(bool);
+    inline Log& operator<<(float);
     inline Log& operator<<(double);
+    inline Log& operator<<(long double);
     inline Log& operator<<(void *);
     inline Log& operator<<(const void *);
 
@@ -102,12 +107,19 @@ PNL_API Log& Log::operator<<(const char* str)
     return *this;
 }
 
+PNL_API Log& Log::operator<<(const signed char* str)
+{
+    return Log::operator<<((const char*)str);
+}
+
 PNL_API Log& Log::operator<<(const unsigned char* str)
 {
     return Log::operator<<((const char*)str);
 }
 
-PNL_API Log& Log::operator<<(const char ch)
+
+
+PNL_API Log& Log::operator<<(char ch)
 {
     if(!isDeniedToWrite())
     {
@@ -117,9 +129,14 @@ PNL_API Log& Log::operator<<(const char ch)
     return *this;
 }
 
+PNL_API Log& Log::operator<<(signed char ch)
+{
+    return Log::operator<<((char)ch);
+}
+
 PNL_API Log& Log::operator<<(unsigned char ch)
 {
-    return Log::operator<<((const char)ch);
+    return Log::operator<<((char)ch);
 }
 
 PNL_API Log& Log::operator<<(long value)
@@ -190,12 +207,27 @@ PNL_API Log& Log::operator<<(int value)
     return (*this)<<(long)value;
 }
 
+PNL_API Log& Log::operator<<(bool value)
+{
+    return (*this)<<(unsigned long)value;
+}
+
+PNL_API Log& Log::operator<<(float value)
+{
+    return (*this)<<(long double)value;
+}
+
 PNL_API Log& Log::operator<<(double value)
+{
+    return (*this)<<(long double)value;
+}
+
+PNL_API Log& Log::operator<<(long double value)
 {
     if(!isDeniedToWrite())
     {
-        char buf[32];
-        int strLen = sprintf(buf, "%lg", value);
+        char buf[128];
+        int strLen = sprintf(buf, "%Lg", value);
 
         WriteString(buf, strLen);
     }

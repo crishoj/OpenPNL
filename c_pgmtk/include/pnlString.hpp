@@ -43,11 +43,23 @@ public: // USER INTERFACE
     inline pnlString &operator<<(const char *str);
     inline pnlString &operator<<(const std::string &str);
     inline pnlString &operator<<(const pnlString &str);
+
+    // Have to overload for each primitive type to avoid an ambiguity 
+    // error caused by someone passing in a type with no exact match.
     inline pnlString &operator<<(char ch);
-    inline pnlString &operator<<(unsigned long);
+    inline pnlString &operator<<(signed char ch);
+    inline pnlString &operator<<(unsigned char ch);
+    inline pnlString &operator<<(bool);
+    inline pnlString &operator<<(short);
+    inline pnlString &operator<<(unsigned short);
     inline pnlString &operator<<(int);
+    inline pnlString &operator<<(unsigned int);
+    inline pnlString &operator<<(long);
+    inline pnlString &operator<<(unsigned long);
     inline pnlString &operator<<(float);
     inline pnlString &operator<<(double);
+    inline pnlString &operator<<(long double);
+
     bool operator!=(const char *str) const { return !operator==(str); }
     bool operator!=(const std::string &str) const { return !operator==(str); }
     bool operator!=(const pnlString &str) const { return !operator==(str); }
@@ -155,6 +167,60 @@ inline pnlString &pnlString::operator<<(char ch)
     return *this;
 }
 
+inline pnlString &pnlString::operator<<(signed char sch)
+{
+    (*this) << (char) sch;
+
+    return *this;
+}
+
+inline pnlString &pnlString::operator<<(unsigned char uch)
+{
+    (*this) << (char) uch;
+
+    return *this;
+}
+
+inline pnlString &pnlString::operator<<(bool val)
+{
+    (*this) << (unsigned long) val;
+}
+
+inline pnlString &pnlString::operator<<(short val)
+{
+    (*this) << (long) val;
+}
+
+inline pnlString &pnlString::operator<<(unsigned short val)
+{
+    (*this) << (unsigned long) val;
+}
+
+inline pnlString &pnlString::operator<<(int val)
+{
+    (*this) << (long) val;
+}
+
+inline pnlString &pnlString::operator<<(unsigned int val)
+{
+    (*this) << (unsigned long) val;
+}
+
+inline pnlString &pnlString::operator<<(long val)
+{
+    if(val < 0)
+    {
+	append("-", 1);
+	(*this) << (((unsigned long)(-(val + 1))) + 1);
+    }
+    else
+    {
+	(*this) << (unsigned long)val;
+    }
+
+    return *this;
+}
+
 inline pnlString &pnlString::operator<<(unsigned long val)
 {
     char buf[22];
@@ -173,32 +239,24 @@ inline pnlString &pnlString::operator<<(unsigned long val)
     return *this;
 }
 
-inline pnlString &pnlString::operator<<(int val)
-{
-    if(val < 0)
-    {
-	append("-", 1);
-	(*this) << (unsigned long)(-(val + 1) + 1);
-    }
-    else
-    {
-	(*this) << (unsigned long)val;
-    }
-
-    return *this;
-}
-
 inline pnlString &pnlString::operator<<(float val)
 {
-    (*this) << (double)val;
+    (*this) << (long double)val;
 
     return *this;
 }
 
 inline pnlString &pnlString::operator<<(double val)
 {
-    char buf[64];
-    int l = sprintf(buf, "%lf", val);
+    (*this) << (long double)val;
+
+    return *this;
+}
+
+inline pnlString &pnlString::operator<<(long double val)
+{
+    char buf[128];
+    int l = sprintf(buf, "%Lf", val);
 
     if(l < 1)
     {
