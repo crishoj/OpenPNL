@@ -184,26 +184,36 @@ inline pnlString &pnlString::operator<<(unsigned char uch)
 inline pnlString &pnlString::operator<<(bool val)
 {
     (*this) << (unsigned long) val;
+
+    return *this;
 }
 
 inline pnlString &pnlString::operator<<(short val)
 {
     (*this) << (long) val;
+
+    return *this;
 }
 
 inline pnlString &pnlString::operator<<(unsigned short val)
 {
     (*this) << (unsigned long) val;
+
+    return *this;
 }
 
 inline pnlString &pnlString::operator<<(int val)
 {
     (*this) << (long) val;
+
+    return *this;
 }
 
 inline pnlString &pnlString::operator<<(unsigned int val)
 {
     (*this) << (unsigned long) val;
+
+    return *this;
 }
 
 inline pnlString &pnlString::operator<<(long val)
