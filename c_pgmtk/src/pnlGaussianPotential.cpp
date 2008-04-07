@@ -126,6 +126,11 @@ CGaussianPotential::Create( const int *domain, int nNodes,
     CGaussianPotential *pNewParam = new CGaussianPotential(domain, nNodes, 
         pMD, obsIndices);
     PNL_CHECK_IF_MEMORY_ALLOCATED( pNewParam );
+    
+    /* 
+     * FIXME: isMoment is hacky, since there is undefined behavior
+     * Also, I need to figure out what am H, K gaussian is...
+     */
     if( isMoment == 1 )
     {
         pNewParam->SetCoefficient( normCoeff, 1-isMoment );

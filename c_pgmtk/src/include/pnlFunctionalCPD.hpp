@@ -1,18 +1,18 @@
 /**
- * @file pnlpFunctionalCPD.hpp
+ * @file pnlFunctionalCPD.hpp
  * @brief Declaration of the CFunctionalCPD class.
  * 
  * This header file declares the CFunctionalCPD class.
  * 
  * Derived from pnlGaussianCPD.hpp.
  * 
- * See also: pnlpFunctionalCPD.cpp
+ * See also: pnlFunctionalCPD.cpp
  * 
  * TODO: Full conversion
  */
 
-#ifndef __PNLPFUNCTIONALCPD__HPP__
-#define __PNLPFUNCTIONALCPD__HPP__
+#ifndef __PNLFUNCTIONALCPD__HPP__
+#define __PNLFUNCTIONALCPD__HPP__
 
 // PNL
 #include "pnlParConfig.hpp"
@@ -112,4 +112,4 @@ private:
 
 PNL_END
 
-#endif// __PNLPFUNCTIONALCPD__HPP__
+#endif// __PNLFUNCTIONALCPD__HPP__

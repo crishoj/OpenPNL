@@ -1,12 +1,12 @@
 /**
- * @file pnlpCondFunctionalDistribFun.hpp
+ * @file pnlCondFunctionalDistribFun.hpp
  * @brief Declaration of the CCondFunctionalDistribFun class.
  * 
  * This header file declares the CCondFunctionalDistribFun class.
  * 
- * Derived from pnlpCondGaussianDistribFun.hpp.
+ * Derived from pnlCondGaussianDistribFun.hpp.
  * 
- * See also: pnlpCondFunctionalDistribFun.cpp
+ * See also: pnlCondFunctionalDistribFun.cpp
  * 
  * TODO: Full conversion
  */
@@ -22,7 +22,7 @@
 #include "pnlNumericDenseMatrix.hpp"
 
 // PNL+
-#include "pnlpFunctionalDistribFun.hpp"
+#include "pnlFunctionalDistribFun.hpp"
 
 #ifdef PNL_RTTI
 #include "pnlpnlType.hpp"

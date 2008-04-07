@@ -1,25 +1,22 @@
 /**
- * @file pnlpFunctionalPotential.hpp
+ * @file pnlFunctionalPotential.hpp
  * @brief Declaration of the CFunctionalPotential class.
  * 
  * This header file declares the CFunctionalPotential class.
  * 
  * Derived from pnlGaussianPotential.hpp.
  * 
- * See also: pnlpFunctionalPotential.cpp
+ * See also: pnlFunctionalPotential.cpp
  * 
  * TODO: Full conversion
  */
 
-#ifndef __PNLPFUNCTIONALPOTENTIAL_HPP__
-#define __PNLPFUNCTIONALPOTENTIAL_HPP__
+#ifndef __PNLFUNCTIONALPOTENTIAL_HPP__
+#define __PNLFUNCTIONALPOTENTIAL_HPP__
 
 // PNL
 #include "pnlParConfig.hpp"
 #include "pnlPotential.hpp"
-
-// PNL+
-#include "pnlpDistributionType.hpp"
 
 #ifdef PNL_RTTI
 #include "pnlpnlType.hpp"
@@ -139,4 +136,4 @@ private:
 
 PNL_END
 
-#endif // __PNLPFUNCTIONALPOTENTIAL_HPP__
+#endif // __PNLFUNCTIONALPOTENTIAL_HPP__

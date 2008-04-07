@@ -1,12 +1,12 @@
 /**
- * @file pnlpCondFunctionalDistribFun.cpp
+ * @file pnlCondFunctionalDistribFun.cpp
  * @brief Implementation of the CCondFunctionalDistribFun class.
  * 
  * This header file implements the CCondFunctionalDistribFun class.
  * 
- * Derived from pnlpCondGaussianDistribFun.cpp.
+ * Derived from pnlCondGaussianDistribFun.cpp.
  * 
- * See also: pnlpCondFunctionalDistribFun.hpp
+ * See also: pnlCondFunctionalDistribFun.hpp
  * 
  * TODO: Full conversion
  */
@@ -21,8 +21,8 @@
 #include "pnlLog.hpp"
 
 // PNL+
-#include "pnlpMatrix_impl.hpp"  // since we'll use CMatrix<CFunctionalDistribFun*>
-#include "pnlpCondFunctionalDistribFun.hpp"
+#include "pnlMatrix_impl.hpp"  // since we'll use CMatrix<CFunctionalDistribFun*>
+#include "pnlCondFunctionalDistribFun.hpp"
 
 PNL_USING
 

@@ -32,34 +32,35 @@
 #include "pnlpnlType.hpp"
 #endif 
 
-PNL_BEGIN
-
-//fixme - enum use for Param&Diatribution - should they be here?
+PNL_BEGIN//fixme - enum use for Param&Diatribution - should they be here?
 typedef PNL_API enum
 {
+    dtUnitFunction,
     dtTabular,
-        dtGaussian,
-        dtCondGaussian,
-        dtUnitFunction,
-        dtMixGaussian,
-        dtScalar,
-        dtTree,
-        dtInvalid,
-        dtSoftMax,
-        dtCondSoftMax
-} EDistributionType;
+    dtGaussian,
+    dtCondGaussian,
+    dtMixGaussian,
+    dtFunctional,
+    dtCondFunctional,
+    dtMixFunctional,
+    dtScalar,
+    dtTree,
+    dtInvalid,
+    dtSoftMax,
+    dtCondSoftMax
+}EDistributionType;
 
 typedef PNL_API enum
 {
     itUsing,
-        itNotUsing
-} EUsingPrior;
+    itNotUsing
+}EUsingPrior;
 
 typedef PNL_API enum
 {   ftPotential
-,   ftCPD
-,   ftIDPotential
-}  EFactorType;
+    , ftCPD
+    , ftIDPotential
+}EFactorType;
 
 bool PNL_API pnlIsSubset(int smaSize, int* smaDomain, int bigSize, int* bigDomain);
 intVector PNL_API pnlIntersect(int size1, int* Domain1, int size2, int* Domain2);
@@ -67,7 +68,7 @@ intVector PNL_API pnlSetUnion(int size1, int* Domain1, int size2, int* Domain2);
 bool PNL_API pnlIsIdentical(int size1, int* Domain1, int size2, int* Domain2);
 
 class CDistribFun;
-class CTabularDistribFun ;
+class CTabularDistribFun;
 class CPotential;
 class CEvidence;
 class CInfEngine;
@@ -78,8 +79,8 @@ class PNL_API CFactor : public CPNLBase
 public:
     //create new factor in other domain and model domain if node types corresponds
     static CFactor* CopyWithNewDomain(const CFactor *factor, intVector &domain,
-        CModelDomain *pModelDomain,
-        const intVector& obsIndices = intVector());
+            CModelDomain *pModelDomain,
+            const intVector& obsIndices = intVector());
     virtual CFactor* Clone() const = 0;
 
     virtual CFactor* CloneWithSharedMatrices() = 0;
@@ -108,9 +109,9 @@ public:
 #ifndef SWIG
     const pConstNodeTypeVector *GetArgType() const;
 #endif
-
+    
     CMatrix<float> *GetMatrix( EMatrixType mType,
-        int numberOfMatrix = -1, const int* discrParentValuesIndices = NULL ) const;
+            int numberOfMatrix = -1, const int* discrParentValuesIndices = NULL ) const;
 
     //methods to convert factor with dense matrices to factor with sparse
     //if its already sparse - return copy
@@ -132,7 +133,7 @@ public:
     virtual bool IsValid(std::string* descriptionOut = NULL) const;
 
     int IsFactorsDistribFunEqual(const CFactor *param, float eps,
-        int withCoeff = 1, float* maxDifferenceOut = NULL) const;
+            int withCoeff = 1, float* maxDifferenceOut = NULL) const;
     void GetDomain( intVector* domainOut ) const;
 #ifdef PNL_OBSOLETE
     void GetDomain(int *DomainSizeOut, const int **domainOut ) const;
@@ -144,10 +145,10 @@ public:
     void TieDistribFun( CFactor *parameter );
 
     void AllocMatrix( const float*data, EMatrixType mType,
-        int numberOfMatrix = -1, const int *discrParentValuesIndices = NULL );
+            int numberOfMatrix = -1, const int *discrParentValuesIndices = NULL );
 
     void AttachMatrix( CMatrix<float> *matrix, EMatrixType mType,
-        int numberOfMatrix = -1, const int* discrParentValuesIndices = NULL );
+            int numberOfMatrix = -1, const int* discrParentValuesIndices = NULL );
 
     int IsDistributionSpecific()const;
     //if 0 - full distribution (non delta, non uniform, non mixed, can haven't valid form - use GetFlagMoment, GetFlagCanonical)
@@ -157,24 +158,24 @@ public:
     //by delta function on some of its dimensions
     void MakeUnitFunction();
 
-    virtual void GenerateSample( CEvidence* evidencesIO, int maximize = 0  ) const = 0;
+    virtual void GenerateSample( CEvidence* evidencesIO, int maximize = 0 ) const = 0;
     virtual CPotential* ConvertStatisticToPot(int numOfSamples) const = 0;
 
     virtual void SetStatistics( const CMatrix<float> *pMat,
-  EStatisticalMatrix matrix, const int* parentsComb = NULL );
+            EStatisticalMatrix matrix, const int* parentsComb = NULL );
     virtual float ProcessingStatisticalData(int numberOfEvidences) = 0;
 
     virtual void UpdateStatisticsEM(const CPotential *pMargPot,
-           const CEvidence *pEvidence = NULL) = 0;
+            const CEvidence *pEvidence = NULL) = 0;
     virtual void UpdateStatisticsML( const pConstEvidenceVector& evidencesIn );
 
     virtual float GetLogLik( const CEvidence* pEv, const CPotential* pShrInfRes = NULL ) const = 0;
 
-  int GetNumberOfFreeParameters()const;
+    int GetNumberOfFreeParameters()const;
 
 #ifdef PNL_OBSOLETE
     virtual void UpdateStatisticsML(const CEvidence* const* pEvidencesIn,
-        int EvidenceNumber) = 0;
+            int EvidenceNumber) = 0;
 #endif
     inline int AreThereAnyObsPositions() const;
     ~CFactor();
@@ -182,22 +183,22 @@ public:
 #ifdef PAR_PNL
     virtual void UpdateStatisticsML(CFactor *pPot) = 0;
 #endif
-
+    
 #ifdef PNL_RTTI
     virtual const CPNLType &GetTypeInfo() const
     {
-      return GetStaticTypeInfo();
+        return GetStaticTypeInfo();
     }
     static const CPNLType &GetStaticTypeInfo()
     {
-      return CFactor::m_TypeInfo;
+        return CFactor::m_TypeInfo;
     }
 #endif
 protected:
 
     CFactor( EDistributionType dt, EFactorType pt,
-        const int *domain, int nNodes, CModelDomain* pMD,
-        const intVector& obsIndicesIn = intVector() );
+            const int *domain, int nNodes, CModelDomain* pMD,
+            const intVector& obsIndicesIn = intVector() );
     CFactor( EDistributionType dt, EFactorType ft, CModelDomain* pMD );
     //this means copy constructor with clone of matrices - doesn't copy them
     CFactor( const CFactor* factor );
@@ -225,8 +226,6 @@ private:
 
     // a number of the factor in the heap
     int m_factNumInHeap;
-
-
 
 };
 

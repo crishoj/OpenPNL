@@ -1,18 +1,18 @@
 /**
- * @file pnlpMixtureFunctionalCPD.hpp
+ * @file pnlMixtureFunctionalCPD.hpp
  * @brief Declaration of the CMixtureFunctionalCPD class.
  * 
  * This header file declares the CMixtureFunctionalCPD class.
  * 
  * Derived from pnlMixtureGaussianCPD.hpp.
  * 
- * See also: pnlpMixtureFunctionalCPD.cpp
+ * See also: pnlMixtureFunctionalCPD.cpp
  * 
  * TODO: Full conversion
  */
 
-#ifndef __PNLPMIXTUREFUNCTIONALCPD__HPP__
-#define __PNLPMIXTUREFUNCTIONALCPD__HPP__
+#ifndef __PNLMIXTUREFUNCTIONALCPD__HPP__
+#define __PNLMIXTUREFUNCTIONALCPD__HPP__
 
 
 // PNL
@@ -124,4 +124,4 @@ inline void CMixtureFunctionalCPD::GetProbabilities( floatVector *proprobabiliti
 
 PNL_END
 
-#endif// __PNLPMIXTUREFUNCTIONALCPD__HPP__
+#endif// __PNLMIXTUREFUNCTIONALCPD__HPP__

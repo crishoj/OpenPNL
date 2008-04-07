@@ -28,6 +28,7 @@ libpnl_la_SOURCES=      \
      pnlBicLearningEngine.cpp     \
      pnlBKInferenceEngine.cpp     \
      pnlBNet.cpp     \
+     pnlCondFunctionalDistribFun.cpp     \
      pnlCondGaussianDistribFun.cpp     \
      pnlCondSoftMaxDistribFun.cpp     \
      pnlConfig.cpp     \
@@ -56,6 +57,9 @@ libpnl_la_SOURCES=      \
      pnlFactors.cpp     \
      pnlFakePtr.cpp     \
      pnlFGSumMaxInferenceEngine.cpp     \
+     pnlFunctionalCPD.cpp     \
+     pnlFunctionalDistribFun.cpp     \
+     pnlFunctionalPotential.cpp     \
      pnlGaussianCPD.cpp     \
      pnlGaussianDistribFun.cpp     \
      pnlGaussianPotential.cpp     \
@@ -82,6 +86,7 @@ libpnl_la_SOURCES=      \
      pnlLWSamplingInferenceEngine.cpp     \
      pnlMatrix.cpp     \
      pnlMatrixIterator.cpp     \
+     pnlMixtureFunctionalCPD.cpp     \
      pnlMixtureGaussianCPD.cpp     \
      pnlMlDynamicStructLearn.cpp     \
      pnlMlStaticStructLearn.cpp     \

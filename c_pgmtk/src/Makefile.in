@@ -49,14 +49,14 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libpnl_la_LIBADD =
+libpnl_la_LIBADD = -L../../cxcore/cxcore/src -lcxcore
 am_libpnl_la_OBJECTS = cvcart.lo cvsvd.lo dbginfo.lo memtrack.lo \
 	pnl1_5SliceInferenceEngine.lo \
 	pnl1_5SliceJtreeInferenceEngine.lo pnl2DBitwiseMatrix.lo \
 	pnl2DNumericDenseMatrix.lo pnl2TBNInferenceEngine.lo \
 	pnl2TPFInferenceEngine.lo pnlAllocator.lo \
 	pnlBayesLearningEngine.lo pnlBicLearningEngine.lo \
-	pnlBKInferenceEngine.lo pnlBNet.lo \
+	pnlBKInferenceEngine.lo pnlBNet.lo pnlCondFunctionalDistribFun.lo \
 	pnlCondGaussianDistribFun.lo pnlCondSoftMaxDistribFun.lo \
 	pnlConfig.lo pnlContext.lo pnlContextLoad.lo \
 	pnlContextPersistence.lo pnlContextSave.lo pnlCoverage.lo \
@@ -67,6 +67,8 @@ am_libpnl_la_OBJECTS = cvcart.lo cvsvd.lo dbginfo.lo memtrack.lo \
 	pnlEvidence.lo pnlExampleModels.lo pnlException.lo \
 	pnlExInferenceEngine.lo pnlFactor.lo pnlFactorGraph.lo \
 	pnlFactors.lo pnlFakePtr.lo pnlFGSumMaxInferenceEngine.lo \
+	pnlFunctionalCPD.lo pnlFunctionalDistribFun.lo \
+    pnlFunctionalPotential.lo \
 	pnlGaussianCPD.lo pnlGaussianDistribFun.lo \
 	pnlGaussianPotential.lo pnlGibbsSamplingInferenceEngine.lo \
 	pnlGibbsWithAnnealingInferenceEngine.lo pnlGraph.lo \
@@ -77,7 +79,8 @@ am_libpnl_la_OBJECTS = cvcart.lo cvsvd.lo dbginfo.lo memtrack.lo \
 	pnlJunctionTree.lo pnlLearningEngine.lo pnlLIMIDInfEngine.lo \
 	pnlLog.lo pnlLogDriver.lo pnlLogMultiplexor.lo pnlLogUsing.lo \
 	pnlLWSamplingInferenceEngine.lo pnlMatrix.lo \
-	pnlMatrixIterator.lo pnlMixtureGaussianCPD.lo \
+	pnlMatrixIterator.lo pnlMixtureFunctionalCPD.lo \
+	pnlMixtureGaussianCPD.lo \
 	pnlMlDynamicStructLearn.lo pnlMlStaticStructLearn.lo \
 	pnlMlStaticStructLearnHC.lo pnlMNet.lo pnlModelDomain.lo \
 	pnlMRF2.lo pnlNaiveInferenceEngine.lo pnlNodeType.lo \
@@ -286,6 +289,7 @@ libpnl_la_SOURCES = \
      pnlBicLearningEngine.cpp     \
      pnlBKInferenceEngine.cpp     \
      pnlBNet.cpp     \
+     pnlCondFunctionalDistribFun.cpp     \
      pnlCondGaussianDistribFun.cpp     \
      pnlCondSoftMaxDistribFun.cpp     \
      pnlConfig.cpp     \
@@ -314,6 +318,9 @@ libpnl_la_SOURCES = \
      pnlFactors.cpp     \
      pnlFakePtr.cpp     \
      pnlFGSumMaxInferenceEngine.cpp     \
+     pnlFunctionalCPD.cpp     \
+     pnlFunctionalDistribFun.cpp     \
+     pnlFunctionalPotential.cpp     \
      pnlGaussianCPD.cpp     \
      pnlGaussianDistribFun.cpp     \
      pnlGaussianPotential.cpp     \
@@ -340,6 +347,7 @@ libpnl_la_SOURCES = \
      pnlLWSamplingInferenceEngine.cpp     \
      pnlMatrix.cpp     \
      pnlMatrixIterator.cpp     \
+     pnlMixtureFunctionalCPD.cpp     \
      pnlMixtureGaussianCPD.cpp     \
      pnlMlDynamicStructLearn.cpp     \
      pnlMlStaticStructLearn.cpp     \
@@ -478,6 +486,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlBayesLearningEngine.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlBicLearningEngine.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlCPD.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlCondFunctionalDistribFun.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlCondGaussianDistribFun.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlCondSoftMaxDistribFun.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlConfig.Plo@am__quote@
@@ -505,6 +514,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFactorGraph.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFactors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFakePtr.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFunctionalCPD.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFunctionalDistribFun.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFunctionalPotential.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlGaussianCPD.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlGaussianDistribFun.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlGaussianPotential.Plo@am__quote@
@@ -530,6 +542,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlMRF2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlMatrix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlMatrixIterator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlMixtureFunctionalCPD.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlMixtureGaussianCPD.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlMlDynamicStructLearn.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlMlStaticStructLearn.Plo@am__quote@

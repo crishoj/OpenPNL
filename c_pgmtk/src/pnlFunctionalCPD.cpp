@@ -1,12 +1,12 @@
 /**
- * @file pnlpFunctionalCPD.cpp
+ * @file pnlFunctionalCPD.cpp
  * @brief Implementation of the CFunctionalCPD class.
  * 
  * This source file implements the CFunctionalCPD class.
  * 
  * Derived from pnlGaussianCPD.hpp.
  * 
- * See also: pnlpFunctionalCPD.hpp
+ * See also: pnlFunctionalCPD.hpp
  * 
  * TODO: Full conversion
  */
@@ -22,10 +22,10 @@
 #include "pnlScalarPotential.hpp"
 
 // PNL+
-#include "pnlpFunctionalCPD.hpp"
-#include "pnlpFunctionalDistribFun.hpp"
-#include "pnlpFunctionalPotential.hpp"
-#include "pnlpCondFunctionalDistribFun.hpp"
+#include "pnlFunctionalCPD.hpp"
+#include "pnlFunctionalDistribFun.hpp"
+#include "pnlFunctionalPotential.hpp"
+#include "pnlCondFunctionalDistribFun.hpp"
 
 PNL_USING
 

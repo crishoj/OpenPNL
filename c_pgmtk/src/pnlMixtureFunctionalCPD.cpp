@@ -1,12 +1,12 @@
 /**
- * @file pnlpMixtureFunctionalCPD.cpp
+ * @file pnlMixtureFunctionalCPD.cpp
  * @brief Implementation of the CMixtureFunctionalCPD class.
  * 
  * This source file implements the CMixtureFunctionalCPD class.
  * 
  * Derived from pnlMixtureGaussianCPD.hpp.
  * 
- * See also: pnlpMixtureFunctionalCPD.hpp
+ * See also: pnlMixtureFunctionalCPD.hpp
  * 
  * TODO: Full conversion
  */
@@ -23,10 +23,10 @@
 #include "pnlRng.hpp"
 
 // PNL+
-#include "pnlpMixtureFunctionalCPD.hpp"
-#include "pnlpFunctionalCPD.hpp"
-#include "pnlpCondFunctionalDistribFun.hpp"
-#include "pnlpFunctionalPotential.hpp"
+#include "pnlMixtureFunctionalCPD.hpp"
+#include "pnlFunctionalCPD.hpp"
+#include "pnlCondFunctionalDistribFun.hpp"
+#include "pnlFunctionalPotential.hpp"
 
 PNL_USING
 

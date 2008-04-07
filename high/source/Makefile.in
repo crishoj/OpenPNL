@@ -49,7 +49,7 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libhigh_la_LIBADD =
+libhigh_la_LIBADD = -L../../c_pgmtk/src -lpnl
 am_libhigh_la_OBJECTS = BNet.lo BNetCB.lo DBN.lo DBNCB.lo LIMID.lo \
 	LIMIDCB.lo MRF.lo MRFCB.lo ModelEngine.lo NetCallBack.lo \
 	PersistProbNet.lo PersistWNodeInfo.lo PersistWTypes.lo \

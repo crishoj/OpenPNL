@@ -1,12 +1,12 @@
 /**
- * @file pnlpFunctionalPotential.cpp
+ * @file pnlFunctionalPotential.cpp
  * @brief Implementation of the CFunctionalPotential class.
  * 
  * This source file implements the CFunctionalPotential class.
  * 
  * Derived from pnlGaussianPotential.hpp.
  * 
- * See also: pnlpFunctionalPotential.hpp
+ * See also: pnlFunctionalPotential.hpp
  * 
  * TODO: Full conversion
  */
@@ -20,8 +20,8 @@
 #include "pnlRng.hpp"
 
 // PNL+
-#include "pnlpFunctionalPotential.hpp"
-#include "pnlpFunctionalDistribFun.hpp"
+#include "pnlFunctionalPotential.hpp"
+#include "pnlFunctionalDistribFun.hpp"
 
 PNL_USING
 
