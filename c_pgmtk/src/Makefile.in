@@ -67,7 +67,7 @@ am_libpnl_la_OBJECTS = cvcart.lo cvsvd.lo dbginfo.lo memtrack.lo \
 	pnlEvidence.lo pnlExampleModels.lo pnlException.lo \
 	pnlExInferenceEngine.lo pnlFactor.lo pnlFactorGraph.lo \
 	pnlFactors.lo pnlFakePtr.lo pnlFGSumMaxInferenceEngine.lo \
-	pnlFunctionalCPD.lo pnlFunctionalDistribFun.lo \
+	pnlFunction.lo pnlFunctionalCPD.lo pnlFunctionalDistribFun.lo \
     pnlFunctionalPotential.lo \
 	pnlGaussianCPD.lo pnlGaussianDistribFun.lo \
 	pnlGaussianPotential.lo pnlGibbsSamplingInferenceEngine.lo \
@@ -318,6 +318,7 @@ libpnl_la_SOURCES = \
      pnlFactors.cpp     \
      pnlFakePtr.cpp     \
      pnlFGSumMaxInferenceEngine.cpp     \
+     pnlFunction.cpp     \
      pnlFunctionalCPD.cpp     \
      pnlFunctionalDistribFun.cpp     \
      pnlFunctionalPotential.cpp     \
@@ -514,6 +515,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFactorGraph.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFactors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFakePtr.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFunction.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFunctionalCPD.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFunctionalDistribFun.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pnlFunctionalPotential.Plo@am__quote@

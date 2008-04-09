@@ -12,6 +12,8 @@
 #ifndef __PNLFUNCTION_HPP__
 #define __PNLFUNCTION_HPP__
 
+#include "pnlObject.hpp"
+
 PNL_BEGIN
 
 class PNL_API CFunction : public CPNLBase
@@ -19,7 +21,7 @@ class PNL_API CFunction : public CPNLBase
 
 public:
     
-    virtual CFunction& operator=( const CFunction&);
+    virtual CFunction& operator=( const CFunction& function);
     virtual CFunction* Clone() const;    
     
     ~CFunction();

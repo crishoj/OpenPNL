@@ -57,8 +57,7 @@ CFunctionalDistribFun* CFunctionalDistribFun::Create(int isPotential,
 }
 
 CFunctionalDistribFun* CFunctionalDistribFun::CreateUnitFunctionDistribution(
-    int NumberOfNodes, const CNodeType *const*nodeTypes, int isPotential,
-    int isCanonical)
+    int NumberOfNodes, const CNodeType *const*nodeTypes, int isPotential)
 {
     PNL_CHECK_IS_NULL_POINTER( nodeTypes );
     
@@ -123,17 +122,6 @@ CDistribFun* CFunctionalDistribFun::Clone() const
     
     if ( !m_bPotential)
     {
-        if (m_NumberOfNodes > 1)
-        {
-            for (int i = 0; i < m_NumberOfNodes - 1; i++)
-            {
-                if (m_pMatricesWeight[i])
-                {
-                    resData->AttachMatrix(m_pMatricesWeight[i]->Clone(),
-                                          matWeights, i);
-                }
-            }
-        }
     } else
     {
         if (m_posOfDeltaMultiply.size() > 0)
@@ -186,16 +174,6 @@ CDistribFun* CFunctionalDistribFun::CloneWithSharedMatrices()
     
     if ( !m_bPotential)
     {
-        if (m_NumberOfNodes > 1)
-        {
-            for (int i = 0; i < m_NumberOfNodes - 1; i++)
-            {
-                if (m_pMatricesWeight[i])
-                {
-                    resData->AttachMatrix(m_pMatricesWeight[i], matWeights, i);
-                }
-            }
-        }
     } else
     {
         if (m_posOfDeltaMultiply.size() > 0)
@@ -215,14 +193,19 @@ CDistribFun* CFunctionalDistribFun::CloneWithSharedMatrices()
     {
         resData->AttachMatrix(m_pMatrixCov, matCovariance, -1, NULL, 0);
     }
-    if (m_pMatrixH)
-    {
-        resData->AttachMatrix(m_pMatrixH, matH);
-    }
-    if (m_pMatrixK)
-    {
-        resData->AttachMatrix(m_pMatrixK, matK, -1, NULL, 0);
-    }
+    
+    /*
+     if (m_pMatrixH)
+     {
+     resData->AttachMatrix(m_pMatrixH, matH);
+     }
+     if (m_pMatrixK)
+     {
+     resData->AttachMatrix(m_pMatrixK, matK, -1, NULL, 0);
+     }
+     
+     */
+
     return resData;
 }
 
@@ -271,9 +254,10 @@ void CFunctionalDistribFun::CreateDefaultMatrices(int typeOfMatrices)
  */
 
 CFunctionalDistribFun::CFunctionalDistribFun(int isPotential,
-        int NumberOfNodes, const CNodeType *const* nodeTypes,
-        const CFunction* function) :
-CDistribFun(dtFunctional, NumberOfNodes, nodeTypes, 0), m_bMoment(0). m_function(function)
+    int NumberOfNodes, const CNodeType *const* nodeTypes,
+    const CFunction* function) :
+    CDistribFun(dtFunctional, NumberOfNodes, nodeTypes, 0),
+            m_function(function)
 {
     if (NumberOfNodes <= 0)
     {
@@ -289,7 +273,7 @@ CDistribFun(dtFunctional, NumberOfNodes, nodeTypes, 0), m_bMoment(0). m_function
     m_pPseudoCountsCov = NULL;
     m_pMatrixMean = NULL;
     m_pMatrixCov = NULL;
-
+    
     /*
      m_pMatrixH = NULL;
      m_pMatrixK = NULL;
@@ -304,7 +288,7 @@ CDistribFun(dtFunctional, NumberOfNodes, nodeTypes, 0), m_bMoment(0). m_function
         for (i = 0; i < NumberOfNodes; i++)
         {
             if (!nodeTypes[i]->IsDiscrete())
-            NumberOfDimensions += nodeTypes[i]->GetNodeSize();
+                NumberOfDimensions += nodeTypes[i]->GetNodeSize();
         }
     } else
     {
@@ -317,7 +301,7 @@ CDistribFun(dtFunctional, NumberOfNodes, nodeTypes, 0), m_bMoment(0). m_function
     //we keep it to have multinomial Gaussian Distribution in such space
     int *ranges = new int [2];
     PNL_CHECK_IF_MEMORY_ALLOCATED( ranges );
-
+    
     if ( !nodeTypes)
     {
         PNL_THROW( CNULLPointer, "nodeTypes" );
@@ -338,7 +322,7 @@ CDistribFun(dtFunctional, NumberOfNodes, nodeTypes, 0), m_bMoment(0). m_function
         } else
         {
             float p1 = (float)pow((double)( 2 * PNL_PI ), (NumberOfDimensions
-                            / 2.0 ));
+                    / 2.0 ));
             /*float detCov = m_pMatrixCov->Determinant();
              if( detCov < 0 )
              {
@@ -351,22 +335,19 @@ CDistribFun(dtFunctional, NumberOfNodes, nodeTypes, 0), m_bMoment(0). m_function
     }
     
     delete []ranges;
-
+    
 }
 
 //constructor for unit function distribution
 CFunctionalDistribFun::CFunctionalDistribFun(int NumberOfNodes,
     const CNodeType *const*nodeTypes, int isPotential) :
-    CDistribFun(dtGaussian, NumberOfNodes, nodeTypes, 1), m_bMoment(0)
+    CDistribFun(dtFunctional, NumberOfNodes, nodeTypes, 1)
 {
     if (NumberOfNodes <= 0)
     {
         PNL_THROW( COutOfRange, "number of nodes" );
     }
-    if ( (isCanonical != 1) && (isCanonical != 0))
-    {
-        PNL_THROW( COutOfRange, "flag is only 0 or 1" )
-    }
+    
     m_pLearnMatrixMean = NULL;
     m_pLearnMatrixCov = NULL;
     m_freedomDegreeCov = -1;
@@ -387,17 +368,16 @@ CFunctionalDistribFun::CFunctionalDistribFun(int NumberOfNodes,
     }
     m_numberOfDims = NumberOfDimensions;
     m_bPotential = isPotential ? 1 : 0;
-    m_bDeltaFunction = 0;
-    m_bCanonical = isCanonical ? 1 : 0;
-    m_bMoment = 1 - m_bCanonical;
     m_pLearnMatrixMean = NULL;
     m_pLearnMatrixCov = NULL;
     m_pMatrixMean = NULL;
     m_pMatrixCov = NULL;
-    m_pMatricesWeight = NULL;
-    m_pMatrixH = NULL;
-    m_pMatrixK = NULL;
-    m_g = 0.0f;
+    
+    /*
+     m_pMatrixH = NULL;
+     m_pMatrixK = NULL;
+     m_g = 0.0f;
+     */
 }
 
 //copy constructor
@@ -412,11 +392,8 @@ CFunctionalDistribFun::CFunctionalDistribFun(
     m_numberOfDims = inpDistr.m_numberOfDims;
     
     m_bPotential = inpDistr.m_bPotential;
-    m_bCanonical = inpDistr.m_bCanonical;
-    m_bMoment = inpDistr.m_bMoment;
-    m_bDeltaFunction = inpDistr.m_bDeltaFunction;
     
-    m_g = inpDistr.m_g;
+    // m_g = inpDistr.m_g;
     m_normCoeff = inpDistr.m_normCoeff;
     
     m_meanValuesOfMult.assign(inpDistr.m_meanValuesOfMult.begin(),
@@ -425,11 +402,14 @@ CFunctionalDistribFun::CFunctionalDistribFun(
                                 inpDistr.m_posOfDeltaMultiply.end() );
     m_offsetToNextMean.assign(inpDistr.m_offsetToNextMean.begin(),
                               inpDistr.m_offsetToNextMean.end() );
-    m_pMatrixK = NULL;
-    m_pMatrixH = NULL;
+    
+    /*
+     m_pMatrixK = NULL;
+     m_pMatrixH = NULL;
+     */
+
     m_pMatrixMean = NULL;
     m_pMatrixCov = NULL;
-    m_pMatricesWeight = NULL;
     m_pLearnMatrixMean = NULL;
     m_pLearnMatrixCov = NULL;
     m_freedomDegreeCov = -1;
@@ -448,40 +428,25 @@ CFunctionalDistribFun::CFunctionalDistribFun(
                 = C2DNumericDenseMatrix<float>::Copy(inpDistr.m_pMatrixMean);
         static_cast<CMatrix<float>*>(m_pMatrixMean)->AddRef(pObj);
     }
-    if (m_bDeltaFunction)
-    {
-        return;
-    }
     if (inpDistr.m_pMatrixCov)
     {
         m_pMatrixCov
                 = C2DNumericDenseMatrix<float>::Copy(inpDistr.m_pMatrixCov);
         static_cast<CMatrix<float>*>(m_pMatrixCov)->AddRef(pObj);
     }
-    if (inpDistr.m_pMatrixH)
-    {
-        m_pMatrixH = C2DNumericDenseMatrix<float>::Copy(inpDistr.m_pMatrixH);
-        static_cast<CMatrix<float>*>(m_pMatrixH)->AddRef(pObj);
-    }
-    if (inpDistr.m_pMatrixK)
-    {
-        m_pMatrixK = C2DNumericDenseMatrix<float>::Copy(inpDistr.m_pMatrixK);
-        static_cast<CMatrix<float>*>(m_pMatrixK)->AddRef(pObj);
-    }
-    if (inpDistr.m_pMatricesWeight)
-    {
-        int numParents = inpDistr.m_NumberOfNodes -1;
-        m_pMatricesWeight = new C2DNumericDenseMatrix<float>*[numParents];
-        for (int i = 0; i < numParents; i++)
-        {
-            if (inpDistr.m_pMatricesWeight[i])
-            {
-                m_pMatricesWeight[i]
-                        = C2DNumericDenseMatrix<float>::Copy(inpDistr.m_pMatricesWeight[i]);
-                static_cast<CMatrix<float>*>(m_pMatricesWeight[i])->AddRef(pObj);
-            }
-        }
-    }
+    
+    /*
+     if (inpDistr.m_pMatrixH)
+     {
+     m_pMatrixH = C2DNumericDenseMatrix<float>::Copy(inpDistr.m_pMatrixH);
+     static_cast<CMatrix<float>*>(m_pMatrixH)->AddRef(pObj);
+     }
+     if (inpDistr.m_pMatrixK)
+     {
+     m_pMatrixK = C2DNumericDenseMatrix<float>::Copy(inpDistr.m_pMatrixK);
+     static_cast<CMatrix<float>*>(m_pMatrixK)->AddRef(pObj);
+     }
+     */
 }
 
 void CFunctionalDistribFun::ReleaseAllMatrices()
@@ -507,35 +472,22 @@ void CFunctionalDistribFun::ReleaseAllMatrices()
         static_cast<CMatrix<float>*>(m_pPseudoCountsCov)->Release(pObj);
         m_pPseudoCountsCov = NULL;
     }
-    if (m_bPotential)
-    {
-        if (m_pMatrixH)
-        {
-            static_cast<CMatrix<float>*>(m_pMatrixH)->Release(pObj);
-            m_pMatrixH = NULL;
-        }
-        if (m_pMatrixK)
-        {
-            static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
-            m_pMatrixK = NULL;
-        }
-    } else
-    {
-        if (m_pMatricesWeight)
-        {
-            for (int i = 0; i < m_NumberOfNodes - 1; i++)
-            {
-                if (m_pMatricesWeight[i])
-                {
-                    static_cast<CMatrix<float>*>(
-                            m_pMatricesWeight[i])->Release(pObj);
-                    m_pMatricesWeight[i] = NULL;
-                }
-            }
-            delete []m_pMatricesWeight;
-            m_pMatricesWeight = NULL;
-        }
-    }
+    
+    /*
+     if (m_bPotential)
+     {
+     if (m_pMatrixH)
+     {
+     static_cast<CMatrix<float>*>(m_pMatrixH)->Release(pObj);
+     m_pMatrixH = NULL;
+     }
+     if (m_pMatrixK)
+     {
+     static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
+     m_pMatrixK = NULL;
+     }
+     }
+     */
 }
 
 CFunctionalDistribFun::~CFunctionalDistribFun()
@@ -559,10 +511,10 @@ CDistribFun& CFunctionalDistribFun::operator =( const CDistribFun& pInputDistr )
     {
         return *this;
     }
-    if( pInputDistr.GetDistributionType() != dtGaussian )
+    if( pInputDistr.GetDistributionType() != dtFunctional )
     {
         PNL_THROW( CInvalidOperation,
-                "input distribution must be Gaussian " );
+                "input distribution must be Functional " );
     }
     //both distributions must be on the same node types
     const CFunctionalDistribFun &pGInputDistr =
@@ -596,177 +548,67 @@ CDistribFun& CFunctionalDistribFun::operator =( const CDistribFun& pInputDistr )
                 "both distributions must be on the same nodes");
     }
     //if both distributions are in the same form - all is easy
-    int sameMoment = ( m_bMoment == pGInputDistr.m_bMoment )? 1:0;
-    int sameCanonical = (m_bCanonical == pGInputDistr.m_bCanonical)? 1:0;
     int sameUnit = (m_bUnitFunctionDistribution == pGInputDistr.m_bUnitFunctionDistribution )? 1:0;
-    int sameDelta = ( m_bDeltaFunction == pGInputDistr.m_bDeltaFunction )? 1:0;
-    if( sameUnit && sameDelta )
+    if( sameUnit )
     {
         if( m_bUnitFunctionDistribution )
         {
-            m_bCanonical = pGInputDistr.m_bCanonical;
             m_bMoment = pGInputDistr.m_bMoment;
             return *this;
         }
-        if( m_bDeltaFunction )
-        {
-            m_bCanonical = pGInputDistr.m_bCanonical;
-            m_bMoment = pGInputDistr.m_bMoment;
-            (*m_pMatrixMean) = *(pGInputDistr.m_pMatrixMean);
-            m_normCoeff = pGInputDistr.m_normCoeff;
-            return *this;
-        }
-        if( sameCanonical && sameMoment )
-        {
-            if( m_bPotential )
-            {   
 
-                if( m_bMoment )
-                {
-                    m_normCoeff = pGInputDistr.m_normCoeff;
-                    (*m_pMatrixMean) = *(pGInputDistr.m_pMatrixMean);
-                    (*m_pMatrixCov) = *( pGInputDistr.m_pMatrixCov );
-                }
-                if( m_bCanonical )
-                {
-                    m_g = pGInputDistr.m_g;
-                    (*m_pMatrixH) = *(pGInputDistr.m_pMatrixH);
-                    (*m_pMatrixK) = *(pGInputDistr.m_pMatrixK);
-                }
-            }
-            else
+        if( m_bPotential )
+        {   
+
+            if( m_bMoment )
             {
                 m_normCoeff = pGInputDistr.m_normCoeff;
                 (*m_pMatrixMean) = *(pGInputDistr.m_pMatrixMean);
-                (*m_pMatrixCov) = *(pGInputDistr.m_pMatrixCov);
-                for( i = 0; i < m_NumberOfNodes-1; i++ )
-                {
-                    (*m_pMatricesWeight[i]) =
-                    *(pGInputDistr.m_pMatricesWeight[i]);
-                }
+                (*m_pMatrixCov) = *( pGInputDistr.m_pMatrixCov );
             }
+
+            /*
+             if( m_bCanonical )
+             {
+             m_g = pGInputDistr.m_g;
+             (*m_pMatrixH) = *(pGInputDistr.m_pMatrixH);
+             (*m_pMatrixK) = *(pGInputDistr.m_pMatrixK);
+             }
+             */
         }
         else
         {
+            m_normCoeff = pGInputDistr.m_normCoeff;
+            (*m_pMatrixMean) = *(pGInputDistr.m_pMatrixMean);
+            (*m_pMatrixCov) = *(pGInputDistr.m_pMatrixCov);
+        }
+
+        else
+        {
             PNL_THROW( CInvalidOperation,
-                    "non special types of distributions (non delta, non unit) must be in the same form" );
+                    "non-unit distributions must be in the same form" );
         }
-    }
-    void* pObj = this;
-    //the delta distributions and unit function distributions haven't weight matrices
-    if( !sameDelta )
+    } else
     {
-        //if only one of them is delta distribution 
-        //we need change self without any supporting their forms (moment, canonical) 
-        if( m_bDeltaFunction )//pGInputDistr.m_bDeltaFunction == 0
+        void* pObj = this;
 
-        {
-            //copy data from the mean matrix and clone all other matrices
-            m_bDeltaFunction = 0;
-            if( pGInputDistr.m_bMoment )
-            {
-                (*m_pMatrixMean) = (*pGInputDistr.m_pMatrixMean);
-                m_normCoeff = pGInputDistr.m_normCoeff;
-                m_pMatrixCov = static_cast<C2DNumericDenseMatrix<
-                float>*>(pGInputDistr.m_pMatrixCov->Clone());
-                m_pMatrixCov->AddRef( pObj );
-            }
-            if( pGInputDistr.m_bCanonical )
-            {
-                m_pMatrixMean->Release(pObj);
-                m_pMatrixMean = NULL;
-                m_g = pGInputDistr.m_g;
-                m_pMatrixH = static_cast<C2DNumericDenseMatrix<
-                float>*>(pGInputDistr.m_pMatrixH->Clone());
-                m_pMatrixH->AddRef( pObj );
-                m_pMatrixK = static_cast<C2DNumericDenseMatrix<
-                float>*>(pGInputDistr.m_pMatrixK->Clone());
-                m_pMatrixK->AddRef( pObj );
-            }
-        }
-        else //this isn't delta, other - it is
-
-        {
-            //this distribution can't be CPD - only potentials can be delta and its the same here
-            m_bDeltaFunction = 1;
-            if( m_bMoment )
-            {
-                (*m_pMatrixMean) = (*pGInputDistr.m_pMatrixMean);
-                m_normCoeff = pGInputDistr.m_normCoeff;
-                m_pMatrixCov->Release(pObj);
-                m_pMatrixCov = NULL;
-            }
-            else
-            {
-                m_pMatrixH->Release(pObj);
-                m_pMatrixH = NULL;
-                m_pMatrixK->Release( pObj );
-                m_pMatrixK = NULL;
-                m_g = FLT_MAX;
-                m_normCoeff = pGInputDistr.m_normCoeff;
-                m_pMatrixMean = static_cast<C2DNumericDenseMatrix<float>*>(
-                        pGInputDistr.m_pMatrixMean->Clone());
-                m_pMatrixMean->AddRef(pObj);
-            }
-
-        }
-        m_bMoment = pGInputDistr.m_bMoment;
-        m_bCanonical = pGInputDistr.m_bCanonical;
-        //return *this;
-    }
-    if( !sameUnit )
-    {
         if( m_bUnitFunctionDistribution )
         {
             m_bUnitFunctionDistribution = 0;
-            m_bCanonical = pGInputDistr.m_bCanonical;
-            m_bMoment = pGInputDistr.m_bMoment;
-            if( pGInputDistr.m_bDeltaFunction )
-            {
-                m_pMatrixMean = static_cast<C2DNumericDenseMatrix<
-                float>*>(pGInputDistr.m_pMatrixMean->Clone());
-                m_pMatrixMean->AddRef( pObj );
-                return *this;
-            }
-            if( m_bMoment )
-            {
-                m_normCoeff = pGInputDistr.m_normCoeff;
-                m_pMatrixMean = static_cast<C2DNumericDenseMatrix<
-                float>*>(pGInputDistr.m_pMatrixMean->Clone());
-                m_pMatrixMean->AddRef( pObj );
-                m_pMatrixCov = static_cast<C2DNumericDenseMatrix<
-                float>*>(pGInputDistr.m_pMatrixCov->Clone());
-                m_pMatrixCov->AddRef( pObj );
-                if( pGInputDistr.m_pMatricesWeight )
-                {
-                    int numParents = m_NumberOfNodes - 1;
-                    m_pMatricesWeight = new C2DNumericDenseMatrix<float> *[numParents];
-                    PNL_CHECK_IF_MEMORY_ALLOCATED( m_pMatricesWeight );
-                    for( i = 0; i < numParents; i++ )
-                    {
-                        m_pMatricesWeight[i] = static_cast<
-                        C2DNumericDenseMatrix<float>*>(
-                                pGInputDistr.m_pMatricesWeight[i]->Clone());
-                        m_pMatricesWeight[i]->AddRef(pObj);
-                    }
-                }
-            }
-            if( m_bCanonical )
-            {
-                m_g = pGInputDistr.m_g;
-                m_pMatrixH = static_cast<C2DNumericDenseMatrix<
-                float>*>(pGInputDistr.m_pMatrixH->Clone());
-                m_pMatrixH->AddRef( pObj );
-                m_pMatrixK = static_cast<C2DNumericDenseMatrix<
-                float>*>(pGInputDistr.m_pMatrixK->Clone());
-                m_pMatrixK->AddRef( pObj );
-            }
-        }
-        else //the other distribution is unit, this - not
+
+            m_normCoeff = pGInputDistr.m_normCoeff;
+            m_pMatrixMean = static_cast<C2DNumericDenseMatrix<
+            float>*>(pGInputDistr.m_pMatrixMean->Clone());
+            m_pMatrixMean->AddRef( pObj );
+            m_pMatrixCov = static_cast<C2DNumericDenseMatrix<
+            float>*>(pGInputDistr.m_pMatrixCov->Clone());
+            m_pMatrixCov->AddRef( pObj );
+
+        } else //the other distribution is unit, this - not
 
         {
             m_bUnitFunctionDistribution = 1;
-            m_g = FLT_MAX;
+            // m_g = FLT_MAX;
             m_normCoeff = 0.0f;
             if( m_pMatrixMean )
             {
@@ -778,24 +620,20 @@ CDistribFun& CFunctionalDistribFun::operator =( const CDistribFun& pInputDistr )
                 m_pMatrixCov->Release(pObj);
                 m_pMatrixCov = NULL;
             }
-            if( m_pMatrixH )
-            {
-                m_pMatrixH->Release(pObj);
-                m_pMatrixH = NULL;
-            }
-            if( m_pMatrixK )
-            {
-                m_pMatrixK->Release(pObj);
-                m_pMatrixK = NULL;
-            }
-            if( m_pMatricesWeight )
-            {
-                for( i = 0; i < m_NumberOfNodes-1; i++ )
-                {
-                    m_pMatricesWeight[i]->Release( pObj );
-                }
-                m_pMatricesWeight = NULL;
-            }
+
+            /*
+             if( m_pMatrixH )
+             {
+             m_pMatrixH->Release(pObj);
+             m_pMatrixH = NULL;
+             }
+             if( m_pMatrixK )
+             {
+             m_pMatrixK->Release(pObj);
+             m_pMatrixK = NULL;
+             }
+             */
+
         }
     }
     //we also need to set positions multiplied by delta if there are such
@@ -824,16 +662,12 @@ void CFunctionalDistribFun::AllocMatrix(const float *data, EMatrixType mType,
 {
     PNL_CHECK_IS_NULL_POINTER( data );
     
-    if ((m_bDeltaFunction )&&(mType != matMean ))
-    {
-        PNL_THROW( CInvalidOperation,
-                "delta function have only matrix mean" )
-    }
     if (m_bUnitFunctionDistribution)
     {
         PNL_THROW( CInvalidOperation,
                 "uniform distribution have no matrices" )
     }
+    
     //check node sizes with node types
     int i;
     void *pObj = this;
@@ -842,10 +676,6 @@ void CFunctionalDistribFun::AllocMatrix(const float *data, EMatrixType mType,
     {
         case 1:
         {
-            if (mType == matWeights)
-            {
-                PNL_THROW( CInconsistentType, "matrix type" );
-            }
             //check node sizes and sum all them
             int dimSizes = 0;
             for (i = 0; i < m_NumberOfNodes; i++)
@@ -902,53 +732,60 @@ void CFunctionalDistribFun::AllocMatrix(const float *data, EMatrixType mType,
                 static_cast<CMatrix<float>*>(m_pMatrixCov)->AddRef(pObj);
                 break;
             }
-            if (mType == matH)
-            {
-                if (m_pMatrixH)
-                {
-                    static_cast<CMatrix<float>*>(m_pMatrixH)->Release(pObj);
-                    m_pMatrixH = NULL;
-                }
-                m_pMatrixH
-                        = C2DNumericDenseMatrix<float>::Create( &dims.front(),
-                                                               data);
-                static_cast<CMatrix<float>*>(m_pMatrixH)->AddRef(pObj);
-                break;
-            }
-            if (mType == matK)
-            {
-                if (m_pMatrixK)
-                {
-                    static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
-                    m_pMatrixK = NULL;
-                }
-                dims[1] = dimSizes;
-                m_pMatrixK
-                        = C2DNumericDenseMatrix<float>::Create( &dims.front(),
-                                                               data);
-                float det = m_pMatrixK->Determinant();
-                if (det < 0)
-                {
-                    PNL_THROW( CInconsistentType,
-                            "K matrix must be positive semidifinite" );
-                }
-                if ( !m_pMatrixK->IsSymmetric(1e-3f))
-                {
-                    static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
-                    PNL_THROW( CInvalidOperation,
-                            "K should be symmetric and well conditioned" )
-                }
-                static_cast<CMatrix<float>*>(m_pMatrixK)->AddRef(pObj);
-            }
+            
+            /*
+             if (mType == matH)
+             {
+             if (m_pMatrixH)
+             {
+             static_cast<CMatrix<float>*>(m_pMatrixH)->Release(pObj);
+             m_pMatrixH = NULL;
+             }
+             m_pMatrixH
+             = C2DNumericDenseMatrix<float>::Create( &dims.front(),
+             data);
+             static_cast<CMatrix<float>*>(m_pMatrixH)->AddRef(pObj);
+             break;
+             }
+             if (mType == matK)
+             {
+             if (m_pMatrixK)
+             {
+             static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
+             m_pMatrixK = NULL;
+             }
+             dims[1] = dimSizes;
+             m_pMatrixK
+             = C2DNumericDenseMatrix<float>::Create( &dims.front(),
+             data);
+             float det = m_pMatrixK->Determinant();
+             if (det < 0)
+             {
+             PNL_THROW( CInconsistentType,
+             "K matrix must be positive semidifinite" );
+             }
+             if ( !m_pMatrixK->IsSymmetric(1e-3f))
+             {
+             static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
+             PNL_THROW( CInvalidOperation,
+             "K should be symmetric and well conditioned" )
+             }
+             static_cast<CMatrix<float>*>(m_pMatrixK)->AddRef(pObj);
+             }
+             */
+
             break;
         }
         case 0:
         {
-            if ((mType == matH )||(mType == matK ))
-            {
-                PNL_THROW( CInconsistentType,
-                        "matrix type" );
-            }
+            /*
+             if ((mType == matH )||(mType == matK ))
+             {
+             PNL_THROW( CInconsistentType,
+             "matrix type" );
+             }
+             */
+
             int dim = m_NodeTypes[m_NumberOfNodes-1]->GetNodeSize();
             int* dims = new int[2];
             PNL_CHECK_IF_MEMORY_ALLOCATED( dims );
@@ -1025,23 +862,7 @@ void CFunctionalDistribFun::AllocMatrix(const float *data, EMatrixType mType,
                 static_cast<CMatrix<float>*>(m_pPseudoCountsCov)->AddRef(pObj);
                 break;
             }
-            if (mType == matWeights)
-            {
-                PNL_CHECK_RANGES( numberOfWeightMatrix, 0, m_NumberOfNodes -1 );
-                
-                if (m_pMatricesWeight[numberOfWeightMatrix])
-                {
-                    static_cast<CMatrix<float>*>(
-                            m_pMatricesWeight[numberOfWeightMatrix])->Release(pObj);
-                    m_pMatricesWeight[numberOfWeightMatrix] = NULL;
-                }
-                dims[0] = dim;
-                dims[1] = m_NodeTypes[numberOfWeightMatrix]->GetNodeSize();
-                m_pMatricesWeight[numberOfWeightMatrix]
-                        = C2DNumericDenseMatrix<float>::Create(dims, data);
-                static_cast<CMatrix<float>*>(
-                        m_pMatricesWeight[numberOfWeightMatrix])->AddRef(pObj);
-            }
+            
             delete []dims;
             break;
         }
@@ -1051,8 +872,8 @@ void CFunctionalDistribFun::AllocMatrix(const float *data, EMatrixType mType,
         }
     }
     CheckMomentFormValidity();
-    CheckCanonialFormValidity();
 }
+
 void CFunctionalDistribFun::AttachMatrix(CMatrix<float>* pMatrix,
     EMatrixType mType, int numberOfWeightMatrix, const int *parentIndices,
     bool isMultipliedByDelta)
@@ -1066,46 +887,16 @@ void CFunctionalDistribFun::AttachMatrix(CMatrix<float>* pMatrix,
         PNL_THROW( CInvalidOperation,
                 "Gaussiandata works with plane matrices" )
     }
-    if ((m_bDeltaFunction )&&(mType != matMean ))
-    {
-        PNL_THROW( CInvalidOperation,
-                "delta function have only matrix mean" )
-    }
     if (m_bUnitFunctionDistribution)
     {
         PNL_THROW( CInvalidOperation,
                 "uniform distribution have no matrices" )
     }
+    
     C2DNumericDenseMatrix<float>* p2Matrix =
             static_cast<C2DNumericDenseMatrix<float>*>(pMatrix);
     void *pObj = this;
-    if ((m_bDeltaFunction )&&(mType == matMean ))
-    {
-        if (m_pMatrixMean)
-        {
-            static_cast<CMatrix<float>*>(m_pMatrixMean)->Release(pObj);
-        }
-        m_pMatrixMean = p2Matrix;
-        static_cast<CMatrix<float>*>(m_pMatrixMean)->AddRef(pObj);
-        //we need to Release all other matrices
-        if (m_pMatrixH)
-        {
-            static_cast<CMatrix<float>*>(m_pMatrixH)->Release(pObj);
-            m_pMatrixH = NULL;
-        }
-        if (m_pMatrixK)
-        {
-            static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
-            m_pMatrixK = NULL;
-        }
-        if (m_pMatrixCov)
-        {
-            static_cast<CMatrix<float>*>(m_pMatrixCov)->Release(pObj);
-            m_pMatrixCov = NULL;
-        }
-        m_normCoeff = 0;
-        return;
-    }
+    
     int i;
     int numDims;
     const int *ranges;
@@ -1168,14 +959,14 @@ void CFunctionalDistribFun::AttachMatrix(CMatrix<float>* pMatrix,
              }
              }*/
             // change matrix - checking data
-            if ((mType == matMean )||(mType == matH ))
+            if ((mType == matMean ))
             {
                 if ((numDims != 2 )||(ranges[0] != dimSize )|| (ranges[1] != 1))
                 {
                     PNL_THROW( CInconsistentSize, "matrix sizes" );
                 }
             }
-            if ((mType == matCovariance )||(mType == matK ))
+            if ((mType == matCovariance ))
             {
                 if ((numDims != 2 )||(ranges[0] != dimSize )|| (ranges[1]
                         != dimSize ))
@@ -1185,7 +976,7 @@ void CFunctionalDistribFun::AttachMatrix(CMatrix<float>* pMatrix,
                 if (!p2Matrix->IsSymmetric(1e-3f))
                 {
                     PNL_THROW( CInvalidOperation,
-                            "K & Covariance should be symmetric" )
+                            "Covariance should be symmetric" )
                 }
             }
             switch (mType)
@@ -1235,41 +1026,44 @@ void CFunctionalDistribFun::AttachMatrix(CMatrix<float>* pMatrix,
                     
                     break;
                 }
-                case matH:
-                {
-                    if (m_pMatrixH)
-                    {
-                        static_cast<CMatrix<float>*>(
-                                m_pMatrixH)->Release(pObj);
-                        m_pMatrixH = NULL;
-                    }
-                    m_pMatrixH = p2Matrix;
-                    static_cast<CMatrix<float>*>(
-                            m_pMatrixH)->AddRef(pObj);
-                    break;
-                }
-                case matK:
-                {
-                    if (m_pMatrixK)
-                    {
-                        static_cast<CMatrix<float>*>(
-                                m_pMatrixK)->Release(pObj);
-                        m_pMatrixK = NULL;
-                    }
-                    m_pMatrixK = p2Matrix;
-                    if ( !isMultipliedByDelta)
-                    {
-                        float det = m_pMatrixK->Determinant();
-                        if (det < 0)
-                        {
-                            PNL_THROW( CInconsistentType,
-                                    "K matrix must be positive semidifinite" );
-                        }
-                    }
-                    static_cast<CMatrix<float>*>(
-                            m_pMatrixK)->AddRef(pObj);
-                    break;
-                }
+                    
+                    /*
+                     case matH:
+                     {
+                     if (m_pMatrixH)
+                     {
+                     static_cast<CMatrix<float>*>(
+                     m_pMatrixH)->Release(pObj);
+                     m_pMatrixH = NULL;
+                     }
+                     m_pMatrixH = p2Matrix;
+                     static_cast<CMatrix<float>*>(
+                     m_pMatrixH)->AddRef(pObj);
+                     break;
+                     }
+                     case matK:
+                     {
+                     if (m_pMatrixK)
+                     {
+                     static_cast<CMatrix<float>*>(
+                     m_pMatrixK)->Release(pObj);
+                     m_pMatrixK = NULL;
+                     }
+                     m_pMatrixK = p2Matrix;
+                     if ( !isMultipliedByDelta)
+                     {
+                     float det = m_pMatrixK->Determinant();
+                     if (det < 0)
+                     {
+                     PNL_THROW( CInconsistentType,
+                     "K matrix must be positive semidifinite" );
+                     }
+                     }
+                     static_cast<CMatrix<float>*>(
+                     m_pMatrixK)->AddRef(pObj);
+                     break;
+                     }
+                     */
             }
             break;
         }
@@ -1386,64 +1180,16 @@ void CFunctionalDistribFun::AttachMatrix(CMatrix<float>* pMatrix,
                             m_pPseudoCountsCov)->AddRef(pObj);
                     break;
                 }
-                case matWeights:
-                {
-                    if ((numberOfWeightMatrix <0 ) ||(numberOfWeightMatrix
-                            > m_NumberOfNodes-1 ))
-                    {
-                        PNL_THROW( COutOfRange, "number of matrix weight" )
-                    } else
-                    {
-                        if ((ranges[0] != nodeSize )
-                                || (ranges[1]
-                                        != m_NodeTypes[numberOfWeightMatrix]->GetNodeSize()))
-                        {
-                            PNL_THROW( CInconsistentSize, "matrix size" );
-                        } else
-                        {
-                            if (m_pMatricesWeight[numberOfWeightMatrix])
-                            {
-                                static_cast<CMatrix<float>*>(
-                                        m_pMatricesWeight[numberOfWeightMatrix])->Release(pObj);
-                                m_pMatricesWeight[numberOfWeightMatrix] = NULL;
-                            }
-                            m_pMatricesWeight[numberOfWeightMatrix] = p2Matrix;
-                            static_cast<CMatrix<float>*>(
-                                    m_pMatricesWeight[numberOfWeightMatrix])->AddRef(pObj);
-                        }
-                    }
-                    break;
-                }
             }
         }
     }
     CheckMomentFormValidity();
-    CheckCanonialFormValidity();
 }
 
+// TODO: Actually check validity.
 bool CFunctionalDistribFun::IsValid(std::string* description) const
 {
-    if (m_bMoment || m_bCanonical)
-    {
-        return 1;
-    } else
-    {
-        if (description)
-        {
-            std::stringstream st;
-            st<<"Gaussian distribution function haven't any valid form - ";
-            st<<"neither Moment no Canonical."<<std::endl;
-            st<<"For valid Moment form should be matrix Mean, symmetric ";
-            st<<"nonsingular matrix Covarianceand in case of CPD  with ";
-            st<<"Gaussian parents - matrices Weights."<<std::endl;
-            st<<"For valid Canonical form (appropriate only for potentials)";
-            st<<"should be H matrix and symmetric nonsingular K matrix."
-                    <<std::endl;
-            std::string s = st.str();
-            description->insert(description->begin(), s.begin(), s.end());
-        }
-        return 0;
-    }
+    return 1;
 }
 
 void CFunctionalDistribFun::Update()
@@ -1451,15 +1197,16 @@ void CFunctionalDistribFun::Update()
     int multWithMaximize = 0;
     if (m_bPotential)
     {
-        if (( !m_bMoment )&&( !m_bCanonical ))
+        if ( !IsValid() )
         {
             PNL_THROW( CInvalidOperation, "no valid form" );
         }
-        if ((m_bUnitFunctionDistribution )||(m_bDeltaFunction))
+        if (m_bUnitFunctionDistribution)
         {
-            m_bMoment = 1;
             return;
         }
+        
+#if 0
         if ((m_bCanonical )&&( !m_bMoment ))
         {
             void *pObj = this;
@@ -1478,7 +1225,7 @@ void CFunctionalDistribFun::Update()
                 m_pMatrixMean = NULL;
             }
             m_pMatrixMean = pnlMultiply(m_pMatrixCov, m_pMatrixH,
-                                        multWithMaximize);
+                    multWithMaximize);
             static_cast<CMatrix<float>*>(m_pMatrixMean)->AddRef(pObj);
             //we can compute norm coeff without base of g
             //n = length(mean);
@@ -1524,6 +1271,8 @@ void CFunctionalDistribFun::Update()
              }*/
             m_bMoment = 1;
         }
+#endif
+        
     }
 }
 
@@ -1532,7 +1281,7 @@ CNodeValues *CFunctionalDistribFun::GetMPE()
     CNodeValues *mpe= NULL;
     if (m_bPotential)
     {
-        UpdateMomentForm();
+        Update();
         int dataLength;
         const float* data;
         m_pMatrixMean->GetRawData( &dataLength, &data);
@@ -1560,7 +1309,7 @@ int CFunctionalDistribFun::IsEqual(const CDistribFun *dataToCompare,
     {
         *maxDifference = 0.0f;
     }
-    if (dataToCompare->GetDistributionType() != dtGaussian)
+    if (dataToCompare->GetDistributionType() != dtFunctional)
     {
         PNL_THROW( CInconsistentType,
                 "we can compare datas of the same type" );
@@ -1584,164 +1333,24 @@ int CFunctionalDistribFun::IsEqual(const CDistribFun *dataToCompare,
     }
     //int ret = 1;
     int ret = 0;
-    //we need to check special cases but it can be in both special & common forms (fixme)
+    // FIXME: we need to check special cases but it can be in both special & common forms
     if (m_bUnitFunctionDistribution)
     {
-        if (( !data->m_bUnitFunctionDistribution )
-                && ( !data->IsDistributionSpecific() )&&(data->m_bCanonical))
-        {
-            float hSum = data->m_pMatrixH->SumAll(1);
-            float kSum = data->m_pMatrixK->SumAll(1);
-            ret = ((hSum < ZeroEpsilon )&&(kSum < ZeroEpsilon )
-                    && (fabs(data->m_g) < ZeroEpsilon ) ) ? 1 : 0;
-            if (maxDifference && !ret)
-            {
-                *maxDifference = (hSum > kSum) ? hSum : kSum;
-                *maxDifference = (*maxDifference > m_g) ? *maxDifference : m_g;
-            }
-        } else if (data->m_bUnitFunctionDistribution)
+        if (data->m_bUnitFunctionDistribution)
         {
             ret = 1;
         }
         return ret;
-        
     }
-    //now we can check if data is in unitFunction form & "this" usn't in this form
     if (data->m_bUnitFunctionDistribution)
     {
-        if (( !IsDistributionSpecific() )&&(m_bCanonical ))
+        if (m_bUnitFunctionDistribution)
         {
-            float hSum = m_pMatrixH->SumAll(1);
-            float kSum = m_pMatrixK->SumAll(1);
-            ret = ((hSum < ZeroEpsilon )&&(kSum < ZeroEpsilon )&& (fabs(m_g)
-                    < ZeroEpsilon ) ) ? 1 : 0;
-            if (maxDifference && !ret)
-            {
-                *maxDifference = (hSum > kSum) ? hSum : kSum;
-                *maxDifference = (*maxDifference > m_g) ? *maxDifference : m_g;
-            }
-        } else
-        {
-            ret = 0;
+            ret = 1;
         }
         return ret;
     }
-    if (m_bDeltaFunction)
-    {
-        if (data->m_bDeltaFunction)
-        {
-            //need to compare means
-            float difNormCoeff = (float)fabs(data->m_normCoeff
-                    -(double)m_normCoeff);
-            C2DNumericDenseMatrix<float>
-                    *matTemp =
-                            static_cast <C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                  data->m_pMatrixMean,
-                                                                                                  m_pMatrixMean,
-                                                                                                   0));
-            float difMean = matTemp->SumAll(1);
-            delete matTemp;
-            if ((m_bMoment && data->m_bMoment )|| (m_bCanonical
-                    && data->m_bCanonical ))
-            {
-                if ( !withCoeff)
-                {
-                    ret = (difMean < epsilon ) ? 1 : 0;
-                    if (maxDifference && !ret)
-                    {
-                        *maxDifference = difMean;
-                    }
-                } else
-                {
-                    ret = ((difNormCoeff < epsilon )&&(difMean <epsilon )) ? 1
-                                                                           : 0;
-                    if (maxDifference && !ret)
-                    {
-                        *maxDifference
-                                = (difMean > difNormCoeff ) ? difMean
-                                                            : difNormCoeff;
-                    }
-                }
-            }
-        } else
-        {
-            if ((data->m_bMoment )&&( !data->IsDistributionSpecific()))
-            {
-                float difNormCoeff = (float)fabs(data->m_normCoeff
-                        -(double)m_normCoeff);
-                C2DNumericDenseMatrix<float>
-                        *matTemp =
-                                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                     data->m_pMatrixMean,
-                                                                                                     m_pMatrixMean,
-                                                                                                      0));
-                float difMean = matTemp->SumAll(1);
-                float covSum = data->m_pMatrixCov->SumAll(1);
-                if ( !withCoeff)
-                {
-                    ret = ((difMean < epsilon ) &&(covSum < ZeroEpsilon) ) ? 1
-                                                                           : 0;
-                    if (maxDifference && !ret)
-                    {
-                        *maxDifference = (difMean > covSum ) ? difMean : covSum;
-                    }
-                } else
-                {
-                    ret = ((difNormCoeff < epsilon )&&(difMean <epsilon )
-                            && (covSum < ZeroEpsilon )) ? 1 : 0;
-                    if (maxDifference && !ret)
-                    {
-                        *maxDifference = (difMean > covSum ) ? difMean : covSum;
-                        *maxDifference
-                                = ( *maxDifference > difNormCoeff )
-                                                                    ? *maxDifference
-                                                                    : difNormCoeff;
-                    }
-                }
-                delete matTemp;
-            }
-        }
-        return ret;
-    }
-    //the case of "this" in non-special form & dataToCompare in special form
-    if ((data->m_bDeltaFunction )&&( !IsDistributionSpecific() ))
-    {
-        if (m_bMoment)
-        {
-            float difNormCoeff = (float)fabs(data->m_normCoeff
-                    -(double)m_normCoeff);
-            C2DNumericDenseMatrix<float>
-                    *matTemp =
-                            static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                 data->m_pMatrixMean,
-                                                                                                 m_pMatrixMean,
-                                                                                                  0));
-            float difMean = matTemp->SumAll(1);
-            float covSum = m_pMatrixCov->SumAll(1);
-            if ( !withCoeff)
-            {
-                ret = ((difMean < epsilon ) &&(covSum < ZeroEpsilon) ) ? 1 : 0;
-                if (maxDifference && !ret)
-                {
-                    *maxDifference = (difMean > covSum ) ? difMean : covSum;
-                }
-            } else
-            {
-                ret = ((difNormCoeff < epsilon )&&(difMean <epsilon )&& (covSum
-                        < ZeroEpsilon )) ? 1 : 0;
-                if (maxDifference && !ret)
-                {
-                    *maxDifference = (difMean > covSum ) ? difMean : covSum;
-                    *maxDifference
-                            = ( *maxDifference > difNormCoeff )
-                                                                ? *maxDifference
-                                                                : difNormCoeff;
-                }
-            }
-            delete matTemp;
-        }
-        return ret;
-    }
+    
     if (m_posOfDeltaMultiply.size() != data->m_posOfDeltaMultiply.size() )
     {
         return 0;
@@ -1786,6 +1395,7 @@ int CFunctionalDistribFun::IsEqual(const CDistribFun *dataToCompare,
             }
         }
     }
+    
     const CFunctionalDistribFun* dataInMomentForm;
     const CFunctionalDistribFun* thisInMomentForm;
     switch (m_bPotential)
@@ -1835,30 +1445,6 @@ int CFunctionalDistribFun::IsEqual(const CDistribFun *dataToCompare,
                     }
                     return 0;
                 }
-                int numParents = dataInMomentForm->GetNumberOfNodes()-1;
-                int i;
-                for (i = 0; i < numParents; i++)
-                {
-                    matDiff
-                            = static_cast<C2DNumericDenseMatrix<float>*> (pnlCombineNumericMatrices(
-                                                                                                    dataInMomentForm->m_pMatricesWeight[i],
-                                                                                                    thisInMomentForm->m_pMatricesWeight[i],
-                                                                                                     0));
-                    
-                    int nDims;
-                    const int *ranges;
-                    matDiff->GetRanges(&nDims, &ranges);
-                    trace = matDiff->SumAll(1)/(ranges[0]*ranges[1]);
-                    if (trace > epsilon)
-                    {
-                        if (maxDifference)
-                        {
-                            *maxDifference = trace;
-                        }
-                        return 0;
-                    }
-                    delete matDiff;
-                }
             }
             ret = 1;
             break;
@@ -1870,83 +1456,42 @@ int CFunctionalDistribFun::IsEqual(const CDistribFun *dataToCompare,
                 return 0;
             } else
             {
-                if ((data->m_bCanonical )&&(m_bCanonical ))
+                
+                float difNormCoeff =
+                        (float)fabs(data->m_normCoeff -m_normCoeff);
+                CNumericDenseMatrix<float> *matTemp =
+                        pnlCombineNumericMatrices(data->m_pMatrixMean,
+                                                  m_pMatrixMean, 0);
+                float difMean = (matTemp->SumAll(1))/m_numberOfDims;
+                delete matTemp;
+                matTemp = pnlCombineNumericMatrices(data->m_pMatrixCov,
+                                                    m_pMatrixCov, 0);
+                float difCov = (matTemp->SumAll(1) )/(m_numberOfDims
+                        * m_numberOfDims );
+                delete matTemp;
+                if ( !withCoeff)
                 {
-                    float difG = (float)fabs(data->m_g - m_g);
-                    CMatrix<float> *matTemp =
-                            pnlCombineNumericMatrices(data->m_pMatrixH,
-                                                      m_pMatrixH, 0);
-                    float difH = (matTemp->SumAll(1) )/m_numberOfDims;
-                    delete matTemp;
-                    matTemp = pnlCombineNumericMatrices(data->m_pMatrixK,
-                                                        m_pMatrixK, 0);
-                    float difK = (matTemp->SumAll(1) )/(m_numberOfDims
-                            * m_numberOfDims);
-                    delete matTemp;
-                    if ( !withCoeff)
+                    ret = ((difMean < epsilon )&&(difCov < epsilon)) ? 1 : 0;
+                    if (maxDifference && !ret)
                     {
-                        ret = ((difH < epsilon )&&(difK < epsilon)) ? 1 : 0;
-                        if (maxDifference && !ret)
-                        {
-                            *maxDifference = (difH > difK) ? difH : difK;
-                        }
-                    } else
-                    {
-                        ret = ((difG < epsilon )&&(difH < epsilon )&& (difK
-                                < epsilon)) ? 1 : 0;
-                        if (maxDifference && !ret)
-                        {
-                            *maxDifference = (difH > difK) ? difH : difK;
-                            *maxDifference
-                                    = (*maxDifference > difG)
-                                                              ? (*maxDifference)
-                                                              : m_g;
-                        }
+                        *maxDifference = (difMean > difCov ) ? difMean : difCov;
                     }
                 } else
                 {
-                    if ((data->m_bMoment )&&(m_bMoment ))
+                    ret = ((difNormCoeff < epsilon )&& (difMean < epsilon )
+                            &&(difCov < epsilon)) ? 1 : 0;
+                    if (maxDifference && !ret)
                     {
-                        float difNormCoeff = (float)fabs(data->m_normCoeff
-                                -m_normCoeff);
-                        CNumericDenseMatrix<float> *matTemp =
-                                pnlCombineNumericMatrices(data->m_pMatrixMean,
-                                                          m_pMatrixMean, 0);
-                        float difMean = (matTemp->SumAll(1))/m_numberOfDims;
-                        delete matTemp;
-                        matTemp = pnlCombineNumericMatrices(data->m_pMatrixCov,
-                                                            m_pMatrixCov, 0);
-                        float difCov = (matTemp->SumAll(1) )/(m_numberOfDims
-                                * m_numberOfDims );
-                        delete matTemp;
-                        if ( !withCoeff)
-                        {
-                            ret
-                                    = ((difMean < epsilon )&&(difCov < epsilon))
-                                                                                 ? 1
-                                                                                 : 0;
-                            if (maxDifference && !ret)
-                            {
-                                *maxDifference = (difMean > difCov ) ? difMean
-                                                                     : difCov;
-                            }
-                        } else
-                        {
-                            ret = ((difNormCoeff < epsilon )&& (difMean
-                                    < epsilon )&&(difCov < epsilon)) ? 1 : 0;
-                            if (maxDifference && !ret)
-                            {
-                                *maxDifference
-                                        = (difMean > difNormCoeff )
-                                                                    ? difMean
+                        *maxDifference
+                                = (difMean > difNormCoeff ) ? difMean
+                                                            : difNormCoeff;
+                        *maxDifference
+                                = ( *maxDifference > difNormCoeff )
+                                                                    ? (*maxDifference)
                                                                     : difNormCoeff;
-                                *maxDifference = ( *maxDifference
-                                        > difNormCoeff ) ? (*maxDifference)
-                                                         : difNormCoeff;
-                            }
-                        }
                     }
                 }
+                
             }
             break;
         }
@@ -1969,6 +1514,9 @@ void CFunctionalDistribFun::SumInSelfData(const int *pBigDomain,
 void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
     const int *pSmallDomain, const CDistribFun *pOtherData)
 {
+    PNL_THROW(CNotImplemented, "haven't for CFunctionalDistribFun now ");
+    
+#if 0
     EDistributionType dtOther = pOtherData->GetDistributionType();
     if ((dtOther != dtGaussian )&&(dtOther != dtScalar ))
     {
@@ -1990,7 +1538,7 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
         return;
     }
     const CFunctionalDistribFun *pGSmallData =
-            (const CFunctionalDistribFun *)pOtherData;
+    (const CFunctionalDistribFun *)pOtherData;
     if (!(m_bPotential )&&((pGSmallData)->GetFactorFlag()))
     {
         PNL_THROW( CInconsistentType,
@@ -2032,7 +1580,7 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
     for (i = 0; i < size2; i++)
     {
         location = std::find(pBigDomain, pBigDomain + size1, pSmallDomain[i])
-                - pBigDomain;
+        - pBigDomain;
         if (location >= size1)
         {
             PNL_THROW( CInternalError, "small domain isn't subset of big" );
@@ -2086,11 +1634,11 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
             //we need to ask about offset to it
             //this offset can be computed by using nodeTypes, but we have it here
             m_posOfDeltaMultiply.insert(m_posOfDeltaMultiply.end(),
-                                        posOfSmallDomInBig.begin(),
-                                        posOfSmallDomInBig.end() );
+                    posOfSmallDomInBig.begin(),
+                    posOfSmallDomInBig.end() );
             const floatVector* mean = pGSmallData->m_pMatrixMean->GetVector();
             m_meanValuesOfMult.insert(m_meanValuesOfMult.end(), mean->begin(),
-                                      mean->end() );
+                    mean->end() );
             if (m_offsetToNextMean.empty() )
             {
                 m_offsetToNextMean.push_back(0);
@@ -2099,11 +1647,11 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
             for (i = 0; i < size2; i++)
             {
                 nodeSize
-                        = m_NodeTypes[posOfSmallDomInBig[i]]->IsDiscrete()
-                                                                            ? 0
-                                                                            : m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
+                = m_NodeTypes[posOfSmallDomInBig[i]]->IsDiscrete()
+                ? 0
+                : m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
                 m_offsetToNextMean.push_back(m_offsetToNextMean[
-                m_offsetToNextMean.size()-1]+nodeSize);
+                        m_offsetToNextMean.size()-1]+nodeSize);
             }
             return;
         } else
@@ -2121,14 +1669,14 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                 {
                     //get node sizes for compare
                     int
-                            nodeSize =
-                                    m_NodeTypes[posOfSmallDomInBig[i]]->IsDiscrete()
-                                                                                      ? 0
-                                                                                      : m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
+                    nodeSize =
+                    m_NodeTypes[posOfSmallDomInBig[i]]->IsDiscrete()
+                    ? 0
+                    : m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
                     for (j = 0; j < nodeSize; j++)
                     {
                         if (fabs(mean1Data[posOfSmallDomInBig[i]+j]
-                                - mean2Data[i])>0.0001f)
+                                        - mean2Data[i])>0.0001f)
                         {
                             PNL_THROW( CInvalidOperation,
                                     "means in delta functions are differ" )
@@ -2154,30 +1702,30 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                     for (i = 0; i < m_posOfDeltaMultiply.size(); i++)
                     {
                         location = std::find(posOfSmallDomInBig.begin(),
-                                             posOfSmallDomInBig.end(),
-                                             m_posOfDeltaMultiply[i])
-                                - posOfSmallDomInBig.begin();
+                                posOfSmallDomInBig.end(),
+                                m_posOfDeltaMultiply[i])
+                        - posOfSmallDomInBig.begin();
                         if (location <= size2)
                         {
                             //we need to check all values of mean:
                             int mean2l;
                             const float *mean2Data;
                             pGSmallData->m_pMatrixMean->GetRawData( &mean2l,
-                                                                    &mean2Data);
+                                    &mean2Data);
                             int thisPosSize = m_offsetToNextMean[i+1]
-                                    - m_offsetToNextMean[i];
+                            - m_offsetToNextMean[i];
                             int offset = 0;
                             for (j = 0; j < location; j++)
                             {
                                 offset
-                                        += pGSmallData->m_NodeTypes[j]->IsDiscrete()
-                                                                                      ? 0
-                                                                                      : pGSmallData->m_NodeTypes[j]->GetNodeSize();
+                                += pGSmallData->m_NodeTypes[j]->IsDiscrete()
+                                ? 0
+                                : pGSmallData->m_NodeTypes[j]->GetNodeSize();
                             }
                             for (j = 0; j < thisPosSize; j++)
                             {
                                 if (fabs(mean2Data[offset + j]
-                                        - m_meanValuesOfMult[m_offsetToNextMean[i] + j])
+                                                - m_meanValuesOfMult[m_offsetToNextMean[i] + j])
                                         >0.001f)
                                 {
                                     isAllright = 0;
@@ -2191,12 +1739,12 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                 if (isAllright)
                 {
                     m_posOfDeltaMultiply.insert(m_posOfDeltaMultiply.end(),
-                                                posOfSmallDomInBig.begin(),
-                                                posOfSmallDomInBig.end() );
+                            posOfSmallDomInBig.begin(),
+                            posOfSmallDomInBig.end() );
                     const floatVector* mean =
-                            pGSmallData->m_pMatrixMean->GetVector();
+                    pGSmallData->m_pMatrixMean->GetVector();
                     m_meanValuesOfMult.insert(m_meanValuesOfMult.end(),
-                                              mean->begin(), mean->end() );
+                            mean->begin(), mean->end() );
                     if (m_offsetToNextMean.empty() )
                     {
                         m_offsetToNextMean.push_back(0);
@@ -2208,11 +1756,11 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                          m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
                          */
                         nodeSize
-                                = m_NodeTypes[posOfSmallDomInBig[i]]->IsDiscrete()
-                                                                                    ? 0
-                                                                                    : m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
+                        = m_NodeTypes[posOfSmallDomInBig[i]]->IsDiscrete()
+                        ? 0
+                        : m_NodeTypes[posOfSmallDomInBig[i]]->GetNodeSize();
                         m_offsetToNextMean.push_back(m_offsetToNextMean[
-                        m_offsetToNextMean.size() - 1] + nodeSize);
+                                m_offsetToNextMean.size() - 1] + nodeSize);
                     }
                 }
                 return;
@@ -2230,20 +1778,20 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
             if (size1 == size2)
             {
                 C2DNumericDenseMatrix<float>
-                        *resH =
-                                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                     m_pMatrixH,
-                                                                                                     pGSmallData->m_pMatrixH,
-                                                                                                      1));
+                *resH =
+                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                m_pMatrixH,
+                                pGSmallData->m_pMatrixH,
+                                1));
                 static_cast<CMatrix<float>*>(m_pMatrixH)->Release(pObj);
                 m_pMatrixH = resH;
                 static_cast<CMatrix<float>*>(m_pMatrixH)->AddRef(pObj);
                 C2DNumericDenseMatrix<float>
-                        *resK =
-                                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                     m_pMatrixK,
-                                                                                                     pGSmallData->m_pMatrixK,
-                                                                                                      1));
+                *resK =
+                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                m_pMatrixK,
+                                pGSmallData->m_pMatrixK,
+                                1));
                 static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
                 m_pMatrixK = resK;
                 static_cast<CMatrix<float>*>(m_pMatrixK)->AddRef(pObj);
@@ -2280,29 +1828,29 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                 const floatVector *vecBigK = m_pMatrixK->GetVector();
                 //we need to create extended matrix from small to sum them
                 C2DNumericDenseMatrix<float> *matSmallH =
-                        pGSmallData->m_pMatrixH;
+                pGSmallData->m_pMatrixH;
                 C2DNumericDenseMatrix<float> *matSmallK =
-                        pGSmallData->m_pMatrixK;
+                pGSmallData->m_pMatrixK;
                 float gSmall = pGSmallData->m_g;
                 const floatVector*vecH = matSmallH->GetVector();
                 const floatVector*vecK = matSmallK->GetVector();
                 floatVector newSmallH = floatVector(num, 0);
                 intVector offsets = intVector(size1, 0);
                 intVector nodeSizesInBig = intVector(size1, 0);
-                
+
                 nodeSizesInBig[0]
-                        = m_NodeTypes[0]->IsDiscrete()
-                                                        ? 0
-                                                        : m_NodeTypes[0]->GetNodeSize();
+                = m_NodeTypes[0]->IsDiscrete()
+                ? 0
+                : m_NodeTypes[0]->GetNodeSize();
                 //                nodeSizesInBig[0] = m_NodeTypes[0]->GetNodeSize();
                 offsets[0] = 0;
                 for (i = 1; i < size1; i++)
                 {
                     //                    nodeSizesInBig[i] = m_NodeTypes[i]->GetNodeSize();
                     nodeSizesInBig[i]
-                            = m_NodeTypes[i]->IsDiscrete()
-                                                            ? 0
-                                                            : m_NodeTypes[i]->GetNodeSize();
+                    = m_NodeTypes[i]->IsDiscrete()
+                    ? 0
+                    : m_NodeTypes[i]->GetNodeSize();
                     offsets[i] = nodeSizesInBig[i-1] + offsets[i-1];
                 }
                 intVector offSmall = intVector(size2, 0);
@@ -2310,7 +1858,7 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                 for (i = 1; i < size2; i++)
                 {
                     offSmall[i] = offSmall[i-1]
-                            + nodeSizesInBig[posOfSmallDomInBig[i-1]];
+                    + nodeSizesInBig[posOfSmallDomInBig[i-1]];
                 }
                 //copy data for H - add information 
                 for (i = 0; i < size2; i++)
@@ -2336,8 +1884,8 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                             memcpy(
                                     &newSmallK[offsets[posOfSmallDomInBig[k]] + (offsets[posOfSmallDomInBig[i]] + j) * num],
                                     &(*vecK)[offSmall[k] + (offSmall[i] + j) * rowSizeSmall],
-                                   sizeof(float)
-                                           * nodeSizesInBig[posOfSmallDomInBig[k]]);
+                                    sizeof(float)
+                                    * nodeSizesInBig[posOfSmallDomInBig[k]]);
                         }
                     }
                 }
@@ -2345,31 +1893,31 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                 const int *ranges;
                 m_pMatrixH->GetRanges( &nDims, &ranges);
                 C2DNumericDenseMatrix<float>
-                        *matNewSmallH =
-                                C2DNumericDenseMatrix<float>::Create(
-                                                                     ranges,
-                                                                      &newSmallH.front() );
+                *matNewSmallH =
+                C2DNumericDenseMatrix<float>::Create(
+                        ranges,
+                        &newSmallH.front() );
                 m_pMatrixK->GetRanges( &nDims, &ranges);
                 C2DNumericDenseMatrix<float>
-                        *matNewSmallK =
-                                C2DNumericDenseMatrix<float>::Create(
-                                                                     ranges,
-                                                                      &newSmallK.front() );
+                *matNewSmallK =
+                C2DNumericDenseMatrix<float>::Create(
+                        ranges,
+                        &newSmallK.front() );
                 C2DNumericDenseMatrix<float>
-                        *resH =
-                                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                     m_pMatrixH,
-                                                                                                     matNewSmallH,
-                                                                                                      1));
+                *resH =
+                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                m_pMatrixH,
+                                matNewSmallH,
+                                1));
                 static_cast<CMatrix<float>*>(m_pMatrixH)->Release(pObj);
                 m_pMatrixH = resH;
                 static_cast<CMatrix<float>*>(m_pMatrixH)->AddRef(pObj);
                 C2DNumericDenseMatrix<float>
-                        * resK =
-                                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                     m_pMatrixK,
-                                                                                                     matNewSmallK,
-                                                                                                      1));
+                * resK =
+                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                m_pMatrixK,
+                                matNewSmallK,
+                                1));
                 static_cast<CMatrix<float>*>(m_pMatrixK)->Release(pObj);
                 m_pMatrixK = resK;
                 static_cast<CMatrix<float>*>(m_pMatrixK)->AddRef(pObj);
@@ -2399,7 +1947,7 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                 }
                 return;
             }
-            
+
         }
         if (fm1&&fm2)
         {
@@ -2408,7 +1956,7 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
             //we need to create new data, 
             //update canonical form for it and multiply
             CFunctionalDistribFun *newSmallData =
-                    static_cast<CFunctionalDistribFun*> (pGSmallData->Clone());
+            static_cast<CFunctionalDistribFun*> (pGSmallData->Clone());
             newSmallData->UpdateCanonicalForm();
             UpdateCanonicalForm();
             MultiplyInSelfData(pBigDomain, pSmallDomain, newSmallData);
@@ -2453,7 +2001,7 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
             //we can multiply it in the same way -
             //by converting small data in canonical form, multiply in canonical,
             CFunctionalDistribFun *newSmallData =
-                    static_cast<CFunctionalDistribFun*> (pGSmallData->Clone());
+            static_cast<CFunctionalDistribFun*> (pGSmallData->Clone());
             newSmallData->UpdateCanonicalForm();
             MultiplyInSelfData(pBigDomain, pSmallDomain, newSmallData);
             delete newSmallData;
@@ -2473,7 +2021,7 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                 m_bMoment = pGSmallData->m_bMoment;
                 m_bCanonical = pGSmallData->m_bCanonical;
                 m_bUnitFunctionDistribution
-                        = pGSmallData->m_bUnitFunctionDistribution;
+                = pGSmallData->m_bUnitFunctionDistribution;
                 m_bDeltaFunction = pGSmallData->m_bDeltaFunction;
                 //we needn't to Release matrices - 
                 //UnitFunctionDistribution doesn't have matrices
@@ -2511,38 +2059,38 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                 dims[0] = m_numberOfDims;
                 floatVector hVec = floatVector(m_numberOfDims, 0.0f);
                 C2DNumericDenseMatrix<float> *matHOfZeros =
-                        C2DNumericDenseMatrix<float>::Create( &dims.front(),
-                                                              &hVec.front() );
+                C2DNumericDenseMatrix<float>::Create( &dims.front(),
+                        &hVec.front() );
                 floatVector kVec = floatVector(m_numberOfDims*m_numberOfDims,
-                                                0.f);
+                        0.f);
                 dims[1] = m_numberOfDims;
                 C2DNumericDenseMatrix<float> *matKofZeros =
-                        C2DNumericDenseMatrix<float>::Create( &dims.front(),
-                                                              &kVec.front() );
+                C2DNumericDenseMatrix<float>::Create( &dims.front(),
+                        &kVec.front() );
                 if (fc2)
                 {
                     //we can work directly with matrices
                     const floatVector*vecH =
-                            pGSmallData->m_pMatrixH->GetVector();
+                    pGSmallData->m_pMatrixH->GetVector();
                     const floatVector*vecK =
-                            pGSmallData->m_pMatrixK->GetVector();
+                    pGSmallData->m_pMatrixK->GetVector();
                     floatVector newSmallH(m_numberOfDims, 0);
                     intVector offsets = intVector(size1, 0);
                     intVector nodeSizesInBig = intVector(size1, 0);
-                    
+
                     nodeSizesInBig[0]
-                            = m_NodeTypes[0]->IsDiscrete()
-                                                            ? 0
-                                                            : m_NodeTypes[0]->GetNodeSize();
+                    = m_NodeTypes[0]->IsDiscrete()
+                    ? 0
+                    : m_NodeTypes[0]->GetNodeSize();
                     //                    nodeSizesInBig[0] = m_NodeTypes[0]->GetNodeSize();
                     offsets[0] = 0;
                     for (i = 1; i < size1; i++)
                     {
                         //                        nodeSizesInBig[i] = m_NodeTypes[i]->GetNodeSize();
                         nodeSizesInBig[i]
-                                = m_NodeTypes[i]->IsDiscrete()
-                                                                ? 0
-                                                                : m_NodeTypes[i]->GetNodeSize();
+                        = m_NodeTypes[i]->IsDiscrete()
+                        ? 0
+                        : m_NodeTypes[i]->GetNodeSize();
                         offsets[i] = nodeSizesInBig[i-1] + offsets[i-1];
                     }
                     intVector offSmall = intVector(size2, 0);
@@ -2550,7 +2098,7 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                     for (i = 1; i < size2; i++)
                     {
                         offSmall[i] = offSmall[i - 1]
-                                + nodeSizesInBig[posOfSmallDomInBig[i - 1]];
+                        + nodeSizesInBig[posOfSmallDomInBig[i - 1]];
                     }
                     //copy data for H - add information 
                     for (i = 0; i < size2; i++)
@@ -2560,8 +2108,8 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                             memcpy(
                                     &newSmallH[offsets[ posOfSmallDomInBig[i]]],
                                     &(*vecH)[offSmall[i]],
-                                   sizeof(float)
-                                           * nodeSizesInBig[posOfSmallDomInBig[i]]);
+                                    sizeof(float)
+                                    * nodeSizesInBig[posOfSmallDomInBig[i]]);
                         }
                     }
                     //add zeros to smallK
@@ -2579,33 +2127,33 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                                 memcpy(
                                         &newSmallK[offsets[posOfSmallDomInBig[k]] + (offsets[posOfSmallDomInBig[i]] + j) * m_numberOfDims],
                                         &(*vecK)[offSmall[k] + (offSmall[i] + j) * rowSizeSmall],
-                                       sizeof(float)
-                                               * nodeSizesInBig[posOfSmallDomInBig[k]]);
+                                        sizeof(float)
+                                        * nodeSizesInBig[posOfSmallDomInBig[k]]);
                             }
                         }
                     }
                     C2DNumericDenseMatrix<float>
-                            *newMatSmallK =
-                                    C2DNumericDenseMatrix<float>::Create(
-                                                                          &dims.front(),
-                                                                          &newSmallK.front() );
+                    *newMatSmallK =
+                    C2DNumericDenseMatrix<float>::Create(
+                            &dims.front(),
+                            &newSmallK.front() );
                     dims[1] = 1;
                     C2DNumericDenseMatrix<float>
-                            *newMatSmallH =
-                                    C2DNumericDenseMatrix<float>::Create(
-                                                                          &dims.front(),
-                                                                          &newSmallH.front() );
+                    *newMatSmallH =
+                    C2DNumericDenseMatrix<float>::Create(
+                            &dims.front(),
+                            &newSmallH.front() );
                     m_pMatrixH
-                            = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                   matHOfZeros,
-                                                                                                   newMatSmallH,
-                                                                                                    1));
+                    = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                    matHOfZeros,
+                                    newMatSmallH,
+                                    1));
                     static_cast<CMatrix<float>*>(m_pMatrixH)->AddRef(pObj);
                     m_pMatrixK
-                            = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                   matKofZeros,
-                                                                                                   newMatSmallK,
-                                                                                                    1));
+                    = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                    matKofZeros,
+                                    newMatSmallK,
+                                    1));
                     static_cast<CMatrix<float>*>(m_pMatrixK)->AddRef(pObj);
                     m_g = pGSmallData->m_g;
                     float kSum = m_pMatrixK->SumAll(1);
@@ -2627,31 +2175,31 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
 
                 {
                     CFunctionalDistribFun
-                            *newSmallData =
-                                    static_cast<CFunctionalDistribFun*>(pGSmallData->Clone());
+                    *newSmallData =
+                    static_cast<CFunctionalDistribFun*>(pGSmallData->Clone());
                     newSmallData->UpdateCanonicalForm();
                     const floatVector*vecH =
-                            newSmallData->m_pMatrixH->GetVector();
+                    newSmallData->m_pMatrixH->GetVector();
                     const floatVector*vecK =
-                            newSmallData->m_pMatrixK->GetVector();
+                    newSmallData->m_pMatrixK->GetVector();
                     floatVector newSmallH(m_numberOfDims, 0);
                     intVector offsets(size1, 0);
                     intVector nodeSizesInBig(size1, 0);
-                    
+
                     nodeSizesInBig[0]
-                            = m_NodeTypes[0]->IsDiscrete()
-                                                            ? 0
-                                                            : m_NodeTypes[0]->GetNodeSize();
-                    
+                    = m_NodeTypes[0]->IsDiscrete()
+                    ? 0
+                    : m_NodeTypes[0]->GetNodeSize();
+
                     //                    nodeSizesInBig[0] = m_NodeTypes[0]->GetNodeSize();
                     offsets[0] = 0;
                     for (i = 1; i < size1; i++)
                     {
                         //                        nodeSizesInBig[i] = m_NodeTypes[i]->GetNodeSize();
                         nodeSizesInBig[i]
-                                = m_NodeTypes[i]->IsDiscrete()
-                                                                ? 0
-                                                                : m_NodeTypes[i]->GetNodeSize();
+                        = m_NodeTypes[i]->IsDiscrete()
+                        ? 0
+                        : m_NodeTypes[i]->GetNodeSize();
                         offsets[i] = nodeSizesInBig[i-1] + offsets[i-1];
                     }
                     intVector offSmall(size2, 0);
@@ -2659,7 +2207,7 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                     for (i = 1; i < size2; i++)
                     {
                         offSmall[i] = offSmall[i - 1]
-                                + nodeSizesInBig[posOfSmallDomInBig[i - 1]];
+                        + nodeSizesInBig[posOfSmallDomInBig[i - 1]];
                     }
                     //copy data for H - add information 
                     for (i = 0; i < size2; i++)
@@ -2669,8 +2217,8 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                             memcpy(
                                     &newSmallH[offsets[posOfSmallDomInBig[i]]],
                                     &(*vecH)[offSmall[i]],
-                                   sizeof(float)
-                                           * nodeSizesInBig[posOfSmallDomInBig[i]]);
+                                    sizeof(float)
+                                    * nodeSizesInBig[posOfSmallDomInBig[i]]);
                         }
                     }
                     //add zeros to smallK
@@ -2688,33 +2236,33 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                                 memcpy(
                                         &newSmallK[offsets[posOfSmallDomInBig[k]] + (offsets[posOfSmallDomInBig[i]] + j) * m_numberOfDims],
                                         &(*vecK)[offSmall[k] + (offSmall[i] + j) * rowSizeSmall],
-                                       sizeof(float)
-                                               * nodeSizesInBig[posOfSmallDomInBig[k]]);
+                                        sizeof(float)
+                                        * nodeSizesInBig[posOfSmallDomInBig[k]]);
                             }
                         }
                     }
                     C2DNumericDenseMatrix<float>
-                            *newMatSmallK =
-                                    C2DNumericDenseMatrix<float>::Create(
-                                                                          &dims.front(),
-                                                                          &newSmallK.front() );
+                    *newMatSmallK =
+                    C2DNumericDenseMatrix<float>::Create(
+                            &dims.front(),
+                            &newSmallK.front() );
                     dims[1] = 1;
                     C2DNumericDenseMatrix<float>
-                            *newMatSmallH =
-                                    C2DNumericDenseMatrix<float>::Create(
-                                                                          &dims.front(),
-                                                                          &newSmallH.front() );
+                    *newMatSmallH =
+                    C2DNumericDenseMatrix<float>::Create(
+                            &dims.front(),
+                            &newSmallH.front() );
                     m_pMatrixH
-                            = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                   matHOfZeros,
-                                                                                                   newMatSmallH,
-                                                                                                    1));
+                    = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                    matHOfZeros,
+                                    newMatSmallH,
+                                    1));
                     static_cast<CMatrix<float>*>(m_pMatrixH)->AddRef(pObj);
                     m_pMatrixK
-                            = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                   matKofZeros,
-                                                                                                   newMatSmallK,
-                                                                                                    1));
+                    = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                    matKofZeros,
+                                    newMatSmallK,
+                                    1));
                     static_cast<CMatrix<float>*>(m_pMatrixK)->AddRef(pObj);
                     m_g = pGSmallData->m_g;
                     float kSum = m_pMatrixK->SumAll(1);
@@ -2734,15 +2282,21 @@ void CFunctionalDistribFun::MultiplyInSelfData(const int *pBigDomain,
                     delete newSmallData;
                     return;
                 }
-                
+
             }
         }
     }
+#endif
+    
 }
 
+// TODO: FIX THIS FUNCTION. IT IS A CLUSTERFUCK.
 void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
     const int *pSmallDomain, const CDistribFun *pOtherData)
 {
+    PNL_THROW(CNotImplemented, "haven't for CFunctionalDistribFun now ");
+    
+#if 0
     EDistributionType dtOther = pOtherData->GetDistributionType();
     if ((dtOther != dtGaussian )&&(dtOther != dtScalar ))
     {
@@ -2758,7 +2312,7 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
                 "we can divide only data for factors");
     }
     const CFunctionalDistribFun *pGSmallData =
-            (const CFunctionalDistribFun *)pOtherData;
+    (const CFunctionalDistribFun *)pOtherData;
     void *pObj = this;
     //getting information to determine type of multiplying
     //delta function(s) - special case
@@ -2801,7 +2355,7 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
     for (i = 0; i < size2; i++)
     {
         location = std::find(pBigDomain, pBigDomain + size1, pSmallDomain[i])
-                - pBigDomain;
+        - pBigDomain;
         if (location >= size1)
         {
             PNL_THROW( CInternalError, "small domain isn't subset of big" );
@@ -2809,8 +2363,8 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
         posOfSmallDomInBig[i] = location;
     }
     if ( !fUni1)
-    {
-        
+    {   
+
         if (fc1 &&fc2)
         {
             //m_bMoment = 0;
@@ -2818,20 +2372,20 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
             if (size1 == size2)
             {
                 C2DNumericDenseMatrix<float>
-                        *resH =
-                                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                     m_pMatrixH,
-                                                                                                     pGSmallData->m_pMatrixH,
-                                                                                                      0));
+                *resH =
+                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                m_pMatrixH,
+                                pGSmallData->m_pMatrixH,
+                                0));
                 m_pMatrixH->Release(pObj);
                 m_pMatrixH = resH;
                 m_pMatrixH->AddRef(pObj);
                 C2DNumericDenseMatrix<float>
-                        *resK =
-                                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                     m_pMatrixK,
-                                                                                                     pGSmallData->m_pMatrixK,
-                                                                                                      0));
+                *resK =
+                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                m_pMatrixK,
+                                pGSmallData->m_pMatrixK,
+                                0));
                 m_pMatrixK->Release(pObj);
                 m_pMatrixK = resK;
                 m_pMatrixK->AddRef(pObj);
@@ -2868,9 +2422,9 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
                 const floatVector *vecBigK = m_pMatrixK->GetVector();
                 //we need to create extended matrix from small to sum them
                 C2DNumericDenseMatrix<float> *matSmallH =
-                        pGSmallData->m_pMatrixH;
+                pGSmallData->m_pMatrixH;
                 C2DNumericDenseMatrix<float> *matSmallK =
-                        pGSmallData->m_pMatrixK;
+                pGSmallData->m_pMatrixK;
                 float gSmall = pGSmallData->m_g;
                 const floatVector*vecH = matSmallH->GetVector();
                 const floatVector*vecK = matSmallK->GetVector();
@@ -2889,7 +2443,7 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
                 for (i = 1; i < size2; i++)
                 {
                     offSmall[i] = offSmall[i-1]
-                            + nodeSizesInBig[posOfSmallDomInBig[i-1]];
+                    + nodeSizesInBig[posOfSmallDomInBig[i-1]];
                 }
                 //copy data for H - add information 
                 for (i = 0; i < size2; i++)
@@ -2915,8 +2469,8 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
                             memcpy(
                                     &newSmallK[offsets[posOfSmallDomInBig[k]] + (offsets[posOfSmallDomInBig[i]] + j) * num],
                                     &(*vecK)[offSmall[k] + (offSmall[i] + j) * rowSizeSmall],
-                                   sizeof(float)
-                                           * nodeSizesInBig[posOfSmallDomInBig[k]]);
+                                    sizeof(float)
+                                    * nodeSizesInBig[posOfSmallDomInBig[k]]);
                         }
                     }
                 }
@@ -2924,31 +2478,31 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
                 const int *ranges;
                 m_pMatrixH->GetRanges( &nDims, &ranges);
                 C2DNumericDenseMatrix<float>
-                        *matNewSmallH =
-                                C2DNumericDenseMatrix<float>::Create(
-                                                                     ranges,
-                                                                      &newSmallH.front());
+                *matNewSmallH =
+                C2DNumericDenseMatrix<float>::Create(
+                        ranges,
+                        &newSmallH.front());
                 m_pMatrixK->GetRanges( &nDims, &ranges);
                 C2DNumericDenseMatrix<float>
-                        *matNewSmallK =
-                                C2DNumericDenseMatrix<float>::Create(
-                                                                     ranges,
-                                                                      &newSmallK.front());
+                *matNewSmallK =
+                C2DNumericDenseMatrix<float>::Create(
+                        ranges,
+                        &newSmallK.front());
                 C2DNumericDenseMatrix<float>
-                        *resH =
-                                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                     m_pMatrixH,
-                                                                                                     matNewSmallH,
-                                                                                                      0));
+                *resH =
+                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                m_pMatrixH,
+                                matNewSmallH,
+                                0));
                 m_pMatrixH->Release(pObj);
                 m_pMatrixH = resH;
                 m_pMatrixH->AddRef(pObj);
                 C2DNumericDenseMatrix<float>
-                        * resK =
-                                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                                     m_pMatrixK,
-                                                                                                     matNewSmallK,
-                                                                                                      0));
+                * resK =
+                static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                m_pMatrixK,
+                                matNewSmallK,
+                                0));
                 m_pMatrixK->Release(pObj);
                 m_pMatrixK = resK;
                 m_pMatrixK->AddRef(pObj);
@@ -2982,7 +2536,7 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
         if (fm1 && fm2)
         {
             CFunctionalDistribFun *newSmallData =
-                    static_cast<CFunctionalDistribFun*> (pGSmallData->Clone());
+            static_cast<CFunctionalDistribFun*> (pGSmallData->Clone());
             newSmallData->UpdateCanonicalForm();
             UpdateCanonicalForm();
             DivideInSelfData(pBigDomain, pSmallDomain, newSmallData);
@@ -2995,11 +2549,11 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
             delete newSmallData;
             return;
         }
-        
+
         if (fc1 && fm2)
         {
             CFunctionalDistribFun *newSmallData =
-                    static_cast<CFunctionalDistribFun*> (pGSmallData->Clone());
+            static_cast<CFunctionalDistribFun*> (pGSmallData->Clone());
             newSmallData->UpdateCanonicalForm();
             DivideInSelfData(pBigDomain, pSmallDomain, newSmallData);
             delete newSmallData;
@@ -3017,7 +2571,7 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
             m_g = FLT_MAX;
             return;
         }
-        
+
     } else //if( fUni1) 
 
     {
@@ -3038,16 +2592,16 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
                 dims[0] = m_numberOfDims;
                 floatVector hVec = floatVector(m_numberOfDims, 0.0f);
                 m_pMatrixH
-                        = C2DNumericDenseMatrix<float>::Create( &dims.front(),
-                                                                &hVec.front() );
+                = C2DNumericDenseMatrix<float>::Create( &dims.front(),
+                        &hVec.front() );
                 m_pMatrixH->AddRef(pObj);
                 m_pMatrixH->CombineInSelf(pGSmallData->m_pMatrixH, 0);
                 floatVector kVec = floatVector(m_numberOfDims*m_numberOfDims,
-                                                0.f);
+                        0.f);
                 dims[1] = m_numberOfDims;
                 m_pMatrixK
-                        = C2DNumericDenseMatrix<float>::Create( &dims.front(),
-                                                                &kVec.front());
+                = C2DNumericDenseMatrix<float>::Create( &dims.front(),
+                        &kVec.front());
                 m_pMatrixK->AddRef(pObj);
                 m_pMatrixK->CombineInSelf(pGSmallData->m_pMatrixK, 0);
                 m_g = -(pGSmallData->m_g);
@@ -3069,13 +2623,13 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
             {
                 //need to get canonical form
                 CFunctionalDistribFun
-                        * pCanonicalSmall =
-                                static_cast<CFunctionalDistribFun*>(pGSmallData->Clone());
+                * pCanonicalSmall =
+                static_cast<CFunctionalDistribFun*>(pGSmallData->Clone());
                 pCanonicalSmall->UpdateCanonicalForm();
                 DivideInSelfData(pBigDomain, pSmallDomain, pCanonicalSmall);
                 delete pCanonicalSmall;
             }
-            
+
             return;
         } else
         {
@@ -3090,14 +2644,14 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
                 dims[0] = m_numberOfDims;
                 floatVector hVec = floatVector(m_numberOfDims, 0.0f);
                 C2DNumericDenseMatrix<float> *matHOfZeros =
-                        C2DNumericDenseMatrix<float>::Create( &dims.front(),
-                                                              &hVec.front() );
+                C2DNumericDenseMatrix<float>::Create( &dims.front(),
+                        &hVec.front() );
                 floatVector kVec = floatVector(m_numberOfDims*m_numberOfDims,
-                                                0.f);
+                        0.f);
                 dims[1] = m_numberOfDims;
                 C2DNumericDenseMatrix<float> *matKofZeros =
-                        C2DNumericDenseMatrix<float>::Create( &dims.front(),
-                                                              &kVec.front());
+                C2DNumericDenseMatrix<float>::Create( &dims.front(),
+                        &kVec.front());
                 //we can work directly with matrices
                 const floatVector*vecH = pGSmallData->m_pMatrixH->GetVector();
                 const floatVector*vecK = pGSmallData->m_pMatrixK->GetVector();
@@ -3116,7 +2670,7 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
                 for (i = 1; i < size2; i++)
                 {
                     offSmall[i] = offSmall[i - 1]
-                            + nodeSizesInBig[posOfSmallDomInBig[i - 1]];
+                    + nodeSizesInBig[posOfSmallDomInBig[i - 1]];
                 }
                 //copy data for H - add information 
                 for (i = 0; i < size2; i++)
@@ -3141,33 +2695,33 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
                             memcpy(
                                     &newSmallK[offsets[posOfSmallDomInBig[k]] + (offsets[posOfSmallDomInBig[i]] + j) * m_numberOfDims],
                                     &(*vecK)[offSmall[k] + (offSmall[i] + j) * rowSizeSmall],
-                                   sizeof(float)
-                                           * nodeSizesInBig[posOfSmallDomInBig[k]]);
+                                    sizeof(float)
+                                    * nodeSizesInBig[posOfSmallDomInBig[k]]);
                         }
                     }
                 }
                 C2DNumericDenseMatrix<float>
-                        *newMatSmallK =
-                                C2DNumericDenseMatrix<float>::Create(
-                                                                      &dims.front(),
-                                                                      &newSmallK.front() );
+                *newMatSmallK =
+                C2DNumericDenseMatrix<float>::Create(
+                        &dims.front(),
+                        &newSmallK.front() );
                 dims[1] = 1;
                 C2DNumericDenseMatrix<float>
-                        *newMatSmallH =
-                                C2DNumericDenseMatrix<float>::Create(
-                                                                      &dims.front(),
-                                                                      &newSmallH.front() );
+                *newMatSmallH =
+                C2DNumericDenseMatrix<float>::Create(
+                        &dims.front(),
+                        &newSmallH.front() );
                 m_pMatrixH
-                        = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                               matHOfZeros,
-                                                                                               newMatSmallH,
-                                                                                                0));
+                = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                matHOfZeros,
+                                newMatSmallH,
+                                0));
                 static_cast<CMatrix<float>*>(m_pMatrixH)->AddRef(pObj);
                 m_pMatrixK
-                        = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                               matKofZeros,
-                                                                                               newMatSmallK,
-                                                                                                0));
+                = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                matKofZeros,
+                                newMatSmallK,
+                                0));
                 static_cast<CMatrix<float>*>(m_pMatrixK)->AddRef(pObj);
                 m_g = 0 - pGSmallData->m_g;
                 float kSum = m_pMatrixK->SumAll(1);
@@ -3191,8 +2745,8 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
 
             {
                 CFunctionalDistribFun
-                        *newSmallData =
-                                static_cast<CFunctionalDistribFun*>(pGSmallData->Clone());
+                *newSmallData =
+                static_cast<CFunctionalDistribFun*>(pGSmallData->Clone());
                 newSmallData->UpdateCanonicalForm();
                 DivideInSelfData(pBigDomain, pSmallDomain, newSmallData);
                 delete newSmallData;
@@ -3200,115 +2754,22 @@ void CFunctionalDistribFun::DivideInSelfData(const int *pBigDomain,
             }
         }
     }
+#endif
+    
 }
 
 CDistribFun* CFunctionalDistribFun::GetNormalized() const
 {
     //gaussian data is normalized - always!
-    //int multWithMaximize = 0;
     CFunctionalDistribFun *gauData =
             static_cast<CFunctionalDistribFun*>(Clone());
-    /*if( m_bMoment && !m_bDeltaFunction && 
-     ( (fabs( m_normCoeff)<0.001f ))||( fabs(m_normCoeff) >= FLT_MAX ) )
-     {
-     float p1 = (float)pow((double)(2*PNL_PI),(m_numberOfDims/2.0));
-     float detCov = m_pMatrixCov->Determinant();
-     if( detCov < 0 )
-     {
-     PNL_THROW( CInternalError,
-     "covariance matrix must be positive semidifinite" );
-     }
-     float p2 = (float)pow((double)detCov,0.5);
-     gauData->m_normCoeff = 1/(p1*p2);
-     }
-     if( m_bCanonical && !m_bUnitFunctionDistribution &&( fabs(m_g)>=FLT_MAX ) )
-     {
-     //we need to recompute it according normalization
-     gauData->UpdateMomentForm();
-     //we have valid moment form - can recompute m_g
-     C2DNumericDenseMatrix<float> *matMeanTransp = gauData->m_pMatrixMean->Transpose();
-     C2DNumericDenseMatrix<float> *matTemp1 = pnlMultiply( matMeanTransp, 
-     m_pMatrixK, multWithMaximize);
-     C2DNumericDenseMatrix<float> *matTemp2 = pnlMultiply(matTemp1,
-     gauData->m_pMatrixMean, multWithMaximize);
-     delete matMeanTransp;
-     int size;
-     const float *val;
-     matTemp2->GetRawData( &size, &val);
-     if( size != 1 )
-     {
-     PNL_THROW( CInternalError, "it should be a single value" );
-     }
-     gauData->m_g = m_normCoeff + 
-     0.5f*(float)(log(m_pMatrixK->Determinant())) - 
-     m_numberOfDims*(float)log(2*PNL_PI) - val[0];
-     delete matTemp1;
-     delete matTemp2;
-     if( !m_bMoment )
-     {
-     //need to release all matrices
-     gauData->m_pMatrixMean->Release(gauData);
-     gauData->m_pMatrixMean = NULL;
-     gauData->m_pMatrixCov->Release(gauData);
-     gauData->m_pMatrixCov = NULL;
-     gauData->m_normCoeff = 0.0f;
-     
-     }
-     }*/
+    
     return gauData;
 }
 
 void CFunctionalDistribFun::Normalize()
 {
     //gaussian data is normalized - always!
-    /*int multWithMaximize = 0;
-     if( m_bMoment && !m_bDeltaFunction && 
-     ( (fabs( m_normCoeff)<0.001f ))||( fabs(m_normCoeff) >= FLT_MAX ) )
-     {
-     float p1 = (float)pow((double)(2*PNL_PI),(m_numberOfDims/2.0));
-     float detCov = m_pMatrixCov->Determinant();
-     if( detCov < 0 )
-     {
-     PNL_THROW( CInternalError,
-     "covariance matrix must be positive semidifinite" );
-     }
-     float p2 = (float)pow((double)detCov,0.5);
-     m_normCoeff = 1/(p1*p2);
-     }
-     if( m_bCanonical && !m_bUnitFunctionDistribution &&( fabs(m_g) >= FLT_MAX ) )
-     {
-     //we need to recompute it according normalization
-     int oldMoment = m_bMoment;
-     UpdateMomentForm();
-     //we have valid moment form - can recompute m_g
-     C2DNumericDenseMatrix<float> *matMeanTransp = m_pMatrixMean->Transpose();
-     C2DNumericDenseMatrix<float> *matTemp1 = pnlMultiply( matMeanTransp, 
-     m_pMatrixK, multWithMaximize);
-     C2DNumericDenseMatrix<float> *matTemp2 = pnlMultiply(matTemp1,
-     m_pMatrixMean, multWithMaximize);
-     delete matMeanTransp;
-     int size;
-     const float *val;
-     matTemp2->GetRawData( &size, &val);
-     if( size != 1 )
-     {
-     PNL_THROW( CInternalError, "it should be a single value" );
-     }
-     m_g = m_normCoeff + 0.5f*(float)(log(m_pMatrixK->Determinant())) - 
-     m_numberOfDims*(float)log(2*PNL_PI) - val[0];
-     delete matTemp1;
-     delete matTemp2;
-     if( !oldMoment )
-     {
-     void* pObj = this;
-     //need to release all matrices
-     m_pMatrixMean->Release(pObj);
-     m_pMatrixMean = NULL;
-     m_pMatrixCov->Release(pObj);
-     m_pMatrixCov = NULL;
-     m_normCoeff = 0.0f;
-     }
-     }*/
 }
 
 CMatrix<float>* CFunctionalDistribFun::GetMatrix(EMatrixType mType,
@@ -3319,16 +2780,11 @@ CMatrix<float>* CFunctionalDistribFun::GetMatrix(EMatrixType mType,
         PNL_THROW( CInvalidOperation,
                 "we haven't any matrices for uniform distribution - it is special case " );
     }
-    if (m_bDeltaFunction &&(mType != matMean))
-    {
-        PNL_THROW( CInvalidOperation,
-                "delta function have only matrix mean" );
-    }
     switch (mType)
     {
         case matMean:
         {
-            if ((m_pMatrixMean )&&(m_bMoment || m_bDeltaFunction ))
+            if (m_pMatrixMean)
             {
                 return m_pMatrixMean;
             } else
@@ -3339,7 +2795,7 @@ CMatrix<float>* CFunctionalDistribFun::GetMatrix(EMatrixType mType,
         }
         case matWishartMean:
         {
-            if ((m_pPseudoCountsMean )&&(m_bMoment || m_bDeltaFunction ))
+            if (m_pPseudoCountsMean)
             {
                 return m_pPseudoCountsMean;
             } else
@@ -3350,7 +2806,7 @@ CMatrix<float>* CFunctionalDistribFun::GetMatrix(EMatrixType mType,
         }
         case matCovariance:
         {
-            if ((m_bMoment )&&(m_pMatrixCov ))
+            if (m_pMatrixCov)
             {
                 return m_pMatrixCov;
             } else
@@ -3361,7 +2817,7 @@ CMatrix<float>* CFunctionalDistribFun::GetMatrix(EMatrixType mType,
         }
         case matWishartCov:
         {
-            if ((m_bMoment )&&(m_pPseudoCountsCov ))
+            if (m_pPseudoCountsCov)
             {
                 return m_pPseudoCountsCov;
             } else
@@ -3370,48 +2826,43 @@ CMatrix<float>* CFunctionalDistribFun::GetMatrix(EMatrixType mType,
                         "we haven't now valid Covariance matrix" );
             }
         }
-        case matWeights:
-        {
-            if ((numWeightMat < 0 )||(numWeightMat >m_NumberOfNodes - 1 ))
-            {
-                PNL_THROW( COutOfRange,
-                        "index of weight matrix is invalid" )
-            }
-            if (( !m_bPotential )&&(m_bMoment ))
-            {
-                return m_pMatricesWeight[numWeightMat];
-            } else
-            {
-                PNL_THROW( CInvalidOperation,
-                        "we have no valid matrix weights" );
-            }
-        }
+            
         case matH:
         {
-            if (m_pMatrixH && m_bCanonical)
-            {
-                return m_pMatrixH;
-            } else
-            {
-                PNL_THROW( CInvalidOperation,
-                        "we haven't now valid H matrix" );
-            }
+            PNL_THROW( CInvalidOperation,
+                    "Functional data have no matrix for H" );
+            
+            /*
+             if (m_pMatrixH && m_bCanonical)
+             {
+             return m_pMatrixH;
+             } else
+             {
+             PNL_THROW( CInvalidOperation,
+             "we haven't now valid H matrix" );
+             }
+             */
         }
         case matK:
         {
-            if (m_pMatrixK && m_bCanonical)
-            {
-                return m_pMatrixK;
-            } else
-            {
-                PNL_THROW( CInvalidOperation,
-                        "we haven't now valid K matrix" );
-            }
+            PNL_THROW( CInvalidOperation,
+                    "Functional data have no matrix for K" );
+            
+            /*
+             if (m_pMatrixK && m_bCanonical)
+             {
+             return m_pMatrixK;
+             } else
+             {
+             PNL_THROW( CInvalidOperation,
+             "we haven't now valid K matrix" );
+             }
+             */
         }
         case matTable:
         {
             PNL_THROW( CInvalidOperation,
-                    "Gaussian data have no matrix for tabular" );
+                    "Functional data have no matrix for tabular" );
         }
         default:
         {
@@ -3436,10 +2887,6 @@ double CFunctionalDistribFun::ComputeProbability(
         PNL_THROW( CInvalidOperation,
                 "can compute probability only for fully conditioned CPD" )
     }
-    if ( !m_bPotential && !m_bMoment)
-    {
-        PNL_THROW( CInvalidOperation, "CPD must have valid moment form" );
-    }
     
     //determine limits
     const double maxForExp = 200;
@@ -3453,185 +2900,97 @@ double CFunctionalDistribFun::ComputeProbability(
     const int* pRangesHere;
     
     int i;
-    if (m_bMoment)
+    
+    m_pMatrixMean->GetRanges( &numRangesHere, &pRangesHere);
+    if (numRanges != numRangesHere)
     {
-        m_pMatrixMean->GetRanges( &numRangesHere, &pRangesHere);
-        if (numRanges != numRangesHere)
-        {
-            PNL_THROW( CInconsistentSize,
-                    "input matrix of variables must be of the same sizes" );
-        } else
-        {
-            for (i = 0; i < numRanges; i++)
-            {
-                if (pRanges[i] != pRangesHere[i])
-                {
-                    PNL_THROW( CInconsistentSize,
-                            "input matrix of variables must be of the same sizes");
-                }
-            }
-        }
-        C2DNumericDenseMatrix<float>
-                * matCentered =
-                        static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                             pMatVariable,
-                                                                                             m_pMatrixMean,
-                                                                                              0));
-        for (i = 0; i < numObsParents; i++)
-        {
-            C2DNumericDenseMatrix<float>* multRes =
-                    pnlMultiply(m_pMatricesWeight[obsParentsIndices[i]],
-                                pObsParentsMats[i], 0);
-            matCentered->CombineInSelf(multRes, 0);
-            delete multRes;
-        }
-        if (m_bDeltaFunction)
-        {
-            //we can only compare mean values
-            //and in case of equal values - set probability to 1
-            //and to 0 - otherwise
-            float sumAllAbs = matCentered->SumAll(1);
-            delete matCentered;
-            float epsilon = 1e-5f;
-            if (sumAllAbs < epsilon)
-            {
-                if (asLog)
-                {
-                    return 0.0;
-                } else
-                {
-                    return 1.0;
-                }
-            } else
-            {
-                if (asLog)
-                {
-                    return -36;
-                } else
-                {
-                    return 0.0;
-                }
-            }
-        }
-        C2DNumericDenseMatrix<float>* matCenteredTr = matCentered->Transpose();
-        C2DNumericDenseMatrix<float>* matCentMult = pnlMultiply(matCentered,
-                                                                matCenteredTr,
-                                                                 0);
-        C2DNumericDenseMatrix<float>* invCov = m_pMatrixCov->Inverse();
-        C2DNumericDenseMatrix<float>* resExp = pnlMultiply(matCentMult, invCov,
-                                                            0);
-        delete invCov;
-        delete matCentMult;
-        const int* dims;
-        int numDims;
-        resExp->GetRanges(&numDims, &dims);
-        assert( dims[0] == dims[1] );
-        int dim = dims[0];
-        float resExpOrder = 0.0f;
-        float valAdd = 0.0f;
-        int indices[2] = { 0, 0 };
-        for (i = 0; i < dim; i++)
-        {
-            indices[0] = i;
-            indices[1] = i;
-            valAdd = resExp->GetElementByIndexes(indices);
-            resExpOrder += valAdd;
-        }
-        delete resExp;
-        if (asLog == 2)
-        {
-            delete matCentered;
-            delete matCenteredTr;
-            return resExpOrder;
-        }
-        resExpOrder = 0.5f*resExpOrder;
-        /*C2DNumericDenseMatrix<float>* multRes = pnlMultiply(matCenteredTr, invCov, 0);
-         C2DNumericDenseMatrix<float>* matResExpOrder = pnlMultiply( multRes, matCentered, 0 );
-         int length;
-         const float* resVal;
-         matResExpOrder->GetRawData( &length, &resVal );
-         assert( length == 1 );
-         resExpOrder = 0.5f*resVal[0];
-         delete multRes;*/
-        delete matCentered;
-        delete matCenteredTr;
-        double p1 = pow((double)(2*PNL_PI), (((double)m_numberOfDims)/2));
-        double p2 = pow(((double)(m_pMatrixCov->Determinant())), 0.5);
-        double normCoeff = 1/(p1*p2);
-        if (asLog)
-        {
-            double ret = log(normCoeff)-resExpOrder;
-            if (ret > maxForExp)
-            {
-                return maxForExp;
-            }
-            if (ret < minForExp)
-            {
-                return minForExp;
-            }
-            return ret;
-        } else
-        {
-            double ret = normCoeff*exp(-resExpOrder);
-            return ret;
-        }
+        PNL_THROW( CInconsistentSize,
+                "input matrix of variables must be of the same sizes" );
     } else
     {
-        //as we're working in terms child-parent, canonical form doesn't use here
-        PNL_THROW( CInconsistentType,
-                "can work with moment Gaussian distribution only" );
-        /*if( m_bCanonical )
-         {
-         m_pMatrixH->GetRanges( &numRangesHere, &pRangesHere );
-         if( numRanges != numRangesHere )
-         {
-         PNL_THROW( CInconsistentSize,
-         "input matrix of variables must be of the same sizes" );
-         }
-         else
-         {
-         for( i = 0; i < numRanges; i++ )
-         {
-         if( pRanges[i] != pRangesHere[i] )
-         {
-         PNL_THROW( CInconsistentSize,
-         "input matrix of variables must be of the same sizes");
-         }
-         }
-         }
-         resExpOrder = m_g;
-         C2DNumericDenseMatrix<float>* pMatVarTr = pMatVariable->Transpose();
-         C2DNumericDenseMatrix<float>* multRes = pnlMultiply( m_pMatrixH,
-         pMatVarTr, 0 );
-         int length;
-         const float* resVal;
-         multRes->GetRawData( &length, &resVal );
-         assert( length == 1 );
-         resExpOrder += resVal[0];
-         delete multRes;
-         multRes = pnlMultiply( pMatVariable, m_pMatrixK, 0 );
-         C2DNumericDenseMatrix<float>* multRes1 = pnlMultiply( multRes,
-         pMatVarTr, 0 );
-         multRes1->GetRawData( &length, &resVal );
-         assert( length == 1 );
-         resExpOrder += resVal[0];
-         delete multRes;
-         delete multRes1;
-         delete pMatVarTr;
-         if( asLog )
-         {
-         return resExpOrder;
-         }
-         else
-         {
-         return (float)exp( resExpOrder );
-         }
-         }
-         else
-         {
-         PNL_THROW( CInvalidOperation,
-         "can't compute probability for invalid distribution" )
-         }*/
+        for (i = 0; i < numRanges; i++)
+        {
+            if (pRanges[i] != pRangesHere[i])
+            {
+                PNL_THROW( CInconsistentSize,
+                        "input matrix of variables must be of the same sizes");
+            }
+        }
+    }
+    C2DNumericDenseMatrix<float>
+            * matCentered =
+                    static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                         pMatVariable,
+                                                                                         m_pMatrixMean,
+                                                                                          0));
+    for (i = 0; i < numObsParents; i++)
+    {
+        C2DNumericDenseMatrix<float>* multRes =
+                pnlMultiply(m_pMatricesWeight[obsParentsIndices[i]],
+                            pObsParentsMats[i], 0);
+        matCentered->CombineInSelf(multRes, 0);
+        delete multRes;
+    }
+    
+    C2DNumericDenseMatrix<float>* matCenteredTr = matCentered->Transpose();
+    C2DNumericDenseMatrix<float>* matCentMult = pnlMultiply(matCentered,
+                                                            matCenteredTr, 0);
+    C2DNumericDenseMatrix<float>* invCov = m_pMatrixCov->Inverse();
+    C2DNumericDenseMatrix<float>* resExp = pnlMultiply(matCentMult, invCov, 0);
+    delete invCov;
+    delete matCentMult;
+    const int* dims;
+    int numDims;
+    resExp->GetRanges(&numDims, &dims);
+    assert( dims[0] == dims[1] );
+    int dim = dims[0];
+    float resExpOrder = 0.0f;
+    float valAdd = 0.0f;
+    int indices[2] = { 0, 0 };
+    for (i = 0; i < dim; i++)
+    {
+        indices[0] = i;
+        indices[1] = i;
+        valAdd = resExp->GetElementByIndexes(indices);
+        resExpOrder += valAdd;
+    }
+    delete resExp;
+    if (asLog == 2)
+    {
+        delete matCentered;
+        delete matCenteredTr;
+        return resExpOrder;
+    }
+    resExpOrder = 0.5f*resExpOrder;
+    /*C2DNumericDenseMatrix<float>* multRes = pnlMultiply(matCenteredTr, invCov, 0);
+     C2DNumericDenseMatrix<float>* matResExpOrder = pnlMultiply( multRes, matCentered, 0 );
+     int length;
+     const float* resVal;
+     matResExpOrder->GetRawData( &length, &resVal );
+     assert( length == 1 );
+     resExpOrder = 0.5f*resVal[0];
+     delete multRes;*/
+    delete matCentered;
+    delete matCenteredTr;
+    double p1 = pow((double)(2*PNL_PI), (((double)m_numberOfDims)/2));
+    double p2 = pow(((double)(m_pMatrixCov->Determinant())), 0.5);
+    double normCoeff = 1/(p1*p2);
+    if (asLog)
+    {
+        double ret = log(normCoeff)-resExpOrder;
+        if (ret > maxForExp)
+        {
+            return maxForExp;
+        }
+        if (ret < minForExp)
+        {
+            return minForExp;
+        }
+        return ret;
+    } else
+    {
+        double ret = normCoeff*exp(-resExpOrder);
+        return ret;
     }
 }
 
@@ -3670,6 +3029,7 @@ CMatrix<float> *CFunctionalDistribFun::GetStatisticalMatrix(
     }
 }
 
+// Dummy function
 CDistribFun* CFunctionalDistribFun::ConvertToSparse() const
 {
     const CFunctionalDistribFun* self = this;
@@ -3677,6 +3037,7 @@ CDistribFun* CFunctionalDistribFun::ConvertToSparse() const
     return resDistrib;
 }
 
+// Dummy function
 CDistribFun* CFunctionalDistribFun::ConvertToDense() const
 {
     const CFunctionalDistribFun* self = this;
@@ -3688,38 +3049,16 @@ void CFunctionalDistribFun::Dump() const
 {
     Log dump("", eLOG_RESULT, eLOGSRV_PNL_POTENTIAL);
     
-    dump<<"I'm a Gaussian distribution function of "<< m_NumberOfNodes
+    dump<<"I'm a Functional distribution function of "<< m_NumberOfNodes
             <<" nodes.\n";
-    int isSpecific = IsDistributionSpecific();
-    if (isSpecific == 1)
+    
+    if (m_bUnitFunctionDistribution)
     {
         dump<<"I'm a Uniform distribution, haven't any matrices.\n";
         return;
     }
-    int i;
-    if (isSpecific == 2)
-    {
-        dump
-                <<"I'm a delta distribution - have only mean matrix, covariance is zero matrix\n";
-        dump<<"My matrix Mean is:\n";
-        const floatVector *myVector = static_cast<CNumericDenseMatrix<float>*>(
-                m_pMatrixMean)->GetVector();
-        for (i = 0; i < myVector->size(); i++)
-        {
-            dump<<(*myVector)[i]<<" ";
-        }
-        dump<<"\n";
-        return;
-    }
-    if (isSpecific == 3)
-    {
-        dump
-                <<"I'm a mixed distribution, result of multiplication by Delta distributions in some dimensions.";
-        dump<<" To see me in valid form you need to marginalize.\n";
-        return;
-    }
+    
     int isFactor = GetFactorFlag();
-    int canonicalFormFlag = GetCanonicalFormFlag();
     int momentFormFlag = GetMomentFormFlag();
     if (momentFormFlag)
     {
@@ -3740,43 +3079,8 @@ void CFunctionalDistribFun::Dump() const
             dump<<(*myVector)[i]<<" ";
         }
         dump<<"\n";
-        if ( !isFactor)
-        {
-            int numParents = m_NumberOfNodes - 1;
-            for (int j = 0; j < numParents; j++)
-            {
-                dump<<"My matrix Weights from %d parent is:"<<j<<"\n";
-                myVector = static_cast<CNumericDenseMatrix<float>*>(
-                        m_pMatricesWeight[j])->GetVector();
-                for (i = 0; i < myVector->size(); i++)
-                {
-                    dump<<(*myVector)[i]<<" ";
-                }
-                dump<<"\n";
-            }
-        }
     }
-    if (canonicalFormFlag)
-    {
-        dump<<"I have valid canonical form\n";
-        dump<<"My coefficient g is "<<m_g<<"\n";
-        dump<<"My matrix H is:\n";
-        const floatVector *myVector = static_cast<
-        CNumericDenseMatrix<float>*>(m_pMatrixH)->GetVector();
-        for (i = 0; i < myVector->size(); i++)
-        {
-            dump<<(*myVector)[i]<<" ";
-        }
-        dump<<"\n";
-        dump<<"My matrix K is:\n";
-        myVector = static_cast<CNumericDenseMatrix<float>*>(m_pMatrixK)->GetVector();
-        for (i = 0; i < myVector->size(); i++)
-        {
-            dump<<(*myVector)[i]<<" ";
-        }
-        dump<<"\n";
-    }
-    if (!(momentFormFlag||canonicalFormFlag))
+    if (!momentFormFlag)
     {
         dump<<"I haven't any valid form\n";
     }
@@ -3798,14 +3102,14 @@ void CFunctionalDistribFun::MarginalizeData(const CDistribFun *pOldData,
     PNL_CHECK_IS_NULL_POINTER( pOldData );
     PNL_CHECK_IS_NULL_POINTER( VarsOfKeep );
     PNL_CHECK_LEFT_BORDER( NumVarsOfKeep, 1 );
-    if (pOldData->GetDistributionType() != dtGaussian)
+    if (pOldData->GetDistributionType() != dtFunctional)
     {
-        PNL_THROW( CInvalidOperation, "we can marginalize only Gaussian" )
+        PNL_THROW( CInvalidOperation, "we can marginalize only Functional" )
     }
     const CFunctionalDistribFun *pData = (const CFunctionalDistribFun*)pOldData;
     if ( !pData->m_bPotential)
     {
-        PNL_THROW( CInvalidOperation, "marginalize a CPD" );
+        PNL_THROW( CInvalidOperation, " can't marginalize a CPD" );
     }
     ReleaseAllMatrices();
     //if we needn't to marginalize - if numNodes == numVarsOfKeep
@@ -3816,8 +3120,6 @@ void CFunctionalDistribFun::MarginalizeData(const CDistribFun *pOldData,
     int numNodes = pData->m_NumberOfNodes;
     m_bDeltaFunction = pData->m_bDeltaFunction;
     m_bUnitFunctionDistribution = pData->m_bUnitFunctionDistribution;
-    m_bMoment = pData->m_bMoment;
-    m_bCanonical = pData->m_bCanonical;
     if ((NumVarsOfKeep == numNodes ))
     {
         m_NodeTypes = pConstNodeTypeVector(
@@ -3892,19 +3194,8 @@ void CFunctionalDistribFun::MarginalizeData(const CDistribFun *pOldData,
     {
         return;
     }
+    
     void * pObj = this;
-    if (pData->m_bDeltaFunction)
-    {
-        C2DNumericDenseMatrix<float>* tempMat= NULL;
-        pData->m_pMatrixMean->GetLinearBlocks(&positionsKeep.front(),
-                                              positionsKeep.size(),
-                                               &nodeSizesOld.front(),
-                                              nodeSizesOld.size(),
-                                               &m_pMatrixMean, &tempMat);
-        m_pMatrixMean->AddRef(pObj);
-        delete tempMat;
-        return;
-    }
     //create array with marks for every type of elements
     //0 - the position should be marginalized (its not delta position)
     //1 - the position should be marginalized but it is the delta position
@@ -4064,127 +3355,45 @@ void CFunctionalDistribFun::MarginalizeData(const CDistribFun *pOldData,
                 positionsKeep[i] -= curIndex;
                 curIndex = 0;
             }
-            if (pData->m_bMoment)
+            
+            C2DNumericDenseMatrix<float>* tempMean= NULL;
+            C2DNumericDenseMatrix<float>* tempCov= NULL;
+            float tempCoeff = 0.0f;
+            pData->ShrinkToMatrices( &posExceptMargDelta.front(),
+                                    numPosExceptMargDelta, matObs, &tempMean,
+                                     &tempCov, &tempCoeff);
+            //marginalize these matrices
+            MarginalizeOnMatrices( &positionsKeep.front(),
+                                  positionsKeep.size(), &nodeSizesOld.front(),
+                                  nodeSizesOld.size(), tempMean, tempCov,
+                                  tempCoeff, 1, &m_pMatrixMean, &m_pMatrixCov,
+                                   &m_normCoeff, maximize);
+            m_pMatrixMean->AddRef(pObj);
+            if (m_pMatrixCov)
             {
-                C2DNumericDenseMatrix<float>* tempMean= NULL;
-                C2DNumericDenseMatrix<float>* tempCov= NULL;
-                float tempCoeff = 0.0f;
-                pData->ShrinkToMatrices( &posExceptMargDelta.front(),
-                                        numPosExceptMargDelta, matObs,
-                                         &tempMean, &tempCov, &tempCoeff);
-                //marginalize these matrices
-                MarginalizeOnMatrices( &positionsKeep.front(),
-                                      positionsKeep.size(),
-                                       &nodeSizesOld.front(),
-                                      nodeSizesOld.size(), tempMean, tempCov,
-                                      tempCoeff, 1, &m_pMatrixMean,
-                                       &m_pMatrixCov, &m_normCoeff, maximize);
-                m_pMatrixMean->AddRef(pObj);
-                if (m_pMatrixCov)
-                {
-                    m_pMatrixCov->AddRef(pObj);
-                } else
-                {
-                    m_bDeltaFunction = 1;
-                }
-                delete tempMean;
-                delete tempCov;
-                if (m_bCanonical)
-                {
-                    m_bCanonical = 0;
-                    UpdateCanonicalForm();
-                }
-            } else if (pData->m_bCanonical)
-            {
-                C2DNumericDenseMatrix<float>* tempH= NULL;
-                C2DNumericDenseMatrix<float>* tempK= NULL;
-                float tempG = 0.0f;
-                pData->ShrinkToMatrices( &posExceptMargDelta.front(),
-                                        numPosExceptMargDelta, matObs, &tempH,
-                                         &tempK, &tempG);
-                //marginalize these matrices
-                MarginalizeOnMatrices( &positionsKeep.front(),
-                                      positionsKeep.size(),
-                                       &nodeSizesOld.front(),
-                                      nodeSizesOld.size(), tempH, tempK, tempG,
-                                       1, &m_pMatrixH, &m_pMatrixK, &m_g,
-                                      maximize);
-                m_pMatrixH->AddRef(pObj);
-                m_pMatrixK->AddRef(pObj);
-                delete tempH;
-                delete tempK;
+                m_pMatrixCov->AddRef(pObj);
             }
+            delete tempMean;
+            delete tempCov;
+            
             delete matObs;
         } else
         {
             //provide marginalization as usual and set positions of delta multiply as usual
-            if (pData->m_bMoment)
+
+            MarginalizeOnMatrices(VarsOfKeep, NumVarsOfKeep,
+                                   &nodeSizesOld.front(), nodeSizesOld.size(),
+                                  pData->m_pMatrixMean, pData->m_pMatrixCov,
+                                  pData->m_normCoeff, 1, &m_pMatrixMean,
+                                   &m_pMatrixCov, &m_normCoeff, maximize);
+            m_pMatrixMean->AddRef(pObj);
+            if (m_pMatrixCov)
             {
-                MarginalizeOnMatrices(VarsOfKeep, NumVarsOfKeep,
-                                       &nodeSizesOld.front(),
-                                      nodeSizesOld.size(),
-                                      pData->m_pMatrixMean,
-                                      pData->m_pMatrixCov, pData->m_normCoeff,
-                                       1, &m_pMatrixMean, &m_pMatrixCov,
-                                       &m_normCoeff, maximize);
-                m_pMatrixMean->AddRef(pObj);
-                if (m_pMatrixCov)
-                {
-                    m_pMatrixCov->AddRef(pObj);
-                } else
-                {
-                    m_bDeltaFunction = 1;
-                }
-                if (m_bCanonical)
-                {
-                    m_bCanonical = 0;
-                    UpdateCanonicalForm();
-                }
-            } else
-            {
-                if (pData->m_bCanonical)
-                {
-                    CFunctionalDistribFun* pDistr =
-                            static_cast<CFunctionalDistribFun*>(pData->Clone());
-                    pDistr->UpdateMomentForm();
-                    MarginalizeOnMatrices(VarsOfKeep, NumVarsOfKeep,
-                                           &nodeSizesOld.front(),
-                                          nodeSizesOld.size(),
-                                          pDistr->m_pMatrixMean,
-                                          pDistr->m_pMatrixCov,
-                                          pDistr->m_normCoeff, 1,
-                                           &m_pMatrixMean, &m_pMatrixCov,
-                                           &m_normCoeff, maximize);
-                    m_bCanonical = 0;
-                    m_bMoment = 1;
-                    m_pMatrixMean->AddRef(pObj);
-                    if (m_pMatrixCov)
-                    {
-                        m_pMatrixCov->AddRef(pObj);
-                    } else
-                    {
-                        m_bDeltaFunction = 1;
-                    }
-                    UpdateCanonicalForm();
-                    if ( !m_bDeltaFunction)
-                    {
-                        m_pMatrixMean->Release(pObj);
-                        m_pMatrixMean = NULL;
-                        m_pMatrixCov->Release(pObj);
-                        m_pMatrixCov = NULL;
-                    }
-                    delete pDistr;
-                    m_normCoeff = 0.0f;
-                    m_bMoment = 0;
-                    /*MarginalizeOnMatrices( VarsOfKeep, NumVarsOfKeep,
-                     &nodeSizesOld.front(), nodeSizesOld.size(),
-                     pData->m_pMatrixH, pData->m_pMatrixK, pData->m_g, 0,
-                     &m_pMatrixH, &m_pMatrixK, &m_g, maximize );
-                     m_pMatrixH->AddRef(pObj);
-                     m_pMatrixK->AddRef(pObj);*/
-                }
+                m_pMatrixCov->AddRef(pObj);
             }
+            
         }
+        
         //need to set all positions marginalized by delta and kept
         m_posOfDeltaMultiply.assign(numsOfDeltaPosInNewData.begin(),
                                     numsOfDeltaPosInNewData.end());
@@ -4210,73 +3419,18 @@ void CFunctionalDistribFun::MarginalizeData(const CDistribFun *pOldData,
     //we need to check number of keeped positions in new delta multiply
     else
     {
-        if (pData->m_bMoment)
+        
+        MarginalizeOnMatrices(VarsOfKeep, NumVarsOfKeep, &nodeSizesOld.front(),
+                              nodeSizesOld.size(), pData->m_pMatrixMean,
+                              pData->m_pMatrixCov, pData->m_normCoeff, 1,
+                               &m_pMatrixMean, &m_pMatrixCov, &m_normCoeff,
+                              maximize);
+        m_pMatrixMean->AddRef(pObj);
+        if (m_pMatrixCov)
         {
-            MarginalizeOnMatrices(VarsOfKeep, NumVarsOfKeep,
-                                   &nodeSizesOld.front(), nodeSizesOld.size(),
-                                  pData->m_pMatrixMean, pData->m_pMatrixCov,
-                                  pData->m_normCoeff, 1, &m_pMatrixMean,
-                                   &m_pMatrixCov, &m_normCoeff, maximize);
-            m_pMatrixMean->AddRef(pObj);
-            if (m_pMatrixCov)
-            {
-                m_pMatrixCov->AddRef(pObj);
-            } else
-            {
-                m_bDeltaFunction = 1;
-            }
-            if (m_bCanonical)
-            {
-                m_bCanonical = 0;
-                UpdateCanonicalForm();
-            }
-        } else
-        {
-            if (pData->m_bCanonical)
-            {
-                MarginalizeOnMatrices(VarsOfKeep, NumVarsOfKeep,
-                                       &nodeSizesOld.front(),
-                                      nodeSizesOld.size(), pData->m_pMatrixH,
-                                      pData->m_pMatrixK, pData->m_g, 0,
-                                       &m_pMatrixH, &m_pMatrixK, &m_g, maximize);
-                m_pMatrixH->AddRef(pObj);
-                m_pMatrixK->AddRef(pObj);
-                /*CFunctionalDistribFun* pDistr = static_cast<CFunctionalDistribFun*>(
-                 pData->Clone());
-                 pDistr->UpdateMomentForm();
-                 MarginalizeOnMatrices( VarsOfKeep, NumVarsOfKeep,
-                 &nodeSizesOld.front(), nodeSizesOld.size(), pDistr->m_pMatrixMean, 
-                 pDistr->m_pMatrixCov, pDistr->m_normCoeff, 1, &m_pMatrixMean,
-                 &m_pMatrixCov, &m_normCoeff, maximize );
-                 m_bCanonical = 0;
-                 m_bMoment = 1;
-                 m_pMatrixMean->AddRef(pObj);
-                 if( m_pMatrixCov )
-                 {
-                 m_pMatrixCov->AddRef( pObj );
-                 }
-                 else
-                 {
-                 m_bDeltaFunction = 1;
-                 }
-                 UpdateCanonicalForm();
-                 //need to make moment form invalid since the pData haven't valid moment form
-                 if( !m_bDeltaFunction )
-                 {
-                 m_pMatrixMean->Release(pObj);
-                 m_pMatrixMean = NULL;
-                 m_pMatrixCov->Release(pObj);
-                 m_pMatrixCov = NULL;
-                 }
-                 //delta distribution have matrix mean and canonical form falg only
-                 m_normCoeff = 0.0f;
-                 m_bMoment = 0;
-                 delete pDistr;*/
-            } else
-            {
-                PNL_THROW( CInvalidOperation, "marginalization invalid data" );
-            }
+            m_pMatrixCov->AddRef(pObj);
         }
+        
     }
 }
 
@@ -4285,9 +3439,9 @@ void CFunctionalDistribFun::ShrinkObservedNodes(const CDistribFun* pOldData,
     const CNodeType* pObsTabNT, const CNodeType* pObsGauNT)
 {
     PNL_CHECK_IS_NULL_POINTER( pOldData );
-    if (pOldData->GetDistributionType() != dtGaussian)
+    if (pOldData->GetDistributionType() != dtFunctional)
     {
-        PNL_THROW( CInconsistentType, "we need to shrink Gaussian" );
+        PNL_THROW( CInconsistentType, "we need to shrink Functional" );
     }
     const CFunctionalDistribFun *pData = (const CFunctionalDistribFun*)pOldData;
     if ( !pData->m_bPotential)
@@ -4301,20 +3455,24 @@ void CFunctionalDistribFun::ShrinkObservedNodes(const CDistribFun* pOldData,
     {
         ReleaseAllMatrices();
         //add referencies for new matrices
-        if (pData->m_pMatrixH)
-        {
-            m_pMatrixH
-                    = static_cast<C2DNumericDenseMatrix<float>*>(pData->m_pMatrixH->Clone());
-            m_pMatrixH->AddRef(pObj);
-        }
-        if (pData->m_pMatrixK)
-        {
-            m_pMatrixK
-                    = static_cast<C2DNumericDenseMatrix<float>*>(pData->m_pMatrixK->Clone());
-            m_pMatrixK->AddRef(pObj);
-        }
-        m_g = pData->m_g;
-        m_bCanonical = pData->m_bCanonical;
+
+        /*
+         if (pData->m_pMatrixH)
+         {
+         m_pMatrixH
+         = static_cast<C2DNumericDenseMatrix<float>*>(pData->m_pMatrixH->Clone());
+         m_pMatrixH->AddRef(pObj);
+         }
+         if (pData->m_pMatrixK)
+         {
+         m_pMatrixK
+         = static_cast<C2DNumericDenseMatrix<float>*>(pData->m_pMatrixK->Clone());
+         m_pMatrixK->AddRef(pObj);
+         }
+         m_g = pData->m_g;
+         m_bCanonical = pData->m_bCanonical;
+         */
+
         if (pData->m_pMatrixMean)
         {
             m_pMatrixMean
@@ -4328,13 +3486,11 @@ void CFunctionalDistribFun::ShrinkObservedNodes(const CDistribFun* pOldData,
             m_pMatrixCov->AddRef(pObj);
         }
         m_normCoeff = pData->m_normCoeff;
-        m_bMoment = pData->m_bMoment;
         m_bPotential = pData->m_bPotential;
         m_numberOfDims = pData->m_numberOfDims;
         m_NumberOfNodes = pData->m_NumberOfNodes;
         m_DistributionType = pData->m_DistributionType;
         m_bUnitFunctionDistribution = pData->m_bUnitFunctionDistribution;
-        m_bDeltaFunction = pData->m_bDeltaFunction;
         return;
     }
     if ( !pVarsObserved)
@@ -4444,68 +3600,13 @@ void CFunctionalDistribFun::ShrinkObservedNodes(const CDistribFun* pOldData,
                                                   &observedValues.front());
     //we partition all matrices into blocks & multiply it to get new distribution
     ReleaseAllMatrices();
-    //check if the model is delta function
-    if (pData->m_bDeltaFunction)
-    {
-        C2DNumericDenseMatrix<float> *matMeanObserved= NULL;
-        C2DNumericDenseMatrix<float> *matMeanUnObserved= NULL;
-        pData->m_pMatrixMean->GetLinearBlocks( &keepedPos.front(),
-                                              keepedPos.size(),
-                                               &nodeSizes.front(),
-                                              pData->m_NumberOfNodes,
-                                               &matMeanUnObserved,
-                                               &matMeanObserved);
-        CNumericDenseMatrix<float>* matDiff =
-                pnlCombineNumericMatrices(matMeanObserved, matObserved, 0);
-        float sumAll = matDiff->SumAll(1);
-        delete matDiff;
-        delete matMeanObserved;
-        float epsilon = 1e-5f;
-        if (sumAll > epsilon)
-        {
-            PNL_THROW(CInvalidOperation,
-                    "can shrink Gaussian Delta distribution only for the same evidence");
-        } else
-        {
-            m_pMatrixMean = matMeanUnObserved;
-            m_pMatrixMean->AddRef(pObj);
-            m_bUnitFunctionDistribution = pData->m_bUnitFunctionDistribution;
-            m_bDeltaFunction = pData->m_bDeltaFunction;
-            m_bMoment = pData->m_bMoment;
-            m_bCanonical = pData->m_bCanonical;
-        }
-        delete matObserved;
-        return;
-    }
-    if (pData->m_bCanonical)
-    {
-        m_bMoment = 0;
-        m_bCanonical = 1;
-        pData->ShrinkToMatrices( &keepedPos.front(), keepedPos.size(),
-                                matObserved, &m_pMatrixH, &m_pMatrixK, &m_g);
-        m_pMatrixH->AddRef(pObj);
-        m_pMatrixK->AddRef(pObj);
-        if (pData->m_bMoment)
-        {
-            UpdateMomentForm();
-        }
-    } else
-    {
-        if (pData->m_bMoment)
-        {
-            m_bCanonical = 0;
-            //we can do it directly - by matrix operations
-            m_bMoment = 1;
-            pData->ShrinkToMatrices( &keepedPos.front(), keepedPos.size(),
-                                    matObserved, &m_pMatrixMean, &m_pMatrixCov,
-                                     &m_normCoeff);
-            m_pMatrixMean->AddRef(pObj);
-            m_pMatrixCov->AddRef(pObj);
-        } else
-        {
-            PNL_THROW( CInvalidOperation, "no valid form to shrink it" );
-        }
-    }
+    
+    //we can do it directly - by matrix operations
+    pData->ShrinkToMatrices( &keepedPos.front(), keepedPos.size(), matObserved,
+                             &m_pMatrixMean, &m_pMatrixCov, &m_normCoeff);
+    m_pMatrixMean->AddRef(pObj);
+    m_pMatrixCov->AddRef(pObj);
+    
     delete matObserved;
 }
 
@@ -4553,89 +3654,93 @@ void CFunctionalDistribFun::MarginalizeOnMatrices(const int* keepVariables,
         delete temp1;
         delete temp2;
         return;
-    } else
-    {
-        C2DNumericDenseMatrix<float>* matHKeep= NULL;
-        C2DNumericDenseMatrix<float>* matHSum= NULL;
-        vecMat->GetLinearBlocks(keepVariables, numKeepVariables,
-                                allVariableSizes, numVariables, &matHKeep,
-                                 &matHSum);
-        
-        C2DNumericDenseMatrix<float> *matXK= NULL;
-        C2DNumericDenseMatrix<float> *matYK= NULL;
-        C2DNumericDenseMatrix<float> *matXYK= NULL;
-        C2DNumericDenseMatrix<float> *matYXK= NULL;
-        squareMat->GetBlocks(keepVariables, numKeepVariables, allVariableSizes,
-                             numVariables, &matXK, &matYK, &matXYK, &matYXK);
-        if (!matHSum)
-        {
-            *resVecMat = matHKeep;
-            *resSquareMat = matXK;
-            *resCoeff = coeff;
-            return;
-        }
-        C2DNumericDenseMatrix<float> *matHSUMTr = matHSum->Transpose();
-        C2DNumericDenseMatrix<float> *matYKinverse = matYK->Inverse();
-        C2DNumericDenseMatrix<float> *matMult1 = pnlMultiply(matYKinverse,
-                                                             matHSum, maximize);
-        C2DNumericDenseMatrix<float> *matMult2 =
-                pnlMultiply(matHSUMTr, matMult1, maximize);
-        int multSize;
-        const float*dataMult;
-        matMult2->GetRawData( &multSize, &dataMult);
-        if (multSize != 1)
-        {
-            PNL_THROW( CInvalidOperation,
-                    "result should be one float number" );
-        }
-        *resCoeff = (float)coeff + 0.5f * (m_numberOfDims * (float)log(2
-                * PNL_PI) - (float)log(matYK->Determinant()) + dataMult[0]);
-        delete matMult1;
-        delete matMult2;
-        matMult1 = pnlMultiply(matXYK, matYKinverse, maximize);
-        matMult2 = pnlMultiply(matMult1, matHSum, maximize);
-        //substract in combining matrices
-        *resVecMat
-                = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                       matHKeep,
-                                                                                       matMult2,
-                                                                                        0));
-        delete matMult2;
-        //substract in combining matrices
-        matMult2 = pnlMultiply(matMult1, matYXK, maximize);
-        
-        //make matrix simmetric to correct miscalculation
-        float *matVec = (float*)&(matMult2->GetVector()->front());
-        const int *ranges;
-        int numDims;
-        matMult2->GetRanges(&numDims, &ranges);
-        int i, j;
-        int size = ranges[0];
-        for (i = 0; i < size; i++)
-        {
-            for (j = 0; j < i; j++)
-            {
-                matVec[i*size+j] = matVec[j*size+i];
-            }
-        }
-        
-        *resSquareMat
-                = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                       matXK,
-                                                                                       matMult2,
-                                                                                        0));
-        delete matMult1;
-        delete matMult2;
-        delete matXK;
-        delete matYK;
-        delete matYKinverse;
-        delete matXYK;
-        delete matYXK;
-        delete matHSum;
-        delete matHSUMTr;
-        delete matHKeep;
-        return;
     }
+    
+    /*
+     else
+     {
+     C2DNumericDenseMatrix<float>* matHKeep= NULL;
+     C2DNumericDenseMatrix<float>* matHSum= NULL;
+     vecMat->GetLinearBlocks(keepVariables, numKeepVariables,
+     allVariableSizes, numVariables, &matHKeep,
+     &matHSum);
+     
+     C2DNumericDenseMatrix<float> *matXK= NULL;
+     C2DNumericDenseMatrix<float> *matYK= NULL;
+     C2DNumericDenseMatrix<float> *matXYK= NULL;
+     C2DNumericDenseMatrix<float> *matYXK= NULL;
+     squareMat->GetBlocks(keepVariables, numKeepVariables, allVariableSizes,
+     numVariables, &matXK, &matYK, &matXYK, &matYXK);
+     if (!matHSum)
+     {
+     *resVecMat = matHKeep;
+     *resSquareMat = matXK;
+     *resCoeff = coeff;
+     return;
+     }
+     C2DNumericDenseMatrix<float> *matHSUMTr = matHSum->Transpose();
+     C2DNumericDenseMatrix<float> *matYKinverse = matYK->Inverse();
+     C2DNumericDenseMatrix<float> *matMult1 = pnlMultiply(matYKinverse,
+     matHSum, maximize);
+     C2DNumericDenseMatrix<float> *matMult2 =
+     pnlMultiply(matHSUMTr, matMult1, maximize);
+     int multSize;
+     const float*dataMult;
+     matMult2->GetRawData( &multSize, &dataMult);
+     if (multSize != 1)
+     {
+     PNL_THROW( CInvalidOperation,
+     "result should be one float number" );
+     }
+     *resCoeff = (float)coeff + 0.5f * (m_numberOfDims * (float)log(2
+     * PNL_PI) - (float)log(matYK->Determinant()) + dataMult[0]);
+     delete matMult1;
+     delete matMult2;
+     matMult1 = pnlMultiply(matXYK, matYKinverse, maximize);
+     matMult2 = pnlMultiply(matMult1, matHSum, maximize);
+     //substract in combining matrices
+     *resVecMat
+     = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+     matHKeep,
+     matMult2,
+     0));
+     delete matMult2;
+     //substract in combining matrices
+     matMult2 = pnlMultiply(matMult1, matYXK, maximize);
+     
+     //make matrix simmetric to correct miscalculation
+     float *matVec = (float*)&(matMult2->GetVector()->front());
+     const int *ranges;
+     int numDims;
+     matMult2->GetRanges(&numDims, &ranges);
+     int i, j;
+     int size = ranges[0];
+     for (i = 0; i < size; i++)
+     {
+     for (j = 0; j < i; j++)
+     {
+     matVec[i*size+j] = matVec[j*size+i];
+     }
+     }
+     
+     *resSquareMat
+     = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+     matXK,
+     matMult2,
+     0));
+     delete matMult1;
+     delete matMult2;
+     delete matXK;
+     delete matYK;
+     delete matYKinverse;
+     delete matXYK;
+     delete matYXK;
+     delete matHSum;
+     delete matHSUMTr;
+     delete matHKeep;
+     return;
+     }
+     */
 }
 
 void CFunctionalDistribFun::ShrinkToMatrices(const int* keepPositions,
@@ -4656,108 +3761,54 @@ void CFunctionalDistribFun::ShrinkToMatrices(const int* keepPositions,
         nodeSizes[i] = m_NodeTypes[i]->GetNodeSize();
     }
     int flagOfMaximizeWithMult = 0;
-    if (m_bCanonical)
-    {
-        C2DNumericDenseMatrix<float> *matHObserved= NULL;
-        C2DNumericDenseMatrix<float> *matHUnObserved= NULL;
-        m_pMatrixH->GetLinearBlocks(keepPositions, numKeepPositions,
-                                     &nodeSizes.front(), m_NumberOfNodes,
-                                     &matHUnObserved, &matHObserved);
-        C2DNumericDenseMatrix<float> *matY= NULL;
-        C2DNumericDenseMatrix<float> *matXY= NULL;
-        C2DNumericDenseMatrix<float> *matYX= NULL;
-        m_pMatrixK->GetBlocks(keepPositions, numKeepPositions,
-                               &nodeSizes.front(), nodeSizes.size(),
-                              resSquareMat, &matY, &matXY, &matYX);
-        int flagOfMaximizeWithMult = 0;
-        C2DNumericDenseMatrix<float> *tempMat =
-                pnlMultiply(matXY, obsMatrix, flagOfMaximizeWithMult);
-        (*resVecMat)
-                = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                       matHUnObserved,
-                                                                                       tempMat,
-                                                                                        0));
-        delete tempMat;
-        C2DNumericDenseMatrix<float> *tempMat2 = obsMatrix->Transpose();
-        tempMat = pnlMultiply(matY, obsMatrix, flagOfMaximizeWithMult);
-        C2DNumericDenseMatrix<float>* tempMat3 =
-                pnlMultiply(tempMat2, tempMat, flagOfMaximizeWithMult);
-        const floatVector *vecData = tempMat3->GetVector();
-        if (vecData->size()!=1)
-        {
-            PNL_THROW( CInvalidOperation, "multiplication" );
-        }
-        delete tempMat;
-        *coeff = (m_g)-0.5f*(*vecData)[0];
-        delete tempMat3;
-        delete tempMat2;
-        tempMat = matHObserved->Transpose();
-        delete matHObserved;
-        delete matHUnObserved;
-        tempMat2 = pnlMultiply(tempMat, obsMatrix, flagOfMaximizeWithMult);
-        vecData = tempMat2->GetVector();
-        if (vecData->size()!=1)
-        {
-            PNL_THROW( CInvalidOperation, "multiplication" );
-        }
-        delete tempMat;
-        delete matY;
-        delete matXY;
-        delete matYX;
-        *coeff = (*coeff)+(*vecData)[0];
-        delete tempMat2;
-        return;
-    }
-    if (m_bMoment)
-    {
-        C2DNumericDenseMatrix<float> *matMeanObserved= NULL;
-        C2DNumericDenseMatrix<float> *matMeanUnObserved= NULL;
-        m_pMatrixMean->GetLinearBlocks(keepPositions, numKeepPositions,
-                                        &nodeSizes.front(), m_NumberOfNodes,
-                                        &matMeanUnObserved, &matMeanObserved);
-        C2DNumericDenseMatrix<float>* matrixK = m_pMatrixCov->Inverse();
-        C2DNumericDenseMatrix<float> *matX= NULL;
-        C2DNumericDenseMatrix<float> *matY= NULL;
-        C2DNumericDenseMatrix<float> *matXY= NULL;
-        C2DNumericDenseMatrix<float> *matYX= NULL;
-        matrixK->GetBlocks(keepPositions, numKeepPositions, &nodeSizes.front(),
-                           nodeSizes.size(), &matX, &matY, &matXY, &matYX);
-        delete matrixK;
-        *resSquareMat = matX->Transpose();
-        C2DNumericDenseMatrix<float>* meanComp =
-                pnlMultiply(matX, matMeanUnObserved, flagOfMaximizeWithMult);
-        C2DNumericDenseMatrix<float>
-                * meanMult =
-                        static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                             obsMatrix,
-                                                                                             matMeanObserved,
-                                                                                              0));
-        C2DNumericDenseMatrix<float>* meanCompSubstr =
-                pnlMultiply(matXY, meanMult, flagOfMaximizeWithMult);
-        C2DNumericDenseMatrix<float>
-                * substrRes =
-                        static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
-                                                                                             meanComp,
-                                                                                             meanCompSubstr,
-                                                                                              0));
-        *resVecMat = pnlMultiply( *resSquareMat, substrRes,
-                                 flagOfMaximizeWithMult);
-        delete matMeanUnObserved;
-        delete matMeanObserved;
-        delete matX;
-        delete matY;
-        delete matXY;
-        delete matYX;
-        delete meanComp;
-        delete meanMult;
-        delete meanCompSubstr;
-        delete substrRes;
-    }
+    
+    C2DNumericDenseMatrix<float> *matMeanObserved= NULL;
+    C2DNumericDenseMatrix<float> *matMeanUnObserved= NULL;
+    m_pMatrixMean->GetLinearBlocks(keepPositions, numKeepPositions,
+                                    &nodeSizes.front(), m_NumberOfNodes,
+                                    &matMeanUnObserved, &matMeanObserved);
+    C2DNumericDenseMatrix<float>* matrixK = m_pMatrixCov->Inverse();
+    C2DNumericDenseMatrix<float> *matX= NULL;
+    C2DNumericDenseMatrix<float> *matY= NULL;
+    C2DNumericDenseMatrix<float> *matXY= NULL;
+    C2DNumericDenseMatrix<float> *matYX= NULL;
+    matrixK->GetBlocks(keepPositions, numKeepPositions, &nodeSizes.front(),
+                       nodeSizes.size(), &matX, &matY, &matXY, &matYX);
+    delete matrixK;
+    *resSquareMat = matX->Transpose();
+    C2DNumericDenseMatrix<float>* meanComp =
+            pnlMultiply(matX, matMeanUnObserved, flagOfMaximizeWithMult);
+    C2DNumericDenseMatrix<float>
+            * meanMult =
+                    static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                         obsMatrix,
+                                                                                         matMeanObserved,
+                                                                                          0));
+    C2DNumericDenseMatrix<float>* meanCompSubstr =
+            pnlMultiply(matXY, meanMult, flagOfMaximizeWithMult);
+    C2DNumericDenseMatrix<float>
+            * substrRes =
+                    static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                         meanComp,
+                                                                                         meanCompSubstr,
+                                                                                          0));
+    *resVecMat = pnlMultiply( *resSquareMat, substrRes, flagOfMaximizeWithMult);
+    delete matMeanUnObserved;
+    delete matMeanObserved;
+    delete matX;
+    delete matY;
+    delete matXY;
+    delete matYX;
+    delete meanComp;
+    delete meanMult;
+    delete meanCompSubstr;
+    delete substrRes;
+    
 }
 
 void CFunctionalDistribFun::ExpandData(const int* pDimsToExtend,
     int numDimsToExpand, const Value* const* valuesArray,
-    const CNodeType* const *allFullNodeTypes, int UpdateCanonical)
+    const CNodeType* const *allFullNodeTypes)
 {
     if ( !m_bPotential)
     {
@@ -4833,7 +3884,7 @@ void CFunctionalDistribFun::ExpandData(const int* pDimsToExtend,
             }
         }
         //we need to update moment form as we have 
-        UpdateMomentForm();
+        Update();
         //we need to find blocks in existing data and put it in bigData for mean and covariance
         const floatVector *meanOld = m_pMatrixMean->GetVector();
         const floatVector *covOld = m_pMatrixCov->GetVector();
@@ -4897,7 +3948,6 @@ void CFunctionalDistribFun::ExpandData(const int* pDimsToExtend,
         m_pMatrixCov = C2DNumericDenseMatrix<float>::Create( &ranges.front(),
                                                              &covNew.front());
         m_pMatrixCov->AddRef(pObj);
-        m_bCanonical = 0;
         m_normCoeff = 1.0f;//fixme - we have singular matrix - no real norm Coeff
         //we need to set new node types:
         m_NodeTypes = pConstNodeTypeVector(allFullNodeTypes, allFullNodeTypes
@@ -4918,16 +3968,16 @@ void CFunctionalDistribFun::ExpandData(const int* pDimsToExtend,
             m_offsetToNextMean.push_back(m_offsetToNextMean[
             m_offsetToNextMean.size()-1]+nodeSize);
         }
-        // may be optimized
-        m_pMatrixH->Release(pObj);
-        m_pMatrixH = NULL;
-        m_pMatrixK->Release(pObj);
-        m_pMatrixK = NULL;
-        m_g = FLT_MAX;
-        if (UpdateCanonical)
-        {
-            UpdateCanonicalForm();
-        }
+        
+        /*
+         // may be optimized
+         m_pMatrixH->Release(pObj);
+         m_pMatrixH = NULL;
+         m_pMatrixK->Release(pObj);
+         m_pMatrixK = NULL;
+         m_g = FLT_MAX;
+         */
+
     }
 }
 
@@ -4950,7 +4000,7 @@ void CFunctionalDistribFun::UpdateStatisticsEM(const CDistribFun* infData,
     
     if ( !infData)
     {
-        PNL_THROW( CNULLPointer, "resalts of inference" )
+        PNL_THROW( CNULLPointer, "results of inference" )
     }
     const CFunctionalDistribFun* myinfData;
     
@@ -4958,9 +4008,9 @@ void CFunctionalDistribFun::UpdateStatisticsEM(const CDistribFun* infData,
     
     if (!static_cast<const CFunctionalDistribFun* >(infData)->GetMomentFormFlag())
     {
-        pGaussDistr = static_cast<CFunctionalDistribFun*>(infData->Clone());
-        pGaussDistr->UpdateMomentForm();
-        myinfData = pGaussDistr;
+        pFuncDistr = static_cast<CFunctionalDistribFun*>(infData->Clone());
+        pFuncDistr->Update();
+        myinfData = pFuncDistr;
     } else
     {
         myinfData = static_cast<const CFunctionalDistribFun* >(infData);
@@ -4997,7 +4047,7 @@ void CFunctionalDistribFun::UpdateStatisticsEM(const CDistribFun* infData,
     int covSize;
     CNumericDenseMatrix<float>* matMT= NULL;
     CNumericDenseMatrix<float>* matCT= NULL;
-    switch (myinfData->IsDistributionSpecific())
+    switch (myinfData->m_bUnitFunctionDistribution)
     {
         case 0:
             matMT
@@ -5013,50 +4063,10 @@ void CFunctionalDistribFun::UpdateStatisticsEM(const CDistribFun* infData,
             PNL_THROW(CAlgorithmicException, "uniform distribution")
             ;
             break;
-        case 2:
-            matMT
-                    = static_cast<CNumericDenseMatrix<float>*>(myinfData->GetMatrix(matMean));
-            matMT->GetRawData(&meanSize, &meanFromInf);
-            mean.assign(meanFromInf, meanFromInf + meanSize);
-            cov.assign(meanSize*meanSize, 0.0f);
-            break;
-        case 3:
-            matMT
-                    = static_cast<CNumericDenseMatrix<float>*>(myinfData->GetMatrix(matMean));
-            matMT->GetRawData(&meanSize, &meanFromInf);
-            mean.assign(meanFromInf, meanFromInf + meanSize);
-            matCT
-                    = static_cast<CNumericDenseMatrix<float>*>(myinfData->GetMatrix(matCovariance));
-            matCT->GetRawData(&covSize, &covFromInf);
-            cov.assign(covFromInf, covFromInf+covSize);
-            int nPositions;
-            const int* positions;
-            const float* values;
-            const int* offsets;
-            
-            nPositions = myinfData->GetMultipliedDelta(&positions, &values,
-                                                        &offsets);
-            for (int i = 0; i < nPositions; i++)
-            {
-                memcpy(&mean[positions[i]], &values[offsets[i]], offsets[i+1]
-                        -offsets[i]);///???
-                for (int j = 0; j < nPositions; j++)
-                {
-                    fill(&cov[positions[i]*meanSize],
-                          &cov[positions[i]*meanSize + meanSize-1], 0.0f);
-                    for (int k = 0; k < meanSize; k++)
-                    {
-                        cov[positions[i] +k*meanSize] = 0.0f;
-                    }
-                }
-            }
-            
-            break;
-            
     }
-    if (pGaussDistr)
+    if (pFuncDistr)
     {
-        delete pGaussDistr;
+        delete pFuncDistr;
     }
     
     int offset = 0;
@@ -5212,6 +4222,7 @@ void CFunctionalDistribFun::UpdateStatisticsML(
     
 }
 
+// TODO: Is canonical required for Potential Distribution?!
 CDistribFun *CFunctionalDistribFun::ConvertCPDDistribFunToPot() const
 {
     if (m_bPotential)
@@ -5221,10 +4232,6 @@ CDistribFun *CFunctionalDistribFun::ConvertCPDDistribFunToPot() const
     if (m_bUnitFunctionDistribution)
     {
         return new CFunctionalDistribFun(m_NumberOfNodes, &m_NodeTypes.front(), 1, 1);
-    }
-    if (!m_bMoment)
-    {
-        PNL_THROW( CInvalidOperation, "we have no valid form of CPD" )
     }
     
     CFunctionalDistribFun* factData= NULL;
@@ -5241,7 +4248,7 @@ CDistribFun *CFunctionalDistribFun::ConvertCPDDistribFunToPot() const
     {
         factData = CFunctionalDistribFun::Copy( this);
         factData->m_bPotential = 1;
-        factData->UpdateCanonicalForm();
+        factData->Update();
         return factData;
     }
     floatVector bigWeightsData = floatVector(NumAllInweights*childSize);
@@ -5777,17 +4784,14 @@ int CFunctionalDistribFun::GetNumberOfFreeParameters() const
     dimOfGaussian = 0;
     nCov = 0;
     
-    if (!m_bDeltaFunction)
+    pMatrix = this->GetMatrix(matCovariance);
+    pMatrix->GetRanges(&nDims, &Dims);
+    dimOfGaussian = Dims[0];
+    if (pMatrix->GetClampValue() )
+        nCov = 0;
+    else
     {
-        pMatrix = this->GetMatrix(matCovariance);
-        pMatrix->GetRanges(&nDims, &Dims);
-        dimOfGaussian = Dims[0];
-        if (pMatrix->GetClampValue() )
-            nCov = 0;
-        else
-        {
-            nCov = dimOfGaussian * (dimOfGaussian-1) / 2; //symmetric (and positive definite)
-        }
+        nCov = dimOfGaussian * (dimOfGaussian-1) / 2; //symmetric (and positive definite)
     }
     
     pMatrix = this->GetMatrix(matMean);
@@ -5799,23 +4803,7 @@ int CFunctionalDistribFun::GetNumberOfFreeParameters() const
     }
     nparents = GetNumberOfNodes()-1;
     
-    nWeights = 0;
-    if (!m_bDeltaFunction)
-    {
-        if (m_pMatricesWeight)
-        {
-            for (i=0; i</*nDims-1*/nparents; i++)
-            {
-                pMatrix = GetMatrix(matWeights, i);
-                if ( !pMatrix->GetClampValue() )
-                {
-                    pMatrix->GetRanges(&nDims, &Dims);
-                    nWeights += Dims[0] * Dims[1];
-                }
-            }
-        }
-    }
-    return nMean + nCov + nWeights;
+    return nMean + nCov;
 }
 
 /*
@@ -5842,6 +4830,7 @@ int CFunctionalDistribFun::GetNumberOfFreeParameters() const
  }
  */
 
+// TODO: This function is tricky and messy
 float CFunctionalDistribFun::ProcessingStatisticalData(float nEv)
 {
     
@@ -5920,11 +4909,14 @@ float CFunctionalDistribFun::ProcessingStatisticalData(float nEv)
         {
             
             int i = 0;
-            pMatB
-                    = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
-                                                                            matWeights,
-                                                                            clumpedDims[i]));
             
+            /*
+             pMatB
+             = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
+             matWeights,
+             clumpedDims[i]));
+             */
+
             for (i = 0; i < clPos.size(); i++)
             {
                 tmp[0] = clPos[i];
@@ -5936,10 +4928,14 @@ float CFunctionalDistribFun::ProcessingStatisticalData(float nEv)
                     pMat1 = GetBlock(tmp, unclPos, nsVec, pMatSigma, NULL);
                     
                 }
-                pMat2 = pnlMultiply(pMatB, pMat1, 0);
-                delete pMat1;
                 
-                pMatSum->CombineInSelf(pMat2, 0);
+                /*
+                 pMat2 = pnlMultiply(pMatB, pMat1, 0);
+                 delete pMat1;
+                 */
+
+                pMatSum->CombineInSelf(pMat1, 0);
+                delete pMat1;
                 delete pMat2;
             }
             if (bClMean)
@@ -5980,22 +4976,23 @@ float CFunctionalDistribFun::ProcessingStatisticalData(float nEv)
         floatVector resB;
         for (i = 0; i < unclPos.size(); i++)
         {
-            
-            pMat2
-                    = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
-                                                                            matWeights,
-                                                                            unclPos[i]));
-            int nEl = pMat2->GetRawDataLength();
-            resB.resize(nEl);
-            
-            mulind[1] = offsetB;
-            for (j = 0; j < nsVec.back(); j++)
-            {
-                mulind[0] = j;
-                memcpy( &resB[j*nsVec[unclPos[i]]], &(*res)[pMat1->ConvertMultiDimIndex(mulind)], nsVec[unclPos[i]]*sizeof(float));
-            }
-            offsetB += nsVec[unclPos[i]];
-            pMat2->SetData(&resB.front());
+            /*
+             pMat2
+             = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
+             matWeights,
+             unclPos[i]));
+             int nEl = pMat2->GetRawDataLength();
+             resB.resize(nEl);
+             
+             mulind[1] = offsetB;
+             for (j = 0; j < nsVec.back(); j++)
+             {
+             mulind[0] = j;
+             memcpy( &resB[j*nsVec[unclPos[i]]], &(*res)[pMat1->ConvertMultiDimIndex(mulind)], nsVec[unclPos[i]]*sizeof(float));
+             }
+             offsetB += nsVec[unclPos[i]];
+             pMat2->SetData(&resB.front());
+             */
         }
         if ( !bClMean)
         {
@@ -6026,11 +5023,10 @@ float CFunctionalDistribFun::ProcessingStatisticalData(float nEv)
     //////////////////////////////////////////////////////////////////////////
     C2DNumericDenseMatrix<float> *matCovVirt = FormCov(nsVec, nEv);
     C2DNumericDenseMatrix<float> *pMatCov= NULL;
-    if ( !m_bDeltaFunction)
-    {
-        pMatCov
-                = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(matCovariance));
-    }
+    
+    pMatCov
+            = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(matCovariance));
+    
     int isIllCond = matCovVirt->IsIllConditioned();
     if (matCovVirt->Determinant() <= FLT_MIN)
     {
@@ -6048,11 +5044,7 @@ float CFunctionalDistribFun::ProcessingStatisticalData(float nEv)
                 CheckMomentFormValidity();
             } else
             {
-                m_bDeltaFunction = 1;
-                static_cast<CMatrix<float>*>(
-                        pMatCov)->Release(this);
-                m_pMatrixCov = NULL;
-                m_normCoeff = 0.0f;
+                PNL_THROW(CInvalidOperation, " covariance matrix is ill-conditioned.");
             }
             delete matCovVirt;
             val1 = float(nsVec.back()*nEv);
@@ -6080,17 +5072,12 @@ float CFunctionalDistribFun::ProcessingStatisticalData(float nEv)
         }
         val1 = float(nsVec.back()*nEv);
     }
-    if ( !m_bDeltaFunction)
-    {
-        pMatCov
-                = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(matCovariance));
-        double ll = -0.5f*(nEv*(nsVec.back()*log(2.f*PNL_PI)
-                + log(fabs(pMatCov->Determinant() ) ) ) + val1);
-        return (float)ll;
-    } else
-    {
-        return -FLT_MAX;
-    }
+    
+    pMatCov
+            = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(matCovariance));
+    double ll = -0.5f*(nEv*(nsVec.back()*log(2.f*PNL_PI)
+            + log(fabs(pMatCov->Determinant() ) ) ) + val1);
+    return (float)ll;
     
 }
 
@@ -6203,29 +5190,33 @@ void CFunctionalDistribFun::PriorToCPD(floatVecVector &parentPrior)
         // float elem = m_pMatrixMean->GetElementByIndexes(index); ???
         float elem = m_pPseudoCountsMean->GetElementByIndexes(index);
         int j;
-        for (j = 0; j < m_NumberOfNodes - 1; ++j)
-        {
-            C2DNumericDenseMatrix<float>
-                    *matW =
-                            static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
-                                                                                  matWeights,
-                                                                                  j));
-            int length = 0;
-            const float *output;
-            matW->GetRawData(&length, &output);
-            if (length != m_NodeTypes[m_NumberOfNodes-1]->GetNodeSize()
-                    *parentPrior[j].size())
-            {
-                PNL_THROW(COutOfRange, "incorrect sizes");
-            }
-            int k;
-            float weigth = 0;
-            for (k = 0; k < parentPrior[j].size(); ++k)
-            {
-                weigth += output[i*parentPrior[j].size()+k]*parentPrior[j][k];
-            }
-            elem -= weigth;
-        }
+        
+        /* Something with the weights
+         for (j = 0; j < m_NumberOfNodes - 1; ++j)
+         {
+         C2DNumericDenseMatrix<float>
+         *matW =
+         static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
+         matWeights,
+         j));
+         int length = 0;
+         const float *output;
+         matW->GetRawData(&length, &output);
+         if (length != m_NodeTypes[m_NumberOfNodes-1]->GetNodeSize()
+         *parentPrior[j].size())
+         {
+         PNL_THROW(COutOfRange, "incorrect sizes");
+         }
+         int k;
+         float weigth = 0;
+         for (k = 0; k < parentPrior[j].size(); ++k)
+         {
+         weigth += output[i*parentPrior[j].size()+k]*parentPrior[j][k];
+         }
+         elem -= weigth;
+         }
+         */
+
         m_pMatrixMean->SetElementByIndexes(elem, index);
     }
     // update covariance matrix
@@ -6453,20 +5444,24 @@ C2DNumericDenseMatrix<float> * CFunctionalDistribFun::FormCov(intVector& nsVec,
     for (i = 0; i < nnodes - 1; i++)
     {
         ind2[0] = i;
-        matW
-                = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
-                                                                        matWeights,
-                                                                        i));
+        
+        /*
+         matW
+         = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
+         matWeights,
+         i));
+         */
+
         tmp = GetBlock(ind2, ind1, nsVec, matS, NULL);
-        tmp1 = pnlMultiply(matW, tmp, 0);
+        // tmp1 = pnlMultiply(matW, tmp, 0);
+        // delete tmp;
+
+        matYY->CombineInSelf(tmp, 0);
+        tmp1 = tmp->Transpose();
         delete tmp;
         
         matYY->CombineInSelf(tmp1, 0);
-        tmp = tmp1->Transpose();
         delete tmp1;
-        
-        matYY->CombineInSelf(tmp, 0);
-        delete tmp;
         
         C2DNumericDenseMatrix<float> *vecXi;
         matStMu->GetLinearBlocks( &ind2.front(), 1, &nsVec.front(),
@@ -6498,33 +5493,40 @@ C2DNumericDenseMatrix<float> * CFunctionalDistribFun::FormCov(intVector& nsVec,
             
             tmp = GetBlock(ind1, ind2, nsVec, matS);
             
-            matW
-                    = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
-                                                                            matWeights,
-                                                                            i));
-            
-            tmp1 = pnlMultiply(matW, tmp, 0);
-            delete tmp;
-            
-            matW
-                    = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
-                                                                            matWeights,
-                                                                            j));
-            tmp = matW->Transpose();
-            
-            tmp2 = pnlMultiply(tmp1, tmp, 0);
-            delete tmp;
-            delete tmp1;
-            
-            matYY->CombineInSelf(tmp2, 1);
+            /*
+             matW
+             = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
+             matWeights,
+             i));
+             */
+
+            // tmp1 = pnlMultiply(matW, tmp, 0);
+            // delete tmp;
+
+            /*
+             matW
+             = static_cast<C2DNumericDenseMatrix<float> *>(GetMatrix(
+             matWeights,
+             j));
+             */
+
+            /*
+             tmp = matW->Transpose();
+             
+             tmp2 = pnlMultiply(tmp1, tmp, 0);
+             delete tmp;
+             delete tmp1;
+             */
+
+            matYY->CombineInSelf(tmp, 1);
             
             if (i != j)
             {
-                tmp = tmp2->Transpose();
-                matYY->CombineInSelf(tmp, 1);
-                delete tmp;
+                tmp1 = tmp->Transpose();
+                matYY->CombineInSelf(tmp1, 1);
+                delete tmp1;
             }
-            delete tmp2;
+            delete tmp;
             
         }
     }
@@ -6571,6 +5573,11 @@ C2DNumericDenseMatrix<float> * CFunctionalDistribFun::FormCov(intVector& nsVec,
     
     return matYY;
     
+}
+
+void CFunctionalDistribFun::SetCoefficient(float coeff)
+{
+    m_normCoeff = coeff;
 }
 
 #ifdef PAR_PNL

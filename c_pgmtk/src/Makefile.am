@@ -57,6 +57,7 @@ libpnl_la_SOURCES=      \
      pnlFactors.cpp     \
      pnlFakePtr.cpp     \
      pnlFGSumMaxInferenceEngine.cpp     \
+     pnlFunction.cpp     \
      pnlFunctionalCPD.cpp     \
      pnlFunctionalDistribFun.cpp     \
      pnlFunctionalPotential.cpp     \

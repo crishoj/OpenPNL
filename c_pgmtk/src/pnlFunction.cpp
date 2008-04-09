@@ -17,14 +17,14 @@ PNL_USING
  * PUBLIC
  */
 
-CFunction::CFunction& operator=( const CFunction&)
+CFunction& CFunction::operator=( const CFunction&)
 {
     return *this;
 }
 
-CFunction::CFunction* Clone() const
+CFunction* CFunction::Clone() const
 {
-    return CFunction();
+    return new CFunction();
 }
 
 CFunction::~CFunction()

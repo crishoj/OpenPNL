@@ -23,7 +23,6 @@
 #include "pnlNodeType.hpp"
 #include "pnlEvidence.hpp"
 #include "pnl2DNumericDenseMatrix.hpp"
-//fixme - enum use for Matrix - should it be here?
 
 #ifdef PNL_RTTI
 #include "pnlpnlType.hpp"

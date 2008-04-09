@@ -122,12 +122,8 @@ void CCondFunctionalDistribFun::CreateDefaultMatrices(int typeOfMatrices)
         }
         CFunctionalDistribFun* theDistr =
                 m_distribution->GetElementByIndexes(&index.front());
-        theDistr
-                = CFunctionalDistribFun::CreateInMomentForm(
-                                                            m_bPotential,
-                                                            numContParents + 1,
-                                                             &contParentsTypes.front(), 
-                                                            NULL, NULL, NULL);
+        theDistr = CFunctionalDistribFun::Create(m_bPotential, numContParents
+                + 1, &contParentsTypes.front(), NULL);
         theDistr->CreateDefaultMatrices(typeOfMatrices);
         m_distribution->SetElementByIndexes(theDistr, &index.front() );
     }
@@ -318,10 +314,13 @@ void CCondFunctionalDistribFun::AllocDistribFun(
     //detect which of distributions should be allocated
     if (isDelta)
     {
-        theDistr
-                = CFunctionalDistribFun::CreateDeltaDistribution(numContParents
-                        + 1, &contParentsTypes.front(), NULL, isMoment,
-                                                                 m_bPotential);
+        /* TODO: GET RID OF DELTA!
+         theDistr
+         = CFunctionalDistribFun::CreateDeltaDistribution(numContParents
+         + 1, &contParentsTypes.front(), NULL, isMoment,
+         m_bPotential);
+         */
+
     } else
     {
         if (isUniform)
@@ -331,30 +330,28 @@ void CCondFunctionalDistribFun::AllocDistribFun(
                                                                             numContParents
                                                                                     + 1,
                                                                              &contParentsTypes.front(),
-                                                                            m_bPotential,
-                                                                             1
-                                                                                    -isMoment);
+                                                                            m_bPotential);
         } else
         {
             if (isMoment)
             {
                 theDistr
-                        = CFunctionalDistribFun::CreateInMomentForm(
-                                                                    m_bPotential,
-                                                                    numContParents
-                                                                            + 1,
-                                                                     &contParentsTypes.front(), 
-                                                                    NULL, NULL, 
-                                                                    NULL);
+                        = CFunctionalDistribFun::Create(
+                                                        m_bPotential,
+                                                        numContParents + 1,
+                                                         &contParentsTypes.front(), 
+                                                        NULL);
             } else
             {
-                theDistr
-                        = CFunctionalDistribFun::CreateInCanonicalForm(
-                                                                       numContParents
-                                                                               + 1,
-                                                                        &contParentsTypes.front(),
-                                                                        0, 0,
-                                                                        0.f);
+                /* TODO: GET RID OF CANONICAL FORM!
+                 theDistr
+                 = CFunctionalDistribFun::CreateInCanonicalForm(
+                 numContParents
+                 + 1,
+                 &contParentsTypes.front(),
+                 0, 0,
+                 0.f);
+                 */
             }
         }
     }
@@ -397,10 +394,7 @@ void CCondFunctionalDistribFun::SetDistribFun(
         PNL_THROW( CInconsistentType,
                 "we can set only data in the same form as we are");
     }
-    if ( !inputDistr->GetMomentFormFlag() )
-    {
-        PNL_THROW( CInconsistentType, "we can set only data in moment form" );
-    }
+    
     int isExist = 1;
     if (m_distribution->GetMatrixClass() == mcSparse)
     {
@@ -597,7 +591,8 @@ void CCondFunctionalDistribFun::SetCoefficient(float coeff, int isCanonical,
         AllocDistribFun(pParentCombination);
         thisDistr = m_distribution->GetElementByIndexes(pParentCombination);
     }
-    thisDistr->SetCoefficient(coeff, isCanonical);
+    
+    thisDistr->SetCoefficient(coeff);
 }
 
 float CCondFunctionalDistribFun::GetCoefficient(int isCanonical,
@@ -613,7 +608,7 @@ float CCondFunctionalDistribFun::GetCoefficient(int isCanonical,
                 "can't set coefficient to non allocated Gaussian distrbution" );
     } else
     {
-        val = pDistr->GetCoefficient(isCanonical);
+        val = pDistr->GetCoefficient();
     }
     return val;
 }
