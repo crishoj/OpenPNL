@@ -12,7 +12,7 @@
 #ifndef __PNLFUNCTION_HPP__
 #define __PNLFUNCTION_HPP__
 
-#include "pnlObject.hpp"
+#include "pnlConfig.hpp"
 
 PNL_BEGIN
 

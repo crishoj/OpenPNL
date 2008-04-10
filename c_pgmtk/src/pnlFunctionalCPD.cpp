@@ -137,9 +137,9 @@ CFunctionalCPD* CFunctionalCPD::CreateUnitFunctionCPD(const int *domain,
     CFunctionalDistribFun
             * UniData =
                     CFunctionalDistribFun::CreateUnitFunctionDistribution(
-                                                                        nNodes,
-                                                                         &ntVec.front(),
-                                                                         0, 0);
+                                                                          nNodes,
+                                                                           &ntVec.front(),
+                                                                           0);
     delete (resCPD->m_CorrespDistribFun);
     resCPD->m_CorrespDistribFun = UniData;
     return resCPD;
@@ -512,7 +512,7 @@ void CFunctionalCPD::SetCoefficient(float coeff, const int* pParentCombination)
         if (dt == dtGaussian)
         {
             static_cast<CFunctionalDistribFun*>(m_CorrespDistribFun)->
-            SetCoefficient(coeff, isForCanonical);
+            SetCoefficient(coeff);
         } else
         {
             if (dt == dtCondGaussian)
@@ -533,7 +533,7 @@ float CFunctionalCPD::GetCoefficient(const int* parentCombination)
     if (dt == dtGaussian)
     {
         val = static_cast<CFunctionalDistribFun*>(m_CorrespDistribFun)->
-        GetCoefficient(forCanonical);
+        GetCoefficient();
     } else
     {
         if (dt == dtCondGaussian)
@@ -615,8 +615,9 @@ void CFunctionalCPD::GenerateSample(CEvidence* evidence, int maximize) const
     CPotential *resultPot;
     if (this->GetDistribFun()->GetDistributionType() == dtCondGaussian)
     {
-        CCondFunctionalDistribFun *tmpDistr =
-                (static_cast<CCondFunctionalDistribFun*>(this->GetDistribFun()));
+        CCondFunctionalDistribFun
+                *tmpDistr =
+                        (static_cast<CCondFunctionalDistribFun*>(this->GetDistribFun()));
         intVector discrParentIndices;
         tmpDistr->GetDiscreteParentsIndices( &discrParentIndices);
         intVector contParentIndices;

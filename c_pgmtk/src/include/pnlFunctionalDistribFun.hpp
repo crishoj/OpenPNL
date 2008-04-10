@@ -59,21 +59,23 @@ public:
 
     void Update();
 
+    int GetMultipliedDelta( const int **positions, const float **values,
+            const int **offsets ) const;
     CDistribFun *ConvertCPDDistribFunToPot() const;
 
-    /* Might still need these...
      CDistribFun *CPD_to_pi(CDistribFun *const* allPiMessages,
      int *multParentIndices, int numMultNodes, int posOfExceptParent = -1,
      int maximizeFlag = 0) const;
      CDistribFun *CPD_to_lambda(const CDistribFun *lambda,
      CDistribFun *const* allPiMessages, int *multParentIndices,
      int numMultNodes, int posOfExceptNode = -1, int maximizeFlag = 0) const;
-     */
 
     inline int GetFactorFlag() const;
     inline float GetCoefficient() const;
     void SetCoefficient(float coeff);
-    
+
+    inline int IsDistributionSpecific() const;
+
     virtual void MarginalizeData(const CDistribFun* pOldData,
             const int *DimOfKeep, int NumDimsOfKeep, int maximize);
     void ShrinkObservedNodes(const CDistribFun* pOldData,
@@ -81,7 +83,7 @@ public:
             int numObsVars, const CNodeType* pObsTabNT, const CNodeType* pObsGauNT);
     void ExpandData(const int* pDimsToExtend, int numDimsToExpand,
             const Value* const* valuesArray,
-            const CNodeType* const*allFullNodeTypes);
+            const CNodeType* const*allFullNodeTypes, int UpdateCanonical = 1);
 
     virtual void MultiplyInSelfData(const int *pBigDomain,
             const int *pSmallDomain, const CDistribFun *pOtherData);
@@ -173,14 +175,17 @@ protected:
             C2DNumericDenseMatrix<float>** resSquareMatOut, float *resCoeffOut,
             int maximize) const;
     CFunctionalDistribFun(int isPotential, int NodeNumber,
-            const CNodeType *const* nodeTypes, const float *dataMean,
-            const float *dataCov, const float **dataWeight = NULL);
-    CFunctionalDistribFun(int NumberOfNodes, const CNodeType *const* nodeTypes,
-            const float *dataH, const float *dataK, float g = 0.0f);
-    CFunctionalDistribFun(int NumberOfNodes, const CNodeType *const* nodeTypes,
-            const float *dataMean, int isMoment, int isPotential);
-    CFunctionalDistribFun(int NumberOfNodes, const CNodeType *const*nodeTypes,
-            int isPotential, int isCanonical);
+            const CNodeType *const* nodeTypes, const CFunction* function);
+
+    /*
+     CFunctionalDistribFun(int NumberOfNodes, const CNodeType *const* nodeTypes,
+     const float *dataH, const float *dataK, float g = 0.0f);
+     CFunctionalDistribFun(int NumberOfNodes, const CNodeType *const* nodeTypes,
+     const float *dataMean, int isMoment, int isPotential);
+     CFunctionalDistribFun(int NumberOfNodes, const CNodeType *const*nodeTypes,
+     int isPotential, int isCanonical);
+     */
+
     CFunctionalDistribFun(const CFunctionalDistribFun & inpDistr);
     C2DNumericDenseMatrix<float> * GetBlock(intVector &ind1, intVector &ind2,
             intVector &ns, const C2DNumericDenseMatrix<float> *pMat,
@@ -238,6 +243,17 @@ inline int CFunctionalDistribFun::GetFactorFlag() const
 inline float CFunctionalDistribFun::GetCoefficient() const
 {
     return m_normCoeff;
+}
+
+inline int CFunctionalDistribFun::IsDistributionSpecific() const
+{
+    if (m_bUnitFunctionDistribution)
+    {
+        return 1;
+    } else
+    {
+        return 3;
+    }
 }
 
 PNL_END

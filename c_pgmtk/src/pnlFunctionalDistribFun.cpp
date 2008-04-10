@@ -657,6 +657,28 @@ CDistribFun& CFunctionalDistribFun::operator =( const CDistribFun& pInputDistr )
     return *this;
 }
 
+int CFunctionalDistribFun::GetMultipliedDelta(const int **positions,
+    const float **values, const int **offsets) const
+{
+    if ( !m_bPotential)
+    {
+        PNL_THROW( CInvalidOperation, "we can multiply only factors" );
+    }
+    if (m_posOfDeltaMultiply.size() == 0)
+    {
+        (*positions) = NULL;
+        (*values) = NULL;
+        (*offsets) = NULL;
+        return 0;
+    } else
+    {
+        (*positions) = &m_posOfDeltaMultiply.front();
+        (*values) = &m_meanValuesOfMult.front();
+        (*offsets) = &m_offsetToNextMean.front();
+        return m_posOfDeltaMultiply.size();
+    }
+}
+
 void CFunctionalDistribFun::AllocMatrix(const float *data, EMatrixType mType,
     int numberOfWeightMatrix, const int *parentIndices)
 {
@@ -4390,390 +4412,387 @@ CDistribFun *CFunctionalDistribFun::ConvertCPDDistribFunToPot() const
     return factData;
 }
 
-/*
- * COMMENTING OUT. BUT MIGHT NEED IT...
- * 
- CDistribFun* CFunctionalDistribFun::CPD_to_pi(CDistribFun *const*allPiMessages,
- int *multParentIndices, int numMultNodes, int posOfExceptParent,
- int maximizeFlag) const
- {
- if (m_bPotential)
- {
- PNL_THROW( CInvalidOperation,
- "only CPD can be converted to lambda message" );
- }
- int i;
- //some parents are in nodeIndices
- if (numMultNodes > m_NumberOfNodes - 1)
- {
- PNL_THROW( CInconsistentSize, "num nodes must be less than number of parents" )
- }
- if ((posOfExceptParent >=0 )&&(numMultNodes+2 != m_NumberOfNodes ))
- {
- PNL_THROW( CInconsistentSize, "numNodes should connect" )
- }
- if (m_bUnitFunctionDistribution)
- {
- PNL_THROW( CInvalidOperation,
- "unit function haven't valid moment form and so can't convert to pi which is in moment form" );
- }
- intVector nonUnitFunction;
- for (i = 0; i < numMultNodes; i++)
- {
- if (allPiMessages[multParentIndices[i]]->GetDistributionType()
- != dtGaussian)
- {
- PNL_THROW( CInvalidOperation,
- "discrete pi messages can't produce Gaussian message to parent" )
- } else
- {
- if ( !static_cast<CFunctionalDistribFun*>(allPiMessages[
- multParentIndices[i]])->m_bUnitFunctionDistribution)
- {
- nonUnitFunction.push_back(multParentIndices[i]);
- }
- }
- //fixme - we need to check Moment form for parent messages
- }
- int numNonInif = nonUnitFunction.size();
- CFunctionalDistribFun
- *resData =
- CFunctionalDistribFun::CreateInMomentForm(
- 1,
- 1,
- &m_NodeTypes[m_NumberOfNodes-1],
- NULL, NULL, NULL);
+CDistribFun* CFunctionalDistribFun::CPD_to_pi(CDistribFun *const*allPiMessages,
+    int *multParentIndices, int numMultNodes, int posOfExceptParent,
+    int maximizeFlag) const
+{
+    if (m_bPotential)
+    {
+        PNL_THROW( CInvalidOperation,
+                "only CPD can be converted to lambda message" );
+    }
+    int i;
+    //some parents are in nodeIndices
+    if (numMultNodes > m_NumberOfNodes - 1)
+    {
+        PNL_THROW( CInconsistentSize, "num nodes must be less than number of parents" )
+    }
+    if ((posOfExceptParent >=0 )&&(numMultNodes+2 != m_NumberOfNodes ))
+    {
+        PNL_THROW( CInconsistentSize, "numNodes should connect" )
+    }
+    if (m_bUnitFunctionDistribution)
+    {
+        PNL_THROW( CInvalidOperation,
+                "unit function haven't valid moment form and so can't convert to pi which is in moment form" );
+    }
+    intVector nonUnitFunction;
+    for (i = 0; i < numMultNodes; i++)
+    {
+        if (allPiMessages[multParentIndices[i]]->GetDistributionType()
+                != dtFunctional)
+        {
+            PNL_THROW( CInvalidOperation,
+                    "discrete pi messages can't produce Functional message to parent" )
+        } else
+        {
+            if ( !static_cast<CFunctionalDistribFun*>(allPiMessages[
+                    multParentIndices[i]])->m_bUnitFunctionDistribution)
+            {
+                nonUnitFunction.push_back(multParentIndices[i]);
+            }
+        }
+        //fixme - we need to check Moment form for parent messages
+    }
+    int numNonInif = nonUnitFunction.size();
+    CFunctionalDistribFun *resData =
+            CFunctionalDistribFun::Create( 1, 1,
+                                           &m_NodeTypes[m_NumberOfNodes-1], 
+                                          NULL);
+    
+#ifndef PAR_OMP
+    C2DNumericDenseMatrix<float> *matrixMean = m_pMatrixMean;
+    C2DNumericDenseMatrix<float> *matrixCov = m_pMatrixCov;
+#else
+    C2DNumericDenseMatrix<float> *matrixMean =
+    static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixMean->Clone());
+    C2DNumericDenseMatrix<float> *matrixCov =
+    static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixCov->Clone());
+#endif
+    
+    matrixMean->AddRef(resData);
+    matrixCov->AddRef(resData);
+    C2DNumericDenseMatrix<float> *prodMat1= NULL;
+    C2DNumericDenseMatrix<float> *prodMat2= NULL;
+    int flagNumComb = 1;
+    int flagMaximize = 0;
+    for (i = 0; i < numNonInif; i++)
+    {
+        //compute covariance matrix
+        if ( !((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->m_bDeltaFunction)
+        {
+            //we needn't to multiply by matrix of zeros!
+            prodMat1 = m_pMatricesWeight[nonUnitFunction[i]]->Transpose();
+            prodMat2
+                    = pnlMultiply(
+                                  ((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->m_pMatrixCov,
+                                  prodMat1, flagMaximize);
+            delete prodMat1;
+            prodMat1 = pnlMultiply(m_pMatricesWeight[nonUnitFunction[i]],
+                                   prodMat2, flagMaximize);
+            delete prodMat2;
+            prodMat2
+                    = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                           matrixCov,
+                                                                                           prodMat1,
+                                                                                           flagNumComb));
+            delete prodMat1;
+            matrixCov->Release(resData);
+            matrixCov = prodMat2;
+            matrixCov->AddRef(resData);
+        }
+        /* NO WEIGHTS: NOT NEEDED
+         //compute mean matrix
+         prodMat1
+         = pnlMultiply(
+         m_pMatricesWeight[nonUnitFunction[i]],
+         ((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->
+         m_pMatrixMean, flagMaximize);
+         prodMat2
+         = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+         matrixMean,
+         prodMat1,
+         flagNumComb));
+         delete prodMat1;
+         matrixMean->Release(resData);
+         matrixMean = prodMat2;
+         matrixMean->AddRef(resData);
+         */
+    }
+    //both matricae are in reference list now
+    resData->m_pMatrixMean = matrixMean;
+    resData->m_pMatrixCov = matrixCov;
+    int numDims1;
+    const int *ranges1;
+    int numDims2;
+    const int *ranges2;
+    matrixMean->GetRanges( &numDims1, &ranges1);
+    matrixCov->GetRanges( &numDims2, &ranges2);
+    if ((ranges1[0] != ranges2[0] )||(ranges2[0] != ranges2[1] ))
+    {
+        PNL_THROW( CInconsistentSize, "mean and covarience" );
+    }
+    float sumMatCov = matrixCov->SumAll(1);
+    if (sumMatCov < 0.000001f)
+    {
+        resData->m_normCoeff = 0.0f;
+    } else
+    {
+        float p1 = (float)pow((double)(2*PNL_PI), (m_numberOfDims/2.0));
+        float p2 = (float)pow((double)matrixCov->Determinant(), 0.5);
+        resData->m_normCoeff = 1/(p1*p2);
+    }
+    
+    return resData;
+}
 
- #ifndef PAR_OMP
- C2DNumericDenseMatrix<float> *matrixMean = m_pMatrixMean;
- C2DNumericDenseMatrix<float> *matrixCov = m_pMatrixCov;
- #else
- C2DNumericDenseMatrix<float> *matrixMean =
- static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixMean->Clone());
- C2DNumericDenseMatrix<float> *matrixCov =
- static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixCov->Clone());
- #endif
- 
- matrixMean->AddRef(resData);
- matrixCov->AddRef(resData);
- C2DNumericDenseMatrix<float> *prodMat1= NULL;
- C2DNumericDenseMatrix<float> *prodMat2= NULL;
- int flagNumComb = 1;
- int flagMaximize = 0;
- for (i = 0; i < numNonInif; i++)
- {
- //compute covariance matrix
- if ( !((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->m_bDeltaFunction)
- {
- //we needn't to multiply by matrix of zeros!
- prodMat1 = m_pMatricesWeight[nonUnitFunction[i]]->Transpose();
- prodMat2
- = pnlMultiply(
- ((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->m_pMatrixCov,
- prodMat1, flagMaximize);
- delete prodMat1;
- prodMat1 = pnlMultiply(m_pMatricesWeight[nonUnitFunction[i]],
- prodMat2, flagMaximize);
- delete prodMat2;
- prodMat2
- = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- matrixCov,
- prodMat1,
- flagNumComb));
- delete prodMat1;
- matrixCov->Release(resData);
- matrixCov = prodMat2;
- matrixCov->AddRef(resData);
- }
- //compute mean matrix
- prodMat1
- = pnlMultiply(
- m_pMatricesWeight[nonUnitFunction[i]],
- ((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->
- m_pMatrixMean, flagMaximize);
- prodMat2
- = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- matrixMean,
- prodMat1,
- flagNumComb));
- delete prodMat1;
- matrixMean->Release(resData);
- matrixMean = prodMat2;
- matrixMean->AddRef(resData);
- }
- //both matricae are in reference list now
- resData->m_pMatrixMean = matrixMean;
- resData->m_pMatrixCov = matrixCov;
- int numDims1;
- const int *ranges1;
- int numDims2;
- const int *ranges2;
- matrixMean->GetRanges( &numDims1, &ranges1);
- matrixCov->GetRanges( &numDims2, &ranges2);
- if ((ranges1[0] != ranges2[0] )||(ranges2[0] != ranges2[1] ))
- {
- PNL_THROW( CInconsistentSize, "mean and covarience" );
- }
- float sumMatCov = matrixCov->SumAll(1);
- if (sumMatCov < 0.000001f)
- {
- resData->m_bDeltaFunction = 1;
- resData->m_normCoeff = 0.0f;
- } else
- {
- float p1 = (float)pow((double)(2*PNL_PI), (m_numberOfDims/2.0));
- float p2 = (float)pow((double)matrixCov->Determinant(), 0.5);
- resData->m_normCoeff = 1/(p1*p2);
- }
- resData->m_bMoment = 1;
+// TODO: This function requires canonical form?
+CDistribFun* CFunctionalDistribFun::CPD_to_lambda(const CDistribFun *lambda,
+    CDistribFun *const* allPiMessages, int *multParentIndices, int numNodes,
+    int posOfExceptNode, int maximizeFlag) const
+{
+    /** THIS REQUIRES CANONICAL FORM... PROBLEMATIC
+    if (m_bPotential)
+    {
+        PNL_THROW( CInvalidOperation,
+                "only CPD can be converted to lambda message" );
+    }
+    int i;
+    //some parents are in nodeNumbers
+    if (numNodes > m_NumberOfNodes - 2)
+    {
+        PNL_THROW( CInconsistentSize,
+                "numNodes is number of parents except one" )
+    }
+    if (lambda->GetDistributionType() != dtFunctional)
+    {
+        PNL_THROW( CInvalidOperation,
+                "discrete lambda can't produce Functional message to parent" )
+    }
+    if (m_bUnitFunctionDistribution)
+    {
+        PNL_THROW( CInvalidOperation,
+                "unit function haven't valid moment form and so can't convert to lambda which is in moment form" );
+    }
+    const CFunctionalDistribFun *lam =
+            static_cast<const CFunctionalDistribFun*>(lambda);
+    intVector nonUnitFunction;
+    for (i = 0; i < numNodes; i++)
+    {
+        if (allPiMessages[multParentIndices[i]]->GetDistributionType()
+                != dtFunctional)
+        {
+            PNL_THROW( CInvalidOperation,
+                    "discrete pi messages can't produce Functional message to parent" )
+        } else
+        {
+            if ( !static_cast<CFunctionalDistribFun*>(allPiMessages[
+                    multParentIndices[i]])->m_bUnitFunctionDistribution)
+            {
+                nonUnitFunction.push_back(multParentIndices[i]);
+            }
+        }
+        //fixme - we need to check Moment form for parent messages
+    }
+    if (lam->m_bUnitFunctionDistribution)
+    {
+        CFunctionalDistribFun
+                *resData =
+                        CFunctionalDistribFun::CreateUnitFunctionDistribution(
+                                                                               1,
+                                                                               &m_NodeTypes[posOfExceptNode],
+                                                                               1);
+        return resData;
+    }
+    float g = 0.0f;
+    CFunctionalDistribFun *resData =
+            CFunctionalDistribFun::Create( 1, &(m_NodeTypes[posOfExceptNode]), 
+            NULL);
+    int numNonInif = nonUnitFunction.size();
+    C2DNumericDenseMatrix<float> *matrixK= NULL;
+    C2DNumericDenseMatrix<float> *matrixH= NULL;
+    //we need to compute the same product as in CPD_to_pi - we can do the same without creation new data
 
- return resData;
- }
-
- CDistribFun* CFunctionalDistribFun::CPD_to_lambda(const CDistribFun *lambda,
- CDistribFun *const* allPiMessages, int *multParentIndices, int numNodes,
- int posOfExceptNode, int maximizeFlag) const
- {
- if (m_bPotential)
- {
- PNL_THROW( CInvalidOperation,
- "only CPD can be converted to lambda message" );
- }
- int i;
- //some parents are in nodeNumbers
- if (numNodes > m_NumberOfNodes - 2)
- {
- PNL_THROW( CInconsistentSize,
- "numNodes is number of parents except one" )
- }
- if (lambda->GetDistributionType() != dtGaussian)
- {
- PNL_THROW( CInvalidOperation,
- "discrete lambda can't produce Gaussian message to parent" )
- }
- if (m_bUnitFunctionDistribution)
- {
- PNL_THROW( CInvalidOperation,
- "unit function haven't valid moment form and so can't convert to lambda which is in moment form" );
- }
- const CFunctionalDistribFun *lam =
- static_cast<const CFunctionalDistribFun*>(lambda);
- intVector nonUnitFunction;
- for (i = 0; i < numNodes; i++)
- {
- if (allPiMessages[multParentIndices[i]]->GetDistributionType()
- != dtGaussian)
- {
- PNL_THROW( CInvalidOperation,
- "discrete pi messages can't produce Gaussian message to parent" )
- } else
- {
- if ( !static_cast<CFunctionalDistribFun*>(allPiMessages[
- multParentIndices[i]])->m_bUnitFunctionDistribution)
- {
- nonUnitFunction.push_back(multParentIndices[i]);
- }
- }
- //fixme - we need to check Moment form for parent messages
- }
- if (lam->m_bUnitFunctionDistribution)
- {
- CFunctionalDistribFun
- *resData =
- CFunctionalDistribFun::CreateUnitFunctionDistribution(
- 1,
- &m_NodeTypes[posOfExceptNode],
- 1);
- return resData;
- }
- float g = 0.0f;
- CFunctionalDistribFun
- *resData =
- CFunctionalDistribFun::CreateInCanonicalForm(
- 1,
- &(m_NodeTypes[posOfExceptNode]),
- NULL, NULL, g);
- int numNonInif = nonUnitFunction.size();
- C2DNumericDenseMatrix<float> *matrixK= NULL;
- C2DNumericDenseMatrix<float> *matrixH= NULL;
- //we need to compute the same product as in CPD_to_pi - we can do the same without creation new data
-
- #ifndef PAR_OMP
- C2DNumericDenseMatrix<float> *matMeanPi = m_pMatrixMean;
- C2DNumericDenseMatrix<float> *matCovPi = m_pMatrixCov;
- #else
- C2DNumericDenseMatrix<float> *matMeanPi =
- static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixMean->Clone());
- C2DNumericDenseMatrix<float> *matCovPi =
- static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixCov->Clone());
- #endif
- 
- matMeanPi->AddRef(resData);
- matCovPi->AddRef(resData);
- C2DNumericDenseMatrix<float> *prodMat1= NULL;
- C2DNumericDenseMatrix<float> *prodMat2= NULL;
- int flagNumComb = 1;
- int flagMaximize = 0;
- for (i = 0; i < numNonInif; i++)
- {
- //compute covariance matrix
- if ( !((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->m_bDeltaFunction)
- {
- //we needn't to multiply by matrix of zeros!
- prodMat1 = m_pMatricesWeight[nonUnitFunction[i]]->Transpose();
- prodMat2
- = pnlMultiply(
- ((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->
- m_pMatrixCov, prodMat1, flagMaximize);
- delete prodMat1;
- prodMat1 = pnlMultiply(m_pMatricesWeight[nonUnitFunction[i]],
- prodMat2, flagMaximize);
- delete prodMat2;
- prodMat2
- = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- matCovPi,
- prodMat1,
- flagNumComb));
- delete prodMat1;
- matCovPi->Release(resData);
- matCovPi = prodMat2;
- matCovPi->AddRef(resData);
- }
- //compute mean matrix
- prodMat1
- = pnlMultiply(
- m_pMatricesWeight[nonUnitFunction[i]],
- ((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->
- m_pMatrixMean, flagMaximize);
- prodMat2
- = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- matMeanPi,
- prodMat1,
- flagNumComb));
- delete prodMat1;
- matMeanPi->Release(resData);
- matMeanPi = prodMat2;
- matMeanPi->AddRef(resData);
- }
- //we use different forms for singular lambda covariance or not
- //we can't use it without specifying of lambda - delta function
- C2DNumericDenseMatrix<float> *matC= NULL;
- C2DNumericDenseMatrix<float> *CovLam= NULL;
- // we need to manipulate with special cases
- if (lam->m_bDeltaFunction)
- {
- int dim = lam->m_numberOfDims;
- floatVector zerosCov = floatVector(dim*dim, 0.0f);
- intVector dims = intVector(2, dim);
- CovLam = C2DNumericDenseMatrix<float>::Create( &dims.front(),
- &zerosCov.front() );
- } else
- {
- CovLam = lam->m_pMatrixK->Inverse();
- }
- if ( !CovLam)
- {
- C2DNumericDenseMatrix<float> *matA= NULL;
- prodMat2 = matCovPi->Inverse();
- prodMat1
- = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- lam->m_pMatrixK,
- prodMat2,
- 1));
- delete prodMat2;
- matA = prodMat1->Inverse();
- delete prodMat1;
- prodMat1 = pnlMultiply(lam->m_pMatrixK, matA, flagMaximize);
- prodMat2 = pnlMultiply(prodMat1, lam->m_pMatrixK, flagMaximize);
- matC
- = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- lam->m_pMatrixK,
- prodMat2,
- 0));
- C2DNumericDenseMatrix<float>
- *identity =
- C2DNumericDenseMatrix<float>::CreateIdentityMatrix(m_NodeTypes[m_NumberOfNodes - 1]->
- GetNodeSize() );
- delete prodMat2;
- C2DNumericDenseMatrix<float>
- *matD =
- static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- identity,
- prodMat1,
- flagNumComb));
- delete prodMat1;
- prodMat1 = pnlMultiply(lam->m_pMatrixK, matMeanPi, flagMaximize);
- prodMat2 = pnlMultiply(matD, prodMat1, flagMaximize);
- delete prodMat1;
- prodMat1 = pnlMultiply(matD, lam->m_pMatrixH, flagMaximize);
- delete matD;
- matD
- = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- prodMat2,
- prodMat1,
- 0));
- delete prodMat1;
- delete prodMat2;
- prodMat1 = m_pMatricesWeight[posOfExceptNode]->Transpose();
- matrixH = pnlMultiply(prodMat1, matD, flagMaximize);
- delete prodMat1;
- delete matD;
- } else
- {
- prodMat1
- = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- matCovPi,
- CovLam,
- 1));
- matC = prodMat1->Inverse();
- delete prodMat1;
- if (lam->m_bDeltaFunction)
- {
- prodMat1
- = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- lam->m_pMatrixMean,
- matMeanPi,
- 0));
- prodMat2 = pnlMultiply(matC, prodMat1, flagMaximize);
- delete prodMat1;
- prodMat1 = m_pMatricesWeight[posOfExceptNode]->Transpose();
- matrixH = pnlMultiply(prodMat1, prodMat2, flagMaximize);
- delete prodMat2;
- delete prodMat1;
- } else
- {
- prodMat1 = pnlMultiply(CovLam, lam->m_pMatrixH, flagMaximize);
- prodMat2
- = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
- prodMat1,
- matMeanPi,
- 0));
- delete prodMat1;
- prodMat1 = pnlMultiply(matC, prodMat2, flagMaximize);
- delete prodMat2;
- prodMat2 = m_pMatricesWeight[posOfExceptNode]->Transpose();
- matrixH = pnlMultiply(prodMat2, prodMat1, flagMaximize);
- delete prodMat2;
- delete prodMat1;
- }
- }
- prodMat1 = pnlMultiply(matC, m_pMatricesWeight[posOfExceptNode],
- flagMaximize);
- prodMat2 = m_pMatricesWeight[posOfExceptNode]->Transpose();
- matrixK = pnlMultiply(prodMat2, prodMat1, flagMaximize);
- delete matC;
- delete CovLam;
- delete prodMat1;
- delete prodMat2;
- matMeanPi->Release(resData);
- matCovPi->Release(resData);
- resData->AttachMatrix(matrixK, matK);
- resData->AttachMatrix(matrixH, matH);
- resData->SetCoefficient(g, 1);
- return resData;
- }
- *
- */
+#ifndef PAR_OMP
+    C2DNumericDenseMatrix<float> *matMeanPi = m_pMatrixMean;
+    C2DNumericDenseMatrix<float> *matCovPi = m_pMatrixCov;
+#else
+    C2DNumericDenseMatrix<float> *matMeanPi =
+    static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixMean->Clone());
+    C2DNumericDenseMatrix<float> *matCovPi =
+    static_cast<C2DNumericDenseMatrix<float>*>(m_pMatrixCov->Clone());
+#endif
+    
+    matMeanPi->AddRef(resData);
+    matCovPi->AddRef(resData);
+    C2DNumericDenseMatrix<float> *prodMat1= NULL;
+    C2DNumericDenseMatrix<float> *prodMat2= NULL;
+    int flagNumComb = 1;
+    int flagMaximize = 0;
+    
+    for (i = 0; i < numNonInif; i++)
+    {
+        //compute covariance matrix
+        if ( !((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->m_bDeltaFunction)
+        {
+            //we needn't to multiply by matrix of zeros!
+            prodMat1 = m_pMatricesWeight[nonUnitFunction[i]]->Transpose();
+            prodMat2
+                    = pnlMultiply(
+                                  ((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->
+                                  m_pMatrixCov, prodMat1, flagMaximize);
+            delete prodMat1;
+            prodMat1 = pnlMultiply(m_pMatricesWeight[nonUnitFunction[i]],
+                                   prodMat2, flagMaximize);
+            delete prodMat2;
+            prodMat2
+                    = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                           matCovPi,
+                                                                                           prodMat1,
+                                                                                           flagNumComb));
+            delete prodMat1;
+            matCovPi->Release(resData);
+            matCovPi = prodMat2;
+            matCovPi->AddRef(resData);
+        }
+        //compute mean matrix
+        prodMat1
+                = pnlMultiply(
+                              m_pMatricesWeight[nonUnitFunction[i]],
+                              ((CFunctionalDistribFun*)allPiMessages[nonUnitFunction[i]])->
+                              m_pMatrixMean, flagMaximize);
+        prodMat2
+                = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                       matMeanPi,
+                                                                                       prodMat1,
+                                                                                       flagNumComb));
+        delete prodMat1;
+        matMeanPi->Release(resData);
+        matMeanPi = prodMat2;
+        matMeanPi->AddRef(resData);
+    }
+    
+    //we use different forms for singular lambda covariance or not
+    //we can't use it without specifying of lambda - delta function
+    C2DNumericDenseMatrix<float> *matC= NULL;
+    C2DNumericDenseMatrix<float> *CovLam= NULL;
+    // we need to manipulate with special cases
+    if (lam->m_bDeltaFunction)
+    {
+        int dim = lam->m_numberOfDims;
+        floatVector zerosCov = floatVector(dim*dim, 0.0f);
+        intVector dims = intVector(2, dim);
+        CovLam = C2DNumericDenseMatrix<float>::Create( &dims.front(),
+                                                       &zerosCov.front() );
+    } else
+    {
+        CovLam = lam->m_pMatrixK->Inverse();
+    }
+    if ( !CovLam)
+    {
+        C2DNumericDenseMatrix<float> *matA= NULL;
+        prodMat2 = matCovPi->Inverse();
+        prodMat1
+                = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                       lam->m_pMatrixK,
+                                                                                       prodMat2,
+                                                                                        1));
+        delete prodMat2;
+        matA = prodMat1->Inverse();
+        delete prodMat1;
+        prodMat1 = pnlMultiply(lam->m_pMatrixK, matA, flagMaximize);
+        prodMat2 = pnlMultiply(prodMat1, lam->m_pMatrixK, flagMaximize);
+        matC
+                = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                       lam->m_pMatrixK,
+                                                                                       prodMat2,
+                                                                                        0));
+        C2DNumericDenseMatrix<float>
+                *identity =
+                        C2DNumericDenseMatrix<float>::CreateIdentityMatrix(m_NodeTypes[m_NumberOfNodes - 1]->
+                        GetNodeSize() );
+        delete prodMat2;
+        C2DNumericDenseMatrix<float>
+                *matD =
+                        static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                             identity,
+                                                                                             prodMat1,
+                                                                                             flagNumComb));
+        delete prodMat1;
+        prodMat1 = pnlMultiply(lam->m_pMatrixK, matMeanPi, flagMaximize);
+        prodMat2 = pnlMultiply(matD, prodMat1, flagMaximize);
+        delete prodMat1;
+        prodMat1 = pnlMultiply(matD, lam->m_pMatrixH, flagMaximize);
+        delete matD;
+        matD
+                = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                       prodMat2,
+                                                                                       prodMat1,
+                                                                                        0));
+        delete prodMat1;
+        delete prodMat2;
+        prodMat1 = m_pMatricesWeight[posOfExceptNode]->Transpose();
+        matrixH = pnlMultiply(prodMat1, matD, flagMaximize);
+        delete prodMat1;
+        delete matD;
+    } else
+    {
+        prodMat1
+                = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                       matCovPi,
+                                                                                       CovLam,
+                                                                                        1));
+        matC = prodMat1->Inverse();
+        delete prodMat1;
+        if (lam->m_bDeltaFunction)
+        {
+            prodMat1
+                    = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                           lam->m_pMatrixMean,
+                                                                                           matMeanPi,
+                                                                                            0));
+            prodMat2 = pnlMultiply(matC, prodMat1, flagMaximize);
+            delete prodMat1;
+            prodMat1 = m_pMatricesWeight[posOfExceptNode]->Transpose();
+            matrixH = pnlMultiply(prodMat1, prodMat2, flagMaximize);
+            delete prodMat2;
+            delete prodMat1;
+        } else
+        {
+            prodMat1 = pnlMultiply(CovLam, lam->m_pMatrixH, flagMaximize);
+            prodMat2
+                    = static_cast<C2DNumericDenseMatrix<float>*>(pnlCombineNumericMatrices(
+                                                                                           prodMat1,
+                                                                                           matMeanPi,
+                                                                                            0));
+            delete prodMat1;
+            prodMat1 = pnlMultiply(matC, prodMat2, flagMaximize);
+            delete prodMat2;
+            prodMat2 = m_pMatricesWeight[posOfExceptNode]->Transpose();
+            matrixH = pnlMultiply(prodMat2, prodMat1, flagMaximize);
+            delete prodMat2;
+            delete prodMat1;
+        }
+    }
+    prodMat1 = pnlMultiply(matC, m_pMatricesWeight[posOfExceptNode],
+                           flagMaximize);
+    prodMat2 = m_pMatricesWeight[posOfExceptNode]->Transpose();
+    matrixK = pnlMultiply(prodMat2, prodMat1, flagMaximize);
+    delete matC;
+    delete CovLam;
+    delete prodMat1;
+    delete prodMat2;
+    matMeanPi->Release(resData);
+    matCovPi->Release(resData);
+    resData->AttachMatrix(matrixK, matK);
+    resData->AttachMatrix(matrixH, matH);
+    resData->SetCoefficient(g, 1);
+    
+    return resData;
+    */
+    
+    return NULL;
+}
 
 int CFunctionalDistribFun::GetNumberOfFreeParameters() const
 {
