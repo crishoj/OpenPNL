@@ -16,6 +16,7 @@
 #ifndef __PNLGRAPH_HPP__
 #define __PNLGRAPH_HPP__
 
+#include <limits.h>
 #include "pnlTypeDefs.hpp"
 #include "pnlException.hpp"
 #include "pnlMatrix.hpp"

@@ -17,6 +17,7 @@
 #ifndef __PNLSTACKMEMPROV_HPP__
 #define __PNLSTACKMEMPROV_HPP__
 
+#include <limits.h>
 #include <assert.h>
 #include <new>
 #include <utility>
